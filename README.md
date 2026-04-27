@@ -1,19 +1,37 @@
 # OTOTR ERP + CRM
 
-OTOTR icin genel merkez ERP/CRM sisteminin yeniden baslangicidir.
+Bu proje, OTOTR icin genel merkez ERP/CRM sisteminin yeniden baslangicidir.
 
-Canli prototip dosyasi: `index.html`
+Mevcut calisir prototip: `index.html`
 
 ## Su anki durum
 
-- Tarayicida calisan bir demo arayuz var.
-- Veri simdilik tarayici `localStorage` uzerinde mock backend gibi saklaniyor.
+- Tek dosyalik, tarayicida calisan bir demo arayuz var.
+- Veri `localStorage` uzerinde mock backend gibi saklaniyor.
 - Dashboard, franchise satis, CRM/randevu, bayi yonetimi, operasyon, kalite, finans, pazarlama, hukuk, kriz, Academy, buyume ve sistem mimarisi modulleri var.
 - OTOTR Master Book kapsami urun omurgasi olarak kullaniliyor.
 
 ## Calistirma
 
 `index.html` dosyasini tarayicida acman yeterli.
+
+## Test
+
+Manuel test:
+
+1. `index.html` dosyasini tarayicida ac.
+2. Sol menuden moduller arasinda gez.
+3. `Yeni Lead` ile kayit olustur.
+4. Franchise kanban ekraninda `Ilerle` aksiyonunu dene.
+5. Bayi tablosunda satira tiklayip detay panelini ac.
+6. `Veri Disa Aktar` ile JSON indirmeyi dene.
+
+Otomatik duman testi:
+
+```powershell
+$env:NODE_PATH='C:\Users\Samivolkannnn\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\node_modules'
+& 'C:\Users\Samivolkannnn\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe' tools/test-index.mjs
+```
 
 ## Hedef
 
@@ -39,3 +57,5 @@ Ilk gercek surum icin odak:
 - Finans/royalty takibi
 
 Detayli plan icin: `docs/erp-crm-roadmap.md`
+
+Sprint 1 is listesi icin: `docs/sprint-1-backlog.md`
