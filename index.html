@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OTOTR ERP + CRM</title>
+  <style>
+    :root{
+      --ink:#101217;--muted:#687182;--line:#e2e6ee;--panel:#fff;--bg:#eef2f6;
+      --red:#d71920;--black:#111318;--green:#14804a;--amber:#b76b00;--blue:#185abc;
+      --shadow:0 18px 48px rgba(16,18,23,.10);--radius:8px;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,Segoe UI,Arial,sans-serif;font-size:14px}
+    button,input,select,textarea{font:inherit}
+    button{cursor:pointer}
+    .app{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+    .side{background:#0b0d12;color:#fff;padding:18px 14px;position:sticky;top:0;height:100vh;overflow:auto}
+    .brand{display:flex;gap:12px;align-items:center;padding:6px 8px 18px;border-bottom:1px solid rgba(255,255,255,.1)}
+    .mark{width:42px;height:42px;border-radius:10px;background:var(--red);display:grid;place-items:center;font-weight:900;letter-spacing:-1px}
+    .brand b{display:block;font-size:18px;letter-spacing:.08em}.brand span{display:block;color:#aeb5c2;font-size:11px;margin-top:2px}
+    .operator{margin:16px 6px;padding:13px;border:1px solid rgba(255,255,255,.1);border-radius:10px;background:rgba(255,255,255,.04)}
+    .operator strong{display:block}.operator small{color:#b4bbc8}
+    .nav-title{color:#777f8f;font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;margin:18px 10px 8px}
+    .nav button{width:100%;border:0;background:transparent;color:#cbd2dd;text-align:left;display:flex;align-items:center;gap:10px;padding:10px;border-radius:8px;margin:2px 0}
+    .nav button:hover{background:rgba(255,255,255,.07);color:#fff}.nav button.active{background:#fff;color:#101217}
+    .nav .icon{width:18px;text-align:center}.count{margin-left:auto;background:#ffe9ea;color:var(--red);padding:2px 7px;border-radius:99px;font-size:11px;font-weight:800}
+    .main{min-width:0}.top{height:70px;background:rgba(255,255,255,.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);display:flex;gap:14px;align-items:center;padding:0 26px;position:sticky;top:0;z-index:5}
+    .crumb{flex:1}.crumb small{display:block;color:var(--muted);font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}.crumb strong{font-size:18px}
+    .search{width:min(420px,34vw);display:flex;align-items:center;gap:8px;background:#f3f5f8;border:1px solid var(--line);border-radius:9px;padding:10px 12px}.search input{width:100%;border:0;outline:0;background:transparent}
+    .api{display:flex;align-items:center;gap:8px;color:var(--green);font-weight:800;font-size:12px;background:#eaf7f0;border:1px solid #bee6cf;border-radius:99px;padding:8px 11px}.dot{width:8px;height:8px;border-radius:50%;background:currentColor}
+    .btn{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:8px;padding:10px 13px;display:inline-flex;gap:8px;align-items:center;font-weight:800}.btn.primary{background:var(--red);border-color:var(--red);color:#fff}.btn.dark{background:var(--black);border-color:var(--black);color:#fff}.btn.small{padding:6px 9px;font-size:12px}
+    .wrap{padding:26px 28px 46px}.hero{background:linear-gradient(135deg,#111318,#252b38 58%,#d71920 150%);color:#fff;border-radius:14px;padding:24px;display:grid;grid-template-columns:1.35fr .65fr;gap:20px;box-shadow:var(--shadow);margin-bottom:18px;overflow:hidden}.hero h1{margin:0 0 8px;font-size:30px;letter-spacing:-.03em}.hero p{margin:0;color:#d8dde7;line-height:1.6}.hero-metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px}.hero-metrics div{border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.08);border-radius:10px;padding:13px}.hero-metrics b{display:block;font-size:22px}.hero-metrics span{font-size:12px;color:#d8dde7}
+    .grid{display:grid;gap:16px}.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}.g70{grid-template-columns:1.35fr .65fr}
+    .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:0 1px 0 rgba(16,18,23,.03);padding:18px;min-width:0}.card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}.card-title{font-weight:900;letter-spacing:-.01em}.card-sub{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.45}
+    .stat{position:relative;overflow:hidden}.stat:before{content:"";position:absolute;inset:0 0 auto 0;height:3px;background:var(--red)}.stat.green:before{background:var(--green)}.stat.blue:before{background:var(--blue)}.stat.amber:before{background:var(--amber)}.label{font-size:11px;color:var(--muted);font-weight:900;text-transform:uppercase;letter-spacing:.08em}.value{font-size:28px;font-weight:900;margin:8px 0 4px;letter-spacing:-.04em}.trend{font-size:12px;color:var(--green);font-weight:800}.trend.down{color:var(--red)}
+    table{width:100%;border-collapse:collapse}th{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;text-align:left;background:#f7f8fa}th,td{padding:12px;border-bottom:1px solid var(--line);vertical-align:middle}td{font-size:13px}tbody tr:hover td{background:#fafbfc}
+    .person{display:flex;align-items:center;gap:10px}.av{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-weight:900;background:#f1f3f6;color:#252a33}.mono{font-variant-numeric:tabular-nums}.badge{display:inline-flex;border-radius:99px;padding:4px 9px;font-size:11px;font-weight:900;border:1px solid transparent}.green{background:#eaf7f0;color:var(--green);border-color:#c5ead5}.red{background:#ffeaec;color:var(--red);border-color:#ffc5ca}.amber{background:#fff4df;color:var(--amber);border-color:#ffe0a6}.blue{background:#eaf1ff;color:var(--blue);border-color:#c9d9ff}.gray{background:#f0f2f5;color:#5c6370;border-color:#dfe3e8}
+    .page{display:none}.page.active{display:block}.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}.toolbar input,.toolbar select{border:1px solid var(--line);border-radius:8px;background:#fff;padding:10px 11px;min-width:170px}
+    .kanban{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.col{background:#f5f6f8;border:1px solid var(--line);border-radius:12px;padding:12px}.col h3{margin:0 0 10px;font-size:13px;display:flex;justify-content:space-between}.deal{background:#fff;border:1px solid var(--line);border-radius:10px;padding:13px;margin-bottom:10px}.deal b{display:block;margin-bottom:4px}.deal small{color:var(--muted);line-height:1.45}.deal-foot{display:flex;justify-content:space-between;margin-top:12px;align-items:center;gap:8px}
+    .mini-list{display:grid;gap:10px}.mini{display:flex;gap:11px;align-items:flex-start;padding:11px;border:1px solid var(--line);border-radius:10px;background:#fff}.mini .ico{width:22px;height:22px;border-radius:7px;background:#ffeaec;color:var(--red);display:grid;place-items:center;font-size:12px;font-weight:900}.mini b{display:block;font-size:13px}.mini span{font-size:12px;color:var(--muted);line-height:1.45}.progress{height:7px;background:#eceff3;border-radius:99px;overflow:hidden}.bar{height:100%;border-radius:99px;background:var(--red)}.bar.green{background:var(--green)}.bar.blue{background:var(--blue)}.bar.amber{background:var(--amber)}
+    .module-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.module{padding:16px;border:1px solid var(--line);border-radius:12px;background:#fff}.module h3{font-size:15px;margin:0 0 7px}.module p{color:var(--muted);font-size:13px;line-height:1.5;margin:0}.drawer{position:fixed;inset:0;background:rgba(11,13,18,.35);display:none;z-index:20}.drawer.open{display:block}.drawer-panel{position:absolute;right:0;top:0;height:100%;width:min(560px,100%);background:#fff;box-shadow:-24px 0 60px rgba(17,19,24,.22);padding:24px;overflow:auto}.modal{position:fixed;inset:0;background:rgba(11,13,18,.42);z-index:30;display:none;place-items:center;padding:18px}.modal.open{display:grid}.modal-box{width:min(700px,100%);background:#fff;border-radius:14px;padding:22px;box-shadow:var(--shadow)}.form{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field{display:flex;flex-direction:column;gap:6px}.field label{font-size:11px;text-transform:uppercase;color:var(--muted);font-weight:900;letter-spacing:.06em}.field input,.field select,.field textarea{border:1px solid var(--line);border-radius:8px;padding:11px}.field.wide{grid-column:1/-1}.actions{display:flex;justify-content:flex-end;gap:10px;margin-top:16px}.toast{position:fixed;right:22px;bottom:22px;background:#111318;color:#fff;border-radius:10px;padding:13px 15px;box-shadow:var(--shadow);display:none;z-index:40}.toast.show{display:block}
+    @media(max-width:1100px){.app{grid-template-columns:1fr}.side{position:relative;height:auto}.top{position:relative}.g4,.g3,.g2,.g70,.kanban,.module-grid,.hero{grid-template-columns:1fr}.search{display:none}}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="side">
+      <div class="brand"><div class="mark">OT</div><div><b>OTOTR</b><span>Genel Merkez ERP + CRM</span></div></div>
+      <div class="operator"><strong>CEO Paneli</strong><small>Genel merkez komuta merkezi</small></div>
+      <nav class="nav" id="nav"></nav>
+    </aside>
+    <main class="main">
+      <header class="top">
+        <div class="crumb"><small>OTOTR ERP + CRM</small><strong id="pageTitle">Yonetim Kokpiti</strong></div>
+        <label class="search"><span>Arama</span><input id="globalSearch" placeholder="Sube, lead, randevu veya rapor ara"></label>
+        <div class="api"><span class="dot"></span><span>Mock API bagli</span></div>
+        <button class="btn" id="exportBtn">Veri indir</button>
+        <button class="btn primary" id="newLeadBtn">Yeni lead</button>
+      </header>
+      <div class="wrap">
+        <section class="hero">
+          <div>
+            <h1>Türkiye ekspertiz zinciri için genel merkez işletim sistemi.</h1>
+            <p>Franchise satış, bayi operasyonu, CRM, kalite denetimi, finans, hukuk, pazarlama ve iş zekası tek yönetim ekranında birleşir.</p>
+          </div>
+          <div class="hero-metrics" id="heroMetrics"></div>
+        </section>
+        <section id="pages"></section>
+      </div>
+    </main>
+  </div>
+
+  <div class="drawer" id="drawer"><div class="drawer-panel"><div id="drawerContent"></div></div></div>
+  <div class="modal" id="leadModal">
+    <div class="modal-box">
+      <div class="card-head"><div><div class="card-title">Yeni Franchise / CRM Lead</div><div class="card-sub">Demo kaydi localStorage uzerinde saklanir.</div></div><button class="btn" data-close>Kapat</button></div>
+      <form id="leadForm" class="form">
+        <div class="field"><label>Ad Soyad / Firma</label><input name="name" required placeholder="Yeni aday"></div>
+        <div class="field"><label>Telefon</label><input name="phone" placeholder="Opsiyonel"></div>
+        <div class="field"><label>Sehir</label><input name="city" required placeholder="Konya"></div>
+        <div class="field"><label>Kaynak</label><select name="source"><option>Franchise formu</option><option>Google</option><option>Instagram</option><option>Referans</option><option>Fuar</option></select></div>
+        <div class="field"><label>Butce</label><select name="budget"><option>3.5M - 5M TL</option><option>5M - 7M TL</option><option>7M+ TL</option><option>Kurumsal hacim</option></select></div>
+        <div class="field"><label>Tip</label><select name="type"><option>Franchise adayi</option><option>Kurumsal musteri</option><option>Filo anlasmasi</option><option>Galeri partneri</option></select></div>
+        <div class="field wide"><label>Not</label><textarea name="note" rows="3" placeholder="Bolge, motivasyon, risk ve sonraki adim"></textarea></div>
+      </form>
+      <div class="actions"><button class="btn" data-close>Vazgec</button><button class="btn primary" form="leadForm">Kaydi olustur</button></div>
+    </div>
+  </div>
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const fmt = n => new Intl.NumberFormat('tr-TR').format(n);
+    const fmtTL = n => new Intl.NumberFormat('tr-TR',{style:'currency',currency:'TRY',maximumFractionDigits:0}).format(n);
+    const seed = {
+      branches:[
+        {id:'BR-001',name:'Bursa Nilufer',city:'Bursa',region:'Marmara',status:'Aktif',manager:'Sube Muduru',revenue:1425000,royalty:128250,reports:872,nps:72,google:4.8,quality:94,risk:'Dusuk',growth:18},
+        {id:'BR-002',name:'Istanbul Atasehir',city:'Istanbul',region:'Marmara',status:'Aktif',manager:'Sube Muduru',revenue:1880000,royalty:169200,reports:1094,nps:68,google:4.6,quality:90,risk:'Orta',growth:11},
+        {id:'BR-003',name:'Ankara Cukurambar',city:'Ankara',region:'Ic Anadolu',status:'Aktif',manager:'Sube Muduru',revenue:1186000,royalty:106740,reports:741,nps:61,google:4.4,quality:84,risk:'Orta',growth:-4},
+        {id:'BR-004',name:'Kocaeli Izmit',city:'Kocaeli',region:'Marmara',status:'Aktif',manager:'Sube Muduru',revenue:965000,royalty:86850,reports:612,nps:74,google:4.9,quality:96,risk:'Dusuk',growth:22},
+        {id:'BR-005',name:'Izmir Bornova',city:'Izmir',region:'Ege',status:'Acilis',manager:'Atama bekliyor',revenue:0,royalty:0,reports:0,nps:0,google:0,quality:81,risk:'Orta',growth:0},
+        {id:'BR-006',name:'Antalya Kepez',city:'Antalya',region:'Akdeniz',status:'Kurulum',manager:'Atama bekliyor',revenue:0,royalty:0,reports:0,nps:0,google:0,quality:68,risk:'Yuksek',growth:0}
+      ],
+      leads:[
+        {id:'LD-2401',name:'Konya franchise adayi',city:'Konya',type:'Franchise adayi',stage:'On Gorusme',score:82,budget:'5M - 7M TL',source:'Franchise formu',owner:'Franchise Satis',next:'Finansal yeterlilik gorusmesi',phone:''},
+        {id:'LD-2402',name:'Kayseri yatirimci adayi',city:'Kayseri',type:'Franchise adayi',stage:'Yatirimci Sunumu',score:76,budget:'3.5M - 5M TL',source:'Referans',owner:'CEO Ofisi',next:'Lokasyon dosyasi',phone:''},
+        {id:'LD-2403',name:'Marmara filo musteri',city:'Istanbul',type:'Kurumsal musteri',stage:'Teklif',score:88,budget:'Aylik 180 arac',source:'B2B satis',owner:'Kurumsal Satis',next:'Pilot fiyat onayi',phone:''},
+        {id:'LD-2404',name:'Akdeniz rent a car',city:'Antalya',type:'Filo anlasmasi',stage:'Sozlesme',score:91,budget:'Aylik 260 arac',source:'Google',owner:'Kurumsal Satis',next:'Hukuk revizyonu',phone:''},
+        {id:'LD-2405',name:'Samsun franchise adayi',city:'Samsun',type:'Franchise adayi',stage:'Yeni Lead',score:64,budget:'3.5M - 5M TL',source:'Instagram',owner:'Franchise Satis',next:'Ilk arama',phone:''}
+      ],
+      appointments:[
+        {time:'09:30',branch:'Bursa Nilufer',customer:'Bireysel musteri',vehicle:'BMW 320i',package:'Full + Guven Paketi',status:'Devam ediyor'},
+        {time:'10:15',branch:'Istanbul Atasehir',customer:'Filo musteri',vehicle:'Ford Transit',package:'Filo Kontrol',status:'Geldi'},
+        {time:'11:00',branch:'Ankara Cukurambar',customer:'Bireysel musteri',vehicle:'Toyota Corolla',package:'Standart',status:'Bekliyor'},
+        {time:'13:30',branch:'Kocaeli Izmit',customer:'Galeri partneri',vehicle:'Audi A4',package:'Kurumsal Full',status:'Tamamlandi'}
+      ],
+      reports:[
+        {id:'RP-9021',branch:'Bursa Nilufer',plate:'16 XXX 001',model:'Mercedes C200 2021',score:8.7,result:'Satin alinabilir',risk:'Dusuk',price:1720000,expert:'Eksper'},
+        {id:'RP-9022',branch:'Ankara Cukurambar',plate:'06 XXX 002',model:'Volkswagen Passat 2019',score:6.4,result:'Pazarlikla alinabilir',risk:'Orta',price:1145000,expert:'Eksper'},
+        {id:'RP-9023',branch:'Istanbul Atasehir',plate:'34 XXX 003',model:'Renault Megane 2020',score:4.8,result:'Riskli',risk:'Yuksek',price:780000,expert:'Eksper'}
+      ],
+      finance:[
+        {month:'Ocak',revenue:3720000,royalty:334800,ad:74400,ebitda:980000},
+        {month:'Subat',revenue:4180000,royalty:376200,ad:83600,ebitda:1120000},
+        {month:'Mart',revenue:4890000,royalty:440100,ad:97800,ebitda:1330000},
+        {month:'Nisan',revenue:5456000,royalty:491040,ad:109120,ebitda:1510000}
+      ],
+      tickets:[
+        {id:'TK-501',title:'Google puani 4.5 alti alarmi',branch:'Ankara Cukurambar',severity:'Orta',sla:'18 saat',owner:'Musteri Deneyimi'},
+        {id:'TK-502',title:'Rapor itirazi',branch:'Istanbul Atasehir',severity:'Yuksek',sla:'3 saat',owner:'Hukuk + Kalite'},
+        {id:'TK-503',title:'Royalty odeme gecikmesi',branch:'Ankara Cukurambar',severity:'Orta',sla:'1 gun',owner:'Finans'},
+        {id:'TK-504',title:'Acilis malzeme gecikmesi',branch:'Antalya Kepez',severity:'Yuksek',sla:'Bugun',owner:'Satin Alma'}
+      ],
+      audits:[
+        {id:'QA-118',branch:'Bursa Nilufer',type:'Rapor kalite kontrol',score:96,finding:'Boya kalinligi notlari eksiksiz',owner:'Kalite',status:'Kapali'},
+        {id:'QA-119',branch:'Ankara Cukurambar',type:'Gizli musteri',score:78,finding:'Rapor anlatimi guclendirilmeli',owner:'Bolge Muduru',status:'30 gun plan'},
+        {id:'QA-120',branch:'Istanbul Atasehir',type:'Kamera denetimi',score:88,finding:'Arac kabul proseduru atlandi',owner:'Operasyon',status:'Takipte'}
+      ]
+    };
+    const navGroups = [
+      ['Komuta',[['dashboard','Yonetim Kokpiti','01'],['intelligence','Is Zekasi','02'],['branches','Bayiler','03'],['operations','Operasyon','04']]],
+      ['Gelir',[['franchise','Franchise Satis','05'],['crm','CRM & Randevu','06'],['finance','Finans','07'],['marketing','Pazarlama','08']]],
+      ['Kontrol',[['quality','Kalite','09'],['legal','Hukuk & Risk','10'],['crisis','Kriz Merkezi','11'],['architecture','Sistem','12']]]
+    ];
+    const titles = {dashboard:'Yonetim Kokpiti',intelligence:'Is Zekasi',branches:'Bayiler',operations:'Operasyon',franchise:'Franchise Satis',crm:'CRM & Randevu',finance:'Finans',marketing:'Pazarlama',quality:'Kalite',legal:'Hukuk & Risk',crisis:'Kriz Merkezi',architecture:'Sistem Mimarisi'};
+    const modules = {
+      operations:[['Arac kabul','Plaka, musteri, paket, odeme ve tahmini teslim suresi alinir.'],['Test istasyonlari','Boya, dyno, mekanik, elektronik, yol testi ve fotograf akisi izlenir.'],['Rapor teslim','Risk dili, satin alma tavsiyesi ve satis sonrasi destek baglanir.']],
+      marketing:[['Google Maps dominasyonu','Yorum, puan, fotograf, yerel SEO ve sube gorunurlugu yonetilir.'],['Performans reklamlari','Google, Meta, remarketing ve bolgesel kampanya verimi izlenir.'],['Yerel lansman','Yeni sube icin influencer, tabela ve galeri is birlikleri planlanir.']],
+      legal:[['Franchise sozlesmesi','Bolge, royalty, denetim, marka kullanimi ve fesih kurallari.'],['KVKK ve veri','Acik riza, rapor paylasimi, bayi yetkileri ve ihlal proseduru.'],['Tazmin ve itiraz','Hatali rapor, ikinci uzman, kok neden ve kanit paketi akisi.']],
+      architecture:[['Merkezi ERP','CRM, randevu, rapor, finans, kalite ve hukuk tek veri modelinde.'],['Bayi paneli','Sube gunluk akis, rapor yazimi, odeme ve KPI ekranlari.'],['Entegrasyonlar','WhatsApp, SMS, odeme, e-fatura, Google yorum ve rapor linki.']]
+    };
+    let DB = JSON.parse(localStorage.getItem('ototr-v1-db') || 'null') || seed;
+    let current = location.hash.replace('#','') || 'dashboard';
+    function save(){ localStorage.setItem('ototr-v1-db', JSON.stringify(DB)); }
+    function statusClass(t){ return /Dusuk|Aktif|Kapali|Tamamlandi|Satin/.test(t) ? 'green' : /Yuksek|Riskli|Kritik/.test(t) ? 'red' : /Orta|Acilis|30/.test(t) ? 'amber' : /Kurulum|Takipte|Devam/.test(t) ? 'blue' : 'gray'; }
+    function badge(t){ return `<span class="badge ${statusClass(t)}">${t}</span>`; }
+    function stat(label,value,trend,color=''){ return `<div class="card stat ${color}"><div class="label">${label}</div><div class="value">${value}</div><div class="trend ${String(trend).startsWith('-')?'down':''}">${trend}</div></div>`; }
+    function mini(icon,title,body){ return `<div class="mini"><div class="ico">${icon}</div><div><b>${title}</b><span>${body}</span></div></div>`; }
+    function renderNav(){
+      nav.innerHTML = navGroups.map(([g,items]) => `<div class="nav-title">${g}</div>` + items.map(([id,label,ic]) => `<button data-route="${id}" class="${id===current?'active':''}"><span class="icon">${ic}</span><span>${label}</span>${id==='franchise'?'<span class="count">'+DB.leads.filter(l=>l.type.includes('Franchise')).length+'</span>':''}${id==='crisis'?'<span class="count">'+DB.tickets.filter(t=>t.severity==='Yuksek').length+'</span>':''}</button>`).join('')).join('');
+      nav.querySelectorAll('button').forEach(b=>b.onclick=()=>route(b.dataset.route));
+    }
+    function renderHero(){
+      const totalRevenue=DB.branches.reduce((s,b)=>s+b.revenue,0), active=DB.branches.filter(b=>b.status==='Aktif').length, reports=DB.branches.reduce((s,b)=>s+b.reports,0), avgQ=Math.round(DB.branches.reduce((s,b)=>s+b.quality,0)/DB.branches.length);
+      heroMetrics.innerHTML = `<div><b>${active}/${DB.branches.length}</b><span>aktif veya kurulumdaki sube</span></div><div><b>${fmtTL(totalRevenue)}</b><span>Nisan ag cirosu</span></div><div><b>${fmt(reports)}</b><span>aylik ekspertiz raporu</span></div><div><b>%${avgQ}</b><span>ortalama kalite skoru</span></div>`;
+    }
+    function table(headers, rows){ return `<table><thead><tr>${headers.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${rows.join('')}</tbody></table>`; }
+    function branchesTable(){ return table(['Sube','Durum','Ciro','Royalty','Rapor','Kalite','Google','Risk'], DB.branches.map(b=>`<tr data-detail="branch:${b.id}"><td><div class="person"><div class="av">${b.city.slice(0,2).toUpperCase()}</div><div><b>${b.name}</b><br><span class="card-sub">${b.manager} - ${b.region}</span></div></div></td><td>${badge(b.status)}</td><td class="mono">${fmtTL(b.revenue)}</td><td class="mono">${fmtTL(b.royalty)}</td><td>${fmt(b.reports)}</td><td><div class="progress"><div class="bar green" style="width:${b.quality}%"></div></div></td><td>${b.google||'-'}</td><td>${badge(b.risk)}</td></tr>`)); }
+    function appointmentsTable(){ return table(['Saat','Sube','Musteri','Arac','Paket','Durum'], DB.appointments.map(a=>`<tr><td class="mono">${a.time}</td><td>${a.branch}</td><td>${a.customer}</td><td>${a.vehicle}</td><td>${a.package}</td><td>${badge(a.status)}</td></tr>`)); }
+    function reportsList(){ return `<div class="mini-list">${DB.reports.map(r=>mini(r.risk==='Yuksek'?'!':'OK',`${r.plate} - ${r.model}`,`${r.branch} - Skor ${r.score}/10 - ${r.result} - Deger ${fmtTL(r.price)}`)).join('')}</div>`; }
+    function kanban(filter=''){
+      const stages=['Yeni Lead','On Gorusme','Yatirimci Sunumu','Teklif'];
+      return stages.map(st=>{ const arr=DB.leads.filter(l=>(!filter||l.stage===filter)&&(l.stage===st||(st==='Teklif'&&l.stage==='Sozlesme'))); return `<div class="col"><h3>${st}<span>${arr.length}</span></h3>${arr.map(l=>`<div class="deal" data-detail="lead:${l.id}"><b>${l.name}</b><small>${l.city} - ${l.type}<br>${l.budget} - Skor ${l.score}</small><div class="deal-foot">${badge(l.stage)}<button class="btn small" data-advance="${l.id}">Ilerle</button></div></div>`).join('') || '<div class="card-sub">Bu asamada kayit yok.</div>'}</div>`; }).join('');
+    }
+    function auditsTable(){ return table(['ID','Sube','Tip','Skor','Bulgu','Sorumlu','Durum'], DB.audits.map(a=>`<tr><td>${a.id}</td><td>${a.branch}</td><td>${a.type}</td><td>%${a.score}</td><td>${a.finding}</td><td>${a.owner}</td><td>${badge(a.status)}</td></tr>`)); }
+    function ticketsTable(){ return table(['ID','Konu','Sube','Onem','SLA','Sorumlu'], DB.tickets.map(t=>`<tr><td>${t.id}</td><td>${t.title}</td><td>${t.branch}</td><td>${badge(t.severity)}</td><td>${t.sla}</td><td>${t.owner}</td></tr>`)); }
+    function financeTable(){ return table(['Ay','Ciro','Royalty','Reklam fonu','EBITDA'], DB.finance.map(f=>`<tr><td>${f.month}</td><td>${fmtTL(f.revenue)}</td><td>${fmtTL(f.royalty)}</td><td>${fmtTL(f.ad)}</td><td>${fmtTL(f.ebitda)}</td></tr>`)); }
+    function moduleCards(key){ return `<div class="module-grid">${(modules[key]||[]).map(m=>`<div class="module"><h3>${m[0]}</h3><p>${m[1]}</p></div>`).join('')}</div>`; }
+    function pageShell(id, html){ return `<div class="page ${id===current?'active':''}" id="page-${id}">${html}</div>`; }
+    function renderPages(){
+      const totalRevenue=DB.branches.reduce((s,b)=>s+b.revenue,0), royalty=DB.branches.reduce((s,b)=>s+b.royalty,0), riskCount=DB.tickets.filter(t=>t.severity==='Yuksek').length;
+      pages.innerHTML =
+        pageShell('dashboard', `<div class="grid g4">${stat('Ag Cirosu',fmtTL(totalRevenue),'+%16 aylik buyume')}${stat('Royalty',fmtTL(royalty),'+%13 tahsilat','green')}${stat('Bugunku Randevu',DB.appointments.length,'Canli operasyon','blue')}${stat('Kritik Alarm',riskCount,'CEO aksiyonu bekliyor','amber')}</div><div class="grid g70" style="margin-top:16px"><div class="card"><div class="card-head"><div><div class="card-title">Sube Karnesi</div><div class="card-sub">Finans, operasyon, kalite ve risk tek tabloda.</div></div></div>${branchesTable()}</div><div class="card"><div class="card-head"><div><div class="card-title">CEO Oncelik Listesi</div><div class="card-sub">Bugun kapatilmasi gereken kararlar</div></div></div><div class="mini-list">${DB.tickets.filter(t=>t.severity==='Yuksek').map(t=>mini('!',t.title,`${t.branch} - SLA: ${t.sla} - Sorumlu: ${t.owner}`)).join('')}${mini('BI','Premium paket donusumu','Ankara ve Istanbul icin rapor anlatim standardi guncellenmeli.')}${mini('EV','EV ekspertiz egitimi','Yeni nesil paketler icin sertifika orani artirilmali.')}</div></div></div>`)+
+        pageShell('intelligence', `<div class="grid g3">${stat('Erken uyari','4 sinyal','Kriz olmadan yakala')}${stat('Fiyat firsati',fmtTL(420000),'Aylik potansiyel','green')}${stat('EV talep payi','%7.8','Marmara artista','blue')}</div><div class="card" style="margin-top:16px"><div class="card-head"><div><div class="card-title">Is Zekasi Sinyalleri</div><div class="card-sub">Veri merkezin CEO kararina donusturdugu alanlar</div></div></div><div class="mini-list">${mini('01','Premium paket dusuk donusum','Standarttan Full pakete gecis Istanbul ve Ankara icin hedef altinda.')}${mini('02','Google puan dususu','Negatif yorum + SLA asimi kriz oncesi alarm uretmeli.')}${mini('03','Ikinci sube adayligi','Bursa ve Kocaeli kalite/NPS/ciro bilesik skorunda ust bantta.')}</div></div>`)+
+        pageShell('branches', `<div class="toolbar"><select id="regionFilter"><option value="">Tum bolgeler</option><option>Marmara</option><option>Ic Anadolu</option><option>Ege</option><option>Akdeniz</option></select></div><div class="card"><div class="card-head"><div><div class="card-title">Bayi ve Sube Yonetimi</div><div class="card-sub">Satira tiklayinca sube detay paneli acilir.</div></div></div><div id="branchesWrap">${branchesTable()}</div></div>`)+
+        pageShell('operations', `<div class="grid g3">${stat('Bugunku arac',DB.appointments.length,'Subeler arasi akis')}${stat('Teslim SLA','%91','Hedef %95','blue')}${stat('Eksik kontrol','5','Kalite takibinde','amber')}</div><div class="grid g2" style="margin-top:16px"><div class="card"><div class="card-title">Randevu Akisi</div>${appointmentsTable()}</div><div class="card"><div class="card-title">Son Raporlar</div>${reportsList()}</div></div><div class="card" style="margin-top:16px">${moduleCards('operations')}</div>`)+
+        pageShell('franchise', `<div class="toolbar"><button class="btn primary" id="openLead2">Yeni lead</button><select id="stageFilter"><option value="">Tum asamalar</option><option>Yeni Lead</option><option>On Gorusme</option><option>Yatirimci Sunumu</option><option>Teklif</option><option>Sozlesme</option></select></div><div class="kanban" id="leadKanban">${kanban()}</div>`)+
+        pageShell('crm', `<div class="grid g4">${stat('Aktif Musteri','12.482','+%9 kayit buyumesi')}${stat('Kurumsal Hesap','86','Filo ve galeri','blue')}${stat('No-show','%6','Hedef %4','amber')}${stat('Tekrar Musteri','%21','Sadakat potansiyeli','green')}</div><div class="grid g2" style="margin-top:16px"><div class="card"><div class="card-title">Randevular</div>${appointmentsTable()}</div><div class="card"><div class="card-title">Musteri Hafizasi</div><div class="mini-list">${mini('360','Musteri 360','Bireysel, kurumsal, galeri, filo ve tekrar musteri profilleri tek yerde.')}${mini('SMS','WhatsApp/SMS otomasyonu','Onay, hatirlatma, rapor linki ve memnuniyet mesajlari.')}${mini('QR','Dijital rapor arsivi','Gecmis raporlar ve arac hafizasi rapor linkine baglanir.')}</div></div></div>`)+
+        pageShell('finance', `<div class="grid g4">${stat('Nisan Ciro',fmtTL(5456000),'+%12')}${stat('Royalty',fmtTL(491040),'+%11','green')}${stat('Reklam Fonu',fmtTL(109120),'Merkez butce','blue')}${stat('EBITDA',fmtTL(1510000),'Tahmini kapanis','amber')}</div><div class="card" style="margin-top:16px"><div class="card-title">Finans ve Royalty</div>${financeTable()}</div>`)+
+        pageShell('marketing', `<div class="grid g3">${stat('Lead','1.314','Aylik toplam')}${stat('CPL',fmtTL(274),'Kanal ortalamasi','blue')}${stat('ROI','4.8x','Google Ads','green')}</div><div class="card" style="margin-top:16px">${moduleCards('marketing')}</div>`)+
+        pageShell('quality', `<div class="grid g4">${stat('Ortalama Kalite','%88','Hedef %92')}${stat('Gizli Musteri','3','Bu ay denetim','blue')}${stat('Rapor Itiraz','2','Kritik inceleme','amber')}${stat('30 Gun Plan','1','Ankara takipte','red')}</div><div class="card" style="margin-top:16px"><div class="card-title">Kalite Denetimleri</div>${auditsTable()}</div>`)+
+        pageShell('legal', `<div class="card"><div class="card-head"><div><div class="card-title">Hukuk ve Risk Playbook</div><div class="card-sub">Franchise, veri, tazmin ve marka koruma basliklari.</div></div></div>${moduleCards('legal')}</div>`)+
+        pageShell('crisis', `<div class="grid g4">${stat('Acik Ticket',DB.tickets.length,'Merkez takipte')}${stat('Kritik',riskCount,'Bugun cozulecek','amber')}${stat('SLA Uyum','%91','Hedef %95','green')}${stat('Kok Neden','2','Rapor + SLA','red')}</div><div class="card" style="margin-top:16px"><div class="card-title">Kriz ve Alarm Merkezi</div>${ticketsTable()}</div>`)+
+        pageShell('architecture', `<div class="card"><div class="card-head"><div><div class="card-title">Sistem Mimarisi</div><div class="card-sub">Prototipten gercek ERP/CRM mimarisine gecis.</div></div></div>${moduleCards('architecture')}</div><div class="card" style="margin-top:16px"><div class="card-title">Sonraki teknik faz</div><p class="card-sub">Frontend modullere ayrilacak, backend API kurulacak, PostgreSQL veri modeli uygulanacak, rol/yetki sistemi ve audit log eklenecek.</p></div>`);
+      wireEvents();
+    }
+    function route(id){ current=id; if(!titles[id]) current='dashboard'; pageTitle.textContent=titles[current]; history.replaceState(null,'','#'+current); renderNav(); renderPages(); }
+    function openDetail(ref){
+      const [type,id]=ref.split(':'); let html='';
+      if(type==='branch'){ const b=DB.branches.find(x=>x.id===id); html=`<div class="card-head"><div><div class="card-title">${b.name}</div><div class="card-sub">${b.city} - ${b.manager} - ${b.region}</div></div><button class="btn" onclick="closeDrawer()">Kapat</button></div><div class="grid g2">${stat('Ciro',fmtTL(b.revenue),b.growth+'% buyume')}${stat('Kalite','%'+b.quality,'Google '+(b.google||'-'),'blue')}${stat('Royalty',fmtTL(b.royalty),'Merkez geliri','green')}${stat('Risk',b.risk,'NPS '+b.nps,'amber')}</div><div class="card" style="margin-top:14px"><div class="card-title">Merkez aksiyonlari</div><div class="mini-list">${mini('1','Kalite standardi','Rapor dili, musteri teslimi ve Google yorum takibi.')}${mini('2','Finans disiplini','Royalty, reklam fonu ve tahsilat SLA kontrolu.')}${mini('3','Buyume karari','Ikinci sube veya 30 gun duzeltme plani veriye gore belirlenir.')}</div></div>`; }
+      if(type==='lead'){ const l=DB.leads.find(x=>x.id===id); html=`<div class="card-head"><div><div class="card-title">${l.name}</div><div class="card-sub">${l.city} - ${l.type}</div></div><button class="btn" onclick="closeDrawer()">Kapat</button></div><div class="grid g2">${stat('Lead skoru',l.score,'Yatirim sinyali')}${stat('Asama',l.stage,l.next,'blue')}</div><div class="mini-list" style="margin-top:14px">${mini('B', 'Butce', l.budget)}${mini('S','Sorumlu',l.owner)}${mini('N','Sonraki adim',l.next)}</div>`; }
+      drawerContent.innerHTML=html; drawer.classList.add('open');
+    }
+    function closeDrawer(){ drawer.classList.remove('open'); }
+    function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2400); }
+    function wireEvents(){
+      document.querySelectorAll('[data-detail]').forEach(el=>el.onclick=e=>{ if(e.target.dataset.advance) return; openDetail(el.dataset.detail); });
+      document.querySelectorAll('[data-advance]').forEach(btn=>btn.onclick=e=>{ e.stopPropagation(); const lead=DB.leads.find(l=>l.id===btn.dataset.advance); if(lead){ lead.stage='Sozlesme'; lead.next='CEO onayi'; save(); renderPages(); toast('Lead asamasi guncellendi.'); }});
+      const f=document.getElementById('stageFilter'); if(f) f.onchange=()=>{ leadKanban.innerHTML=kanban(f.value); wireEvents(); };
+      const o=document.getElementById('openLead2'); if(o) o.onclick=openLeadModal;
+      const r=document.getElementById('regionFilter'); if(r) r.onchange=()=>{ const rows= r.value? DB.branches.filter(b=>b.region===r.value):DB.branches; branchesWrap.innerHTML=table(['Sube','Durum','Ciro','Royalty','Rapor','Kalite','Google','Risk'], rows.map(b=>`<tr data-detail="branch:${b.id}"><td><div class="person"><div class="av">${b.city.slice(0,2).toUpperCase()}</div><div><b>${b.name}</b><br><span class="card-sub">${b.manager} - ${b.region}</span></div></div></td><td>${badge(b.status)}</td><td class="mono">${fmtTL(b.revenue)}</td><td class="mono">${fmtTL(b.royalty)}</td><td>${fmt(b.reports)}</td><td><div class="progress"><div class="bar green" style="width:${b.quality}%"></div></div></td><td>${b.google||'-'}</td><td>${badge(b.risk)}</td></tr>`)); wireEvents(); };
+    }
+    function openLeadModal(){ leadModal.classList.add('open'); }
+    document.getElementById('newLeadBtn').onclick=openLeadModal;
+    document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>leadModal.classList.remove('open'));
+    drawer.onclick=e=>{ if(e.target.id==='drawer') closeDrawer(); };
+    leadForm.onsubmit=e=>{ e.preventDefault(); const data=Object.fromEntries(new FormData(e.target).entries()); DB.leads.unshift({id:'LD-'+Math.floor(3000+Math.random()*6000),stage:'Yeni Lead',score:58+Math.floor(Math.random()*35),owner:'Franchise Satis',next:'Ilk arama',...data}); save(); e.target.reset(); leadModal.classList.remove('open'); route('franchise'); toast('Yeni lead olusturuldu.'); };
+    exportBtn.onclick=()=>{ const blob=new Blob([JSON.stringify(DB,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='ototr-demo-veri.json'; a.click(); URL.revokeObjectURL(a.href); toast('Demo verisi indirildi.'); };
+    globalSearch.oninput=e=>{ const q=e.target.value.toLowerCase().trim(); if(q.length<2) return; const hit=[...DB.branches.map(x=>['branches',Object.values(x).join(' ')]),...DB.leads.map(x=>['franchise',Object.values(x).join(' ')]),...DB.appointments.map(x=>['crm',Object.values(x).join(' ')])].find(x=>x[1].toLowerCase().includes(q)); if(hit){ route(hit[0]); toast('Ilgili module gecildi.'); }};
+    renderHero(); route(current);
+  </script>
+</body>
+</html>
