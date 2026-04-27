@@ -2,7 +2,7 @@
 
 ## 1.html
 
-Kaynak: onceki OTOTR ERP/CRM HTML prototipi.
+Kaynak: `C:\Users\Samivolkannnn\Downloads\1.html`
 
 Projeye aktarilan dosya: `index.html`
 
@@ -29,14 +29,17 @@ Icerik ozeti:
 
 Teknik durum:
 
-- HTML/CSS/JS prototip
+- Tek dosyalik HTML/CSS/JS
 - Mock veri seti JavaScript icinde
 - Kayitlar `localStorage` ile saklaniyor
-- Yeni lead olusturma, lead asamasi ilerletme ve JSON disa aktarma akislari prototip seviyesinde calisiyor
+- Yeni lead olusturma, lead asamasi ilerletme ve JSON disa aktarma calisiyor
+- Chart.js ve Lucide ikonlari CDN uzerinden yukleniyor; yuklenemezse grafik icin basit fallback var
 
 ## ALL.docx
 
-Kaynak: OTOTR Master Book.
+Kaynak: `C:\Users\Samivolkannnn\Downloads\ALL.docx`
+
+Projeye aktarilan dosya: `docs/ALL.docx`
 
 Icerik ozeti:
 

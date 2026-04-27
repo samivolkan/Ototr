@@ -12,7 +12,7 @@ Hedef: Yerelde calisan ileri prototipi ana kaynak kabul edip, gercek MVP'ye gecm
 
 ## 2. Duman Testi Kapsami
 
-Simdilik test edilen akislar:
+Simdilik test edilen akiskar:
 
 - Dashboard aciliyor.
 - Sol menu route sayisi beklenen seviyede.

@@ -1,14 +1,14 @@
 # OTOTR ERP/CRM Yol Haritasi
 
-Bu yol haritasi, mevcut OTOTR prototipi ve Master Book kapsamindan toparlandi.
+Bu yol haritasi, eski `1.html` prototipi ve `ALL.docx` Master Book kapsamindan toparlandi.
 
 ## Faz 0 - Kurtarma ve Prototip
 
-Amac: Kaybolan onceki calismayi calisir hale getirmek.
+Amac: Kaybolan sohbetlerden kalan isi calisir hale getirmek.
 
 - [x] Eski HTML prototipi projeye alindi.
 - [x] Master Book icinden ERP/CRM kapsam basliklari cikarildi.
-- [x] Calisir demo korundu.
+- [x] Calisir tek dosyalik demo korundu.
 - [ ] Demo icindeki veri alanlari normalize edilecek.
 - [ ] UI metinleri ve Turkce karakterler tarayicida kontrol edilecek.
 

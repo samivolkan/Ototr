@@ -1,0 +1,7 @@
+# Local source materials
+docs/ALL.docx
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+.vscode/

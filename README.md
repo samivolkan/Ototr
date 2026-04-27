@@ -9,7 +9,7 @@ Mevcut calisir prototip: `index.html`
 - Tek dosyalik, tarayicida calisan bir demo arayuz var.
 - Veri `localStorage` uzerinde mock backend gibi saklaniyor.
 - Dashboard, franchise satis, CRM/randevu, bayi yonetimi, operasyon, kalite, finans, pazarlama, hukuk, kriz, Academy, buyume ve sistem mimarisi modulleri var.
-- OTOTR Master Book kapsami urun omurgasi olarak kullaniliyor.
+- `ALL.docx` icindeki OTOTR Master Book, urun kapsaminin ana kaynagi olarak kullanildi.
 
 ## Calistirma
 
