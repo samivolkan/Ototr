@@ -38,13 +38,22 @@ page.on("console", (msg) => {
 page.on("pageerror", (err) => errors.push(err.message));
 
 const url = "file:///" + htmlPath.replace(/\\/g, "/");
+await page.addInitScript(() => localStorage.clear());
 await page.goto(url, { waitUntil: "load" });
 await page.waitForSelector("#page-dashboard.active");
 
 const title = await page.title();
 const navCount = await page.locator("#nav button").count();
+const navRoutes = await page.$$eval("#nav [data-nav-route]", (buttons) =>
+  buttons.map((button) => button.getAttribute("data-nav-route"))
+);
 
-await page.locator('#nav button[data-route="franchise"]').click();
+for (const route of navRoutes) {
+  await page.locator(`#nav [data-nav-route="${route}"]`).click();
+  await page.waitForSelector(`#page-${route}.active`);
+}
+
+await page.locator('#nav [data-nav-route="franchise"]').click();
 await page.waitForSelector("#page-franchise.active");
 const leadBefore = await page.locator("#page-franchise.active .deal").count();
 
@@ -59,21 +68,57 @@ await page.waitForSelector("#leadModal.open", { state: "hidden", timeout: 5000 }
 
 const leadAfter = await page.locator("#page-franchise.active .deal").count();
 
-await page.locator('#nav button[data-route="branches"]').click();
+await page.locator('#nav [data-nav-route="branches"]').click();
 await page.waitForSelector("#page-branches.active");
 await page.locator('#page-branches.active tr[data-detail^="branch:"]').first().click();
 await page.waitForSelector("#drawer.open");
 const drawerTitle = await page.locator("#drawerContent .card-title").first().innerText();
+await page.locator("#drawer").click({ position: { x: 12, y: 12 } });
+await page.waitForFunction(() => !document.getElementById("drawer").classList.contains("open"));
+
+await page.locator("#globalSearch").fill("Konya");
+await page.waitForSelector("#page-franchise.active");
+const searchRoute = await page.locator("#pageTitle").innerText();
+
+await page.locator('#nav [data-nav-route="settings"]').click();
+await page.waitForSelector("#page-settings.active");
+await page.locator("#resetDemo").click();
+await page.waitForFunction(
+  () => {
+    const value = localStorage.getItem("ototr-demo-db-v1");
+    return value && !value.includes("Test Franchise Adayi");
+  }
+);
+await page.locator('#nav [data-nav-route="franchise"]').click();
+await page.waitForSelector("#page-franchise.active");
+const leadAfterReset = await page.locator("#page-franchise.active .deal").count();
+
+const mobile = await context.newPage();
+const mobileErrors = [];
+mobile.on("console", (msg) => {
+  if (msg.type() === "error") mobileErrors.push(msg.text());
+});
+mobile.on("pageerror", (err) => mobileErrors.push(err.message));
+await mobile.setViewportSize({ width: 390, height: 844 });
+await mobile.addInitScript(() => localStorage.clear());
+await mobile.goto(url, { waitUntil: "load" });
+await mobile.waitForSelector("#page-dashboard.active");
+const mobileNavCount = await mobile.locator("#nav [data-nav-route]").count();
 
 await browser.close();
 
 const result = {
   title,
   navCount,
+  navRoutes,
   leadBefore,
   leadAfter,
+  leadAfterReset,
   drawerTitle,
+  searchRoute,
+  mobileNavCount,
   errors,
+  mobileErrors,
 };
 
 console.log(JSON.stringify(result, null, 2));
@@ -82,6 +127,22 @@ if (errors.length > 0) {
   throw new Error("Sayfada console/page error bulundu.");
 }
 
+if (mobileErrors.length > 0) {
+  throw new Error("Mobil gorunumde console/page error bulundu.");
+}
+
 if (leadAfter !== leadBefore + 1) {
   throw new Error("Yeni lead ekleme testi basarisiz.");
+}
+
+if (leadAfterReset !== leadBefore) {
+  throw new Error("Demo verisini sifirlama testi basarisiz.");
+}
+
+if (searchRoute !== "Franchise Satış") {
+  throw new Error("Global arama ilgili franchise ekranina gecmedi.");
+}
+
+if (mobileNavCount !== navCount) {
+  throw new Error("Mobil gorunumde nav elemanlari eksik.");
 }

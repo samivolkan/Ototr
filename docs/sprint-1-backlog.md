@@ -15,25 +15,26 @@ Hedef: Yerelde calisan ileri prototipi ana kaynak kabul edip, gercek MVP'ye gecm
 Simdilik test edilen akiskar:
 
 - Dashboard aciliyor.
-- Sol menu route sayisi beklenen seviyede.
+- Tum sol menu route'lari hata vermeden aciliyor.
 - Franchise ekrani aciliyor.
 - Yeni lead ekleniyor.
 - Lead sayisi artiyor.
 - Bayiler ekrani aciliyor.
 - Bayi satirindan detay paneli aciliyor.
+- Arama kutusu ilgili module geciriyor.
+- `Demo Verisini Sifirla` akisi calisiyor.
+- Mobil viewport temel kontrolu calisiyor.
 - Konsol/page error yok.
 
 Eklenmesi gereken testler:
 
-- Arama kutusu ilgili module geciriyor mu?
 - `Veri Disa Aktar` JSON uretiyor mu?
-- `Demo Verisini Sifirla` akisi calisiyor mu?
-- Mobil viewport tasarimi bozuluyor mu?
-- Tum nav route'lari hata vermeden aciliyor mu?
+- Mobil viewport gorsel tasarim/regresyon kontrolu eklenecek.
+- Tum nav route'lari icin temel UI beklentileri ayrilacak.
 
 ## 3. UI Temizligi
 
-- [ ] Butonlarda ayni `data-route` degerinin hem nav hem kart aksiyonlarinda tekrar etmesi testleri zorlastiriyor; nav icin `data-nav-route`, kart aksiyonu icin `data-route` ayrilabilir.
+- [x] Butonlarda ayni `data-route` degerinin hem nav hem kart aksiyonlarinda tekrar etmesi giderildi; nav icin `data-nav-route`, kart aksiyonu icin `data-route` ayrildi.
 - [ ] Formlarda zorunlu alanlar kullaniciya daha net gosterilmeli.
 - [ ] Grafiklerin CDN kapaliyken fallback gorunumu kontrol edilmeli.
 - [ ] Mobilde tablo tasmasi icin yatay kaydirma veya kart gorunumu eklenmeli.

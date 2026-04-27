@@ -331,8 +331,8 @@
 
     function renderNav(){
       const nav=document.getElementById('nav');
-      nav.innerHTML = navGroups.map(([g,items]) => `<div class="nav-title">${g}</div>` + items.map(([id,label,ic]) => `<button data-route="${id}" class="${id===current?'active':''}">${icon(ic)}<span>${label}</span>${id==='franchise'?'<span class="count">'+DB.leads.filter(l=>l.type.includes('Franchise')).length+'</span>':''}${id==='crisis'?'<span class="count">'+DB.tickets.filter(t=>t.severity==='Yüksek').length+'</span>':''}</button>`).join('')).join('');
-      nav.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>route(b.dataset.route)));
+      nav.innerHTML = navGroups.map(([g,items]) => `<div class="nav-title">${g}</div>` + items.map(([id,label,ic]) => `<button data-nav-route="${id}" class="${id===current?'active':''}">${icon(ic)}<span>${label}</span>${id==='franchise'?'<span class="count">'+DB.leads.filter(l=>l.type.includes('Franchise')).length+'</span>':''}${id==='crisis'?'<span class="count">'+DB.tickets.filter(t=>t.severity==='Yüksek').length+'</span>':''}</button>`).join('')).join('');
+      nav.querySelectorAll('[data-nav-route]').forEach(b=>b.addEventListener('click',()=>route(b.dataset.navRoute)));
     }
 
     function renderHero(){
