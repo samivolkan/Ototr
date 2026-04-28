@@ -16,10 +16,10 @@
       --violet:#6d3fc8;--cyan:#087e8b;--shadow:0 18px 50px rgba(17,19,24,.10);--r:8px;
     }
     *{box-sizing:border-box} html{scroll-behavior:smooth}
-    body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;background:#eef1f5;color:var(--ink);font-size:14px}
+    body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;background:#eef1f5;color:var(--ink);font-size:14px;overflow-x:hidden}
     button,input,select,textarea{font:inherit}
     button{cursor:pointer}
-    .app{display:grid;grid-template-columns:272px 1fr;min-height:100vh}
+    .app{display:grid;grid-template-columns:272px 1fr;min-height:100vh;width:100%;max-width:100vw;overflow-x:hidden}
     .side{position:sticky;top:0;height:100vh;background:linear-gradient(180deg,#090a0d,#151820);color:#fff;padding:18px 14px;overflow:auto}
     .brand{display:flex;align-items:center;gap:12px;padding:8px 8px 18px;border-bottom:1px solid rgba(255,255,255,.09)}
     .mark{width:42px;height:42px;border-radius:10px;background:var(--red);display:grid;place-items:center;font-weight:900;letter-spacing:-1px}
@@ -29,7 +29,7 @@
     .nav button:hover{background:rgba(255,255,255,.06);color:#fff}.nav button.active{background:#fff;color:#101217}
     .nav i{width:18px;height:18px}.count{margin-left:auto;background:rgba(215,25,32,.14);color:#ffb7bb;border:1px solid rgba(215,25,32,.25);padding:2px 7px;border-radius:99px;font-size:11px}
     .nav button.active .count{background:#ffe9ea;color:var(--red)}
-    .main{min-width:0}
+    .main{min-width:0;overflow-x:hidden}
     .top{height:72px;background:rgba(255,255,255,.88);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:14px;padding:0 28px;position:sticky;top:0;z-index:5}
     .header-identity{flex:1;display:flex;align-items:center;gap:11px;min-width:240px}.header-identity small{display:block;color:var(--muted);font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.14em}.header-identity strong{display:block;font-size:18px;letter-spacing:-.02em}.header-identity span{display:block;color:#4d5563;font-size:12px;font-weight:800;margin-top:2px}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
     .search{width:min(430px,34vw);display:flex;align-items:center;gap:9px;background:#f2f4f7;border:1px solid var(--line);border-radius:9px;padding:10px 12px}
@@ -77,7 +77,34 @@
     .dept-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.dept-card{border:1px solid var(--line);border-radius:10px;background:#fff;padding:14px;cursor:pointer}.dept-card:hover{box-shadow:0 10px 24px rgba(17,19,24,.07);transform:translateY(-1px)}.dept-card h3{font-size:14px;margin:0 0 8px}.dept-card p{font-size:12px;color:var(--muted);line-height:1.5;margin:0 0 10px}.dept-meta{display:flex;gap:6px;flex-wrap:wrap}
     .profile-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:16px}.profile-head h2{font-size:26px;margin:0 0 6px;letter-spacing:-.03em}.profile-head p{margin:0;color:var(--muted);line-height:1.55}.backline{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}.score-big{font-size:42px;font-weight:900;letter-spacing:-.05em}.stage-list{display:grid;gap:9px}.stage{display:grid;grid-template-columns:34px 1fr auto;gap:10px;align-items:center;padding:12px;border:1px solid var(--line);border-radius:10px;background:#fff}.stage-num{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:#111318;color:#fff;font-size:12px;font-weight:900}.stage.done .stage-num{background:var(--green)}.stage.current .stage-num{background:var(--red)}.timeline-note{font-size:12px;color:var(--muted);line-height:1.5}.quick-actions{display:flex;gap:8px;flex-wrap:wrap}
     @media (max-width:1400px){.top{height:auto;flex-wrap:wrap;padding:12px 28px}.header-identity{min-width:220px}.top-filters{flex:1 1 280px}.search{width:auto;flex:1 1 360px}.top-actions{margin-left:auto}}
-    @media (max-width:1100px){.app{grid-template-columns:1fr}.side{position:relative;height:auto}.top{position:relative;flex-wrap:wrap;height:auto;padding:14px}.top-filters,.top-actions{flex-wrap:wrap}.command-dock{top:auto;bottom:18px}.g4,.g3,.g2,.g70,.g60,.kanban,.module-grid,.dept-grid,.chart-kpis,.ai-insight .insight-grid,.kpi-grid,.region-grid,.summary-grid,.score-box,.ops-room{grid-template-columns:1fr}.hero{grid-template-columns:1fr}.search{display:none}.alert-row,.funnel-step{grid-template-columns:1fr}.factor{grid-template-columns:1fr}.executive-toolbar{align-items:flex-start;flex-direction:column}.map-canvas{min-height:360px}}
+    @media (max-width:1100px){
+      .app{display:block}
+      .side{position:sticky;top:0;z-index:30;height:auto;max-height:148px;padding:10px 12px 9px;overflow:hidden;border-bottom:1px solid rgba(255,255,255,.09)}
+      .brand{padding:2px 4px 9px;gap:10px}.mark{width:34px;height:34px;border-radius:9px}.brand b{font-size:15px}.brand span{font-size:10px}
+      .nav{display:flex;gap:7px;overflow-x:auto;overflow-y:hidden;padding:1px 2px 4px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+      .nav::-webkit-scrollbar{display:none}.nav-title{display:none}
+      .nav button{width:auto;flex:0 0 auto;white-space:nowrap;margin:0;padding:9px 10px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.035)}
+      .nav button.active{background:#fff;color:#101217}.nav i{width:16px;height:16px}.count{margin-left:6px}
+      .top{position:relative;z-index:10;flex-wrap:wrap;height:auto;padding:13px 16px;gap:10px}
+      .header-identity{min-width:0;flex:1 1 100%}.header-identity strong{font-size:17px}.header-identity span{font-size:12px}
+      .top-filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%;gap:8px}.mini-select{min-width:0;width:100%}
+      .top-actions{width:100%;justify-content:flex-end;flex-wrap:wrap}.api{margin-right:auto}.search{display:none}
+      .wrap{padding:18px 18px 40px}.hero{grid-template-columns:1fr;padding:20px;gap:16px}.hero h1{font-size:25px}.hero p{font-size:13px}.hero-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .command-dock{top:auto;bottom:18px;width:min(360px,calc(100vw - 10px));transform:translateX(calc(100% - 40px))}.dock-tab{width:40px;min-height:126px}.dock-panel{max-height:min(74vh,640px)}
+      .g2,.g70,.g60,.kanban,.module-grid,.dept-grid,.ai-insight .insight-grid,.score-box,.ops-room{grid-template-columns:1fr}
+      .g4,.g3,.chart-kpis,.kpi-grid,.region-grid,.summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .alert-row,.funnel-step{grid-template-columns:1fr}.factor{grid-template-columns:1fr}.executive-toolbar{align-items:flex-start;flex-direction:column}.map-canvas{min-height:360px}
+    }
+    @media (max-width:700px){
+      .side{max-height:132px;padding:9px 10px 8px}.nav button{padding:8px 9px;font-size:12px}.nav button .count{font-size:10px;padding:1px 6px}.nav i{width:15px;height:15px}
+      .top{padding:12px}.header-identity small{font-size:9px;letter-spacing:.1em}.header-identity strong{font-size:16px;line-height:1.2}
+      .top-filters{order:2;grid-template-columns:1fr 1fr}.api{order:4;width:100%;justify-content:center;margin-right:0}.top-actions{order:3;width:auto;justify-content:flex-start}.top>.btn:not(.primary){display:none}.top>.btn.primary{order:3;margin-left:auto}.icon-btn{width:36px;height:36px}.btn{padding:9px 11px}
+      .wrap{padding:14px 12px 34px}.hero{padding:17px;border-radius:12px;margin-bottom:14px}.hero h1{font-size:22px}.hero-metrics{grid-template-columns:1fr}.hero-metrics b{font-size:20px}
+      .g4,.g3,.g2,.g70,.g60,.kanban,.module-grid,.dept-grid,.chart-kpis,.ai-insight .insight-grid,.kpi-grid,.region-grid,.summary-grid,.score-box,.ops-room,.drill,.form,.matrix,.heat{grid-template-columns:1fr}
+      .card{padding:15px;overflow-x:auto}.card-head{align-items:flex-start;flex-direction:column}.toolbar select,.toolbar input{min-width:0;width:100%}
+      table{min-width:640px}.profile-head,.stage{grid-template-columns:1fr}.command-dock{bottom:14px;align-items:flex-end}.dock-panel{max-height:72vh}.dock-tab span{font-size:10px}
+      .drawer-panel{width:100%;padding:18px}.modal{padding:12px}.actions{flex-wrap:wrap}.actions .btn{flex:1 1 auto;justify-content:center}
+    }
   </style>
 </head>
 <body>
