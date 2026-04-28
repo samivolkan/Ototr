@@ -323,7 +323,7 @@
     let DB, current='dashboard', charts={};
 
     function badge(text){
-      const c = text==='Düşük'||text==='Aktif'||text==='Kapalı'||text==='Satın alınabilir' ? 'b-green' : text==='Yüksek'||text==='Riskli'||text==='Kritik' ? 'b-red' : text==='Orta'||text==='Açılış'||text==='30 gün plan' ? 'b-amber' : text==='Kurulum'||text==='Takipte' ? 'b-blue' : 'b-gray';
+      const c = text==='Düşük'||text==='Aktif'||text==='Kapalı'||text==='Satın alınabilir' ? 'b-green' : text==='Yüksek'||text==='Riskli'||text==='Kritik'||text==='P0' ? 'b-red' : text==='Orta'||text==='Açılış'||text==='30 gün plan'||text==='P1'||text==='CEO takip'||text==='Düzeltme planı' ? 'b-amber' : text==='Kurulum'||text==='Takipte'||text==='P2'||text==='Büyüt / ödüllendir' ? 'b-blue' : 'b-gray';
       return `<span class="badge ${c}">${text}</span>`;
     }
     function icon(name){ return `<i data-lucide="${name}"></i>`; }
@@ -357,16 +357,21 @@
       const riskCount=DB.tickets.filter(t=>t.severity==='Yüksek').length;
       document.getElementById('pages').innerHTML =
         pageShell('dashboard', `
-          <div class="grid g4">${stat('Ağ Cirosu',fmtTL(totalRevenue),'+%16 aylık büyüme')}${stat('Royalty Alacağı',fmtTL(royalty),'+%13 tahsilat projeksiyonu','green')}${stat('Bugünkü Randevu',activeReports,'5 şubede canlı akış','blue')}${stat('Kritik Alarm',riskCount,'CEO aksiyonu bekliyor','amber')}</div>
-          <div class="card"><div class="card-head"><div><div class="card-title">OTOTR Stratejik Karar Odaları</div><div class="card-sub">Chat notlarındaki oda mantığını genel merkez işletim sistemine bağladım. Kartlara tıklayınca ilgili odaya ait karar yapısı açılır.</div></div></div>${roomsGrid()}</div>
+          <div class="grid g4">${stat('Ağ Sağlığı','87/100','Ciro + kalite + itibar bileşik skor','green')}${stat('Bugünkü Araç Hacmi',fmt(activeReports*114),'162 şube projeksiyonu','blue')}${stat('Kritik Alarm',riskCount+3,'CEO kararı bekleyen dosya','amber')}${stat('Açık Şikayet',43,'9 kritik, 14 SLA riski','red')}</div>
+          <div class="grid g4">${stat('Ağ Cirosu',fmtTL(totalRevenue),'+%16 aylık büyüme')}${stat('Royalty Alacağı',fmtTL(royalty),'+%13 tahsilat projeksiyonu','green')}${stat('No-show / Gecikme','%6.8','Hedef %4 altı','amber')}${stat('Büyüme Fırsatı','18 şehir','Yeni franchise aday haritası','blue')}</div>
+          <div class="grid g70">
+            <div class="card"><div class="card-head"><div><div class="card-title">CEO Alarm Masası</div><div class="card-sub">100-200 şubelik ağda ilk bakılacak para, kalite, operasyon ve itibar sinyalleri</div></div><button class="btn" data-route="crisis">Kriz merkezine git</button></div>${ceoAlarmTable()}</div>
+            <div class="card"><div class="card-head"><div><div class="card-title">Bugün CEO Ne Yapmalı?</div><div class="card-sub">${today} için karar listesi</div></div></div>${ceoDecisionList()}</div>
+          </div>
+          <div class="grid g70">
+            <div class="card"><div class="card-head"><div><div class="card-title">Şube Sağlık ve Sapma Tablosu</div><div class="card-sub">Şube sayısı büyüdüğünde CEO sadece sapmaları ve karar gerektirenleri görür.</div></div><button class="btn" data-route="branches">Tüm şubeler</button></div>${ceoBranchHealthTable()}</div>
+            <div class="card"><div class="card-head"><div><div class="card-title">Şikayet ve İtibar Radarı</div><div class="card-sub">Yoğun şikayet dönemlerinde kök neden, trend ve telafi aksiyonu</div></div></div>${ceoComplaintRadar()}</div>
+          </div>
           <div class="grid g70">
             <div class="card"><div class="card-head"><div><div class="card-title">Gelir, Royalty ve EBITDA Trendi</div><div class="card-sub">Merkez gelir modelinin aylık görünümü</div></div><button class="btn" data-route="finance">Finansa git</button></div><canvas id="chartRevenue" height="120"></canvas></div>
-            <div class="card"><div class="card-head"><div><div class="card-title">CEO Öncelik Listesi</div><div class="card-sub">${today} itibarıyla</div></div></div>${priorityList()}</div>
+            <div class="card"><div class="card-head"><div><div class="card-title">Canlı Operasyon Yoğunluğu</div><div class="card-sub">Günlük yüzlerce araçta darboğaz ve teslim riski</div></div></div>${ceoOpsFlow()}</div>
           </div>
-          <div class="grid g60">
-            <div class="card"><div class="card-head"><div><div class="card-title">Şube Skor Kartı</div><div class="card-sub">Ciro, kalite, Google puanı ve risk</div></div><button class="btn" data-route="branches">Tüm şubeler</button></div>${branchesTable(DB.branches.slice(0,5))}</div>
-            <div class="card"><div class="card-head"><div><div class="card-title">Canlı Operasyon Akışı</div><div class="card-sub">Randevu ve rapor trafiği</div></div></div>${appointmentsList()}</div>
-          </div>`)+
+          <div class="card"><div class="card-head"><div><div class="card-title">OTOTR Stratejik Karar Odaları</div><div class="card-sub">Genel merkez işletim sistemi: büyüme, kalite, finans, hukuk, kriz ve kültür kararları</div></div></div>${roomsGrid()}</div>`)+
         pageShell('franchise', `
           <div class="toolbar"><select id="stageFilter"><option value="">Tüm aşamalar</option><option>Yeni Lead</option><option>Ön Görüşme</option><option>Yatırımcı Sunumu</option><option>Teklif</option><option>Sözleşme</option></select><button class="btn primary" id="openLead2">${icon('plus')}Yeni Lead</button></div>
           <div class="grid g4">${stat('Franchise Adayı',DB.leads.filter(l=>l.type.includes('Franchise')).length,'Sıcak lead havuzu')}${stat('Ortalama Skor',Math.round(DB.leads.reduce((s,l)=>s+l.score,0)/DB.leads.length),'+12 puan iyileşme','green')}${stat('Sözleşme Aşaması',DB.leads.filter(l=>l.stage==='Sözleşme').length,'Hukuk kontrolünde','blue')}${stat('Hedef Şehir',12,'2026 büyüme haritası','violet')}</div>
@@ -398,6 +403,50 @@
         <div class="mini">${icon('map')}<div><b>Konya franchise adayı yüksek skorlu</b><span>Finansal yeterlilik ve lokasyon görüşmesi CEO onayına hazır.</span></div></div>
         <div class="mini">${icon('graduation-cap')}<div><b>EV Full eğitim tamamlanma oranı düşük</b><span>Yeni nesil hizmet paketleri için teknik sertifika hızlandırılmalı.</span></div></div>
       </div>`;
+    }
+    function ceoAlarmTable(){
+      const alarms=[
+        ['P0','Yanlış yorumlanan rapor itirazı','Hukuk + Kalite','3 saat','Raporu kilitle, ikinci uzman ata'],
+        ['P0','Google puanı 4.5 altı şube alarmı','Müşteri Deneyimi','18 saat','Müdür araması + telafi paketi'],
+        ['P1','Royalty ödeme gecikmesi','Finans','1 gün','Nakit akışı görüşmesi aç'],
+        ['P1','Açılış malzemesi gecikmesi','Satın Alma','Bugün','Açılış takvimini revize et'],
+        ['P2','Academy sertifika eksiği','Operasyon','3 gün','Bölge eğitim kampı planla']
+      ];
+      return `<table><thead><tr><th>Öncelik</th><th>Alarm</th><th>Sahip</th><th>SLA</th><th>CEO kararı</th></tr></thead><tbody>${alarms.map(a=>`<tr><td>${badge(a[0])}</td><td><b>${a[1]}</b></td><td>${a[2]}</td><td>${a[3]}</td><td>${a[4]}</td></tr>`).join('')}</tbody></table>`;
+    }
+    function ceoDecisionList(){
+      const criticalComplaints=DB.complaints.filter(c=>c.risk==='Yüksek').reduce((s,c)=>s+c.count,0);
+      const riskyBranches=DB.branches.filter(b=>b.risk==='Yüksek').length;
+      const decisions=[
+        ['flame','Kritik şikayetleri kapat',`${criticalComplaints} yüksek riskli kök neden için hukuk, kalite ve müşteri deneyimi aynı dosyada çalışmalı.`],
+        ['building-2','Riskli şubeleri ayır',`${riskyBranches} şube CEO takip listesinde; kalite, SLA ve Google puanı birlikte okunmalı.`],
+        ['wallet-cards','Nakit / royalty kararını al',`${fmtTL(DB.branches.reduce((s,b)=>s+b.royalty,0))} royalty alacağı için gecikme ve büyüme etkisi kontrol edilmeli.`],
+        ['map-pinned','Franchise büyüme fırsatını seç','18 şehir haritasından sadece operasyon standardını taşıyabilecek adaylar ilerletilmeli.'],
+        ['shield-check','Marka itibarını koru','4.5 altı Google puanı ve sosyal medya şikayeti aynı alarm kuyruğunda izlenmeli.']
+      ];
+      return `<div class="mini-list">${decisions.map(d=>`<div class="mini">${icon(d[0])}<div><b>${d[1]}</b><span>${d[2]}</span></div></div>`).join('')}</div>`;
+    }
+    function ceoBranchHealthTable(){
+      const rows=[...DB.branches].sort((a,b)=>{
+        const da=DB.branchDetails[a.id]||{}, db=DB.branchDetails[b.id]||{};
+        return (db.complaints||0)+(100-(b.quality||0)) - ((da.complaints||0)+(100-(a.quality||0)));
+      }).slice(0,6);
+      return `<table><thead><tr><th>Şube</th><th>Sağlık</th><th>Ciro</th><th>Şikayet</th><th>Google</th><th>SLA</th><th>Karar</th></tr></thead><tbody>${rows.map(b=>{const d=DB.branchDetails[b.id]||{}; const health=Math.max(0,Math.min(100,Math.round((b.quality||0)*0.45+(d.sla||0)*0.25+((b.google||4.2)*20)*0.2+(100-Math.min(30,d.complaints||0)*3)*0.1))); const decision=b.risk==='Yüksek'?'CEO takip':health<82?'Düzeltme planı':health>92?'Büyüt / ödüllendir':'Standart takip'; return `<tr data-detail="branch:${b.id}" onclick="openDetail(this.dataset.detail);event.stopPropagation()"><td><b>${b.name}</b><br><span class="card-sub">${b.manager}</span></td><td><b>${health}/100</b><div class="progress"><div class="bar ${health<82?'red':health<90?'amber':'green'}" style="width:${health}%"></div></div></td><td class="mono">${fmtTL(b.revenue)}</td><td>${d.complaints||0}</td><td>${b.google||'-'}</td><td>%${d.sla||0}</td><td>${badge(decision)} <button class="btn detail-btn" data-detail="branch:${b.id}" onclick="openDetail(this.dataset.detail);event.stopPropagation()">Aç</button></td></tr>`}).join('')}</tbody></table>`;
+    }
+    function ceoComplaintRadar(){
+      return `<div class="mini-list">${DB.complaints.map(c=>`<div class="mini">${icon(c.risk==='Yüksek'?'siren':'message-circle-warning')}<div><b>${c.root} - ${c.count} kayıt</b><span>Trend: ${c.trend} | Risk: ${c.risk} | Aksiyon: ${c.fix}</span></div></div>`).join('')}<div class="mini">${icon('phone-call')}<div><b>CEO eskalasyon kuralı</b><span>Aynı kök neden 24 saatte 5 kez tekrarlarsa bölge müdürü, kalite ve hukuk aynı görüşmeye girer.</span></div></div></div>`;
+    }
+    function ceoOpsFlow(){
+      const projected=DB.appointments.length*114;
+      const reports=DB.branches.reduce((s,b)=>s+b.reports,0);
+      const queue=[
+        ['car-front',`${fmt(projected)} araç bugün`,`${DB.branches.filter(b=>b.status==='Aktif').length} aktif şubeden gelen canlı randevu hacmi projeksiyonu.`],
+        ['clock-3','47 bekleyen teslim','Teslim anlatımı ve ödeme kapanışı geciken araçlar müşteri memnuniyetini düşürür.'],
+        ['timer-reset','31 dk kritik bekleme','Ankara servis kuyruğu hedefin üstünde; vardiya veya istasyon desteği gerekli.'],
+        ['image-off','5 rapor fotoğraf eksiği','Hatalı rapor ve itiraz riskini büyütmeden kalite kontrol tamamlanmalı.'],
+        ['file-check-2',`${fmt(reports)} aylık rapor`,`Rapor hacmi büyürken standart dil, kanıt ve ikinci kontrol kuralları korunmalı.`]
+      ];
+      return `<div class="mini-list">${queue.map(q=>`<div class="mini">${icon(q[0])}<div><b>${q[1]}</b><span>${q[2]}</span></div></div>`).join('')}</div>`;
     }
     function branchesTable(rows){
       return `<table><thead><tr><th>Şube</th><th>Durum</th><th>Ciro</th><th>Royalty</th><th>Rapor</th><th>Kalite</th><th>Google</th><th>Risk / Detay</th></tr></thead><tbody>${rows.map(b=>`<tr data-detail="branch:${b.id}" onclick="openDetail(this.dataset.detail);event.stopPropagation()"><td><div class="person"><div class="av">${b.city.slice(0,2).toUpperCase()}</div><div><b>${b.name}</b><br><span class="card-sub">${b.manager} - ${b.region}</span></div></div></td><td>${badge(b.status)}</td><td class="mono">${fmtTL(b.revenue)}</td><td class="mono">${fmtTL(b.royalty)}</td><td>${fmt(b.reports)}</td><td><div class="progress"><div class="bar green" style="width:${b.quality}%"></div></div></td><td>${b.google||'-'}</td><td>${badge(b.risk)} <button class="btn detail-btn" data-detail="branch:${b.id}" onclick="openDetail(this.dataset.detail);event.stopPropagation()">Aç</button></td></tr>`).join('')}</tbody></table>`;

@@ -41,6 +41,9 @@ const url = "file:///" + htmlPath.replace(/\\/g, "/");
 await page.addInitScript(() => localStorage.clear());
 await page.goto(url, { waitUntil: "load" });
 await page.waitForSelector("#page-dashboard.active");
+await page.locator("#page-dashboard.active .card-title").filter({ hasText: "CEO Alarm Masası" }).first().waitFor();
+await page.locator("#page-dashboard.active .card-title").filter({ hasText: "Şube Sağlık ve Sapma Tablosu" }).first().waitFor();
+await page.locator("#page-dashboard.active .card-title").filter({ hasText: "Şikayet ve İtibar Radarı" }).first().waitFor();
 
 const title = await page.title();
 const navCount = await page.locator("#nav button").count();
