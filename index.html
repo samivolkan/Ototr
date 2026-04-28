@@ -213,19 +213,19 @@
         kpis:[
           {label:'Bugünkü Ekspertiz',value:'3.864',change:'+%8.4',direction:'up',icon:'car-front',tone:'good',hint:'düne göre'},
           {label:'Bugünkü Ciro',value:'₺14,82M',change:'+%11.2',direction:'up',icon:'banknote',tone:'good',hint:'düne göre'},
-          {label:'Ortalama Ticket',value:'₺3.835',change:'+%3.1',direction:'up',icon:'receipt',tone:'info',hint:'haftalık'},
+          {label:'Araç Başı Ortalama Gelir',value:'₺3.835',change:'+%3.1',direction:'up',icon:'receipt',tone:'info',hint:'ciro / araç'},
           {label:'Aktif Şube',value:'148/162',change:'3 offline',direction:'down',icon:'building-2',tone:'warn',hint:'canlı ağ'},
           {label:'Memnuniyet',value:'4.62/5',change:'-%0.3',direction:'down',icon:'smile',tone:'warn',hint:'7 gün'},
           {label:'Açık Şikayet',value:'87',change:'+14',direction:'down',icon:'message-circle-warning',tone:'warn',hint:'24 saat'},
           {label:'Bugünkü Lead',value:'326',change:'+%18',direction:'up',icon:'user-plus',tone:'good',hint:'reklam + organik'},
-          {label:'Royalty Geliri',value:'₺18,64M',change:'+%12.6',direction:'up',icon:'wallet-cards',tone:'good',hint:'bu ay'}
+          {label:'Royalty Sağlığı',value:'%98,7',change:'Sorun yok',direction:'up',icon:'shield-check',tone:'good',hint:'otomatik çekim'}
         ],
         alerts:[
           {severity:'critical',branch:'İstanbul Ataşehir',text:'1 yıldız Google yorumu ve hatalı rapor iddiası aynı dosyada birleşti.',time:'Bugün 10:42',route:'crisis'},
           {severity:'critical',branch:'Ankara Çukurambar',text:'Yasal tehdit içeren müşteri kaydı, 3 saat içinde hukuk yanıtı bekliyor.',time:'Bugün 09:18',route:'legal'},
           {severity:'high',branch:'Antalya Kepez',text:'Şube 47 dakikadır offline; randevu kabul ve ödeme akışı durmuş görünüyor.',time:'Bugün 11:06',route:'operations'},
           {severity:'high',branch:'İzmir Bornova',text:'Aşırı bekleme süresi sosyal medya şikayetine dönüştü.',time:'Bugün 11:22',route:'crisis'},
-          {severity:'medium',branch:'Kayseri Melikgazi',text:'Royalty ödemesi 5 gün gecikti; finans araması açılmalı.',time:'Dün 17:35',route:'finance'},
+          {severity:'medium',branch:'Kayseri Melikgazi',text:'Otomatik royalty çekimi tekrar denemede; finans ekranında takip ediliyor.',time:'Dün 17:35',route:'finance'},
           {severity:'medium',branch:'Adana Seyhan',text:'Çözülmemiş müşteri şikayeti SLA sınırına yaklaştı.',time:'Dün 15:10',route:'crm'}
         ],
         regions:[
@@ -268,7 +268,7 @@
           {stage:'Şubeye gelen',count:604,rate:81},
           {stage:'Satışa dönen',count:486,rate:80}
         ],
-        financeSummary:{todayRevenue:14820000,monthRevenue:318600000,expectedMonthEnd:462000000,royaltyCollection:91,overdue:12600000,topRevenue:[['İstanbul Maslak',219400],['İstanbul Ataşehir',203200],['Bursa Nilüfer',173500],['Kocaeli İzmit',149800],['Ankara Söğütözü',139700]]},
+        financeSummary:{todayRevenue:14820000,monthRevenue:318600000,expectedMonthEnd:462000000,royaltyHealth:98.7,royaltyRiskBranches:3,royaltyBlockedAmount:42800,royaltyStatus:'Sorun yok',topRevenue:[['İstanbul Maslak',219400],['İstanbul Ataşehir',203200],['Bursa Nilüfer',173500],['Kocaeli İzmit',149800],['Ankara Söğütözü',139700]]},
         franchiseSummary:{newApplications:74,inTalks:38,contractStage:11,openingPrep:7,riskyCandidates:5},
         trustFactors:[
           ['Müşteri memnuniyeti',92],
@@ -429,6 +429,7 @@
         const merged=parsed ? {...seed,...parsed} : seed;
         if(!merged.financeHistory?.some(x=>x.year===2026)) merged.financeHistory=seed.financeHistory;
         if(!merged.ceoDashboard?.network) merged.ceoDashboard=seed.ceoDashboard;
+        if(merged.ceoDashboard?.kpis?.some(x=>x.label==='Ortalama Ticket')) merged.ceoDashboard=seed.ceoDashboard;
         localStorage.setItem(this.key, JSON.stringify(merged));
         return this.db();
       },
@@ -561,7 +562,7 @@
     }
     function FinanceSummary(){
       const f=DB.ceoDashboard.financeSummary;
-      return `<div class="summary-grid"><div class="summary-tile"><span>Bugünkü ciro</span><b>${fmtTL(f.todayRevenue)}</b></div><div class="summary-tile"><span>Bu ay ciro</span><b>${fmtTL(f.monthRevenue)}</b></div><div class="summary-tile"><span>Ay sonu beklenti</span><b>${fmtTL(f.expectedMonthEnd)}</b></div><div class="summary-tile"><span>Royalty tahsilat</span><b>%${f.royaltyCollection}</b></div><div class="summary-tile"><span>Geciken tahsilat</span><b>${fmtTL(f.overdue)}</b></div><div class="summary-tile"><span>Risk</span><b>Orta</b></div></div><div class="mini-list" style="margin-top:10px">${f.topRevenue.map(x=>`<div class="mini">${icon('trophy')}<div><b>${x[0]}</b><span>Bugünkü ciro: ${fmtTL(x[1])}</span></div></div>`).join('')}</div>`;
+      return `<div class="summary-grid"><div class="summary-tile"><span>Bugünkü ciro</span><b>${fmtTL(f.todayRevenue)}</b></div><div class="summary-tile"><span>Bu ay ciro</span><b>${fmtTL(f.monthRevenue)}</b></div><div class="summary-tile"><span>Ay sonu beklenti</span><b>${fmtTL(f.expectedMonthEnd)}</b></div><div class="summary-tile"><span>Royalty sağlığı</span><b>%${String(f.royaltyHealth).replace('.',',')}</b></div><div class="summary-tile"><span>Tekrar denemede</span><b>${f.royaltyRiskBranches} şube</b></div><div class="summary-tile"><span>Bugün çekilemeyen</span><b>${fmtTL(f.royaltyBlockedAmount)}</b></div></div><div class="mini" style="margin-top:10px">${icon('shield-check')}<div><b>Royalty otomatik çekim özeti: ${f.royaltyStatus}</b><span>CEO ekranında yalnızca durum lambası gösterilir; kart/banka/deneme/mutabakat detayları Finans & Royalty ekranına bırakılır.</span></div></div><div class="mini-list" style="margin-top:10px">${f.topRevenue.map(x=>`<div class="mini">${icon('trophy')}<div><b>${x[0]}</b><span>Bugünkü ciro: ${fmtTL(x[1])}</span></div></div>`).join('')}</div>`;
     }
     function FranchiseSummary(){
       const f=DB.ceoDashboard.franchiseSummary;
