@@ -39,6 +39,7 @@ Eklenmesi gereken testler:
 - [x] Dashboard CEO odakli karar ekranina donusturuldu: ag sagligi, operasyon yogunlugu, sikayet radari, sube sapmalari ve gunluk CEO aksiyonlari tek ekrana alindi.
 - [x] Gelir/Royalty/EBITDA grafigi 2024-2025 yil secimi ve aylik/3 ay/6 ay/yillik donem secimiyle profesyonel trende cevrildi.
 - [x] Gelir/Royalty/EBITDA grafigi 2024/2025/2026 coklu yil secimi, 2026 gerceklesen/tahmin ayrimi ve yapay zeka finans yorumu ile genisletildi.
+- [x] CEO Dashboard genel merkez ekranina genisletildi: sirket nabzi KPI, acil durum merkezi, Turkiye bolge ozeti, en iyi/riskli subeler, musteri deneyimi, funnel, finans, franchise ve OTOTR guven skoru eklendi.
 - [ ] Formlarda zorunlu alanlar kullaniciya daha net gosterilmeli.
 - [ ] Grafiklerin CDN kapaliyken fallback gorunumu kontrol edilmeli.
 - [ ] Mobilde tablo tasmasi icin yatay kaydirma veya kart gorunumu eklenmeli.
