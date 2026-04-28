@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OTOTR ERP + CRM Platform</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="live-ticker" aria-label="Canlı merkez akışı">
+    <div class="ticker-label"><span></span>CANLI MERKEZ</div>
+    <div class="ticker-window">
+      <div class="ticker-track" id="tickerItems">
+        <span class="ticker-item">OTOTR ana merkez verileri yükleniyor...</span>
+      </div>
+    </div>
+  </div>
+
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">OT</div>
+      <div>
+        <strong>OTOTR</strong>
+        <span>ERP + CRM Platform</span>
+      </div>
+    </div>
+    <div class="identity">
+      <b>Volkan Aksoy</b>
+      <span>CEO / Genel Müdür</span>
+    </div>
+    <nav id="nav"></nav>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="top-left">
+        <div class="top-brand">
+          <div class="top-logo">OT</div>
+          <div>
+            <span class="eyebrow">OTOTR Genel Merkez</span>
+            <h1 id="pageTitle">Yükleniyor</h1>
+          </div>
+        </div>
+        <label class="top-filter">
+          <span>Şirket</span>
+          <select id="companySelect">
+            <option>OTOTR Holding</option>
+            <option>OTOTR Franchise Ağı</option>
+          </select>
+        </label>
+        <label class="top-filter">
+          <span>Şube</span>
+          <select id="branchFilter">
+            <option value="">Tüm Şubeler</option>
+          </select>
+        </label>
+      </div>
+      <div class="global-search" role="search">
+        <span>⌕</span>
+        <input id="globalSearch" placeholder="Müşteri, plaka, şube, personel veya bayi ara">
+      </div>
+      <div class="top-actions">
+        <span class="api-pill" id="apiState">API bekleniyor</span>
+        <button class="top-action" type="button" onclick="go('alerts')">Bildirimler <b>5</b></button>
+        <button class="top-action" type="button" onclick="go('rooms')">Görevler <b>12</b></button>
+        <button class="top-action" type="button" onclick="go('support')">Destek <b>3</b></button>
+        <button class="btn" id="refreshBtn" type="button">Yenile</button>
+        <button class="btn primary" id="newDecisionBtn" type="button">Karar Ekle</button>
+        <button class="profile-chip" type="button">VA</button>
+      </div>
+    </header>
+
+    <section id="view" class="view"></section>
+  </main>
+
+  <div class="modal" id="modal">
+    <div class="modal-box">
+      <div class="modal-head">
+        <strong id="modalTitle">Detay</strong>
+        <button class="btn ghost" id="modalClose">Kapat</button>
+      </div>
+      <div id="modalBody"></div>
+    </div>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "name": "ototr-platform",
+  "version": "0.1.0",
+  "private": true,
+  "description": "OTOTR ERP + CRM genel merkez platformu",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
