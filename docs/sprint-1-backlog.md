@@ -37,6 +37,7 @@ Eklenmesi gereken testler:
 
 - [x] Butonlarda ayni `data-route` degerinin hem nav hem kart aksiyonlarinda tekrar etmesi giderildi; nav icin `data-nav-route`, kart aksiyonu icin `data-route` ayrildi.
 - [x] Dashboard CEO odakli karar ekranina donusturuldu: ag sagligi, operasyon yogunlugu, sikayet radari, sube sapmalari ve gunluk CEO aksiyonlari tek ekrana alindi.
+- [x] Gelir/Royalty/EBITDA grafigi 2024-2025 yil secimi ve aylik/3 ay/6 ay/yillik donem secimiyle profesyonel trende cevrildi.
 - [ ] Formlarda zorunlu alanlar kullaniciya daha net gosterilmeli.
 - [ ] Grafiklerin CDN kapaliyken fallback gorunumu kontrol edilmeli.
 - [ ] Mobilde tablo tasmasi icin yatay kaydirma veya kart gorunumu eklenmeli.

@@ -59,6 +59,7 @@
     .kanban{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.col{background:#f5f6f8;border:1px solid var(--line);border-radius:12px;padding:12px}.col h3{margin:0 0 10px;font-size:13px;display:flex;justify-content:space-between}.deal{background:#fff;border:1px solid var(--line);border-radius:10px;padding:13px;margin-bottom:10px}.deal b{display:block;margin-bottom:4px}.deal small{color:var(--muted)}.deal-foot{display:flex;justify-content:space-between;margin-top:12px;align-items:center}
     .mini-list{display:grid;gap:10px}.mini{display:flex;gap:11px;align-items:flex-start;padding:11px;border:1px solid var(--line);border-radius:10px;background:#fff}.mini i{width:18px;height:18px;color:var(--red);margin-top:2px}.mini b{display:block;font-size:13px}.mini span{font-size:12px;color:var(--muted);line-height:1.45}
     .progress{height:7px;background:#eceff3;border-radius:99px;overflow:hidden}.bar{height:100%;border-radius:99px;background:var(--red)}.bar.green{background:var(--green)}.bar.amber{background:var(--amber)}.bar.blue{background:var(--blue)}
+    .chart-panel{display:grid;gap:12px}.chart-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.seg{display:inline-flex;gap:4px;border:1px solid var(--line);background:#f5f6f8;border-radius:10px;padding:4px}.seg button{border:0;background:transparent;border-radius:7px;padding:8px 10px;font-weight:850;font-size:12px;color:var(--muted);cursor:pointer}.seg button.active{background:#fff;color:#111318;box-shadow:0 1px 2px rgba(17,19,24,.08)}.chart-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.chart-kpi{border:1px solid var(--line);border-radius:10px;padding:10px;background:#fff}.chart-kpi span{display:block;font-size:11px;color:var(--muted);font-weight:800;text-transform:uppercase}.chart-kpi b{display:block;font-size:17px;margin-top:4px}.chart-kpi small{color:var(--muted);font-size:11px}
     .route-link{color:var(--red);font-weight:800;text-decoration:none}.route-link:hover{text-decoration:underline}
     .drawer{position:fixed;inset:0;pointer-events:none;z-index:20}.drawer.open{pointer-events:auto}.drawer:before{content:"";position:absolute;inset:0;background:rgba(11,13,18,.34);opacity:0;transition:.18s}.drawer.open:before{opacity:1}.drawer-panel{position:absolute;right:0;top:0;height:100%;width:min(560px,100%);background:#fff;box-shadow:-24px 0 60px rgba(17,19,24,.22);transform:translateX(100%);transition:.22s;padding:24px;overflow:auto}.drawer.open .drawer-panel{transform:none}
     .modal{position:fixed;inset:0;background:rgba(11,13,18,.42);z-index:30;display:none;place-items:center;padding:18px}.modal.open{display:grid}.modal-box{width:min(680px,100%);background:#fff;border-radius:14px;padding:22px;box-shadow:var(--shadow)}
@@ -70,7 +71,7 @@
     .drill{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:14px}.drill .mini{min-height:82px}.pill-row{display:flex;gap:8px;flex-wrap:wrap}.pill{border:1px solid var(--line);border-radius:99px;padding:7px 10px;background:#fff;font-size:12px;font-weight:800;color:#4d5563}.heat{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}.heat div{border-radius:8px;padding:12px;text-align:center;background:#f3f4f6;font-size:12px}.heat b{display:block;font-size:18px;margin-bottom:3px}.heat .hot{background:#ffeaec;color:var(--red)}.heat .good{background:#eaf7f0;color:var(--green)}.heat .warn{background:#fff4df;color:var(--amber)}
     .dept-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.dept-card{border:1px solid var(--line);border-radius:10px;background:#fff;padding:14px;cursor:pointer}.dept-card:hover{box-shadow:0 10px 24px rgba(17,19,24,.07);transform:translateY(-1px)}.dept-card h3{font-size:14px;margin:0 0 8px}.dept-card p{font-size:12px;color:var(--muted);line-height:1.5;margin:0 0 10px}.dept-meta{display:flex;gap:6px;flex-wrap:wrap}
     .profile-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:16px}.profile-head h2{font-size:26px;margin:0 0 6px;letter-spacing:-.03em}.profile-head p{margin:0;color:var(--muted);line-height:1.55}.backline{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}.score-big{font-size:42px;font-weight:900;letter-spacing:-.05em}.stage-list{display:grid;gap:9px}.stage{display:grid;grid-template-columns:34px 1fr auto;gap:10px;align-items:center;padding:12px;border:1px solid var(--line);border-radius:10px;background:#fff}.stage-num{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:#111318;color:#fff;font-size:12px;font-weight:900}.stage.done .stage-num{background:var(--green)}.stage.current .stage-num{background:var(--red)}.timeline-note{font-size:12px;color:var(--muted);line-height:1.5}.quick-actions{display:flex;gap:8px;flex-wrap:wrap}
-    @media (max-width:1100px){.app{grid-template-columns:1fr}.side{position:relative;height:auto}.top{position:relative}.g4,.g3,.g2,.g70,.g60,.kanban,.module-grid,.dept-grid{grid-template-columns:1fr}.hero{grid-template-columns:1fr}.search{display:none}}
+    @media (max-width:1100px){.app{grid-template-columns:1fr}.side{position:relative;height:auto}.top{position:relative}.g4,.g3,.g2,.g70,.g60,.kanban,.module-grid,.dept-grid,.chart-kpis{grid-template-columns:1fr}.hero{grid-template-columns:1fr}.search{display:none}}
   </style>
 </head>
 <body>
@@ -167,6 +168,32 @@
         {month:'Şubat',revenue:4180000,royalty:376200,ad:83600,ebitda:1120000},
         {month:'Mart',revenue:4890000,royalty:440100,ad:97800,ebitda:1330000},
         {month:'Nisan',revenue:5456000,royalty:491040,ad:109120,ebitda:1510000}
+      ],
+      financeHistory:[
+        {year:2024,month:'Ocak',revenue:2180000,royalty:196200,ad:43600,ebitda:421000},
+        {year:2024,month:'Şubat',revenue:2325000,royalty:209250,ad:46500,ebitda:456000},
+        {year:2024,month:'Mart',revenue:2610000,royalty:234900,ad:52200,ebitda:528000},
+        {year:2024,month:'Nisan',revenue:2860000,royalty:257400,ad:57200,ebitda:604000},
+        {year:2024,month:'Mayıs',revenue:3150000,royalty:283500,ad:63000,ebitda:692000},
+        {year:2024,month:'Haziran',revenue:3420000,royalty:307800,ad:68400,ebitda:774000},
+        {year:2024,month:'Temmuz',revenue:3680000,royalty:331200,ad:73600,ebitda:846000},
+        {year:2024,month:'Ağustos',revenue:3920000,royalty:352800,ad:78400,ebitda:918000},
+        {year:2024,month:'Eylül',revenue:4210000,royalty:378900,ad:84200,ebitda:1008000},
+        {year:2024,month:'Ekim',revenue:4475000,royalty:402750,ad:89500,ebitda:1092000},
+        {year:2024,month:'Kasım',revenue:4820000,royalty:433800,ad:96400,ebitda:1198000},
+        {year:2024,month:'Aralık',revenue:5260000,royalty:473400,ad:105200,ebitda:1346000},
+        {year:2025,month:'Ocak',revenue:3720000,royalty:334800,ad:74400,ebitda:980000},
+        {year:2025,month:'Şubat',revenue:4180000,royalty:376200,ad:83600,ebitda:1120000},
+        {year:2025,month:'Mart',revenue:4890000,royalty:440100,ad:97800,ebitda:1330000},
+        {year:2025,month:'Nisan',revenue:5456000,royalty:491040,ad:109120,ebitda:1510000},
+        {year:2025,month:'Mayıs',revenue:5980000,royalty:538200,ad:119600,ebitda:1704000},
+        {year:2025,month:'Haziran',revenue:6420000,royalty:577800,ad:128400,ebitda:1880000},
+        {year:2025,month:'Temmuz',revenue:7040000,royalty:633600,ad:140800,ebitda:2110000},
+        {year:2025,month:'Ağustos',revenue:7520000,royalty:676800,ad:150400,ebitda:2290000},
+        {year:2025,month:'Eylül',revenue:8180000,royalty:736200,ad:163600,ebitda:2540000},
+        {year:2025,month:'Ekim',revenue:8750000,royalty:787500,ad:175000,ebitda:2760000},
+        {year:2025,month:'Kasım',revenue:9420000,royalty:847800,ad:188400,ebitda:3020000},
+        {year:2025,month:'Aralık',revenue:10160000,royalty:914400,ad:203200,ebitda:3340000}
       ],
       tickets:[
         {id:'TK-501',title:'Google puanı 4.5 altı alarmı',branch:'Ankara Çukurambar',severity:'Orta',sla:'18 saat',owner:'Müşteri Deneyimi'},
@@ -368,7 +395,7 @@
             <div class="card"><div class="card-head"><div><div class="card-title">Şikayet ve İtibar Radarı</div><div class="card-sub">Yoğun şikayet dönemlerinde kök neden, trend ve telafi aksiyonu</div></div></div>${ceoComplaintRadar()}</div>
           </div>
           <div class="grid g70">
-            <div class="card"><div class="card-head"><div><div class="card-title">Gelir, Royalty ve EBITDA Trendi</div><div class="card-sub">Merkez gelir modelinin aylık görünümü</div></div><button class="btn" data-route="finance">Finansa git</button></div><canvas id="chartRevenue" height="120"></canvas></div>
+            <div class="card"><div class="card-head"><div><div class="card-title">Gelir, Royalty ve EBITDA Trendi</div><div class="card-sub">Şube detayı olmadan, merkez finans performansının dönemsel görünümü</div></div><button class="btn" data-route="finance">Finansa git</button></div>${revenueTrendPanel()}</div>
             <div class="card"><div class="card-head"><div><div class="card-title">Canlı Operasyon Yoğunluğu</div><div class="card-sub">Günlük yüzlerce araçta darboğaz ve teslim riski</div></div></div>${ceoOpsFlow()}</div>
           </div>
           <div class="card"><div class="card-head"><div><div class="card-title">OTOTR Stratejik Karar Odaları</div><div class="card-sub">Genel merkez işletim sistemi: büyüme, kalite, finans, hukuk, kriz ve kültür kararları</div></div></div>${roomsGrid()}</div>`)+
@@ -448,6 +475,47 @@
       ];
       return `<div class="mini-list">${queue.map(q=>`<div class="mini">${icon(q[0])}<div><b>${q[1]}</b><span>${q[2]}</span></div></div>`).join('')}</div>`;
     }
+    function revenueTrendPanel(){
+      return `<div class="chart-panel">
+        <div class="chart-toolbar">
+          <div class="seg" aria-label="Yıl seçimi"><button class="active" data-revenue-year="2025">2025</button><button data-revenue-year="2024">2024</button></div>
+          <div class="seg" aria-label="Dönem seçimi"><button class="active" data-revenue-period="month">Aylık</button><button data-revenue-period="quarter">3 Ay</button><button data-revenue-period="half">6 Ay</button><button data-revenue-period="year">Yıllık</button></div>
+        </div>
+        <div class="chart-kpis" id="revenueTrendKpis">${revenueTrendKpis(2025,'month')}</div>
+        <canvas id="chartRevenue" height="150"></canvas>
+      </div>`;
+    }
+    function revenueTrendState(){
+      const year=Number(document.querySelector('[data-revenue-year].active')?.dataset.revenueYear || 2025);
+      const period=document.querySelector('[data-revenue-period].active')?.dataset.revenuePeriod || 'month';
+      return {year,period};
+    }
+    function groupFinance(year,period){
+      const rows=DB.financeHistory||DB.finance.map(f=>({...f,year:2025}));
+      const sum=(label,items)=>({label,revenue:items.reduce((s,x)=>s+x.revenue,0),royalty:items.reduce((s,x)=>s+x.royalty,0),ad:items.reduce((s,x)=>s+x.ad,0),ebitda:items.reduce((s,x)=>s+x.ebitda,0)});
+      if(period==='year'){
+        return [2024,2025].map(y=>sum(String(y),rows.filter(r=>r.year===y)));
+      }
+      const selected=rows.filter(r=>r.year===year);
+      if(period==='quarter') return [
+        sum('Ocak-Mart',selected.slice(0,3)),
+        sum('Nisan-Haziran',selected.slice(3,6)),
+        sum('Temmuz-Eylül',selected.slice(6,9)),
+        sum('Ekim-Aralık',selected.slice(9,12))
+      ];
+      if(period==='half') return [
+        sum('İlk 6 Ay',selected.slice(0,6)),
+        sum('Son 6 Ay',selected.slice(6,12))
+      ];
+      return selected.map(r=>sum(r.month,[r]));
+    }
+    function revenueTrendKpis(year,period){
+      const grouped=groupFinance(year,period), total=grouped.reduce((s,x)=>s+x.revenue,0), royalty=grouped.reduce((s,x)=>s+x.royalty,0), ebitda=grouped.reduce((s,x)=>s+x.ebitda,0);
+      const prev=period==='year' ? groupFinance(2024,'year')[0]?.revenue || 0 : groupFinance(year-1,period).reduce((s,x)=>s+x.revenue,0);
+      const growth=prev ? Math.round(((total-prev)/prev)*100) : 0;
+      const margin=total ? Math.round((ebitda/total)*100) : 0;
+      return `<div class="chart-kpi"><span>Toplam Ciro</span><b>${fmtTL(total)}</b><small>${growth>=0?'+':''}%${growth} önceki yıl karşılaştırması</small></div><div class="chart-kpi"><span>Royalty</span><b>${fmtTL(royalty)}</b><small>Ortalama royalty oranı %9</small></div><div class="chart-kpi"><span>EBITDA Marjı</span><b>%${margin}</b><small>${fmtTL(ebitda)} operasyon kârlılığı</small></div>`;
+    }
     function branchesTable(rows){
       return `<table><thead><tr><th>Şube</th><th>Durum</th><th>Ciro</th><th>Royalty</th><th>Rapor</th><th>Kalite</th><th>Google</th><th>Risk / Detay</th></tr></thead><tbody>${rows.map(b=>`<tr data-detail="branch:${b.id}" onclick="openDetail(this.dataset.detail);event.stopPropagation()"><td><div class="person"><div class="av">${b.city.slice(0,2).toUpperCase()}</div><div><b>${b.name}</b><br><span class="card-sub">${b.manager} - ${b.region}</span></div></div></td><td>${badge(b.status)}</td><td class="mono">${fmtTL(b.revenue)}</td><td class="mono">${fmtTL(b.royalty)}</td><td>${fmt(b.reports)}</td><td><div class="progress"><div class="bar green" style="width:${b.quality}%"></div></div></td><td>${b.google||'-'}</td><td>${badge(b.risk)} <button class="btn detail-btn" data-detail="branch:${b.id}" onclick="openDetail(this.dataset.detail);event.stopPropagation()">Aç</button></td></tr>`).join('')}</tbody></table>`;
     }
@@ -510,6 +578,14 @@
       const open2=document.getElementById('openLead2'); if(open2) open2.addEventListener('click',openLeadModal);
       const stageFilter=document.getElementById('stageFilter'); if(stageFilter) stageFilter.addEventListener('change',()=>{ document.getElementById('leadKanban').innerHTML=kanban(stageFilter.value); wirePageEvents(); if(window.lucide) lucide.createIcons(); });
       const reset=document.getElementById('resetDemo'); if(reset) reset.addEventListener('click',async()=>{DB=await Backend.reset(); renderAll(); toast('Demo verisi sıfırlandı.');});
+      document.querySelectorAll('[data-revenue-year],[data-revenue-period]').forEach(btn=>btn.addEventListener('click',()=>{
+        const attr=btn.dataset.revenueYear!==undefined?'revenueYear':'revenuePeriod';
+        document.querySelectorAll(`[data-${attr.replace(/[A-Z]/g,m=>'-'+m.toLowerCase())}]`).forEach(x=>x.classList.remove('active'));
+        btn.classList.add('active');
+        const {year,period}=revenueTrendState();
+        const kpis=document.getElementById('revenueTrendKpis'); if(kpis) kpis.innerHTML=revenueTrendKpis(year,period);
+        renderCharts();
+      }));
     }
     function route(id){ current=id; document.getElementById('pageTitle').textContent=titles[id]; document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id==='page-'+id)); renderNav(); history.replaceState(null,'','#'+id); setTimeout(renderCharts,40); if(window.lucide) lucide.createIcons(); }
     function openDetail(ref){
@@ -544,7 +620,17 @@
     function renderCharts(){
       Object.values(charts).forEach(c=>c.destroy()); charts={};
       const make=(id,type,data,options={})=>{ const el=document.getElementById(id); if(!el) return; if(window.Chart) charts[id]=new Chart(el,{type,data,options:{responsive:true,plugins:{legend:{position:'bottom'}},...options}}); else fallbackChart(el,data); };
-      make('chartRevenue','line',{labels:DB.finance.map(f=>f.month),datasets:[{label:'Ciro',data:DB.finance.map(f=>f.revenue),borderColor:'#d71920',backgroundColor:'rgba(215,25,32,.08)',fill:true,tension:.35},{label:'Royalty',data:DB.finance.map(f=>f.royalty),borderColor:'#14804a',tension:.35},{label:'EBITDA',data:DB.finance.map(f=>f.ebitda),borderColor:'#185abc',tension:.35}]});
+      const trend=revenueTrendState(), grouped=groupFinance(trend.year,trend.period);
+      const kpis=document.getElementById('revenueTrendKpis'); if(kpis) kpis.innerHTML=revenueTrendKpis(trend.year,trend.period);
+      make('chartRevenue','bar',{labels:grouped.map(x=>x.label),datasets:[
+        {type:'bar',label:'Ciro',data:grouped.map(x=>x.revenue),yAxisID:'y',backgroundColor:'rgba(215,25,32,.16)',borderColor:'#d71920',borderWidth:1,borderRadius:8,barPercentage:.58,categoryPercentage:.72},
+        {type:'line',label:'EBITDA',data:grouped.map(x=>x.ebitda),yAxisID:'y',borderColor:'#185abc',backgroundColor:'rgba(24,90,188,.12)',borderWidth:3,pointRadius:4,pointHoverRadius:6,tension:.36,fill:false},
+        {type:'line',label:'Royalty',data:grouped.map(x=>x.royalty),yAxisID:'y1',borderColor:'#14804a',backgroundColor:'rgba(20,128,74,.12)',borderWidth:3,pointRadius:4,pointHoverRadius:6,tension:.36,fill:false}
+      ]},{
+        interaction:{mode:'index',intersect:false},
+        plugins:{legend:{position:'bottom',labels:{usePointStyle:true,boxWidth:8}},tooltip:{callbacks:{label:(ctx)=>`${ctx.dataset.label}: ${fmtTL(ctx.parsed.y)}`}}},
+        scales:{x:{grid:{display:false},ticks:{color:'#69707d',font:{weight:'700'}}},y:{beginAtZero:true,grid:{color:'rgba(17,19,24,.08)'},ticks:{callback:v=>fmtTL(v),maxTicksLimit:5}},y1:{beginAtZero:true,position:'right',grid:{drawOnChartArea:false},ticks:{callback:v=>fmtTL(v),maxTicksLimit:5}}}
+      });
       make('chartOps','bar',{labels:DB.branches.map(b=>b.city),datasets:[{label:'Rapor adedi',data:DB.branches.map(b=>b.reports),backgroundColor:'#d71920'},{label:'Kalite skoru',data:DB.branches.map(b=>b.quality*8),backgroundColor:'#111318'}]});
       make('chartFinance','doughnut',{labels:['Royalty','Reklam Katkı','Yazılım Lisansı','Eğitim'],datasets:[{data:[491040,109120,72000,46000],backgroundColor:['#d71920','#111318','#185abc','#14804a']}]});
       make('chartBI','radar',{labels:DB.branches.slice(0,4).map(b=>b.city),datasets:[{label:'Ciro endeksi',data:DB.branches.slice(0,4).map(b=>Math.round(b.revenue/20000)),borderColor:'#d71920',backgroundColor:'rgba(215,25,32,.12)'},{label:'Kalite',data:DB.branches.slice(0,4).map(b=>b.quality),borderColor:'#185abc',backgroundColor:'rgba(24,90,188,.10)'}]});

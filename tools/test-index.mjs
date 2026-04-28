@@ -44,9 +44,14 @@ await page.waitForSelector("#page-dashboard.active");
 await page.locator("#page-dashboard.active .card-title").filter({ hasText: "CEO Alarm Masası" }).first().waitFor();
 await page.locator("#page-dashboard.active .card-title").filter({ hasText: "Şube Sağlık ve Sapma Tablosu" }).first().waitFor();
 await page.locator("#page-dashboard.active .card-title").filter({ hasText: "Şikayet ve İtibar Radarı" }).first().waitFor();
+await page.locator('#page-dashboard.active [data-revenue-year="2024"]').click();
+await page.locator('#page-dashboard.active [data-revenue-period="quarter"]').click();
+await page.waitForFunction(() => document.querySelector('[data-revenue-year="2024"]')?.classList.contains("active"));
+await page.waitForFunction(() => document.querySelector('[data-revenue-period="quarter"]')?.classList.contains("active"));
 
 const title = await page.title();
 const navCount = await page.locator("#nav button").count();
+const revenueChartReady = await page.locator("#chartRevenue").evaluate((canvas) => canvas.width > 0 && canvas.height > 0);
 const navRoutes = await page.$$eval("#nav [data-nav-route]", (buttons) =>
   buttons.map((button) => button.getAttribute("data-nav-route"))
 );
@@ -113,6 +118,7 @@ await browser.close();
 const result = {
   title,
   navCount,
+  revenueChartReady,
   navRoutes,
   leadBefore,
   leadAfter,
@@ -148,4 +154,8 @@ if (searchRoute !== "Franchise Satış") {
 
 if (mobileNavCount !== navCount) {
   throw new Error("Mobil gorunumde nav elemanlari eksik.");
+}
+
+if (!revenueChartReady) {
+  throw new Error("Gelir/Royalty/EBITDA grafigi olusmadi.");
 }
