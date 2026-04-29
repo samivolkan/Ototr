@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="ototr-version" content="SVK v2.0.0-command-dashboard" />
+  <title>OTOTR Genel Merkez Dashboard V2</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    :root{
+      --red:#d71920;--red-2:#9f1016;--ink:#101217;--muted:#667085;--soft:#f3f5f8;--line:#dde3ea;--panel:#fff;
+      --green:#13804b;--amber:#bd6f00;--blue:#185abc;--violet:#6840c6;--cyan:#087e8b;--black:#07090d;
+      --side:270px;--r:10px;--shadow:0 18px 50px rgba(16,18,23,.12);
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;background:#eef2f6;color:var(--ink);font-size:13px;overflow-x:hidden}
+    button,input,select,textarea{font:inherit}button{cursor:pointer}
+    .app{display:grid;grid-template-columns:var(--side) minmax(0,1fr);min-height:100vh}
+    .side{position:fixed;inset:0 auto 0 0;width:var(--side);height:100dvh;background:linear-gradient(180deg,#080a0f 0%,#151922 72%,#201015 140%);color:#fff;padding:18px 14px;overflow:auto;z-index:30}
+    .brand{display:flex;gap:12px;align-items:center;padding:8px 8px 16px;border-bottom:1px solid rgba(255,255,255,.09)}
+    .mark{width:42px;height:42px;border-radius:11px;background:var(--red);display:grid;place-items:center;font-weight:950;letter-spacing:-1px;box-shadow:0 12px 24px rgba(215,25,32,.35)}
+    .brand b{display:block;font-size:17px;letter-spacing:.11em}.brand span{display:block;margin-top:3px;color:#aeb7c6;font-size:11px;font-weight:700}.version{display:inline-flex;margin-top:7px;border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:3px 8px;background:rgba(255,255,255,.055);color:#e6ebf3;font-size:10px;font-weight:850}
+    .nav-group{margin-top:18px}.nav-title{margin:0 10px 8px;color:#737d8e;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.14em}
+    .nav a{display:flex;align-items:center;gap:10px;color:#c5ccda;text-decoration:none;border-radius:9px;padding:10px;margin:2px 0;font-weight:750}
+    .nav a:hover,.nav a.active{background:rgba(255,255,255,.08);color:#fff}.nav a.active{background:#fff;color:#111318}.nav i{width:17px;height:17px}.nav small{margin-left:auto;border:1px solid rgba(215,25,32,.25);background:rgba(215,25,32,.14);color:#ffc3c7;border-radius:999px;padding:2px 7px;font-size:10px}.nav a.active small{background:#ffeaec;color:var(--red)}
+    .main{grid-column:2;min-width:0}
+    .top{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.9);backdrop-filter:blur(16px);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;padding:12px 22px}
+    .identity{min-width:230px}.identity small{display:block;color:var(--muted);font-weight:900;font-size:10px;letter-spacing:.13em;text-transform:uppercase}.identity b{display:block;font-size:18px;letter-spacing:-.02em}.live{display:inline-flex;align-items:center;gap:7px;margin-top:3px;color:var(--green);font-size:11px;font-weight:850}.dot{width:8px;height:8px;border-radius:50%;background:currentColor;box-shadow:0 0 0 0 rgba(19,128,75,.5);animation:pulse 1.8s infinite}@keyframes pulse{70%{box-shadow:0 0 0 8px rgba(19,128,75,0)}100%{box-shadow:0 0 0 0 rgba(19,128,75,0)}}
+    .search{position:relative;display:flex;align-items:center;gap:9px;min-width:260px;flex:1;max-width:480px;border:1px solid var(--line);border-radius:10px;background:#f5f7fa;padding:10px 12px}.search i{width:17px;height:17px;color:#69707d}.search input{width:100%;border:0;outline:0;background:transparent}.search-results{display:none;position:absolute;left:0;right:0;top:calc(100% + 8px);background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px;box-shadow:var(--shadow);z-index:60}.search-results.open{display:grid;gap:6px}.search-hit{border:1px solid transparent;border-radius:9px;background:#fff;text-align:left;padding:10px}.search-hit:hover{background:#f6f8fb;border-color:#dce5ef}.search-hit b{display:block}.search-hit span{display:block;color:var(--muted);font-size:11px;margin-top:2px}
+    .mode{display:inline-flex;gap:4px;border:1px solid var(--line);border-radius:11px;background:#f5f7fa;padding:4px}.mode button{border:0;background:transparent;border-radius:8px;padding:8px 10px;font-size:12px;font-weight:900;color:#667085}.mode button.active{background:#111318;color:#fff}
+    .icon-btn,.btn{border:1px solid var(--line);background:#fff;color:#242a34;border-radius:9px;display:inline-flex;align-items:center;justify-content:center;gap:8px;font-weight:850}.icon-btn{width:38px;height:38px;position:relative}.icon-btn i,.btn i{width:16px;height:16px}.btn{padding:9px 12px}.btn.primary{background:var(--red);border-color:var(--red);color:#fff}.btn.dark{background:#111318;color:#fff;border-color:#111318}.btn.ghost{background:#f6f8fb}.notice{position:absolute;top:7px;right:7px;width:7px;height:7px;border-radius:50%;background:var(--red);box-shadow:0 0 0 2px #fff}
+    .profile{display:flex;align-items:center;gap:9px;border:1px solid var(--line);border-radius:999px;background:#fff;padding:5px 10px 5px 5px;font-weight:850}.avatar{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:#111318;color:#fff;font-size:11px;font-weight:900}
+    .wrap{padding:20px 22px 46px}.section{margin-top:16px}.section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;margin-bottom:10px}.section-head h2{font-size:16px;margin:0;letter-spacing:-.02em}.section-head p{margin:3px 0 0;color:var(--muted);font-size:12px}.card{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:15px;box-shadow:0 1px 0 rgba(16,18,23,.03);min-width:0}.card.tight{padding:12px}.card-title{font-weight:900;letter-spacing:-.01em}.sub{color:var(--muted);font-size:12px;margin-top:3px}.grid{display:grid;gap:14px}.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}.g5{grid-template-columns:repeat(5,1fr)}.g70{grid-template-columns:1.35fr .65fr}.g60{grid-template-columns:1.12fr .88fr}
+    .hero{display:grid;grid-template-columns:1.2fr repeat(4,1fr);gap:12px}.health{background:radial-gradient(circle at 14% 0%,rgba(215,25,32,.34),transparent 36%),linear-gradient(135deg,#080a0f,#242936);color:#fff;border-color:#252c38;display:grid;grid-template-columns:130px 1fr;align-items:center;gap:14px;min-height:142px}.ring{--p:86;width:116px;height:116px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--green) calc(var(--p)*1%),rgba(255,255,255,.12) 0)}.ring div{width:82px;height:82px;border-radius:50%;background:#101217;display:grid;place-items:center;text-align:center;border:1px solid rgba(255,255,255,.1)}.ring b{font-size:27px}.ring span{font-size:9px;color:#bec6d4;font-weight:900;text-transform:uppercase}.health h1{margin:0 0 7px;font-size:22px;letter-spacing:-.04em}.health p{margin:0;color:#d4d9e4;line-height:1.55}.hero-metric{position:relative;overflow:hidden;min-height:142px}.hero-metric:before{content:"";position:absolute;inset:0 0 auto 0;height:3px;background:var(--red)}.hero-metric.good:before{background:var(--green)}.hero-metric.warn:before{background:var(--amber)}.hero-metric.info:before{background:var(--blue)}.label{font-size:10px;color:var(--muted);font-weight:900;text-transform:uppercase;letter-spacing:.08em}.value{font-size:28px;font-weight:950;letter-spacing:-.05em;margin:8px 0 6px}.trend{display:inline-flex;align-items:center;gap:4px;color:var(--green);font-weight:900;font-size:12px}.trend.down{color:var(--red)}.trend.warn{color:var(--amber)}
+    .alarm-strip{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(278px,1fr);gap:10px;overflow-x:auto;padding-bottom:2px;scrollbar-width:thin}.alarm{border:1px solid var(--line);border-left-width:4px;border-radius:12px;background:#fff;padding:12px;display:grid;gap:9px}.alarm.critical{border-left-color:var(--red);background:#fff7f8}.alarm.high{border-left-color:var(--amber);background:#fffaf0}.alarm.medium{border-left-color:var(--blue);background:#f7faff}.alarm-head{display:flex;justify-content:space-between;gap:8px}.severity{font-size:10px;font-weight:950;text-transform:uppercase;border-radius:999px;padding:4px 8px}.critical .severity{background:#ffeaec;color:var(--red)}.high .severity{background:#fff3df;color:var(--amber)}.medium .severity{background:#eaf1ff;color:var(--blue)}.deadline{font-size:10px;color:#475467;font-weight:900}.alarm b{display:block}.alarm p{margin:2px 0 0;color:#4d5563;line-height:1.35}.action-row{display:flex;gap:6px;flex-wrap:wrap}.mini-btn{border:1px solid var(--line);background:#fff;border-radius:999px;padding:5px 8px;font-size:10px;font-weight:900;color:#354052}.mini-btn:hover{border-color:#ffc5ca;color:var(--red)}.mini-btn.red{background:var(--red);border-color:var(--red);color:#fff}
+    .kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}.kpi{position:relative;overflow:hidden;min-height:118px}.kpi:before{content:"";position:absolute;inset:0 0 auto 0;height:3px;background:var(--blue)}.kpi.good:before{background:var(--green)}.kpi.warn:before{background:var(--amber)}.kpi.bad:before{background:var(--red)}.kpi-top{display:flex;justify-content:space-between;gap:10px}.ico{width:34px;height:34px;border-radius:10px;background:#f3f5f8;color:var(--red);display:grid;place-items:center}.ico i{width:17px;height:17px}.mini-trend{height:26px;margin-top:8px;display:flex;align-items:end;gap:3px}.mini-trend span{display:block;width:100%;border-radius:4px 4px 0 0;background:#dde5ee}.good .mini-trend span{background:#c7ead7}.warn .mini-trend span{background:#ffe1a9}.bad .mini-trend span{background:#ffc7cc}
+    .split-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.status-pill{display:inline-flex;align-items:center;gap:7px;border-radius:999px;padding:7px 10px;font-size:11px;font-weight:950;border:1px solid}.status-pill.good{background:#eaf7f0;color:var(--green);border-color:#c6ead7}.status-pill.warn{background:#fff4df;color:var(--amber);border-color:#ffe0a7}.status-pill.bad{background:#ffeaec;color:var(--red);border-color:#ffc5ca}
+    .metric-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.tile{border:1px solid var(--line);background:#fff;border-radius:11px;padding:11px}.tile span{display:block;color:var(--muted);font-size:10px;font-weight:900;text-transform:uppercase}.tile b{display:block;font-size:18px;margin-top:5px}.tile small{display:block;color:var(--muted);margin-top:3px}
+    .chartbox{min-height:250px}.chartbox canvas{width:100%;max-height:252px}.progress{height:8px;background:#edf1f5;border-radius:999px;overflow:hidden}.bar{height:100%;border-radius:999px;background:var(--red)}.bar.green{background:var(--green)}.bar.amber{background:var(--amber)}.bar.blue{background:var(--blue)}
+    .ops-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:12px}.hour-flow{display:grid;gap:8px}.flow-row{display:grid;grid-template-columns:44px 1fr 46px;align-items:center;gap:8px}.flow-row span{font-size:11px;color:var(--muted);font-weight:850}.flow-row b{text-align:right}.issue-list{display:grid;gap:8px}.issue{display:grid;grid-template-columns:30px 1fr auto;gap:9px;align-items:center;border:1px solid var(--line);border-radius:10px;background:#fff;padding:9px}.issue i{width:18px;height:18px;color:var(--red)}.issue b{font-size:12px}.issue span{display:block;color:var(--muted);font-size:11px;margin-top:2px}
+    table{width:100%;border-collapse:collapse}th,td{padding:10px;border-bottom:1px solid var(--line);vertical-align:middle}th{text-align:left;background:#f7f9fb;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.06em}td{font-size:12px}tbody tr:nth-child(even) td{background:#fafbfc}tbody tr:hover td{background:#f2f5f9}.num{text-align:right}.center{text-align:center}.mono{font-variant-numeric:tabular-nums}.badge{display:inline-flex;border-radius:999px;border:1px solid transparent;padding:4px 8px;font-size:10px;font-weight:950}.b-green{background:#eaf7f0;color:var(--green);border-color:#c6ead7}.b-amber{background:#fff4df;color:var(--amber);border-color:#ffe0a7}.b-red{background:#ffeaec;color:var(--red);border-color:#ffc5ca}.b-blue{background:#eaf1ff;color:var(--blue);border-color:#c8d9ff}.b-gray{background:#f1f3f6;color:#596273;border-color:#dde4ec}
+    .branch-score{display:flex;align-items:center;gap:8px}.scorebar{width:64px;height:7px;background:#edf1f5;border-radius:999px;overflow:hidden}.decision{font-weight:950}.decision.grow{color:var(--green)}.decision.watch{color:var(--blue)}.decision.fix{color:var(--amber)}.decision.replace{color:var(--red)}
+    .region-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}.region{position:relative;border:1px solid var(--line);border-radius:12px;background:#fff;padding:12px;overflow:hidden}.region:before{content:"";position:absolute;inset:0 0 auto 0;height:4px;background:var(--green)}.region.warn:before{background:var(--amber)}.region.bad:before{background:var(--red)}.region h3{margin:0 0 9px;font-size:13px}.region-stat{display:grid;grid-template-columns:1fr 1fr;gap:8px}.region-stat span{font-size:10px;color:var(--muted);font-weight:900;text-transform:uppercase}.region-stat b{display:block;font-size:15px;margin-top:2px}.opportunity{margin-top:10px;border-top:1px solid var(--line);padding-top:9px;color:#475467;font-size:11px;line-height:1.45}
+    .complaint-list,.people-list,.task-list,.ai-list{display:grid;gap:9px}.complaint,.person,.task,.ai-card{border:1px solid var(--line);border-radius:11px;background:#fff;padding:10px;display:grid;gap:8px}.complaint-head,.task-head,.ai-head{display:flex;justify-content:space-between;gap:10px}.complaint p,.ai-card p{margin:0;color:#475467;line-height:1.45}.person{grid-template-columns:36px 1fr auto;align-items:center}.person .avatar{width:34px;height:34px}.person b{display:block}.person span{display:block;color:var(--muted);font-size:11px;margin-top:2px}.rank{font-size:18px;font-weight:950;color:var(--green)}.task-head b{font-size:13px}.task-meta{display:flex;gap:6px;flex-wrap:wrap}.task-meta span{border:1px solid var(--line);border-radius:999px;padding:4px 7px;background:#f8fafc;color:#475467;font-size:10px;font-weight:850}.ai-card{background:linear-gradient(135deg,#fff,#f7faff);border-color:#dbe7ff}.ai-head i{color:var(--blue)}.impact{display:grid;grid-template-columns:1fr 1fr;gap:8px}.impact div{border:1px solid #dbe7ff;background:#fff;border-radius:9px;padding:8px}.impact span{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;font-weight:900}.impact b{display:block;margin-top:3px}
+    .drawer{position:fixed;right:0;top:112px;z-index:80;width:min(380px,calc(100vw - 8px));display:flex;align-items:flex-start;transform:translateX(calc(100% - 42px));transition:.22s cubic-bezier(.2,.8,.2,1);filter:drop-shadow(-18px 18px 38px rgba(16,18,23,.16))}.drawer.open{transform:translateX(0)}.drawer-tab{width:42px;min-height:146px;border:1px solid #222936;border-right:0;border-radius:13px 0 0 13px;background:#111318;color:#fff;display:flex;align-items:center;justify-content:center;gap:8px;flex-direction:column;padding:12px 6px}.drawer-tab span{writing-mode:vertical-rl;transform:rotate(180deg);font-size:11px;font-weight:950}.drawer-tab i{width:18px;height:18px}.drawer-panel{flex:1;max-height:calc(100vh - 128px);overflow:auto;background:#eef2f6;border:1px solid var(--line);border-right:0;border-radius:14px 0 0 14px;padding:12px}.drawer-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px}.drawer-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px}.drawer-title b{display:flex;align-items:center;gap:7px}.drawer-title i{width:16px;height:16px;color:var(--red)}.close{width:31px;height:31px;border:1px solid var(--line);border-radius:9px;background:#fff;display:grid;place-items:center}.close i{width:15px;height:15px}
+    .modal{position:fixed;inset:0;background:rgba(7,9,13,.5);display:none;place-items:center;padding:18px;z-index:100}.modal.open{display:grid}.modal-box{width:min(720px,100%);background:#fff;border-radius:15px;padding:20px;box-shadow:var(--shadow)}.modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:14px}.modal-head h2{margin:0;font-size:18px}.form{display:grid;grid-template-columns:1fr 1fr;gap:11px}.field{display:flex;flex-direction:column;gap:6px}.field label{font-size:10px;color:var(--muted);font-weight:900;text-transform:uppercase;letter-spacing:.07em}.field input,.field select,.field textarea{border:1px solid var(--line);border-radius:9px;padding:10px;background:#fff}.field.wide{grid-column:1/-1}.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+    .toast{position:fixed;right:22px;bottom:22px;background:#111318;color:#fff;border-radius:10px;padding:13px 15px;box-shadow:var(--shadow);display:none;z-index:120;font-weight:800}.toast.show{display:block}
+    @media(max-width:1480px){.hero{grid-template-columns:1.3fr repeat(2,1fr)}.kpi-grid{grid-template-columns:repeat(4,1fr)}.region-grid{grid-template-columns:repeat(3,1fr)}.top{flex-wrap:wrap}.identity{flex:1}.search{order:3;max-width:none;flex-basis:100%}}
+    @media(max-width:1100px){.app{display:block}.side{position:sticky;top:0;width:auto;height:auto;max-height:142px;overflow:hidden;padding:10px 12px;z-index:40}.main{grid-column:auto}.brand{padding:2px 4px 9px}.nav{display:flex;gap:7px;overflow:auto}.nav-group{margin:0}.nav-title{display:none}.nav a{white-space:nowrap;flex:0 0 auto;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.035)}.wrap{padding:16px}.hero,.g2,.g3,.g4,.g5,.g70,.g60,.ops-grid{grid-template-columns:1fr}.kpi-grid{grid-template-columns:repeat(2,1fr)}.metric-row{grid-template-columns:repeat(2,1fr)}.top{position:relative}.mode{overflow:auto}.drawer{top:auto;bottom:16px}.drawer-panel{max-height:72vh}.region-grid{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:700px){body{font-size:12px}.side{max-height:132px}.top{padding:12px}.identity{min-width:0}.profile,.top .icon-btn{display:none}.search{min-width:0}.hero,.health{grid-template-columns:1fr}.ring{margin:auto}.kpi-grid,.metric-row,.region-grid,.form{grid-template-columns:1fr}.card{padding:13px;overflow:auto}table{min-width:860px}.section-head{align-items:flex-start;flex-direction:column}.drawer{width:min(360px,calc(100vw - 8px));transform:translateX(calc(100% - 40px))}.drawer-tab{width:40px}.modal-box{padding:16px}.modal-actions{flex-wrap:wrap}.modal-actions .btn{flex:1 1 auto}}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="side">
+      <div class="brand">
+        <div class="mark">OT</div>
+        <div><b>OTOTR</b><span>Genel Merkez Dashboard</span><small class="version">SVK v2.0.0</small></div>
+      </div>
+      <nav class="nav" aria-label="Ana menü">
+        <div class="nav-group">
+          <div class="nav-title">Komuta</div>
+          <a href="#overview" class="active"><i data-lucide="layout-dashboard"></i>CEO Özet<small>8</small></a>
+          <a href="#alarms"><i data-lucide="siren"></i>Alarm Bar<small>5</small></a>
+          <a href="#finance"><i data-lucide="banknote"></i>Finans</a>
+          <a href="#operations"><i data-lucide="workflow"></i>Operasyon</a>
+          <a href="#experience"><i data-lucide="message-square-warning"></i>Müşteri</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-title">Karar</div>
+          <a href="#crm"><i data-lucide="users-round"></i>Satış & CRM</a>
+          <a href="#branches"><i data-lucide="building-2"></i>Şube Matrisi<small>6</small></a>
+          <a href="#regions"><i data-lucide="map"></i>Bölge</a>
+          <a href="#people"><i data-lucide="badge-check"></i>Personel</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-title">Takip</div>
+          <a href="#actions"><i data-lucide="target"></i>Aksiyon Motoru</a>
+          <a href="#tasks"><i data-lucide="list-checks"></i>Görev Takibi<small id="taskNavCount">0</small></a>
+          <a href="#ai"><i data-lucide="sparkles"></i>AI Öneri</a>
+        </div>
+      </nav>
+    </aside>
+
+    <main class="main">
+      <header class="top">
+        <div class="identity">
+          <small>OTOTR Genel Merkez</small>
+          <b>Volkan Aksoy — CEO / Genel Müdür</b>
+          <span class="live"><span class="dot"></span><span id="lastUpdate">Canlı veri</span></span>
+        </div>
+        <div class="search">
+          <i data-lucide="search"></i>
+          <input id="globalSearch" autocomplete="off" placeholder="Şube, personel, müşteri, alarm veya görev ara">
+          <div id="searchResults" class="search-results"></div>
+        </div>
+        <div class="mode" aria-label="Mod seçimi">
+          <button class="active" data-mode="CEO">CEO</button>
+          <button data-mode="COO">COO</button>
+          <button data-mode="CFO">CFO</button>
+          <button data-mode="Franchise">Franchise</button>
+          <button data-mode="Marketing">Marketing</button>
+        </div>
+        <button class="icon-btn" data-detail="Bildirim Merkezi"><i data-lucide="bell"></i><span class="notice"></span></button>
+        <button class="btn primary" data-open-action><i data-lucide="plus"></i>Yeni Aksiyon</button>
+        <div class="profile"><span class="avatar">VA</span><span>CEO</span></div>
+      </header>
+
+      <div class="wrap">
+        <section id="overview" class="section">
+          <div class="hero">
+            <div class="card health">
+              <div class="ring" style="--p:86"><div><b>86</b><span>sağlık</span></div></div>
+              <div>
+                <h1>Genel merkez sağlık skoru güçlü, riskler müşteri deneyimi ve SLA tarafında yoğunlaşıyor.</h1>
+                <p>Finans stabil. Kritik alarm sayısı kontrol edilebilir seviyede; Ankara, İstanbul ve WhatsApp SLA bugün öncelik almalı.</p>
+              </div>
+            </div>
+            <div class="card hero-metric good"><div class="label">Bugünkü Ciro</div><div class="value">₺14,82M</div><span class="trend"><i data-lucide="trending-up"></i>+%11,2</span><div class="sub">Hedef: ₺13,4M</div></div>
+            <div class="card hero-metric info"><div class="label">Bugünkü Araç</div><div class="value">3.864</div><span class="trend"><i data-lucide="trending-up"></i>+%8,4</span><div class="sub">162 şube ağı</div></div>
+            <div class="card hero-metric warn"><div class="label">Kritik Alarm</div><div class="value">5</div><span class="trend warn"><i data-lucide="triangle-alert"></i>2 kritik</span><div class="sub">SLA içinde 3 kayıt</div></div>
+            <div class="card hero-metric bad"><div class="label">Şikayet Riski</div><div class="value">87</div><span class="trend down"><i data-lucide="trending-down"></i>+14</span><div class="sub">24 saat açık kayıt</div></div>
+            <div class="card hero-metric good"><div class="label">Finans Durumu</div><div class="value">Stabil</div><span class="trend"><i data-lucide="shield-check"></i>Alarm yok</span><div class="sub">Royalty normal</div></div>
+          </div>
+        </section>
+
+        <section id="alarms" class="section">
+          <div class="section-head">
+            <div><h2>Kritik Alarm Bar</h2><p>Risk sinyali, sahip, deadline ve aksiyon aynı satırda.</p></div>
+            <button class="btn dark" data-open-action><i data-lucide="clipboard-plus"></i>Alarmdan görev oluştur</button>
+          </div>
+          <div class="alarm-strip" id="alarmStrip"></div>
+        </section>
+
+        <section class="section">
+          <div class="section-head"><div><h2>Ana KPI Kartları</h2><p>Hedef, gerçekleşen, dün farkı ve mini trend.</p></div></div>
+          <div class="kpi-grid" id="kpiGrid"></div>
+        </section>
+
+        <section id="finance" class="section grid g60">
+          <div class="card">
+            <div class="split-head">
+              <div><div class="card-title">Finans Merkezi</div><div class="sub">Ciro, EBITDA, paket geliri ve karlılık sapmaları.</div></div>
+              <span class="status-pill good"><i data-lucide="shield-check"></i>Finans stabil</span>
+            </div>
+            <div class="metric-row">
+              <div class="tile"><span>Bugünkü ciro</span><b>₺14,82M</b><small>Hedef üstü +%11,2</small></div>
+              <div class="tile"><span>Aylık ciro</span><b>₺318,4M</b><small>Gerçekleşme %74</small></div>
+              <div class="tile"><span>Ortalama sepet</span><b>₺3.835</b><small>Premium etki +₺144</small></div>
+              <div class="tile"><span>EBITDA tahmini</span><b>%22,6</b><small>Ay sonu ₺72M</small></div>
+            </div>
+            <div class="chartbox" style="margin-top:12px"><canvas id="financeChart"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="split-head"><div><div class="card-title">Paket Bazlı Gelir</div><div class="sub">Royalty normal, ana alarm yok.</div></div></div>
+            <div class="issue-list" id="packageRevenue"></div>
+            <div class="card tight" style="margin-top:12px;background:#f8fbf9;border-color:#c6ead7">
+              <span class="status-pill good"><i data-lucide="check-circle-2"></i>Royalty normal</span>
+              <p class="sub" style="line-height:1.55">Royalty ve tahsilat ana KPI olarak şişirilmedi. Sorun oluşursa alarm bar içinde görünecek.</p>
+            </div>
+            <div class="issue-list" style="margin-top:12px">
+              <div class="issue"><i data-lucide="trending-down"></i><div><b>Karlılığı düşen şube</b><span>Antalya Kepez: EBITDA -%3,8 sapma</span></div><button class="mini-btn" data-open-action>Görev</button></div>
+              <div class="issue"><i data-lucide="wallet-cards"></i><div><b>Reklam / gelir oranı</b><span>%6,2 | limit %7,5</span></div><button class="mini-btn" data-detail="Reklam harcaması">Detay</button></div>
+            </div>
+          </div>
+        </section>
+
+        <section id="operations" class="section grid g70">
+          <div class="card">
+            <div class="split-head"><div><div class="card-title">Operasyon Merkezi</div><div class="sub">Saatlik araç akışı, bekleme, kapasite ve gecikme.</div></div><button class="btn" data-open-action><i data-lucide="user-plus"></i>Operasyon görevi</button></div>
+            <div class="ops-grid">
+              <div class="chartbox"><canvas id="operationChart"></canvas></div>
+              <div class="hour-flow" id="hourFlow"></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="split-head"><div><div class="card-title">Operasyon Aksiyonları</div><div class="sub">Sorun yanında direkt müdahale.</div></div></div>
+            <div class="issue-list">
+              <div class="issue"><i data-lucide="timer"></i><div><b>Ortalama ekspertiz süresi</b><span>52 dk | hedef 45 dk</span></div><button class="mini-btn" data-open-action>Denetim</button></div>
+              <div class="issue"><i data-lucide="clock-alert"></i><div><b>Geciken araçlar</b><span>38 araç | İstanbul ve Antalya yoğun</span></div><button class="mini-btn" data-open-action>Görev ata</button></div>
+              <div class="issue"><i data-lucide="calendar-x"></i><div><b>No-show oranı</b><span>%7,8 | dün %6,1</span></div><button class="mini-btn" data-detail="No-show raporu">Detay</button></div>
+              <div class="issue"><i data-lucide="zap"></i><div><b>En hızlı şube</b><span>Bursa Nilüfer | 38 dk</span></div><button class="mini-btn" data-detail="Bursa operasyon">Detay</button></div>
+              <div class="issue"><i data-lucide="alert-circle"></i><div><b>En yavaş şube</b><span>Antalya Kepez | 68 dk</span></div><button class="mini-btn red" data-open-action>Müdahale</button></div>
+            </div>
+          </div>
+        </section>
+
+        <section id="experience" class="section grid g60">
+          <div class="card">
+            <div class="split-head"><div><div class="card-title">Müşteri Memnuniyeti / Şikayet Merkezi</div><div class="sub">Açık kayıt, SLA, NPS, Google ve son yorumlar.</div></div><span class="status-pill warn"><i data-lucide="message-square-warning"></i>Risk artıyor</span></div>
+            <div class="metric-row">
+              <div class="tile"><span>Açık şikayet</span><b>87</b><small>Kritik: 12</small></div>
+              <div class="tile"><span>Ort. çözüm</span><b>5s 42dk</b><small>Hedef: 4s</small></div>
+              <div class="tile"><span>NPS</span><b>62</b><small>Geçen hafta 66</small></div>
+              <div class="tile"><span>Google ağ puanı</span><b>4.58</b><small>Risk eşiği 4.45</small></div>
+            </div>
+            <div class="complaint-list" id="complaints" style="margin-top:12px"></div>
+          </div>
+          <div class="card">
+            <div class="split-head"><div><div class="card-title">Son 10 Yorum Sinyali</div><div class="sub">Düzeltilen kötü yorum: 9</div></div></div>
+            <div class="chartbox"><canvas id="sentimentChart"></canvas></div>
+            <div class="issue-list">
+              <div class="issue"><i data-lucide="star-half"></i><div><b>Ankara 4.2 eşiğine yaklaşıyor</b><span>Google kurtarma planı önerildi</span></div><button class="mini-btn" data-open-action>Plan aç</button></div>
+              <div class="issue"><i data-lucide="repeat-2"></i><div><b>Tekrarlayan şikayet</b><span>Bekleme süresi, fiyat itirazı, personel dili</span></div><button class="mini-btn" data-detail="Tekrarlayan şikayetler">Detay</button></div>
+            </div>
+          </div>
+        </section>
+
+        <section id="crm" class="section grid g60">
+          <div class="card">
+            <div class="split-head"><div><div class="card-title">Satış & CRM Merkezi</div><div class="sub">Lead kaynakları, dönüşüm, WhatsApp ve yeniden arama.</div></div><button class="btn" data-open-action><i data-lucide="phone-call"></i>Lead ata</button></div>
+            <div class="metric-row">
+              <div class="tile"><span>Bugünkü lead</span><b>326</b><small>Organik + reklam</small></div>
+              <div class="tile"><span>Randevuya dönüşen</span><b>148</b><small>%45,4</small></div>
+              <div class="tile"><span>Kaçan lead</span><b>39</b><small>Tekrar arama gerekli</small></div>
+              <div class="tile"><span>WhatsApp cevap</span><b>12 dk</b><small>SLA 15 dk</small></div>
+            </div>
+            <div class="chartbox" style="margin-top:12px"><canvas id="leadChart"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="split-head"><div><div class="card-title">CRM Aksiyon Listesi</div><div class="sub">Bugün yeniden aranacak leadler.</div></div></div>
+            <div class="issue-list" id="crmActions"></div>
+          </div>
+        </section>
+
+        <section id="branches" class="section">
+          <div class="section-head">
+            <div><h2>Şube Karar Matrisi</h2><p>Ciro, karlılık, Google, şikayet, SLA, personel ve veri kalitesi tek karar etiketine iner.</p></div>
+            <button class="btn dark" data-open-action><i data-lucide="calendar-plus"></i>Müdür toplantısı planla</button>
+          </div>
+          <div class="card" style="overflow:auto">
+            <table id="branchTable"></table>
+          </div>
+        </section>
+
+        <section id="regions" class="section">
+          <div class="section-head"><div><h2>Türkiye / Bölgesel Görünüm</h2><p>Harita yerine veri yoğun bölgesel kart sistemi.</p></div></div>
+          <div class="region-grid" id="regionGrid"></div>
+        </section>
+
+        <section id="people" class="section grid g60">
+          <div class="card">
+            <div class="split-head"><div><div class="card-title">Personel Performansı</div><div class="sub">Satış, şikayet, eğitim, devamsızlık, prim ve çıkma riski.</div></div><button class="btn" data-open-action><i data-lucide="graduation-cap"></i>Eğitim ata</button></div>
+            <div class="people-list" id="peopleList"></div>
+          </div>
+          <div class="card">
+            <div class="split-head"><div><div class="card-title">Personel Risk Sinyalleri</div><div class="sub">Aksiyon gerektiren insan kaynağı kayıtları.</div></div></div>
+            <div class="issue-list">
+              <div class="issue"><i data-lucide="user-x"></i><div><b>İşten çıkma riski</b><span>Burak Şahin | yüksek devamsızlık</span></div><button class="mini-btn" data-open-action>Görüşme</button></div>
+              <div class="issue"><i data-lucide="badge-percent"></i><div><b>Prim hak edenler</b><span>Ahmet Yılmaz, Elif Kaya</span></div><button class="mini-btn" data-detail="Prim onayı">Onay</button></div>
+              <div class="issue"><i data-lucide="book-open-check"></i><div><b>Eksik eğitim</b><span>EV ekspertiz modülü 14 kişi eksik</span></div><button class="mini-btn" data-open-action>Eğitim ata</button></div>
+            </div>
+          </div>
+        </section>
+
+        <section id="actions" class="section grid g2">
+          <div class="card">
+            <div class="split-head"><div><div class="card-title">Aksiyon Motoru</div><div class="sub">Kritik veri aksiyona bağlanır; sahip, deadline ve takip girilir.</div></div></div>
+            <div class="grid g3">
+              <button class="btn" data-open-action><i data-lucide="clipboard-plus"></i>Görev oluştur</button>
+              <button class="btn" data-open-action><i data-lucide="user-check"></i>Sorumlu ata</button>
+              <button class="btn" data-open-action><i data-lucide="calendar-clock"></i>Deadline ver</button>
+              <button class="btn" data-open-action><i data-lucide="map-pin"></i>Bölge müdürünü çağır</button>
+              <button class="btn" data-open-action><i data-lucide="message-circle"></i>WhatsApp gönder</button>
+              <button class="btn" data-open-action><i data-lucide="shield-alert"></i>Şube denetimi aç</button>
+              <button class="btn" data-open-action><i data-lucide="badge-dollar-sign"></i>İade onayı ver</button>
+              <button class="btn" data-open-action><i data-lucide="megaphone"></i>Kampanya başlat</button>
+              <button class="btn" data-open-action><i data-lucide="graduation-cap"></i>Eğitim ata</button>
+            </div>
+          </div>
+          <div id="tasks" class="card">
+            <div class="split-head"><div><div class="card-title">Görev Takip Motoru</div><div class="sub">Açık, geciken, tamamlanan ve kişi bazlı yük.</div></div><span class="status-pill warn" id="taskSummary">0 açık görev</span></div>
+            <div class="task-list" id="taskList"></div>
+          </div>
+        </section>
+
+        <section id="ai" class="section">
+          <div class="section-head"><div><h2>AI Öneri Motoru</h2><p>Beklenen etki, risk ve aksiyon butonu birlikte.</p></div></div>
+          <div class="grid g5" id="aiList"></div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <aside class="drawer" id="quickDrawer" aria-label="Hızlı işlemler">
+    <button class="drawer-tab" id="drawerToggle"><i data-lucide="panel-right-open"></i><span>Hızlı İşlemler</span></button>
+    <div class="drawer-panel">
+      <div class="drawer-card">
+        <div class="drawer-title"><b><i data-lucide="zap"></i>Hızlı İşlemler</b><button class="close" id="drawerClose"><i data-lucide="x"></i></button></div>
+        <div class="grid">
+          <button class="btn primary" data-open-action><i data-lucide="plus"></i>Yeni aksiyon</button>
+          <button class="btn" data-detail="Şube müdürü arama listesi"><i data-lucide="phone"></i>Şube müdürünü ara</button>
+          <button class="btn" data-open-action><i data-lucide="siren"></i>Kriz kaydı aç</button>
+        </div>
+      </div>
+      <div class="drawer-card">
+        <div class="drawer-title"><b><i data-lucide="activity"></i>Yönetim Nabzı</b></div>
+        <div class="issue-list" id="pulseList"></div>
+      </div>
+      <div class="drawer-card">
+        <div class="drawer-title"><b><i data-lucide="timer"></i>SLA Sinyalleri</b></div>
+        <div class="issue-list">
+          <div class="issue"><i data-lucide="message-circle-warning"></i><div><b>WhatsApp</b><span>12 dk / hedef 15 dk</span></div><span class="badge b-green">İyi</span></div>
+          <div class="issue"><i data-lucide="file-warning"></i><div><b>Rapor itirazı</b><span>2 kayıt 2. inceleme</span></div><span class="badge b-amber">Takip</span></div>
+          <div class="issue"><i data-lucide="headphones"></i><div><b>Şikayet dönüş</b><span>5s 42dk / hedef 4s</span></div><span class="badge b-red">Risk</span></div>
+        </div>
+      </div>
+      <div class="drawer-card">
+        <div class="drawer-title"><b><i data-lucide="phone-call"></i>Bugün Aranacaklar</b></div>
+        <div class="issue-list">
+          <div class="issue"><i data-lucide="user"></i><div><b>Ayşe Karaca</b><span>Franchise adayı | Kayseri</span></div><button class="mini-btn">Ara</button></div>
+          <div class="issue"><i data-lucide="user"></i><div><b>Duru Lojistik</b><span>Rapor itirazı | Ataşehir</span></div><button class="mini-btn">Ara</button></div>
+        </div>
+      </div>
+      <div class="drawer-card">
+        <div class="drawer-title"><b><i data-lucide="folder-warning"></i>Kritik Dosyalar</b></div>
+        <div class="issue-list">
+          <div class="issue"><i data-lucide="scale"></i><div><b>Yasal tehdit</b><span>İstanbul Ataşehir dosyası</span></div><button class="mini-btn" data-detail="Yasal tehdit">Detay</button></div>
+          <div class="issue"><i data-lucide="wallet"></i><div><b>Bütçe sapması</b><span>Antalya kurulum planı</span></div><button class="mini-btn" data-detail="Bütçe sapması">Detay</button></div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="modal" id="actionModal">
+    <div class="modal-box">
+      <div class="modal-head">
+        <div><h2>Yeni Aksiyon Oluştur</h2><p class="sub">Demo kayıt görev listesine eklenir.</p></div>
+        <button class="close" data-close-modal><i data-lucide="x"></i></button>
+      </div>
+      <form id="actionForm" class="form">
+        <div class="field"><label>Başlık</label><input name="title" required value="Kritik alarm için aksiyon"></div>
+        <div class="field"><label>Kategori</label><select name="category"><option>Operasyon</option><option>Finans</option><option>Müşteri</option><option>CRM</option><option>Personel</option><option>Franchise</option></select></div>
+        <div class="field"><label>Sorumlu</label><select name="owner"><option>Elif Kaya</option><option>Ahmet Yılmaz</option><option>Murat Demir</option><option>Selin Arslan</option><option>Burak Şahin</option></select></div>
+        <div class="field"><label>Şube</label><select name="branch"><option>İstanbul Ataşehir</option><option>Ankara Çukurambar</option><option>Antalya Kepez</option><option>Bursa Nilüfer</option><option>İzmir Bornova</option><option>Kocaeli İzmit</option></select></div>
+        <div class="field"><label>Öncelik</label><select name="priority"><option>Kritik</option><option>Yüksek</option><option>Orta</option><option>Düşük</option></select></div>
+        <div class="field"><label>Deadline</label><input name="deadline" type="datetime-local"></div>
+        <div class="field wide"><label>Açıklama</label><textarea name="note" rows="4">Sahip, kanıt ve kapanış kriteri ile takip edilecek.</textarea></div>
+        <div class="field wide modal-actions"><button type="button" class="btn" data-close-modal>Vazgeç</button><button class="btn primary" type="submit">Kaydet</button></div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal" id="detailModal">
+    <div class="modal-box">
+      <div class="modal-head">
+        <div><h2 id="detailTitle">Detay</h2><p id="detailText" class="sub"></p></div>
+        <button class="close" data-close-detail><i data-lucide="x"></i></button>
+      </div>
+      <div class="grid g3">
+        <div class="tile"><span>Öncelik</span><b>Yüksek</b><small>CEO takip</small></div>
+        <div class="tile"><span>Sahip</span><b>Operasyon</b><small>Otomatik yönlendirme</small></div>
+        <div class="tile"><span>Deadline</span><b>Bugün</b><small>SLA içinde kapat</small></div>
+      </div>
+      <div class="modal-actions"><button class="btn" data-open-action><i data-lucide="clipboard-plus"></i>Görev oluştur</button><button class="btn primary" data-close-detail>Kapalı</button></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const fmtTL = v => '₺' + Number(v).toLocaleString('tr-TR');
+    const icon = name => `<i data-lucide="${name}"></i>`;
+    const badge = text => {
+      const c = text === 'Grow' || text === 'İyi' || text === 'Tamamlandı' ? 'b-green' : text === 'Watch' || text === 'Bilgi' || text === 'Açık' ? 'b-blue' : text === 'Fix' || text === 'Yüksek' || text === 'Takip' || text === 'Gecikti' ? 'b-amber' : text === 'Replace' || text === 'Kritik' || text === 'Risk' ? 'b-red' : 'b-gray';
+      return `<span class="badge ${c}">${text}</span>`;
+    };
+    const DATA = {
+      alarms:[
+        {level:'critical',branch:'Ankara Çukurambar',owner:'Müşteri Deneyimi',deadline:'Bugün 15:00',text:'Google puanı 4.2 altına yaklaşıyor.',action:'Google yorum kurtarma'},
+        {level:'critical',branch:'İstanbul Ataşehir',owner:'Kalite',deadline:'Bugün 14:30',text:'Rapor itirazı ikinci inceleme bekliyor.',action:'Kalite denetimi'},
+        {level:'high',branch:'Antalya Kepez',owner:'CFO',deadline:'Yarın 10:00',text:'Kurulum bütçesi plan dışı sapma verdi.',action:'CFO incelemesi'},
+        {level:'high',branch:'CRM Merkezi',owner:'CRM',deadline:'Bugün 12:00',text:'WhatsApp SLA 15 dakikayı aştı.',action:'SLA görevi'},
+        {level:'medium',branch:'Bursa Nilüfer',owner:'Satış',deadline:'48 saat',text:'Premium paket dönüşümü düştü.',action:'Fiyat testi'}
+      ],
+      kpis:[
+        ['Bugünkü Ciro','₺14,82M','Hedef ₺13,4M','+%11,2','good','banknote',[40,54,62,72,86]],
+        ['Bugünkü Araç','3.864','Hedef 3.550','+%8,4','good','car',[52,58,55,66,78]],
+        ['Ortalama Paket Tutarı','₺3.835','Hedef ₺3.700','+₺144','good','package-check',[48,52,58,62,67]],
+        ['Şikayet Riski','87','Hedef < 70','+14','bad','message-square-warning',[42,49,55,67,80]],
+        ['Google Ağ Puanı','4.58','Hedef 4.65','-%0,3','warn','star',[76,74,72,70,69]],
+        ['WhatsApp SLA','12 dk','Hedef 15 dk','İçeride','good','message-circle',[70,72,73,78,82]],
+        ['Lead Dönüşüm','%45,4','Hedef %42','+%3,1','good','route',[49,51,57,61,68]],
+        ['Şube Sağlık','86/100','Hedef 84','+2','good','shield-check',[72,75,78,84,86]],
+        ['Operasyon Hızı','52 dk','Hedef 45 dk','+7 dk','warn','timer',[69,67,65,62,59]],
+        ['Açık Görevler','31','Geciken 7','+4','warn','list-checks',[36,39,34,42,47]]
+      ],
+      branches:[
+        {name:'Bursa Nilüfer',city:'Bursa',cars:42,revenue:173500,google:4.9,complaint:1,sla:'96%',score:94,decision:'Grow',manager:'Ahmet Yılmaz'},
+        {name:'İstanbul Ataşehir',city:'İstanbul',cars:48,revenue:203200,google:4.7,complaint:3,sla:'88%',score:86,decision:'Watch',manager:'Elif Kaya'},
+        {name:'Ankara Çukurambar',city:'Ankara',cars:27,revenue:97200,google:4.1,complaint:13,sla:'72%',score:62,decision:'Fix',manager:'Murat Demir'},
+        {name:'Antalya Kepez',city:'Antalya',cars:18,revenue:63200,google:3.9,complaint:9,sla:'68%',score:58,decision:'Replace',manager:'Selin Arslan'},
+        {name:'Kocaeli İzmit',city:'Kocaeli',cars:36,revenue:149800,google:4.9,complaint:0,sla:'94%',score:92,decision:'Grow',manager:'Burak Şahin'},
+        {name:'İzmir Bornova',city:'İzmir',cars:20,revenue:70100,google:4.2,complaint:7,sla:'78%',score:70,decision:'Fix',manager:'Elif Kaya'}
+      ],
+      regions:[
+        ['Marmara','good',54,88,'₺7,8M',3,'EV ekspertiz kapasitesi'],
+        ['İç Anadolu','warn',28,74,'₺3,1M',7,'Konya ikinci lokasyon'],
+        ['Ege','warn',23,76,'₺2,7M',5,'Filo anlaşması'],
+        ['Akdeniz','bad',21,68,'₺2,2M',9,'Antalya kalite planı'],
+        ['Karadeniz','good',15,84,'₺1,6M',2,'Samsun franchise'],
+        ['Doğu / Güneydoğu','warn',12,77,'₺1,2M',4,'Gaziantep büyüme']
+      ],
+      complaints:[
+        ['Duru Lojistik','İstanbul Ataşehir','Rapor itirazı','Kritik','1s 20dk','Kalite'],
+        ['Hasan Kaya','Ankara Çukurambar','Bekleme süresi','Yüksek','2s 10dk','Operasyon'],
+        ['Mert Otomotiv','Antalya Kepez','Fiyat itirazı','Yüksek','3s 45dk','Finans'],
+        ['Elif Yaman','İzmir Bornova','Google düşük yorum','Kritik','55dk','Müşteri Deneyimi']
+      ],
+      people:[
+        ['Ahmet Yılmaz','En çok satış yapan','Bursa Nilüfer','₺1,42M','#1','green'],
+        ['Elif Kaya','En iyi lead kapatan','İstanbul / İzmir','%62 kapanış','#2','green'],
+        ['Murat Demir','En çok şikayet alan','Ankara Çukurambar','13 kayıt','#3','amber'],
+        ['Selin Arslan','Performans görüşmesi','Antalya Kepez','SLA riski','#4','red'],
+        ['Burak Şahin','Prim hak eden','Kocaeli İzmit','Google 4.9','#5','green']
+      ],
+      tasks:[
+        {title:'Ankara Google kurtarma planı',owner:'Murat Demir',branch:'Ankara Çukurambar',deadline:'Bugün 15:00',status:'Açık',priority:'Kritik'},
+        {title:'Ataşehir rapor itirazı ikinci kontrol',owner:'Elif Kaya',branch:'İstanbul Ataşehir',deadline:'Bugün 14:30',status:'Gecikti',priority:'Kritik'},
+        {title:'Antalya CFO bütçe incelemesi',owner:'Selin Arslan',branch:'Antalya Kepez',deadline:'Yarın 10:00',status:'Açık',priority:'Yüksek'},
+        {title:'Bursa premium paket fiyat testi',owner:'Ahmet Yılmaz',branch:'Bursa Nilüfer',deadline:'48 saat',status:'Açık',priority:'Orta'}
+      ],
+      ai:[
+        ['Ankara için Google yorum kurtarma planı başlat','Puan kaybını 7 gün içinde durdurur','Marka riski yüksek','Plan aç'],
+        ['İstanbul Ataşehir rapor itirazları için kalite denetimi aç','İtiraz tekrarını azaltır','Müşteri krizi orta','Denetim aç'],
+        ['Bursa premium paket fiyatlama testi yap','Sepet +%4,5 artabilir','Dönüşüm riski düşük','Test başlat'],
+        ['Antalya finans sapması için CFO incelemesi başlat','Karlılık kaybını erken yakalar','Bütçe riski yüksek','İnceleme aç'],
+        ['Marmara EV ekspertiz eğitim kapasitesi artır','Yeni gelir kanalı açar','Operasyon yükü orta','Eğitim ata']
+      ]
+    };
+    let tasks = [...DATA.tasks];
+    function severityText(level){ return level === 'critical' ? 'Kritik' : level === 'high' ? 'Yüksek' : 'Orta'; }
+    function renderAlarms(){
+      document.getElementById('alarmStrip').innerHTML = DATA.alarms.map(a=>`<article class="alarm ${a.level}"><div class="alarm-head"><span class="severity">${severityText(a.level)}</span><span class="deadline">${a.deadline}</span></div><div><b>${a.branch}</b><p>${a.text}</p></div><div class="sub">Sorumlu: ${a.owner}</div><div class="action-row"><button class="mini-btn red" data-open-action>Görev oluştur</button><button class="mini-btn" data-open-action>Sorumlu ata</button><button class="mini-btn" data-detail="${a.action}">Detaya git</button><button class="mini-btn" data-open-action>Kriz kaydı aç</button></div></article>`).join('');
+    }
+    function renderKpis(){
+      document.getElementById('kpiGrid').innerHTML = DATA.kpis.map(k=>`<div class="card kpi ${k[4]}"><div class="kpi-top"><div><div class="label">${k[0]}</div><div class="value">${k[1]}</div></div><div class="ico">${icon(k[5])}</div></div><div class="sub">${k[2]}</div><span class="trend ${k[4]==='bad'?'down':k[4]==='warn'?'warn':''}">${k[3]}</span><div class="mini-trend">${k[6].map(v=>`<span style="height:${v}%"></span>`).join('')}</div></div>`).join('');
+    }
+    function renderPackages(){
+      const rows=[['Mini Paket',1280000,18,'blue'],['Standart Paket',4120000,39,'green'],['Full Paket',6900000,63,'green'],['EV Full',2520000,48,'amber']];
+      document.getElementById('packageRevenue').innerHTML = rows.map(r=>`<div class="issue"><i data-lucide="package"></i><div><b>${r[0]}</b><span>${fmtTL(r[1])} gelir · dönüşüm %${r[2]}</span><div class="progress" style="margin-top:7px"><div class="bar ${r[3]}" style="width:${r[2]+24}%"></div></div></div><button class="mini-btn" data-detail="${r[0]}">Detay</button></div>`).join('');
+    }
+    function renderOps(){
+      const rows=[['09',312,78],['10',486,88],['11',542,96],['12',398,73],['13',361,66],['14',504,91],['15',476,84]];
+      document.getElementById('hourFlow').innerHTML = rows.map(r=>`<div class="flow-row"><span>${r[0]}:00</span><div class="progress"><div class="bar blue" style="width:${r[2]}%"></div></div><b>${r[1]}</b></div>`).join('');
+    }
+    function renderComplaints(){
+      document.getElementById('complaints').innerHTML = DATA.complaints.map(c=>`<div class="complaint"><div class="complaint-head"><div><b>${c[0]}</b><div class="sub">${c[1]} · ${c[2]}</div></div>${badge(c[3])}</div><p>SLA: ${c[4]} · Sorumlu: ${c[5]}</p><div class="action-row"><button class="mini-btn" data-open-action>Müşteriyi ara</button><button class="mini-btn" data-open-action>WhatsApp</button><button class="mini-btn" data-open-action>Çözüm ata</button><button class="mini-btn" data-detail="${c[2]}">Google takip</button></div></div>`).join('');
+    }
+    function renderCrm(){
+      const rows=[['Google Ads',112,'Randevu oluştur'],['Meta',74,'WhatsApp gönder'],['WhatsApp',58,'Lead ata'],['Organik',51,'Tekrar arama'],['Referans',31,'Randevu oluştur']];
+      document.getElementById('crmActions').innerHTML = rows.map(r=>`<div class="issue"><i data-lucide="send"></i><div><b>${r[0]}</b><span>${r[1]} lead · öneri: ${r[2]}</span></div><button class="mini-btn" data-open-action>${r[2]}</button></div>`).join('');
+    }
+    function renderBranches(){
+      const rows = DATA.branches.map(b=>`<tr><td><b>${b.name}</b><div class="sub">${b.manager}</div></td><td>${b.city}</td><td class="center">${b.cars}</td><td class="num mono">${fmtTL(b.revenue)}</td><td class="center">${b.google}</td><td class="center">${b.complaint}</td><td class="center">${b.sla}</td><td><div class="branch-score"><b>${b.score}</b><div class="scorebar"><div class="bar ${b.score>84?'green':b.score>70?'amber':'red'}" style="width:${b.score}%"></div></div></div></td><td><span class="decision ${b.decision.toLowerCase()}">${b.decision}</span></td><td><button class="mini-btn" data-detail="${b.name} profili">Detay</button><button class="mini-btn" data-open-action>Görev</button><button class="mini-btn" data-open-action>Denetim</button></td></tr>`).join('');
+      document.getElementById('branchTable').innerHTML = `<thead><tr><th>Şube</th><th>Şehir</th><th class="center">Günlük Araç</th><th class="num">Günlük Ciro</th><th class="center">Google</th><th class="center">Şikayet</th><th class="center">SLA</th><th>Skor</th><th>Karar</th><th>Aksiyon</th></tr></thead><tbody>${rows}</tbody>`;
+    }
+    function renderRegions(){
+      document.getElementById('regionGrid').innerHTML = DATA.regions.map(r=>`<div class="region ${r[1]==='good'?'':r[1]}"><h3>${r[0]}</h3><div class="region-stat"><div><span>Şube</span><b>${r[2]}</b></div><div><span>Skor</span><b>${r[3]}</b></div><div><span>Ciro</span><b>${r[4]}</b></div><div><span>Risk</span><b>${r[5]}</b></div></div><div class="opportunity"><b>Fırsat:</b> ${r[6]}</div><button class="mini-btn" style="margin-top:9px" data-detail="${r[0]} bölgesi">Bölge detay</button></div>`).join('');
+    }
+    function renderPeople(){
+      document.getElementById('peopleList').innerHTML = DATA.people.map(p=>`<div class="person"><span class="avatar">${p[0].split(' ').map(x=>x[0]).join('')}</span><div><b>${p[0]}</b><span>${p[1]} · ${p[2]} · ${p[3]}</span></div><div class="rank" style="color:var(--${p[5]})">${p[4]}</div></div>`).join('');
+    }
+    function renderTasks(){
+      const open = tasks.filter(t=>t.status!=='Tamamlandı').length, late = tasks.filter(t=>t.status==='Gecikti').length;
+      document.getElementById('taskSummary').innerHTML = `${open} açık · ${late} geciken`;
+      document.getElementById('taskNavCount').textContent = open;
+      document.getElementById('taskList').innerHTML = tasks.map((t,i)=>`<div class="task"><div class="task-head"><b>${t.title}</b>${badge(t.priority)}</div><div class="task-meta"><span>${t.owner}</span><span>${t.branch}</span><span>${t.deadline}</span><span>${t.status}</span></div><div class="action-row"><button class="mini-btn" data-detail="${t.title}">Detay</button><button class="mini-btn" data-complete-task="${i}">Tamamla</button></div></div>`).join('');
+    }
+    function renderAi(){
+      document.getElementById('aiList').innerHTML = DATA.ai.map(a=>`<article class="ai-card"><div class="ai-head"><b>${a[0]}</b>${icon('sparkles')}</div><p>${a[0]}</p><div class="impact"><div><span>Beklenen etki</span><b>${a[1]}</b></div><div><span>Risk</span><b>${a[2]}</b></div></div><button class="btn" data-open-action>${a[3]}</button></article>`).join('');
+    }
+    function renderPulse(){
+      document.getElementById('pulseList').innerHTML = [['Şirket sağlık','86/100','İyi'],['Kritik alarm','5 kayıt','Takip'],['Açık görev','31 görev','Risk'],['Finans','Stabil','İyi']].map(p=>`<div class="issue"><i data-lucide="activity"></i><div><b>${p[0]}</b><span>${p[1]}</span></div>${badge(p[2])}</div>`).join('');
+    }
+    function renderSearch(q){
+      const box=document.getElementById('searchResults');
+      if(q.trim().length<2){ box.classList.remove('open'); box.innerHTML=''; return; }
+      const pool=[
+        ...DATA.branches.map(b=>({title:b.name,sub:b.city+' · '+b.decision,type:'Şube'})),
+        ...DATA.people.map(p=>({title:p[0],sub:p[1],type:'Personel'})),
+        ...DATA.alarms.map(a=>({title:a.branch,sub:a.text,type:'Alarm'})),
+        ...tasks.map(t=>({title:t.title,sub:t.owner+' · '+t.branch,type:'Görev'}))
+      ];
+      const s=q.toLocaleLowerCase('tr-TR');
+      const hits=pool.filter(x=>(x.title+' '+x.sub+' '+x.type).toLocaleLowerCase('tr-TR').includes(s)).slice(0,7);
+      box.innerHTML = hits.length ? hits.map(h=>`<button class="search-hit" data-detail="${h.title}"><b>${h.title}</b><span>${h.type} · ${h.sub}</span></button>`).join('') : `<div class="search-hit"><b>Sonuç yok</b><span>Başka kelime dene</span></div>`;
+      box.classList.add('open');
+    }
+    function showToast(text){ const t=document.getElementById('toast'); t.textContent=text; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2200); }
+    function openActionModal(){
+      const input=document.querySelector('#actionForm [name="deadline"]');
+      if(input && !input.value){
+        const d=new Date(Date.now()+4*60*60*1000);
+        input.value=d.toISOString().slice(0,16);
+      }
+      document.getElementById('actionModal').classList.add('open');
+    }
+    function closeActionModal(){ document.getElementById('actionModal').classList.remove('open'); }
+    function openDetail(title){
+      document.getElementById('detailTitle').textContent=title;
+      document.getElementById('detailText').textContent='Demo detay ekranı: aksiyon oluşturabilir, sorumlu atayabilir veya ilgili modüle geçiş tasarlanabilir.';
+      document.getElementById('detailModal').classList.add('open');
+    }
+    function closeDetail(){ document.getElementById('detailModal').classList.remove('open'); }
+    function renderCharts(){
+      if(!window.Chart){
+        document.querySelectorAll('canvas').forEach(c=>{ c.replaceWith(Object.assign(document.createElement('div'),{className:'card',textContent:'Grafik yüklenemedi, veri özeti aktif.'})); });
+        return;
+      }
+      Chart.defaults.font.family='Inter, sans-serif';
+      Chart.defaults.color='#667085';
+      new Chart(document.getElementById('financeChart'),{type:'line',data:{labels:['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'],datasets:[{label:'Ciro',data:[218,232,246,258,272,286,301,318,334,352,371,392],borderColor:'#d71920',backgroundColor:'rgba(215,25,32,.08)',fill:true,tension:.36},{label:'EBITDA',data:[42,45,49,52,56,59,63,72,75,81,85,91],borderColor:'#185abc',backgroundColor:'rgba(24,90,188,.08)',fill:true,tension:.36}]},options:{responsive:true,plugins:{legend:{position:'bottom'}},scales:{y:{ticks:{callback:v=>'₺'+v+'M'}}}}});
+      new Chart(document.getElementById('operationChart'),{type:'bar',data:{labels:['09','10','11','12','13','14','15'],datasets:[{label:'Araç',data:[312,486,542,398,361,504,476],backgroundColor:'#185abc'},{label:'Geciken',data:[14,23,31,18,16,28,22],backgroundColor:'#d71920'}]},options:{responsive:true,plugins:{legend:{position:'bottom'}}}});
+      new Chart(document.getElementById('sentimentChart'),{type:'doughnut',data:{labels:['Pozitif','Nötr','Negatif','Kritik'],datasets:[{data:[64,19,12,5],backgroundColor:['#13804b','#185abc','#bd6f00','#d71920'],borderWidth:0}]},options:{plugins:{legend:{position:'bottom'}},cutout:'64%'}});
+      new Chart(document.getElementById('leadChart'),{type:'bar',data:{labels:['Google Ads','Meta','WhatsApp','Organik','Referans'],datasets:[{label:'Lead',data:[112,74,58,51,31],backgroundColor:'#d71920'},{label:'Randevu',data:[54,31,32,22,9],backgroundColor:'#13804b'}]},options:{indexAxis:'y',plugins:{legend:{position:'bottom'}}}});
+    }
+    function boot(){
+      renderAlarms();renderKpis();renderPackages();renderOps();renderComplaints();renderCrm();renderBranches();renderRegions();renderPeople();renderTasks();renderAi();renderPulse();renderCharts();
+      document.getElementById('lastUpdate').textContent='Canlı veri · '+new Date().toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});
+      if(window.lucide) lucide.createIcons();
+    }
+    document.addEventListener('click',e=>{
+      const open=e.target.closest('[data-open-action]'); if(open){ e.preventDefault(); openActionModal(); return; }
+      const detail=e.target.closest('[data-detail]'); if(detail){ e.preventDefault(); openDetail(detail.dataset.detail); return; }
+      const complete=e.target.closest('[data-complete-task]'); if(complete){ tasks[Number(complete.dataset.completeTask)].status='Tamamlandı'; renderTasks(); showToast('Görev tamamlandı.'); return; }
+      const nav=e.target.closest('.nav a'); if(nav){ document.querySelectorAll('.nav a').forEach(a=>a.classList.remove('active')); nav.classList.add('active'); }
+    });
+    document.getElementById('drawerToggle').addEventListener('click',()=>document.getElementById('quickDrawer').classList.toggle('open'));
+    document.getElementById('drawerClose').addEventListener('click',()=>document.getElementById('quickDrawer').classList.remove('open'));
+    document.querySelectorAll('.mode button').forEach(btn=>btn.addEventListener('click',()=>{ document.querySelectorAll('.mode button').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); showToast(btn.dataset.mode+' modu aktif.'); }));
+    document.getElementById('globalSearch').addEventListener('input',e=>renderSearch(e.target.value));
+    document.addEventListener('click',e=>{ if(!e.target.closest('.search')) document.getElementById('searchResults').classList.remove('open'); });
+    document.querySelectorAll('[data-close-modal]').forEach(x=>x.addEventListener('click',closeActionModal));
+    document.querySelectorAll('[data-close-detail]').forEach(x=>x.addEventListener('click',closeDetail));
+    document.getElementById('actionModal').addEventListener('click',e=>{ if(e.target.id==='actionModal') closeActionModal(); });
+    document.getElementById('detailModal').addEventListener('click',e=>{ if(e.target.id==='detailModal') closeDetail(); });
+    document.getElementById('actionForm').addEventListener('submit',e=>{
+      e.preventDefault();
+      const fd=new FormData(e.currentTarget);
+      const deadline=fd.get('deadline') ? new Date(fd.get('deadline')).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : 'Bugün';
+      tasks.unshift({title:fd.get('title'),owner:fd.get('owner'),branch:fd.get('branch'),deadline,status:'Açık',priority:fd.get('priority')});
+      renderTasks(); closeActionModal(); showToast('Yeni aksiyon görev listesine eklendi.');
+      if(window.lucide) lucide.createIcons();
+    });
+    window.addEventListener('load',boot);
+  </script>
+</body>
+</html>
