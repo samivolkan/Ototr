@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="ototr-version" content="SVK v1.0.5-bolge-canli-arama" />
+  <meta name="ototr-version" content="SVK v1.0.6-kar-risk-demo-data" />
   <title>OTOTR Genel Merkez ERP + CRM</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -121,7 +121,7 @@
 <body>
   <div class="app">
     <aside class="side">
-      <a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.5</small></div></a>
+      <a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.6</small></div></a>
       <div class="nav" id="nav"></div>
     </aside>
 
@@ -177,6 +177,7 @@
   </div>
   <div class="toast" id="toast"></div>
 
+  <script src="src/data/demo/demoData.js"></script>
   <script>
     const fmtTL = n => new Intl.NumberFormat('tr-TR',{style:'currency',currency:'TRY',maximumFractionDigits:0}).format(n);
     const fmt = n => new Intl.NumberFormat('tr-TR').format(n);
@@ -435,6 +436,31 @@
       ]
     };
 
+    const profitRiskDemoModel = window.OTOTR_DEMO_DATA?.createDemoModel?.();
+    if(profitRiskDemoModel?.dashboardSeed){
+      const demoSeed = profitRiskDemoModel.dashboardSeed;
+      Object.assign(seed, {
+        branches: demoSeed.branches,
+        finance: demoSeed.finance,
+        financeHistory: demoSeed.financeHistory,
+        marketing: demoSeed.marketing,
+        branchDetails: demoSeed.branchDetails,
+        complaints: demoSeed.complaints,
+        tickets: demoSeed.tickets,
+        ceoDashboard: {
+          ...seed.ceoDashboard,
+          ...demoSeed.ceoDashboard,
+          quickActions: seed.ceoDashboard.quickActions
+        },
+        demoOperations: demoSeed.operations,
+        demoPackages: demoSeed.demoPackages,
+        demoUsers: demoSeed.users,
+        demoKpiTargets: demoSeed.kpiTargets,
+        demoRiskAlerts: demoSeed.riskAlerts
+      });
+      window.OTOTR_DASHBOARD_SERVICE = profitRiskDemoModel.services;
+    }
+
     const navGroups = [
       ['Komuta', [['dashboard','Yönetim Kokpiti','layout-dashboard'],['intelligence','İş Zekası','chart-no-axes-column'],['branches','Bayiler & Şubeler','building-2'],['operations','Operasyon','workflow']]],
       ['Gelir', [['franchise','Franchise Satış','handshake'],['crm','CRM & Randevu','users'],['finance','Finans & Royalty','banknote'],['marketing','Pazarlama','megaphone']]],
@@ -560,7 +586,7 @@
     }
 
     const Backend = {
-      key:'ototr-demo-db-v1',
+      key:'ototr-demo-db-v2-profit-risk',
       async connect(){
         await wait(220);
         const old=localStorage.getItem(this.key), parsed=old ? JSON.parse(old) : null;

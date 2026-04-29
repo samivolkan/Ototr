@@ -116,7 +116,7 @@ await page.waitForSelector("#page-settings.active");
 await page.locator("#resetDemo").click();
 await page.waitForFunction(
   () => {
-    const value = localStorage.getItem("ototr-demo-db-v1");
+    const value = localStorage.getItem("ototr-demo-db-v2-profit-risk");
     return value && !value.includes("Test Franchise Adayi");
   }
 );
