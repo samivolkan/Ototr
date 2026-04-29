@@ -20,6 +20,9 @@ const marmaraSummary = service.getDashboardSummary("BOLGE_MUDURU", "marmara");
 const kadikoySummary = service.getDashboardSummary("BAYI", null, "BR-002");
 const antalyaAlerts = service.getRiskAlerts("BAYI", null, "BR-009").map(a => a.type);
 const bursaAlerts = service.getRiskAlerts("BAYI", null, "BR-008").map(a => a.type);
+const ceoLegal = service.getLegalSummary("CEO");
+const marmaraLegal = service.getLegalSummary("BOLGE_MUDURU", "marmara");
+const antalyaLegal = service.getLegalSummary("BAYI", null, "BR-009");
 
 assert(seed.branches.length === 10, "10 subelik demo evren olusmadi.");
 assert(operations.length === 300, "30 gun x 10 sube operasyon verisi olusmadi.");
@@ -35,6 +38,15 @@ assert(JSON.stringify(packages.map(p => p.price)) === JSON.stringify([5000,7500,
 assert(Math.min(...operations.map(x => x.vehicleCount)) >= 8 && Math.max(...operations.map(x => x.vehicleCount)) <= 15, "Gunluk arac sayisi 8-15 bandinda degil.");
 assert(ceoSummary.averageTicket >= 8900 && ceoSummary.averageTicket <= 9500, "Ortalama ticket 8.900-9.500 TL bandinda degil.");
 assert(ceoSummary.totalRoyalty === operations.reduce((s,x)=>s+x.royalty,0), "Aylik royalty toplami hatali.");
+assert(seed.legalModule.contracts.length === 10, "Legal contract yapisi 10 subeyi kapsamiyor.");
+assert(seed.legalModule.legalCases.length >= 5, "Legal case demo datasi eksik.");
+assert(seed.legalModule.legalComplaints.some(x => x.legalRisk), "Legal risk sikayetleri uretilmiyor.");
+assert(seed.legalModule.compliance.every(x => x.complianceScore >= 0 && x.complianceScore <= 100), "Compliance skorlari 0-100 bandinda degil.");
+assert(seed.legalModule.legalAlerts.length > 0, "Legal alert uretilmiyor.");
+assert(ceoLegal.totalLegalCases >= marmaraLegal.totalLegalCases, "Legal CEO filtresi bolge filtresinden kucuk olamaz.");
+assert(marmaraLegal.legalAlerts.every(a => a.regionId === "marmara"), "Bolge muduru legal alarmlari kendi bolgesiyle sinirli degil.");
+assert(antalyaLegal.legalAlerts.every(a => a.branchId === "BR-009"), "Bayi legal alarmlari kendi subesiyle sinirli degil.");
+assert(ceoSummary.totalLegalCases === ceoLegal.totalLegalCases && ceoSummary.complianceScoreAvg === ceoLegal.complianceScoreAvg, "Dashboard summary legal alanlari tasimiyor.");
 
 console.log(JSON.stringify({
   branches: seed.branches.length,
@@ -46,6 +58,15 @@ console.log(JSON.stringify({
   totalMonthlyRevenue: ceoSummary.totalMonthlyRevenue,
   totalRoyalty: ceoSummary.totalRoyalty,
   delayedRoyalty: ceoSummary.delayedRoyalty,
+  legal: {
+    totalLegalCases: ceoLegal.totalLegalCases,
+    highRiskCases: ceoLegal.highRiskCases,
+    riskyBranches: ceoLegal.riskyBranches,
+    complianceScoreAvg: ceoLegal.complianceScoreAvg,
+    legalAlerts: ceoLegal.legalAlerts.length,
+    marmaraLegalAlerts: marmaraLegal.legalAlerts.length,
+    antalyaLegalAlerts: antalyaLegal.legalAlerts.length
+  },
   antalyaAlerts,
   bursaAlerts
 }, null, 2));

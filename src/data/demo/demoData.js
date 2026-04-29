@@ -148,6 +148,73 @@
     return alerts;
   }
 
+  function createLegalModule(branchRows){
+    const contracts = branchRows.map((branch, index) => {
+      const status = branch.id === "BR-009" || branch.id === "BR-008" ? "violation" : index % 4 === 0 ? "expiring" : "active";
+      return {
+        contractId:`CNT-${String(index + 1).padStart(3,"0")}`,
+        branchId:branch.id,
+        branchName:branch.displayName,
+        regionId:branch.regionId,
+        region:branch.region,
+        startDate:`2024-${String((index % 9) + 1).padStart(2,"0")}-01`,
+        endDate: status === "expiring" ? "2026-06-30" : `2027-${String((index % 9) + 1).padStart(2,"0")}-01`,
+        royaltyRate:ROYALTY_RATE,
+        status
+      };
+    });
+    const legalCases = [
+      {caseId:"LC-001",branchId:"BR-009",type:"consumer",status:"open",riskLevel:"high",amount:185000,nextHearingDate:"2026-05-14"},
+      {caseId:"LC-002",branchId:"BR-008",type:"arbitration",status:"open",riskLevel:"medium",amount:76000,nextHearingDate:"2026-06-03"},
+      {caseId:"LC-003",branchId:"BR-004",type:"lawsuit",status:"open",riskLevel:"medium",amount:124000,nextHearingDate:"2026-05-28"},
+      {caseId:"LC-004",branchId:"BR-002",type:"consumer",status:"closed",riskLevel:"low",amount:22000,nextHearingDate:null},
+      {caseId:"LC-005",branchId:"BR-001",type:"consumer",status:"open",riskLevel:"low",amount:34000,nextHearingDate:"2026-07-09"},
+      {caseId:"LC-006",branchId:"BR-006",type:"arbitration",status:"open",riskLevel:"medium",amount:58000,nextHearingDate:"2026-05-22"}
+    ].map(row => {
+      const branch = branchRows.find(b => b.id === row.branchId);
+      return {...row, branchName:branch?.displayName || row.branchId, regionId:branch?.regionId, region:branch?.region};
+    });
+    const legalComplaints = [
+      {complaintId:"CMP-L-001",branchId:"BR-009",legalRisk:true,escalationLevel:"critical"},
+      {complaintId:"CMP-L-002",branchId:"BR-009",legalRisk:true,escalationLevel:"high"},
+      {complaintId:"CMP-L-003",branchId:"BR-008",legalRisk:true,escalationLevel:"medium"},
+      {complaintId:"CMP-L-004",branchId:"BR-004",legalRisk:false,escalationLevel:"low"},
+      {complaintId:"CMP-L-005",branchId:"BR-006",legalRisk:true,escalationLevel:"medium"},
+      {complaintId:"CMP-L-006",branchId:"BR-002",legalRisk:false,escalationLevel:"low"}
+    ].map(row => {
+      const branch = branchRows.find(b => b.id === row.branchId);
+      return {...row, branchName:branch?.displayName || row.branchId, regionId:branch?.regionId, region:branch?.region};
+    });
+    const compliance = branchRows.map(branch => {
+      const base = branch.id === "BR-009" ? 62 : branch.id === "BR-008" ? 70 : branch.id === "BR-006" ? 76 : branch.trustScore;
+      const violationsCount = branch.id === "BR-009" ? 5 : branch.id === "BR-008" ? 3 : branch.id === "BR-006" ? 2 : base < 82 ? 1 : 0;
+      return {branchId:branch.id, branchName:branch.displayName, regionId:branch.regionId, region:branch.region, complianceScore:clamp(base,0,100), violationsCount};
+    });
+    const legalAlerts = [];
+    const pushAlert = (type, severity, branchId, description) => {
+      const branch = branchRows.find(b => b.id === branchId);
+      legalAlerts.push({type, severity, branchId, branchName:branch?.displayName || branchId, regionId:branch?.regionId, region:branch?.region, description});
+    };
+    contracts.filter(x => x.status === "violation").forEach(x => pushAlert("CONTRACT_VIOLATION", "critical", x.branchId, `${x.branchName} sözleşme yükümlülüğü ihlal sinyali veriyor.`));
+    contracts.filter(x => x.status === "expiring").forEach(x => pushAlert("CONTRACT_EXPIRING", "warning", x.branchId, `${x.branchName} franchise sözleşmesi yenileme penceresine girdi.`));
+    legalCases.filter(x => x.status === "open" && x.riskLevel === "high").forEach(x => pushAlert("HIGH_RISK_CASE", "critical", x.branchId, `${x.branchName} yüksek riskli hukuki dosya açık: ${x.type}.`));
+    legalComplaints.filter(x => x.legalRisk).forEach(x => pushAlert("LEGAL_RISK_COMPLAINT", x.escalationLevel === "critical" ? "critical" : "warning", x.branchId, `${x.branchName} şikayet kaydı hukuki eskalasyon riski taşıyor.`));
+    compliance.filter(x => x.complianceScore < 75).forEach(x => pushAlert("LOW_COMPLIANCE", "warning", x.branchId, `${x.branchName} uyum skoru ${x.complianceScore}/100 seviyesinde.`));
+    return {contracts, legalCases, legalComplaints, compliance, legalAlerts};
+  }
+
+  function legalSummary(legalRows){
+    const totalLegalCases = legalRows.legalCases.filter(x => x.status === "open").length;
+    const highRiskCases = legalRows.legalCases.filter(x => x.status === "open" && x.riskLevel === "high").length;
+    const riskyBranches = new Set([
+      ...legalRows.legalCases.filter(x => x.riskLevel === "high").map(x => x.branchId),
+      ...legalRows.contracts.filter(x => x.status === "violation").map(x => x.branchId),
+      ...legalRows.compliance.filter(x => x.complianceScore < 75).map(x => x.branchId)
+    ]).size;
+    const complianceScoreAvg = legalRows.compliance.length ? Math.round(sum(legalRows.compliance,"complianceScore") / legalRows.compliance.length) : 0;
+    return {totalLegalCases, highRiskCases, riskyBranches, complianceScoreAvg, legalAlerts:legalRows.legalAlerts};
+  }
+
   function groupBy(rows, key){
     return rows.reduce((m,row)=>{ const value = typeof key === "function" ? key(row) : row[key]; (m[value] ||= []).push(row); return m; }, {});
   }
@@ -234,10 +301,12 @@
     const best = branchRows.slice().sort((a,b)=>b.trustScore-a.trustScore).slice(0,10);
     const risk = branchRows.slice().sort((a,b)=>a.trustScore-b.trustScore).slice(0,10);
     const financeHistory = createFinanceHistory(operations);
+    const legalModule = createLegalModule(branchRows);
+    const legalDashboardSummary = legalSummary(legalModule);
     const topRevenue = branchRows.slice().sort((a,b)=>b.dailyRevenue-a.dailyRevenue).slice(0,5).map(b=>[b.displayName,b.dailyRevenue]);
     const network = { branchCount:branchRows.length, activeBranches:branchRows.length, offlineBranches:0, todayCars:summary.totalDailyVehicles, todayRevenue:summary.totalDailyRevenue, avgTicket:summary.averageTicket, avgSatisfaction:Number((summary.customerSatisfaction/20).toFixed(2)), openComplaints:summary.totalComplaints, todayLeads:sum(latestRows(operations),"leads"), monthlyRoyalty:summary.totalRoyalty, trustScore:Math.round(sum(branchRows,"trustScore")/branchRows.length) };
     return {
-      operations, kpiTargets:targets, riskAlerts:alerts, demoPackages:packages, users,
+      operations, kpiTargets:targets, riskAlerts:alerts, demoPackages:packages, users, legalModule, legalSummary:legalDashboardSummary,
       branches: branchRows.map(b => ({ id:b.id, name:b.displayName, city:b.city, region:b.region, regionId:b.regionId, status:"Aktif", manager:b.manager, revenue:b.monthlyRevenue, royalty:Math.round(b.monthlyRevenue*ROYALTY_RATE), reports:b.monthlyVehicles, nps:b.satisfactionPercent-20, google:b.google, quality:b.trustScore, risk:b.status==="Fix"||b.status==="Replace"?"Yuksek":b.status==="Watch"?"Orta":"Dusuk", growth:b.growth, late:b.royaltyDelay ? 1 : 0 })),
       finance: financeHistory.filter(x=>x.year===2026).slice(0,4),
       financeHistory,
@@ -254,6 +323,20 @@
         {root:"Lead donusumu dustu",count:alerts.filter(a=>a.type==="MARKETING_CONVERSION_DROP").length,trend:"+%8",risk:"Orta",fix:"Kanal ve fiyat itirazi analizi"}
       ],
       tickets: alerts.slice(0,6).map(a=>({id:a.id,title:a.title,branch:a.branchName,severity:a.severity==="critical"?"Yuksek":"Orta",sla:a.severity==="critical"?"3 saat":"24 saat",owner:a.type.includes("ROYALTY")?"Finans":a.type.includes("COMPLAINT")?"Musteri Deneyimi":"Operasyon"})),
+      legal: legalModule.legalCases.map(row => ({
+        id:row.caseId,
+        title:`${row.branchName} - ${row.type}`,
+        area:row.type,
+        risk:row.riskLevel === "high" ? "Yüksek" : row.riskLevel === "medium" ? "Orta" : "Düşük",
+        status:row.status === "open" ? "Açık" : "Kapalı",
+        owner:"Hukuk",
+        items:[
+          `Dosya tutarı ${formatTL(row.amount)}`,
+          row.nextHearingDate ? `Sonraki duruşma ${row.nextHearingDate}` : "Duruşma yok",
+          `Şube: ${row.branchName}`,
+          `Risk seviyesi: ${row.riskLevel}`
+        ]
+      })),
       ceoDashboard:{
         network,
         kpis:[
@@ -266,7 +349,11 @@
           {label:"Bugunku Lead",value:String(network.todayLeads),change:"+%9",direction:"up",icon:"user-plus",tone:"good",hint:"pazarlama"},
           {label:"Royalty Sagligi",value:summary.delayedRoyalty ? "Risk var" : "Stabil",change:summary.delayedRoyalty ? formatTL(summary.delayedRoyalty) : "Sorun yok",direction:summary.delayedRoyalty ? "down" : "up",icon:"shield-check",tone:summary.delayedRoyalty ? "warn" : "good",hint:"otomatik cekim"}
         ],
-        alerts: alerts.slice(0,7).map(a=>({ severity:a.severity==="critical"?"critical":a.severity==="warning"?"high":"medium", branch:a.branchName, text:a.description, time:"Bugun", route:a.type==="ROYALTY_DELAY"?"finance":a.type.includes("COMPLAINT")||a.type.includes("SATISFACTION")?"crisis":"operations", raw:a })),
+        alerts: [
+          ...legalModule.legalAlerts.slice(0,3).map(a=>({severity:a.severity==="critical"?"critical":"high",branch:a.branchName,text:a.description,time:"Bugün",route:"legal",raw:a})),
+          ...alerts.slice(0,5).map(a=>({ severity:a.severity==="critical"?"critical":a.severity==="warning"?"high":"medium", branch:a.branchName, text:a.description, time:"Bugun", route:a.type==="ROYALTY_DELAY"?"finance":a.type.includes("COMPLAINT")||a.type.includes("SATISFACTION")?"crisis":"operations", raw:a }))
+        ],
+        legalSummary: legalDashboardSummary,
         regions: regionsRows,
         bestBranches: best.map(b=>[b.displayName,b.dailyVehicles,b.dailyRevenue,b.satisfaction,b.complaints,b.trustScore,b.status,b.averageTicket]),
         riskyBranches: risk.map(b=>[b.displayName,b.dailyVehicles,b.dailyRevenue,b.satisfaction,b.complaints,b.trustScore,b.status,b.averageTicket]),
@@ -327,7 +414,8 @@
         const visibleIds = new Set(this.getVisibleBranches(role, regionId, branchId).map(b=>b.id));
         const rows = dashboardSeed.operations.filter(x=>visibleIds.has(x.branchId));
         const alerts = dashboardSeed.riskAlerts.filter(x=>visibleIds.has(x.branchId));
-        return summarizeRows(rows, dashboardSeed.kpiTargets, alerts);
+        const summary = summarizeRows(rows, dashboardSeed.kpiTargets, alerts);
+        return {...summary, ...this.getLegalSummary(role, regionId, branchId)};
       },
       getBranchPerformance(role="CEO", regionId, branchId){
         const visible = this.getVisibleBranches(role, regionId, branchId).map(b=>b.id);
@@ -348,6 +436,22 @@
       getRiskAlerts(role="CEO", regionId, branchId){
         const visibleIds = new Set(this.getVisibleBranches(role, regionId, branchId).map(b=>b.id));
         return dashboardSeed.riskAlerts.filter(a=>visibleIds.has(a.branchId));
+      },
+      getLegalModule(role="CEO", regionId, branchId){
+        const visibleIds = new Set(this.getVisibleBranches(role, regionId, branchId).map(b=>b.id));
+        return {
+          contracts: dashboardSeed.legalModule.contracts.filter(x=>visibleIds.has(x.branchId)),
+          legalCases: dashboardSeed.legalModule.legalCases.filter(x=>visibleIds.has(x.branchId)),
+          legalComplaints: dashboardSeed.legalModule.legalComplaints.filter(x=>visibleIds.has(x.branchId)),
+          compliance: dashboardSeed.legalModule.compliance.filter(x=>visibleIds.has(x.branchId)),
+          legalAlerts: dashboardSeed.legalModule.legalAlerts.filter(x=>visibleIds.has(x.branchId))
+        };
+      },
+      getLegalSummary(role="CEO", regionId, branchId){
+        return legalSummary(this.getLegalModule(role, regionId, branchId));
+      },
+      getLegalAlerts(role="CEO", regionId, branchId){
+        return this.getLegalModule(role, regionId, branchId).legalAlerts;
       }
     };
     return { packages, branches:branchProfiles, users, regions, dashboardSeed, services };
