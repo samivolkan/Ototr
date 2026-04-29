@@ -86,15 +86,28 @@ const leadAfter = await page.locator("#page-franchise.active .deal").count();
 
 await page.locator('#nav [data-nav-route="branches"]').click();
 await page.waitForSelector("#page-branches.active");
-await page.locator('#page-branches.active tr[data-detail^="branch:"]').first().click();
-await page.waitForSelector("#drawer.open");
-const drawerTitle = await page.locator("#drawerContent .card-title").first().innerText();
-await page.locator("#drawer").click({ position: { x: 12, y: 12 } });
-await page.waitForFunction(() => !document.getElementById("drawer").classList.contains("open"));
+let drawerTitle = "";
+const branchProfileLinks = page.locator("#page-branches.active [data-branch-profile]");
+if (await branchProfileLinks.count()) {
+  await branchProfileLinks.first().click();
+  await page.waitForSelector("#page-branchProfile.active");
+  drawerTitle = await page.locator("#page-branchProfile.active h2").first().innerText();
+} else {
+  await page.locator('#page-branches.active tr[data-detail^="branch:"]').first().click();
+  await page.waitForSelector("#drawer.open");
+  drawerTitle = await page.locator("#drawerContent .card-title").first().innerText();
+  await page.locator("#drawer").click({ position: { x: 12, y: 12 } });
+  await page.waitForFunction(() => !document.getElementById("drawer").classList.contains("open"));
+}
 
 await page.locator("#globalSearch").fill("Konya");
+await page.waitForSelector('#searchResults.open .search-hit[data-search-type="lead"]');
+await page.locator('#searchResults.open .search-hit[data-search-type="lead"]').first().click();
 await page.waitForSelector("#page-franchise.active");
+await page.waitForSelector("#drawer.open");
 const searchRoute = await page.locator("#pageTitle").innerText();
+await page.locator("#drawer").click({ position: { x: 12, y: 12 } });
+await page.waitForFunction(() => !document.getElementById("drawer").classList.contains("open"));
 
 await page.locator('#nav [data-nav-route="settings"]').click();
 await page.waitForSelector("#page-settings.active");
