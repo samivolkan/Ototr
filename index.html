@@ -281,12 +281,12 @@
           {severity:'medium',branch:'Adana Seyhan',text:'Çözülmemiş müşteri şikayeti SLA sınırına yaklaştı.',time:'Dün 15:10',route:'crm'}
         ],
         regions:[
-          {region:'Marmara',cities:'İstanbul, Bursa, Kocaeli',cars:1420,branches:54,avgSale:4160,satisfaction:4.71,risk:'Yükselen',tone:'good',citySales:[['İstanbul',4280],['Bursa',4130],['Kocaeli',4070]]},
-          {region:'İç Anadolu',cities:'Ankara, Konya, Kayseri',cars:642,branches:28,avgSale:3820,satisfaction:4.43,risk:'Riskli',tone:'bad',citySales:[['Ankara',3790],['Konya',3880],['Kayseri',3740]]},
-          {region:'Ege',cities:'İzmir, Manisa, Aydın',cars:538,branches:23,avgSale:3910,satisfaction:4.58,risk:'Dengeli',tone:'warn',citySales:[['İzmir',3970],['Manisa',3820],['Aydın',3890]]},
-          {region:'Akdeniz',cities:'Antalya, Adana, Mersin',cars:486,branches:21,avgSale:3640,satisfaction:4.37,risk:'Riskli',tone:'bad',citySales:[['Antalya',3510],['Adana',3540],['Mersin',3490]]},
-          {region:'Karadeniz',cities:'Samsun, Trabzon, Ordu',cars:318,branches:15,avgSale:3890,satisfaction:4.66,risk:'Yükselen',tone:'good',citySales:[['Samsun',3940],['Trabzon',3810],['Ordu',3870]]},
-          {region:'Doğu & Güneydoğu',cities:'Gaziantep, Diyarbakır, Erzurum, Van',cars:418,branches:19,avgSale:3570,satisfaction:4.49,risk:'Dengeli',tone:'warn',citySales:[['Gaziantep',3800],['Diyarbakır',3460],['Erzurum',3520],['Van',3490]]}
+          {region:'Marmara',cities:'İstanbul, Bursa, Kocaeli',cars:1420,branches:54,avgSale:4160,satisfaction:4.71,risk:'Yükselen',tone:'good'},
+          {region:'İç Anadolu',cities:'Ankara, Konya, Kayseri',cars:642,branches:28,avgSale:3820,satisfaction:4.43,risk:'Riskli',tone:'bad'},
+          {region:'Ege',cities:'İzmir, Manisa, Aydın',cars:538,branches:23,avgSale:3910,satisfaction:4.58,risk:'Dengeli',tone:'warn'},
+          {region:'Akdeniz',cities:'Antalya, Adana, Mersin',cars:486,branches:21,avgSale:3640,satisfaction:4.37,risk:'Riskli',tone:'bad'},
+          {region:'Karadeniz',cities:'Samsun, Trabzon, Ordu',cars:318,branches:15,avgSale:3890,satisfaction:4.66,risk:'Yükselen',tone:'good'},
+          {region:'Doğu & Güneydoğu',cities:'Gaziantep, Diyarbakır, Erzurum, Van',cars:418,branches:19,avgSale:3570,satisfaction:4.49,risk:'Dengeli',tone:'warn'}
         ],
         bestBranches:[
           ['Bursa Nilüfer',42,173500,4.9,1,96,'Lider',4130],
@@ -700,7 +700,7 @@
     }
     function alertSla(a){ return a.severity==='critical'?'3 saat':a.severity==='high'?'24 saat':'48 saat'; }
     function TurkeyBranchOverview(){
-      return `<div class="region-grid">${DB.ceoDashboard.regions.map(r=>`<div class="region-card"><div class="region-head"><div class="region-title" data-route="branches" title="${r.cities}"><span class="risk-dot ${r.tone==='bad'?'bad':r.tone==='warn'?'warn':'good'}"></span>${r.region}<span class="pill" style="margin-left:8px;padding:4px 8px">${r.branches} şube</span></div>${badge(r.risk)}</div><div class="region-tip"><b>İl bazlı satış ort.</b>${r.citySales.map(c=>`<span>${c[0]}: ${fmtTL(c[1])}</span>`).join('')}</div><div class="region-stats"><div><small>Araç</small><b>${fmt(r.cars)}</b></div><div><small>Bölge satış ort.</small><b>${fmtTL(r.avgSale)}</b></div><div><small>Memnuniyet</small><b>${r.satisfaction}</b></div></div></div>`).join('')}</div>`;
+      return `<div class="region-grid">${DB.ceoDashboard.regions.map(r=>`<div class="region-card"><div class="region-head"><div class="region-title" data-route="branches" title="${r.cities}"><span class="risk-dot ${r.tone==='bad'?'bad':r.tone==='warn'?'warn':'good'}"></span>${r.region}<span class="pill" style="margin-left:8px;padding:4px 8px">${r.branches} şube</span></div>${badge(r.risk)}</div><div class="region-tip">${r.cities}</div><div class="region-stats"><div><small>Araç</small><b>${fmt(r.cars)}</b></div><div><small>Bölge satış ort.</small><b>${fmtTL(r.avgSale)}</b></div><div><small>Memnuniyet</small><b>${r.satisfaction}</b></div></div></div>`).join('')}</div>`;
     }
     function LiveOperationCenter(){
       const pos=[[70,30],[38,38],[50,49],[72,46],[23,54],[44,69]];
