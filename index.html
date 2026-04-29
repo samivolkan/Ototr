@@ -22,9 +22,10 @@
     button{cursor:pointer}
     .app{display:grid;grid-template-columns:var(--side-w) minmax(0,1fr);min-height:100vh;width:100%;max-width:100vw;overflow-x:hidden}
     .side{position:fixed;left:0;top:0;bottom:0;width:var(--side-w);height:100dvh;z-index:18;background:linear-gradient(180deg,#090a0d,#151820);color:#fff;padding:18px 14px;overflow:auto}
-    .brand{display:flex;align-items:center;gap:12px;padding:8px 8px 18px;border-bottom:1px solid rgba(255,255,255,.09)}
+    .brand{display:flex;align-items:center;gap:12px;padding:8px 8px 18px;border-bottom:1px solid rgba(255,255,255,.09);color:#fff;text-decoration:none;border-radius:10px}
+    .brand:hover{background:rgba(255,255,255,.05)}
     .mark{width:42px;height:42px;border-radius:10px;background:var(--red);display:grid;place-items:center;font-weight:900;letter-spacing:-1px}
-    .brand b{display:flex;align-items:center;gap:8px;font-size:18px;letter-spacing:.1em}.brand span{display:block;color:#9ba3b2;font-size:11px;margin-top:2px}.brand .role-tag{letter-spacing:0;border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:3px 7px;background:rgba(255,255,255,.07);color:#fff;font-size:10px}.brand .version-tag{display:inline-flex;margin-top:7px;border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:3px 7px;color:#d7dce6;background:rgba(255,255,255,.05);font-size:10px;font-weight:850;letter-spacing:.02em}
+    .brand b{display:flex;align-items:center;gap:8px;font-size:18px;letter-spacing:.1em}.brand span{display:block;color:#9ba3b2;font-size:11px;margin-top:2px}.brand .version-tag{display:block;margin-top:4px;color:#d7dce6;font-size:10px;font-weight:850;letter-spacing:.02em}
     .nav-title{color:#6f7786;font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;margin:18px 10px 8px}
     .nav button{width:100%;border:0;background:transparent;color:#c5ccd8;text-align:left;display:flex;align-items:center;gap:10px;padding:10px;border-radius:8px;margin:2px 0}
     .nav button:hover{background:rgba(255,255,255,.06);color:#fff}.nav button.active{background:#fff;color:#101217}
@@ -118,7 +119,7 @@
 <body>
   <div class="app">
     <aside class="side">
-      <div class="brand"><div class="mark">OT</div><div><b>OTOTR <small class="role-tag">CEO</small></b><span>SVK v1.0.4 · ERP Yönetim Paneli</span><small class="version-tag">bayi-skorlari</small></div></div>
+      <a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.4</small></div></a>
       <div class="nav" id="nav"></div>
     </aside>
 
