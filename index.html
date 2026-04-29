@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="ototr-version" content="SVK v1.0.7-legal-module" />
+  <meta name="ototr-version" content="SVK v1.0.8-legal-kpi-risk" />
   <title>OTOTR Genel Merkez ERP + CRM</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -121,7 +121,7 @@
 <body>
   <div class="app">
     <aside class="side">
-      <a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.7</small></div></a>
+      <a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.8</small></div></a>
       <div class="nav" id="nav"></div>
     </aside>
 
@@ -177,6 +177,11 @@
   </div>
   <div class="toast" id="toast"></div>
 
+  <script src="src/data/demo/legal.js"></script>
+  <script src="src/services/permissionService.js"></script>
+  <script src="src/services/kpiService.js"></script>
+  <script src="src/services/alertService.js"></script>
+  <script src="src/services/legalService.js"></script>
   <script src="src/data/demo/demoData.js"></script>
   <script>
     const fmtTL = n => new Intl.NumberFormat('tr-TR',{style:'currency',currency:'TRY',maximumFractionDigits:0}).format(n);
@@ -1117,12 +1122,13 @@
     function legalData(){ return DB.demoLegalModule || {contracts:[],legalCases:[],legalComplaints:[],compliance:[],legalAlerts:[]}; }
     function legalSummaryData(){ return DB.ceoDashboard.legalSummary || DB.demoLegalSummary || {totalLegalCases:0,highRiskCases:0,riskyBranches:0,complianceScoreAvg:0,legalAlerts:[]}; }
     function LegalSummaryPanel(){
-      const s=legalSummaryData(), alerts=s.legalAlerts||[];
-      return `<div class="summary-grid"><div class="summary-tile"><span>Açık hukuki dosya</span><b>${s.totalLegalCases}</b></div><div class="summary-tile"><span>Yüksek risk</span><b>${s.highRiskCases}</b></div><div class="summary-tile"><span>Riskli şube</span><b>${s.riskyBranches}</b></div><div class="summary-tile"><span>Uyum skoru</span><b>${s.complianceScoreAvg}/100</b></div></div><div class="mini-list" style="margin-top:10px">${alerts.slice(0,3).map(a=>`<div class="mini">${icon(a.severity==='critical'?'siren':'scale')}<div><b>${a.branchName||a.branchId}</b><span>${a.description}</span></div></div>`).join('') || `<div class="mini">${icon('shield-check')}<div><b>Hukuki alarm yok</b><span>Sözleşme, dosya ve compliance sinyali stabil.</span></div></div>`}</div>`;
+      const s=legalSummaryData(), l=legalData(), alerts=s.legalAlerts||[];
+      const highComplaints=l.legalComplaints.filter(x=>x.legalRisk && x.severity==='yüksek').length;
+      return `<div class="summary-grid"><div class="summary-tile"><span>Hukuki risk puanı</span><b>${s.hukukiRiskPuani||0}/100</b></div><div class="summary-tile"><span>Yüksek riskli şikayet</span><b>${highComplaints}</b></div><div class="summary-tile"><span>Potansiyel dava</span><b>${s.potansiyelDavaSayisi||0}</b></div><div class="summary-tile"><span>Açık dosya</span><b>${s.totalLegalCases}</b></div><div class="summary-tile"><span>Kazanma oranı</span><b>%${s.davaKazanmaOrani||0}</b></div><div class="summary-tile"><span>Hukuki maliyet</span><b>${fmtTL(s.toplamHukukMaliyeti||0)}</b></div><div class="summary-tile"><span>Rapor kalitesi</span><b>${s.ortalamaRaporKalitesi||0}/100</b></div><div class="summary-tile"><span>Bayi uyum</span><b>${s.complianceScoreAvg}/100</b></div></div><div class="mini-list" style="margin-top:10px">${alerts.slice(0,3).map(a=>`<div class="mini">${icon(a.severity==='critical'||a.severity==='kritik'?'siren':'scale')}<div><b>${a.branchName||a.branchId}</b><span>${a.description}</span></div></div>`).join('') || `<div class="mini">${icon('shield-check')}<div><b>Hukuki alarm yok</b><span>Sözleşme, dosya ve compliance sinyali stabil.</span></div></div>`}</div>`;
     }
     function LegalStats(){
       const s=legalSummaryData();
-      return `${stat('Açık Hukuki Dosya',s.totalLegalCases,'Rol filtresine bağlı','blue')}${stat('Yüksek Risk',s.highRiskCases,'CEO takip','red')}${stat('Riskli Şube',s.riskyBranches,'Hukuk + operasyon','amber')}${stat('Uyum Skoru',s.complianceScoreAvg+'/100','Ağ ortalaması','green')}`;
+      return `${stat('Hukuki Risk Puanı',(s.hukukiRiskPuani||0)+'/100','şikayet + dava + rapor + uyum','red')}${stat('Devam Eden Davalar',s.totalLegalCases,'rol filtresine bağlı','blue')}${stat('Kazanma Oranı','%'+(s.davaKazanmaOrani||0),'kapanan dosyalar','green')}${stat('Bayi Uyum Durumu',s.complianceScoreAvg+'/100','ağ ortalaması','amber')}`;
     }
     function LegalContractTable(){
       const rows=legalData().contracts || [];

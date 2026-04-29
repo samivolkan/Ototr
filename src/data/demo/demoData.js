@@ -38,6 +38,16 @@
     { id:"akdeniz", name:"Akdeniz Bölgesi", opportunity:"Antalya kalite kurtarma planı" }
   ];
 
+  const loadOptional = path => {
+    try { return typeof module !== "undefined" && module.exports ? require(path) : null; }
+    catch { return null; }
+  };
+  const externalLegalDemo = global.OTOTR_LEGAL_DEMO || loadOptional("./legal.js");
+  const externalPermissionService = global.OTOTR_PERMISSION_SERVICE || loadOptional("../../services/permissionService.js");
+  const externalKpiService = global.OTOTR_KPI_SERVICE || loadOptional("../../services/kpiService.js");
+  const externalAlertService = global.OTOTR_ALERT_SERVICE || loadOptional("../../services/alertService.js");
+  const externalLegalService = global.OTOTR_LEGAL_SERVICE || loadOptional("../../services/legalService.js");
+
   const clamp = (n,min,max) => Math.max(min, Math.min(max, n));
   const round = n => Math.round(n);
   const sum = (arr,key) => arr.reduce((s,x)=>s+(Number(typeof key === "function" ? key(x) : x[key])||0),0);
@@ -148,7 +158,8 @@
     return alerts;
   }
 
-  function createLegalModule(branchRows){
+  function createLegalModule(branchRows, operations=[]){
+    if(externalLegalDemo?.createLegalData) return externalLegalDemo.createLegalData(branchRows, operations);
     const contracts = branchRows.map((branch, index) => {
       const status = branch.id === "BR-009" || branch.id === "BR-008" ? "violation" : index % 4 === 0 ? "expiring" : "active";
       return {
@@ -204,11 +215,13 @@
   }
 
   function legalSummary(legalRows){
-    const totalLegalCases = legalRows.legalCases.filter(x => x.status === "open").length;
-    const highRiskCases = legalRows.legalCases.filter(x => x.status === "open" && x.riskLevel === "high").length;
+    const isOpen = x => ["open","açık","devam ediyor"].includes(x.status);
+    const isHigh = x => ["high","yüksek"].includes(x.riskLevel);
+    const totalLegalCases = legalRows.legalCases.filter(isOpen).length;
+    const highRiskCases = legalRows.legalCases.filter(x => isOpen(x) && isHigh(x)).length;
     const riskyBranches = new Set([
-      ...legalRows.legalCases.filter(x => x.riskLevel === "high").map(x => x.branchId),
-      ...legalRows.contracts.filter(x => x.status === "violation").map(x => x.branchId),
+      ...legalRows.legalCases.filter(isHigh).map(x => x.branchId),
+      ...legalRows.contracts.filter(x => x.status === "violation" || x.status === "ihlal").map(x => x.branchId),
       ...legalRows.compliance.filter(x => x.complianceScore < 75).map(x => x.branchId)
     ]).size;
     const complianceScoreAvg = legalRows.compliance.length ? Math.round(sum(legalRows.compliance,"complianceScore") / legalRows.compliance.length) : 0;
@@ -225,6 +238,7 @@
   }
 
   function roleFilter(rows, role="CEO", regionId, branchId){
+    if(externalPermissionService?.filterRowsByRole) return externalPermissionService.filterRowsByRole(rows, rows, role, regionId, branchId);
     const normalized = String(role || "CEO").toUpperCase();
     if(normalized.includes("BAYI") || normalized.includes("SUBE")) return rows.filter(x => (x.branchId || x.id) === branchId);
     if(normalized.includes("BOLGE")) return rows.filter(x => x.regionId === regionId || x.region === regionId);
@@ -301,8 +315,9 @@
     const best = branchRows.slice().sort((a,b)=>b.trustScore-a.trustScore).slice(0,10);
     const risk = branchRows.slice().sort((a,b)=>a.trustScore-b.trustScore).slice(0,10);
     const financeHistory = createFinanceHistory(operations);
-    const legalModule = createLegalModule(branchRows);
-    const legalDashboardSummary = legalSummary(legalModule);
+    const legalModule = createLegalModule(branchRows, operations);
+    const legalKpis = externalKpiService?.calculateLegalKPIs ? externalKpiService.calculateLegalKPIs(legalModule, summary.totalMonthlyRevenue || 1) : {};
+    const legalDashboardSummary = {...legalSummary(legalModule), ...legalKpis};
     const topRevenue = branchRows.slice().sort((a,b)=>b.dailyRevenue-a.dailyRevenue).slice(0,5).map(b=>[b.displayName,b.dailyRevenue]);
     const network = { branchCount:branchRows.length, activeBranches:branchRows.length, offlineBranches:0, todayCars:summary.totalDailyVehicles, todayRevenue:summary.totalDailyRevenue, avgTicket:summary.averageTicket, avgSatisfaction:Number((summary.customerSatisfaction/20).toFixed(2)), openComplaints:summary.totalComplaints, todayLeads:sum(latestRows(operations),"leads"), monthlyRoyalty:summary.totalRoyalty, trustScore:Math.round(sum(branchRows,"trustScore")/branchRows.length) };
     return {
@@ -350,7 +365,7 @@
           {label:"Royalty Sagligi",value:summary.delayedRoyalty ? "Risk var" : "Stabil",change:summary.delayedRoyalty ? formatTL(summary.delayedRoyalty) : "Sorun yok",direction:summary.delayedRoyalty ? "down" : "up",icon:"shield-check",tone:summary.delayedRoyalty ? "warn" : "good",hint:"otomatik cekim"}
         ],
         alerts: [
-          ...legalModule.legalAlerts.slice(0,3).map(a=>({severity:a.severity==="critical"?"critical":"high",branch:a.branchName,text:a.description,time:"Bugün",route:"legal",raw:a})),
+          ...legalModule.legalAlerts.slice(0,3).map(a=>({severity:a.severity==="critical"||a.severity==="kritik"?"critical":"high",branch:a.branchName,text:a.description,time:"Bugün",route:"legal",raw:a})),
           ...alerts.slice(0,5).map(a=>({ severity:a.severity==="critical"?"critical":a.severity==="warning"?"high":"medium", branch:a.branchName, text:a.description, time:"Bugun", route:a.type==="ROYALTY_DELAY"?"finance":a.type.includes("COMPLAINT")||a.type.includes("SATISFACTION")?"crisis":"operations", raw:a }))
         ],
         legalSummary: legalDashboardSummary,
@@ -408,6 +423,7 @@
 
   function createDemoModel(){
     const dashboardSeed = buildDashboardSeed();
+    const runtimeLegalService = externalLegalService?.createLegalService ? externalLegalService.createLegalService(dashboardSeed) : null;
     const services = {
       getVisibleBranches(role, regionId, branchId){ return roleFilter(dashboardSeed.branches, role, regionId, branchId); },
       getDashboardSummary(role="CEO", regionId, branchId){
@@ -438,6 +454,7 @@
         return dashboardSeed.riskAlerts.filter(a=>visibleIds.has(a.branchId));
       },
       getLegalModule(role="CEO", regionId, branchId){
+        if(runtimeLegalService?.visibleModule) return runtimeLegalService.visibleModule(role, regionId, branchId);
         const visibleIds = new Set(this.getVisibleBranches(role, regionId, branchId).map(b=>b.id));
         return {
           contracts: dashboardSeed.legalModule.contracts.filter(x=>visibleIds.has(x.branchId)),
@@ -448,10 +465,21 @@
         };
       },
       getLegalSummary(role="CEO", regionId, branchId){
+        if(runtimeLegalService?.getLegalSummary) return runtimeLegalService.getLegalSummary(role, regionId, branchId);
         return legalSummary(this.getLegalModule(role, regionId, branchId));
       },
+      getLegalOverview(role="CEO", regionId, branchId){
+        return runtimeLegalService?.getLegalOverview ? runtimeLegalService.getLegalOverview(role, regionId, branchId) : this.getLegalSummary(role, regionId, branchId);
+      },
+      getLegalKPIs(role="CEO", regionId, branchId){
+        if(runtimeLegalService?.getLegalKPIs) return runtimeLegalService.getLegalKPIs(role, regionId, branchId);
+        return externalKpiService?.calculateLegalKPIs ? externalKpiService.calculateLegalKPIs(this.getLegalModule(role, regionId, branchId), 1) : {};
+      },
+      getLegalRiskScore(role="CEO", regionId, branchId){
+        return runtimeLegalService?.getLegalRiskScore ? runtimeLegalService.getLegalRiskScore(role, regionId, branchId) : (this.getLegalKPIs(role, regionId, branchId).hukukiRiskPuani || 0);
+      },
       getLegalAlerts(role="CEO", regionId, branchId){
-        return this.getLegalModule(role, regionId, branchId).legalAlerts;
+        return runtimeLegalService?.getLegalAlerts ? runtimeLegalService.getLegalAlerts(role, regionId, branchId) : this.getLegalModule(role, regionId, branchId).legalAlerts;
       }
     };
     return { packages, branches:branchProfiles, users, regions, dashboardSeed, services };

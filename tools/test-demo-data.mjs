@@ -39,7 +39,7 @@ assert(Math.min(...operations.map(x => x.vehicleCount)) >= 8 && Math.max(...oper
 assert(ceoSummary.averageTicket >= 8900 && ceoSummary.averageTicket <= 9500, "Ortalama ticket 8.900-9.500 TL bandinda degil.");
 assert(ceoSummary.totalRoyalty === operations.reduce((s,x)=>s+x.royalty,0), "Aylik royalty toplami hatali.");
 assert(seed.legalModule.contracts.length === 10, "Legal contract yapisi 10 subeyi kapsamiyor.");
-assert(seed.legalModule.legalCases.length >= 5, "Legal case demo datasi eksik.");
+assert(seed.legalModule.legalCases.length >= 20, "20+ dava demo datasi olusmadi.");
 assert(seed.legalModule.legalComplaints.some(x => x.legalRisk), "Legal risk sikayetleri uretilmiyor.");
 assert(seed.legalModule.compliance.every(x => x.complianceScore >= 0 && x.complianceScore <= 100), "Compliance skorlari 0-100 bandinda degil.");
 assert(seed.legalModule.legalAlerts.length > 0, "Legal alert uretilmiyor.");
@@ -47,6 +47,10 @@ assert(ceoLegal.totalLegalCases >= marmaraLegal.totalLegalCases, "Legal CEO filt
 assert(marmaraLegal.legalAlerts.every(a => a.regionId === "marmara"), "Bolge muduru legal alarmlari kendi bolgesiyle sinirli degil.");
 assert(antalyaLegal.legalAlerts.every(a => a.branchId === "BR-009"), "Bayi legal alarmlari kendi subesiyle sinirli degil.");
 assert(ceoSummary.totalLegalCases === ceoLegal.totalLegalCases && ceoSummary.complianceScoreAvg === ceoLegal.complianceScoreAvg, "Dashboard summary legal alanlari tasimiyor.");
+assert(typeof service.getLegalOverview("CEO").hukukiRiskPuani === "number", "getLegalOverview calismiyor.");
+assert(typeof service.getLegalKPIs("CEO").davaKazanmaOrani === "number", "getLegalKPIs calismiyor.");
+assert(typeof service.getLegalRiskScore("CEO") === "number", "getLegalRiskScore calismiyor.");
+assert(service.getLegalAlerts("CEO").length >= ceoLegal.legalAlerts.length, "getLegalAlerts calismiyor.");
 
 console.log(JSON.stringify({
   branches: seed.branches.length,
