@@ -100,6 +100,8 @@ if (await branchProfileLinks.count()) {
   await page.waitForFunction(() => !document.getElementById("drawer").classList.contains("open"));
 }
 
+await page.locator('#nav [data-nav-route="dashboard"]').click();
+await page.waitForSelector("#page-dashboard.active");
 await page.locator("#globalSearch").fill("Konya");
 await page.waitForSelector('#searchResults.open .search-hit[data-search-type="lead"]');
 await page.locator('#searchResults.open .search-hit[data-search-type="lead"]').first().click();

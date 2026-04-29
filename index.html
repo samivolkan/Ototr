@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="ototr-version" content="SVK v1.0.4-bayi-skorlari" />
+  <meta name="ototr-version" content="SVK v1.0.5-bolge-canli-arama" />
   <title>OTOTR Genel Merkez ERP + CRM</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -32,9 +32,11 @@
     .nav i{width:18px;height:18px}.count{margin-left:auto;background:rgba(215,25,32,.14);color:#ffb7bb;border:1px solid rgba(215,25,32,.25);padding:2px 7px;border-radius:99px;font-size:11px}
     .nav button.active .count{background:#ffe9ea;color:var(--red)}
     .main{grid-column:2;min-width:0;overflow-x:hidden}
-    .top{height:72px;background:rgba(255,255,255,.88);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:14px;padding:0 28px;position:sticky;top:0;z-index:5}
+    .top{display:none}
     .header-identity{display:none}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
     .search{width:min(620px,44vw);display:flex;align-items:center;gap:9px;background:#f2f4f7;border:1px solid var(--line);border-radius:9px;padding:10px 12px;position:relative}
+    .hero-search{width:min(560px,100%);margin-top:18px;background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);color:#fff}
+    .hero-search input{color:#fff}.hero-search input::placeholder{color:#c9ced8}.hero-search i{color:#fff}
     .search input{width:100%;border:0;outline:0;background:transparent;color:var(--ink)}
     .search-results{position:absolute;left:0;right:0;top:calc(100% + 8px);display:none;gap:6px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px;box-shadow:0 18px 44px rgba(17,19,24,.16);z-index:50}.search-results.open{display:grid}.search-hit{border:1px solid transparent;background:#fff;border-radius:9px;padding:10px;text-align:left;display:grid;gap:3px}.search-hit:hover,.search-hit.active{background:#f6f8fb;border-color:#dbe3ee}.search-hit b{font-size:13px}.search-hit span{color:var(--muted);font-size:11px}.search-empty{padding:10px;color:var(--muted);font-size:12px}
     .api{display:flex;align-items:center;gap:8px;color:var(--green);font-weight:700;font-size:12px;background:#eaf7f0;border:1px solid #bfe5d0;border-radius:99px;padding:8px 11px}
@@ -96,7 +98,7 @@
       .top{position:relative;z-index:10;flex-wrap:wrap;height:auto;padding:13px 16px;gap:10px}
       .header-identity{min-width:0;flex:1 1 100%}.header-identity strong{font-size:17px}.header-identity span{font-size:12px}
       .top-filters{display:none}.mini-select{min-width:0;width:100%}
-      .top-actions{width:100%;justify-content:flex-end;flex-wrap:wrap}.api{margin-right:auto}.search{display:none}
+      .top-actions{width:100%;justify-content:flex-end;flex-wrap:wrap}.api{margin-right:auto}.search{display:none}.hero-search{display:flex;width:100%}
       .wrap{padding:18px 18px 40px}.hero{grid-template-columns:1fr;padding:20px;gap:16px}.hero h1{font-size:25px}.hero p{font-size:13px}.hero-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
       .command-dock{top:auto;bottom:18px;width:min(360px,calc(100vw - 10px));transform:translateX(calc(100% - 40px))}.dock-tab{width:40px;min-height:126px}.dock-panel{max-height:min(74vh,640px)}
       .g2,.g70,.g60,.kanban,.module-grid,.dept-grid,.ai-insight .insight-grid,.score-box,.ops-room{grid-template-columns:1fr}
@@ -119,20 +121,12 @@
 <body>
   <div class="app">
     <aside class="side">
-      <a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.4</small></div></a>
+      <a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.5</small></div></a>
       <div class="nav" id="nav"></div>
     </aside>
 
     <main class="main">
       <header class="top">
-        <div class="search"><i data-lucide="search"></i><input id="globalSearch" autocomplete="off" placeholder="Bayi, müşteri, plaka, aday veya rapor ara"><div class="search-results" id="searchResults"></div></div>
-        <div class="api"><span class="dot pulse"></span><span id="apiStatus">Mock API bağlı</span></div>
-        <div class="top-actions" aria-label="Hızlı üst menü">
-          <button class="icon-btn" data-action="Bildirim merkezi açıldı."><i data-lucide="bell"></i><span class="notice-dot"></span></button>
-          <button class="icon-btn" data-action="Görev merkezi açıldı."><i data-lucide="list-todo"></i><span class="notice-dot"></span></button>
-          <button class="icon-btn" data-action="Destek talepleri açıldı."><i data-lucide="headphones"></i></button>
-        </div>
-        <button class="btn primary" id="newLeadBtn"><i data-lucide="plus"></i>Yeni Lead</button>
       </header>
       <span id="pageTitle" class="sr-only">Yönetim Kokpiti</span>
 
@@ -141,6 +135,7 @@
           <div>
             <h1>Türkiye ekspertiz zinciri için genel merkez işletim sistemi.</h1>
             <p>OTOTR Master Book içeriğine göre tasarlanmış bu demo; franchise satışı, bayi operasyonu, CRM, kalite denetimi, finans, hukuk, pazarlama ve iş zekasını tek yönetim ekranında toplar.</p>
+            <div class="search hero-search"><i data-lucide="search"></i><input id="globalSearch" autocomplete="off" placeholder="Bayi, müşteri, plaka, aday veya rapor ara"><div class="search-results" id="searchResults"></div></div>
           </div>
           <div class="hero-metrics" id="heroMetrics"></div>
         </section>
@@ -294,12 +289,12 @@
           {severity:'medium',branch:'Adana Seyhan',text:'Çözülmemiş müşteri şikayeti SLA sınırına yaklaştı.',time:'Dün 15:10',route:'crm'}
         ],
         regions:[
-          {region:'Marmara',cities:'İstanbul, Bursa, Kocaeli',cars:1420,branches:54,avgSale:4160,regionAvg:4210,revenue:7800000,riskCount:3,opportunity:'EV ekspertiz kapasitesi',satisfaction:4.71,regionScore:91,branchScore:88,growthScore:94,risk:'Yükselen',tone:'good'},
-          {region:'İç Anadolu',cities:'Ankara, Konya, Kayseri',cars:642,branches:28,avgSale:3820,regionAvg:3860,revenue:3100000,riskCount:7,opportunity:'Konya ikinci lokasyon',satisfaction:4.43,regionScore:74,branchScore:71,growthScore:82,risk:'Riskli',tone:'bad'},
-          {region:'Ege',cities:'İzmir, Manisa, Aydın',cars:538,branches:23,avgSale:3910,regionAvg:3940,revenue:2700000,riskCount:5,opportunity:'Filo anlaşması',satisfaction:4.58,regionScore:79,branchScore:76,growthScore:81,risk:'Dengeli',tone:'warn'},
-          {region:'Akdeniz',cities:'Antalya, Adana, Mersin',cars:486,branches:21,avgSale:3640,regionAvg:3660,revenue:2200000,riskCount:9,opportunity:'Antalya kalite planı',satisfaction:4.37,regionScore:68,branchScore:64,growthScore:73,risk:'Riskli',tone:'bad'},
-          {region:'Karadeniz',cities:'Samsun, Trabzon, Ordu',cars:318,branches:15,avgSale:3890,regionAvg:3920,revenue:1600000,riskCount:2,opportunity:'Samsun franchise büyümesi',satisfaction:4.66,regionScore:84,branchScore:82,growthScore:88,risk:'Yükselen',tone:'good'},
-          {region:'Doğu & Güneydoğu',cities:'Gaziantep, Diyarbakır, Erzurum, Van',cars:418,branches:19,avgSale:3570,regionAvg:3610,revenue:1200000,riskCount:4,opportunity:'Gaziantep büyüme hattı',satisfaction:4.49,regionScore:77,branchScore:74,growthScore:85,risk:'Dengeli',tone:'warn'}
+          {region:'Marmara',cities:'İstanbul, Bursa, Kocaeli',cars:1420,branches:54,avgSale:4160,regionAvg:4210,revenue:7800000,riskCount:3,opportunity:'EV ekspertiz kapasitesi',satisfaction:4.71,regionScore:91,branchScore:88,growthScore:94,growthDelta:12.4,risk:'Yükselen',tone:'good'},
+          {region:'İç Anadolu',cities:'Ankara, Konya, Kayseri',cars:642,branches:28,avgSale:3820,regionAvg:3860,revenue:3100000,riskCount:7,opportunity:'Konya ikinci lokasyon',satisfaction:4.43,regionScore:74,branchScore:71,growthScore:82,growthDelta:-4.8,risk:'Riskli',tone:'bad'},
+          {region:'Ege',cities:'İzmir, Manisa, Aydın',cars:538,branches:23,avgSale:3910,regionAvg:3940,revenue:2700000,riskCount:5,opportunity:'Filo anlaşması',satisfaction:4.58,regionScore:79,branchScore:76,growthScore:81,growthDelta:3.1,risk:'Dengeli',tone:'warn'},
+          {region:'Akdeniz',cities:'Antalya, Adana, Mersin',cars:486,branches:21,avgSale:3640,regionAvg:3660,revenue:2200000,riskCount:9,opportunity:'Antalya kalite planı',satisfaction:4.37,regionScore:68,branchScore:64,growthScore:73,growthDelta:-7.2,risk:'Riskli',tone:'bad'},
+          {region:'Karadeniz',cities:'Samsun, Trabzon, Ordu',cars:318,branches:15,avgSale:3890,regionAvg:3920,revenue:1600000,riskCount:2,opportunity:'Samsun franchise büyümesi',satisfaction:4.66,regionScore:84,branchScore:82,growthScore:88,growthDelta:8.6,risk:'Yükselen',tone:'good'},
+          {region:'Doğu & Güneydoğu',cities:'Gaziantep, Diyarbakır, Erzurum, Van',cars:418,branches:19,avgSale:3570,regionAvg:3610,revenue:1200000,riskCount:4,opportunity:'Gaziantep büyüme hattı',satisfaction:4.49,regionScore:77,branchScore:74,growthScore:85,growthDelta:5.4,risk:'Dengeli',tone:'warn'}
         ],
         personnel:[
           {name:'Ahmet Yılmaz',role:'En çok satış yapan',branch:'Bursa Nilüfer',metric:'₺1,42M satış',signal:'Prim hak ediyor',tone:'good',rank:'#1',action:'Prim onayı'},
@@ -577,7 +572,7 @@
           merged.ceoDashboard={...seed.ceoDashboard,...merged.ceoDashboard};
           merged.ceoDashboard.network={...seed.ceoDashboard.network,...(merged.ceoDashboard.network||{})};
           merged.ceoDashboard.financeSummary={...seed.ceoDashboard.financeSummary,...(merged.ceoDashboard.financeSummary||{})};
-          if(!merged.ceoDashboard.regions?.some(x=>x.revenue&&x.riskCount!==undefined&&x.opportunity)) merged.ceoDashboard.regions=seed.ceoDashboard.regions;
+          if(!merged.ceoDashboard.regions?.some(x=>x.revenue&&x.riskCount!==undefined&&x.opportunity&&x.regionScore!==undefined&&x.growthDelta!==undefined)) merged.ceoDashboard.regions=seed.ceoDashboard.regions;
           if(!merged.ceoDashboard.personnel) merged.ceoDashboard.personnel=seed.ceoDashboard.personnel;
           if(!merged.ceoDashboard.actionTasks) merged.ceoDashboard.actionTasks=seed.ceoDashboard.actionTasks;
           if(!merged.ceoDashboard.aiRecommendations) merged.ceoDashboard.aiRecommendations=seed.ceoDashboard.aiRecommendations;
@@ -763,12 +758,35 @@
     }
     function alertSla(a){ return a.severity==='critical'?'3 saat':a.severity==='high'?'24 saat':'48 saat'; }
     function TurkeyBranchOverview(){
-      return `<div class="region-grid compact">${DB.ceoDashboard.regions.map(r=>`<div class="region-card"><div class="region-head"><div class="region-title" data-route="branches" title="${r.cities}"><span class="risk-dot ${r.tone==='bad'?'bad':r.tone==='warn'?'warn':'good'}"></span>${r.region}<span class="pill" style="margin-left:8px;padding:3px 7px">${r.branches} şube</span></div>${scoreChip(r.regionScore)}</div><div class="region-tip">${r.cities}</div><div class="region-stats"><div><small>Ciro</small><b>${compactTL(r.revenue||0)}</b></div><div><small>Araç</small><b>${fmt(r.cars)}</b></div><div><small>Ort.</small><b class="live-num">${fmtTL(liveRegionAverage(r))}</b></div><div><small>Risk</small><b>${r.riskCount||0}</b></div></div><div class="mini-list" style="gap:5px">${miniScore('Bölge',r.regionScore)}${miniScore('Şube',r.branchScore)}${miniScore('Büyüme',r.growthScore)}</div><div class="region-opportunity"><span><b>Fırsat:</b> ${r.opportunity||'Bölge detay analizi'}</span><button class="btn detail-btn" data-detail="region:${r.region}">Detay</button></div></div>`).join('')}</div>`;
+      const regions=(DB.ceoDashboard.regions||[]).map(regionLiveData);
+      return `<div class="region-grid compact">${regions.map(r=>`<div class="region-card"><div class="region-head"><div class="region-title" data-route="branches" title="${r.cities}"><span class="risk-dot ${r.tone==='bad'?'bad':r.tone==='warn'?'warn':'good'}"></span>${r.region}<span class="pill" style="margin-left:8px;padding:3px 7px">${r.branches} şube</span></div>${scoreChip(r.regionScore)}</div><div class="region-tip">${r.cities}</div><div class="region-stats"><div><small>Ciro</small><b>${compactTL(r.revenue||0)}</b></div><div><small>Araç</small><b>${fmt(r.cars)}</b></div><div><small>Ort.</small><b class="live-num">${fmtTL(liveRegionAverage(r))}</b></div><div><small>Risk</small><b>${r.riskCount||0}</b></div></div><div class="mini-list" style="gap:5px">${miniScore('Bölge',r.regionScore)}${miniScore('Şube',r.branchScore)}${miniGrowth(r.growthScore,r.growthDelta)}</div><div class="region-opportunity"><span><b>Fırsat:</b> ${r.opportunity||'Bölge detay analizi'}</span><button class="btn detail-btn" data-detail="region:${r.region}">Detay</button></div></div>`).join('')}</div>`;
     }
     function compactTL(n){ return n>=1000000 ? `₺${(n/1000000).toFixed(1).replace('.',',')}M` : fmtTL(n); }
     function scoreTone(score){ return score>=84?'good':score>=74?'warn':'bad'; }
     function scoreChip(score){ return `<span class="score-chip ${scoreTone(score)}">${score}/100</span>`; }
     function miniScore(label,score){ return `<div class="score-mini"><span>${label}</span><div class="progress"><div class="bar ${scoreTone(score)==='bad'?'red':scoreTone(score)==='warn'?'amber':'green'}" style="width:${score}%"></div></div><b>${score}</b></div>`; }
+    const regionFallbacks=[
+      {region:'Marmara',cities:'İstanbul, Bursa, Kocaeli',cars:1420,branches:54,avgSale:4160,regionAvg:4210,revenue:7800000,riskCount:3,opportunity:'EV ekspertiz kapasitesi',satisfaction:4.71,regionScore:91,branchScore:88,growthScore:94,growthDelta:12.4,risk:'Yükselen',tone:'good'},
+      {region:'İç Anadolu',cities:'Ankara, Konya, Kayseri',cars:642,branches:28,avgSale:3820,regionAvg:3860,revenue:3100000,riskCount:7,opportunity:'Konya ikinci lokasyon',satisfaction:4.43,regionScore:74,branchScore:71,growthScore:82,growthDelta:-4.8,risk:'Riskli',tone:'bad'},
+      {region:'Ege',cities:'İzmir, Manisa, Aydın',cars:538,branches:23,avgSale:3910,regionAvg:3940,revenue:2700000,riskCount:5,opportunity:'Filo anlaşması',satisfaction:4.58,regionScore:79,branchScore:76,growthScore:81,growthDelta:3.1,risk:'Dengeli',tone:'warn'},
+      {region:'Akdeniz',cities:'Antalya, Adana, Mersin',cars:486,branches:21,avgSale:3640,regionAvg:3660,revenue:2200000,riskCount:9,opportunity:'Antalya kalite planı',satisfaction:4.37,regionScore:68,branchScore:64,growthScore:73,growthDelta:-7.2,risk:'Riskli',tone:'bad'},
+      {region:'Karadeniz',cities:'Samsun, Trabzon, Ordu',cars:318,branches:15,avgSale:3890,regionAvg:3920,revenue:1600000,riskCount:2,opportunity:'Samsun franchise büyümesi',satisfaction:4.66,regionScore:84,branchScore:82,growthScore:88,growthDelta:8.6,risk:'Yükselen',tone:'good'},
+      {region:'Doğu & Güneydoğu',cities:'Gaziantep, Diyarbakır, Erzurum, Van',cars:418,branches:19,avgSale:3570,regionAvg:3610,revenue:1200000,riskCount:4,opportunity:'Gaziantep büyüme hattı',satisfaction:4.49,regionScore:77,branchScore:74,growthScore:85,growthDelta:5.4,risk:'Dengeli',tone:'warn'}
+    ];
+    function regionLiveData(r={},i=0){
+      const fallback=regionFallbacks.find(x=>x.region===r.region)||regionFallbacks[i%regionFallbacks.length];
+      const merged={...fallback,...r};
+      const seedValue=Array.from(merged.region||'').reduce((s,ch)=>s+ch.charCodeAt(0),0);
+      const liveShift=((new Date().getMinutes()+seedValue)%5)-2;
+      merged.regionAvg=Number(merged.regionAvg||merged.avgSale||fallback.regionAvg)+liveShift*15;
+      merged.growthScore=Math.max(8,Math.min(100,Number(merged.growthScore??fallback.growthScore)));
+      merged.growthDelta=Number(merged.growthDelta??fallback.growthDelta);
+      return merged;
+    }
+    function miniGrowth(score,delta){
+      const value=Number(delta)||0, sign=value>=0?'+':'-', cls=value<0?'red':'green';
+      return `<div class="score-mini"><span>Büyüme</span><div class="progress"><div class="bar ${cls}" style="width:${Math.max(8,Math.min(100,score||50))}%"></div></div><b>${sign}%${Math.abs(value).toFixed(1).replace('.',',')}</b></div>`;
+    }
     function liveRegionAverage(r){
       const seedValue=Array.from(r.region||'').reduce((s,ch)=>s+ch.charCodeAt(0),0);
       const variance=((new Date().getMinutes()+seedValue)%9-4)*20;
@@ -1046,9 +1064,9 @@
     }
     function branchQuestions(){ return `<div class="mini-list">${['Bu şube parayı kazanıyor mu, yoksa sadece ciro mu üretiyor?','Google puanı ve NPS düşerse ilk 48 saatte kim ne yapacak?','Premium paket dönüşümü neden düşük/yüksek?','Royalty gecikmesi nakit akışı mı, disiplin problemi mi?','Bu bayi ikinci şubeyi hak ediyor mu?','Fesih eşiğine yaklaşan operasyon sinyali var mı?'].map(x=>`<div class="mini">${icon('circle-help')}<div><b>${x}</b><span>Şube detay panelinde ciro, kalite, finans ve risk birlikte okunur.</span></div></div>`).join('')}</div>`; }
     function BranchRegionScoreBoard(){
-      const regions=DB.ceoDashboard.regions, avgRegion=Math.round(regions.reduce((s,r)=>s+r.regionScore,0)/regions.length), avgBranch=Math.round(regions.reduce((s,r)=>s+r.branchScore,0)/regions.length);
+      const regions=(DB.ceoDashboard.regions||[]).map(regionLiveData), avgRegion=Math.round(regions.reduce((s,r)=>s+r.regionScore,0)/regions.length), avgBranch=Math.round(regions.reduce((s,r)=>s+r.branchScore,0)/regions.length);
       const best=regions.slice().sort((a,b)=>b.regionScore-a.regionScore)[0], risk=regions.slice().sort((a,b)=>a.regionScore-b.regionScore)[0];
-      return `<div class="branch-score-board"><div class="branch-score-tile"><span>Bölge skor ort.</span><b>${avgRegion}/100</b><div class="progress" style="margin-top:7px"><div class="bar ${scoreTone(avgRegion)==='bad'?'red':scoreTone(avgRegion)==='warn'?'amber':'green'}" style="width:${avgRegion}%"></div></div></div><div class="branch-score-tile"><span>Şube skor ort.</span><b>${avgBranch}/100</b><div class="progress" style="margin-top:7px"><div class="bar ${scoreTone(avgBranch)==='bad'?'red':scoreTone(avgBranch)==='warn'?'amber':'green'}" style="width:${avgBranch}%"></div></div></div><div class="branch-score-tile"><span>En güçlü bölge</span><b>${best.region}</b><small class="card-sub">${best.regionScore}/100 · ${best.opportunity}</small></div><div class="branch-score-tile"><span>En riskli bölge</span><b>${risk.region}</b><small class="card-sub">${risk.regionScore}/100 · ${risk.riskCount} risk</small></div></div><div class="region-grid compact" style="margin-top:10px">${regions.map(r=>`<div class="region-card"><div class="region-head"><div class="region-title"><span class="risk-dot ${r.tone==='bad'?'bad':r.tone==='warn'?'warn':'good'}"></span>${r.region}</div>${scoreChip(r.regionScore)}</div><div class="mini-list" style="gap:5px">${miniScore('Bölge',r.regionScore)}${miniScore('Şube',r.branchScore)}${miniScore('Büyüme',r.growthScore)}</div><div class="region-opportunity"><span><b>Fırsat:</b> ${r.opportunity}</span><button class="btn detail-btn" data-detail="region:${r.region}">Detay</button></div></div>`).join('')}</div>`;
+      return `<div class="branch-score-board"><div class="branch-score-tile"><span>Bölge skor ort.</span><b>${avgRegion}/100</b><div class="progress" style="margin-top:7px"><div class="bar ${scoreTone(avgRegion)==='bad'?'red':scoreTone(avgRegion)==='warn'?'amber':'green'}" style="width:${avgRegion}%"></div></div></div><div class="branch-score-tile"><span>Şube skor ort.</span><b>${avgBranch}/100</b><div class="progress" style="margin-top:7px"><div class="bar ${scoreTone(avgBranch)==='bad'?'red':scoreTone(avgBranch)==='warn'?'amber':'green'}" style="width:${avgBranch}%"></div></div></div><div class="branch-score-tile"><span>En güçlü bölge</span><b>${best.region}</b><small class="card-sub">${best.regionScore}/100 · ${best.opportunity}</small></div><div class="branch-score-tile"><span>En riskli bölge</span><b>${risk.region}</b><small class="card-sub">${risk.regionScore}/100 · ${risk.riskCount} risk</small></div></div><div class="region-grid compact" style="margin-top:10px">${regions.map(r=>`<div class="region-card"><div class="region-head"><div class="region-title"><span class="risk-dot ${r.tone==='bad'?'bad':r.tone==='warn'?'warn':'good'}"></span>${r.region}</div>${scoreChip(r.regionScore)}</div><div class="mini-list" style="gap:5px">${miniScore('Bölge',r.regionScore)}${miniScore('Şube',r.branchScore)}${miniGrowth(r.growthScore,r.growthDelta)}</div><div class="region-opportunity"><span><b>Fırsat:</b> ${r.opportunity}</span><button class="btn detail-btn" data-detail="region:${r.region}">Detay</button></div></div>`).join('')}</div>`;
     }
     function BranchPageRecommendations(){
       const items=[
@@ -1189,7 +1207,7 @@
       if(type==='task'){ const t=DB.ceoDashboard.actionTasks.find(x=>x.id===id); html=`<div class="card-head"><div><div class="card-title">${t?.title||'Görev Detayı'}</div><div class="card-sub">${t?.category||'Aksiyon'} · ${t?.owner||'Sorumlu'} · ${t?.branch||'Şube'}</div></div><button class="btn" onclick="closeDrawer()">Kapat</button></div><div class="grid g2">${stat('Öncelik',t?.priority||'-','Görev takip')}${stat('Deadline',t?.deadline||'-',t?.status||'Açık','amber')}</div><div class="card" style="margin-top:14px"><div class="card-title">Kapanış Kriteri</div><p style="color:var(--muted);line-height:1.6">${t?.note||'Kanıt, not ve tekrar kontrol sonucu olmadan görev kapanmamalı.'}</p></div><button class="btn primary" style="margin-top:14px" onclick="openActionModal('${(t?.title||'Görev devam aksiyonu').replace(/'/g,'')}');closeDrawer()">Devam aksiyonu aç</button>`; }
       if(type==='ai'){ const ai=DB.ceoDashboard.aiRecommendations.find(x=>x.title===id); html=`<div class="card-head"><div><div class="card-title">${ai?.title||id}</div><div class="card-sub">${ai?.category||'AI Öneri Motoru'}</div></div><button class="btn" onclick="closeDrawer()">Kapat</button></div><div class="grid g2">${stat('Beklenen Etki',ai?.impact||'-','Karar etkisi','green')}${stat('Risk',ai?.risk||'-','Uygulama riski','amber')}</div><button class="btn primary" style="margin-top:14px" onclick="openActionModal('${(ai?.action||'AI önerisi').replace(/'/g,'')}');closeDrawer()">Aksiyona çevir</button>`; }
       if(type==='hr'){ html=`<div class="card-head"><div><div class="card-title">${id}</div><div class="card-sub">İnsan Kaynakları aksiyon detayı</div></div><button class="btn" onclick="closeDrawer()">Kapat</button></div><div class="mini-list"><div class="mini">${icon('graduation-cap')}<div><b>Eğitim / koçluk</b><span>Eksik yetkinlik, müşteri dili veya teknik sertifika aksiyonu atanır.</span></div></div><div class="mini">${icon('badge-percent')}<div><b>Prim ve motivasyon</b><span>Başarı sinyali varsa prim, risk sinyali varsa görüşme planlanır.</span></div></div></div><button class="btn primary" style="margin-top:14px" onclick="openActionModal('${id.replace(/'/g,'')}');closeDrawer()">İK görevi oluştur</button>`; }
-      if(type==='region'){ const r=DB.ceoDashboard.regions.find(x=>x.region===id); html=`<div class="card-head"><div><div class="card-title">${r?.region||id} Bölge Detayı</div><div class="card-sub">${r?.cities||''}</div></div><button class="btn" onclick="closeDrawer()">Kapat</button></div><div class="grid g2">${stat('Ciro',fmtTL(r?.revenue||0),'Bölge toplamı','green')}${stat('Risk',r?.riskCount||0,r?.risk||'Takip','amber')}${stat('Bölge Ort.',fmtTL(liveRegionAverage(r||{})),'Canlı ortalama','blue')}${stat('Fırsat',r?.opportunity||'-','Büyüme alanı')}</div><button class="btn primary" style="margin-top:14px" onclick="openActionModal('${(r?.region||id).replace(/'/g,'')} bölge aksiyonu');closeDrawer()">Bölge aksiyonu aç</button>`; }
+      if(type==='region'){ const r=regionLiveData(DB.ceoDashboard.regions.find(x=>x.region===id)||{region:id}); html=`<div class="card-head"><div><div class="card-title">${r?.region||id} Bölge Detayı</div><div class="card-sub">${r?.cities||''}</div></div><button class="btn" onclick="closeDrawer()">Kapat</button></div><div class="grid g2">${stat('Ciro',fmtTL(r?.revenue||0),'Bölge toplamı','green')}${stat('Risk',r?.riskCount||0,r?.risk||'Takip','amber')}${stat('Bölge Ort.',fmtTL(liveRegionAverage(r||{})),'Canlı ortalama','blue')}${stat('Fırsat',r?.opportunity||'-','Büyüme alanı')}</div><button class="btn primary" style="margin-top:14px" onclick="openActionModal('${(r?.region||id).replace(/'/g,'')} bölge aksiyonu');closeDrawer()">Bölge aksiyonu aç</button>`; }
       if(type==='module'){ html=`<div class="card-head"><div><div class="card-title">${id}</div><div class="card-sub">Alt başlık tasarım prensibi</div></div><button class="btn" onclick="closeDrawer()">Kapat</button></div><div class="mini-list">${moduleDeepDive(id).map(x=>`<div class="mini">${icon('layers-3')}<div><b>${x[0]}</b><span>${x[1]}</span></div></div>`).join('')}</div>`; }
       if(type==='room'){ const r=rooms.find(x=>x.id===id); html=`<div class="card-head"><div><div class="card-title">${r.title}</div><div class="card-sub">${r.owner} | Karar odası</div></div><button class="btn" onclick="closeDrawer()">Kapat</button></div><p style="color:var(--muted);line-height:1.6">${r.mission}</p><div class="card" style="margin-top:14px"><div class="card-title">İlk Mesaj</div><p style="color:var(--muted);line-height:1.6">${r.first}</p></div><div class="drill"><div class="mini">${icon('target')}<div><b>Ana KPI</b><span>${r.kpis.join(', ')}</span></div></div><div class="mini">${icon('route')}<div><b>Bağlı Modül</b><span>${titles[r.route]} ekranına operasyonel olarak bağlanır.</span></div></div></div><button class="btn primary" style="margin-top:14px" onclick="route('${r.route}');closeDrawer()">Bu odaya git</button>`; }
       if(type==='dept'){ const [key,idx]=id.split(':'), plan=departmentPlans[key], item=plan.items[Number(idx)]; html=`<div class="card-head"><div><div class="card-title">${item[0]}</div><div class="card-sub">${titles[key]} | ${plan.owner}</div></div><button class="btn" onclick="closeDrawer()">Kapat</button></div><p style="color:var(--muted);line-height:1.6">${item[1]}</p><div class="grid g2">${stat('Ana KPI',item[2],'Departman başarı ölçütü')}${stat('Zorunlu Kayıt',item[3].split(',')[0],'Veri modeli alanı','blue')}</div><div class="card" style="margin-top:14px"><div class="card-head"><div><div class="card-title">Bu Alt Başlıkta Olması Gerekenler</div><div class="card-sub">Ürün ekranı tasarlanırken eksik bırakılmaması gereken alanlar</div></div></div><div class="mini-list">${deptDetailBullets(key,item).map(x=>`<div class="mini">${icon(x[0])}<div><b>${x[1]}</b><span>${x[2]}</span></div></div>`).join('')}</div></div>`; }
@@ -1212,7 +1230,8 @@
     });
     document.getElementById('drawer').addEventListener('click',e=>{if(e.target.id==='drawer')closeDrawer();});
     function openLeadModal(){ document.getElementById('leadModal').classList.add('open'); }
-    document.getElementById('newLeadBtn').addEventListener('click',openLeadModal);
+    const newLeadBtn=document.getElementById('newLeadBtn');
+    if(newLeadBtn) newLeadBtn.addEventListener('click',openLeadModal);
     document.querySelectorAll('[data-close-modal]').forEach(b=>b.addEventListener('click',()=>document.getElementById('leadModal').classList.remove('open')));
     document.getElementById('leadForm').addEventListener('submit',async e=>{
       e.preventDefault(); const data=Object.fromEntries(new FormData(e.target).entries()); DB=await Backend.createLead(data); e.target.reset(); document.getElementById('leadModal').classList.remove('open'); renderAll(); route('franchise'); toast('Yeni kayıt demo backend üzerinden oluşturuldu.');
@@ -1313,9 +1332,10 @@
     }
     function renderAll(){ renderHero(); renderNav(); renderPages(); }
     (async function init(){
-      document.getElementById('apiStatus').textContent='Mock API bağlanıyor';
+      const apiStatus=document.getElementById('apiStatus');
+      if(apiStatus) apiStatus.textContent='Mock API bağlanıyor';
       DB=await Backend.connect();
-      document.getElementById('apiStatus').textContent='Mock API bağlı';
+      if(apiStatus) apiStatus.textContent='Mock API bağlı';
       current=(location.hash||'#dashboard').replace('#','');
       renderAll(); route(titles[current]?current:'dashboard');
     })();
