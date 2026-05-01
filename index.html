@@ -3,12 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="ototr-version" content="SVK v1.0.14-academy-charts" />
+  <meta name="ototr-version" content="SVK v1.0.15-branch-map" />
   <title>OTOTR Genel Merkez ERP + CRM</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
   <style>
     :root{
@@ -113,6 +115,7 @@
     .academy-cert-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.academy-cert{border:1px solid var(--line);border-radius:11px;background:#fff;padding:12px;display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:start}.academy-cert-icon{width:34px;height:34px;border-radius:10px;background:#f3f4f6;display:grid;place-items:center;color:var(--red)}.academy-cert b{display:block;font-size:12px}.academy-cert span{display:block;color:var(--muted);font-size:11px;margin-top:3px}
     .academy-ai{border:1px solid #dbe7ff;background:#f6f9ff;border-radius:11px;padding:12px}.academy-ai b{display:block}.academy-ai p{margin:6px 0 0;color:#3f4754;font-size:12px;line-height:1.45}
     .academy-chart-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:14px;margin-top:14px}.academy-chart-card{min-height:300px}.academy-chart-card canvas{max-height:260px}.academy-chart-card.compact canvas{max-height:220px}.academy-chart-note{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}.academy-chart-note span{border:1px solid var(--line);border-radius:999px;background:#fff;padding:4px 8px;font-size:10px;font-weight:850;color:#4d5563}
+    .branch-map-layout{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:14px;align-items:stretch}.branch-map-canvas{min-height:520px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#eef1f5}.branch-map-side{display:grid;grid-template-rows:auto 1fr;gap:10px;min-height:520px}.branch-map-filters{display:grid;grid-template-columns:1fr 1fr;gap:8px}.branch-map-filters select,.branch-map-filters input{height:38px;border:1px solid var(--line);border-radius:8px;background:#fff;padding:0 10px;font-weight:800;color:#303641}.branch-map-list{display:grid;gap:8px;align-content:start;max-height:472px;overflow:auto;padding-right:2px}.branch-map-item{border:1px solid var(--line);border-radius:10px;background:#fff;padding:10px;text-align:left;display:grid;gap:7px}.branch-map-item:hover,.branch-map-item.active{border-color:#cbd5e1;box-shadow:0 10px 24px rgba(17,19,24,.06);transform:translateY(-1px)}.branch-map-item.active{background:#fff7f8;border-color:#ffc5ca}.branch-map-item b{font-size:13px}.branch-map-item span{font-size:11px;color:var(--muted);line-height:1.35}.branch-map-marker{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:#111318;color:#fff;border:3px solid #fff;box-shadow:0 10px 24px rgba(17,19,24,.22);font-size:10px;font-weight:950}.branch-map-marker.good{background:var(--green)}.branch-map-marker.warn{background:var(--amber)}.branch-map-marker.bad{background:var(--red)}.branch-map-popup{display:grid;gap:6px;min-width:210px}.branch-map-popup b{font-size:14px}.branch-map-popup span{color:#4d5563;font-size:12px}.leaflet-container{font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}.leaflet-popup-content-wrapper{border-radius:10px}.leaflet-popup-content{margin:12px}
     .complaints-main-grid{display:grid;gap:16px;margin-top:16px;align-items:start}
     .complaints-main-grid > .card{min-width:0}
     .complaint-table-wrap{width:100%;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:10px;background:#fff}
@@ -159,7 +162,7 @@
       .wrap{padding:18px 18px 40px}.hero{grid-template-columns:1fr;padding:20px;gap:16px}.hero h1{font-size:25px}.hero p{font-size:13px}.hero-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
       .command-dock{top:auto;bottom:18px;width:min(360px,calc(100vw - 10px));transform:translateX(calc(100% - 40px))}.dock-tab{width:40px;min-height:126px}.dock-panel{max-height:min(74vh,640px)}
       .g2,.g70,.g60,.kanban,.module-grid,.dept-grid,.ai-insight .insight-grid,.score-box,.ops-room,.fr-command,.fr-next-grid,.crm-layout,.marketing-layout,#page-marketing .marketing-top-grid,#page-marketing .marketing-lower-grid,#page-marketing .marketing-wide-grid,#page-marketing .marketing-bottom-grid,.marketing-overview-grid,.team-children,.performance-grid,.rhythm-grid,.marketing-performance-layout,.performance-board,.branch-perf-layout,.marketing-insight-row{grid-template-columns:1fr}
-      .academy-command{grid-template-columns:1fr}.academy-rail{position:static}.academy-course-grid,.academy-chart-grid{grid-template-columns:1fr}
+      .academy-command{grid-template-columns:1fr}.academy-rail{position:static}.academy-course-grid,.academy-chart-grid,.branch-map-layout{grid-template-columns:1fr}
       .fr-side,.crm-rail,.marketing-rail{position:static}
       .g4,.g3,.chart-kpis,.kpi-grid,.region-grid,.region-grid.compact,.summary-grid,.decision-strip,.action-grid,.region-extra,.branch-score-board,.crm-kpis,.crm-card-grid,.slot-grid,.academy-kpis,.academy-region-grid,.academy-cert-grid,.marketing-kpis,.marketing-card-list,.marketing-mini-grid,.ad-channel-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
       .alert-row,.funnel-step{grid-template-columns:1fr}.factor{grid-template-columns:1fr}.executive-toolbar{align-items:flex-start;flex-direction:column}.map-canvas{min-height:360px}
@@ -169,7 +172,7 @@
       .top{padding:12px}.header-identity small{font-size:9px;letter-spacing:.1em}.header-identity strong{font-size:16px;line-height:1.2}
       .top-filters{display:none}.api{order:4;width:100%;justify-content:center;margin-right:0}.top-actions{order:3;width:auto;justify-content:flex-start}.top>.btn:not(.primary){display:none}.top>.btn.primary{order:3;margin-left:auto}.icon-btn{width:36px;height:36px}.btn{padding:9px 11px}
       .wrap{padding:14px 12px 34px}.hero{padding:17px;border-radius:12px;margin-bottom:14px}.hero h1{font-size:22px}.hero-metrics{grid-template-columns:1fr}.hero-metrics b{font-size:20px}#page-marketing{margin:-14px -12px -34px;padding:14px 12px 34px}#page-marketing .marketing-hero h2{font-size:23px}
-      .g4,.g3,.g2,.g70,.g60,.kanban,.module-grid,.dept-grid,.chart-kpis,.ai-insight .insight-grid,.kpi-grid,.region-grid,.region-grid.compact,.summary-grid,.score-box,.ops-room,.drill,.form,.matrix,.heat,.decision-strip,.profile-hero,.action-grid,.region-extra,.impact-grid,.branch-score-board,.crm-kpis,.crm-card-grid,.slot-grid,.academy-kpis,.academy-region-grid,.academy-cert-grid,.academy-chart-grid,.marketing-kpis,.marketing-card-list,.marketing-mini-grid,.marketing-form-grid,.marketing-content-row,.ad-channel-grid,.marketing-performance-layout,.performance-board,.branch-perf-layout,.marketing-insight-row{grid-template-columns:1fr}
+      .g4,.g3,.g2,.g70,.g60,.kanban,.module-grid,.dept-grid,.chart-kpis,.ai-insight .insight-grid,.kpi-grid,.region-grid,.region-grid.compact,.summary-grid,.score-box,.ops-room,.drill,.form,.matrix,.heat,.decision-strip,.profile-hero,.action-grid,.region-extra,.impact-grid,.branch-score-board,.crm-kpis,.crm-card-grid,.slot-grid,.academy-kpis,.academy-region-grid,.academy-cert-grid,.academy-chart-grid,.branch-map-layout,.marketing-kpis,.marketing-card-list,.marketing-mini-grid,.marketing-form-grid,.marketing-content-row,.ad-channel-grid,.marketing-performance-layout,.performance-board,.branch-perf-layout,.marketing-insight-row{grid-template-columns:1fr}
       .marketing-hero{display:grid}
       .profile-hero h2{font-size:23px}.profile-score{width:100%;height:auto;min-height:86px}
       .card{padding:15px;overflow-x:auto}.card-head{align-items:flex-start;flex-direction:column}.toolbar select,.toolbar input{min-width:0;width:100%}
@@ -183,7 +186,7 @@
 <body>
   <div class="app">
     <aside class="side">
-      <a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.14</small></div></a>
+      <a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.15</small></div></a>
       <div class="nav" id="nav"></div>
     </aside>
 
@@ -1625,7 +1628,7 @@
         pageShell('franchise', franchiseDashboard())+
         pageShell('crm', crmDashboard())+
         pageShell('complaints', ComplaintsCenterPage())+
-        pageShell('branches', `<div class="grid g4">${stat('Aktif Şube',DB.branches.filter(b=>b.status==='Aktif').length,'4 şehirde operasyon')}${stat('Açılış Pipeline',2,'İzmir ve Antalya')}${stat('Ortalama NPS',Math.round(DB.branches.filter(b=>b.nps).reduce((s,b)=>s+b.nps,0)/4),'+6 puan','green')}${stat('Riskli Bayi',DB.branches.filter(b=>b.risk==='Yüksek').length,'Kurulum gecikmesi','amber')}</div><div class="card"><div class="card-head"><div><div class="card-title">Bayi & Bölge Skor Panosu</div><div class="card-sub">Dashboard özetinde görünen skorlar bu sayfada detayın başlangıcı olarak tutulur.</div></div></div>${BranchRegionScoreBoard()}</div><div class="card"><div class="card-head"><div><div class="card-title">Bölge Dağılımı Haritası</div><div class="card-sub">Power BI canlı bölge dağılımı görünümü</div></div><a class="btn" href="https://app.powerbi.com/view?r=eyJrIjoiZWU4MjIzNzUtODEzZi00M2Y3LWFjZDQtNTU3YmE1N2QzMjFhIiwidCI6ImY1MWU0MWIxLTBjYTAtNDIyOS05YThmLTkzM2JmNzg2YTQyZSJ9&pageName=ReportSectione51bd36fad3b69165600" target="_blank" rel="noopener">Power BI'da aç</a></div>${PowerBIRegionMap()}</div><div class="grid g70"><div class="card"><div class="card-head"><div><div class="card-title">Bayi Performans ve Royalty Tablosu</div><div class="card-sub">Satıra tıklayınca şube karnesi açılır; profil butonu tam sayfaya taşır.</div></div></div>${branchesTable(DB.branches)}</div><div class="card"><div class="card-head"><div><div class="card-title">Şube Sayfası İçin Tasarım Notları</div><div class="card-sub">Bir sonraki turda birlikte tasarlayacağımız alt başlık önerileri</div></div></div>${BranchPageRecommendations()}</div></div>`)+
+        pageShell('branches', `<div class="grid g4">${stat('Aktif Şube',DB.branches.filter(b=>b.status==='Aktif').length,'4 şehirde operasyon')}${stat('Açılış Pipeline',2,'İzmir ve Antalya')}${stat('Ortalama NPS',Math.round(DB.branches.filter(b=>b.nps).reduce((s,b)=>s+b.nps,0)/4),'+6 puan','green')}${stat('Riskli Bayi',DB.branches.filter(b=>b.risk==='Yüksek').length,'Kurulum gecikmesi','amber')}</div><div class="card"><div class="card-head"><div><div class="card-title">Bayi & Bölge Skor Panosu</div><div class="card-sub">Dashboard özetinde görünen skorlar bu sayfada detayın başlangıcı olarak tutulur.</div></div></div>${BranchRegionScoreBoard()}</div><div class="card"><div class="card-head"><div><div class="card-title">Canlı Türkiye Şube Haritası</div><div class="card-sub">Şube marker seçimi, bölge filtresi, risk rengi ve profil aksiyonu</div></div><a class="btn" href="https://app.powerbi.com/view?r=eyJrIjoiZWU4MjIzNzUtODEzZi00M2Y3LWFjZDQtNTU3YmE1N2QzMjFhIiwidCI6ImY1MWU0MWIxLTBjYTAtNDIyOS05YThmLTkzM2JmNzg2YTQyZSJ9&pageName=ReportSectione51bd36fad3b69165600" target="_blank" rel="noopener">Power BI raporu</a></div>${BranchTurkeyMap()}</div><div class="grid g70"><div class="card"><div class="card-head"><div><div class="card-title">Bayi Performans ve Royalty Tablosu</div><div class="card-sub">Satıra tıklayınca şube karnesi açılır; profil butonu tam sayfaya taşır.</div></div></div>${branchesTable(DB.branches)}</div><div class="card"><div class="card-head"><div><div class="card-title">Şube Sayfası İçin Tasarım Notları</div><div class="card-sub">Bir sonraki turda birlikte tasarlayacağımız alt başlık önerileri</div></div></div>${BranchPageRecommendations()}</div></div>`)+
         pageShell('branchProfile', BranchProfilePage())+
         pageShell('operations', `<div class="grid g3">${moduleCard('Araç Kabul','Plaka, müşteri, paket, tahmini süre ve satış kanalı tek kayda bağlanır.','car-front')}${moduleCard('Test Sıralaması','Dyno, boya, mekanik, elektronik, yol testi ve EV kontrolleri standart akışa alınır.','list-checks')}${moduleCard('Teslim Prosedürü','Rapor anlatımı, risk dili, noter öncesi kontrol ve satış sonrası destek kapanışı yapılır.','clipboard-check')}</div><div class="card"><div class="card-head"><div><div class="card-title">Operasyon Darboğaz Haritası</div><div class="card-sub">Şube bazlı günlük kapasite, bekleme ve teslim süresi</div></div></div><canvas id="chartOps" height="120"></canvas></div>`)+
         pageShell('quality', QualityDashboard())+
@@ -1828,6 +1831,78 @@
       const seedValue=Array.from(r.region||'').reduce((s,ch)=>s+ch.charCodeAt(0),0);
       const variance=((new Date().getMinutes()+seedValue)%9-4)*20;
       return Math.max(2500,(r.regionAvg||r.avgSale||3800)+variance);
+    }
+    function branchMapRows(){
+      const coords={
+        'Bursa Nilüfer':[40.218,28.982],'İstanbul Ataşehir':[40.992,29.124],'Ankara Çukurambar':[39.908,32.792],
+        'Kocaeli İzmit':[40.766,29.940],'İzmir Bornova':[38.462,27.217],'Antalya Kepez':[36.921,30.713]
+      };
+      return (DB.branches||[]).map((b,i)=>{
+        const d=DB.branchDetails?.[b.id]||{}, c=coords[b.name]||[39+(i%5)*.45,30+(i%6)*1.2], liveShift=((new Date().getMinutes()+i)%5)-2;
+        const tone=b.risk==='Yüksek'||b.status==='Kurulum'?'bad':b.risk==='Orta'||b.status==='Açılış'?'warn':'good';
+        return {...b,lat:c[0],lng:c[1],tone,cars:Math.max(0,Math.round((b.reports||0)/30)+liveShift),sla:d.sla||Math.max(64,96-i*5),capacity:d.capacity||Math.max(45,88-i*7),avgTicket:d.avgTicket||Math.round((b.revenue||0)/Math.max(1,b.reports||1)),wait:d.wait||`${12+i*4} dk`};
+      });
+    }
+    function filteredBranchMapRows(){
+      const region=document.getElementById('branchMapRegion')?.value||'', q=(document.getElementById('branchMapSearch')?.value||'').toLocaleLowerCase('tr-TR');
+      return branchMapRows().filter(b=>(!region||b.region===region)&&(!q||[b.name,b.city,b.region,b.manager,b.status].join(' ').toLocaleLowerCase('tr-TR').includes(q)));
+    }
+    function branchMapList(rows=filteredBranchMapRows()){
+      return rows.map(b=>`<button class="branch-map-item" data-branch-map-select="${b.id}"><b>${b.name}</b><span>${b.city} · ${b.region} · ${b.manager}</span><div class="compact-meta"><span>${b.status}</span><span>${b.risk} risk</span><span>${b.cars} araç</span><span>SLA %${b.sla}</span></div></button>`).join('') || `<div class="mini">${icon('map-pin-off')}<div><b>Kayıt bulunamadı</b><span>Filtreyi temizleyip tekrar deneyin.</span></div></div>`;
+    }
+    function BranchTurkeyMap(){
+      const rows=branchMapRows(), regions=[...new Set(rows.map(b=>b.region))];
+      return `<div class="branch-map-layout"><div id="ototrTurkeyMap" class="branch-map-canvas" aria-label="OTOTR Türkiye şube haritası"></div><div class="branch-map-side"><div class="branch-map-filters"><select id="branchMapRegion"><option value="">Tüm bölgeler</option>${regions.map(r=>`<option>${r}</option>`).join('')}</select><input id="branchMapSearch" placeholder="Şube, il veya müdür ara"></div><div id="branchMapList" class="branch-map-list">${branchMapList(rows)}</div></div></div>`;
+    }
+    let branchLeafletMap=null, branchLeafletMarkers=[];
+    function initBranchMap(){
+      const el=document.getElementById('ototrTurkeyMap');
+      if(current!=='branches' || !el) return;
+      const rows=filteredBranchMapRows();
+      if(!window.L){
+        el.innerHTML=`<div class="mini" style="margin:16px">${icon('map-pin')}<div><b>Harita kütüphanesi yüklenemedi</b><span>Şube listesi yine sağ panelden seçilebilir.</span></div></div>`;
+        return;
+      }
+      if(branchLeafletMap){ branchLeafletMap.remove(); branchLeafletMap=null; }
+      branchLeafletMarkers=[];
+      branchLeafletMap=L.map(el,{zoomControl:true,scrollWheelZoom:false,maxBounds:[[35.2,24.5],[42.8,45.5]],maxBoundsViscosity:.85}).setView([39.1,35.2],6);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'&copy; OpenStreetMap katkıda bulunanlar'}).addTo(branchLeafletMap);
+      rows.forEach(b=>{
+        const marker=L.marker([b.lat,b.lng],{title:b.name,icon:L.divIcon({className:'',html:`<div class="branch-map-marker ${b.tone}">${b.city.slice(0,2).toLocaleUpperCase('tr-TR')}</div>`,iconSize:[30,30],iconAnchor:[15,15]})}).addTo(branchLeafletMap);
+        marker.bindPopup(`<div class="branch-map-popup"><b>${b.name}</b><span>${b.city} · ${b.region} · ${b.manager}</span><div class="compact-meta"><span>${b.status}</span><span>${b.risk} risk</span><span>${b.cars} araç</span><span>SLA %${b.sla}</span><span>${fmtTL(b.avgTicket)} ort.</span></div><button class="btn primary" onclick="openBranchProfile('${b.id}')" style="width:100%;justify-content:center;margin-top:4px">Şube profilini aç</button></div>`);
+        marker.on('click',()=>selectBranchMapItem(b.id,false));
+        branchLeafletMarkers.push({id:b.id,marker});
+      });
+      if(branchLeafletMarkers.length){
+        const group=L.featureGroup(branchLeafletMarkers.map(x=>x.marker));
+        branchLeafletMap.fitBounds(group.getBounds().pad(.18));
+      }
+      setTimeout(()=>branchLeafletMap?.invalidateSize(),80);
+    }
+    function refreshBranchMap(){
+      const list=document.getElementById('branchMapList');
+      if(list) list.innerHTML=branchMapList();
+      bindBranchMapEvents();
+      initBranchMap();
+    }
+    function selectBranchMapItem(id,openProfile=false){
+      document.querySelectorAll('.branch-map-item').forEach(x=>x.classList.toggle('active',x.dataset.branchMapSelect===id));
+      const hit=branchLeafletMarkers.find(x=>x.id===id);
+      if(hit && branchLeafletMap){ branchLeafletMap.setView(hit.marker.getLatLng(),8,{animate:true}); hit.marker.openPopup(); }
+      if(openProfile) openBranchProfile(id);
+    }
+    function bindBranchMapEvents(){
+      ['branchMapRegion','branchMapSearch'].forEach(id=>{
+        const el=document.getElementById(id);
+        if(!el || el.dataset.mapBound==='1') return;
+        el.dataset.mapBound='1';
+        el.addEventListener(el.tagName==='INPUT'?'input':'change',refreshBranchMap);
+      });
+      document.querySelectorAll('[data-branch-map-select]').forEach(btn=>{
+        if(btn.dataset.mapBound==='1') return;
+        btn.dataset.mapBound='1';
+        btn.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();selectBranchMapItem(btn.dataset.branchMapSelect,false);});
+      });
     }
     function PowerBIRegionMap(){
       const src='https://app.powerbi.com/view?r=eyJrIjoiZWU4MjIzNzUtODEzZi00M2Y3LWFjZDQtNTU3YmE1N2QzMjFhIiwidCI6ImY1MWU0MWIxLTBjYTAtNDIyOS05YThmLTkzM2JmNzg2YTQyZSJ9&pageName=ReportSectione51bd36fad3b69165600';
@@ -3477,6 +3552,7 @@
       document.querySelectorAll('[data-crm-filter]').forEach(btn=>btn.addEventListener('click',()=>toast('CRM filtreleri frontend seviyesinde uygulandı.')));
       wireAcademyEvents();
       bindHREvents();
+      bindBranchMapEvents();
       const dockToggle=document.getElementById('commandDockToggle'); if(dockToggle) dockToggle.addEventListener('click',e=>{e.stopPropagation();toggleCommandDock();});
       document.querySelectorAll('[data-dock-close]').forEach(el=>el.addEventListener('click',e=>{e.stopPropagation();toggleCommandDock(false);}));
       document.querySelectorAll('[data-advance]').forEach(btn=>btn.addEventListener('click',async e=>{ e.stopPropagation(); DB=await Backend.updateLead(btn.dataset.advance,'Sözleşme'); renderAll(); route('franchise'); toast('Lead aşaması demo API ile güncellendi.'); }));
@@ -3556,7 +3632,7 @@
       renderNav();
       history.replaceState(null,'','#'+(resolved==='hr'?hrRouteFor(HR_VIEW.room):resolved));
       window.scrollTo({top:0,behavior:'smooth'});
-      setTimeout(renderCharts,40);
+      setTimeout(()=>{renderCharts();initBranchMap();},40);
       if(window.lucide) lucide.createIcons();
     }
     function openBranchProfile(id){ selectedBranchId=id; closeDrawer(); current='branchProfile'; renderPages(); route('branchProfile'); }
