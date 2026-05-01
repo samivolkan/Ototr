@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
@@ -107,7 +107,29 @@
     .academy-live-list{display:grid;gap:9px}.academy-live{display:grid;grid-template-columns:44px 1fr auto;gap:10px;align-items:center;border:1px solid var(--line);border-radius:10px;background:#fff;padding:10px}.academy-date{width:40px;height:40px;border-radius:10px;background:#111318;color:#fff;display:grid;place-items:center;text-align:center}.academy-date b{display:block;font-size:16px;line-height:1}.academy-date span{display:block;font-size:9px;color:#d7dce6;text-transform:uppercase}.academy-live strong{display:block;font-size:12px}.academy-live small{color:var(--muted)}
     .academy-cert-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.academy-cert{border:1px solid var(--line);border-radius:11px;background:#fff;padding:12px;display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:start}.academy-cert-icon{width:34px;height:34px;border-radius:10px;background:#f3f4f6;display:grid;place-items:center;color:var(--red)}.academy-cert b{display:block;font-size:12px}.academy-cert span{display:block;color:var(--muted);font-size:11px;margin-top:3px}
     .academy-ai{border:1px solid #dbe7ff;background:#f6f9ff;border-radius:11px;padding:12px}.academy-ai b{display:block}.academy-ai p{margin:6px 0 0;color:#3f4754;font-size:12px;line-height:1.45}
+    .complaints-main-grid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;margin-top:16px;align-items:start}
+    .complaints-main-grid > .card{min-width:0}
+    .complaint-table-wrap{width:100%;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:10px;background:#fff}
+    .complaint-table{min-width:1280px;table-layout:auto}
+    .complaint-table th,.complaint-table td{padding:10px 9px;font-size:12px;white-space:normal;line-height:1.35}
+    .complaint-table th{white-space:nowrap}
+    .complaint-table td:nth-child(15){min-width:72px;white-space:nowrap}
+    .complaint-table td:nth-child(14){min-width:190px;max-width:240px}
+    .complaint-table td:nth-child(7){min-width:150px}
+    .complaint-table td:nth-child(8){min-width:135px}
+    .complaint-table td:nth-child(12){min-width:135px}
+    .complaint-table td:nth-child(13){min-width:155px}
+    .complaints-decision-card{overflow:hidden}
+    .iso-accordion{margin-top:16px}
+    .iso-accordion details{border:1px solid var(--line);border-radius:12px;background:#fff;overflow:hidden}
+    .iso-accordion summary{list-style:none;cursor:pointer;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;font-weight:900}
+    .iso-accordion summary::-webkit-details-marker{display:none}
+    .iso-accordion summary:after{content:"+";width:28px;height:28px;border:1px solid var(--line);border-radius:50%;display:grid;place-items:center;font-size:18px;color:var(--red);background:#fff}
+    .iso-accordion details[open] summary:after{content:"-"}
+    .iso-accordion .iso-body{border-top:1px solid var(--line);padding:14px 18px 18px}
+    .iso-accordion .mini-list{grid-template-columns:repeat(2,minmax(0,1fr));display:grid}
     @media (max-width:1400px){.top{height:auto;flex-wrap:wrap;padding:12px 28px}.header-identity{min-width:220px}.top-filters{flex:1 1 280px}.search{width:auto;flex:1 1 360px}.top-actions{margin-left:auto}}
+    @media (max-width:1100px){.complaints-main-grid{grid-template-columns:1fr}.iso-accordion .mini-list{grid-template-columns:1fr}.complaint-table{min-width:1100px}}
     @media (max-width:1100px){
       .app{display:block}
       .side{position:sticky;top:0;bottom:auto;width:auto;z-index:30;height:auto;max-height:148px;padding:10px 12px 9px;overflow:hidden;border-bottom:1px solid rgba(255,255,255,.09)}
@@ -462,7 +484,67 @@
         {id:'LG-04',title:'Rekabet Yasağı ve Personel Gizlilik',area:'İK',risk:'Orta',status:'Güncel',owner:'İK',items:['Usta transfer sınırları','Eğitim materyali gizliliği','Rapor formatı mülkiyeti','Bayi sonrası rekabet süresi']},
         {id:'LG-05',title:'Marka Tescil ve Görsel Kimlik Koruma',area:'Marka',risk:'Orta',status:'Takipte',owner:'Marka Ofisi',items:['Logo kullanım kılavuzu','Tabela onay süreci','Sosyal medya hesap standardı','Yerel reklam onayı']},
         {id:'LG-06',title:'B2B/Filo Hizmet Sözleşmeleri',area:'Kurumsal',risk:'Orta',status:'Güncel',owner:'Kurumsal Satış',items:['Hizmet seviyesi','Toplu rapor paylaşımı','Ödeme vadesi','Sorumluluk sınırı','Rapor teslim formatı']}
-      ]
+      ],
+      complaintsCenter:{
+        complaintKpis:[
+          {label:'Açık şikayet',value:'42',trend:'+8 / 7 gün',tone:'warn',icon:'message-circle-warning'},
+          {label:'Kritik şikayet',value:'9',trend:'P0-P1 takip',tone:'bad',icon:'shield-alert'},
+          {label:'SLA içinde çözülen',value:'%84',trend:'hedef %92',tone:'warn',icon:'timer-reset'},
+          {label:'Ortalama çözüm süresi',value:'18s 40dk',trend:'kritik dosya 6s',tone:'info',icon:'clock-3'},
+          {label:'24 saat negatif yorum',value:'11',trend:'3 Google 1 yıldız',tone:'bad',icon:'star-off'},
+          {label:'Hukuki riske dönen dosya',value:'6',trend:'2 ihtarname',tone:'bad',icon:'scale'},
+          {label:'Telafi maliyeti',value:'₺128.500',trend:'aylık limit %64',tone:'warn',icon:'wallet-cards'},
+          {label:'Müşteri geri kazanım oranı',value:'%57',trend:'+%9 iyileşme',tone:'good',icon:'heart-handshake'},
+          {label:'Şube güven skoru etkisi',value:'-4,8',trend:'riskli şube ort.',tone:'bad',icon:'activity'},
+          {label:'Kök neden kapatma oranı',value:'%71',trend:'18 kalıcı aksiyon',tone:'info',icon:'git-pull-request-arrow'}
+        ],
+        complaintTickets:[
+          {id:'CMP-2401',customer:'Cem Tunalı',phone:'0532 118 44 90',plate:'34 EFL 918',branch:'İstanbul Ataşehir',region:'Marmara',type:'Yanlış rapor yorumu',source:'Google 1 yıldız yorumu',priority:'P0',sla:'Aşıldı',legalRisk:'Yüksek',team:'Hukuk + Kalite',status:'Hukuk incelemesinde',lastAction:'Rapor kilitlendi, ikinci uzman atandı',summary:'Boya/değişen parça yorumu nedeniyle satış iptal oldu iddiası.',opened:'Bugün 10:42',nextAction:'Müşteriye yazılı cevap ve ikinci kontrol sonucu',rootCause:'rapor dili',compensation:'Ücretsiz tekrar kontrol + yazılı teknik açıklama',amountRisk:185000,brandRisk:'Yüksek'},
+          {id:'CMP-2402',customer:'Elif Yaman',phone:'0541 220 18 06',plate:'06 BYN 404',branch:'Ankara Çukurambar',region:'İç Anadolu',type:'Boya/değişen parça itirazı',source:'Çağrı merkezi',priority:'P0',sla:'Kritik',legalRisk:'Yüksek',team:'Hukuk + Müşteri Deneyimi',status:'Şube savunması bekleniyor',lastAction:'Şubeden kamera ve fotoğraf kanıtı istendi',summary:'Alıcı ile satıcı arasında rapor sorumluluğu tartışması büyüdü.',opened:'Bugün 09:18',nextAction:'Şube savunması ve hukuk ön değerlendirmesi',rootCause:'teknik yorum farkı',compensation:'Yazılı cevap + bölge müdürü araması',amountRisk:95000,brandRisk:'Yüksek'},
+          {id:'CMP-2403',customer:'Duru Lojistik',phone:'0216 555 33 10',plate:'34 DLR 022',branch:'İzmir Bornova',region:'Ege',type:'Geç teslim',source:'WhatsApp',priority:'P1',sla:'Aşıldı',legalRisk:'Düşük',team:'Operasyon',status:'Müşteriye dönüş yapıldı',lastAction:'Filo sorumlusu arandı, yeni teslim randevusu verildi',summary:'Filo aracının raporu 55 dakika geç teslim edildi.',opened:'Dün 16:30',nextAction:'Operasyon darboğazı düzeltme planı',rootCause:'eksik açıklama',compensation:'Bir sonraki ekspertizde indirim',amountRisk:7500,brandRisk:'Orta'},
+          {id:'CMP-2404',customer:'Hasan Kaya',phone:'0553 402 16 16',plate:'16 CM 616',branch:'Bursa Nilüfer',region:'Marmara',type:'Personel iletişimi',source:'Memnuniyet anketi',priority:'P2',sla:'İçinde',legalRisk:'Yok',team:'Müşteri Deneyimi',status:'Telafi önerildi',lastAction:'Şube müdürü özür araması yaptı',summary:'Rapor tesliminde müşteriye acele ve teknik olmayan bir dil kullanıldı.',opened:'Dün 11:05',nextAction:'Academy rapor dili eğitimi ataması',rootCause:'iletişim hatası',compensation:'Ücretsiz mini kontrol',amountRisk:2500,brandRisk:'Düşük'},
+          {id:'CMP-2405',customer:'Mert Otomotiv',phone:'0262 440 10 40',plate:'41 MOT 081',branch:'Kocaeli İzmit',region:'Marmara',type:'Mekanik arıza iddiası',source:'Bayi paneli',priority:'P1',sla:'İçinde',legalRisk:'Orta',team:'Kalite',status:'Kalite incelemesinde',lastAction:'Mekanik fotoğraf ve cihaz çıktısı dosyaya eklendi',summary:'Ekspertiz sonrası turbo arıza iddiası ile ücretsiz kontrol talep edildi.',opened:'2 gün önce',nextAction:'Teknik sorumluluk sınırı analizi',rootCause:'teknik yorum farkı',compensation:'Ücretsiz tekrar kontrol',amountRisk:42000,brandRisk:'Orta'},
+          {id:'CMP-2406',customer:'Akdeniz Rent A Car',phone:'0242 333 19 88',plate:'07 ARC 522',branch:'Antalya Kepez',region:'Akdeniz',type:'Eksik açıklama',source:'Kurumsal müşteri',priority:'P1',sla:'Kritik',legalRisk:'Orta',team:'Operasyon + Academy',status:'İncelemede',lastAction:'Rapor anlatım scripti kontrol edildi',summary:'Filo müşterisi rapordaki notların yeterince açıklanmadığını belirtti.',opened:'Bugün 08:55',nextAction:'Şube müdürü takip aksiyonu',rootCause:'eksik açıklama',compensation:'Yazılı cevap + filo sorumlusu toplantısı',amountRisk:28000,brandRisk:'Orta'},
+          {id:'CMP-2407',customer:'Serkan Yıldız',phone:'0555 901 77 22',plate:'55 SY 901',branch:'Adana Seyhan',region:'Akdeniz',type:'Ekspertiz sonrası hukuki ihtar',source:'Noter ihtarı',priority:'P0',sla:'Aşıldı',legalRisk:'Yüksek',team:'Hukuk',status:'Hukuk incelemesinde',lastAction:'İhtarname hukuk ekranına aktarıldı',summary:'Satıcı/alıcı anlaşmazlığı rapor sorumluluğuna çevrildi.',opened:'3 gün önce',nextAction:'Arabuluculuk öncesi savunma dosyası',rootCause:'rapor sorumluluğu',compensation:'Hukuki cevap taslağı',amountRisk:310000,brandRisk:'CEO takip'},
+          {id:'CMP-2408',customer:'Ayşe Karaca',phone:'0544 182 90 11',plate:'38 AK 182',branch:'Kayseri Melikgazi',region:'İç Anadolu',type:'Tekrar eden şube şikayeti',source:'Dashboard alarmı',priority:'P1',sla:'İçinde',legalRisk:'Düşük',team:'Kalite + Academy',status:'Yeniden açıldı',lastAction:'Aynı kök neden üçüncü kez görüldü',summary:'Rapor teslim dili ve bekleme süresi tekrar eden memnuniyetsizlik üretiyor.',opened:'Bugün 12:20',nextAction:'Şube düzeltme planı + personel eğitimi',rootCause:'rapor dili',compensation:'Müdür araması + yazılı süreç iyileştirmesi',amountRisk:12000,brandRisk:'Orta'}
+        ],
+        complaintCategories:[['Yanlış rapor yorumu',9],['Boya/değişen parça itirazı',8],['Mekanik arıza iddiası',6],['Eksik açıklama',7],['Geç teslim',5],['Personel iletişimi',7]],
+        complaintSources:[['Google',11],['Çağrı merkezi',9],['WhatsApp',8],['Bayi paneli',6],['Hukuki ihtar',3],['Dashboard alarmı',5]],
+        complaintSla:{inside:31,critical:5,breached:6,trend:[78,81,79,84,88,84],labels:['Kasım','Aralık','Ocak','Şubat','Mart','Nisan']},
+        complaintRootCauses:[['rapor dili',10],['eksik açıklama',8],['iletişim hatası',7],['teknik yorum farkı',6],['operasyon gecikmesi',5],['rapor sorumluluğu',6]],
+        complaintLegalRisks:[
+          {id:'CMP-2401',branch:'İstanbul Ataşehir',customer:'Cem Tunalı',subject:'Yanlış rapor yorumu',risk:'Yüksek',amount:185000,status:'İhtar riski',deadline:'Bugün 16:00',action:'Teknik savunma + yazılı cevap',brandRisk:'Yüksek'},
+          {id:'CMP-2402',branch:'Ankara Çukurambar',customer:'Elif Yaman',subject:'Boya/değişen parça itirazı',risk:'Yüksek',amount:95000,status:'Arabuluculuk ihtimali',deadline:'Yarın 12:00',action:'Şube savunması bekleniyor',brandRisk:'Yüksek'},
+          {id:'CMP-2407',branch:'Adana Seyhan',customer:'Serkan Yıldız',subject:'Ekspertiz sonrası hukuki ihtar',risk:'CEO takip',amount:310000,status:'İhtar geldi',deadline:'02.05.2026',action:'Hukuki cevap taslağı',brandRisk:'CEO takip'},
+          {id:'CMP-2405',branch:'Kocaeli İzmit',customer:'Mert Otomotiv',subject:'Mekanik arıza iddiası',risk:'Orta',amount:42000,status:'Uzlaşma',deadline:'03.05.2026',action:'Teknik sorumluluk sınırı',brandRisk:'Orta'}
+        ],
+        complaintBranchScore:[
+          {branch:'Bursa Nilüfer',open:4,sla:1,legal:0,recovery:8,score:96,status:'Lider'},
+          {branch:'Kocaeli İzmit',open:3,sla:0,legal:1,recovery:7,score:91,status:'Sağlıklı'},
+          {branch:'İstanbul Ataşehir',open:9,sla:2,legal:2,recovery:4,score:72,status:'Takipte'},
+          {branch:'Ankara Çukurambar',open:13,sla:3,legal:2,recovery:3,score:61,status:'CEO takip'},
+          {branch:'İzmir Bornova',open:7,sla:2,legal:0,recovery:2,score:68,status:'Riskli'},
+          {branch:'Antalya Kepez',open:8,sla:2,legal:1,recovery:2,score:64,status:'Riskli'}
+        ],
+        complaintTimeline:[
+          {time:'10:42',title:'Google 1 yıldız yorumu yakalandı',note:'Sosyal yorum şikayet dosyasına bağlandı.'},
+          {time:'10:50',title:'Şikayet kaydı açıldı',note:'Müşteriye alındı bildirimi gönderildi.'},
+          {time:'11:05',title:'Rapor kilitlendi',note:'İkinci uzman incelemesi başlatıldı.'},
+          {time:'11:30',title:'Şube savunması istendi',note:'Kamera, fotoğraf ve çağrı kayıtları talep edildi.'},
+          {time:'12:10',title:'Hukuk ön incelemesi',note:'Marka ve tazmin riski sınıflandırıldı.'}
+        ],
+        complaintActions:['Hukuka gönder','Kalite incelemesi aç','Şubeden savunma iste','Müşteriye dönüş yapıldı','Telafi öner','Dosyayı kapat','Academy eğitimi ata','Dashboard alarmına ekle'],
+        complaintCompensation:[['Yazılı cevap',14,0],['Ücretsiz tekrar kontrol',9,18500],['İndirim / kupon',7,22500],['Kısmi iade',3,87500]],
+        complaintEscalations:[['P0 Hukuk + CEO',3],['P1 Kalite kurulu',7],['P2 Şube müdürü',18],['Academy eğitim',12]],
+        complaintSentiment:{negative24h:11,googleOneStar:3,recovered:12,trend:[5,7,6,9,8,11],labels:['Pzt','Sal','Çar','Per','Cum','Bugün']},
+        complaintDashboardAlerts:[
+          {severity:'critical',branch:'İstanbul Ataşehir',text:'P0: Google 1 yıldız + açık şikayet birleşik alarmı.',time:'Bugün 10:42',route:'complaints'},
+          {severity:'critical',branch:'Ankara Çukurambar',text:'P0: Hukuki riske dönen müşteri şikayeti.',time:'Bugün 09:18',route:'legal'},
+          {severity:'high',branch:'Adana Seyhan',text:'P1: 24 saati aşan kritik şikayet.',time:'Dün 18:20',route:'complaints'},
+          {severity:'high',branch:'Kayseri Melikgazi',text:'P1: Aynı şubede tekrar eden rapor itirazı.',time:'Bugün 12:20',route:'quality'},
+          {severity:'medium',branch:'Bursa Nilüfer',text:'P2: Academy eğitim ihtiyacı doğuran iletişim şikayeti.',time:'Dün 11:05',route:'academy'}
+        ]
+      }
     };
 
     const profitRiskDemoModel = window.OTOTR_DEMO_DATA?.createDemoModel?.();
@@ -496,11 +578,11 @@
 
     const navGroups = [
       ['Komuta', [['dashboard','Yönetim Kokpiti','layout-dashboard'],['intelligence','İş Zekası','chart-no-axes-column'],['branches','Bayiler & Şubeler','building-2'],['operations','Operasyon','workflow']]],
-      ['Gelir', [['franchise','Franchise Satış','handshake'],['crm','CRM & Randevu','users'],['finance','Finans & Royalty','banknote'],['marketing','Pazarlama','megaphone']]],
+      ['Gelir', [['franchise','Franchise Satış','handshake'],['crm','CRM & Randevu','users'],['complaints','Müşteri Şikayetleri','message-circle-warning'],['finance','Finans & Royalty','banknote'],['marketing','Pazarlama','megaphone']]],
       ['Kontrol', [['quality','Kalite Denetim','shield-check'],['academy','OTOTR Academy','graduation-cap'],['hr','İnsan Kaynakları','badge-check'],['legal','Hukuk & Risk','scale'],['crisis','Kriz Merkezi','siren']]],
       ['Strateji', [['actions','Aksiyon & Görev','target'],['ai','AI Öneri','sparkles'],['growth','Büyüme Haritası','map'],['legacy','Legacy Room','landmark'],['architecture','Sistem Mimarisi','network'],['settings','Ayarlar','settings']]]
     ];
-    const titles = {dashboard:'Yönetim Kokpiti',intelligence:'İş Zekası',branches:'Bayiler & Şubeler',operations:'Operasyon',franchise:'Franchise Satış',crm:'CRM & Randevu',finance:'Finans & Royalty',marketing:'Pazarlama',quality:'Kalite Denetim',academy:'OTOTR Academy',hr:'İnsan Kaynakları',legal:'Hukuk & Risk',crisis:'Kriz Merkezi',actions:'Aksiyon & Görev',ai:'AI Öneri',growth:'Büyüme Haritası',legacy:'Legacy Room',architecture:'Sistem Mimarisi',settings:'Ayarlar',branchProfile:'Şube Profili',franchiseProfile:'Aday Değerlendirme',customerProfile:'Müşteri 360'};
+    const titles = {dashboard:'Yönetim Kokpiti',intelligence:'İş Zekası',branches:'Bayiler & Şubeler',operations:'Operasyon',franchise:'Franchise Satış',crm:'CRM & Randevu',complaints:'Müşteri Şikayetleri',finance:'Finans & Royalty',marketing:'Pazarlama',quality:'Kalite Denetim',academy:'OTOTR Academy',hr:'İnsan Kaynakları',legal:'Hukuk & Risk',crisis:'Kriz Merkezi',actions:'Aksiyon & Görev',ai:'AI Öneri',growth:'Büyüme Haritası',legacy:'Legacy Room',architecture:'Sistem Mimarisi',settings:'Ayarlar',branchProfile:'Şube Profili',franchiseProfile:'Aday Değerlendirme',customerProfile:'Müşteri 360'};
     const rooms = [
       {id:'room-main',title:'Ana Merkez Room',route:'dashboard',owner:'CEO',mission:'Marka vizyonu, büyük yatırımlar, yeni şehir kararları, yıllık plan ve kriz kararları burada yönetilir.',first:'OTOTR ana merkez sohbetidir. Tüm büyük kararları burada yöneteceğiz.',kpis:['Karar kapanış süresi','Yıllık plan gerçekleşme','Kritik alarm çözümü']},
       {id:'room-crm',title:'CRM Room',route:'crm',owner:'Müşteri Deneyimi',mission:'Müşteri, bayi, operasyon, finans ve pazarlama CRM akışlarını tek müşteri hafızasına bağlar.',first:'OTOTR CRM odası. Müşteri, bayi ve operasyon verisini tek sistemde yöneteceğiz.',kpis:['Randevu oranı','WhatsApp SLA','Tekrar müşteri']},
@@ -603,7 +685,38 @@
       ]}
     };
 
+    function enrichComplaintCenter(db){
+      if(!db) return db;
+      db.complaintsCenter = db.complaintsCenter || seed.complaintsCenter;
+      if(!db.complaintsCenter) return db;
+      db.ceoDashboard = db.ceoDashboard || seed.ceoDashboard;
+      db.ceoDashboard.quickActions = (db.ceoDashboard.quickActions || seed.ceoDashboard.quickActions || []).map(a => a.label && a.label.includes('Şikayet') ? {...a,route:'complaints'} : a);
+      const addKpis=[
+        {label:'Kritik Şikayet',value:String(db.complaintsCenter.complaintTickets.filter(x=>x.priority==='P0'||x.priority==='P1').length),change:'SLA + hukuk',direction:'down',icon:'message-circle-warning',tone:'warn',hint:'müşteri riski'},
+        {label:'SLA Aşımı',value:String(db.complaintsCenter.complaintTickets.filter(x=>x.sla==='Aşıldı').length),change:'kritik eşik',direction:'down',icon:'timer-off',tone:'warn',hint:'şikayet SLA'},
+        {label:'Hukuki Riskli Şikayet',value:String(db.complaintsCenter.complaintTickets.filter(x=>x.legalRisk==='Yüksek').length),change:'P0 takip',direction:'down',icon:'scale',tone:'warn',hint:'hukuk bağlantısı'},
+        {label:'Şube Güven Skoru Düşüşü',value:'-4,8',change:'şikayet etkisi',direction:'down',icon:'activity',tone:'warn',hint:'riskli şube ort.'},
+        {label:'Google Puanı Etkisi',value:'-0,07',change:'11 negatif',direction:'down',icon:'star-off',tone:'warn',hint:'24 saat'},
+        {label:'Telafi Maliyeti',value:'₺128K',change:'aylık %64',direction:'down',icon:'wallet-cards',tone:'warn',hint:'iade + kontrol'}
+      ];
+      const existingLabels=new Set((db.ceoDashboard.kpis||[]).map(k=>k.label));
+      db.ceoDashboard.kpis=[...(db.ceoDashboard.kpis||[]),...addKpis.filter(k=>!existingLabels.has(k.label))];
+      const alarmTexts=new Set((db.ceoDashboard.alerts||[]).map(a=>a.text));
+      db.ceoDashboard.alerts=[...(db.complaintsCenter.complaintDashboardAlerts||[]).filter(a=>!alarmTexts.has(a.text)),...(db.ceoDashboard.alerts||[])].slice(0,10);
+      const factors=db.ceoDashboard.trustFactors || [];
+      const factorMap=new Map(factors.map(f=>[f[0],f]));
+      factorMap.set('Şikayet sağlığı',[ 'Şikayet sağlığı', Math.max(58, 100 - (db.complaintsCenter.complaintTickets.filter(x=>x.status!=='Kapandı').length*2)) ]);
+      factorMap.set('Hukuki riskli şikayet',[ 'Hukuki riskli şikayet', Math.max(52, 100 - (db.complaintsCenter.complaintTickets.filter(x=>x.legalRisk==='Yüksek').length*9)) ]);
+      db.ceoDashboard.trustFactors=[...factorMap.values()];
+      const pulseMap=new Map((db.ceoDashboard.managementPulse||[]).map(p=>[p.label,p]));
+      pulseMap.set('Kritik müşteri şikayeti',{label:'Kritik müşteri şikayeti',value:db.complaintsCenter.complaintTickets.filter(x=>x.priority==='P0').length,tone:'bad',note:'Hukuk, kalite ve müşteri deneyimi ortak takip'});
+      pulseMap.set('Telafi maliyeti',{label:'Telafi maliyeti',value:'₺128K',tone:'warn',note:'İade, ücretsiz kontrol ve yazılı cevap etkisi'});
+      db.ceoDashboard.managementPulse=[...pulseMap.values()];
+      return db;
+    }
+
     function normalizeRoyalty(db){
+      db=enrichComplaintCenter(db);
       const normalized={...db};
       normalized.branches=(normalized.branches||[]).map(b=>({...b,royalty:royaltyAmount(b.revenue)}));
       normalized.finance=(normalized.finance||[]).map(f=>({...f,royalty:royaltyAmount(f.revenue)}));
@@ -648,7 +761,7 @@
       async reset(){ localStorage.removeItem(this.key); return this.connect(); }
     };
     const wait = ms => new Promise(r=>setTimeout(r,ms));
-    let DB, current='dashboard', charts={}, selectedBranchId='BR-002';
+    let DB, current='dashboard', charts={}, selectedBranchId='BR-002', complaintFilters={};
 
     function badge(text){
       const c = text==='Düşük'||text==='Aktif'||text==='Açık'||text==='Kapalı'||text==='Satın alınabilir'||text==='Lider'||text==='Sağlıklı'||text==='Yükselen' ? 'b-green' : text==='Yüksek'||text==='Riskli'||text==='Kritik'||text==='P0' ? 'b-red' : text==='Orta'||text==='Gecikmiş'||text==='Açılış'||text==='30 gün plan'||text==='P1'||text==='CEO takip'||text==='Düzeltme planı'||text==='Düzeltme'||text==='Dengeli' ? 'b-amber' : text==='Kurulum'||text==='Takipte'||text==='P2'||text==='Büyüt / ödüllendir'||text==='Büyüt' ? 'b-blue' : 'b-gray';
@@ -659,7 +772,7 @@
 
     function renderNav(){
       const nav=document.getElementById('nav');
-      nav.innerHTML = navGroups.map(([g,items]) => `<div class="nav-title">${g}</div>` + items.map(([id,label,ic]) => `<button data-nav-route="${id}" class="${id===current?'active':''}">${icon(ic)}<span>${label}</span>${id==='franchise'?'<span class="count">'+DB.leads.filter(l=>l.type.includes('Franchise')).length+'</span>':''}${id==='crisis'?'<span class="count">'+DB.tickets.filter(t=>t.severity==='Yüksek').length+'</span>':''}</button>`).join('')).join('');
+      nav.innerHTML = navGroups.map(([g,items]) => `<div class="nav-title">${g}</div>` + items.map(([id,label,ic]) => `<button data-nav-route="${id}" class="${id===current?'active':''}">${icon(ic)}<span>${label}</span>${id==='franchise'?'<span class="count">'+DB.leads.filter(l=>l.type.includes('Franchise')).length+'</span>':''}${id==='complaints'?'<span class="count">'+((DB.complaintsCenter?.complaintTickets||[]).filter(t=>t.status!=='Kapandı').length)+'</span>':''}${id==='crisis'?'<span class="count">'+DB.tickets.filter(t=>t.severity==='Yüksek').length+'</span>':''}</button>`).join('')).join('');
       nav.querySelectorAll('[data-nav-route]').forEach(b=>b.addEventListener('click',()=>route(b.dataset.navRoute)));
     }
 
@@ -730,6 +843,7 @@
           </div>`)+
         pageShell('franchise', franchiseDashboard())+
         pageShell('crm', crmDashboard())+
+        pageShell('complaints', ComplaintsCenterPage())+
         pageShell('branches', `<div class="grid g4">${stat('Aktif Şube',DB.branches.filter(b=>b.status==='Aktif').length,'4 şehirde operasyon')}${stat('Açılış Pipeline',2,'İzmir ve Antalya')}${stat('Ortalama NPS',Math.round(DB.branches.filter(b=>b.nps).reduce((s,b)=>s+b.nps,0)/4),'+6 puan','green')}${stat('Riskli Bayi',DB.branches.filter(b=>b.risk==='Yüksek').length,'Kurulum gecikmesi','amber')}</div><div class="card"><div class="card-head"><div><div class="card-title">Bayi & Bölge Skor Panosu</div><div class="card-sub">Dashboard özetinde görünen skorlar bu sayfada detayın başlangıcı olarak tutulur.</div></div></div>${BranchRegionScoreBoard()}</div><div class="card"><div class="card-head"><div><div class="card-title">Bölge Dağılımı Haritası</div><div class="card-sub">Power BI canlı bölge dağılımı görünümü</div></div><a class="btn" href="https://app.powerbi.com/view?r=eyJrIjoiZWU4MjIzNzUtODEzZi00M2Y3LWFjZDQtNTU3YmE1N2QzMjFhIiwidCI6ImY1MWU0MWIxLTBjYTAtNDIyOS05YThmLTkzM2JmNzg2YTQyZSJ9&pageName=ReportSectione51bd36fad3b69165600" target="_blank" rel="noopener">Power BI'da aç</a></div>${PowerBIRegionMap()}</div><div class="grid g70"><div class="card"><div class="card-head"><div><div class="card-title">Bayi Performans ve Royalty Tablosu</div><div class="card-sub">Satıra tıklayınca şube karnesi açılır; profil butonu tam sayfaya taşır.</div></div></div>${branchesTable(DB.branches)}</div><div class="card"><div class="card-head"><div><div class="card-title">Şube Sayfası İçin Tasarım Notları</div><div class="card-sub">Bir sonraki turda birlikte tasarlayacağımız alt başlık önerileri</div></div></div>${BranchPageRecommendations()}</div></div>`)+
         pageShell('branchProfile', BranchProfilePage())+
         pageShell('operations', `<div class="grid g3">${moduleCard('Araç Kabul','Plaka, müşteri, paket, tahmini süre ve satış kanalı tek kayda bağlanır.','car-front')}${moduleCard('Test Sıralaması','Dyno, boya, mekanik, elektronik, yol testi ve EV kontrolleri standart akışa alınır.','list-checks')}${moduleCard('Teslim Prosedürü','Rapor anlatımı, risk dili, noter öncesi kontrol ve satış sonrası destek kapanışı yapılır.','clipboard-check')}</div><div class="card"><div class="card-head"><div><div class="card-title">Operasyon Darboğaz Haritası</div><div class="card-sub">Şube bazlı günlük kapasite, bekleme ve teslim süresi</div></div></div><canvas id="chartOps" height="120"></canvas></div>`)+
@@ -739,7 +853,7 @@
         pageShell('intelligence', `<div class="grid g4">${stat('Bileşik Ağ Skoru','87/100','Ciro + kalite + itibar')}${stat('Fiyat Fırsatı',fmtTL(420000),'Premium paket optimizasyonu','green')}${stat('Erken Uyarı',DB.complaints.filter(c=>c.risk==='Yüksek').length,'Kritik kök neden','amber')}${stat('Büyüme Sinyali','2 Şube','İkinci lokasyon adayı','blue')}</div><div class="grid g60"><div class="card"><div class="card-head"><div><div class="card-title">İş Zekası İçgörü Akışı</div><div class="card-sub">Tıklanabilir stratejik öneriler ve sahipleri</div></div></div>${insightTable()}</div><div class="card"><div class="card-head"><div><div class="card-title">Canlı Isı Haritası</div><div class="card-sub">CEO'nun ilk bakışta göreceği sinyaller</div></div></div>${heatMap()}</div></div><div class="grid g2"><div class="card"><div class="card-head"><div><div class="card-title">Bölge Performans Karşılaştırması</div><div class="card-sub">Ciro, rapor adedi ve kalite bileşik skoru</div></div></div><canvas id="chartBI" height="120"></canvas></div><div class="card"><div class="card-head"><div><div class="card-title">Şikayet Kök Neden Analizi</div><div class="card-sub">Kriz oluşmadan müdahale edilecek alanlar</div></div></div>${complaintsTable()}</div></div><div class="card"><div class="card-head"><div><div class="card-title">Şube Karşılaştırmalı Karar Tablosu</div><div class="card-sub">Ciro değil, kârlılık + kalite + itibar birlikte okunur.</div></div></div>${branchDecisionTable()}</div>`)+
         pageShell('academy', AcademyDashboard())+
         pageShell('hr', `<div class="grid g4">${stat('Personel Skoru','84/100','Ağ ortalaması','green')}${stat('Prim Hak Eden',2,'Bu hafta onay bekliyor','blue')}${stat('Eksik Eğitim',14,'EV ekspertiz modülü','amber')}${stat('Çıkma Riski',1,'Görüşme planlanmalı','red')}</div><div class="grid g60"><div class="card"><div class="card-head"><div><div class="card-title">Personel Performansı</div><div class="card-sub">Satış, şikayet, eğitim, prim ve müdür performansı</div></div><button class="btn" data-open-action-modal="Eğitim ata">Eğitim ata</button></div>${PersonnelPerformancePanel()}</div><div class="card"><div class="card-head"><div><div class="card-title">İK Risk ve Aksiyonları</div><div class="card-sub">İndex2'den alınan yönetim mantığı eski tasarıma uyarlandı</div></div></div>${HumanResourcesActions()}</div></div>`)+
-        pageShell('legal', `<div class="grid g4">${LegalStats()}</div><div class="grid g3">${moduleCard('Franchise Sözleşmesi','Bölge koruma, marka kullanımı, royalty, denetim hakkı ve fesih eşikleri.','file-signature','Franchise Hukuku')}${moduleCard('Hatalı Rapor Sorumluluğu','Tazmin, itiraz, sigorta, kayıt saklama ve kök neden prosedürü.','shield-alert','Rapor Sorumluluğu')}${moduleCard('KVKK & Veri Sahipliği','Müşteri, rapor, bayi performansı ve merkezi CRM verisinin mülkiyeti.','database','Veri Hukuku')}</div><div class="grid g60"><div class="card"><div class="card-head"><div><div class="card-title">Hukuki Dosya ve Sözleşme Envanteri</div><div class="card-sub">Satıra tıklayınca madde bazlı kontrol listesi açılır.</div></div></div>${legalTable()}</div><div class="card"><div class="card-head"><div><div class="card-title">Risk Matrisi</div><div class="card-sub">Hukuk, operasyon ve itibar riski</div></div></div><div class="matrix"><div class="risk low"><b>Düşük</b>Marka tescil yenileme, standart sözleşme revizyonları</div><div class="risk mid"><b>Orta</b>Royalty gecikmesi, Google puan düşüşü, rapor itirazları</div><div class="risk high"><b>Yüksek</b>Hatalı rapor tazmini, bayi skandalı, sosyal medya krizi</div></div><hr style="border:0;border-top:1px solid var(--line);margin:16px 0">${legalPlaybook()}</div></div><div class="grid g2"><div class="card"><div class="card-head"><div><div class="card-title">Sözleşme Durumları</div><div class="card-sub">Aktif, yenileme ve ihlal sinyalleri</div></div></div>${LegalContractTable()}</div><div class="card"><div class="card-head"><div><div class="card-title">Hukuki Alarmlar</div><div class="card-sub">Rol filtresiyle beslenecek hukuki alarm kuyruğu</div></div></div>${LegalAlertList()}</div></div>`)+
+        pageShell('legal', `<div class="grid g4">${LegalStats()}</div><div class="grid g3">${moduleCard('Franchise Sözleşmesi','Bölge koruma, marka kullanımı, royalty, denetim hakkı ve fesih eşikleri.','file-signature','Franchise Hukuku')}${moduleCard('Hatalı Rapor Sorumluluğu','Tazmin, itiraz, sigorta, kayıt saklama ve kök neden prosedürü.','shield-alert','Rapor Sorumluluğu')}${moduleCard('KVKK & Veri Sahipliği','Müşteri, rapor, bayi performansı ve merkezi CRM verisinin mülkiyeti.','database','Veri Hukuku')}</div><div class="grid g60"><div class="card"><div class="card-head"><div><div class="card-title">Hukuki Dosya ve Sözleşme Envanteri</div><div class="card-sub">Satıra tıklayınca madde bazlı kontrol listesi açılır.</div></div></div>${legalTable()}</div><div class="card"><div class="card-head"><div><div class="card-title">Risk Matrisi</div><div class="card-sub">Hukuk, operasyon ve itibar riski</div></div></div><div class="matrix"><div class="risk low"><b>Düşük</b>Marka tescil yenileme, standart sözleşme revizyonları</div><div class="risk mid"><b>Orta</b>Royalty gecikmesi, Google puan düşüşü, rapor itirazları</div><div class="risk high"><b>Yüksek</b>Hatalı rapor tazmini, bayi skandalı, sosyal medya krizi</div></div><hr style="border:0;border-top:1px solid var(--line);margin:16px 0">${legalPlaybook()}</div></div><div class="card" style="margin-top:16px"><div class="card-head"><div><div class="card-title">Şikayetten Hukuka Dönen Dosyalar</div><div class="card-sub">Müşteri şikayeti, ihtar, arabuluculuk ve dava riskine döndüğünde hukuk kuyruğuna otomatik aktarılır.</div></div><button class="btn" data-route="complaints">Şikayet merkezine git</button></div>${ComplaintLegalRiskTable()}</div><div class="grid g2" style="margin-top:16px"><div class="card"><div class="card-head"><div><div class="card-title">Sözleşme Durumları</div><div class="card-sub">Aktif, yenileme ve ihlal sinyalleri</div></div></div>${LegalContractTable()}</div><div class="card"><div class="card-head"><div><div class="card-title">Hukuki Alarmlar</div><div class="card-sub">Rol filtresiyle beslenecek hukuki alarm kuyruğu</div></div></div>${LegalAlertList()}</div></div>`)+
         pageShell('crisis', `<div class="grid g4">${stat('Açık Ticket',DB.tickets.length,'Merkez takipte')}${stat('Kritik',riskCount,'Bugün çözülmeli','amber')}${stat('SLA Uyum','%91','Hedef %95','green')}${stat('Tekrar Eden Kök Neden',2,'Rapor anlatımı + SLA','red')}</div><div class="card"><div class="card-head"><div><div class="card-title">Kriz ve Alarm Merkezi</div><div class="card-sub">Yanlış rapor, sosyal medya, bayi skandalı, hukuki kriz ve acil eylem</div></div></div>${ticketsTable()}</div>`)+
         pageShell('actions', `<div class="grid g4">${stat('Açık Görev',DB.ceoDashboard.actionTasks.filter(t=>t.status!=='Tamamlandı').length,'Canlı takip','blue')}${stat('Geciken',DB.ceoDashboard.actionTasks.filter(t=>t.status==='Gecikti').length,'SLA riski','red')}${stat('Tamamlanan',DB.ceoDashboard.actionTasks.filter(t=>t.status==='Tamamlandı').length,'Bu demo oturumunda','green')}${stat('En Hızlı Çözen','Elif Kaya','Kalite aksiyonları','green')}</div><div class="grid g60"><div class="card"><div class="card-head"><div><div class="card-title">Aksiyon Motoru</div><div class="card-sub">Görev oluştur, sorumlu ata, deadline ver ve takip et</div></div><button class="btn primary" data-open-action-modal="Yeni aksiyon">Yeni Aksiyon</button></div>${ActionCommandGrid()}</div><div class="card"><div class="card-head"><div><div class="card-title">Görev Takip Motoru</div><div class="card-sub">Açık, geciken ve tamamlanan görevler</div></div></div>${ActionTaskPanel()}</div></div>`)+
         pageShell('ai', `<div class="grid g4">${stat('AI Öneri',DB.ceoDashboard.aiRecommendations.length,'Aksiyon bekliyor','blue')}${stat('Yüksek Etki',3,'CEO önceliği','green')}${stat('Yüksek Risk',2,'Kriz önleme','amber')}${stat('Göreve Dönüşüm','%42','Hedef %60','blue')}</div><div class="card"><div class="card-head"><div><div class="card-title">AI Öneri Motoru</div><div class="card-sub">Beklenen etki, risk ve aksiyon butonu birlikte</div></div><button class="btn primary" data-open-action-modal="AI önerisi">Öneriden görev oluştur</button></div>${AIRecommendationPanel()}</div>`)+
@@ -750,6 +864,73 @@
       wirePageEvents();
       renderCharts();
       if(window.lucide) lucide.createIcons();
+    }
+
+    function complaintCenter(){ return DB.complaintsCenter || seed.complaintsCenter || {}; }
+    function complaintTone(text){
+      return text==='P0'||text==='Yüksek'||text==='Aşıldı'||text==='CEO takip'||text==='Riskli' ? 'b-red' : text==='P1'||text==='Kritik'||text==='Orta'||text==='Hukuk incelemesinde'||text==='Şube savunması bekleniyor'||text==='Yeniden açıldı' ? 'b-amber' : text==='P2'||text==='İçinde'||text==='Takipte'||text==='Kalite incelemesinde'||text==='İncelemede'||text==='Müşteriye dönüş yapıldı' ? 'b-blue' : 'b-green';
+    }
+    function complaintBadge(text){ return `<span class="badge ${complaintTone(text)}">${text}</span>`; }
+    function uniq(arr){ return [...new Set(arr.filter(Boolean))]; }
+    function filteredComplaints(){
+      const rows=complaintCenter().complaintTickets || [];
+      return rows.filter(r=>{
+        const f=complaintFilters;
+        return (!f.region||r.region===f.region) && (!f.branch||r.branch===f.branch) && (!f.priority||r.priority===f.priority) && (!f.status||r.status===f.status) && (!f.type||r.type===f.type) && (!f.legalRisk||r.legalRisk===f.legalRisk) && (!f.sla||r.sla===f.sla) && (!f.source||r.source===f.source);
+      });
+    }
+    function complaintSelect(id,label,values){
+      return `<select data-complaint-filter="${id}"><option value="">${label}</option>${values.map(v=>`<option ${complaintFilters[id]===v?'selected':''}>${v}</option>`).join('')}</select>`;
+    }
+    function ComplaintsCenterPage(){
+      const c=complaintCenter(), rows=filteredComplaints();
+      return `<div class="toolbar">
+        <button class="btn primary" data-action="Yeni şikayet dosyası açıldı.">${icon('plus')}Yeni şikayet aç</button>
+        ${complaintSelect('region','Bölge',uniq((c.complaintTickets||[]).map(x=>x.region)))}
+        ${complaintSelect('branch','Şube',uniq((c.complaintTickets||[]).map(x=>x.branch)))}
+        ${complaintSelect('priority','Öncelik',uniq((c.complaintTickets||[]).map(x=>x.priority)))}
+        ${complaintSelect('status','Durum',uniq((c.complaintTickets||[]).map(x=>x.status)))}
+        ${complaintSelect('type','Şikayet türü',uniq((c.complaintTickets||[]).map(x=>x.type)))}
+        ${complaintSelect('legalRisk','Hukuki risk',uniq((c.complaintTickets||[]).map(x=>x.legalRisk)))}
+        ${complaintSelect('sla','SLA durumu',uniq((c.complaintTickets||[]).map(x=>x.sla)))}
+        ${complaintSelect('source','Kaynak',uniq((c.complaintTickets||[]).map(x=>x.source)))}
+        <select data-complaint-filter="date"><option value="">Tarih aralığı</option><option>Bugün</option><option>Son 7 gün</option><option>Bu ay</option></select>
+      </div>
+      <div class="kpi-grid">${(c.complaintKpis||[]).map(k=>`<div class="card kpi-card ${k.tone==='good'?'good':k.tone==='bad'?'warn':k.tone==='info'?'info':'warn'}"><div class="kpi-main"><div class="label">${k.label}</div><div class="kpi-line"><span class="kpi-value">${k.value}</span><span class="kpi-meta"><span class="card-sub">${k.trend}</span></span></div></div><div class="kpi-ico">${icon(k.icon)}</div></div>`).join('')}</div>
+      <div class="complaints-main-grid">
+        <div class="card complaints-decision-card"><div class="card-head"><div><div class="card-title">Müşteri Şikayetleri Karar Masası</div><div class="card-sub">${rows.length} dosya listeleniyor; hukuk, kalite, Academy ve dashboard aksiyonları aynı kayıttan yönetilir.</div></div><button class="btn" data-action="Filtrelenmiş şikayet listesi dışa aktarım kuyruğuna alındı.">${icon('download')}Dışa aktar</button></div>${ComplaintTicketsTable(rows)}</div>
+        <div class="card"><div class="card-head"><div><div class="card-title">Şikayet Sağlığı Skoru</div><div class="card-sub">100 - açık şikayet etkisi - SLA aşımı etkisi - hukuki risk etkisi + geri kazanım etkisi</div></div></div>${ComplaintBranchScore()}</div>
+      </div>
+      <div class="grid g3" style="margin-top:16px">
+        <div class="card"><div class="card-head"><div><div class="card-title">Şikayet Türleri</div><div class="card-sub">Dağılım analizi</div></div></div><canvas id="chartComplaintTypes" height="150"></canvas></div>
+        <div class="card"><div class="card-head"><div><div class="card-title">Şube Bazlı Açık Şikayet</div><div class="card-sub">Tekrar eden şube sinyali</div></div></div><canvas id="chartComplaintBranches" height="150"></canvas></div>
+        <div class="card"><div class="card-head"><div><div class="card-title">SLA Uyum Trendi</div><div class="card-sub">Çözüm disiplini</div></div></div><canvas id="chartComplaintSla" height="150"></canvas></div>
+        <div class="card"><div class="card-head"><div><div class="card-title">Google Negatif Yorum Trendi</div><div class="card-sub">24 saat alarmı</div></div></div><canvas id="chartComplaintSentiment" height="150"></canvas></div>
+        <div class="card"><div class="card-head"><div><div class="card-title">Kök Neden Dağılımı</div><div class="card-sub">Kalite ve Academy girdisi</div></div></div><canvas id="chartComplaintRoot" height="150"></canvas></div>
+        <div class="card"><div class="card-head"><div><div class="card-title">Hukuki Riske Dönüş Trend</div><div class="card-sub">İhtar, arabuluculuk, dava riski</div></div></div><canvas id="chartComplaintLegal" height="150"></canvas></div>
+      </div>
+      <div class="grid g2" style="margin-top:16px">
+        <div class="card"><div class="card-head"><div><div class="card-title">Kalite & Academy Bağlantısı</div><div class="card-sub">Rapor dili, eksik açıklama, iletişim hatası ve teknik yorum farkı için önerilen aksiyonlar</div></div></div>${ComplaintQualityAcademy()}</div>
+        <div class="card"><div class="card-head"><div><div class="card-title">Dashboard Alarm Kuyruğu</div><div class="card-sub">CEO kokpitine aktarılan şikayet sinyalleri</div></div></div>${ComplaintAlertList()}</div>
+      </div>
+      <div class="card iso-accordion"><details><summary><span>ISO 10002 Şikayet Yönetim Disiplini</span><small class="card-sub">Tıklayınca kontrol adımlarını açar/kapatır.</small></summary><div class="iso-body"><p style="margin:0 0 12px;color:var(--muted);line-height:1.6">Her şikayet kayıt altına alınır, tarafsız incelenir, süresi içinde cevaplanır, kök nedeni kapatılır ve müşteri geri kazanımı ölçülür.</p>${Iso10002Panel()}</div></details></div>`;
+    }
+    function ComplaintTicketsTable(rows){
+      return `<div class="complaint-table-wrap"><table class="complaint-table"><thead><tr><th>Dosya No</th><th>Müşteri</th><th>Telefon</th><th>Plaka</th><th>Şube</th><th>Bölge</th><th>Şikayet türü</th><th>Kaynak</th><th>Öncelik</th><th>SLA</th><th>Hukuki risk</th><th>Sorumlu ekip</th><th>Durum</th><th>Son aksiyon</th><th>Detay</th></tr></thead><tbody>${rows.map(r=>`<tr><td><b>${r.id}</b></td><td>${r.customer}</td><td class="mono">${r.phone}</td><td class="mono">${r.plate}</td><td>${r.branch}</td><td>${r.region}</td><td>${r.type}</td><td>${r.source}</td><td>${complaintBadge(r.priority)}</td><td>${complaintBadge(r.sla)}</td><td>${complaintBadge(r.legalRisk)}</td><td>${r.team}</td><td>${complaintBadge(r.status)}</td><td>${r.lastAction}</td><td><button class="btn detail-btn" data-detail="complaint:${r.id}">Aç</button></td></tr>`).join('')}</tbody></table></div>`;
+    }
+    function Iso10002Panel(){
+      return `<div class="mini-list">${['Kayıt alındı','Müşteriye alındı bildirimi gönderildi','Sorumlu atandı','SLA başladı','Kanıtlar toplandı','Şube savunması alındı','Kök neden belirlendi','Çözüm önerisi üretildi','Müşteriye yazılı dönüş yapıldı','Memnuniyet tekrar ölçüldü','Kalıcı aksiyon açıldı'].map((x,i)=>`<div class="mini">${icon(i<7?'check-circle-2':'circle-dot')}<div><b>${x}</b><span>${i<7?'Aktif dosyalarda zorunlu kontrol tamamlanma oranı izleniyor.':'Kapanış öncesi kanıt ve müşteri geri kazanımı beklenir.'}</span></div></div>`).join('')}</div>`;
+    }
+    function ComplaintBranchScore(){
+      const rows=complaintCenter().complaintBranchScore || [];
+      return `<div class="mini-list">${rows.map(b=>`<div class="mini">${icon(b.score<70?'shield-alert':'shield-check')}<div><b>${b.branch} · ${complaintBadge(b.status)}</b><span>Açık: ${b.open}, SLA aşımı: ${b.sla}, hukuki risk: ${b.legal}, geri kazanım: ${b.recovery}</span><div class="progress" style="margin-top:8px"><div class="bar ${b.score<70?'amber':'green'}" style="width:${b.score}%"></div></div></div><b>${b.score}</b></div>`).join('')}</div>`;
+    }
+    function ComplaintQualityAcademy(){
+      const needs=(complaintCenter().complaintRootCauses||[]).filter(x=>['rapor dili','eksik açıklama','iletişim hatası','teknik yorum farkı'].includes(x[0]));
+      return `<div class="mini-list">${needs.map(x=>`<div class="mini">${icon('graduation-cap')}<div><b>${x[0]} · ${x[1]} kayıt</b><span>Kalite düzeltme planı, Academy eğitim ataması, şube müdürü takip aksiyonu ve personel bazlı eğitim ihtiyacı oluşturuldu.</span><div class="quick-actions" style="margin-top:8px"><button class="micro-btn" data-action="${x[0]} için kalite düzeltme planı açıldı.">Kalite planı</button><button class="micro-btn" data-action="${x[0]} için Academy eğitimi atandı.">Eğitim ata</button><button class="micro-btn" data-open-action-modal="${x[0]} şube müdürü takip aksiyonu">Müdür takibi</button></div></div></div>`).join('')}</div>`;
+    }
+    function ComplaintAlertList(){
+      return `<div class="mini-list">${(complaintCenter().complaintDashboardAlerts||[]).map(a=>`<div class="mini">${icon(a.severity==='critical'?'siren':'bell-ring')}<div><b>${a.text}</b><span>${a.branch} · ${a.time}</span><div class="quick-actions" style="margin-top:8px"><button class="micro-btn" data-route="${a.route}">Modüle git</button><button class="micro-btn" data-action="Alarm dashboard kuyruğuna eklendi.">Alarma ekle</button></div></div></div>`).join('')}</div>`;
     }
 
     function priorityList(){
@@ -767,7 +948,7 @@
     function kpiRoute(label){
       if(label.includes('Ciro') || label.includes('Gelir') || label.includes('Royalty')) return 'finance';
       if(label.includes('Şube')) return 'branches';
-      if(label.includes('Şikayet') || label.includes('Memnuniyet')) return 'crisis';
+      if(label.includes('Şikayet') || label.includes('Sikayet') || label.includes('SLA') || label.includes('Google') || label.includes('Telafi') || label.includes('Memnuniyet')) return 'complaints';
       if(label.includes('Lead')) return 'franchise';
       return 'operations';
     }
@@ -790,11 +971,13 @@
       return `<div class="rail-card"><div class="rail-title">${icon('activity')}Yönetim Nabzı</div><div class="pulse-list">${DB.ceoDashboard.managementPulse.map(p=>`<div class="pulse-item"><div><b>${p.label}</b><span>${p.note}</span></div><div class="pulse-score ${p.tone==='bad'?'bad':p.tone==='warn'?'warn':''}">${p.value}</div></div>`).join('')}</div></div>`;
     }
     function SlaPulsePanel(){
+      const cc=complaintCenter(), sla=cc.complaintSla||{}, sentiment=cc.complaintSentiment||{};
       const items=[
         ['WhatsApp SLA','11 dk yanıt',86,'good'],
-        ['Şikayet çözüm','3s 18dk ort.',68,'warn'],
+        ['Şikayet çözüm',`${sla.inside||0} dosya SLA içinde`,Math.round(((sla.inside||0)/Math.max(1,(sla.inside||0)+(sla.critical||0)+(sla.breached||0)))*100),'warn'],
+        ['Negatif yorum',`${sentiment.negative24h||0} kayıt / 24 saat`,Math.max(20,100-((sentiment.negative24h||0)*5)),'bad'],
         ['Rapor kalite','%90 ağ skoru',90,'good'],
-        ['Offline şube','3 şube riskte',42,'bad']
+        ['Hukuk riski',`${(cc.complaintLegalRisks||[]).length} şikayet dosyası`,Math.max(20,100-((cc.complaintLegalRisks||[]).length*12)),'bad']
       ];
       return `<div class="rail-card"><div class="rail-title">${icon('gauge')}SLA Sinyalleri</div><div class="sla-strip">${items.map(x=>`<div class="sla-item"><div><b>${x[0]}</b><span>${x[1]}</span><div class="sla-meter"><div class="${x[3]==='bad'?'bad':x[3]==='warn'?'warn':''}" style="width:${x[2]}%"></div></div></div><strong>${x[2]}</strong></div>`).join('')}</div></div>`;
     }
@@ -1374,7 +1557,13 @@
     }
     function LegalStats(){
       const s=legalSummaryData();
-      return `${stat('Hukuki Risk Puanı',(s.hukukiRiskPuani||0)+'/100','şikayet + dava + rapor + uyum','red')}${stat('Devam Eden Davalar',s.totalLegalCases,'rol filtresine bağlı','blue')}${stat('Kazanma Oranı','%'+(s.davaKazanmaOrani||0),'kapanan dosyalar','green')}${stat('Bayi Uyum Durumu',s.complianceScoreAvg+'/100','ağ ortalaması','amber')}`;
+      const lr=(complaintCenter().complaintLegalRisks||[]);
+      const totalPrevented=lr.reduce((sum,x)=>sum+(x.amount||0),0);
+      return `${stat('Hukuki Risk Puanı',(s.hukukiRiskPuani||0)+'/100','şikayet + dava + rapor + uyum','red')}${stat('Şikayet Kaynaklı Açık Dosya',lr.length,'müşteri şikayetinden aktı','red')}${stat('İhtarnameye Dönen Dosya',lr.filter(x=>String(x.status).includes('İhtar')).length,'resmi cevap bekler','amber')}${stat('Arabuluculuk Dosyası',lr.filter(x=>String(x.status).includes('Arabuluculuk')).length,'uzlaşma takip','blue')}${stat('Dava Riski Yüksek',lr.filter(x=>x.risk==='Yüksek'||x.risk==='CEO takip').length,'CEO önceliği','red')}${stat('Kazanılan / Kapatılan','3','müşteri dosyası','green')}${stat('Önlenen Tahmini Zarar',fmtTL(totalPrevented),'şikayet savunma etkisi','green')}${stat('Bayi Uyum Durumu',s.complianceScoreAvg+'/100','ağ ortalaması','amber')}`;
+    }
+    function ComplaintLegalRiskTable(){
+      const rows=complaintCenter().complaintLegalRisks||[];
+      return `<table><thead><tr><th>Dosya No</th><th>Şube</th><th>Müşteri</th><th>Konu</th><th>Risk seviyesi</th><th>Tutar riski</th><th>İhtar / dava / arabuluculuk durumu</th><th>Son tarih</th><th>Hukuk aksiyonu</th><th>Marka riski</th></tr></thead><tbody>${rows.map(r=>`<tr><td><b>${r.id}</b></td><td>${r.branch}</td><td>${r.customer}</td><td>${r.subject}</td><td>${complaintBadge(r.risk)}</td><td>${fmtTL(r.amount)}</td><td>${r.status}</td><td>${r.deadline}</td><td>${r.action}</td><td>${complaintBadge(r.brandRisk)}</td></tr>`).join('')}</tbody></table>`;
     }
     function LegalContractTable(){
       const rows=legalData().contracts || [];
@@ -1489,6 +1678,11 @@
       const stageFilter=document.getElementById('stageFilter'); if(stageFilter) stageFilter.addEventListener('change',()=>{ document.getElementById('leadKanban').innerHTML=kanban(stageFilter.value); wirePageEvents(); if(window.lucide) lucide.createIcons(); });
       const reset=document.getElementById('resetDemo'); if(reset) reset.addEventListener('click',async()=>{DB=await Backend.reset(); renderAll(); toast('Demo verisi sıfırlandı.');});
       const exportBtn=document.getElementById('exportBtn'); if(exportBtn) exportBtn.addEventListener('click',exportDemoData);
+      document.querySelectorAll('[data-complaint-filter]').forEach(el=>el.addEventListener('change',()=>{
+        complaintFilters[el.dataset.complaintFilter]=el.value;
+        renderPages();
+        route('complaints');
+      }));
       document.querySelectorAll('[data-revenue-year]').forEach(btn=>btn.addEventListener('click',()=>{
         const activeCount=document.querySelectorAll('[data-revenue-year].active').length;
         if(btn.classList.contains('active') && activeCount===1) return;
@@ -1505,7 +1699,7 @@
         renderCharts();
       }));
     }
-    function route(id){ current=id; document.getElementById('pageTitle').textContent=titles[id]||id; document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id==='page-'+id)); renderHero(); renderNav(); history.replaceState(null,'','#'+id); window.scrollTo({top:0,behavior:'smooth'}); setTimeout(renderCharts,40); if(window.lucide) lucide.createIcons(); }
+    function route(id){ current=id; document.getElementById('pageTitle').textContent=titles[id]||id; document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id==='page-'+id)); renderHero(); bindGlobalSearch(); renderNav(); history.replaceState(null,'','#'+id); window.scrollTo({top:0,behavior:'smooth'}); setTimeout(renderCharts,40); if(window.lucide) lucide.createIcons(); }
     function openBranchProfile(id){ selectedBranchId=id; closeDrawer(); current='branchProfile'; renderPages(); route('branchProfile'); }
     function openDetail(ref){
       const parts=ref.split(':'), type=parts[0], id=parts.slice(1).join(':'); let html='';
@@ -1515,6 +1709,7 @@
       if(type==='crmCustomer'){ const c=crmData().customers.find(x=>x.name===id)||crmData().customers[0]; html=`<div class="card-head"><div><div class="card-title">${c.name}</div><div class="card-sub">Müşteri 360 · ${c.type} · ${c.phone}</div></div><button class="btn" onclick="closeDrawer()">Kapat</button></div><div class="grid g2">${stat('Toplam randevu',c.appointments,'Tamamlanan '+c.completed)}${stat('Toplam ciro',fmtTL(c.totalRevenue),'Son işlem '+c.lastDate,'green')}${stat('Memnuniyet',c.satisfaction+'/5','Şikayet: '+c.complaint,'blue')}${stat('Hukuki risk',c.legalRisk,'KVKK: '+c.kvkk,'amber')}</div><div class="card" style="margin-top:14px"><div class="card-title">Zaman Çizelgesi</div><div class="mini-list" style="margin-top:10px">${['Lead oluştu','İlk arama yapıldı','WhatsApp gönderildi','Randevu oluşturuldu','Kapora alındı','Araç geldi','Rapor teslim edildi','Anket gönderildi'].map((x,i)=>`<div class="mini">${icon(['user-plus','phone','message-circle','calendar-check','credit-card','car-front','file-check','star'][i])}<div><b>${x}</b><span>${c.name} için demo CRM kaydı.</span></div></div>`).join('')}</div></div><div class="card" style="margin-top:14px"><div class="card-title">Tekrar Satış Fırsatı</div><p style="color:var(--muted);line-height:1.6">Önceki araçlar, raporlar, WhatsApp geçmişi, arama notları, görevler ve SLA geçmişi bu müşteri kartında API bağlantısına hazır tutulur.</p><button class="btn primary" data-open-action-modal="${c.name} takip görevi">Takip görevi oluştur</button></div>`; }
       if(type==='academyCourse'){ const c=academySeed().courses.find(x=>x.id===id); if(!c){toast('Eğitim bulunamadı.'); return;} html=`<div class="card-head"><div><div class="card-title">${c.title}</div><div class="card-sub">${c.cat} · ${c.role} · ${c.owner}</div></div><button class="btn" onclick="closeDrawer()">Kapat</button></div><div class="grid g2">${stat('İlerleme','%'+c.progress,c.status)}${stat('Süre',c.duration,c.modules+' modül','blue')}${stat('Bölge',c.region,c.branch,'green')}${stat('Puan',c.score+'/5','Katılımcı değerlendirme','amber')}</div><div class="card" style="margin-top:14px"><div class="card-title">Eğitim Amacı</div><p style="color:var(--muted);line-height:1.6">${c.desc}</p></div><div class="mini-list" style="margin-top:14px"><div class="mini">${icon('user-check')}<div><b>Atama kuralı</b><span>${c.role} rolüne atanabilir; şube ve bölge bazlı zorunlu hale getirilebilir.</span></div></div><div class="mini">${icon('clipboard-check')}<div><b>Sınav ve sertifika</b><span>Minimum %80 sınav skoru ve müdür onayı sonrası sertifika üretilir.</span></div></div><div class="mini">${icon('bar-chart-3')}<div><b>KPI bağlantısı</b><span>Tamamlanma, sınav skoru ve gecikme kişi/şube/bölge KPI'larına yansır.</span></div></div></div><button class="btn primary" style="margin-top:14px" onclick="toast('Eğitim atama görevi oluşturuldu.');closeDrawer()">Eğitimi ata</button>`; }
       if(type==='academyPerson'){ const p=academySeed().people.find(x=>x.id===id); if(!p){toast('Personel bulunamadı.'); return;} html=`<div class="card-head"><div><div class="card-title">${p.name}</div><div class="card-sub">${p.role} · ${p.region} · ${p.branch}</div></div><button class="btn" onclick="closeDrawer()">Kapat</button></div><div class="grid g2">${stat('Tamamlama','%'+p.completion,p.path)}${stat('Sınav',p.exam+'/100','Son sınav skoru','blue')}${stat('Sertifika',p.cert,'Geçerli belge','green')}${stat('Geciken',p.overdue,p.status,'amber')}</div><div class="card" style="margin-top:14px"><div class="card-title">Kişi Bazlı Eğitim Planı</div><div class="mini-list" style="margin-top:10px"><div class="mini">${icon('route')}<div><b>Mevcut eğitim yolu</b><span>${p.path}</span></div></div><div class="mini">${icon('target')}<div><b>Sıradaki eğitim</b><span>${p.next}</span></div></div><div class="mini">${icon('alarm-clock')}<div><b>SLA notu</b><span>Geciken eğitim varsa şube müdürü ve bölge müdürü takip listesine düşer.</span></div></div></div></div><button class="btn primary" style="margin-top:14px" onclick="openActionModal('${p.name} eğitim takip görevi');closeDrawer()">Takip görevi oluştur</button>`; }
+      if(type==='complaint'){ const c=(complaintCenter().complaintTickets||[]).find(x=>x.id===id); const timeline=complaintCenter().complaintTimeline||[]; if(c) html=`<div class="card-head"><div><div class="card-title">${c.id} · ${c.customer}</div><div class="card-sub">${c.phone} · ${c.plate} · ${c.branch} · ${c.region}</div></div><button class="btn" onclick="closeDrawer()">Kapat</button></div><div class="grid g2">${stat('Öncelik',c.priority,c.status,'red')}${stat('SLA',c.sla,c.opened,'amber')}${stat('Hukuki Risk',c.legalRisk,'Tutar riski '+fmtTL(c.amountRisk||0),'red')}${stat('Kök Neden',c.rootCause,'Kalite + Academy girdisi','blue')}</div><div class="card" style="margin-top:14px"><div class="card-title">Şikayet Özeti</div><p style="color:var(--muted);line-height:1.6">${c.summary}</p></div><div class="grid g2" style="margin-top:14px"><div class="card"><div class="card-head"><div><div class="card-title">Müşteri ve Araç Özeti</div><div class="card-sub">Ekspertiz raporu bağlantısı demo</div></div></div><div class="mini-list"><div class="mini">${icon('user')}<div><b>${c.customer}</b><span>${c.phone}</span></div></div><div class="mini">${icon('car-front')}<div><b>${c.plate}</b><span>${c.type} · ${c.source}</span></div></div><div class="mini">${icon('file-text')}<div><b>Rapor bağlantısı</b><span>RPR-${c.plate.replaceAll(' ','')}-2026 demo kaydı</span></div></div></div></div><div class="card"><div class="card-head"><div><div class="card-title">Kanıtlar</div><div class="card-sub">Fotoğraf, rapor, çağrı, WhatsApp ve Google yorum kaydı</div></div></div><div class="mini-list">${['Fotoğraf seti','Ekspertiz raporu','Çağrı kaydı','WhatsApp yazışması','Google yorum ekran görüntüsü'].map(x=>`<div class="mini">${icon('paperclip')}<div><b>${x}</b><span>Demo kanıt paketi dosyaya bağlandı.</span></div></div>`).join('')}</div></div></div><div class="card" style="margin-top:14px"><div class="card-head"><div><div class="card-title">Zaman Çizelgesi</div><div class="card-sub">ISO 10002 kayıt ve tarafsız inceleme akışı</div></div></div><div class="action-timeline">${timeline.map(t=>`<div class="timeline-step"><span class="step-icon">${icon('clock')}</span><div><b>${t.title}</b><span>${t.note}</span></div><strong>${t.time}</strong></div>`).join('')}</div></div><div class="grid g3" style="margin-top:14px"><div class="card"><div class="card-title">Şube Açıklaması</div><p style="color:var(--muted);line-height:1.6">Şube müdürü kamera, cihaz çıktısı ve rapor teslim notlarını 2 saat içinde dosyaya eklemeli.</p></div><div class="card"><div class="card-title">Kalite Değerlendirmesi</div><p style="color:var(--muted);line-height:1.6">${c.rootCause} kök nedeni için ikinci uzman incelemesi ve kalıcı aksiyon zorunlu.</p></div><div class="card"><div class="card-title">Hukuk Notu</div><p style="color:var(--muted);line-height:1.6">Marka riski ${c.brandRisk}; yazılı cevap dili hukuk ve kalite tarafından birlikte onaylanmalı.</p></div></div><div class="card" style="margin-top:14px"><div class="card-head"><div><div class="card-title">Telafi, SLA ve Sonraki Aksiyon</div><div class="card-sub">${c.compensation} · Sonraki adım: ${c.nextAction}</div></div></div><div class="quick-actions">${['Hukuka gönder','Kalite incelemesi aç','Şubeden savunma iste','Müşteriye dönüş yapıldı','Telafi öner','Dosyayı kapat','Academy eğitimi ata','Dashboard alarmına ekle'].map(a=>`<button class="btn" data-action="${c.id}: ${a} işlemi kayda alındı.">${a}</button>`).join('')}</div></div>`; }
       if(type==='legal'){ const l=DB.legal.find(x=>x.id===id); html=`<div class="card-head"><div><div class="card-title">${l.title}</div><div class="card-sub">${l.area} - ${l.owner}</div></div><button class="btn" onclick="closeDrawer()">Kapat</button></div><div class="grid g2">${stat('Risk',l.risk,'Hukuki öncelik')}${stat('Durum',l.status,'Sahip: '+l.owner,'blue')}</div><div class="card" style="margin-top:14px"><div class="card-head"><div><div class="card-title">Madde Bazlı Kontrol Listesi</div><div class="card-sub">Bu başlık sözleşme/dosya içinde mutlaka görünmeli.</div></div></div><div class="mini-list">${l.items.map(x=>`<div class="mini">${icon('check-square')}<div><b>${x}</b><span>Metin, sorumluluk, yaptırım ve kayıt ispatı birlikte tasarlanmalı.</span></div></div>`).join('')}</div></div><div class="card" style="margin-top:14px"><div class="card-title">CEO Notu</div><p style="color:var(--muted);line-height:1.6">Hukuk ekranı yalnız arşiv değil; franchise kalitesini koruyan fren sistemi olmalı. Her dosyada eşik, sahip, süre, kanıt ve yaptırım net yazılmalı.</p></div>`; }
       if(type==='insight'){ const i=DB.intelligence.find(x=>x.id===id); html=`<div class="card-head"><div><div class="card-title">${i.title}</div><div class="card-sub">${i.owner}</div></div><button class="btn" onclick="closeDrawer()">Kapat</button></div><div class="grid g2">${stat('Etki',i.impact,'Finansal / operasyonel')}${stat('Sinyal',i.signal,'Veri merkezi alarmı','blue')}</div><div class="card" style="margin-top:14px"><div class="card-title">Önerilen Karar</div><p style="color:var(--muted);line-height:1.6">${i.action}. Bu içgörü haftalık CEO toplantısında karar maddesine çevrilmeli; aksiyon sahibi, hedef tarih ve ölçüm kriteri girilmeli.</p></div>`; }
       if(type==='task'){ const t=DB.ceoDashboard.actionTasks.find(x=>x.id===id); html=`<div class="card-head"><div><div class="card-title">${t?.title||'Görev Detayı'}</div><div class="card-sub">${t?.category||'Aksiyon'} · ${t?.owner||'Sorumlu'} · ${t?.branch||'Şube'}</div></div><button class="btn" onclick="closeDrawer()">Kapat</button></div><div class="grid g2">${stat('Öncelik',t?.priority||'-','Görev takip')}${stat('Deadline',t?.deadline||'-',t?.status||'Açık','amber')}</div><div class="card" style="margin-top:14px"><div class="card-title">Kapanış Kriteri</div><p style="color:var(--muted);line-height:1.6">${t?.note||'Kanıt, not ve tekrar kontrol sonucu olmadan görev kapanmamalı.'}</p></div><button class="btn primary" style="margin-top:14px" onclick="openActionModal('${(t?.title||'Görev devam aksiyonu').replace(/'/g,'')}');closeDrawer()">Devam aksiyonu aç</button>`; }
@@ -1528,6 +1723,13 @@
     }
     function closeDrawer(){ document.getElementById('drawer').classList.remove('open'); }
     document.addEventListener('click',e=>{
+      const actionEl=e.target.closest('[data-action]');
+      if(actionEl){
+        e.preventDefault();
+        e.stopPropagation();
+        toast(actionEl.dataset.action);
+        return;
+      }
       const branchEl=e.target.closest('[data-branch-profile]');
       if(branchEl && !e.target.closest('[data-detail]')){
         e.preventDefault();
@@ -1565,11 +1767,13 @@
       toast('Yeni aksiyon görev takip motoruna eklendi.');
     });
     function searchIndex(){
+      if(!DB) return [];
       return [
         ...DB.branches.map(x=>({type:'branch',id:x.id,title:x.name,sub:`Şube · ${x.city} · ${x.manager}`,text:Object.values(x).join(' ')})),
         ...DB.leads.map(x=>({type:'lead',id:x.id,title:x.name,sub:`${x.type} · ${x.city} · ${x.stage}`,text:Object.values(x).join(' ')})),
         ...DB.reports.map(x=>({type:'report',id:x.id,title:`${x.plate} · ${x.model}`,sub:`Rapor · ${x.branch} · ${x.result}`,text:Object.values(x).join(' ')})),
         ...DB.tickets.map(x=>({type:'ticket',id:x.id,title:x.title,sub:`Kriz · ${x.branch} · ${x.owner}`,text:Object.values(x).join(' ')})),
+        ...(complaintCenter().complaintTickets||[]).map(x=>({type:'complaint',id:x.id,title:`${x.id} · ${x.customer}`,sub:`Şikayet · ${x.plate} · ${x.branch} · ${x.type}`,text:Object.values(x).join(' ')})),
         ...DB.ceoDashboard.actionTasks.map(x=>({type:'task',id:x.id,title:x.title,sub:`Görev · ${x.owner} · ${x.branch}`,text:Object.values(x).join(' ')})),
         ...DB.ceoDashboard.personnel.map(x=>({type:'hr',id:x.role,title:x.name,sub:`İK · ${x.role} · ${x.branch}`,text:Object.values(x).join(' ')}))
       ];
@@ -1582,6 +1786,7 @@
       document.getElementById('globalSearch').value='';
       if(type==='branch') return openBranchProfile(id);
       if(type==='lead'){ route('franchise'); setTimeout(()=>openDetail('lead:'+id),80); return; }
+      if(type==='complaint'){ route('complaints'); setTimeout(()=>openDetail('complaint:'+id),80); return; }
       if(type==='ticket'){ route('crisis'); toast('Kriz kaydı açıldı.'); return; }
       if(type==='task'){ route('actions'); setTimeout(()=>openDetail('task:'+id),80); return; }
       if(type==='hr'){ route('hr'); setTimeout(()=>openDetail('hr:'+id),80); return; }
@@ -1597,11 +1802,15 @@
       r.classList.add('open');
       if(window.lucide) lucide.createIcons();
     }
-    document.getElementById('globalSearch').addEventListener('input',e=>renderSearchResults(e.target.value.trim()));
-    document.getElementById('searchResults').addEventListener('click',e=>{
-      const hit=e.target.closest('[data-search-type]'); if(!hit) return;
-      e.preventDefault(); e.stopPropagation(); openSearchHit(hit.dataset.searchType,hit.dataset.searchId);
-    });
+    function bindGlobalSearch(){
+      const search=document.getElementById('globalSearch'), results=document.getElementById('searchResults');
+      if(search && !search.dataset.bound){ search.dataset.bound='1'; search.addEventListener('input',e=>renderSearchResults(e.target.value.trim())); }
+      if(results && !results.dataset.bound){ results.dataset.bound='1'; results.addEventListener('click',e=>{
+        const hit=e.target.closest('[data-search-type]'); if(!hit) return;
+        e.preventDefault(); e.stopPropagation(); openSearchHit(hit.dataset.searchType,hit.dataset.searchId);
+      }); }
+    }
+    bindGlobalSearch();
     document.addEventListener('click',e=>{ if(!e.target.closest('.search')) closeSearchResults(); });
 
     function renderCharts(){
@@ -1636,6 +1845,13 @@
       make('chartOps','bar',{labels:DB.branches.map(b=>b.city),datasets:[{label:'Rapor adedi',data:DB.branches.map(b=>b.reports),backgroundColor:'#d71920'},{label:'Kalite skoru',data:DB.branches.map(b=>b.quality*8),backgroundColor:'#111318'}]});
       make('chartFinance','doughnut',{labels:['Royalty','Reklam Katkı','Yazılım Lisansı','Eğitim'],datasets:[{data:[royaltyAmount(5456000),109120,72000,46000],backgroundColor:['#d71920','#111318','#185abc','#14804a']}]});
       make('chartBI','radar',{labels:DB.branches.slice(0,4).map(b=>b.city),datasets:[{label:'Ciro endeksi',data:DB.branches.slice(0,4).map(b=>Math.round(b.revenue/20000)),borderColor:'#d71920',backgroundColor:'rgba(215,25,32,.12)'},{label:'Kalite',data:DB.branches.slice(0,4).map(b=>b.quality),borderColor:'#185abc',backgroundColor:'rgba(24,90,188,.10)'}]});
+      const cc=complaintCenter();
+      make('chartComplaintTypes','doughnut',{labels:(cc.complaintCategories||[]).map(x=>x[0]),datasets:[{data:(cc.complaintCategories||[]).map(x=>x[1]),backgroundColor:['#d71920','#111318','#185abc','#14804a','#b76b00','#6d3fc8']}]});
+      make('chartComplaintBranches','bar',{labels:(cc.complaintBranchScore||[]).map(x=>x.branch.replace('İstanbul ','').replace('Ankara ','')),datasets:[{label:'Açık şikayet',data:(cc.complaintBranchScore||[]).map(x=>x.open),backgroundColor:'#d71920'},{label:'Şikayet sağlığı skoru',data:(cc.complaintBranchScore||[]).map(x=>x.score/10),backgroundColor:'#111318'}]});
+      make('chartComplaintSla','line',{labels:cc.complaintSla?.labels||[],datasets:[{label:'SLA uyum %',data:cc.complaintSla?.trend||[],borderColor:'#14804a',backgroundColor:'rgba(20,128,74,.12)',tension:.35,fill:true}]},{scales:{y:{min:50,max:100}}});
+      make('chartComplaintSentiment','line',{labels:cc.complaintSentiment?.labels||[],datasets:[{label:'Negatif yorum',data:cc.complaintSentiment?.trend||[],borderColor:'#d71920',backgroundColor:'rgba(215,25,32,.12)',tension:.35,fill:true}]});
+      make('chartComplaintRoot','polarArea',{labels:(cc.complaintRootCauses||[]).map(x=>x[0]),datasets:[{data:(cc.complaintRootCauses||[]).map(x=>x[1]),backgroundColor:['#d7192030','#11131830','#185abc30','#14804a30','#b76b0030','#6d3fc830'],borderColor:['#d71920','#111318','#185abc','#14804a','#b76b00','#6d3fc8']}]});
+      make('chartComplaintLegal','bar',{labels:['Kasım','Aralık','Ocak','Şubat','Mart','Nisan'],datasets:[{label:'Hukuki riske dönen',data:[1,2,2,4,5,(cc.complaintLegalRisks||[]).length],backgroundColor:'#111318'},{label:'İhtar / dava riski',data:[0,1,1,2,2,(cc.complaintLegalRisks||[]).filter(x=>x.risk==='Yüksek'||x.risk==='CEO takip').length],backgroundColor:'#d71920'}]});
     }
     function fallbackChart(canvas,data){
       const ctx=canvas.getContext('2d'), w=canvas.width=canvas.clientWidth*2, h=canvas.height=(canvas.clientHeight||220)*2;
