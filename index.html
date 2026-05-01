@@ -138,6 +138,7 @@
     .iso-accordion details[open] summary:after{content:"-"}
     .iso-accordion .iso-body{border-top:1px solid var(--line);padding:14px 18px 18px}
     .iso-accordion .mini-list{grid-template-columns:repeat(2,minmax(0,1fr));display:grid}
+    .hr-room{display:grid;gap:14px}.hr-hero{border:1px solid #222938;border-radius:14px;background:linear-gradient(135deg,#0b0d12,#202635 76%,#d71920 150%);color:#fff;padding:20px;display:flex;justify-content:space-between;gap:16px;align-items:flex-end;box-shadow:var(--shadow)}.hr-hero h2{margin:0 0 7px;font-size:27px;letter-spacing:0}.hr-hero p{margin:0;color:#d7dce6;line-height:1.55;max-width:900px}.hr-hero .quick-actions .btn{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);color:#fff}.hr-tabs{display:flex;gap:8px;overflow-x:auto;padding:2px 0 5px;scrollbar-width:thin}.hr-tab{border:1px solid var(--line);background:#fff;border-radius:999px;padding:9px 12px;font-size:12px;font-weight:900;color:#4d5563;white-space:nowrap}.hr-tab.active{background:#111318;color:#fff;border-color:#111318}.hr-subtabs{display:flex;gap:7px;flex-wrap:wrap}.hr-subtabs button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 9px;font-size:11px;font-weight:850;color:#4d5563}.hr-data-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.hr-data-card{border:1px solid var(--line);border-radius:10px;background:#fff;padding:12px;display:grid;gap:7px;min-width:0}.hr-data-card span{color:var(--muted);font-size:10px;font-weight:900;text-transform:uppercase}.hr-data-card b{font-size:20px;letter-spacing:0}.hr-table-wrap{width:100%;overflow:auto;border:1px solid var(--line);border-radius:11px;background:#fff}.hr-table{min-width:1060px}.hr-table th,.hr-table td{padding:10px}.hr-card-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.hr-card-grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}.hr-info-card{border:1px solid var(--line);border-radius:11px;background:#fff;padding:12px;display:grid;gap:9px}.hr-info-card h3{margin:0;font-size:13px}.hr-info-card p{margin:0;color:var(--muted);font-size:12px;line-height:1.45}.hr-score-row{display:grid;grid-template-columns:140px 1fr 42px;gap:8px;align-items:center;font-size:12px}.hr-score-row b{font-size:12px}.hr-kanban{display:grid;grid-template-columns:repeat(5,minmax(220px,1fr));gap:12px;overflow:auto;padding-bottom:4px}.hr-kanban-col{border:1px solid var(--line);border-radius:12px;background:#f7f8fa;padding:10px;min-height:230px}.hr-kanban-col h3{margin:0 0 9px;font-size:12px;display:flex;justify-content:space-between;gap:8px}.hr-request-card{border:1px solid var(--line);border-radius:10px;background:#fff;padding:11px;margin-bottom:9px;display:grid;gap:7px}.hr-request-card b{font-size:12px}.hr-request-card small{color:var(--muted);line-height:1.35}.hr-check-list{display:grid;gap:8px}.hr-check{display:grid;grid-template-columns:24px 1fr auto;gap:9px;align-items:center;border:1px solid var(--line);border-radius:10px;background:#fff;padding:9px}.hr-check i{width:22px;height:22px;color:var(--green)}.hr-check.late{border-color:#ffe0a6;background:#fffaf0}.hr-check.late i{color:var(--amber)}.hr-tree{display:grid;gap:9px}.hr-tree-node{border:1px solid var(--line);border-radius:10px;background:#fff;padding:11px}.hr-tree-node.child{margin-left:24px}.hr-mask{display:inline-flex;border:1px dashed #cbd5e1;border-radius:999px;color:#69707d;background:#f8fafc;padding:4px 7px;font-size:10px;font-weight:900}.hr-empty{border:1px dashed #d7dce6;border-radius:11px;padding:18px;text-align:center;color:var(--muted);background:#fff}.hr-cost-ok{color:var(--green)}.hr-cost-watch{color:var(--blue)}.hr-cost-risk{color:var(--amber)}.hr-cost-critical{color:var(--red)}.hr-settings-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.hr-settings-row{display:grid;grid-template-columns:1fr 110px;gap:10px;align-items:center;border:1px solid var(--line);border-radius:10px;background:#fff;padding:10px}.hr-settings-row input{width:100%;border:1px solid var(--line);border-radius:8px;padding:8px}
     @media (max-width:1400px){.top{height:auto;flex-wrap:wrap;padding:12px 28px}.header-identity{min-width:220px}.top-filters{flex:1 1 280px}.search{width:auto;flex:1 1 360px}.top-actions{margin-left:auto}}
     @media (max-width:1100px){.complaints-main-grid{grid-template-columns:1fr}.complaint-health-strip{grid-template-columns:repeat(2,minmax(0,1fr))}.iso-accordion .mini-list{grid-template-columns:1fr}.complaint-table{min-width:980px}}
     @media (max-width:1100px){
@@ -173,6 +174,8 @@
       table{min-width:640px}.profile-head,.stage{grid-template-columns:1fr}.command-dock{bottom:14px;align-items:flex-end}.dock-panel{max-height:72vh}.dock-tab span{font-size:10px}
       .drawer-panel{width:100%;padding:18px}.modal{padding:12px}.actions{flex-wrap:wrap}.actions .btn{flex:1 1 auto;justify-content:center}
     }
+    @media (max-width:1100px){.hr-hero{display:grid}.hr-data-grid,.hr-card-grid,.hr-card-grid.two,.hr-settings-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.hr-kanban{grid-template-columns:repeat(3,minmax(220px,1fr))}}
+    @media (max-width:700px){.hr-data-grid,.hr-card-grid,.hr-card-grid.two,.hr-settings-grid{grid-template-columns:1fr}.hr-hero{padding:16px}.hr-hero h2{font-size:22px}.hr-score-row{grid-template-columns:1fr}.hr-kanban{grid-template-columns:repeat(2,minmax(210px,1fr))}.hr-tree-node.child{margin-left:10px}}
   </style>
 </head>
 <body>
@@ -587,6 +590,766 @@
       window.OTOTR_DASHBOARD_SERVICE = profitRiskDemoModel.services;
     }
 
+    const HR_DATA_KEY = 'ototr-hr-data';
+    const HR_SETTINGS_KEY = 'ototr-hr-settings';
+    const HR_ACTIONS_KEY = 'ototr-hr-actions';
+    const hrStorageVersion = 'v1';
+
+    const hrBranchesSeed = [
+      {id:'BR-HR-101',name:'Bursa Nilüfer',city:'Bursa',region:'Marmara',status:'Aktif',manager:'Kadir Başaran',revenue:1425000,minType:'standart',vehicleCount:128,vehicleCapacity:11},
+      {id:'BR-HR-102',name:'İstanbul Ataşehir',city:'İstanbul',region:'Marmara',status:'Aktif',manager:'Selin Aras',revenue:1880000,minType:'bölge ana',vehicleCount:170,vehicleCapacity:14},
+      {id:'BR-HR-103',name:'Ankara Çukurambar',city:'Ankara',region:'İç Anadolu',status:'Aktif',manager:'Emre Sarı',revenue:1186000,minType:'standart',vehicleCount:112,vehicleCapacity:10},
+      {id:'BR-HR-104',name:'Kocaeli İzmit',city:'Kocaeli',region:'Marmara',status:'Aktif',manager:'Mehmet Aydın',revenue:965000,minType:'mini',vehicleCount:92,vehicleCapacity:9},
+      {id:'BR-HR-105',name:'İzmir Bornova',city:'İzmir',region:'Ege',status:'Açılış',manager:'Derya Koç',revenue:0,minType:'mini',vehicleCount:0,vehicleCapacity:3},
+      {id:'BR-HR-106',name:'Antalya Kepez',city:'Antalya',region:'Akdeniz',status:'Kurulum',manager:'Atama bekleniyor',revenue:0,minType:'mini',vehicleCount:0,vehicleCapacity:2},
+      {id:'BR-HR-107',name:'Konya Selçuklu',city:'Konya',region:'İç Anadolu',status:'Aktif',manager:'Aylin Güler',revenue:742000,minType:'premium',vehicleCount:88,vehicleCapacity:8},
+      {id:'BR-HR-108',name:'Adana Seyhan',city:'Adana',region:'Akdeniz',status:'Aktif',manager:'Ceyda Söz',revenue:683000,minType:'standart',vehicleCount:76,vehicleCapacity:7}
+    ];
+
+    const HR_MIN_STAFFING_STANDARD = {
+      mini:{'Şube müdürü':1,Teknisyen:2,'Müşteri kabul':1,Destek:0,'Bölge destek':0},
+      standart:{'Şube müdürü':1,Teknisyen:3,'Müşteri kabul':1,Destek:1,'Bölge destek':0},
+      premium:{'Şube müdürü':1,Teknisyen:5,'Müşteri kabul':2,Destek:2,'Bölge destek':0},
+      'bölge ana':{'Şube müdürü':1,Teknisyen:7,'Müşteri kabul':2,Destek:2,'Bölge destek':1}
+    };
+
+    const HR_ROLES = [
+      {name:'CEO',department:'Yönetim',minAcademyLevel:3,requiredCerts:['L3 Kurumsal Yönetim'],minCost:0},
+      {name:'İnsan Kaynakları Sorumlusu',department:'İnsan Kaynakları',minAcademyLevel:3,requiredCerts:['İK Operasyon'],minCost:1},
+      {name:'Finans Sorumlusu',department:'Finans',minAcademyLevel:3,requiredCerts:['Finans Disiplin'],minCost:1},
+      {name:'Hukuk Sorumlusu',department:'Hukuk & Uyum',minAcademyLevel:3,requiredCerts:['Yasal Sorumluluk'],minCost:1},
+      {name:'Pazarlama Sorumlusu',department:'Pazarlama',minAcademyLevel:2,requiredCerts:['Marka ve Müşteri'],minCost:0},
+      {name:'Sosyal Medya Sorumlusu',department:'Pazarlama',minAcademyLevel:2,requiredCerts:['Dijital İletişim'],minCost:0},
+      {name:'Tedarik Sorumlusu',department:'Satın Alma',minAcademyLevel:2,requiredCerts:['Tedarik Süreç'],minCost:0},
+      {name:'Academy Sorumlusu',department:'Academy',minAcademyLevel:3,requiredCerts:['Eğitim Metodolojisi'],minCost:0},
+      {name:'Bölge Müdürü',department:'Operasyon',minAcademyLevel:4,requiredCerts:['L3 Operasyon'],minCost:0},
+      {name:'Franchise Sahibi',department:'Franchise Yönetimi',minAcademyLevel:3,requiredCerts:['Franchise Yönetimi'],minCost:1},
+      {name:'Şube Müdürü',department:'Şube Yönetimi',minAcademyLevel:3,requiredCerts:['L3 Liderlik'],minCost:0},
+      {name:'Teknisyen',department:'Teknik Operasyon',minAcademyLevel:2,requiredCerts:['Teknik Eğitim'],minCost:0},
+      {name:'Müşteri Kabul',department:'Müşteri Kabul',minAcademyLevel:2,requiredCerts:['Müşteri Standartları'],minCost:0},
+      {name:'Destek Personeli',department:'Destek Operasyon',minAcademyLevel:1,requiredCerts:['Destek Operasyonu'],minCost:0}
+    ];
+
+    const HR_DEPARTMENTS = [
+      {name:'Yönetim',owner:'CEO',description:'Genel merkez stratejik ve operasyonel karar yönetimi.'},
+      {name:'İnsan Kaynakları',owner:'İnsan Kaynakları Sorumlusu',description:'Personel yaşam döngüsü, işe alım ve performans yönetimi.'},
+      {name:'Finans',owner:'Finans Sorumlusu',description:'Bütçe, gider, bordro simülasyonu ve prim denetimi.'},
+      {name:'Hukuk & Uyum',owner:'Hukuk Sorumlusu',description:'Sözleşme, KVKK, etik ve dava riskleri.'},
+      {name:'Pazarlama',owner:'Pazarlama Sorumlusu',description:'Şube destekli talep ve marka görünüm yönetimi.'},
+      {name:'Sosyal Medya',owner:'Sosyal Medya Sorumlusu',description:'Dijital görünürlük, yorum ve itibar takibi.'},
+      {name:'Tedarik / Satın Alma',owner:'Tedarik Sorumlusu',description:'Cihaz/stoğ/sözleşme lojistiği ve maliyet disiplini.'},
+      {name:'Operasyon',owner:'Operasyon Direktörü',description:'Rapor kalitesi, süreç disiplini ve günlük operasyon.'},
+      {name:'Academy',owner:'Academy Sorumlusu',description:'Yetkinlik, eğitim, sertifika ve sınav yönetimi.'},
+      {name:'Kalite Denetim',owner:'Kalite Ekibi',description:'Rapor dili ve denetim standartları.'},
+      {name:'Franchise Yönetimi',owner:'Franchise Satış',description:'Şube açılış, destek ve standart takip.'},
+      {name:'CRM / Müşteri Deneyimi',owner:'CRM Lideri',description:'Müşteri yolculuğu ve şube veri bütünlüğü.'},
+      {name:'Teknoloji / Sistem',owner:'Operasyon Teknolojisi',description:'Modüller ve veri bütünlüğü.'}
+    ];
+
+    const HR_RECRUITMENT_STAGES = ['Taslak','Şube Onayında','İK İncelemesinde','Finans İncelemesinde','Academy Testinde','Bölge Onayında','Merkez Onayında','Onaylandı','Reddedildi','Bekletildi'];
+    const HR_BONUS_STATUSES = ['Uygun','Şartlı Uygun','Kilitli','Uygun Değil','İncelemede'];
+    const HR_RISK_BADGE = {iyi:'Sağlıklı',izlenir:'İzlenmeli',riskli:'Riskli',kritik:'Kritik'};
+
+    const HR_SEED_SETTINGS = {
+      performanceWeights:{company:15,region:15,branch:20,manager:35,employee:25},
+      bonusRules:{
+        academyLockWeight:35,
+        certExpiredWeight:40,
+        disciplineWeight:35,
+        customerRiskWeight:5
+      },
+      staffingStandards:{mini:HR_MIN_STAFFING_STANDARD.mini,standart:HR_MIN_STAFFING_STANDARD.standart,premium:HR_MIN_STAFFING_STANDARD.premium,'bölge ana':HR_MIN_STAFFING_STANDARD['bölge ana']},
+      payrollMasks:['Kimlik no gizli','Sağlık verisi gizli','Disiplin dosyası gizli']
+    };
+    const HR_VIEW_KEY = 'ototr-hr-view';
+    const HR_ROOMS = [
+      {id:'executive-dashboard',title:'HR Executive Dashboard',slug:'executive-dashboard'},
+      {id:'organization',title:'Organizasyon & Departmanlar',slug:'organizasyon'},
+      {id:'roles',title:'Roller & Görev Tanımları',slug:'roller'},
+      {id:'employee360',title:'Personel 360',slug:'personel'},
+      {id:'branch-management',title:'Şube Personel Yönetimi',slug:'subeler'},
+      {id:'recruitment',title:'İşe Alım & Merkez Onay Odası',slug:'ise-alim'},
+      {id:'onboarding',title:'Onboarding / Oryantasyon',slug:'onboarding'},
+      {id:'academy',title:'Academy & Sertifika Odası',slug:'academy'},
+      {id:'performance',title:'Performans Sistemi',slug:'performans'},
+      {id:'bonus',title:'Prim Simülasyon Odası',slug:'prim-simulasyon'},
+      {id:'shift',title:'Vardiya / Devam / İzin',slug:'vardiya'},
+      {id:'cost',title:'Personel Giderleri & Şube Maliyetleri',slug:'giderler'},
+      {id:'profitability',title:'Kârlılık KPI Hazırlık Odası',slug:'karlilik-hazirlik'},
+      {id:'hr-health',title:'Şube İK Sağlık Skoru',slug:'sube-saglik'},
+      {id:'career',title:'Kariyer / Terfi / Yedekleme',slug:'kariyer'},
+      {id:'discipline',title:'Disiplin / Etik / Hukuk',slug:'disiplin'},
+      {id:'reports',title:'Raporlama Merkezi',slug:'raporlar'},
+      {id:'settings',title:'HR Ayarları',slug:'ayarlar'}
+    ];
+    const HR_ROOM_BY_SLUG = Object.fromEntries(HR_ROOMS.map(r => [r.slug, r.id]));
+    const HR_ROOM_BY_ID = Object.fromEntries(HR_ROOMS.map(r => [r.id, r]));
+    const HR_DEFAULT_ROOM = 'executive-dashboard';
+    const HR_VIEW = (()=>{
+      try{
+        const raw = localStorage.getItem(HR_VIEW_KEY);
+        const parsed = raw ? JSON.parse(raw) : null;
+        return {
+          room: parsed?.room && HR_ROOM_BY_ID[parsed.room] ? parsed.room : HR_DEFAULT_ROOM,
+          lastFilters: parsed?.lastFilters || {},
+          activeEmployeeId: parsed?.activeEmployeeId || ''
+        };
+      }catch(e){
+        return {room:HR_DEFAULT_ROOM,lastFilters:{},activeEmployeeId:''};
+      }
+    })();
+
+    const HR_ACADEMY_COURSES = [
+      {id:'AC-01',title:'OTOTR Kültür Eğitimi',category:'Kültür',requiredForRoles:['İnsan Kaynakları Sorumlusu','Şube Müdürü'],minLevel:1,duration:'4 saat',modules:['Marka', 'Dil', 'Müşteri Yaklaşımı'],passScore:80,status:'Zorunlu'},
+      {id:'AC-02',title:'Teknik Ekspertiz Eğitimleri',category:'Teknik',requiredForRoles:['Teknisyen','Şube Müdürü'],minLevel:2,duration:'12 saat',modules:['Boya', 'Mekanik', 'Elektronik', 'EV'],passScore:82,status:'Zorunlu'},
+      {id:'AC-03',title:'Müşteri Deneyimi Eğitimleri',category:'Müşteri',requiredForRoles:['Müşteri Kabul','Şube Müdürü'],minLevel:1,duration:'6 saat',modules:['Karşılama', 'Randevu', 'İletişim'],passScore:78,status:'Zorunlu'},
+      {id:'AC-04',title:'Satış ve CRM Eğitimleri',category:'Satış',requiredForRoles:['Müşteri Kabul','Franchise Sahibi'],minLevel:2,duration:'8 saat',modules:['Lead', 'Randevu', 'Takip'],passScore:76,status:'Önerilen'},
+      {id:'AC-05',title:'Şube Müdürü Okulu',category:'Liderlik',requiredForRoles:['Şube Müdürü'],minLevel:3,duration:'20 saat',modules:['Operasyon', 'Maliyet', 'Kriz'],passScore:88,status:'Zorunlu'},
+      {id:'AC-06',title:'Franchise Sahibi Programı',category:'Franchise',requiredForRoles:['Franchise Sahibi'],minLevel:2,duration:'16 saat',modules:['Model', 'Disiplin', 'Bütçe'],passScore:82,status:'Zorunlu'},
+      {id:'AC-07',title:'Hukuk & KVKK Eğitimleri',category:'Uyum',requiredForRoles:['Hukuk Sorumlusu','Şube Müdürü'],minLevel:3,duration:'10 saat',modules:['Sözleşme', 'Veri Güvenliği', 'İhtilaf'],passScore:80,status:'Zorunlu'}
+    ];
+
+    const formatCurrencyTRY = n => new Intl.NumberFormat('tr-TR',{style:'currency',currency:'TRY',maximumFractionDigits:0}).format(Number(n)||0);
+    const formatPercent = v => `${(Number(v)||0).toLocaleString('tr-TR',{maximumFractionDigits:1})}%`;
+    const toDate = n => {
+      const d = new Date(n || Date.now());
+      return `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`;
+    };
+    const safeNum = n => Number.isFinite(Number(n)) ? Number(n) : 0;
+    const clamp100 = n => Math.max(0, Math.min(100, Math.round(Number(n)||0)));
+    const clamp = (n,min,max) => Math.max(min, Math.min(max,n));
+    const rand = (a,b) => Math.floor(Math.random()*(b-a+1))+a;
+    const pick = arr => arr[rand(0,arr.length-1)];
+    const clone = obj => JSON.parse(JSON.stringify(obj||{}));
+    const levelLabel = idx => ['L0','L1','L2','L3','L4','L5'][idx] || 'L0';
+
+    function getRiskLevel(score){
+      const s = safeNum(score);
+      return s>=85?'Sağlıklı (Yeşil)':s>=70?'İzlenmeli (Mavi)':s>=55?'Riskli (Amber)':'Kritik (Kırmızı)';
+    }
+
+    function getGrade(score){
+      const s = safeNum(score);
+      return s>=90?'A+':s>=80?'A':s>=70?'B':s>=60?'C':s>=50?'D':'E';
+    }
+
+    function getAcademyLevelScore(level){
+      return {0:20,1:35,2:55,3:75,4:90,5:100}[Math.max(0,Math.min(5,Number(level)||0))] || 35;
+    }
+
+    function getCertificationRisk(employee, certifications){
+      const certs = hrGetCertificationsByEmployee(employee.id, certifications || HR_DATA?.certifications || []);
+      if(!certs.length) return 'Yüksek';
+      const risk = certs.some(c => c.status==='Süresi Dolmuş') ? 'Kritik' : certs.some(c => c.status==='Süre Yakında Doluyor') ? 'Riskli' : 'Düşük';
+      return risk;
+    }
+
+    function getAcademyLockStatus(employee){
+      const certRisk = getCertificationRisk(employee);
+      if(employee.academyLevel < (HR_ROLES.find(r=>r.name===employee.position)?.minAcademyLevel || 0)) return 'Kilitli';
+      if(certRisk === 'Kritik') return 'Kilitli';
+      return 'Açık';
+    }
+
+    function getRecommendedActions(item){
+      const result = [];
+      const score = safeNum(item.finalScore || item.score || item.totalScore);
+      if(score < 55) result.push('Acil performans planı aç');
+      if((item.openPositions||0) > 0) result.push('Açık kadro talebi oluştur');
+      if(item.hrRiskLevel==='Kritik' || item.hrRiskLevel==='Riskli') result.push('İK görüşmesi planla');
+      if(item.academyStatus === 'Kilitli' || item.academyLockReason) result.push('Academy yeniden eğitim ata');
+      if((item.totalMonthlyCost||0) > (item.branchRevenue||1) * 0.75) result.push('Maliyet kontrol alarmı aç');
+      return result.length ? result : ['Durum stabil'];
+    }
+
+    function calculateEmployeeFinalScore(employee){
+      const performance = safeNum(employee.performanceScore);
+      const branchImpact = safeNum(employee.branchScoreImpact);
+      const companyImpact = safeNum(employee.companyScoreImpact);
+      const regionImpact = safeNum(employee.regionScoreImpact);
+      const result = performance*0.7 + branchImpact*0.2 + companyImpact*0.05 + regionImpact*0.05;
+      return clamp100(result);
+    }
+
+    function calculateManagerFinalScore(manager){
+      const personal = safeNum(manager.performanceScore);
+      const branch = safeNum(manager.branchScoreImpact);
+      const final = personal*0.35 + branch*0.45 + safeNum(manager.regionScoreImpact)*0.1 + safeNum(manager.companyScoreImpact)*0.1;
+      return clamp100(final);
+    }
+
+    function calculateBranchScore(branch){
+      const staffGap = clamp((safeNum(branch.personnelCount) - branch.personnelNeed) / Math.max(1, branch.personnelNeed) * 100, 0, 100);
+      const academy = safeNum(branch.academyCompletion);
+      const cert = safeNum(branch.certificationRate);
+      const perf = safeNum(branch.averagePerformance);
+      const cost = clamp(100 - (safeNum(branch.personnelCostToRevenueRatio) * 1.3), 0, 100);
+      const final = Math.round((staffGap*0.25)+(academy*0.2)+(cert*0.15)+(perf*0.25)+(cost*0.15));
+      return clamp100(final);
+    }
+
+    function calculateRegionScore(region){
+      const branches = (HR_DATA.branches || []).filter(b => b.region === region).map(calculateBranchScore);
+      if(!branches.length) return 0;
+      return clamp100(branches.reduce((s,v)=>s+v,0) / branches.length);
+    }
+
+    function calculateCompanyScore(){
+      const branches = (HR_DATA.branches || []);
+      if(!branches.length) return 0;
+      return clamp100(branches.reduce((s,b)=>s+safeNum(calculateBranchScore(b)),0) / branches.length);
+    }
+
+    function calculatePersonnelCostToRevenue(branch){
+      return safeNum(branch.totalPersonnelCost) && safeNum(branch.revenue) ? safeNum(branch.totalPersonnelCost) / Math.max(1,safeNum(branch.revenue)) * 100 : 0;
+    }
+    function calculateRevenuePerEmployee(branch){
+      return safeNum(branch.revenue) / Math.max(1,safeNum(branch.personnelCount));
+    }
+    function calculateVehiclePerTechnician(branch){
+      return safeNum(branch.vehicleCount) / Math.max(1,safeNum(branch.minTechnicianCount));
+    }
+    function calculateBranchHRHealth(branch){
+      const staffingScore = clamp(safeNum(branch.personnelCount) / Math.max(1,branch.personnelNeed)*100,0,100) * 0.15;
+      const certificationScore = safeNum(branch.certificationRate) * 0.15;
+      const academyScore = safeNum(branch.academyCompletion) * 0.15;
+      const perfScore = safeNum(branch.averagePerformance) * 0.15;
+      const costScore = clamp(100 - calculatePersonnelCostToRevenue(branch),0,100) * 0.10;
+      const attendanceScore = safeNum(100 - safeNum(branch.attendanceRiskScore));
+      const attendanceImpact = clamp(attendanceScore * 0.10,0,10);
+      const turnoverScore = clamp((100 - safeNum(branch.turnoverRate))*1,0,100) * 0.10;
+      const disciplineScore = safeNum(branch.disciplineRiskScore) * 0.05;
+      const successionScore = safeNum(branch.successionScore) * 0.05;
+      const total = (staffingScore+certificationScore+academyScore+perfScore+costScore+attendanceImpact+turnoverScore+disciplineScore+successionScore);
+      return clamp100(Math.round(total));
+    }
+    function calculateBranchHRHealthLabel(value){
+      return getRiskLevel(value);
+    }
+    function calculateProfitabilityReadiness(branch){
+      const staffingDiscipline = clamp(100 - safeNum(branch.personnelCostVariance || 0),0,100) * 0.25;
+      const productivity = clamp(safeNum(branch.personnelPerformance),0,100) * 0.25;
+      const vehicleCost = clamp(100 - Math.min(150, safeNum(branch.vehiclePerTechnician)*3),0,100) * 0.15;
+      const simulation = clamp(100 - safeNum(branch.bonusSimulationLoad||0) * 0.2,0,100) * 0.1;
+      const training = clamp(100 - (safeNum(branch.trainingCostImpact)||0) / 5,0,100) * 0.1;
+      const turnover = clamp(100 - safeNum(branch.turnoverRate)*1.8,0,100) * 0.1;
+      const dataQuality = clamp(100 - safeNum(branch.dataQualityGap),0,100) * 0.05;
+      const total = Math.round(staffingDiscipline + productivity + vehicleCost + simulation + training + turnover + dataQuality);
+      return clamp100(total);
+    }
+    function calculateBonusSimulation(employee){
+      const reasons = [];
+      let score = safeNum(employee.performanceScore);
+      let status = 'Uygun';
+      if(employee.academyStatus !== 'Açık'){
+        reasons.push('Academy zorunlu eğitimi eksik');
+        status = 'Kilitli';
+      }
+      if(employee.certificationStatus === 'Süresi dolmuş'){
+        reasons.push('Sertifika süresi dolmuş');
+        status = 'Kilitli';
+      }
+      if(employee.disciplineStatus === 'Açık' && safeNum(employee.disciplineRisk)>=70){
+        reasons.push('Disiplin dosyası açık');
+        status = 'Kilitli';
+      }
+      if(score < 60){
+        status = 'Uygun Değil';
+      } else if(score < 70 && status !== 'Kilitli'){
+        status = 'Şartlı Uygun';
+      }
+      const amount = status === 'Uygun' ? safeNum(employee.totalMonthlyCost) * 0.18 : status === 'Şartlı Uygun' ? safeNum(employee.totalMonthlyCost) * 0.12 : 0;
+      return {status, reasons, amount: Math.round(amount)};
+    }
+
+    function randomDate(daysAgoMin=40, daysAheadMax=120){
+      const d = new Date();
+      const shift = rand(-daysAgoMin, daysAheadMax);
+      return new Date(d.getTime()+shift*24*60*60*1000).toISOString().slice(0,10);
+    }
+
+    function hrBuildEmployee({branchId,branchName,region,position,department,legalEmployerType,legalEmployerName,isCenterRole = false,managerId = null,idx=1}){
+      const role = HR_ROLES.find(r => r.name===position) || HR_ROLES[11];
+      const first = pick(['Murat','Selin','Ahmet','Burak','Emre','Derya','Ayşe','Cem','Sena','Deniz','Pelin','Berk','İrem','Kerem','İlker','Merve','Onur']);
+      const last = pick(['Yılmaz','Kaya','Şahin','Demir','Aras','Karaca','Aksoy','Koç','Sarı','Güneş','Türkmen','Şen','Aydın','Bayram','Özkan']);
+      const full = `${first} ${last}`;
+      const academyLevel = clamp(role.minAcademyLevel + rand(-1,2),0,5);
+      const performance = clamp(rand(54,95));
+      const companyImpact = clamp(rand(60,95));
+      const regionImpact = clamp(rand(55,95));
+      const branchImpact = clamp(rand(50,95));
+      const employee = {
+        id:`EMP-${String(idx).padStart(4,'0')}`,
+        employeeCode:`EMP-${branchId.split('-').pop()}-${String(idx).padStart(2,'0')}`,
+        firstName:first,
+        lastName:last,
+        fullName:full,
+        phone:`05${rand(2,5)}${String(rand(100,999)).padStart(3,'0')} ${String(rand(10,99)).padStart(2,'0')} ${rand(10,99).toString().padStart(2,'0')}`,
+        email:`${first.toLowerCase()}.${last.toLowerCase()}@ototr.com`,
+        branchId,
+        branchName,
+        region,
+        department,
+        position,
+        managerId,
+        legalEmployerType,
+        legalEmployerName,
+        employmentStatus: rand(1,20)===1?'Pasif':'Aktif',
+        startDate: randomDate(300,1),
+        probationEndDate: randomDate(-1,60),
+        academyLevel,
+        certificationStatus: rand(1,9)===1?'Süresi dolmuş':rand(1,8)===1?'Süre Yakında Doluyor':'Geçerli',
+        performanceScore:performance,
+        companyScoreImpact:companyImpact,
+        regionScoreImpact:regionImpact,
+        branchScoreImpact:branchImpact,
+        finalScore:0,
+        grade:'B',
+        bonusSimulationStatus:'İncelemede',
+        bonusSimulationAmount:0,
+        hrRiskLevel: rand(1,10) <=2?'Riskli':rand(1,15)===1?'Kritik':'Sağlıklı',
+        totalMonthlyCost: rand(17500,44000),
+        attendanceRisk: rand(1,9)===1?'Yüksek':rand(1,7)===1?'Orta':'Düşük',
+        disciplineStatus: rand(1,12)===1?'Açık':'Kapalı',
+        createdAt:randomDate(700,1),
+        updatedAt:randomDate(120,0),
+        isManager: position.includes('Müdürü'),
+        isCenter: isCenterRole
+      };
+      employee.academyStatus = getAcademyLockStatus(employee);
+      employee.finalScore = calculateEmployeeFinalScore(employee);
+      employee.grade = getGrade(employee.finalScore);
+      const bonus = calculateBonusSimulation(employee);
+      employee.bonusSimulationStatus = bonus.status;
+      employee.bonusSimulationAmount = bonus.amount;
+      employee.bonusSimulationLockReason = bonus.reasons.join(', ');
+      return employee;
+    }
+
+    function hrGetCertificationsByEmployee(employeeId,certifications){
+      return (certifications || []).filter(x=>x.employeeId===employeeId);
+    }
+
+    function buildHRSeed(){
+      const generatedEmployees = [];
+      let idx = 1;
+      const central = [
+        hrBuildEmployee({branchId:'HQ',branchName:'Genel Merkez',region:'Merkez',position:'CEO',department:'Yönetim',legalEmployerType:'Merkez',legalEmployerName:'OTOTR Merkez',isCenterRole:true,idx:idx++}),
+        hrBuildEmployee({branchId:'HQ',branchName:'Genel Merkez',region:'Merkez',position:'İnsan Kaynakları Sorumlusu',department:'İnsan Kaynakları',legalEmployerType:'Merkez',legalEmployerName:'OTOTR Merkez',isCenterRole:true,idx:idx++}),
+        hrBuildEmployee({branchId:'HQ',branchName:'Genel Merkez',region:'Merkez',position:'Finans Sorumlusu',department:'Finans',legalEmployerType:'Merkez',legalEmployerName:'OTOTR Merkez',isCenterRole:true,idx:idx++}),
+        hrBuildEmployee({branchId:'HQ',branchName:'Genel Merkez',region:'Merkez',position:'Hukuk Sorumlusu',department:'Hukuk & Uyum',legalEmployerType:'Merkez',legalEmployerName:'OTOTR Merkez',isCenterRole:true,idx:idx++}),
+        hrBuildEmployee({branchId:'HQ',branchName:'Genel Merkez',region:'Merkez',position:'Pazarlama Sorumlusu',department:'Pazarlama',legalEmployerType:'Merkez',legalEmployerName:'OTOTR Merkez',isCenterRole:true,idx:idx++}),
+        hrBuildEmployee({branchId:'HQ',branchName:'Genel Merkez',region:'Merkez',position:'Sosyal Medya Sorumlusu',department:'Pazarlama',legalEmployerType:'Merkez',legalEmployerName:'OTOTR Merkez',isCenterRole:true,idx:idx++}),
+        hrBuildEmployee({branchId:'HQ',branchName:'Genel Merkez',region:'Merkez',position:'Tedarik Sorumlusu',department:'Satın Alma',legalEmployerType:'Merkez',legalEmployerName:'OTOTR Merkez',isCenterRole:true,idx:idx++}),
+        hrBuildEmployee({branchId:'HQ',branchName:'Genel Merkez',region:'Merkez',position:'Academy Sorumlusu',department:'Academy',legalEmployerType:'Merkez',legalEmployerName:'OTOTR Merkez',isCenterRole:true,idx:idx++}),
+        hrBuildEmployee({branchId:'HQ',branchName:'Genel Merkez',region:'Merkez',position:'Bölge Müdürü',department:'Operasyon',legalEmployerType:'Merkez',legalEmployerName:'OTOTR Merkez',isCenterRole:true,idx:idx++})
+      ];
+
+      hrBranchesSeed.forEach(b=>{
+        const mgr = hrBuildEmployee({branchId:b.id,branchName:b.name,region:b.region,position:'Şube Müdürü',department:'Şube Yönetimi',legalEmployerType:'Franchise',legalEmployerName:b.manager||'Franchise Sahibi',isCenterRole:false,idx:idx++});
+        generatedEmployees.push(mgr);
+        const std = HR_MIN_STAFFING_STANDARD[b.minType] || HR_MIN_STAFFING_STANDARD.standart;
+        const techNeed = safeNum(std.Teknisyen) + rand(-1,1);
+        for(let i=0;i<techNeed;i++){
+          generatedEmployees.push(hrBuildEmployee({branchId:b.id,branchName:b.name,region:b.region,position:'Teknisyen',department:'Teknik Operasyon',legalEmployerType:'Franchise',legalEmployerName:b.manager||'Franchise Sahibi',managerId:mgr.id,isCenterRole:false,idx:idx++}));
+        }
+        for(let i=0;i<safeNum(std['Müşteri kabul']);i++){
+          generatedEmployees.push(hrBuildEmployee({branchId:b.id,branchName:b.name,region:b.region,position:'Müşteri Kabul',department:'Müşteri Kabul',legalEmployerType:'Franchise',legalEmployerName:b.manager||'Franchise Sahibi',managerId:mgr.id,isCenterRole:false,idx:idx++}));
+        }
+        for(let i=0;i<(safeNum(std.Destek)||0);i++){
+          generatedEmployees.push(hrBuildEmployee({branchId:b.id,branchName:b.name,region:b.region,position:'Destek Personeli',department:'Destek Operasyon',legalEmployerType:'Franchise',legalEmployerName:b.manager||'Franchise Sahibi',managerId:mgr.id,isCenterRole:false,idx:idx++}));
+        }
+      });
+
+      const branchMap = Object.fromEntries(hrBranchesSeed.map(x=>[x.id,x]));
+      const allEmployees = [...central, ...generatedEmployees];
+
+      const branches = hrBranchesSeed.map(branch=>{
+        const staffRows = allEmployees.filter(e=>e.branchId===branch.id);
+        const byPos = {
+          Şube: staffRows.find(e=>e.position==='Şube Müdürü'),
+          Teknisyen: staffRows.filter(e=>e.position==='Teknisyen').length,
+          MüşteriKabul: staffRows.filter(e=>e.position==='Müşteri Kabul').length,
+          Destek: staffRows.filter(e=>e.position==='Destek Personeli').length
+        };
+        const min = HR_MIN_STAFFING_STANDARD[branch.minType] || HR_MIN_STAFFING_STANDARD.standart;
+        const need = safeNum(min['Şube müdürü']) + safeNum(min.Teknisyen) + safeNum(min['Müşteri kabul']) + safeNum(min.Destek);
+        const avgPerf = Math.round(staffRows.reduce((s,e)=>s+safeNum(e.performanceScore),0) / Math.max(1,staffRows.length));
+        const certRate = Math.round(staffRows.reduce((s,e)=>s + (e.certificationStatus==='Geçerli' ? 100 : 70),0) / Math.max(1,staffRows.length));
+        const academyCompletion = Math.round(staffRows.reduce((s,e)=>s + getAcademyLevelScore(e.academyLevel),0) / Math.max(1,staffRows.length));
+        const totalPersonnelCost = staffRows.reduce((s,e)=>s + safeNum(e.totalMonthlyCost),0);
+        return {
+          ...branch,
+          personnelCount:staffRows.length,
+          personnelNeed:need,
+          minTechnicianCount:safeNum(min.Teknisyen),
+          minManagerCount:safeNum(min['Şube müdürü']),
+          minReceptionCount:safeNum(min['Müşteri kabul']),
+          minSupportCount:safeNum(min.Destek),
+          openPositions:Math.max(0, need - staffRows.length),
+          averagePerformance:avgPerf,
+          certificationRate:certRate,
+          academyCompletion:academyCompletion,
+          totalPersonnelCost,
+          personnelCostToRevenueRatio:calculatePersonnelCostToRevenue({totalPersonnelCost,revenue:branch.revenue}),
+          payrollDate:randomDate(180,1),
+          attendanceRiskScore:rand(1,24),
+          disciplineRiskScore:rand(50,95),
+          personnelPerformance:avgPerf,
+          turnoverRate:rand(3,16),
+          trainingCostImpact:rand(0,18),
+          bonusSimulationLoad:rand(20,60),
+          dataQualityGap:rand(8,30),
+          successionScore:rand(45,88),
+          riskLevel:getRiskLevel(calculateBranchScore({...branch,personnelCount:staffRows.length,personnelNeed:need,averagePerformance:avgPerf,certificationRate:certRate,academyCompletion:academyCompletion,totalPersonnelCost,personnelCostToRevenueRatio:0})),
+          hrHealthScore:calculateBranchHRHealth({
+            personnelCount:staffRows.length,
+            personnelNeed:need,
+            certificationRate:certRate,
+            academyCompletion:academyCompletion,
+            averagePerformance:avgPerf,
+            totalPersonnelCost,
+            attendanceRiskScore:rand(0,20),
+            turnoverRate:rand(2,18),
+            disciplineRiskScore:rand(50,95),
+            successionScore:rand(45,88)
+          }),
+          profitabilityReadinessScore:calculateProfitabilityReadiness({
+            personnelCostDiscipline:rand(40,95),
+            personnelPerformance:avgPerf,
+            vehiclePerTechnician:calculateVehiclePerTechnician({vehicleCount:branch.vehicleCount,minTechnicianCount:Math.max(1,min.Teknisyen)}),
+            bonusSimulationLoad:rand(20,40),
+            trainingCostImpact:rand(0,15),
+            turnoverRate:rand(3,18),
+            dataQualityGap:rand(8,30)
+          })
+        };
+      });
+
+      const certifications = allEmployees.flatMap(e=>{
+        return HR_ACADEMY_COURSES.slice(0, rand(1,4)).map(c=>{
+          const status = rand(1,10)===1?'Süresi dolmuş': rand(1,12)===1?'Süre Yakında Doluyor':'Geçerli';
+          const issued = new Date();
+          issued.setDate(issued.getDate() - rand(90,980));
+          const exp = new Date(issued);
+          exp.setDate(exp.getDate() + rand(45, 780));
+          if(status === 'Süresi dolmuş') exp.setMonth(exp.getMonth()-rand(1,3));
+          if(status === 'Süre Yakında Doluyor') exp.setDate(issued.getDate() + rand(5,22));
+          return {
+            id:`CERT-${Math.floor(Math.random()*900000)}`,
+            employeeId:e.id,
+            name:c.title,
+            level:levelLabel(c.minLevel),
+            issuedAt:issued.toISOString().slice(0,10),
+            expiresAt:exp.toISOString().slice(0,10),
+            status,
+            examScore:rand(55,98),
+            practicalScore:rand(50,96)
+          };
+        });
+      });
+
+      const recruitmentRequests = [];
+      for(let i=1;i<=10;i++){
+        const branch = pick(hrBranchesSeed);
+        recruitmentRequests.push({
+          id:`REQ-${String(i).padStart(3,'0')}`,
+          branchId:branch.id,
+          branchName:branch.name,
+          position:pick(HR_ROLES.map(r=>r.name)),
+          reason:pick(['Yeni açılış planı','Ayrılan personel yerine','Yoğunluk artışı','Müşteri memnuniyet hedefi']),
+          urgency:pick(['Normal','Yüksek','Acil']),
+          requestedBy:pick(['Şube Müdürü','Franchise Sahibi','Bölge Müdürü']),
+          franchiseOwnerApproval: pick(['Bekliyor','Onaylandı','Reddedildi']),
+          hrStatus: pick(['Bekliyor','İncelemede','Onaylandı','Reddedildi']),
+          financeStatus: pick(['Bekliyor','İncelemede','Onaylandı']),
+          academyStatus: pick(['Bekliyor','Tamamlandı','Eksik Eğitim']),
+          regionManagerStatus: pick(['Bekliyor','Onaylandı']),
+          finalStatus: pick(HR_RECRUITMENT_STAGES),
+          estimatedMonthlyCost:rand(22000,42000),
+          costImpact:rand(10,24),
+          createdAt:randomDate(120,0),
+          targetStartDate:randomDate(0,90)
+        });
+      }
+
+      const candidates = recruitmentRequests.map((req,idx)=>{
+        return {
+          id:`CAN-${String(idx+1).padStart(3,'0')}`,
+          requestId:req.id,
+          name:pick(['Burak','Deniz','Merve','Efe','Gamze','Barış','İpek','Alperen']).concat(' ',pick(['Demir','Kara','Özkan','Özdemir','Bastürk','Tekin','Kurt','Acar'])),
+          phone:`05${rand(2,5)}${String(rand(100,999)).padStart(3,'0')} ${String(rand(10,99)).padStart(2,'0')} ${String(rand(10,99)).padStart(2,'0')}`,
+          email:`candidate.${idx+1}@mail.com`,
+          role:req.position,
+          branch:req.branchName,
+          experience:rand(1,11),
+          expectedSalary:rand(18,45)*1000,
+          technicalScore:rand(55,97),
+          communicationScore:rand(52,96),
+          academyPreTestScore:rand(50,95),
+          referenceStatus: pick(['Açık','Kontrol ediliyor','Eksik']),
+          status: pick(['Aday','İncelemede','Önerildi','Reddedildi']),
+          notes: pick(['Operasyon odaklı','Müşteri dili güçlü','Teknik zenginlik iyi','Staj geçmişi sınırlı','Bölgeye uygun'])
+        };
+      });
+
+      const performanceReviews = allEmployees.map(e=>({
+        id:`PR-${e.id}`,
+        employeeId:e.id,
+        cycle:'Nisan 2026',
+        companyScore:safeNum(e.companyScoreImpact),
+        regionScore:safeNum(e.regionScoreImpact),
+        branchScore:safeNum(e.branchScoreImpact),
+        managerScore: safeNum(rand(55,96)),
+        personalKpiScore:safeNum(e.performanceScore),
+        academyImpact: getAcademyLevelScore(e.academyLevel),
+        attendanceImpact: pick([95,90,84,72,64]),
+        qualityImpact: rand(60,99),
+        customerImpact: rand(50,98),
+        costDisciplineImpact: rand(40,95),
+        finalScore:e.finalScore,
+        grade:e.grade,
+        notes:`${e.fullName} için dönem performansı izlendi; gelişim alanları eğitim ve süreklilik odaklı.`
+      }));
+
+      const bonusSimulations = allEmployees.map(e=>({
+        id:`BS-${e.id}`,
+        employeeId:e.id,
+        employeeName:e.fullName,
+        branch:e.branchName,
+        personalScore:e.performanceScore,
+        branchScore:safeNum(branches.find(b=>b.id===e.branchId)?.averagePerformance),
+        academyScore:getAcademyLevelScore(e.academyLevel),
+        attendanceScore:e.attendanceRisk === 'Düşük' ? 95 : e.attendanceRisk === 'Orta' ? 72 : 55,
+        customerScore:rand(60,97),
+        qualityPenalty:rand(0,10),
+        lockReason:getAcademyLockStatus(e)==='Kilitli' ? 'Academy eksik / Sertifika durumu' : '',
+        status:e.bonusSimulationStatus,
+        simulatedAmount:e.bonusSimulationAmount,
+        simulatedAt:randomDate(30,0),
+        managerComment:pick(['İlerleme iyi.', 'Kritik alan var, iyileştirme planı', 'Şube hedeflerine uygun'])
+      }));
+
+      const employeeCosts = allEmployees.map(e=>({
+        id:`EC-${e.id}`,
+        employeeId:e.id,
+        baseSalaryCost:safeNum(e.totalMonthlyCost)*0.62,
+        employerCost:safeNum(e.totalMonthlyCost)*0.18,
+        mealCost:rand(250,550),
+        transportCost:rand(150,420),
+        bonusSimulationCost:safeNum(e.bonusSimulationAmount || 0),
+        overtimeSimulationCost:rand(200,1700),
+        trainingCost:rand(650,3000),
+        certificationCost:rand(350,2500),
+        uniformCost:rand(120,380),
+        assetCost:rand(250,1200),
+        recruitmentCost:rand(1500,4300),
+        turnoverCost:rand(0,6500),
+        totalMonthlyCost:safeNum(e.totalMonthlyCost)
+      }));
+
+      const shifts = allEmployees.slice(0,18).map(e=>({
+        id:`SH-${e.id}`,
+        date:randomDate(14,0),
+        branch:e.branchName,
+        employeeId:e.id,
+        employee:e.fullName,
+        role:e.position,
+        startTime:'09:00',
+        endTime:'18:00',
+        overlapRisk: pick(['Düşük','Orta','Yüksek']),
+        certificationOk:getAcademyLockStatus(e)!=='Kilitli',
+        notes:'Demo vardiya kaydı.'
+      }));
+
+      const attendanceRecords = allEmployees.slice(0,20).map(e=>({
+        id:`AT-${e.id}`,
+        employeeId:e.id,
+        employeeName:e.fullName,
+        date:randomDate(20,0),
+        checkIn: pick(['08:53','09:10','08:45','09:22','09:04']),
+        checkOut:pick(['17:46','18:02','18:31','18:10','18:24']),
+        late: pick([true,false,false,false,true]),
+        earlyLeave: pick([true,false,false]),
+        absent: pick([false,false,false]),
+        sick: pick([false,false,false,false,true]),
+        overtime: rand(0,2),
+        managerNote: pick(['Takipte', 'Açık', 'Temiz'])
+      }));
+
+      const leaveRequests = allEmployees.slice(0,8).map(e=>({
+        id:`LV-${e.id}`,
+        employeeId:e.id,
+        employeeName:e.fullName,
+        branch:e.branchName,
+        leaveType: pick(['Yıllık izin','Mazeret izni','Hastalık raporu','Ücretsiz izin','Resmi tatil']),
+        startDate:randomDate(0,30),
+        endDate:randomDate(1,50),
+        riskLevel: pick(['Düşük','Orta','Yüksek']),
+        status: pick(['Onaylandı','Bekliyor','Reddedildi']),
+        createdAt:randomDate(40,0)
+      }));
+
+      const disciplinaryCases = allEmployees.slice(0,4).map((e,i)=>({
+        id:`DC-${String(i+1).padStart(3,'0')}`,
+        employeeId:e.id,
+        employeeName:e.fullName,
+        branch:e.branchName,
+        type: pick(['Devamsızlık','Geç kalma','Rapor hatası','Marka standardı ihlali','KVKK ihlali']),
+        priority: pick(['Kritik','Yüksek','Orta']),
+        status: pick(['Açık','İncelemede','Kapanıyor','Kapandı']),
+        openedAt:randomDate(60,0),
+        owner: pick(['Şube Müdürü','İK Sorumlusu','Bölge Müdürü']),
+        requiresLegal: rand(1,5)===1,
+        bonusImpact: pick(['Evet','Hayır']),
+        performanceImpact: pick(['Etkilenir','Orta etkilenir']),
+        description:'Demo disiplin kaydı; simülasyon amacıyla oluşturuldu.'
+      }));
+
+      const branchHealth = branches.map(b=>({
+        id:`HRS-${b.id}`,
+        branchId:b.id,
+        period:'Nisan 2026',
+        staffingScore:clamp(Math.round(safeNum(b.personnelCount) / Math.max(1,b.personnelNeed) *100),0,100),
+        academyScore:b.academyCompletion,
+        certificationScore:b.certificationRate,
+        performanceScore:b.averagePerformance,
+        costDisciplineScore:clamp(100 - b.personnelCostToRevenueRatio*1.7,0,100),
+        attendanceScore:clamp(100 - safeNum(b.attendanceRiskScore),0,100),
+        turnoverScore:clamp(100 - safeNum(b.turnoverRate),0,100),
+        disciplineScore:clamp(100 - safeNum(b.disciplineRiskScore),0,100),
+        successionScore:b.successionScore,
+        finalScore:calculateBranchHRHealth({
+          personnelCount:b.personnelCount,
+          personnelNeed:b.personnelNeed,
+          certificationRate:b.certificationRate,
+          academyCompletion:b.academyCompletion,
+          averagePerformance:b.averagePerformance,
+          totalPersonnelCost:b.totalPersonnelCost,
+          attendanceRiskScore:b.attendanceRiskScore,
+          turnoverRate:b.turnoverRate,
+          disciplineRiskScore:b.disciplineRiskScore,
+          successionScore:b.successionScore
+        }),
+        riskLevel:getRiskLevel(calculateBranchHRHealth({
+          personnelCount:b.personnelCount,
+          personnelNeed:b.personnelNeed,
+          certificationRate:b.certificationRate,
+          academyCompletion:b.academyCompletion,
+          averagePerformance:b.averagePerformance,
+          totalPersonnelCost:b.totalPersonnelCost,
+          attendanceRiskScore:b.attendanceRiskScore,
+          turnoverRate:b.turnoverRate,
+          disciplineRiskScore:b.disciplineRiskScore,
+          successionScore:b.successionScore
+        })),
+        recommendedActions:getRecommendedActions(b)
+      }));
+
+      const profitability = branches.map(b=>({
+        id:`PF-${b.id}`,
+        branchId:b.id,
+        period:'Nisan 2026',
+        branchRevenue:b.revenue || 0,
+        totalPersonnelCost:safeNum(b.totalPersonnelCost),
+        personnelCostToRevenueRatio:Math.round(calculatePersonnelCostToRevenue(b)),
+        revenuePerEmployee:Math.round(calculateRevenuePerEmployee({revenue:b.revenue,personnelCount:b.personnelCount})),
+        vehiclePerTechnician:Math.round(calculateVehiclePerTechnician({vehicleCount:b.vehicleCount,minTechnicianCount:Math.max(1,b.minTechnicianCount)})),
+        bonusSimulationLoad:safeNum(b.bonusSimulationLoad),
+        trainingCostImpact:safeNum(b.trainingCostImpact),
+        turnoverCostImpact:rand(0,18),
+        overtimeRisk:rand(0,25),
+        dataCompletenessScore:rand(60,98),
+        profitabilityReadinessScore:calculateProfitabilityReadiness({
+          personnelCostDiscipline:safeNum(100 - calculatePersonnelCostToRevenue(b)),
+          personnelPerformance:b.averagePerformance,
+          vehiclePerTechnician:calculateVehiclePerTechnician({vehicleCount:b.vehicleCount,minTechnicianCount:Math.max(1,b.minTechnicianCount)}),
+          bonusSimulationLoad:safeNum(b.bonusSimulationLoad),
+          trainingCostImpact:safeNum(b.trainingCostImpact),
+          turnoverRate:safeNum(b.turnoverRate),
+          dataQualityGap:safeNum(b.dataQualityGap)
+        })
+      }));
+
+      return {
+        version: hrStorageVersion,
+        branches,
+        employees: allEmployees,
+        branchMap,
+        roles: HR_ROLES,
+        departments: HR_DEPARTMENTS,
+        recruitmentRequests,
+        candidates,
+        academyCourses:HR_ACADEMY_COURSES,
+        certifications,
+        performanceReviews,
+        bonusSimulations,
+        costProfiles: employeeCosts,
+        shifts,
+        attendance: attendanceRecords,
+        leaveRequests,
+        disciplinaryCases,
+        branchHealth,
+        profitability,
+        actions: []
+      };
+    }
+
+    let HR_DATA = null;
+    let HR_SETTINGS = null;
+
+    const getHRData = () => {
+      if(HR_DATA) return HR_DATA;
+      const raw = localStorage.getItem(HR_DATA_KEY);
+      if(!raw){
+        HR_DATA = buildHRSeed();
+        localStorage.setItem(HR_DATA_KEY, JSON.stringify(HR_DATA));
+      }else{
+        try{
+          const parsed = JSON.parse(raw);
+          HR_DATA = parsed?.version === hrStorageVersion ? parsed : buildHRSeed();
+          HR_DATA.version = hrStorageVersion;
+        }catch(e){
+          HR_DATA = buildHRSeed();
+        }
+        localStorage.setItem(HR_DATA_KEY, JSON.stringify(HR_DATA));
+      }
+      return HR_DATA;
+    };
+
+    const saveHRData = (next) => {
+      if(next) HR_DATA = next;
+      localStorage.setItem(HR_DATA_KEY, JSON.stringify(HR_DATA||buildHRSeed()));
+      return HR_DATA;
+    };
+
+    const getHRSettings = () => {
+      if(HR_SETTINGS) return HR_SETTINGS;
+      const raw = localStorage.getItem(HR_SETTINGS_KEY);
+      if(!raw){ HR_SETTINGS = clone(HR_SEED_SETTINGS); localStorage.setItem(HR_SETTINGS_KEY, JSON.stringify(HR_SETTINGS)); return HR_SETTINGS; }
+      try{
+        HR_SETTINGS = {...HR_SEED_SETTINGS,...JSON.parse(raw)};
+      }catch(e){
+        HR_SETTINGS = clone(HR_SEED_SETTINGS);
+      }
+      return HR_SETTINGS;
+    };
+    const saveHRSettings = (next) => {
+      if(next) HR_SETTINGS = {...HR_SETTINGS, ...next};
+      localStorage.setItem(HR_SETTINGS_KEY, JSON.stringify(HR_SETTINGS||HR_SEED_SETTINGS));
+      return HR_SETTINGS;
+    };
+
+    const getHRActions = () => {
+      const raw = localStorage.getItem(HR_ACTIONS_KEY);
+      if(!raw) return [];
+      try{ return JSON.parse(raw)||[]; }catch(e){ return []; }
+    };
+    const setHRActions = (list) => {
+      localStorage.setItem(HR_ACTIONS_KEY, JSON.stringify(list||[]));
+      return list||[];
+    };
+
     const navGroups = [
       ['Komuta', [['dashboard','Yönetim Kokpiti','layout-dashboard'],['intelligence','İş Zekası','chart-no-axes-column'],['branches','Bayiler & Şubeler','building-2'],['operations','Operasyon','workflow']]],
       ['Gelir', [['franchise','Franchise Satış','handshake'],['crm','CRM & Randevu','users'],['complaints','Müşteri Şikayetleri','message-circle-warning'],['finance','Finans & Royalty','banknote'],['marketing','Pazarlama','megaphone']]],
@@ -783,13 +1546,17 @@
 
     function renderNav(){
       const nav=document.getElementById('nav');
-      nav.innerHTML = navGroups.map(([g,items]) => `<div class="nav-title">${g}</div>` + items.map(([id,label,ic]) => `<button data-nav-route="${id}" class="${id===current?'active':''}">${icon(ic)}<span>${label}</span>${id==='franchise'?'<span class="count">'+DB.leads.filter(l=>l.type.includes('Franchise')).length+'</span>':''}${id==='complaints'?'<span class="count">'+((DB.complaintsCenter?.complaintTickets||[]).filter(t=>t.status!=='Kapandı').length)+'</span>':''}${id==='crisis'?'<span class="count">'+DB.tickets.filter(t=>t.severity==='Yüksek').length+'</span>':''}</button>`).join('')).join('');
+      const leads = Array.isArray(DB?.leads) ? DB.leads : [];
+      const tickets = Array.isArray(DB?.tickets) ? DB.tickets : [];
+      const complaintTickets = Array.isArray(DB?.complaintsCenter?.complaintTickets) ? DB.complaintsCenter.complaintTickets : [];
+      nav.innerHTML = navGroups.map(([g,items]) => `<div class="nav-title">${g}</div>` + items.map(([id,label,ic]) => `<button data-nav-route="${id}" class="${id===current?'active':''}">${icon(ic)}<span>${label}</span>${id==='franchise'?'<span class="count">'+leads.filter(l=>String(l.type||'').includes('Franchise')).length+'</span>':''}${id==='complaints'?'<span class="count">'+complaintTickets.filter(t=>t.status!=='Kapandı').length+'</span>':''}${id==='crisis'?'<span class="count">'+tickets.filter(t=>t.severity==='Yüksek').length+'</span>':''}</button>`).join('')).join('');
       nav.querySelectorAll('[data-nav-route]').forEach(b=>b.addEventListener('click',()=>route(b.dataset.navRoute)));
     }
 
     function renderHero(){
       const hero=document.querySelector('.hero');
       if(hero) hero.style.display=current==='dashboard'?'grid':'none';
+      if(!DB) return;
       if(current!=='dashboard') return;
       const n=DB.ceoDashboard?.network;
       const totalRevenue=n?.todayRevenue || DB.branches.reduce((s,b)=>s+b.revenue,0);
@@ -864,7 +1631,7 @@
         pageShell('marketing', typeof MarketingDashboard==='function' ? MarketingDashboard() : `<div class="grid g4">${stat('Pazarlama Harcaması',fmtTL(368000),'Nisan kampanyaları')}${stat('Toplam Lead',1314,'Çapraz kanal','green')}${stat('En İyi ROI','6.6x','Google Maps','blue')}${stat('CPL Ort.',fmtTL(268),'- %11 düşüş','green')}</div><div class="card"><div class="card-head"><div><div class="card-title">Kanal Performansı</div><div class="card-sub">Google Maps dominasyonu, sosyal medya, remarketing</div></div></div>${marketingTable()}</div>`)+
         pageShell('intelligence', `<div class="grid g4">${stat('Bileşik Ağ Skoru','87/100','Ciro + kalite + itibar')}${stat('Fiyat Fırsatı',fmtTL(420000),'Premium paket optimizasyonu','green')}${stat('Erken Uyarı',DB.complaints.filter(c=>c.risk==='Yüksek').length,'Kritik kök neden','amber')}${stat('Büyüme Sinyali','2 Şube','İkinci lokasyon adayı','blue')}</div><div class="grid g60"><div class="card"><div class="card-head"><div><div class="card-title">İş Zekası İçgörü Akışı</div><div class="card-sub">Tıklanabilir stratejik öneriler ve sahipleri</div></div></div>${insightTable()}</div><div class="card"><div class="card-head"><div><div class="card-title">Canlı Isı Haritası</div><div class="card-sub">CEO'nun ilk bakışta göreceği sinyaller</div></div></div>${heatMap()}</div></div><div class="grid g2"><div class="card"><div class="card-head"><div><div class="card-title">Bölge Performans Karşılaştırması</div><div class="card-sub">Ciro, rapor adedi ve kalite bileşik skoru</div></div></div><canvas id="chartBI" height="120"></canvas></div><div class="card"><div class="card-head"><div><div class="card-title">Şikayet Kök Neden Analizi</div><div class="card-sub">Kriz oluşmadan müdahale edilecek alanlar</div></div></div>${complaintsTable()}</div></div><div class="card"><div class="card-head"><div><div class="card-title">Şube Karşılaştırmalı Karar Tablosu</div><div class="card-sub">Ciro değil, kârlılık + kalite + itibar birlikte okunur.</div></div></div>${branchDecisionTable()}</div>`)+
         pageShell('academy', AcademyDashboard())+
-        pageShell('hr', `<div class="grid g4">${stat('Personel Skoru','84/100','Ağ ortalaması','green')}${stat('Prim Hak Eden',2,'Bu hafta onay bekliyor','blue')}${stat('Eksik Eğitim',14,'EV ekspertiz modülü','amber')}${stat('Çıkma Riski',1,'Görüşme planlanmalı','red')}</div><div class="grid g60"><div class="card"><div class="card-head"><div><div class="card-title">Personel Performansı</div><div class="card-sub">Satış, şikayet, eğitim, prim ve müdür performansı</div></div><button class="btn" data-open-action-modal="Eğitim ata">Eğitim ata</button></div>${PersonnelPerformancePanel()}</div><div class="card"><div class="card-head"><div><div class="card-title">İK Risk ve Aksiyonları</div><div class="card-sub">İndex2'den alınan yönetim mantığı eski tasarıma uyarlandı</div></div></div>${HumanResourcesActions()}</div></div>`)+
+        pageShell('hr', renderHRRoom())+
         pageShell('legal', `<div class="grid g4">${LegalStats()}</div><div class="grid g3">${moduleCard('Franchise Sözleşmesi','Bölge koruma, marka kullanımı, royalty, denetim hakkı ve fesih eşikleri.','file-signature','Franchise Hukuku')}${moduleCard('Hatalı Rapor Sorumluluğu','Tazmin, itiraz, sigorta, kayıt saklama ve kök neden prosedürü.','shield-alert','Rapor Sorumluluğu')}${moduleCard('KVKK & Veri Sahipliği','Müşteri, rapor, bayi performansı ve merkezi CRM verisinin mülkiyeti.','database','Veri Hukuku')}</div><div class="grid g60"><div class="card"><div class="card-head"><div><div class="card-title">Hukuki Dosya ve Sözleşme Envanteri</div><div class="card-sub">Satıra tıklayınca madde bazlı kontrol listesi açılır.</div></div></div>${legalTable()}</div><div class="card"><div class="card-head"><div><div class="card-title">Risk Matrisi</div><div class="card-sub">Hukuk, operasyon ve itibar riski</div></div></div><div class="matrix"><div class="risk low"><b>Düşük</b>Marka tescil yenileme, standart sözleşme revizyonları</div><div class="risk mid"><b>Orta</b>Royalty gecikmesi, Google puan düşüşü, rapor itirazları</div><div class="risk high"><b>Yüksek</b>Hatalı rapor tazmini, bayi skandalı, sosyal medya krizi</div></div><hr style="border:0;border-top:1px solid var(--line);margin:16px 0">${legalPlaybook()}</div></div><div class="card" style="margin-top:16px"><div class="card-head"><div><div class="card-title">Şikayetten Hukuka Dönen Dosyalar</div><div class="card-sub">Müşteri şikayeti, ihtar, arabuluculuk ve dava riskine döndüğünde hukuk kuyruğuna otomatik aktarılır.</div></div><button class="btn" data-route="complaints">Şikayet merkezine git</button></div>${ComplaintLegalRiskTable()}</div><div class="grid g2" style="margin-top:16px"><div class="card"><div class="card-head"><div><div class="card-title">Sözleşme Durumları</div><div class="card-sub">Aktif, yenileme ve ihlal sinyalleri</div></div></div>${LegalContractTable()}</div><div class="card"><div class="card-head"><div><div class="card-title">Hukuki Alarmlar</div><div class="card-sub">Rol filtresiyle beslenecek hukuki alarm kuyruğu</div></div></div>${LegalAlertList()}</div></div>`)+
         pageShell('crisis', `<div class="grid g4">${stat('Açık Ticket',DB.tickets.length,'Merkez takipte')}${stat('Kritik',riskCount,'Bugün çözülmeli','amber')}${stat('SLA Uyum','%91','Hedef %95','green')}${stat('Tekrar Eden Kök Neden',2,'Rapor anlatımı + SLA','red')}</div><div class="card"><div class="card-head"><div><div class="card-title">Kriz ve Alarm Merkezi</div><div class="card-sub">Yanlış rapor, sosyal medya, bayi skandalı, hukuki kriz ve acil eylem</div></div></div>${ticketsTable()}</div>`)+
         pageShell('actions', `<div class="grid g4">${stat('Açık Görev',DB.ceoDashboard.actionTasks.filter(t=>t.status!=='Tamamlandı').length,'Canlı takip','blue')}${stat('Geciken',DB.ceoDashboard.actionTasks.filter(t=>t.status==='Gecikti').length,'SLA riski','red')}${stat('Tamamlanan',DB.ceoDashboard.actionTasks.filter(t=>t.status==='Tamamlandı').length,'Bu demo oturumunda','green')}${stat('En Hızlı Çözen','Elif Kaya','Kalite aksiyonları','green')}</div><div class="grid g60"><div class="card"><div class="card-head"><div><div class="card-title">Aksiyon Motoru</div><div class="card-sub">Görev oluştur, sorumlu ata, deadline ver ve takip et</div></div><button class="btn primary" data-open-action-modal="Yeni aksiyon">Yeni Aksiyon</button></div>${ActionCommandGrid()}</div><div class="card"><div class="card-head"><div><div class="card-title">Görev Takip Motoru</div><div class="card-sub">Açık, geciken ve tamamlanan görevler</div></div></div>${ActionTaskPanel()}</div></div>`)+
@@ -1645,18 +2412,819 @@
       const rows=(DB.ceoDashboard.aiRecommendations||[]).slice(0,mode==='compact'?2:99);
       return `<div class="ai-card-list">${rows.map(a=>`<article class="ai-card"><div class="ai-head"><div><b>${a.title}</b><div class="card-sub">${a.category}</div></div>${icon('sparkles')}</div><p>${a.title}</p><div class="impact-grid"><div><span>Beklenen etki</span><b>${a.impact}</b></div><div><span>Risk</span><b>${a.risk}</b></div></div><div class="quick-actions"><button class="btn" data-open-action-modal="${a.action}">${a.action}</button><button class="btn" data-detail="ai:${a.title}">Detay</button></div></article>`).join('')}</div>`;
     }
+    function hrData(){ return getHRData(); }
+    function hrSaveView(){
+      localStorage.setItem(HR_VIEW_KEY, JSON.stringify(HR_VIEW));
+    }
+    function hrRouteFor(roomId){
+      const room = HR_ROOM_BY_ID[roomId] || HR_ROOM_BY_ID[HR_DEFAULT_ROOM];
+      return room.id === HR_DEFAULT_ROOM ? 'ik' : `ik/${room.slug}`;
+    }
+    function parseHRRoute(id){
+      const clean = String(id||'').replace(/^#/, '').replace(/^\/+/, '');
+      if(clean === 'hr' || clean === 'ik') return {page:'hr', room:HR_DEFAULT_ROOM, hash:'ik'};
+      if(clean.startsWith('ik/')){
+        const slug = clean.split('/')[1] || HR_ROOM_BY_ID[HR_DEFAULT_ROOM].slug;
+        return {page:'hr', room:HR_ROOM_BY_SLUG[slug] || HR_DEFAULT_ROOM, hash:`ik/${slug}`};
+      }
+      return null;
+    }
+    function selectHRRoom(roomId, replaceHash=true){
+      HR_VIEW.room = HR_ROOM_BY_ID[roomId] ? roomId : HR_DEFAULT_ROOM;
+      hrSaveView();
+      const body = document.getElementById('hrRoomBody');
+      if(body) body.innerHTML = renderHRRoomBody();
+      document.querySelectorAll('[data-hr-room]').forEach(x=>x.classList.toggle('active', x.dataset.hrRoom === HR_VIEW.room));
+      bindHREvents();
+      if(window.lucide) lucide.createIcons();
+      if(replaceHash) history.replaceState(null, '', '#'+hrRouteFor(HR_VIEW.room));
+    }
+    function hrInitials(name){
+      return String(name||'OT').split(' ').map(x=>x[0]).join('').slice(0,2).toLocaleUpperCase('tr-TR');
+    }
+    function hrBadge(text){
+      const t = String(text||'-');
+      const red = ['Kritik','Kritik (Kırmızı)','Kilitli','Uygun Değil','Süresi dolmuş','Süresi Dolmuş','Yüksek','Reddedildi','Riskli','Riskli (Amber)','Gider Yüksek','Performans Düşük'];
+      const amber = ['Şartlı Uygun','Süre Yakında Doluyor','Bekletildi','Bekliyor','İncelemede','Onay Bekliyor','Orta','Eksik Eğitim','Academy Eksik','Sertifika Riski'];
+      const blue = ['İzlenmeli','İzlenmeli (Mavi)','Merkez Onayında','Bölge Onayında','Finans İncelemesinde','Academy Testinde','Şube Onayında','İK İncelemesinde','Açılış','Kurulum','İncelemede'];
+      const green = ['Sağlıklı','Sağlıklı (Yeşil)','Uygun','Onaylandı','Geçerli','Aktif','Açık', 'Tamamlandı', 'Düşük'];
+      const c = red.includes(t) ? 'b-red' : amber.includes(t) ? 'b-amber' : blue.includes(t) ? 'b-blue' : green.includes(t) ? 'b-green' : 'b-gray';
+      return `<span class="badge ${c}">${t}</span>`;
+    }
+    function hrScoreClass(score){
+      const s = safeNum(score);
+      return s>=85?'green':s>=70?'blue':s>=55?'amber':'red';
+    }
+    function hrRiskShort(value){
+      const text = String(value||'');
+      if(text.includes('Kritik')) return 'Kritik';
+      if(text.includes('Riskli')) return 'Riskli';
+      if(text.includes('İzlen')) return 'İzlenmeli';
+      if(text.includes('Sağ')) return 'Sağlıklı';
+      return text || 'İzlenmeli';
+    }
+    function hrCostClass(ratio){
+      const r = safeNum(ratio);
+      return r < 22 ? 'hr-cost-ok' : r < 30 ? 'hr-cost-watch' : r < 38 ? 'hr-cost-risk' : 'hr-cost-critical';
+    }
+    function hrKpi(label,value,sub,iconName='activity',tone='info'){
+      const cls = tone==='good'?'good':tone==='warn'?'warn':tone==='bad'?'warn':'info';
+      return `<div class="card kpi-card ${cls}"><div class="kpi-main"><div class="label">${label}</div><div class="kpi-line"><span class="kpi-value">${value}</span></div><div class="card-sub">${sub}</div></div><div class="kpi-ico">${icon(iconName)}</div></div>`;
+    }
+    function hrSummary(){
+      const d = hrData();
+      const employees = d.employees || [];
+      const branches = d.branches || [];
+      const center = employees.filter(e=>e.isCenter);
+      const branchStaff = employees.filter(e=>!e.isCenter);
+      const openPositions = branches.reduce((s,b)=>s+safeNum(b.openPositions),0);
+      const pending = (d.recruitmentRequests||[]).filter(r=>!['Onaylandı','Reddedildi'].includes(r.finalStatus)).length;
+      const avgPerf = Math.round(employees.reduce((s,e)=>s+safeNum(e.finalScore||e.performanceScore),0) / Math.max(1, employees.length));
+      const companyScore = calculateCompanyScore();
+      const regions = uniq(branches.map(b=>b.region));
+      const regionAvg = Math.round(regions.reduce((s,r)=>s+calculateRegionScore(r),0)/Math.max(1,regions.length));
+      const branchAvg = Math.round(branches.reduce((s,b)=>s+calculateBranchScore(b),0)/Math.max(1,branches.length));
+      const academy = Math.round(branches.reduce((s,b)=>s+safeNum(b.academyCompletion),0)/Math.max(1,branches.length));
+      const certRisk = employees.filter(e=>['Süresi dolmuş','Süre Yakında Doluyor'].includes(e.certificationStatus)).length;
+      const totalCost = employees.reduce((s,e)=>s+safeNum(e.totalMonthlyCost),0);
+      const revenue = branches.reduce((s,b)=>s+safeNum(b.revenue),0);
+      const bonusTotal = (d.bonusSimulations||[]).reduce((s,b)=>s+safeNum(b.simulatedAmount),0);
+      const absenceRisk = employees.filter(e=>e.attendanceRisk==='Yüksek').length;
+      const criticalBranches = branches.filter(b=>safeNum(b.hrHealthScore)<55 || hrRiskShort(b.riskLevel)==='Kritik').length;
+      const openCases = (d.disciplinaryCases||[]).filter(c=>c.status!=='Kapandı').length;
+      return {employees,branches,center,branchStaff,openPositions,pending,avgPerf,companyScore,regionAvg,branchAvg,academy,certRisk,totalCost,revenue,bonusTotal,absenceRisk,criticalBranches,openCases};
+    }
+    function renderHRRoom(){
+      const room = HR_ROOM_BY_ID[HR_VIEW.room] || HR_ROOM_BY_ID[HR_DEFAULT_ROOM];
+      return `<div class="hr-room">
+        <div class="hr-hero">
+          <div>
+            <h2>İnsan Kaynakları / HR Room</h2>
+            <p>Genel merkez, franchise şubeler, Academy, performans, prim simülasyonu ve personel giderlerini tek merkezden yönetin.</p>
+          </div>
+          <div class="quick-actions">
+            <button class="btn primary" data-hr-quick="action">${icon('clipboard-plus')}Aksiyon Oluştur</button>
+            <button class="btn" data-hr-room="employee360">${icon('users')}Personel 360</button>
+            <button class="btn" data-hr-room="recruitment">${icon('user-plus')}Talep Aç</button>
+          </div>
+        </div>
+        <div class="card" style="padding:12px">
+          <div class="hr-tabs">${HR_ROOMS.map(r=>`<button class="hr-tab ${r.id===room.id?'active':''}" data-hr-room="${r.id}">${r.title}</button>`).join('')}</div>
+        </div>
+        <div id="hrRoomBody">${renderHRRoomBody()}</div>
+      </div>`;
+    }
+    function renderHRRoomBody(){
+      const room = HR_VIEW.room;
+      if(room==='organization') return renderOrganizationRoom();
+      if(room==='roles') return renderRolesRoom();
+      if(room==='employee360') return renderEmployeeDirectory();
+      if(room==='branch-management') return renderBranchWorkforceRoom();
+      if(room==='recruitment') return renderRecruitmentRoom();
+      if(room==='onboarding') return renderOnboardingRoom();
+      if(room==='academy') return renderAcademyHRRoom();
+      if(room==='performance') return renderPerformanceRoom();
+      if(room==='bonus') return renderBonusSimulationRoom();
+      if(room==='shift') return renderShiftAttendanceRoom();
+      if(room==='cost') return renderPersonnelCostRoom();
+      if(room==='profitability') return renderProfitabilityPreparationRoom();
+      if(room==='hr-health') return renderBranchHRHealthRoom();
+      if(room==='career') return renderCareerSuccessionRoom();
+      if(room==='discipline') return renderDisciplineRoom();
+      if(room==='reports') return renderHRReportsRoom();
+      if(room==='settings') return renderHRSettingsRoom();
+      return renderHRDashboard();
+    }
+    function renderHRDashboard(){
+      const s = hrSummary(), d = hrData();
+      const kpis = [
+        ['Toplam Personel',s.employees.length,'Merkez + şube ağı','users','info'],
+        ['Genel Merkez',s.center.length,'Merkez kadro','building-2','info'],
+        ['Şube Personeli',s.branchStaff.length,'Franchise ekipleri','id-card','info'],
+        ['Aktif Şube',s.branches.filter(b=>b.status==='Aktif').length,'Operasyonda','store','good'],
+        ['Açık Kadro',s.openPositions,'Kadro standardı farkı','user-plus','warn'],
+        ['Onay Bekleyen',s.pending,'İşe alım hattı','clock','warn'],
+        ['Ort. Performans',s.avgPerf,'Ağ ortalaması','activity','good'],
+        ['Şirket Skoru',s.companyScore,'Bileşik skor','crown','good'],
+        ['Bölge Skoru Ort.',s.regionAvg,'Bölge ortalaması','map','info'],
+        ['Şube Skoru Ort.',s.branchAvg,'Şube ortalaması','git-branch','info'],
+        ['Academy Tamamlama',formatPercent(s.academy),'L0-L5 uyumu','graduation-cap','good'],
+        ['Sertifika Riski',s.certRisk,'Dolmuş/yaklaşan','badge-alert','warn'],
+        ['Personel Gideri',formatCurrencyTRY(s.totalCost),'Aylık simülasyon','wallet','info'],
+        ['Gider / Ciro',formatPercent(s.totalCost/Math.max(1,s.revenue)*100),'Şube kârlılık girdisi','percent','warn'],
+        ['Prim Simülasyonu',formatCurrencyTRY(s.bonusTotal),'Gerçek ödeme değildir','badge-percent','info'],
+        ['Devamsızlık Riski',s.absenceRisk,'Yüksek riskli kayıt','calendar-x','warn'],
+        ['Kritik Şube',s.criticalBranches,'İK sağlık skoru','siren','bad'],
+        ['Açık Vaka',s.openCases,'Disiplin / etik','scale','warn']
+      ];
+      return `<div class="grid">
+        <div class="kpi-grid">${kpis.map(k=>hrKpi(k[0],k[1],k[2],k[3],k[4])).join('')}</div>
+        <div class="grid g2">
+          <div class="card"><div class="card-head"><div><div class="card-title">Alarm Merkezi</div><div class="card-sub">Merkez standart koyar; şube ihtiyacı, Academy riski, gider ve performans alarmı burada birleşir.</div></div></div>${HRAlertCenter()}</div>
+          <div class="card"><div class="card-head"><div><div class="card-title">Bekleyen Onaylar</div><div class="card-sub">İşe alım, prim, sertifika, vardiya ve disiplin kararları</div></div></div>${PendingApprovalsPanel()}</div>
+        </div>
+        <div class="grid g2">
+          <div class="card"><div class="card-head"><div><div class="card-title">Şirket → Bölge → Şube Performans Haritası</div><div class="card-sub">Bölge skoru, Academy, gider/ciro ve risk görünümü</div></div></div>${CompanyRegionBranchScorePanel()}</div>
+          <div class="card"><div class="card-head"><div><div class="card-title">Academy & Sertifika Risk Paneli</div><div class="card-sub">L0-L5 dağılımı ve operasyon yetkisi kilitleri</div></div><button class="btn" data-hr-room="academy">Academy odası</button></div>${AcademyCertificationRiskPanel()}</div>
+        </div>
+        <div class="card"><div class="card-head"><div><div class="card-title">Şube İK Sağlık Listesi</div><div class="card-sub">Kadro, Academy, sertifika, maliyet, sağlık skoru ve aksiyon</div></div><button class="btn" data-hr-room="hr-health">Tüm skorlar</button></div>${BranchHRHealthMap()}</div>
+        <div class="grid g2">
+          <div class="card"><div class="card-head"><div><div class="card-title">Prim Simülasyon Özeti</div><div class="card-sub">Uygunluk, kilit nedeni ve tahmini yük</div></div></div>${BonusSimulationSummaryPanel()}</div>
+          <div class="card"><div class="card-head"><div><div class="card-title">Personel Gider Özeti</div><div class="card-sub">Merkez, şube, araç başı ve eğitim maliyeti</div></div></div>${PersonnelCostSummaryPanel()}</div>
+        </div>
+      </div>`;
+    }
+    function HRAlertCenter(){
+      const d = hrData();
+      const riskBranch = [...(d.branches||[])].sort((a,b)=>safeNum(b.personnelCostToRevenueRatio)-safeNum(a.personnelCostToRevenueRatio))[0] || {};
+      const certs = (d.certifications||[]).filter(c=>c.status!=='Geçerli').slice(0,2);
+      const manager = (d.employees||[]).find(e=>e.position==='Şube Müdürü' && safeNum(e.finalScore)<70) || (d.employees||[]).find(e=>e.position==='Şube Müdürü');
+      const openReq = (d.recruitmentRequests||[]).find(r=>r.finalStatus!=='Onaylandı') || {};
+      const alerts = [
+        ['Yüksek','İstanbul Ataşehir şubesinde 1 müşteri kabul personeli açığı var.','Kadro talebi önerildi','user-plus'],
+        ['Riskli',`${certs[0]?.employeeId || 'Bursa Nilüfer'} için L2 sertifika yenileme riski oluştu.`,'Academy yenileme görevi','badge-alert'],
+        ['Kritik',`${riskBranch.name||'Ankara Çukurambar'} şubesinde personel gider / ciro oranı hedefin üzerinde.`,'Finans uyarısı','wallet-cards'],
+        ['İzlenmeli',`${openReq.branchName||'İzmir Bornova'} işe alım talebi merkez onayı bekliyor.`,'Onay hattı','clipboard-check'],
+        ['Riskli',`${manager?.branchName||'Kocaeli İzmit'} müdür skoru iki dönemdir takipte.`,'Bölge müdürü aksiyonu','activity'],
+        ['Kritik','Academy zorunlu eğitimi eksik olan 6 personelin prim simülasyonu kilitli.','Prim kilidi','lock']
+      ];
+      return `<div class="mini-list">${alerts.map(a=>`<div class="mini">${icon(a[3])}<div><b>${a[1]}</b><span>${a[2]} · ${a[0]}</span><div class="quick-actions" style="margin-top:8px"><button class="micro-btn" data-hr-create-action="${a[1]}">Aksiyon oluştur</button></div></div></div>`).join('')}</div>`;
+    }
+    function PendingApprovalsPanel(){
+      const d = hrData();
+      const counts = [
+        ['İşe alım talebi',(d.recruitmentRequests||[]).filter(r=>r.finalStatus!=='Onaylandı').length,'user-plus'],
+        ['Aday onayı',(d.candidates||[]).filter(c=>c.status!=='Reddedildi').length,'user-check'],
+        ['Prim simülasyonu inceleme',(d.bonusSimulations||[]).filter(b=>b.status==='İncelemede'||b.status==='Kilitli').length,'badge-percent'],
+        ['Disiplin dosyası',(d.disciplinaryCases||[]).filter(c=>c.status!=='Kapandı').length,'scale'],
+        ['Sertifika yenileme',(d.certifications||[]).filter(c=>c.status!=='Geçerli').length,'badge-check'],
+        ['Vardiya/izin çakışması',(d.leaveRequests||[]).filter(l=>l.riskLevel==='Yüksek').length,'calendar-days'],
+        ['Şube kadro eksikliği',(d.branches||[]).filter(b=>safeNum(b.openPositions)>0).length,'users']
+      ];
+      return `<div class="hr-data-grid">${counts.map(x=>`<div class="hr-data-card"><span>${x[0]}</span><b>${x[1]}</b><div class="quick-actions"><button class="micro-btn" data-hr-create-action="${x[0]} onayı">İncele</button></div></div>`).join('')}</div>`;
+    }
+    function CompanyRegionBranchScorePanel(){
+      const d = hrData();
+      const regions = uniq((d.branches||[]).map(b=>b.region));
+      return `<div class="hr-card-grid">${regions.map(region=>{
+        const branches = d.branches.filter(b=>b.region===region);
+        const personnel = d.employees.filter(e=>e.region===region).length;
+        const score = calculateRegionScore(region);
+        const academy = Math.round(branches.reduce((s,b)=>s+safeNum(b.academyCompletion),0)/Math.max(1,branches.length));
+        const costRatio = Math.round(branches.reduce((s,b)=>s+safeNum(b.personnelCostToRevenueRatio),0)/Math.max(1,branches.length));
+        return `<div class="hr-info-card"><div class="card-head" style="margin:0"><div><h3>${region}</h3><p>${branches.length} şube · ${personnel} personel</p></div>${hrBadge(hrRiskShort(getRiskLevel(score)))}</div>${hrScoreRow('Bölge skoru',score)}${hrScoreRow('Academy',academy)}${hrScoreRow('Gider / ciro',Math.max(0,100-costRatio))}<div class="compact-meta"><span>${formatPercent(costRatio)} gider/ciro</span><span>${branches.map(b=>b.city).join(', ')}</span></div></div>`;
+      }).join('')}</div>`;
+    }
+    function BranchHRHealthMap(){
+      const d = hrData();
+      return `<div class="hr-table-wrap"><table class="hr-table"><thead><tr><th>Şube</th><th>Bölge</th><th>Müdür</th><th>Personel</th><th>Kadro</th><th>Academy</th><th>Sertifika</th><th>Gider/Ciro</th><th>İK Skoru</th><th>Risk</th><th>Aksiyon</th></tr></thead><tbody>${(d.branches||[]).map(b=>`<tr data-hr-branch="${b.id}"><td><b>${b.name}</b><br><span class="card-sub">${b.city}</span></td><td>${b.region}</td><td>${b.manager}</td><td>${b.personnelCount}</td><td>${b.openPositions>0?hrBadge('Riskli'):hrBadge('Sağlıklı')}</td><td>${progressCell(b.academyCompletion)}</td><td>${progressCell(b.certificationRate)}</td><td><b class="${hrCostClass(b.personnelCostToRevenueRatio)}">${formatPercent(b.personnelCostToRevenueRatio)}</b></td><td><b>${b.hrHealthScore}</b></td><td>${hrBadge(hrRiskShort(getRiskLevel(b.hrHealthScore)))}</td><td><button class="micro-btn" data-hr-branch="${b.id}">Detay</button></td></tr>`).join('')}</tbody></table></div>`;
+    }
+    function AcademyCertificationRiskPanel(){
+      const d = hrData(), levels=[0,1,2,3,4,5];
+      const locked = (d.employees||[]).filter(e=>getAcademyLockStatus(e)==='Kilitli');
+      return `<div class="hr-data-grid">${levels.map(l=>`<div class="hr-data-card"><span>${levelLabel(l)} Personel</span><b>${d.employees.filter(e=>safeNum(e.academyLevel)===l).length}</b><div class="progress"><div class="bar ${l>=3?'green':l>=2?'blue':'amber'}" style="width:${Math.max(8,l*18)}%"></div></div></div>`).join('')}<div class="hr-data-card"><span>Sertifika Riski</span><b>${d.certifications.filter(c=>c.status!=='Geçerli').length}</b></div><div class="hr-data-card"><span>Eğitim Eksik</span><b>${d.employees.filter(e=>e.academyStatus==='Kilitli').length}</b></div><div class="hr-data-card"><span>Operasyon Kilitli</span><b>${locked.length}</b></div></div>`;
+    }
+    function BonusSimulationSummaryPanel(){
+      const rows = hrData().bonusSimulations || [];
+      const by = status => rows.filter(r=>r.status===status).length;
+      return `<div class="hr-data-grid">${HR_BONUS_STATUSES.map(s=>`<div class="hr-data-card"><span>${s}</span><b>${by(s)}</b>${hrBadge(s)}</div>`).join('')}<div class="hr-data-card"><span>Tahmini Prim Yükü</span><b>${formatCurrencyTRY(rows.reduce((s,r)=>s+safeNum(r.simulatedAmount),0))}</b></div><div class="hr-data-card"><span>Kalite Kilidi</span><b>${rows.filter(r=>safeNum(r.qualityPenalty)>7).length}</b></div><div class="hr-data-card"><span>Academy Kilidi</span><b>${rows.filter(r=>String(r.lockReason).includes('Academy')).length}</b></div></div>`;
+    }
+    function PersonnelCostSummaryPanel(){
+      const d = hrData();
+      const center = d.employees.filter(e=>e.isCenter).reduce((s,e)=>s+safeNum(e.totalMonthlyCost),0);
+      const branch = d.employees.filter(e=>!e.isCenter).reduce((s,e)=>s+safeNum(e.totalMonthlyCost),0);
+      const revenue = d.branches.reduce((s,b)=>s+safeNum(b.revenue),0);
+      const training = d.costProfiles.reduce((s,c)=>s+safeNum(c.trainingCost),0);
+      const bonus = d.costProfiles.reduce((s,c)=>s+safeNum(c.bonusSimulationCost),0);
+      return `<div class="hr-data-grid">${[
+        ['Toplam aylık gider',formatCurrencyTRY(center+branch)],
+        ['Şube gideri',formatCurrencyTRY(branch)],
+        ['Merkez gideri',formatCurrencyTRY(center)],
+        ['Gider / ciro',formatPercent((center+branch)/Math.max(1,revenue)*100)],
+        ['Şube başı maliyet',formatCurrencyTRY(branch/Math.max(1,d.branches.length))],
+        ['Araç başı maliyet',formatCurrencyTRY(branch/Math.max(1,d.branches.reduce((s,b)=>s+safeNum(b.vehicleCount),0)))],
+        ['Eğitim maliyeti',formatCurrencyTRY(training)],
+        ['Prim sim. maliyeti',formatCurrencyTRY(bonus)]
+      ].map(x=>`<div class="hr-data-card"><span>${x[0]}</span><b>${x[1]}</b></div>`).join('')}</div>`;
+    }
+    function renderOrganizationRoom(){
+      const d = hrData();
+      const depts = HR_DEPARTMENTS.concat([
+        {name:'Şube Yönetimi',owner:'Şube Müdürü',description:'Şube günlük kadro ve operasyon yönetimi.'},
+        {name:'Teknik Operasyon',owner:'Kıdemli Teknisyen',description:'Ekspertiz işlemi, rapor doğruluğu ve cihaz sorumluluğu.'},
+        {name:'Müşteri Kabul',owner:'Müşteri Kabul',description:'Randevu, karşılama ve CRM veri disiplini.'},
+        {name:'Destek Operasyon',owner:'Destek Personeli',description:'Saha düzeni ve operasyon desteği.'}
+      ]);
+      return `<div class="grid">
+        <div class="grid g2">
+          <div class="card"><div class="card-head"><div><div class="card-title">Organizasyon Ağacı</div><div class="card-sub">CEO → merkez sorumluları → bölge müdürleri → şube müdürleri → şube personeli</div></div></div>${OrganizationTree()}</div>
+          <div class="card"><div class="card-head"><div><div class="card-title">Bölge / Franchise Organizasyonu</div><div class="card-sub">Franchise sahibi ve şube müdürü kendi şube alanını görür.</div></div></div>${d.branches.map(b=>`<div class="mini">${icon('store')}<div><b>${b.name}</b><span>${b.region} · Franchise: ${b.franchiseOwner||b.manager} · Müdür: ${b.manager}</span></div>${hrBadge(hrRiskShort(getRiskLevel(b.hrHealthScore)))}</div>`).join('')}</div>
+        </div>
+        <div class="card"><div class="card-head"><div><div class="card-title">Departman Kartları</div><div class="card-sub">Merkez ve şube departmanları için performans, Academy, gider ve risk</div></div></div><div class="hr-card-grid">${depts.map(dep=>DepartmentCard(dep)).join('')}</div></div>
+      </div>`;
+    }
+    function OrganizationTree(){
+      const d = hrData();
+      const center = d.employees.filter(e=>e.isCenter).slice(0,8);
+      const regions = uniq(d.branches.map(b=>b.region));
+      return `<div class="hr-tree"><div class="hr-tree-node"><b>CEO</b><div class="card-sub">Şirket skoru, büyüme, kârlılık ve risk yönetimi</div></div>${center.filter(e=>e.position!=='CEO').map(e=>`<div class="hr-tree-node child"><b>${e.position}</b><div class="card-sub">${e.fullName} · ${e.department} · ${levelLabel(e.academyLevel)}</div></div>`).join('')}${regions.map(region=>`<div class="hr-tree-node child"><b>${region} Bölgesi</b><div class="card-sub">${d.branches.filter(b=>b.region===region).length} şube · Skor ${calculateRegionScore(region)}</div></div>${d.branches.filter(b=>b.region===region).map(b=>`<div class="hr-tree-node child" style="margin-left:46px"><b>${b.name}</b><div class="card-sub">${b.manager} · ${b.personnelCount} personel · İK ${b.hrHealthScore}</div></div>`).join('')}`).join('')}</div>`;
+    }
+    function DepartmentCard(dep){
+      const employees = hrData().employees.filter(e=>e.department===dep.name || e.position===dep.owner);
+      const perf = Math.round(employees.reduce((s,e)=>s+safeNum(e.finalScore),0)/Math.max(1,employees.length)) || rand(70,90);
+      return `<div class="hr-info-card"><div class="card-head" style="margin:0"><div><h3>${dep.name}</h3><p>${dep.description}</p></div>${hrBadge(hrRiskShort(getRiskLevel(perf)))}</div><div class="compact-meta"><span>Sorumlu: ${dep.owner}</span><span>Personel: ${employees.length}</span><span>Açık kadro: ${employees.length<1?1:0}</span></div>${hrScoreRow('Performans',perf)}${hrScoreRow('Academy uyumu',Math.max(58,perf-5))}<div class="quick-actions"><button class="micro-btn" data-hr-create-action="${dep.name} departman detayı">Detay</button></div></div>`;
+    }
+    function renderRolesRoom(){
+      const permissionRows = [
+        ['CEO','Tüm sistemi görür','Tüm modüller','Tam yetki'],
+        ['İnsan Kaynakları Sorumlusu','Tüm personel ve işe alım süreçleri','HR Room','Yönetir'],
+        ['Finans Sorumlusu','Personel giderleri, prim ve kârlılık hazırlığı','Finans + HR','Görür/Onaylar'],
+        ['Hukuk Sorumlusu','Disiplin, etik, KVKK ve hukuki riskler','Hukuk + HR','Görür'],
+        ['Academy Sorumlusu','Eğitim, sınav, sertifika ve L0-L5','Academy + HR','Yönetir'],
+        ['Bölge Müdürü','Kendi bölgesindeki şubeler','Bölge görünümü','Görür/Yorumlar'],
+        ['Franchise Sahibi','Kendi şubesindeki tüm bilgiler','Şube paneli','Görür/Ön onay'],
+        ['Şube Müdürü','Günlük personel, vardiya ve talep','Şube İK','İşlem yapar'],
+        ['Personel','Kendi profil, eğitim, izin ve performans özeti','Kişisel görünüm','Sınırlı']
+      ];
+      return `<div class="grid">
+        <div class="card"><div class="card-head"><div><div class="card-title">Roller & Görev Tanımları</div><div class="card-sub">KPI, minimum Academy seviyesi, sertifika ve prim simülasyonu kuralları</div></div></div><div class="hr-card-grid">${HR_ROLES.map(RoleDefinitionCard).join('')}</div></div>
+        <div class="card"><div class="card-head"><div><div class="card-title">Yetki Matrisi</div><div class="card-sub">Hassas alanlarda maskeleme ve yetki gerekliliği gösterilir.</div></div></div><div class="hr-table-wrap"><table class="hr-table"><thead><tr><th>Rol</th><th>Görünüm</th><th>Modül</th><th>Yetki</th><th>Hassas Alan</th></tr></thead><tbody>${permissionRows.map(r=>`<tr><td><b>${r[0]}</b></td><td>${r[1]}</td><td>${r[2]}</td><td>${hrBadge(r[3])}</td><td><span class="hr-mask">Gizli / Yetki Gerekli</span></td></tr>`).join('')}</tbody></table></div></div>
+      </div>`;
+    }
+    function RoleDefinitionCard(role){
+      const job = {
+        CEO:'Şirket skoru, büyüme, kârlılık, marka güveni, franchise genişleme, kurumsal sistem ve risk yönetimi.',
+        'İnsan Kaynakları Sorumlusu':'İşe alım, personel kayıtları, performans döngüsü, Academy uyumu, disiplin, izin/vardiya ve şube İK sağlığı.',
+        'Finans Sorumlusu':'Personel giderleri, şube maliyetleri, prim simülasyonu, personel gider / ciro oranı ve kârlılık KPI hazırlığı.',
+        'Hukuk Sorumlusu':'Sözleşme, KVKK, disiplin, etik, marka standardı, hukuki risk ve belge uyumu.',
+        'Pazarlama Sorumlusu':'Lead üretimi, kampanya performansı, şube pazarlama desteği, marka görünürlüğü ve CAC.',
+        'Sosyal Medya Sorumlusu':'İçerik takvimi, etkileşim, DM cevap süresi, şube içerikleri, marka dili ve sosyal lead katkısı.',
+        'Tedarik Sorumlusu':'Ekipman, malzeme, tedarikçi, zimmet, maliyet kontrolü, teslim süresi ve stok/talep doğruluğu.',
+        'Academy Sorumlusu':'Eğitim, sınav, sertifika, eğitmen SLA ve L0-L5 seviye standardı.',
+        'Bölge Müdürü':'Bölge şube performansı, personel açığı, Academy takibi ve operasyon yorumları.',
+        'Franchise Sahibi':'Şube yatırımcı sorumluluğu, personel standardı, gider kontrolü, marka uyumu ve merkez onay süreçleri.',
+        'Şube Müdürü':'Şube ciro hedefi, personel yönetimi, vardiya, kalite, müşteri memnuniyeti, Academy takibi ve gider disiplini.',
+        'Teknisyen':'Teknik kontrol, ekspertiz işlem kalitesi, rapor doğruluğu, işlem süresi, sertifika uyumu ve zimmet sorumluluğu.',
+        'Müşteri Kabul':'Randevu karşılama, CRM veri doğruluğu, müşteri yönlendirme, paket anlatımı, ilk şikayet teması ve evrak düzeni.',
+        'Destek Personeli':'Saha düzeni, ekipman desteği, operasyon akışı ve şube günlük ihtiyaçları.'
+      }[role.name] || 'Rol bazlı görev tanımı HR Room ayarları üzerinden yönetilir.';
+      const critical = ['CEO','Şube Müdürü','Bölge Müdürü','Finans Sorumlusu','İnsan Kaynakları Sorumlusu','Teknisyen'].includes(role.name);
+      return `<div class="hr-info-card"><div class="card-head" style="margin:0"><div><h3>${role.name}</h3><p>${job}</p></div>${critical?hrBadge('Kritik'):hrBadge('İzlenmeli')}</div><div class="compact-meta"><span>${role.department}</span><span>${role.name.includes('Şube')||role.name.includes('Teknisyen')||role.name.includes('Müşteri')?'Şube':'Merkez'}</span><span>Min ${levelLabel(role.minAcademyLevel)}</span></div><div class="mini-list"><div class="mini">${icon('badge-check')}<div><b>Gerekli sertifika</b><span>${role.requiredCerts.join(', ')}</span></div></div><div class="mini">${icon('target')}<div><b>KPI grubu</b><span>${role.department} performans seti · Prim: ${role.minCost?'Dahil':'Koşullu'}</span></div></div><div class="mini">${icon('wallet')}<div><b>Gider merkezi</b><span>${role.department} · Merkez onayı ${critical?'gerekli':'duruma bağlı'}</span></div></div></div></div>`;
+    }
+    function renderEmployeeDirectory(){
+      const d = hrData(), f = HR_VIEW.lastFilters || {};
+      const branches = uniq(d.employees.map(e=>e.branchName));
+      const regions = uniq(d.employees.map(e=>e.region));
+      const roles = uniq(d.employees.map(e=>e.position));
+      const depts = uniq(d.employees.map(e=>e.department));
+      let rows = d.employees.filter(e=>{
+        const q = searchText(f.q||'');
+        return (!q || searchText(`${e.fullName} ${e.branchName} ${e.position} ${e.employeeCode}`).includes(q)) &&
+          (!f.branch || e.branchName===f.branch) && (!f.region || e.region===f.region) && (!f.role || e.position===f.role) &&
+          (!f.department || e.department===f.department) && (!f.level || String(e.academyLevel)===String(f.level)) &&
+          (!f.cert || e.certificationStatus===f.cert) && (!f.bonus || e.bonusSimulationStatus===f.bonus) &&
+          (!f.risk || e.hrRiskLevel===f.risk) && (!f.status || e.employmentStatus===f.status) &&
+          (!f.scope || (f.scope==='Merkez' ? e.isCenter : !e.isCenter));
+      });
+      return `<div class="grid">
+        <div class="card"><div class="card-head"><div><div class="card-title">Personel 360</div><div class="card-sub">${rows.length} kayıt listeleniyor. Satıra tıklayınca personel profili açılır.</div></div><button class="btn primary" data-hr-create-action="Yeni personel kaydı">${icon('user-plus')}Yeni Personel</button></div>${EmployeeFilters({branches,regions,roles,depts})}${EmployeeDirectoryTable(rows)}</div>
+      </div>`;
+    }
+    function EmployeeFilters(data){
+      const f = HR_VIEW.lastFilters || {};
+      const select = (key,label,values)=>`<select data-hr-filter="${key}"><option value="">${label}</option>${values.map(v=>`<option value="${v}" ${f[key]===v?'selected':''}>${v}</option>`).join('')}</select>`;
+      return `<div class="toolbar"><input data-hr-filter="q" placeholder="İsim, şube, rol veya personel kodu ara" value="${f.q||''}">${select('branch','Şube',data.branches)}${select('region','Bölge',data.regions)}${select('role','Rol',data.roles)}${select('department','Departman',data.depts)}${select('level','Academy',['0','1','2','3','4','5'])}${select('cert','Sertifika',['Geçerli','Süre Yakında Doluyor','Süresi dolmuş'])}${select('bonus','Prim',['Uygun','Şartlı Uygun','Kilitli','Uygun Değil','İncelemede'])}${select('risk','Risk',['Sağlıklı','Riskli','Kritik'])}${select('status','Durum',['Aktif','Pasif'])}${select('scope','Merkez/Şube',['Merkez','Şube'])}</div>`;
+    }
+    function EmployeeDirectoryTable(rows){
+      if(!rows.length) return `<div class="hr-empty">Filtrelere uygun personel bulunamadı.</div>`;
+      return `<div class="hr-table-wrap"><table class="hr-table"><thead><tr><th>Personel</th><th>Rol</th><th>Şube</th><th>Bölge</th><th>Departman</th><th>Academy</th><th>Sertifika</th><th>Performans</th><th>Prim</th><th>Maliyet</th><th>Risk</th><th>Durum</th></tr></thead><tbody>${rows.map(e=>`<tr data-hr-employee="${e.id}"><td><div class="person"><div class="av">${hrInitials(e.fullName)}</div><div><b>${e.fullName}</b><span class="card-sub">${e.employeeCode}</span></div></div></td><td>${e.position}</td><td>${e.branchName}</td><td>${e.region}</td><td>${e.department}</td><td>${hrBadge(levelLabel(e.academyLevel))}</td><td>${hrBadge(e.certificationStatus)}</td><td><b>${e.finalScore}</b> ${hrBadge(e.grade)}</td><td>${hrBadge(e.bonusSimulationStatus)}</td><td>${formatCurrencyTRY(e.totalMonthlyCost)}</td><td>${hrBadge(e.hrRiskLevel)}</td><td>${hrBadge(e.employmentStatus)}</td></tr>`).join('')}</tbody></table></div>`;
+    }
+    function renderBranchWorkforceRoom(){
+      const d = hrData();
+      return `<div class="grid">
+        <div class="card"><div class="card-head"><div><div class="card-title">Şube Personel Yönetimi</div><div class="card-sub">Franchise sahibi kendi şubesinde personel, maliyet, Academy, vardiya, prim ve sağlık skorunu görür.</div></div></div><div class="hr-card-grid">${d.branches.map(BranchWorkforceCard).join('')}</div></div>
+        <div class="card"><div class="card-head"><div><div class="card-title">Minimum Kadro Standardı</div><div class="card-sub">Eksik kadro varsa işe alım talebi önerilir.</div></div></div>${MinimumStaffingStandardPanel()}</div>
+      </div>`;
+    }
+    function BranchWorkforceCard(b){
+      return `<div class="hr-info-card" data-hr-branch="${b.id}"><div class="card-head" style="margin:0"><div><h3>${b.name}</h3><p>${b.city} · ${b.region} · ${b.status}</p></div>${hrBadge(hrRiskShort(getRiskLevel(b.hrHealthScore)))}</div><div class="compact-meta"><span>Franchise: ${b.franchiseOwner||b.manager}</span><span>Müdür: ${b.manager}</span><span>${b.personnelCount}/${b.personnelNeed} personel</span></div>${hrScoreRow('Academy',b.academyCompletion)}${hrScoreRow('Sertifika',b.certificationRate)}${hrScoreRow('Performans',b.averagePerformance)}<div class="hr-data-grid" style="grid-template-columns:repeat(2,1fr)"><div class="hr-data-card"><span>Gider</span><b>${formatCurrencyTRY(b.totalPersonnelCost)}</b></div><div class="hr-data-card"><span>Gider/Ciro</span><b class="${hrCostClass(b.personnelCostToRevenueRatio)}">${formatPercent(b.personnelCostToRevenueRatio)}</b></div><div class="hr-data-card"><span>Açık Kadro</span><b>${b.openPositions}</b></div><div class="hr-data-card"><span>İK Skoru</span><b>${b.hrHealthScore}</b></div></div><div class="quick-actions"><button class="micro-btn" data-hr-branch="${b.id}">Şube detayı</button><button class="micro-btn" data-hr-create-action="${b.name} kadro talebi">Kadro talebi</button></div></div>`;
+    }
+    function MinimumStaffingStandardPanel(){
+      return `<div class="hr-card-grid">${Object.entries(HR_MIN_STAFFING_STANDARD).map(([type,std])=>`<div class="hr-info-card"><h3>${type.toLocaleUpperCase('tr-TR')} Şube</h3><div class="mini-list">${Object.entries(std).map(([k,v])=>`<div class="mini">${icon('users')}<div><b>${k}</b><span>Minimum ${v}</span></div>${safeNum(v)>0?hrBadge('Zorunlu'):hrBadge('Opsiyonel')}</div>`).join('')}</div></div>`).join('')}</div>`;
+    }
+    function renderRecruitmentRoom(){
+      const d = hrData();
+      return `<div class="grid">
+        <div class="card"><div class="card-head"><div><div class="card-title">İşe Alım & Merkez Onay Odası</div><div class="card-sub">Şube personeli merkez onayıyla işe alınır; İK, Finans, Academy, Bölge ve Merkez adımları izlenir.</div></div><button class="btn primary" data-hr-create-request>${icon('plus')}Talep Aç</button></div>${RecruitmentKanban()}</div>
+        <div class="grid g2">
+          <div class="card"><div class="card-head"><div><div class="card-title">Aday Kartları</div><div class="card-sub">Ön test, teknik yeterlilik, iletişim ve referans durumu</div></div><button class="btn" data-hr-create-action="Aday ekleme">Aday Ekle</button></div>${CandidateCards(d.candidates||[])}</div>
+          <div class="card"><div class="card-head"><div><div class="card-title">Onay Akışı</div><div class="card-sub">Taslak → Şube → İK → Finans → Academy → Bölge → Merkez</div></div></div>${HiringApprovalTimeline()}</div>
+        </div>
+      </div>`;
+    }
+    function RecruitmentKanban(){
+      const d = hrData();
+      return `<div class="hr-kanban">${HR_RECRUITMENT_STAGES.map(stage=>`<div class="hr-kanban-col"><h3>${stage}<span>${d.recruitmentRequests.filter(r=>r.finalStatus===stage).length}</span></h3>${d.recruitmentRequests.filter(r=>r.finalStatus===stage).map(r=>`<div class="hr-request-card" data-hr-recruitment="${r.id}"><b>${r.position}</b><small>${r.branchName} · ${r.reason} · ${r.urgency}</small><div class="compact-meta"><span>${formatCurrencyTRY(r.estimatedMonthlyCost)}</span><span>%${r.costImpact} gider etkisi</span></div><div class="quick-actions"><button class="micro-btn" data-hr-recruitment="${r.id}">Detay</button><button class="micro-btn" data-hr-next-stage="${r.id}">Sonraki</button><button class="micro-btn" data-hr-recruitment-status="${r.id}:Onaylandı">Merkez Onayla</button></div></div>`).join('') || `<div class="hr-empty">Kayıt yok</div>`}</div>`).join('')}</div>`;
+    }
+    function CandidateCards(rows){
+      return `<div class="hr-card-grid two">${rows.slice(0,6).map(c=>`<div class="hr-info-card"><div class="card-head" style="margin:0"><div><h3>${c.name}</h3><p>${c.role} · ${c.branch}</p></div>${hrBadge(c.status)}</div><div class="compact-meta"><span>${c.experience} yıl</span><span>${formatCurrencyTRY(c.expectedSalary)}</span><span>Referans: ${c.referenceStatus}</span></div>${hrScoreRow('Teknik',c.technicalScore)}${hrScoreRow('İletişim',c.communicationScore)}${hrScoreRow('Academy ön test',c.academyPreTestScore)}<button class="micro-btn" data-hr-create-action="${c.name} aday görüşmesi">Görüşme notu</button></div>`).join('')}</div>`;
+    }
+    function HiringApprovalTimeline(){
+      const steps=['Şube kadro ihtiyacı','Franchise ön onay','İK incelemesi','Finans gider etkisi','Academy aday testi','Bölge operasyon yorumu','Genel merkez nihai karar','Onboarding planı'];
+      return `<div class="action-timeline">${steps.map((s,i)=>`<div class="timeline-step"><span class="step-icon">${icon(i<3?'check-circle-2':i<6?'clock':'circle-dot')}</span><div><b>${s}</b><span>${i<3?'Tamamlanan demo adım':'Demo onay kuyruğu'}</span></div><strong>${i+1}</strong></div>`).join('')}</div>`;
+    }
+    function renderOnboardingRoom(){
+      const d = hrData();
+      const steps = ['Evrak kontrolü','KVKK ve gizlilik onayı','OTOTR kültür eğitimi','Marka davranış standardı','Şube operasyon standardı','Müşteri karşılama standardı','Teknik rol eğitimleri','Rapor dili ve kalite standardı','CRM / randevu sistemi eğitimi','İş sağlığı ve güvenliği','İlk sınav','Mentor atanması','İlk 7 gün kontrolü','İlk 30 gün değerlendirmesi','Deneme süresi değerlendirmesi'];
+      const people = d.employees.slice(0,6);
+      return `<div class="grid g2">
+        <div class="card"><div class="card-head"><div><div class="card-title">Onboarding Checklist</div><div class="card-sub">Yeni işe alınan personel için zorunlu adımlar</div></div></div><div class="hr-check-list">${steps.map((s,i)=>`<div class="hr-check ${i>10?'late':''}">${icon(i<10?'check-circle-2':'clock')}<div><b>${s}</b><span>${i<10?'Tamamlandı':'Takipte'}</span></div>${hrBadge(i<10?'Tamamlandı':'Bekliyor')}</div>`).join('')}</div></div>
+        <div class="card"><div class="card-head"><div><div class="card-title">30-60-90 Gün Planı</div><div class="card-sub">Temel eğitim, rol bazlı görev ve deneme süresi kararı</div></div></div><div class="mini-list">${people.map((p,i)=>`<div class="mini">${icon('route')}<div><b>${p.fullName}</b><span>${p.branchName} · ${p.position} · Mentor: ${d.employees[i+1]?.fullName||'İK Sorumlusu'} · Sonraki görev: ${['Temel eğitim','Rol bazlı görev','Teknik sınav'][i%3]}</span></div>${hrBadge(i%3===0?'İzlenmeli':'Sağlıklı')}</div>`).join('')}</div></div>
+      </div>`;
+    }
+    function renderAcademyHRRoom(){
+      const d = hrData();
+      const risks = d.certifications.filter(c=>c.status!=='Geçerli').slice(0,10);
+      const locked = d.employees.filter(e=>getAcademyLockStatus(e)==='Kilitli');
+      return `<div class="grid">
+        <div class="card"><div class="card-head"><div><div class="card-title">Academy & Sertifika Odası</div><div class="card-sub">L0-L5 seviye sistemi, rol bazlı minimum seviyeler ve operasyon kilitleri</div></div><button class="btn primary" data-hr-assign-training>${icon('graduation-cap')}Eğitim Ata</button></div>${AcademyCertificationRiskPanel()}</div>
+        <div class="grid g2"><div class="card"><div class="card-head"><div><div class="card-title">Eğitim Listesi</div><div class="card-sub">Zorunlu ve önerilen eğitim kataloğu</div></div></div><div class="hr-card-grid two">${d.academyCourses.map(c=>`<div class="hr-info-card"><div class="card-head" style="margin:0"><div><h3>${c.title}</h3><p>${c.category} · ${c.duration}</p></div>${hrBadge(c.status)}</div><div class="compact-meta"><span>Min ${levelLabel(c.minLevel)}</span><span>Geçme ${c.passScore}</span><span>${c.modules.length} modül</span></div><button class="micro-btn" data-hr-assign-training="${c.id}">Eğitim ata</button></div>`).join('')}</div></div>
+        <div class="card"><div class="card-head"><div><div class="card-title">Operasyon Yetkisi Kilitli Personeller</div><div class="card-sub">Academy veya sertifika kuralı nedeniyle kilitlenenler</div></div></div><div class="mini-list">${locked.slice(0,8).map(e=>`<div class="mini">${icon('lock')}<div><b>${e.fullName}</b><span>${e.position} · ${e.branchName} · ${levelLabel(e.academyLevel)} · ${e.certificationStatus}</span></div><button class="micro-btn" data-hr-employee="${e.id}">Profil</button></div>`).join('') || '<div class="hr-empty">Operasyon yetkisi kilitli personel yok.</div>'}</div></div></div>
+        <div class="card"><div class="card-head"><div><div class="card-title">Sertifika Riskleri</div><div class="card-sub">Süresi dolacak veya dolmuş belgeler</div></div></div><div class="hr-table-wrap"><table class="hr-table"><thead><tr><th>Sertifika</th><th>Personel</th><th>Seviye</th><th>Bitiş</th><th>Durum</th><th>Sınav</th><th>Aksiyon</th></tr></thead><tbody>${risks.map(c=>{const e=d.employees.find(x=>x.id===c.employeeId)||{};return `<tr><td><b>${c.name}</b></td><td>${e.fullName||c.employeeId}</td><td>${c.level}</td><td>${toDate(c.expiresAt)}</td><td>${hrBadge(c.status)}</td><td>${c.examScore}</td><td><button class="micro-btn" data-hr-renew-cert="${c.id}">Yenile</button></td></tr>`}).join('')}</tbody></table></div></div>
+      </div>`;
+    }
+    function renderPerformanceRoom(){
+      const d = hrData(), company = calculateCompanyScore(), regions = uniq(d.branches.map(b=>b.region));
+      return `<div class="grid">
+        <div class="card"><div class="card-head"><div><div class="card-title">Performans Sistemi</div><div class="card-sub">Şirket, bölge, şube, müdür ve çalışan skorlarını tek zincirde simüle edin.</div></div><button class="btn primary" data-hr-create-action="Performans simülasyonu">${icon('play')}Simülasyon</button></div><div class="hr-data-grid">${[['Şirket Skoru',company],...regions.map(r=>[`${r} Bölgesi`,calculateRegionScore(r)])].map(x=>`<div class="hr-data-card"><span>${x[0]}</span><b>${x[1]}</b>${hrScoreRow('',x[1])}</div>`).join('')}</div></div>
+        <div class="grid g2"><div class="card"><div class="card-head"><div><div class="card-title">Şube Skoru Tablosu</div><div class="card-sub">Ciro, maliyet, müşteri, kalite, Academy ve müdür etkisi</div></div></div>${BranchPerformanceTableHR()}</div><div class="card"><div class="card-head"><div><div class="card-title">Rol Bazlı KPI Görünümü</div><div class="card-sub">Büyük şirket performans mantığına göre rol KPI setleri</div></div></div>${RoleBasedKpiTable()}</div></div>
+        <div class="card"><div class="card-head"><div><div class="card-title">Çalışan Skor Tablosu</div><div class="card-sub">Çalışan nihai skoru = Kişisel KPI %70 + Şube %20 + Bölge %5 + Şirket %5</div></div></div>${EmployeeScoreTable()}</div>
+      </div>`;
+    }
+    function BranchPerformanceTableHR(){
+      const rows = hrData().branches || [];
+      return `<div class="hr-table-wrap"><table class="hr-table"><thead><tr><th>Şube</th><th>Bölge</th><th>Şube Skoru</th><th>Performans</th><th>Academy</th><th>Gider Disiplini</th><th>Risk</th></tr></thead><tbody>${rows.map(b=>{const score=calculateBranchScore(b);return `<tr data-hr-branch="${b.id}"><td><b>${b.name}</b></td><td>${b.region}</td><td><b>${score}</b> ${hrBadge(getGrade(score))}</td><td>${b.averagePerformance}</td><td>${formatPercent(b.academyCompletion)}</td><td class="${hrCostClass(b.personnelCostToRevenueRatio)}">${formatPercent(b.personnelCostToRevenueRatio)}</td><td>${hrBadge(hrRiskShort(getRiskLevel(score)))}</td></tr>`}).join('')}</tbody></table></div>`;
+    }
+    function RoleBasedKpiTable(){
+      const kpis = [
+        ['CEO','Şirket skoru, franchise büyüme, kârlılık, marka güveni, operasyon standardı, Academy gelişimi, hukuk/uyum, insan kaynağı sağlığı'],
+        ['Şube Müdürü','Şube skoru, ciro hedefi, gider kontrolü, ekip performansı, Academy, vardiya disiplini, müşteri memnuniyeti, kalite'],
+        ['Pazarlama Sorumlusu','Lead üretimi, lead kalitesi, kampanya ROI, şube destek başarısı, marka uyumu, raporlama disiplini, CAC'],
+        ['Sosyal Medya Sorumlusu','İçerik takvimi, etkileşim, DM/yorum cevap süresi, şube görünürlüğü, lead katkısı, marka dili, kriz yönetimi'],
+        ['Tedarik Sorumlusu','Zamanında teslim, maliyet kontrolü, onaylı tedarikçi, zimmet doğruluğu, arıza/eksik oranı, stok/talep doğruluğu'],
+        ['Teknisyen','İşlem adedi, kalite, rapor doğruluğu, işlem süresi, şikayet etkisi, Academy, sertifika, vardiya/devam, ekipman kullanımı']
+      ];
+      return `<div class="mini-list">${kpis.map(k=>`<div class="mini">${icon('target')}<div><b>${k[0]}</b><span>${k[1]}</span></div></div>`).join('')}</div>`;
+    }
+    function EmployeeScoreTable(){
+      const rows = [...hrData().employees].sort((a,b)=>safeNum(b.finalScore)-safeNum(a.finalScore)).slice(0,18);
+      return `<div class="hr-table-wrap"><table class="hr-table"><thead><tr><th>Personel</th><th>Rol</th><th>Şube</th><th>Kişisel KPI</th><th>Şube Etki</th><th>Bölge Etki</th><th>Şirket Etki</th><th>Nihai</th><th>Grade</th><th>Aksiyon</th></tr></thead><tbody>${rows.map(e=>`<tr data-hr-employee="${e.id}"><td><b>${e.fullName}</b></td><td>${e.position}</td><td>${e.branchName}</td><td>${e.performanceScore}</td><td>${e.branchScoreImpact}</td><td>${e.regionScoreImpact}</td><td>${e.companyScoreImpact}</td><td><b>${e.finalScore}</b></td><td>${hrBadge(e.grade)}</td><td>${e.finalScore<70?'<button class="micro-btn" data-hr-create-action="'+e.fullName+' PIP önerisi">PIP öner</button>':'<button class="micro-btn" data-hr-employee="'+e.id+'">Profil</button>'}</td></tr>`).join('')}</tbody></table></div>`;
+    }
+    function renderBonusSimulationRoom(){
+      const rows = hrData().bonusSimulations || [];
+      return `<div class="grid">
+        <div class="card"><div class="card-head"><div><div class="card-title">Prim Simülasyon Odası</div><div class="card-sub">Gerçek ödeme değildir. Performans, Academy, kalite, vardiya ve şube skorlarına göre tahmini prim uygunluğu simüle edilir.</div></div><button class="btn primary" data-hr-simulate-all>${icon('calculator')}Toplu Simüle Et</button></div>${BonusSimulationSummaryPanel()}</div>
+        <div class="card"><div class="card-head"><div><div class="card-title">Prim Simülasyonu Tablosu</div><div class="card-sub">Kilit nedeni, Academy/sertifika etkisi ve yönetici notu</div></div></div><div class="hr-table-wrap"><table class="hr-table"><thead><tr><th>Personel</th><th>Şube</th><th>Kişisel</th><th>Şube</th><th>Academy</th><th>Devam</th><th>Kalite</th><th>Tutar</th><th>Durum</th><th>Kilit Nedeni</th><th>Aksiyon</th></tr></thead><tbody>${rows.map(r=>`<tr><td><b>${r.employeeName}</b></td><td>${r.branch}</td><td>${r.personalScore}</td><td>${r.branchScore}</td><td>${r.academyScore}</td><td>${r.attendanceScore}</td><td>-${r.qualityPenalty}</td><td>${formatCurrencyTRY(r.simulatedAmount)}</td><td>${hrBadge(r.status)}</td><td>${r.lockReason||'-'}</td><td><button class="micro-btn" data-hr-simulate="${r.employeeId}">Yenile</button></td></tr>`).join('')}</tbody></table></div></div>
+      </div>`;
+    }
+    function renderShiftAttendanceRoom(){
+      const d = hrData();
+      return `<div class="grid">
+        <div class="grid g2"><div class="card"><div class="card-head"><div><div class="card-title">Haftalık Vardiya Planı</div><div class="card-sub">Minimum kadro, sertifika ve randevu yoğunluğu uyarıları</div></div></div>${ShiftPlanner(d.shifts)}</div><div class="card"><div class="card-head"><div><div class="card-title">İzin Talepleri</div><div class="card-sub">İzin minimum kadroyu bozarsa alarm üretir.</div></div></div>${LeaveRequestTable(d.leaveRequests)}</div></div>
+        <div class="card"><div class="card-head"><div><div class="card-title">Devam Kayıtları</div><div class="card-sub">Giriş, çıkış, geç kalma, erken çıkış ve fazla mesai simülasyonu</div></div></div>${AttendanceTable(d.attendance)}</div>
+      </div>`;
+    }
+    function ShiftPlanner(rows){
+      return `<div class="hr-table-wrap"><table class="hr-table"><thead><tr><th>Şube</th><th>Tarih</th><th>Personel</th><th>Rol</th><th>Saat</th><th>Sertifika</th><th>Fazla Mesai</th><th>Onay</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${r.branch}</td><td>${toDate(r.date)}</td><td><b>${r.employee}</b></td><td>${r.role}</td><td>${r.startTime}-${r.endTime}</td><td>${hrBadge(r.certificationOk?'Uygun':'Kilitli')}</td><td>${hrBadge(r.overlapRisk)}</td><td>${hrBadge('Şube Onayında')}</td></tr>`).join('')}</tbody></table></div>`;
+    }
+    function AttendanceTable(rows){
+      return `<div class="hr-table-wrap"><table class="hr-table"><thead><tr><th>Personel</th><th>Tarih</th><th>Giriş</th><th>Çıkış</th><th>Geç</th><th>Erken</th><th>Rapor</th><th>Fazla Mesai</th><th>Not</th></tr></thead><tbody>${rows.map(r=>`<tr><td><b>${r.employeeName}</b></td><td>${toDate(r.date)}</td><td>${r.checkIn}</td><td>${r.checkOut}</td><td>${hrBadge(r.late?'Orta':'Düşük')}</td><td>${hrBadge(r.earlyLeave?'Orta':'Düşük')}</td><td>${hrBadge(r.sick?'Hastalık':'Yok')}</td><td>${r.overtime} saat</td><td>${r.managerNote}</td></tr>`).join('')}</tbody></table></div>`;
+    }
+    function LeaveRequestTable(rows){
+      return `<div class="mini-list">${rows.map(r=>`<div class="mini">${icon(r.riskLevel==='Yüksek'?'calendar-x':'calendar-check')}<div><b>${r.employeeName}</b><span>${r.branch} · ${r.leaveType} · ${toDate(r.startDate)} - ${toDate(r.endDate)}</span><span>${r.riskLevel==='Yüksek'?'Bu izin onaylanırsa şubede minimum teknisyen sayısı sağlanamayacak.':'Minimum kadro uyumu korunuyor.'}</span></div>${hrBadge(r.riskLevel==='Yüksek'?'Kritik':r.status)}</div>`).join('')}</div>`;
+    }
+    function renderPersonnelCostRoom(){
+      const d = hrData();
+      return `<div class="grid">
+        <div class="card"><div class="card-head"><div><div class="card-title">Personel Giderleri & Şube Maliyetleri</div><div class="card-sub">Kârlılık KPI sistemine hazırlık için simülasyon alanı</div></div></div>${PersonnelCostSummaryPanel()}</div>
+        <div class="card"><div class="card-head"><div><div class="card-title">Şube Bazlı Gider Tablosu</div><div class="card-sub">Personel gider / ciro oranı renkli risk kuralıyla gösterilir.</div></div></div><div class="hr-table-wrap"><table class="hr-table"><thead><tr><th>Şube</th><th>Ciro</th><th>Personel</th><th>Toplam Gider</th><th>Gider/Ciro</th><th>Araç</th><th>Araç Başı</th><th>Personel Başı Ciro</th><th>Prim Yükü</th><th>Eğitim</th><th>Risk</th></tr></thead><tbody>${d.branches.map(b=>`<tr data-hr-branch="${b.id}"><td><b>${b.name}</b></td><td>${formatCurrencyTRY(b.revenue)}</td><td>${b.personnelCount}</td><td>${formatCurrencyTRY(b.totalPersonnelCost)}</td><td><b class="${hrCostClass(b.personnelCostToRevenueRatio)}">${formatPercent(b.personnelCostToRevenueRatio)}</b></td><td>${b.vehicleCount}</td><td>${formatCurrencyTRY(b.totalPersonnelCost/Math.max(1,b.vehicleCount))}</td><td>${formatCurrencyTRY(calculateRevenuePerEmployee(b))}</td><td>${formatCurrencyTRY(b.bonusSimulationLoad*1000)}</td><td>${formatCurrencyTRY(b.trainingCostImpact*1000)}</td><td>${hrBadge(hrRiskShort(getRiskLevel(b.hrHealthScore)))}</td></tr>`).join('')}</tbody></table></div></div>
+      </div>`;
+    }
+    function renderProfitabilityPreparationRoom(){
+      const rows = hrData().profitability || [];
+      const sorted = [...rows].sort((a,b)=>safeNum(b.profitabilityReadinessScore)-safeNum(a.profitabilityReadinessScore));
+      return `<div class="grid">
+        <div class="card"><div class="card-head"><div><div class="card-title">Kârlılık KPI Hazırlık Odası</div><div class="card-sub">Şube kârlılık KPI sistemine temel olacak personel, verimlilik ve gider göstergelerini simüle edin.</div></div>${hrBadge('Finans modülüne bağlanmaya hazır')}</div><div class="hr-data-grid">${[['Ort. Hazırlık Skoru',Math.round(rows.reduce((s,r)=>s+r.profitabilityReadinessScore,0)/Math.max(1,rows.length))],['Veri Tamlığı',Math.round(rows.reduce((s,r)=>s+r.dataCompletenessScore,0)/Math.max(1,rows.length))],['Riskli Şube',rows.filter(r=>r.profitabilityReadinessScore<65).length],['Eksik Veri',rows.filter(r=>r.dataCompletenessScore<75).length]].map(x=>`<div class="hr-data-card"><span>${x[0]}</span><b>${x[1]}</b></div>`).join('')}</div></div>
+        <div class="grid g2"><div class="card"><div class="card-head"><div><div class="card-title">En İyi 5 Şube</div></div></div><div class="mini-list">${sorted.slice(0,5).map(r=>ProfitabilityMini(r)).join('')}</div></div><div class="card"><div class="card-head"><div><div class="card-title">Riskli 5 Şube</div></div></div><div class="mini-list">${sorted.slice(-5).reverse().map(r=>ProfitabilityMini(r,true)).join('')}</div></div></div>
+        <div class="card"><div class="card-head"><div><div class="card-title">Şube Karşılaştırma Tablosu</div><div class="card-sub">Personel gider disiplini, verimlilik, araç başı maliyet, prim, eğitim ve veri tamlığı</div></div></div><div class="hr-table-wrap"><table class="hr-table"><thead><tr><th>Şube</th><th>Gider/Ciro</th><th>Araç Başı</th><th>Personel Başı Ciro</th><th>Prim Yükü</th><th>Eğitim Etkisi</th><th>Turnover</th><th>Fazla Mesai</th><th>Veri</th><th>Skor</th></tr></thead><tbody>${rows.map(r=>{const b=hrData().branches.find(x=>x.id===r.branchId)||{};return `<tr><td><b>${b.name}</b></td><td>${formatPercent(r.personnelCostToRevenueRatio)}</td><td>${r.vehiclePerTechnician}</td><td>${formatCurrencyTRY(r.revenuePerEmployee)}</td><td>${formatCurrencyTRY(r.bonusSimulationLoad*1000)}</td><td>${formatCurrencyTRY(r.trainingCostImpact*1000)}</td><td>${formatCurrencyTRY(r.turnoverCostImpact*1000)}</td><td>${hrBadge(r.overtimeRisk>18?'Riskli':'İzlenmeli')}</td><td>${r.dataCompletenessScore}</td><td><b>${r.profitabilityReadinessScore}</b></td></tr>`}).join('')}</tbody></table></div></div>
+      </div>`;
+    }
+    function ProfitabilityMini(r,risk=false){
+      const b = hrData().branches.find(x=>x.id===r.branchId)||{};
+      return `<div class="mini">${icon(risk?'alert-triangle':'check-circle-2')}<div><b>${b.name}</b><span>Hazırlık ${r.profitabilityReadinessScore} · Veri ${r.dataCompletenessScore} · Gider/Ciro ${formatPercent(r.personnelCostToRevenueRatio)}</span></div>${hrBadge(hrRiskShort(getRiskLevel(r.profitabilityReadinessScore)))}</div>`;
+    }
+    function renderBranchHRHealthRoom(){
+      const rows = hrData().branchHealth || [];
+      return `<div class="grid">
+        <div class="card"><div class="card-head"><div><div class="card-title">Şube İK Sağlık Skoru</div><div class="card-sub">Kadro, sertifika, Academy, performans, gider, devam, turnover, disiplin ve yedekleme bileşik skoru</div></div></div><div class="hr-table-wrap"><table class="hr-table"><thead><tr><th>Şube</th><th>Kadro</th><th>Sertifika</th><th>Academy</th><th>Performans</th><th>Gider</th><th>Devam</th><th>Turnover</th><th>Disiplin</th><th>Yedekleme</th><th>Skor</th><th>Aksiyon</th></tr></thead><tbody>${rows.map(r=>{const b=hrData().branches.find(x=>x.id===r.branchId)||{};return `<tr data-hr-branch="${r.branchId}"><td><b>${b.name}</b><br><span class="card-sub">${b.region} · ${b.manager}</span></td><td>${r.staffingScore}</td><td>${r.certificationScore}</td><td>${r.academyScore}</td><td>${r.performanceScore}</td><td>${r.costDisciplineScore}</td><td>${r.attendanceScore}</td><td>${r.turnoverScore}</td><td>${r.disciplineScore}</td><td>${r.successionScore}</td><td><b>${r.finalScore}</b> ${hrBadge(hrRiskShort(r.riskLevel))}</td><td><button class="micro-btn" data-hr-create-action="${b.name} İK sağlık aksiyonu">Aksiyon</button></td></tr>`}).join('')}</tbody></table></div></div>
+        <div class="card"><div class="card-head"><div><div class="card-title">Otomatik Aksiyon Önerileri</div><div class="card-sub">Eksik kadro, sertifika, gider, turnover, müdür skoru ve devamsızlık için görev önerileri</div></div></div><div class="mini-list">${rows.flatMap(r=>r.recommendedActions.map(a=>({r,a}))).slice(0,10).map(x=>{const b=hrData().branches.find(y=>y.id===x.r.branchId)||{};return `<div class="mini">${icon('sparkles')}<div><b>${b.name}</b><span>${x.a}</span></div><button class="micro-btn" data-hr-create-action="${b.name}: ${x.a}">Oluştur</button></div>`}).join('')}</div></div>
+      </div>`;
+    }
+    function renderCareerSuccessionRoom(){
+      const d = hrData();
+      const paths = [
+        ['Teknisyen','L0 Aday Teknisyen → L1 Yardımcı Teknisyen → L2 Yetkili Teknisyen → L3 Kıdemli Teknisyen → L4 Eğitmen Teknisyen → L5 Master / Denetçi'],
+        ['Müşteri Kabul','Müşteri Kabul → Kıdemli Müşteri Kabul → CRM Sorumlusu → Şube Müdür Yardımcısı → Şube Müdürü'],
+        ['Şube Müdürü','Şube Müdürü → Kıdemli Şube Müdürü → Bölge Müdürü → Operasyon Sorumlusu → Operasyon Direktörü'],
+        ['Merkez Personel','Uzman → Kıdemli Uzman → Sorumlu → Müdür → Direktör']
+      ];
+      const candidates = [...d.employees].filter(e=>e.finalScore>=78 && e.academyLevel>=2).slice(0,10);
+      const critical = ['Şube Müdürü','Kıdemli Teknisyen','Bölge Müdürü','Academy Eğitmeni','Kalite Denetçisi','Franchise Destek Uzmanı','CRM Takım Lideri','Finans Sorumlusu','İK Sorumlusu'];
+      return `<div class="grid">
+        <div class="card"><div class="card-head"><div><div class="card-title">Kariyer Yolları</div><div class="card-sub">L0-L5, müşteri kabul, şube müdürü ve merkez kariyer patikaları</div></div></div><div class="hr-card-grid two">${paths.map(p=>`<div class="hr-info-card"><h3>${p[0]}</h3><p>${p[1]}</p></div>`).join('')}</div></div>
+        <div class="grid g2"><div class="card"><div class="card-head"><div><div class="card-title">Terfi Adayları</div><div class="card-sub">Son 6 ay performans, Academy, sertifika, yorum ve disiplin kriterleri</div></div></div><div class="mini-list">${candidates.map(e=>`<div class="mini">${icon('trending-up')}<div><b>${e.fullName}</b><span>${e.position} · ${e.branchName} · Skor ${e.finalScore} · ${levelLabel(e.academyLevel)}</span></div>${hrBadge(e.disciplineStatus==='Kapalı'?'Uygun':'İncelemede')}</div>`).join('')}</div></div>
+        <div class="card"><div class="card-head"><div><div class="card-title">Yedekleme Planı</div><div class="card-sub">Kritik roller için hazır olma seviyesi ve eksik eğitimler</div></div></div><div class="mini-list">${critical.map((role,i)=>`<div class="mini">${icon('shield-check')}<div><b>${role}</b><span>Mevcut kişi: ${d.employees[i]?.fullName||'Atama bekliyor'} · Yedek 1: ${d.employees[i+4]?.fullName||'-'} · Hazır olma: ${['30 gün','60 gün','90 gün'][i%3]}</span></div>${hrBadge(i%4===0?'Riskli':'İzlenmeli')}</div>`).join('')}</div></div></div>
+      </div>`;
+    }
+    function renderDisciplineRoom(){
+      const rows = hrData().disciplinaryCases || [];
+      const types = ['Devamsızlık','Geç kalma','Müşteriyle uygunsuz iletişim','Rapor hatası','Marka standardı ihlali','KVKK/gizlilik ihlali','Şube içi davranış sorunu','Zimmet hasarı','Rapor manipülasyonu şüphesi','Çıkar çatışması','Hukuki risk','Franchise standart ihlali'];
+      return `<div class="grid">
+        <div class="card"><div class="card-head"><div><div class="card-title">Disiplin / Etik / Hukuk</div><div class="card-sub">Vaka açılır, kanıt eklenir, İK/Hukuk inceler, performans ve prim etkisi işlenir.</div></div><button class="btn primary" data-hr-create-action="Yeni disiplin vakası">${icon('plus')}Vaka Aç</button></div><div class="hr-table-wrap"><table class="hr-table"><thead><tr><th>Vaka ID</th><th>Personel</th><th>Şube</th><th>Tip</th><th>Öncelik</th><th>Durum</th><th>Açılış</th><th>Sorumlu</th><th>Hukuk</th><th>Prim</th><th>Performans</th><th>Detay</th></tr></thead><tbody>${rows.map(c=>`<tr><td><b>${c.id}</b></td><td>${c.employeeName}</td><td>${c.branch}</td><td>${c.type}</td><td>${hrBadge(c.priority)}</td><td>${hrBadge(c.status)}</td><td>${toDate(c.openedAt)}</td><td>${c.owner}</td><td>${hrBadge(c.requiresLegal?'Gerekli':'Hayır')}</td><td>${c.bonusImpact}</td><td>${c.performanceImpact}</td><td><button class="micro-btn" data-hr-case="${c.id}">Aç</button></td></tr>`).join('')}</tbody></table></div></div>
+        <div class="grid g2"><div class="card"><div class="card-head"><div><div class="card-title">Vaka Tipleri</div></div></div><div class="hr-subtabs">${types.map(t=>`<button data-hr-create-action="${t} vaka tipi">${t}</button>`).join('')}</div></div><div class="card"><div class="card-head"><div><div class="card-title">Aksiyon Tipleri</div></div></div><div class="mini-list">${['Sözlü uyarı','Yazılı uyarı','Eğitim tekrarı','Mentorluk','Performans iyileştirme planı','Görev kısıtlama','Prim simülasyonu kilidi','Yetki askıya alma','Hukuki inceleme','İşten çıkış önerisi'].map(a=>`<div class="mini">${icon('gavel')}<div><b>${a}</b><span>Demo aksiyon kaydı oluşturulabilir.</span></div><button class="micro-btn" data-hr-create-action="${a}">Aksiyon</button></div>`).join('')}</div></div></div>
+      </div>`;
+    }
+    function renderHRReportsRoom(){
+      const reports = [
+        ['Tüm personel raporu','Personel 360 kayıtları','HR_DATA.employees'],['Şube bazlı personel raporu','Şube personel dağılımı','HR_DATA.branches'],['Rol bazlı dağılım','Rol ve departman kırılımı','HR_ROLES'],['Açık kadro raporu','Kadro standardı farkı','minimumStaffing'],['İşe alım onay raporu','Pipeline ve adaylar','recruitmentRequests'],['Academy tamamlama raporu','Eğitim ve sertifika','academyCourses'],['Sertifika risk raporu','Dolacak/dolmuş belgeler','certifications'],['Performans dağılım raporu','Şirket / bölge / şube / kişi skorları','performanceReviews'],['Personel gider raporu','Maliyet profilleri','costProfiles'],['Prim simülasyon raporu','Tahmini prim uygunluğu','bonusSimulations'],['Disiplin / etik vaka raporu','Açık ve kapalı vakalar','disciplinaryCases'],['Turnover raporu','Devir maliyeti ve risk','branchHealth'],['Şube İK sağlık raporu','Bileşik sağlık skoru','branchHealth'],['Kârlılık KPI hazırlık raporu','Finans hazırlık snapshot','profitability']
+      ];
+      return `<div class="card"><div class="card-head"><div><div class="card-title">Raporlama Merkezi</div><div class="card-sub">Genel merkez ve franchise sahibi raporları; dışa aktarım demo toast üretir.</div></div></div><div class="hr-card-grid">${reports.map(r=>`<div class="hr-info-card"><div class="card-head" style="margin:0"><div><h3>${r[0]}</h3><p>${r[1]}</p></div>${icon('file-text')}</div><div class="compact-meta"><span>Veri: ${r[2]}</span><span>Son güncelleme: Bugün</span></div><div class="quick-actions"><button class="micro-btn" data-hr-report="${r[0]}">Dışa aktar</button><button class="micro-btn" data-hr-create-action="${r[0]} detay">Detay</button></div></div>`).join('')}</div></div>`;
+    }
+    function renderHRSettingsRoom(){
+      const s = getHRSettings();
+      const weights = s.performanceWeights || {};
+      return `<div class="grid">
+        <div class="card"><div class="card-head"><div><div class="card-title">HR Ayarları</div><div class="card-sub">Rol, Academy, performans, prim, minimum kadro, gider, disiplin, onay ve risk eşikleri</div></div><button class="btn primary" data-hr-save-settings>${icon('save')}Kaydet</button></div><div class="hr-settings-grid">${Object.entries(weights).map(([k,v])=>`<label class="hr-settings-row"><span>${k} ağırlığı</span><input data-hr-setting-weight="${k}" type="number" value="${v}"></label>`).join('')}</div></div>
+        <div class="grid g2"><div class="card"><div class="card-head"><div><div class="card-title">Prim Simülasyon Kuralları</div></div></div><div class="mini-list">${Object.entries(s.bonusRules||{}).map(([k,v])=>`<div class="mini">${icon('settings-2')}<div><b>${k}</b><span>Etki puanı: ${v}</span></div></div>`).join('')}</div></div><div class="card"><div class="card-head"><div><div class="card-title">Maskeleme ve Hassas Alanlar</div></div></div><div class="mini-list">${['Kimlik no','Sağlık verisi','Disiplin dosyası detayı','Hukuki not','Maaş detayı','KVKK belgesi','İşten çıkış gerekçesi'].map(x=>`<div class="mini">${icon('lock-keyhole')}<div><b>${x}</b><span>Gizli / Yetki Gerekli / Maskeleme</span></div><span class="hr-mask">Maskeleme</span></div>`).join('')}</div></div></div>
+      </div>`;
+    }
+    function hrScoreRow(label,score){
+      const s = clamp100(score);
+      return `<div class="hr-score-row">${label?`<b>${label}</b>`:'<span></span>'}<div class="progress"><div class="bar ${hrScoreClass(s)}" style="width:${Math.max(6,s)}%"></div></div><strong>${s}</strong></div>`;
+    }
+    function progressCell(score){
+      return `<div style="min-width:120px">${hrScoreRow('',score)}</div>`;
+    }
     function PersonnelPerformancePanel(){
-      return `<div class="hr-list">${(DB.ceoDashboard.personnel||[]).map(p=>`<div class="hr-person"><div class="hr-avatar">${p.name.split(' ').map(x=>x[0]).join('')}</div><div><b>${p.name}</b><span>${p.role} · ${p.branch} · ${p.metric}</span><span>${p.signal}</span></div><div><div class="hr-rank" style="color:var(--${p.tone==='bad'?'red':p.tone==='warn'?'amber':'green'})">${p.rank}</div><button class="micro-btn" data-open-action-modal="${p.action}">${p.action}</button></div></div>`).join('')}</div>`;
+      const rows = hrData().employees.slice(0,6).map(e=>({name:e.fullName,role:e.position,branch:e.branchName,metric:`Skor ${e.finalScore}`,signal:e.bonusSimulationStatus,rank:e.grade,tone:e.finalScore<70?'warn':'good',action:`${e.fullName} gelişim aksiyonu`}));
+      return `<div class="hr-list">${rows.map(p=>`<div class="hr-person"><div class="hr-avatar">${hrInitials(p.name)}</div><div><b>${p.name}</b><span>${p.role} · ${p.branch} · ${p.metric}</span><span>${p.signal}</span></div><div><div class="hr-rank" style="color:var(--${p.tone==='bad'?'red':p.tone==='warn'?'amber':'green'})">${p.rank}</div><button class="micro-btn" data-open-action-modal="${p.action}">${p.action}</button></div></div>`).join('')}</div>`;
     }
     function HumanResourcesActions(){
-      const items=[
-        ['graduation-cap','Eksik eğitimli personel','EV ekspertiz modülü 14 kişi eksik','Eğitim ata'],
-        ['badge-percent','Prim hak edenler','Ahmet Yılmaz ve Elif Kaya bu hafta prim onayı bekliyor','Prim onayı'],
-        ['user-x','İşten çıkma riski','Selin Arslan için performans görüşmesi planlanmalı','Görüşme planla'],
-        ['message-square-warning','En çok şikayet alan','Murat Demir için müşteri dili koçluğu önerildi','Koçluk ata'],
-        ['calendar-x','Devamsızlık sinyali','Antalya ekibinde 3 vardiya sapması var','Müdür uyarısı']
-      ];
-      return `<div class="mini-list">${items.map(i=>`<div class="mini">${icon(i[0])}<div><b>${i[1]}</b><span>${i[2]}</span><div class="quick-actions" style="margin-top:8px"><button class="micro-btn" data-open-action-modal="${i[3]}">${i[3]}</button><button class="micro-btn" data-detail="hr:${i[1]}">Detay</button></div></div></div>`).join('')}</div>`;
+      return HRAlertCenter();
+    }
+    function createHRAction(action){
+      const actions = getHRActions();
+      const next = {
+        id:`HRA-${Date.now()}`,
+        title:action || 'HR aksiyonu',
+        owner:'İnsan Kaynakları Sorumlusu',
+        status:'Açık',
+        priority:String(action||'').toLocaleLowerCase('tr-TR').includes('kritik')?'Kritik':'Orta',
+        createdAt:new Date().toISOString(),
+        dueDate:randomDate(0,14)
+      };
+      actions.unshift(next);
+      setHRActions(actions);
+      toast('Demo HR aksiyonu oluşturuldu.');
+      return next;
+    }
+    function updateRecruitmentStatus(id,status){
+      const d = hrData();
+      const req = d.recruitmentRequests.find(r=>r.id===id);
+      if(!req) return;
+      req.finalStatus = status;
+      req.updatedAt = new Date().toISOString();
+      if(status==='Onaylandı'){
+        req.hrStatus = 'Onaylandı';
+        req.financeStatus = 'Onaylandı';
+        req.academyStatus = 'Tamamlandı';
+        req.regionManagerStatus = 'Onaylandı';
+      }
+      saveHRData(d);
+      toast(`${req.id} durumu güncellendi: ${status}`);
+      selectHRRoom('recruitment', false);
+    }
+    function moveRecruitmentNext(id){
+      const d = hrData();
+      const req = d.recruitmentRequests.find(r=>r.id===id);
+      if(!req) return;
+      const idx = HR_RECRUITMENT_STAGES.indexOf(req.finalStatus);
+      const next = HR_RECRUITMENT_STAGES[Math.min(HR_RECRUITMENT_STAGES.length-1, Math.max(0, idx)+1)];
+      updateRecruitmentStatus(id,next);
+    }
+    function assignAcademyTraining(employeeId,courseId){
+      const d = hrData();
+      const employee = d.employees.find(e=>e.id===employeeId) || d.employees[0];
+      const course = d.academyCourses.find(c=>c.id===courseId) || d.academyCourses[0];
+      d.trainingAssignments = d.trainingAssignments || [];
+      d.trainingAssignments.unshift({
+        id:`TR-${Date.now()}`,
+        employeeId:employee?.id,
+        employeeName:employee?.fullName,
+        courseId:course?.id,
+        courseTitle:course?.title,
+        status:'Atandı',
+        assignedAt:new Date().toISOString(),
+        dueDate:randomDate(0,30)
+      });
+      saveHRData(d);
+      toast(`${employee?.fullName || 'Personel'} için eğitim atandı.`);
+      selectHRRoom('academy', false);
+    }
+    function simulateBonus(employeeId){
+      const d = hrData();
+      const employee = d.employees.find(e=>e.id===employeeId);
+      if(!employee) return;
+      const result = calculateBonusSimulation(employee);
+      employee.bonusSimulationStatus = result.status;
+      employee.bonusSimulationAmount = result.amount;
+      employee.bonusSimulationLockReason = result.reasons.join(', ');
+      const row = d.bonusSimulations.find(b=>b.employeeId===employeeId);
+      if(row){
+        row.status = result.status;
+        row.simulatedAmount = result.amount;
+        row.lockReason = result.reasons.join(', ');
+        row.simulatedAt = new Date().toISOString();
+      }
+      saveHRData(d);
+      toast(`${employee.fullName} prim simülasyonu yenilendi.`);
+      selectHRRoom('bonus', false);
+    }
+    function simulateAllBonuses(){
+      const d = hrData();
+      (d.employees||[]).forEach(e=>{
+        const result = calculateBonusSimulation(e);
+        e.bonusSimulationStatus = result.status;
+        e.bonusSimulationAmount = result.amount;
+        e.bonusSimulationLockReason = result.reasons.join(', ');
+        const row = d.bonusSimulations.find(b=>b.employeeId===e.id);
+        if(row){
+          row.status = result.status;
+          row.simulatedAmount = result.amount;
+          row.lockReason = result.reasons.join(', ');
+          row.simulatedAt = new Date().toISOString();
+        }
+      });
+      saveHRData(d);
+      toast('Tüm prim simülasyonları yenilendi.');
+      selectHRRoom('bonus', false);
+    }
+    function createRecruitmentRequest(){
+      const d = hrData();
+      const branch = (d.branches||[]).find(b=>safeNum(b.openPositions)>0) || (d.branches||[])[0];
+      const req = {
+        id:`REQ-${String((d.recruitmentRequests||[]).length+1).padStart(3,'0')}`,
+        branchId:branch.id,
+        branchName:branch.name,
+        position:branch.openPositions>0?'Teknisyen':'Müşteri Kabul',
+        reason:branch.openPositions>0?'Minimum kadro standardı':'Yoğunluk artışı',
+        urgency:branch.openPositions>0?'Yüksek':'Normal',
+        requestedBy:'Şube Müdürü',
+        franchiseOwnerApproval:'Bekliyor',
+        hrStatus:'Bekliyor',
+        financeStatus:'Bekliyor',
+        academyStatus:'Bekliyor',
+        regionManagerStatus:'Bekliyor',
+        finalStatus:'Taslak',
+        estimatedMonthlyCost:rand(24000,42000),
+        costImpact:rand(10,22),
+        createdAt:new Date().toISOString(),
+        targetStartDate:randomDate(14,45)
+      };
+      d.recruitmentRequests.unshift(req);
+      saveHRData(d);
+      toast('Demo kadro talebi açıldı.');
+      selectHRRoom('recruitment', false);
+    }
+    function renewCertification(id){
+      const d = hrData();
+      const cert = d.certifications.find(c=>c.id===id);
+      if(!cert) return;
+      const next = new Date();
+      next.setFullYear(next.getFullYear()+1);
+      cert.status = 'Geçerli';
+      cert.issuedAt = new Date().toISOString().slice(0,10);
+      cert.expiresAt = next.toISOString().slice(0,10);
+      saveHRData(d);
+      toast('Sertifika yenileme demo olarak tamamlandı.');
+      selectHRRoom('academy', false);
+    }
+    function saveHRSettingsFromForm(){
+      const currentSettings = getHRSettings();
+      const weights = {...(currentSettings.performanceWeights||{})};
+      document.querySelectorAll('[data-hr-setting-weight]').forEach(input=>{
+        weights[input.dataset.hrSettingWeight] = safeNum(input.value);
+      });
+      saveHRSettings({...currentSettings, performanceWeights:weights});
+      toast('HR ayarları localStorage üzerine kaydedildi.');
+    }
+    function openEmployeeDetail(id){
+      const d = hrData();
+      const e = d.employees.find(x=>x.id===id);
+      if(!e){ toast('Personel bulunamadı.'); return; }
+      const review = d.performanceReviews.find(r=>r.employeeId===e.id) || {};
+      const cost = d.costProfiles.find(c=>c.employeeId===e.id) || {};
+      const bonus = d.bonusSimulations.find(b=>b.employeeId===e.id) || {};
+      const certs = d.certifications.filter(c=>c.employeeId===e.id);
+      const docs = ['Sözleşme','KVKK aydınlatma','Gizlilik','Marka davranış taahhüdü','Sertifika belgeleri','Academy belgeleri','Zimmet belgeleri','İzin belgeleri','Disiplin belgeleri'];
+      const html = `<div class="card-head"><div><div class="card-title">${e.fullName}</div><div class="card-sub">${e.employeeCode} · ${e.position} · ${e.branchName} · ${e.region}</div></div><button class="btn" onclick="closeDrawer()">Kapat</button></div>
+        <div class="grid g2">${stat('Nihai Skor',e.finalScore,`Grade ${e.grade}`,hrScoreClass(e.finalScore)==='green'?'green':'amber')}${stat('Academy',levelLabel(e.academyLevel),e.academyStatus,'blue')}${stat('Prim',e.bonusSimulationStatus,formatCurrencyTRY(e.bonusSimulationAmount),'amber')}${stat('Aylık Maliyet',formatCurrencyTRY(e.totalMonthlyCost),'Kârlılık KPI girdisi','blue')}</div>
+        <div class="card" style="margin-top:14px"><div class="card-head"><div><div class="card-title">Genel Bilgiler</div><div class="card-sub">Hassas alanlar maskelenir.</div></div>${hrBadge(e.hrRiskLevel)}</div><div class="hr-data-grid">${[
+          ['Telefon',e.phone],['E-posta',e.email],['Departman',e.department],['Bağlı yönetici',e.managerId||'Merkez'],['Hukuki işveren',`${e.legalEmployerType} / ${e.legalEmployerName}`],['İşe giriş',toDate(e.startDate)],['Deneme bitiş',toDate(e.probationEndDate)],['Yetki seviyesi',e.isCenter?'Merkez':'Şube'],['Kimlik no','<span class="hr-mask">Gizli / Yetki Gerekli</span>'],['Maaş detayı','<span class="hr-mask">Maskeleme</span>']
+        ].map(x=>`<div class="hr-data-card"><span>${x[0]}</span><b>${x[1]}</b></div>`).join('')}</div></div>
+        <div class="card" style="margin-top:14px"><div class="card-head"><div><div class="card-title">Görev & Yetkinlik</div><div class="card-sub">Rol açıklaması, ana sorumluluk, eksik yetkinlik ve önerilen eğitimler</div></div></div><div class="mini-list">${[
+          ['Görev tanımı',`${e.position} rolü için OTOTR standart operasyon ve raporlama disiplini.`],
+          ['Yapabileceği işler',e.academyLevel>=2?'Standart görevleri yapabilir.':'Gözetim altında çalışabilir.'],
+          ['Yapamayacağı işler',e.academyLevel<2?'Bağımsız kritik operasyon ve ekspertiz yapamaz.':'Sertifika dışı kritik görevler.'],
+          ['Önerilen eğitimler',d.academyCourses.filter(c=>c.requiredForRoles.includes(e.position)).map(c=>c.title).join(', ') || 'Rol bazlı gelişim planı']
+        ].map(x=>`<div class="mini">${icon('check-circle-2')}<div><b>${x[0]}</b><span>${x[1]}</span></div></div>`).join('')}</div></div>
+        <div class="grid g2" style="margin-top:14px"><div class="card"><div class="card-head"><div><div class="card-title">Academy & Sertifika</div><div class="card-sub">Zorunlu eğitim, sınav ve operasyon yetkisi</div></div></div><div class="mini-list">${certs.map(c=>`<div class="mini">${icon('badge-check')}<div><b>${c.name}</b><span>${c.level} · Bitiş ${toDate(c.expiresAt)} · Sınav ${c.examScore}</span></div>${hrBadge(c.status)}</div>`).join('') || '<div class="hr-empty">Sertifika kaydı yok.</div>'}</div></div><div class="card"><div class="card-head"><div><div class="card-title">Performans</div><div class="card-sub">Şirket, bölge, şube ve kişisel KPI zinciri</div></div></div>${hrScoreRow('Kişisel KPI',review.personalKpiScore||e.performanceScore)}${hrScoreRow('Şube etkisi',review.branchScore||e.branchScoreImpact)}${hrScoreRow('Bölge etkisi',review.regionScore||e.regionScoreImpact)}${hrScoreRow('Şirket etkisi',review.companyScore||e.companyScoreImpact)}${hrScoreRow('Nihai skor',review.finalScore||e.finalScore)}<p class="card-sub">${review.notes||'Performans yorumu demo verisiyle oluşturuldu.'}</p></div></div>
+        <div class="grid g2" style="margin-top:14px"><div class="card"><div class="card-head"><div><div class="card-title">Prim Simülasyonu</div><div class="card-sub">Gerçek ödeme değildir.</div></div>${hrBadge(bonus.status||e.bonusSimulationStatus)}</div><div class="hr-data-grid" style="grid-template-columns:repeat(2,1fr)"><div class="hr-data-card"><span>Tutar</span><b>${formatCurrencyTRY(bonus.simulatedAmount||e.bonusSimulationAmount)}</b></div><div class="hr-data-card"><span>Kilit nedeni</span><b>${bonus.lockReason||e.bonusSimulationLockReason||'-'}</b></div><div class="hr-data-card"><span>Kalite etkisi</span><b>-${bonus.qualityPenalty||0}</b></div><div class="hr-data-card"><span>Devam etkisi</span><b>${bonus.attendanceScore||'-'}</b></div></div><button class="btn" style="margin-top:10px" onclick="simulateBonus('${e.id}')">Prim simülasyonunu yenile</button></div><div class="card"><div class="card-head"><div><div class="card-title">Gider Profili</div><div class="card-sub">Aylık ücret, işveren maliyeti, eğitim, zimmet ve turnover simülasyonu</div></div></div><div class="hr-data-grid" style="grid-template-columns:repeat(2,1fr)">${[
+          ['Aylık ücret',cost.baseSalaryCost],['İşveren maliyeti',cost.employerCost],['Yemek',cost.mealCost],['Yol',cost.transportCost],['Prim sim.',cost.bonusSimulationCost],['Fazla mesai',cost.overtimeSimulationCost],['Eğitim',cost.trainingCost],['Sertifika',cost.certificationCost],['Üniforma',cost.uniformCost],['Zimmet',cost.assetCost],['İşe alım',cost.recruitmentCost],['Toplam',cost.totalMonthlyCost||e.totalMonthlyCost]
+        ].map(x=>`<div class="hr-data-card"><span>${x[0]}</span><b>${formatCurrencyTRY(x[1])}</b></div>`).join('')}</div></div></div>
+        <div class="grid g2" style="margin-top:14px"><div class="card"><div class="card-head"><div><div class="card-title">Vardiya / Devam / İzin</div></div></div><div class="mini-list"><div class="mini">${icon('calendar-days')}<div><b>Devam riski</b><span>${e.attendanceRisk}</span></div>${hrBadge(e.attendanceRisk)}</div><div class="mini">${icon('clock')}<div><b>Fazla mesai</b><span>Demo vardiya simülasyonu üzerinden takip edilir.</span></div></div></div></div><div class="card"><div class="card-head"><div><div class="card-title">Evrak & Uyum</div></div></div><div class="hr-subtabs">${docs.map(doc=>`<button>${doc} ${['KVKK aydınlatma','Disiplin belgeleri'].includes(doc)?'<span class="hr-mask">Gizli</span>':''}</button>`).join('')}</div></div></div>
+        <div class="card" style="margin-top:14px"><div class="card-head"><div><div class="card-title">Disiplin / Etik ve Kariyer</div><div class="card-sub">Açık vaka, terfi potansiyeli ve yedekleme görünümü</div></div></div><div class="mini-list"><div class="mini">${icon('scale')}<div><b>Disiplin durumu</b><span>${e.disciplineStatus==='Açık'?'Hukuk/İK incelemesi gerekir.':'Bu personelin disiplin vakası yok.'}</span></div>${hrBadge(e.disciplineStatus==='Açık'?'Kritik':'Kapalı')}</div><div class="mini">${icon('trending-up')}<div><b>Kariyer önerisi</b><span>${e.finalScore>=80?'Terfi havuzuna alınabilir.':'Gelişim planı sonrası tekrar değerlendirilebilir.'}</span></div>${hrBadge(e.finalScore>=80?'Uygun':'İzlenmeli')}</div></div></div>`;
+      document.getElementById('drawerContent').innerHTML = html;
+      document.getElementById('drawer').classList.add('open');
+      if(window.lucide) lucide.createIcons();
+    }
+    function openBranchHRDetail(id){
+      const d = hrData();
+      const b = d.branches.find(x=>x.id===id);
+      if(!b){ toast('Şube bulunamadı.'); return; }
+      const staff = d.employees.filter(e=>e.branchId===id);
+      const health = d.branchHealth.find(h=>h.branchId===id) || {};
+      const html = `<div class="card-head"><div><div class="card-title">${b.name}</div><div class="card-sub">${b.city} · ${b.region} · Franchise: ${b.franchiseOwner||b.manager}</div></div><button class="btn" onclick="closeDrawer()">Kapat</button></div>
+        <div class="grid g2">${stat('Personel',`${b.personnelCount}/${b.personnelNeed}`,`${b.openPositions} açık kadro`,b.openPositions?'amber':'green')}${stat('İK Sağlık',b.hrHealthScore,hrRiskShort(getRiskLevel(b.hrHealthScore)),hrScoreClass(b.hrHealthScore))}${stat('Personel Gideri',formatCurrencyTRY(b.totalPersonnelCost),formatPercent(b.personnelCostToRevenueRatio)+' gider/ciro','blue')}${stat('Kârlılık Hazırlık',b.profitabilityReadinessScore,'Finans modülüne hazır','green')}</div>
+        <div class="card" style="margin-top:14px"><div class="card-head"><div><div class="card-title">Şube Personel Listesi</div><div class="card-sub">Satıra tıklayınca personel 360 profili açılır.</div></div></div>${EmployeeDirectoryTable(staff)}</div>
+        <div class="grid g2" style="margin-top:14px"><div class="card"><div class="card-head"><div><div class="card-title">Rollere Göre Dağılım ve Kadro</div></div></div><div class="mini-list">${Object.entries(HR_MIN_STAFFING_STANDARD[b.minType]||{}).map(([role,need])=>{const count=staff.filter(e=>e.position.toLocaleLowerCase('tr-TR').includes(role.split(' ')[0].toLocaleLowerCase('tr-TR'))).length;return `<div class="mini">${icon(count<need?'alert-triangle':'check-circle-2')}<div><b>${role}</b><span>Mevcut ${count} · Minimum ${need}</span></div>${hrBadge(count<need?'Riskli':'Sağlıklı')}</div>`}).join('')}</div></div><div class="card"><div class="card-head"><div><div class="card-title">Academy, Sertifika ve Prim</div></div></div>${hrScoreRow('Academy',b.academyCompletion)}${hrScoreRow('Sertifika',b.certificationRate)}${hrScoreRow('Performans',b.averagePerformance)}<div class="hr-data-grid" style="grid-template-columns:repeat(2,1fr);margin-top:10px"><div class="hr-data-card"><span>Prim yükü</span><b>${formatCurrencyTRY(b.bonusSimulationLoad*1000)}</b></div><div class="hr-data-card"><span>Vardiya risk</span><b>${b.attendanceRiskScore}</b></div></div></div></div>
+        <div class="card" style="margin-top:14px"><div class="card-head"><div><div class="card-title">Önerilen Aksiyonlar</div><div class="card-sub">Kadro, sertifika, gider, turnover ve müdür skoru sinyalleri</div></div></div><div class="mini-list">${(health.recommendedActions||getRecommendedActions(b)).map(a=>`<div class="mini">${icon('target')}<div><b>${a}</b><span>${b.name} için demo görev oluşturulabilir.</span></div><button class="micro-btn" data-hr-create-action="${b.name}: ${a}">Aksiyon</button></div>`).join('')}</div></div>`;
+      document.getElementById('drawerContent').innerHTML = html;
+      document.getElementById('drawer').classList.add('open');
+      bindHREvents();
+      if(window.lucide) lucide.createIcons();
+    }
+    function openRecruitmentDetail(id){
+      const d = hrData();
+      const r = d.recruitmentRequests.find(x=>x.id===id);
+      if(!r){ toast('Talep bulunamadı.'); return; }
+      const candidates = d.candidates.filter(c=>c.requestId===id);
+      const html = `<div class="card-head"><div><div class="card-title">${r.id} · ${r.position}</div><div class="card-sub">${r.branchName} · ${r.reason} · ${r.urgency}</div></div><button class="btn" onclick="closeDrawer()">Kapat</button></div>
+        <div class="grid g2">${stat('Durum',r.finalStatus,'Merkez onay hattı','blue')}${stat('Tahmini Maliyet',formatCurrencyTRY(r.estimatedMonthlyCost),`%${r.costImpact} gider etkisi`,'amber')}${stat('Hedef Başlangıç',toDate(r.targetStartDate),'Planlanan tarih','green')}${stat('Talep Eden',r.requestedBy,'Şube / Franchise','blue')}</div>
+        <div class="card" style="margin-top:14px"><div class="card-head"><div><div class="card-title">Kadro Talep Formu</div><div class="card-sub">Kadro standardı, gider etkisi ve merkez karar alanları</div></div></div><div class="hr-data-grid">${[
+          ['Şube',r.branchName],['Pozisyon',r.position],['Talep nedeni',r.reason],['Franchise yorumu',r.franchiseOwnerApproval],['İK kararı',r.hrStatus],['Finans kararı',r.financeStatus],['Academy kararı',r.academyStatus],['Bölge kararı',r.regionManagerStatus],['Merkez nihai karar',r.finalStatus]
+        ].map(x=>`<div class="hr-data-card"><span>${x[0]}</span><b>${x[1]}</b></div>`).join('')}</div></div>
+        <div class="card" style="margin-top:14px"><div class="card-head"><div><div class="card-title">Adaylar</div></div></div>${CandidateCards(candidates.length?candidates:d.candidates.slice(0,2))}</div>
+        <div class="quick-actions" style="margin-top:14px"><button class="btn" data-hr-next-stage="${r.id}">Sonraki Aşamaya Gönder</button><button class="btn primary" data-hr-recruitment-status="${r.id}:Onaylandı">Merkez Onayla</button><button class="btn" data-hr-recruitment-status="${r.id}:Reddedildi">Reddet</button><button class="btn" data-hr-recruitment-status="${r.id}:Bekletildi">Beklet</button><button class="btn" data-hr-create-action="${r.id} onboarding planı">Onboarding Başlat</button></div>`;
+      document.getElementById('drawerContent').innerHTML = html;
+      document.getElementById('drawer').classList.add('open');
+      bindHREvents();
+      if(window.lucide) lucide.createIcons();
+    }
+    function bindHREvents(){
+      document.querySelectorAll('[data-hr-room]').forEach(btn=>{
+        if(btn.dataset.hrBound==='1') return;
+        btn.dataset.hrBound='1';
+        btn.addEventListener('click',e=>{ e.preventDefault(); e.stopPropagation(); selectHRRoom(btn.dataset.hrRoom); });
+      });
+      document.querySelectorAll('[data-hr-filter]').forEach(el=>{
+        if(el.dataset.hrBound==='1') return;
+        el.dataset.hrBound='1';
+        el.addEventListener(el.tagName==='INPUT'?'input':'change',()=>{
+          HR_VIEW.lastFilters = HR_VIEW.lastFilters || {};
+          HR_VIEW.lastFilters[el.dataset.hrFilter] = el.value;
+          hrSaveView();
+          const body = document.getElementById('hrRoomBody');
+          if(body) body.innerHTML = renderEmployeeDirectory();
+          bindHREvents();
+          if(window.lucide) lucide.createIcons();
+        });
+      });
+      document.querySelectorAll('[data-hr-employee]').forEach(el=>{
+        if(el.dataset.hrBound==='1') return;
+        el.dataset.hrBound='1';
+        el.addEventListener('click',e=>{ e.preventDefault(); e.stopPropagation(); openEmployeeDetail(el.dataset.hrEmployee); });
+      });
+      document.querySelectorAll('[data-hr-branch]').forEach(el=>{
+        if(el.dataset.hrBound==='1') return;
+        el.dataset.hrBound='1';
+        el.addEventListener('click',e=>{ e.preventDefault(); e.stopPropagation(); openBranchHRDetail(el.dataset.hrBranch); });
+      });
+      document.querySelectorAll('[data-hr-recruitment]').forEach(el=>{
+        if(el.dataset.hrBound==='1') return;
+        el.dataset.hrBound='1';
+        el.addEventListener('click',e=>{ e.preventDefault(); e.stopPropagation(); openRecruitmentDetail(el.dataset.hrRecruitment); });
+      });
+      document.querySelectorAll('[data-hr-create-action]').forEach(el=>{
+        if(el.dataset.hrBound==='1') return;
+        el.dataset.hrBound='1';
+        el.addEventListener('click',e=>{ e.preventDefault(); e.stopPropagation(); createHRAction(el.dataset.hrCreateAction); });
+      });
+      document.querySelectorAll('[data-hr-recruitment-status]').forEach(el=>{
+        if(el.dataset.hrBound==='1') return;
+        el.dataset.hrBound='1';
+        el.addEventListener('click',e=>{ e.preventDefault(); e.stopPropagation(); const [id,status]=el.dataset.hrRecruitmentStatus.split(':'); updateRecruitmentStatus(id,status); closeDrawer(); });
+      });
+      document.querySelectorAll('[data-hr-next-stage]').forEach(el=>{
+        if(el.dataset.hrBound==='1') return;
+        el.dataset.hrBound='1';
+        el.addEventListener('click',e=>{ e.preventDefault(); e.stopPropagation(); moveRecruitmentNext(el.dataset.hrNextStage); });
+      });
+      document.querySelectorAll('[data-hr-create-request]').forEach(el=>{
+        if(el.dataset.hrBound==='1') return;
+        el.dataset.hrBound='1';
+        el.addEventListener('click',e=>{ e.preventDefault(); e.stopPropagation(); createRecruitmentRequest(); });
+      });
+      document.querySelectorAll('[data-hr-assign-training]').forEach(el=>{
+        if(el.dataset.hrBound==='1') return;
+        el.dataset.hrBound='1';
+        el.addEventListener('click',e=>{ e.preventDefault(); e.stopPropagation(); const first = hrData().employees.find(x=>x.academyStatus==='Kilitli') || hrData().employees[0]; assignAcademyTraining(first?.id, el.dataset.hrAssignTraining || undefined); });
+      });
+      document.querySelectorAll('[data-hr-renew-cert]').forEach(el=>{
+        if(el.dataset.hrBound==='1') return;
+        el.dataset.hrBound='1';
+        el.addEventListener('click',e=>{ e.preventDefault(); e.stopPropagation(); renewCertification(el.dataset.hrRenewCert); });
+      });
+      document.querySelectorAll('[data-hr-simulate]').forEach(el=>{
+        if(el.dataset.hrBound==='1') return;
+        el.dataset.hrBound='1';
+        el.addEventListener('click',e=>{ e.preventDefault(); e.stopPropagation(); simulateBonus(el.dataset.hrSimulate); });
+      });
+      document.querySelectorAll('[data-hr-simulate-all]').forEach(el=>{
+        if(el.dataset.hrBound==='1') return;
+        el.dataset.hrBound='1';
+        el.addEventListener('click',e=>{ e.preventDefault(); e.stopPropagation(); simulateAllBonuses(); });
+      });
+      document.querySelectorAll('[data-hr-report]').forEach(el=>{
+        if(el.dataset.hrBound==='1') return;
+        el.dataset.hrBound='1';
+        el.addEventListener('click',e=>{ e.preventDefault(); e.stopPropagation(); toast('Demo: Rapor dışa aktarma backend entegrasyonu sonrası aktif olacak.'); });
+      });
+      document.querySelectorAll('[data-hr-save-settings]').forEach(el=>{
+        if(el.dataset.hrBound==='1') return;
+        el.dataset.hrBound='1';
+        el.addEventListener('click',e=>{ e.preventDefault(); e.stopPropagation(); saveHRSettingsFromForm(); });
+      });
+      document.querySelectorAll('[data-hr-case]').forEach(el=>{
+        if(el.dataset.hrBound==='1') return;
+        el.dataset.hrBound='1';
+        el.addEventListener('click',e=>{ e.preventDefault(); e.stopPropagation(); const c=hrData().disciplinaryCases.find(x=>x.id===el.dataset.hrCase); if(c) createHRAction(`${c.id} hukuk/etik incelemesi`); });
+      });
+      document.querySelectorAll('[data-hr-quick]').forEach(el=>{
+        if(el.dataset.hrBound==='1') return;
+        el.dataset.hrBound='1';
+        el.addEventListener('click',e=>{ e.preventDefault(); e.stopPropagation(); createHRAction('HR Room hızlı aksiyon'); });
+      });
     }
 
     function toggleCommandDock(force){
@@ -1696,6 +3264,7 @@
       document.querySelectorAll('[data-crm-status]').forEach(sel=>sel.addEventListener('change',()=>toast('Randevu durumu demo olarak güncellendi: '+sel.value)));
       document.querySelectorAll('[data-crm-filter]').forEach(btn=>btn.addEventListener('click',()=>toast('CRM filtreleri frontend seviyesinde uygulandı.')));
       wireAcademyEvents();
+      bindHREvents();
       const dockToggle=document.getElementById('commandDockToggle'); if(dockToggle) dockToggle.addEventListener('click',e=>{e.stopPropagation();toggleCommandDock();});
       document.querySelectorAll('[data-dock-close]').forEach(el=>el.addEventListener('click',e=>{e.stopPropagation();toggleCommandDock(false);}));
       document.querySelectorAll('[data-advance]').forEach(btn=>btn.addEventListener('click',async e=>{ e.stopPropagation(); DB=await Backend.updateLead(btn.dataset.advance,'Sözleşme'); renderAll(); route('franchise'); toast('Lead aşaması demo API ile güncellendi.'); }));
@@ -1724,7 +3293,31 @@
         renderCharts();
       }));
     }
-    function route(id){ current=id; document.getElementById('pageTitle').textContent=titles[id]||id; document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id==='page-'+id)); renderHero(); bindGlobalSearch(); renderNav(); history.replaceState(null,'','#'+id); window.scrollTo({top:0,behavior:'smooth'}); setTimeout(renderCharts,40); if(window.lucide) lucide.createIcons(); }
+    function route(id){
+      const hrRoute = parseHRRoute(id);
+      let resolved = hrRoute ? 'hr' : id;
+      if(!titles[resolved]) resolved = 'dashboard';
+      if(hrRoute){
+        HR_VIEW.room = hrRoute.room;
+        hrSaveView();
+      }
+      current = resolved;
+      document.getElementById('pageTitle').textContent = titles[resolved] || resolved;
+      document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id==='page-'+resolved));
+      if(resolved==='hr'){
+        const body=document.getElementById('hrRoomBody');
+        if(body) body.innerHTML=renderHRRoomBody();
+        document.querySelectorAll('[data-hr-room]').forEach(x=>x.classList.toggle('active',x.dataset.hrRoom===HR_VIEW.room));
+        bindHREvents();
+      }
+      renderHero();
+      bindGlobalSearch();
+      renderNav();
+      history.replaceState(null,'','#'+(resolved==='hr'?hrRouteFor(HR_VIEW.room):resolved));
+      window.scrollTo({top:0,behavior:'smooth'});
+      setTimeout(renderCharts,40);
+      if(window.lucide) lucide.createIcons();
+    }
     function openBranchProfile(id){ selectedBranchId=id; closeDrawer(); current='branchProfile'; renderPages(); route('branchProfile'); }
     function openDetail(ref){
       const parts=ref.split(':'), type=parts[0], id=parts.slice(1).join(':'); let html='';
@@ -1739,7 +3332,10 @@
       if(type==='insight'){ const i=DB.intelligence.find(x=>x.id===id); html=`<div class="card-head"><div><div class="card-title">${i.title}</div><div class="card-sub">${i.owner}</div></div><button class="btn" onclick="closeDrawer()">Kapat</button></div><div class="grid g2">${stat('Etki',i.impact,'Finansal / operasyonel')}${stat('Sinyal',i.signal,'Veri merkezi alarmı','blue')}</div><div class="card" style="margin-top:14px"><div class="card-title">Önerilen Karar</div><p style="color:var(--muted);line-height:1.6">${i.action}. Bu içgörü haftalık CEO toplantısında karar maddesine çevrilmeli; aksiyon sahibi, hedef tarih ve ölçüm kriteri girilmeli.</p></div>`; }
       if(type==='task'){ const t=DB.ceoDashboard.actionTasks.find(x=>x.id===id); html=`<div class="card-head"><div><div class="card-title">${t?.title||'Görev Detayı'}</div><div class="card-sub">${t?.category||'Aksiyon'} · ${t?.owner||'Sorumlu'} · ${t?.branch||'Şube'}</div></div><button class="btn" onclick="closeDrawer()">Kapat</button></div><div class="grid g2">${stat('Öncelik',t?.priority||'-','Görev takip')}${stat('Deadline',t?.deadline||'-',t?.status||'Açık','amber')}</div><div class="card" style="margin-top:14px"><div class="card-title">Kapanış Kriteri</div><p style="color:var(--muted);line-height:1.6">${t?.note||'Kanıt, not ve tekrar kontrol sonucu olmadan görev kapanmamalı.'}</p></div><button class="btn primary" style="margin-top:14px" onclick="openActionModal('${(t?.title||'Görev devam aksiyonu').replace(/'/g,'')}');closeDrawer()">Devam aksiyonu aç</button>`; }
       if(type==='ai'){ const ai=DB.ceoDashboard.aiRecommendations.find(x=>x.title===id); html=`<div class="card-head"><div><div class="card-title">${ai?.title||id}</div><div class="card-sub">${ai?.category||'AI Öneri Motoru'}</div></div><button class="btn" onclick="closeDrawer()">Kapat</button></div><div class="grid g2">${stat('Beklenen Etki',ai?.impact||'-','Karar etkisi','green')}${stat('Risk',ai?.risk||'-','Uygulama riski','amber')}</div><button class="btn primary" style="margin-top:14px" onclick="openActionModal('${(ai?.action||'AI önerisi').replace(/'/g,'')}');closeDrawer()">Aksiyona çevir</button>`; }
-      if(type==='hr'){ html=`<div class="card-head"><div><div class="card-title">${id}</div><div class="card-sub">İnsan Kaynakları aksiyon detayı</div></div><button class="btn" onclick="closeDrawer()">Kapat</button></div><div class="mini-list"><div class="mini">${icon('graduation-cap')}<div><b>Eğitim / koçluk</b><span>Eksik yetkinlik, müşteri dili veya teknik sertifika aksiyonu atanır.</span></div></div><div class="mini">${icon('badge-percent')}<div><b>Prim ve motivasyon</b><span>Başarı sinyali varsa prim, risk sinyali varsa görüşme planlanır.</span></div></div></div><button class="btn primary" style="margin-top:14px" onclick="openActionModal('${id.replace(/'/g,'')}');closeDrawer()">İK görevi oluştur</button>`; }
+      if(type==='hrEmployee'){ openEmployeeDetail(id); return; }
+      if(type==='hrBranch'){ openBranchHRDetail(id); return; }
+      if(type==='hrRecruitment'){ openRecruitmentDetail(id); return; }
+      if(type==='hr'){ html=`<div class="card-head"><div><div class="card-title">${id}</div><div class="card-sub">İnsan Kaynakları aksiyon detayı</div></div><button class="btn" onclick="closeDrawer()">Kapat</button></div><div class="mini-list"><div class="mini">${icon('graduation-cap')}<div><b>Eğitim / koçluk</b><span>Eksik yetkinlik, müşteri dili veya teknik sertifika aksiyonu atanır.</span></div></div><div class="mini">${icon('badge-percent')}<div><b>Prim ve motivasyon</b><span>Başarı sinyali varsa prim, risk sinyali varsa görüşme planlanır.</span></div></div></div><button class="btn primary" style="margin-top:14px" onclick="createHRAction('${id.replace(/'/g,'')}');closeDrawer()">İK görevi oluştur</button>`; }
       if(type==='region'){ const r=regionLiveData(DB.ceoDashboard.regions.find(x=>x.region===id)||{region:id}); html=`<div class="card-head"><div><div class="card-title">${r?.region||id} Bölge Detayı</div><div class="card-sub">${r?.cities||''}</div></div><button class="btn" onclick="closeDrawer()">Kapat</button></div><div class="grid g2">${stat('Ciro',fmtTL(r?.revenue||0),'Bölge toplamı','green')}${stat('Risk',r?.riskCount||0,r?.risk||'Takip','amber')}${stat('Bölge Ort.',fmtTL(liveRegionAverage(r||{})),'Canlı ortalama','blue')}${stat('Fırsat',r?.opportunity||'-','Büyüme alanı')}</div><button class="btn primary" style="margin-top:14px" onclick="openActionModal('${(r?.region||id).replace(/'/g,'')} bölge aksiyonu');closeDrawer()">Bölge aksiyonu aç</button>`; }
       if(type==='module'){ html=`<div class="card-head"><div><div class="card-title">${id}</div><div class="card-sub">Alt başlık tasarım prensibi</div></div><button class="btn" onclick="closeDrawer()">Kapat</button></div><div class="mini-list">${moduleDeepDive(id).map(x=>`<div class="mini">${icon('layers-3')}<div><b>${x[0]}</b><span>${x[1]}</span></div></div>`).join('')}</div>`; }
       if(type==='room'){ const r=rooms.find(x=>x.id===id); html=`<div class="card-head"><div><div class="card-title">${r.title}</div><div class="card-sub">${r.owner} | Karar odası</div></div><button class="btn" onclick="closeDrawer()">Kapat</button></div><p style="color:var(--muted);line-height:1.6">${r.mission}</p><div class="card" style="margin-top:14px"><div class="card-title">İlk Mesaj</div><p style="color:var(--muted);line-height:1.6">${r.first}</p></div><div class="drill"><div class="mini">${icon('target')}<div><b>Ana KPI</b><span>${r.kpis.join(', ')}</span></div></div><div class="mini">${icon('route')}<div><b>Bağlı Modül</b><span>${titles[r.route]} ekranına operasyonel olarak bağlanır.</span></div></div></div><button class="btn primary" style="margin-top:14px" onclick="route('${r.route}');closeDrawer()">Bu odaya git</button>`; }
@@ -1793,6 +3389,7 @@
     });
     function searchIndex(){
       if(!DB || !DB.branches || !DB.leads || !DB.reports || !DB.tickets || !DB.ceoDashboard) return [];
+      const hd = hrData();
       return [
         ...DB.branches.map(x=>({type:'branch',id:x.id,title:x.name,sub:`Şube · ${x.city} · ${x.manager}`,text:Object.values(x).join(' ')})),
         ...DB.leads.map(x=>({type:'lead',id:x.id,title:x.name,sub:`${x.type} · ${x.city} · ${x.stage}`,text:Object.values(x).join(' ')})),
@@ -1800,7 +3397,9 @@
         ...DB.tickets.map(x=>({type:'ticket',id:x.id,title:x.title,sub:`Kriz · ${x.branch} · ${x.owner}`,text:Object.values(x).join(' ')})),
         ...(complaintCenter().complaintTickets||[]).map(x=>({type:'complaint',id:x.id,title:`${x.id} · ${x.customer}`,sub:`Şikayet · ${x.plate} · ${x.branch} · ${x.type}`,text:Object.values(x).join(' ')})),
         ...DB.ceoDashboard.actionTasks.map(x=>({type:'task',id:x.id,title:x.title,sub:`Görev · ${x.owner} · ${x.branch}`,text:Object.values(x).join(' ')})),
-        ...DB.ceoDashboard.personnel.map(x=>({type:'hr',id:x.role,title:x.name,sub:`İK · ${x.role} · ${x.branch}`,text:Object.values(x).join(' ')}))
+        ...(hd.employees||[]).map(x=>({type:'hrEmployee',id:x.id,title:x.fullName,sub:`İK · ${x.position} · ${x.branchName}`,text:Object.values(x).join(' ')})),
+        ...(hd.branches||[]).map(x=>({type:'hrBranch',id:x.id,title:`${x.name} İK`,sub:`Şube İK · ${x.region} · ${x.personnelCount} personel`,text:Object.values(x).join(' ')})),
+        ...(hd.recruitmentRequests||[]).map(x=>({type:'hrRecruitment',id:x.id,title:`${x.id} · ${x.position}`,sub:`İşe alım · ${x.branchName} · ${x.finalStatus}`,text:Object.values(x).join(' ')}))
       ];
     }
     function searchText(value){
@@ -1814,7 +3413,10 @@
       if(type==='complaint'){ route('complaints'); setTimeout(()=>openDetail('complaint:'+id),80); return; }
       if(type==='ticket'){ route('crisis'); toast('Kriz kaydı açıldı.'); return; }
       if(type==='task'){ route('actions'); setTimeout(()=>openDetail('task:'+id),80); return; }
-      if(type==='hr'){ route('hr'); setTimeout(()=>openDetail('hr:'+id),80); return; }
+      if(type==='hrEmployee'){ route('ik/personel'); setTimeout(()=>openEmployeeDetail(id),80); return; }
+      if(type==='hrBranch'){ route('ik/subeler'); setTimeout(()=>openBranchHRDetail(id),80); return; }
+      if(type==='hrRecruitment'){ route('ik/ise-alim'); setTimeout(()=>openRecruitmentDetail(id),80); return; }
+      if(type==='hr'){ route('ik'); setTimeout(()=>openDetail('hr:'+id),80); return; }
       route('crm'); toast('Rapor arama sonucu CRM & Randevu ekranına taşındı.');
     }
     function closeSearchResults(){ const r=document.getElementById('searchResults'); if(r) r.classList.remove('open'); }
@@ -1890,12 +3492,20 @@
       if(apiStatus) apiStatus.textContent='Mock API bağlanıyor';
       DB=await Backend.connect();
       if(apiStatus) apiStatus.textContent='Mock API bağlı';
-      current=(location.hash||'#dashboard').replace('#','');
-      renderAll(); route(titles[current]?current:'dashboard');
+      const initial=(location.hash||'#dashboard').replace('#','');
+      const initialHR=parseHRRoute(initial);
+      if(initialHR){
+        HR_VIEW.room=initialHR.room;
+        current='hr';
+      }else{
+        current=titles[initial]?initial:'dashboard';
+      }
+      renderAll(); route(initialHR?initial:current);
     })();
     window.addEventListener('hashchange',()=>{
       const id=(location.hash||'#dashboard').replace('#','');
-      if(titles[id] && id!==current) route(id);
+      const hr=parseHRRoute(id);
+      if(hr || (titles[id] && id!==current)) route(id);
     });
   </script>
 
