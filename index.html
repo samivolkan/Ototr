@@ -107,19 +107,24 @@
     .academy-live-list{display:grid;gap:9px}.academy-live{display:grid;grid-template-columns:44px 1fr auto;gap:10px;align-items:center;border:1px solid var(--line);border-radius:10px;background:#fff;padding:10px}.academy-date{width:40px;height:40px;border-radius:10px;background:#111318;color:#fff;display:grid;place-items:center;text-align:center}.academy-date b{display:block;font-size:16px;line-height:1}.academy-date span{display:block;font-size:9px;color:#d7dce6;text-transform:uppercase}.academy-live strong{display:block;font-size:12px}.academy-live small{color:var(--muted)}
     .academy-cert-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.academy-cert{border:1px solid var(--line);border-radius:11px;background:#fff;padding:12px;display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:start}.academy-cert-icon{width:34px;height:34px;border-radius:10px;background:#f3f4f6;display:grid;place-items:center;color:var(--red)}.academy-cert b{display:block;font-size:12px}.academy-cert span{display:block;color:var(--muted);font-size:11px;margin-top:3px}
     .academy-ai{border:1px solid #dbe7ff;background:#f6f9ff;border-radius:11px;padding:12px}.academy-ai b{display:block}.academy-ai p{margin:6px 0 0;color:#3f4754;font-size:12px;line-height:1.45}
-    .complaints-main-grid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;margin-top:16px;align-items:start}
+    .complaints-main-grid{display:grid;gap:16px;margin-top:16px;align-items:start}
     .complaints-main-grid > .card{min-width:0}
     .complaint-table-wrap{width:100%;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:10px;background:#fff}
-    .complaint-table{min-width:1280px;table-layout:auto}
-    .complaint-table th,.complaint-table td{padding:10px 9px;font-size:12px;white-space:normal;line-height:1.35}
+    .complaint-table{min-width:980px;table-layout:fixed}
+    .complaint-table th,.complaint-table td{padding:10px 8px;font-size:12px;white-space:normal;line-height:1.35}
     .complaint-table th{white-space:nowrap}
-    .complaint-table td:nth-child(15){min-width:72px;white-space:nowrap}
-    .complaint-table td:nth-child(14){min-width:190px;max-width:240px}
-    .complaint-table td:nth-child(7){min-width:150px}
-    .complaint-table td:nth-child(8){min-width:135px}
-    .complaint-table td:nth-child(12){min-width:135px}
-    .complaint-table td:nth-child(13){min-width:155px}
+    .complaint-table th:nth-child(1){width:140px}.complaint-table th:nth-child(2){width:105px}.complaint-table th:nth-child(3){width:145px}.complaint-table th:nth-child(4){width:150px}.complaint-table th:nth-child(5){width:118px}.complaint-table th:nth-child(6){width:140px}.complaint-table th:nth-child(7){width:160px}.complaint-table th:nth-child(8){width:210px}.complaint-table th:nth-child(9){width:78px}
+    .complaint-table td:nth-child(8){color:#4d5563}
+    .complaint-table td:nth-child(9){white-space:nowrap}
     .complaints-decision-card{overflow:hidden}
+    .complaint-health-card{padding:16px}
+    .complaint-health-strip{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
+    .complaint-health-item{border:1px solid var(--line);border-radius:10px;background:#fff;padding:11px;display:grid;gap:8px;min-width:0}
+    .complaint-health-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+    .complaint-health-head b{font-size:12px;line-height:1.25}.complaint-health-score{font-size:20px;font-weight:950;letter-spacing:-.04em}
+    .complaint-health-meta{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;color:var(--muted);font-size:10px;font-weight:850}
+    .complaint-health-meta span{border:1px solid var(--line);border-radius:999px;background:#f8fafc;padding:4px 6px;text-align:center;white-space:nowrap}
+    .complaint-health-item.risk{border-color:#ffe0a6;background:#fffaf0}.complaint-health-item.critical{border-color:#ffc5ca;background:#fff7f8}
     .iso-accordion{margin-top:16px}
     .iso-accordion details{border:1px solid var(--line);border-radius:12px;background:#fff;overflow:hidden}
     .iso-accordion summary{list-style:none;cursor:pointer;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;font-weight:900}
@@ -129,7 +134,7 @@
     .iso-accordion .iso-body{border-top:1px solid var(--line);padding:14px 18px 18px}
     .iso-accordion .mini-list{grid-template-columns:repeat(2,minmax(0,1fr));display:grid}
     @media (max-width:1400px){.top{height:auto;flex-wrap:wrap;padding:12px 28px}.header-identity{min-width:220px}.top-filters{flex:1 1 280px}.search{width:auto;flex:1 1 360px}.top-actions{margin-left:auto}}
-    @media (max-width:1100px){.complaints-main-grid{grid-template-columns:1fr}.iso-accordion .mini-list{grid-template-columns:1fr}.complaint-table{min-width:1100px}}
+    @media (max-width:1100px){.complaints-main-grid{grid-template-columns:1fr}.complaint-health-strip{grid-template-columns:repeat(2,minmax(0,1fr))}.iso-accordion .mini-list{grid-template-columns:1fr}.complaint-table{min-width:980px}}
     @media (max-width:1100px){
       .app{display:block}
       .side{position:sticky;top:0;bottom:auto;width:auto;z-index:30;height:auto;max-height:148px;padding:10px 12px 9px;overflow:hidden;border-bottom:1px solid rgba(255,255,255,.09)}
@@ -897,9 +902,9 @@
         <select data-complaint-filter="date"><option value="">Tarih aralığı</option><option>Bugün</option><option>Son 7 gün</option><option>Bu ay</option></select>
       </div>
       <div class="kpi-grid">${(c.complaintKpis||[]).map(k=>`<div class="card kpi-card ${k.tone==='good'?'good':k.tone==='bad'?'warn':k.tone==='info'?'info':'warn'}"><div class="kpi-main"><div class="label">${k.label}</div><div class="kpi-line"><span class="kpi-value">${k.value}</span><span class="kpi-meta"><span class="card-sub">${k.trend}</span></span></div></div><div class="kpi-ico">${icon(k.icon)}</div></div>`).join('')}</div>
+      <div class="card complaint-health-card" style="margin-top:16px"><div class="card-head"><div><div class="card-title">Şikayet Sağlığı Skoru</div><div class="card-sub">Şube bazında açık dosya, SLA aşımı, hukuki risk ve geri kazanım etkisi tek yatay bantta okunur.</div></div></div>${ComplaintBranchScore()}</div>
       <div class="complaints-main-grid">
         <div class="card complaints-decision-card"><div class="card-head"><div><div class="card-title">Müşteri Şikayetleri Karar Masası</div><div class="card-sub">${rows.length} dosya listeleniyor; hukuk, kalite, Academy ve dashboard aksiyonları aynı kayıttan yönetilir.</div></div><button class="btn" data-action="Filtrelenmiş şikayet listesi dışa aktarım kuyruğuna alındı.">${icon('download')}Dışa aktar</button></div>${ComplaintTicketsTable(rows)}</div>
-        <div class="card"><div class="card-head"><div><div class="card-title">Şikayet Sağlığı Skoru</div><div class="card-sub">100 - açık şikayet etkisi - SLA aşımı etkisi - hukuki risk etkisi + geri kazanım etkisi</div></div></div>${ComplaintBranchScore()}</div>
       </div>
       <div class="grid g3" style="margin-top:16px">
         <div class="card"><div class="card-head"><div><div class="card-title">Şikayet Türleri</div><div class="card-sub">Dağılım analizi</div></div></div><canvas id="chartComplaintTypes" height="150"></canvas></div>
@@ -916,14 +921,14 @@
       <div class="card iso-accordion"><details><summary><span>ISO 10002 Şikayet Yönetim Disiplini</span><small class="card-sub">Tıklayınca kontrol adımlarını açar/kapatır.</small></summary><div class="iso-body"><p style="margin:0 0 12px;color:var(--muted);line-height:1.6">Her şikayet kayıt altına alınır, tarafsız incelenir, süresi içinde cevaplanır, kök nedeni kapatılır ve müşteri geri kazanımı ölçülür.</p>${Iso10002Panel()}</div></details></div>`;
     }
     function ComplaintTicketsTable(rows){
-      return `<div class="complaint-table-wrap"><table class="complaint-table"><thead><tr><th>Dosya No</th><th>Müşteri</th><th>Telefon</th><th>Plaka</th><th>Şube</th><th>Bölge</th><th>Şikayet türü</th><th>Kaynak</th><th>Öncelik</th><th>SLA</th><th>Hukuki risk</th><th>Sorumlu ekip</th><th>Durum</th><th>Son aksiyon</th><th>Detay</th></tr></thead><tbody>${rows.map(r=>`<tr><td><b>${r.id}</b></td><td>${r.customer}</td><td class="mono">${r.phone}</td><td class="mono">${r.plate}</td><td>${r.branch}</td><td>${r.region}</td><td>${r.type}</td><td>${r.source}</td><td>${complaintBadge(r.priority)}</td><td>${complaintBadge(r.sla)}</td><td>${complaintBadge(r.legalRisk)}</td><td>${r.team}</td><td>${complaintBadge(r.status)}</td><td>${r.lastAction}</td><td><button class="btn detail-btn" data-detail="complaint:${r.id}">Aç</button></td></tr>`).join('')}</tbody></table></div>`;
+      return `<div class="complaint-table-wrap"><table class="complaint-table"><thead><tr><th>Müşteri</th><th>Plaka</th><th>Şube</th><th>Konu / Kaynak</th><th>Risk</th><th>Sahip / Durum</th><th>Son aksiyon</th><th>CEO kararı</th><th>Detay</th></tr></thead><tbody>${rows.map(r=>`<tr><td><b>${r.customer}</b><br><span class="card-sub">${r.region}</span></td><td class="mono"><b>${r.plate}</b><br><button class="micro-btn" data-detail="complaint:${r.id}">Rapor</button></td><td>${r.branch}</td><td><b>${r.type}</b><br><span class="card-sub">${r.source}</span></td><td>${complaintBadge(r.priority)} ${complaintBadge(r.sla)} ${complaintBadge(r.legalRisk)}</td><td><b>${r.team}</b><br>${complaintBadge(r.status)}</td><td>${r.lastAction}</td><td><b>${r.nextAction}</b><br><span class="card-sub">${r.compensation}</span></td><td><button class="btn detail-btn" data-detail="complaint:${r.id}">Aç</button></td></tr>`).join('')}</tbody></table></div>`;
     }
     function Iso10002Panel(){
       return `<div class="mini-list">${['Kayıt alındı','Müşteriye alındı bildirimi gönderildi','Sorumlu atandı','SLA başladı','Kanıtlar toplandı','Şube savunması alındı','Kök neden belirlendi','Çözüm önerisi üretildi','Müşteriye yazılı dönüş yapıldı','Memnuniyet tekrar ölçüldü','Kalıcı aksiyon açıldı'].map((x,i)=>`<div class="mini">${icon(i<7?'check-circle-2':'circle-dot')}<div><b>${x}</b><span>${i<7?'Aktif dosyalarda zorunlu kontrol tamamlanma oranı izleniyor.':'Kapanış öncesi kanıt ve müşteri geri kazanımı beklenir.'}</span></div></div>`).join('')}</div>`;
     }
     function ComplaintBranchScore(){
       const rows=complaintCenter().complaintBranchScore || [];
-      return `<div class="mini-list">${rows.map(b=>`<div class="mini">${icon(b.score<70?'shield-alert':'shield-check')}<div><b>${b.branch} · ${complaintBadge(b.status)}</b><span>Açık: ${b.open}, SLA aşımı: ${b.sla}, hukuki risk: ${b.legal}, geri kazanım: ${b.recovery}</span><div class="progress" style="margin-top:8px"><div class="bar ${b.score<70?'amber':'green'}" style="width:${b.score}%"></div></div></div><b>${b.score}</b></div>`).join('')}</div>`;
+      return `<div class="complaint-health-strip">${rows.map(b=>`<div class="complaint-health-item ${b.score<65?'critical':b.score<75?'risk':''}"><div class="complaint-health-head"><b>${b.branch}</b><span class="complaint-health-score">${b.score}</span></div><div>${complaintBadge(b.status)}</div><div class="progress"><div class="bar ${b.score<70?'amber':'green'}" style="width:${b.score}%"></div></div><div class="complaint-health-meta"><span>Açık ${b.open}</span><span>SLA ${b.sla}</span><span>Hukuk ${b.legal}</span><span>Geri ${b.recovery}</span></div></div>`).join('')}</div>`;
     }
     function ComplaintQualityAcademy(){
       const needs=(complaintCenter().complaintRootCauses||[]).filter(x=>['rapor dili','eksik açıklama','iletişim hatası','teknik yorum farkı'].includes(x[0]));
