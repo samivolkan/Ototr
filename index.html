@@ -1621,7 +1621,6 @@
                 <div class="ceo-note"><b>Yönlendirme:</b> Dashboard genel merkez karar ekranı olarak kaldı. Şube detayı, paket kırılımı, müşteri dosyası ve operasyon kayıtları mevcut alt modüllere bırakıldı; butonlar ilgili route'a taşır veya backend hazır olana kadar aynı mock akışta çalışır.</div>
               </div>
             </div>
-            ${CommandDock()}
           </div>`)+
         pageShell('franchise', franchiseDashboard())+
         pageShell('crm', crmDashboard())+
@@ -1642,7 +1641,8 @@
         pageShell('growth', `<div class="grid g3">${stat('1. Yıl Hedefi','8 Şube','Pilot standardizasyon')}${stat('3. Yıl Hedefi','25+ Şube','Türkiye yayılımı','blue')}${stat('5. Yıl Hedefi','75+ Şube','İlk 3 zincir hedefi','green')}</div><div class="grid g2"><div class="card">${growthPlan()}</div><div class="card"><div class="card-head"><div><div class="card-title">Uluslararası Açılım</div><div class="card-sub">Master franchise dış pazar hedefleri</div></div></div>${intlPlan()}</div></div>`)+
         pageShell('legacy', `<div class="grid g3">${stat('Kültür Belgeleri','5','Manifesto, değerler, sözler')}${stat('Ana İlke','Güven','Her rapor vicdan imzası','green')}${stat('2035 Vizyonu','Ulusal güven markası','Nesiller boyu yapı','blue')}</div><div class="grid g2"><div class="card"><div class="card-head"><div><div class="card-title">Kurucu Manifestosu Taslağı</div><div class="card-sub">Duvara asılacak seviyede ana metin çekirdeği</div></div></div>${legacyManifesto()}</div><div class="card"><div class="card-head"><div><div class="card-title">İlk 5 Legacy Belgesi</div><div class="card-sub">Kültür ve miras odasının üretmesi gereken dokümanlar</div></div></div>${legacyDocs()}</div></div>`)+
         pageShell('architecture', `<div class="module-grid">${moduleCard('Merkezi ERP','Bayi, müşteri, rapor, randevu, finans, kalite ve satın alma tek veri modeline bağlanır.','server')}${moduleCard('Bayi Paneli','Şube günlük akışını yönetir; merkez kalite, finans ve KPI üzerinden görür.','monitor')}${moduleCard('Rapor Yazılımı','Araç dijital hafızası, fotoğraf, skor, risk dili ve müşteri paylaşım linki üretir.','file-text')}${moduleCard('Mobil Uygulama','Müşteri rapor arşivi, randevu, sadakat, kampanya ve itiraz akışını taşır.','smartphone')}${moduleCard('Otomatik SMS/WhatsApp','Randevu onayı, rapor linki, memnuniyet, tekrar satış ve kriz aksiyonlarını tetikler.','message-square')}${moduleCard('Sadakat Sistemi','Tekrar ekspertiz, noter öncesi kontrol, kurumsal anlaşma ve premium paket kullanımı izlenir.','heart-handshake')}</div><div class="card" style="margin-top:16px"><div class="card-head"><div><div class="card-title">Admin Panel Wireframe Kapsam Haritası</div><div class="card-sub">Chat önerisindeki 14 ekranı mevcut ERP/CRM modüllerine bağladım.</div></div></div>${adminCoverage()}</div>`)+
-        pageShell('settings', `<div class="grid g2"><div class="card"><div class="card-head"><div><div class="card-title">CEO Yetki Profili</div><div class="card-sub">İlk fazda tüm modüllere tam erişim</div></div></div>${settingsList()}</div><div class="card"><div class="card-head"><div><div class="card-title">Demo Backend</div><div class="card-sub">localStorage mock API bağlantısı</div></div></div><p>Bu prototipte veri okuma, yeni lead oluşturma, lead aşaması güncelleme, görev oluşturma ve dışa aktarma işlemleri çalışan bir demo API katmanından geçer.</p><div class="quick-actions"><button class="btn" id="exportBtn">${icon('download')}Veri Dışa Aktar</button><button class="btn dark" id="resetDemo">${icon('refresh-cw')}Demo Verisini Sıfırla</button></div></div></div>`);
+        pageShell('settings', `<div class="grid g2"><div class="card"><div class="card-head"><div><div class="card-title">CEO Yetki Profili</div><div class="card-sub">İlk fazda tüm modüllere tam erişim</div></div></div>${settingsList()}</div><div class="card"><div class="card-head"><div><div class="card-title">Demo Backend</div><div class="card-sub">localStorage mock API bağlantısı</div></div></div><p>Bu prototipte veri okuma, yeni lead oluşturma, lead aşaması güncelleme, görev oluşturma ve dışa aktarma işlemleri çalışan bir demo API katmanından geçer.</p><div class="quick-actions"><button class="btn" id="exportBtn">${icon('download')}Veri Dışa Aktar</button><button class="btn dark" id="resetDemo">${icon('refresh-cw')}Demo Verisini Sıfırla</button></div></div></div>`)+
+        CommandDock();
       wirePageEvents();
       renderCharts();
       if(window.lucide) lucide.createIcons();
@@ -1740,12 +1740,26 @@
         return `<button class="quick-command ${a.tone||''}" ${attrs}><span class="quick-icon">${icon(a.icon)}</span><span><strong>${a.label}</strong><span>${a.hint}</span></span>${icon('chevron-right')}</button>`;
       }).join('')}</div></div>`;
     }
+    function QualityQuickNavigation(){
+      const items=[
+        ['quality-kpis','KPI','Kalite skorları ve kritik özet','gauge','blue'],
+        ['quality-charts','Grafikler','Bölge, trend, hata ve heatmap','chart-no-axes-column',''],
+        ['quality-audits','Denetimler','Denetim yönetimi ve filtreler','clipboard-check','green'],
+        ['quality-checklist','Checklist','0-5 puan denetim motoru','list-checks','amber'],
+        ['quality-findings','Bulgular','Kritik, major, minor bulgular','search-check',''],
+        ['quality-capa','CAPA','Düzeltici aksiyon takibi','target','green'],
+        ['quality-risk','Risk','Risk skorları ve alarmlar','shield-alert','amber'],
+        ['quality-flow','Süreç Akışı','Kalite veri zinciri','workflow','blue']
+      ];
+      return `<div class="rail-card"><div class="rail-title">${icon('shield-check')}Kalite Hızlı Geçişleri</div><div class="quick-stack">${items.map(i=>`<button class="quick-command ${i[4]}" data-quality-anchor="${i[0]}"><span class="quick-icon">${icon(i[3])}</span><span><strong>${i[1]}</strong><span>${i[2]}</span></span>${icon('chevron-right')}</button>`).join('')}</div></div>`;
+    }
     function CommandDock(){
       return `<aside class="command-dock" id="commandDock" aria-label="Hızlı yönetim paneli">
         <button class="dock-tab" id="commandDockToggle" type="button" aria-expanded="false">${icon('panel-right-open')}<span>Hızlı Panel</span></button>
         <div class="dock-panel">
           <div class="dock-head"><div><b>Hızlı İşlemler</b><span>Yeni kayıt, görev ve rapor komutları</span></div><button class="dock-close" type="button" data-dock-close aria-label="Paneli kapat">${icon('x')}</button></div>
           ${QuickCommandPanel()}
+          ${QualityQuickNavigation()}
         </div>
       </aside>`;
     }
@@ -2344,7 +2358,6 @@
           <div><h2>Kalite ve Kontrol Merkezi</h2><p>Şube, bayi, personel, satış, pazarlama, Academy, insan kaynakları ve müşteri deneyimini tek kalite sistemi altında izleyin.</p></div>
           <div class="quick-actions"><button class="btn primary" data-quality-open-audit>${icon('plus')}Yeni Denetim Oluştur</button><a class="btn" href="#quality-findings">${icon('siren')}Kritik Bulguları Gör</a><a class="btn" href="#quality-capa">${icon('target')}CAPA Takibi</a><a class="btn" href="#quality-academy">${icon('graduation-cap')}Academy Açıkları</a></div>
         </section>
-        <nav class="ototr-quality-nav"><a href="#quality-kpis">KPI</a><a href="#quality-charts">Grafikler</a><a href="#quality-audits">Denetimler</a><a href="#quality-checklist">Checklist</a><a href="#quality-findings">Bulgular</a><a href="#quality-capa">CAPA</a><a href="#quality-risk">Risk</a><a href="#quality-flow">Süreç Akışı</a></nav>
         <section id="quality-kpis" class="ototr-quality-kpis">${qualityKpi('Genel Kalite Skoru',avg+'/100','Hedef 92 · aylık -3','q-warn','İzlenmeli')}${qualityKpi('Kritik Bulgu Sayısı',critical,'2 dosya CEO takipte','q-critical','Kritik')}${qualityKpi('Açık CAPA Aksiyonu',openCapa,'Kanıtlı kapanış bekliyor','q-risk','Açık')}${qualityKpi('Geciken Aksiyon',late,'Samsun İlkadım alarmda','q-critical','Gecikti')}${qualityKpi('Eğitim Eksik Personel',q.academy[0][1],'Academy ataması önerildi','q-risk','Risk')}${qualityKpi('En Riskli Şube',risky.name,'Risk skoru '+qualityRiskScore(risky),'q-critical',risky.risk)}${qualityKpi('En Riskli Bayi','Konya Meram','Şikayet yoğunluğu yüksek','q-critical','Kritik')}${qualityKpi('Şikayet Kaynaklı Bulgu',complaintFindings,'ISO 10002 kök neden','q-risk','İzlenmeli')}</section>
         <section id="quality-charts" class="ototr-quality-grid-2">
           <div class="card ototr-quality-chart-card"><div class="card-head"><div><div class="card-title">Bölge Bazlı Kalite Skoru</div><div class="card-sub">Şube ve bayi puanları bölge ortalamasına çevrilir.</div></div></div><canvas id="chartQualityRegion" height="170"></canvas></div>
@@ -3490,6 +3503,16 @@
         document.querySelectorAll('[data-revenue-period]').forEach(x=>x.classList.remove('active'));
         btn.classList.add('active');
         renderCharts();
+      }));
+      document.querySelectorAll('[data-quality-anchor]').forEach(el=>el.addEventListener('click',e=>{
+        e.preventDefault();
+        e.stopPropagation();
+        const targetId=el.dataset.qualityAnchor;
+        if(current!=='quality') route('quality');
+        setTimeout(()=>{
+          document.getElementById(targetId)?.scrollIntoView({behavior:'smooth',block:'start'});
+          toggleCommandDock(false);
+        },80);
       }));
       document.querySelectorAll('[data-quality-filter]').forEach(el=>el.addEventListener('change',()=>{
         qualityFilters[el.dataset.qualityFilter]=el.value;
