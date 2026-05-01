@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="ototr-version" content="SVK v1.0.12-crm-saas" />
+  <meta name="ototr-version" content="SVK v1.0.13-academy-control" />
   <title>OTOTR Genel Merkez ERP + CRM</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -178,7 +178,7 @@
 <body>
   <div class="app">
     <aside class="side">
-      <a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.12</small></div></a>
+      <a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.13</small></div></a>
       <div class="nav" id="nav"></div>
     </aside>
 
@@ -827,6 +827,7 @@
                   </div>
                 </div>
                 <div class="card"><div class="card-head"><div><div class="card-title">CRM & Randevu Operasyon Özeti</div><div class="card-sub">Bugünkü randevu, WhatsApp SLA, no-show riski ve kritik müşteri sinyalleri</div></div><button class="btn" data-route="crm">CRM'e git</button></div>${CRMExecutiveSummary()}</div>
+                <div class="card"><div class="card-head"><div><div class="card-title">OTOTR Academy Kontrol Özeti</div><div class="card-sub">Bölge, şube, eğitmen ve kişi bazlı eğitim SLA / KPI sinyalleri</div></div><button class="btn" data-route="academy">Academy'ye git</button></div>${AcademyExecutiveSummary()}</div>
                 <div class="card"><div class="card-head"><div><div class="card-title">Canlı Operasyon Merkezi</div><div class="card-sub">Türkiye yoğunluğu, bekleyen araçlar, SLA ve şube akışı tek yönetim ekranında</div></div><button class="btn" data-route="operations">Operasyona git</button></div>${LiveOperationCenter()}</div>
                 <div class="card"><div class="card-head"><div><div class="card-title">Türkiye / Şube Genel Görünümü</div><div class="card-sub">Bölge kartları: araç adedi, şube sayısı, memnuniyet ve risk sinyali</div></div><button class="btn" data-route="branches">Şube ekranına git</button></div>${TurkeyBranchOverview()}</div>
                 <div class="grid g2">
@@ -994,9 +995,10 @@
     }
     function severityText(level){ return level==='critical'?'Kritik':level==='high'?'Yüksek':'Orta'; }
     function AlertCenter(){
-      return `<div class="alert-list">${DB.ceoDashboard.alerts.map((a,i)=>{
+      const academyAlerts=typeof academySeed==='function' ? academySeed().people.filter(p=>p.overdue>0).slice(0,3).map(p=>({branch:p.branch,text:`${p.name} için ${p.overdue} geciken Academy eğitimi var`,severity:p.overdue>2?'critical':'high',time:'Academy SLA',route:'academy',detail:'academyPerson:'+p.id})) : [];
+      return `<div class="alert-list">${DB.ceoDashboard.alerts.concat(academyAlerts).map((a,i)=>{
         const owner=alertOwner(a), sla=alertSla(a);
-        return `<div class="alert-row ${a.severity}"><div class="severity ${a.severity}">${severityText(a.severity)}</div><div><b>${a.branch}</b><span>${a.text}</span><div class="compact-meta"><span>${owner}</span><span>Deadline: ${sla}</span><span>${a.severity==='critical'?'CEO onayı':'Bölge takip'}</span><span>${a.time}</span><button class="micro-btn" data-open-action-modal="${a.branch} alarm görevi">Görev oluştur</button><button class="micro-btn" data-action="${owner} sorumlu atama kuyruğuna alındı.">Sorumlu ata</button><button class="micro-btn" data-detail="alert:${i}">Detaya git</button><button class="micro-btn" data-route="crisis">Kriz kaydı aç</button></div></div></div>`;
+        return `<div class="alert-row ${a.severity}"><div class="severity ${a.severity}">${severityText(a.severity)}</div><div><b>${a.branch}</b><span>${a.text}</span><div class="compact-meta"><span>${owner}</span><span>Deadline: ${sla}</span><span>${a.severity==='critical'?'CEO onayı':'Bölge takip'}</span><span>${a.time}</span><button class="micro-btn" data-open-action-modal="${a.branch} alarm görevi">Görev oluştur</button><button class="micro-btn" data-action="${owner} sorumlu atama kuyruğuna alındı.">Sorumlu ata</button><button class="micro-btn" data-detail="${a.detail||'alert:'+i}">Detaya git</button><button class="micro-btn" data-route="crisis">Kriz kaydı aç</button></div></div></div>`;
       }).join('')}</div>`;
     }
     function alertOwner(a){
@@ -1004,6 +1006,7 @@
       if(a.route==='finance') return 'Finans';
       if(a.route==='operations') return 'Operasyon';
       if(a.route==='crm') return 'Müşteri Deneyimi';
+      if(a.route==='academy') return 'OTOTR Academy';
       return 'Kriz Masası';
     }
     function alertSla(a){ return a.severity==='critical'?'3 saat':a.severity==='high'?'24 saat':'48 saat'; }
@@ -1459,6 +1462,17 @@
     }
     function marketingTable(){ return `<table><thead><tr><th>Kanal</th><th>Harcama</th><th>Lead</th><th>CPL</th><th>ROI</th></tr></thead><tbody>${DB.marketing.map(m=>`<tr><td>${m.channel}</td><td>${fmtTL(m.spend)}</td><td>${m.leads}</td><td>${fmtTL(m.cpl)}</td><td>${m.roi}x</td></tr>`).join('')}</tbody></table>`; }
     function academyList(){ return `<div class="mini-list">${DB.academy.map(a=>`<div class="mini">${icon('book-open-check')}<div style="width:100%"><b>${a.name}</b><span>${a.audience} - Sertifika: ${a.cert}</span><div class="progress" style="margin-top:8px"><div class="bar blue" style="width:${a.completion}%"></div></div></div></div>`).join('')}</div>`; }
+
+    function AcademyExecutiveSummary(){
+      const d=typeof academySeed==='function' ? academySeed() : {people:[],courses:[]};
+      const people=d.people||[], courses=d.courses||[];
+      const avg=Math.round(people.reduce((s,p)=>s+(p.completion||0),0)/Math.max(1,people.length));
+      const overdue=people.reduce((s,p)=>s+(p.overdue||0),0);
+      const certs=people.reduce((s,p)=>s+(p.cert||0),0);
+      const low=people.slice().sort((a,b)=>(a.completion||0)-(b.completion||0))[0]||{};
+      const evReady=courses.filter(c=>String(c.title||'').includes('EV') && (c.progress||0)>=70).length;
+      return `<div class="summary-grid"><div class="summary-tile"><span>Academy skoru</span><b>%${avg}</b></div><div class="summary-tile"><span>Geciken eğitim</span><b>${overdue}</b></div><div class="summary-tile"><span>Aktif eğitim</span><b>${courses.length}</b></div><div class="summary-tile"><span>Sertifika</span><b>${certs}</b></div><div class="summary-tile"><span>En düşük kişi</span><b>${low.name||'-'}</b></div><div class="summary-tile"><span>EV hazırlık</span><b>${evReady}</b></div></div><div class="mini-list" style="margin-top:10px"><div class="mini">${icon('graduation-cap')}<div><b>${low.branch||'Academy'} eğitim SLA takibi</b><span>${low.name||'Personel'} için hedef gerçekleşme %${low.completion||0}; geciken eğitimler dashboard alarmına bağlandı.</span></div></div></div>`;
+    }
 
     function academySeed(){
       return {
