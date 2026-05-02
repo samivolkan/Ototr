@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="ototr-version" content="SVK v1.0.18-growth-map" />
+  <meta name="ototr-version" content="SVK v1.0.19-clean-module-headers" />
   <title>OTOTR Genel Merkez ERP + CRM</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -190,7 +190,7 @@
 <body>
   <div class="app">
     <aside class="side">
-      <a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.18</small></div></a>
+      <a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.19</small></div></a>
       <div class="nav" id="nav"></div>
     </aside>
 
@@ -1605,7 +1605,7 @@
     function moduleHeaderActions(id,title){
       if(id==='hr') return `<button class="btn primary" data-hr-quick="action">${icon('clipboard-plus')}Aksiyon Oluştur</button><button class="btn" data-hr-room="employee360">${icon('users')}Personel 360</button><button class="btn" data-hr-room="recruitment">${icon('user-plus')}Talep Aç</button>`;
       if(id==='quality') return `<button class="btn primary" data-quality-open-audit>${icon('plus')}Yeni Denetim Oluştur</button><button class="btn" data-action="Kritik kalite bulguları filtrelendi.">${icon('siren')}Kritik Bulgular</button><button class="btn" data-route="academy">${icon('graduation-cap')}Academy Açıkları</button>`;
-      if(id==='franchise') return `<button class="btn primary" data-open-action-modal="Yeni franchise aksiyonu">${icon('plus')}Yeni Lead</button><button class="btn" data-open-action-modal="Büyüme planı aksiyonu">${icon('map')}Büyüme Planı</button><button class="btn" data-open-action-modal="Franchise görev ataması">${icon('clipboard-plus')}Görev Ata</button>`;
+      if(id==='franchise') return `<button class="btn primary" id="openLead2">${icon('plus')}Yeni Lead</button><button class="btn" data-open-action-modal="Büyüme planı aksiyonu">${icon('map')}Büyüme Planı</button><button class="btn" data-open-action-modal="Franchise görev ataması">${icon('clipboard-plus')}Görev Ata</button><button class="btn" data-open-action-modal="Franchise geciken süreç aksiyonu">${icon('check-square')}Aksiyon Aç</button>`;
       if(id==='crm') return `<button class="btn primary" data-open-action-modal="Yeni randevu aksiyonu">${icon('calendar-plus')}Randevu Oluştur</button><button class="btn" data-open-action-modal="CRM takip görevi">${icon('message-circle')}WhatsApp Takip</button><button class="btn" data-open-action-modal="Lead aksiyonu">${icon('user-plus')}Lead Ata</button>`;
       if(id==='academy') return `<button class="btn primary" data-action="Yeni eğitim atama ekranı demo olarak hazırlandı.">${icon('graduation-cap')}Eğitim Ata</button><button class="btn" data-action="Başarı ve deadline kırılımları güncellendi.">${icon('bar-chart-3')}Skorları Gör</button>`;
       return `<button class="btn primary" data-open-action-modal="${title} aksiyonu">${icon('clipboard-plus')}Aksiyon Oluştur</button><button class="btn" data-open-action-modal="${title} sorumlu atama">${icon('user-check')}Sorumlu Ata</button>`;
@@ -1616,7 +1616,7 @@
       const group=(navGroups.find(([,items])=>items.some(x=>x[0]===id))||['Sistem'])[0];
       const owner=plan?.owner || (id==='branchProfile'?'Operasyon Direktörlüğü':'Genel Merkez');
       const meta=moduleHeaderMeta[id] || [`${group} · ${owner}`, `${baseTitle} / Yönetim Room`, plan?.mission || 'Bu modül OTOTR genel merkez yönetim standardına bağlı çalışır.'];
-      return `<div class="module-page-head"><div><div class="module-page-kicker">${meta[0]}</div><h1>${meta[1]}</h1><p>${meta[2]}</p></div><div class="module-page-actions">${moduleHeaderActions(id,meta[1])}</div></div>`;
+      return `<div class="module-page-head"><div><h1>${meta[1]}</h1><p>${meta[2]}</p></div><div class="module-page-actions">${moduleHeaderActions(id,meta[1])}</div></div>`;
     }
     function pageShell(id, content){ return `<div class="page ${id===current?'active':''}" id="page-${id}">${pageHeader(id)}${content}${deptPlan(id)}</div>`; }
     function stat(label,value,trend,color=''){ return `<div class="card stat ${color}"><div class="label">${label}</div><div class="value">${value}</div><div class="trend ${String(trend).startsWith('-')?'down':''}">${trend}</div></div>`; }
@@ -2234,10 +2234,6 @@
       const score=Math.max(0,Math.min(100,Math.round(86-delayed.length*3+opened*2)));
       return `<div class="fr-tabs"><button class="fr-tab active" data-fr-tab="dashboard">Dashboard</button><button class="fr-tab" data-fr-tab="leads">Başvuru & Lead Havuzu</button><button class="fr-tab" data-fr-tab="pipeline">Pipeline</button><button class="fr-tab" data-fr-tab="tasks">Görevler</button><button class="fr-tab" data-fr-tab="growthPlan">Büyüme Planı</button><button class="fr-tab" data-fr-tab="location">Lokasyon Analizi</button><button class="fr-tab" data-fr-tab="financeCheck">Finansal Yeterlilik</button><button class="fr-tab" data-fr-tab="contract">Sözleşme</button><button class="fr-tab" data-fr-tab="setup">Kurulum</button><button class="fr-tab" data-fr-tab="academyOpen">Eğitim & Açılış</button><button class="fr-tab" data-fr-tab="activeBranches">Aktif Bayiler</button><button class="fr-tab" data-fr-tab="royalty">Royalty</button></div>
       <div class="fr-tab-pane active" id="fr-tab-dashboard">
-        <div class="executive-toolbar">
-          <div><h2>Franchise Dashboard</h2><p>Başvurudan bayi açılışına kadar hibrit yönetim: satış ekibi günlük takip, genel merkez karar kapıları.</p></div>
-          <div class="toolbar-controls"><button class="btn primary" id="openLead2">${icon('plus')}Yeni Lead</button><button class="btn" data-open-action-modal="Franchise geciken süreç aksiyonu">${icon('check-square')}Aksiyon aç</button></div>
-        </div>
         ${franchiseVisualCommand(c,delayed.length,opened,score)}
         <div class="grid g3" style="margin-top:16px">${stat('Toplam Aday',c.length,'Lead + aktif süreç')}${stat('Aktif Süreç',active.length,delayed.length+' gecikme','amber')}${stat('Bu Ay Açılan Bayi',opened,'Hedef 5 / gerçekleşen 3','green')}</div>
         <div class="grid g3" style="margin-top:16px">${stat('Ort. Açılış Süresi',avgOpen+' gün','Hedef 60 gün','blue')}${stat('Geciken Süreç',delayed.length,'SLA üstü aday','amber')}${stat('Franchise GM Skoru',score+'/100',score>=85?'Sağlıklı':'Takip gerekli','green')}</div>
