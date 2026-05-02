@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="ototr-version" content="SVK v1.0.54-dashboard-signal-strip" />
+  <meta name="ototr-version" content="SVK v1.0.55-responsive-dashboard-fix" />
   <title>OTOTR Genel Merkez ERP + CRM</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -310,8 +310,12 @@
     .premium-score-ring:after{content:"";position:absolute;inset:-3px;border-radius:50%;background:conic-gradient(from 0deg,transparent,rgba(255,255,255,.6),transparent 24%);animation:ringSweep 4.2s linear infinite;z-index:-1}
     .premium-score-core{position:relative;text-align:center}.premium-score-core b{display:block;font-size:30px;letter-spacing:-.06em}.premium-score-core span{display:block;margin-top:2px;font-size:9px;color:var(--muted);font-weight:950;text-transform:uppercase}
     .premium-factor-list{display:grid;gap:8px;min-width:0}.premium-factor-row{display:grid;grid-template-columns:minmax(112px,1fr) minmax(120px,1.25fr) 32px;gap:9px;align-items:center}.premium-factor-row b{font-size:11px;line-height:1.18}.premium-factor-row strong{font-size:12px;text-align:right}.premium-track{height:8px;border-radius:999px;background:#edf1f6;overflow:hidden}.premium-fill{height:100%;width:calc(var(--v)*1%);border-radius:999px;background:linear-gradient(90deg,var(--tone),color-mix(in srgb,var(--tone) 72%,#fff));position:relative;animation:barGrow .7s cubic-bezier(.2,.8,.2,1) both}.premium-fill:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.5),transparent);animation:barSheen 2.6s ease-in-out infinite}.premium-score-note{margin-top:12px;display:grid;grid-template-columns:36px 1fr;gap:10px;align-items:center;border:1px solid #dbe7ff;border-radius:12px;background:linear-gradient(135deg,#fff,#f7fbff);padding:11px}.premium-score-note i{width:28px;height:28px;color:var(--red)}.premium-score-note b{display:block}.premium-score-note span{display:block;color:var(--muted);font-size:12px;margin-top:2px;line-height:1.35}
+    .premium-gm-score{min-width:0;overflow:hidden}.premium-gm-score .premium-factor-list{min-width:0;overflow:hidden}.premium-gm-score .premium-factor-row{grid-template-columns:minmax(0,1fr) minmax(54px,.78fr) 28px;gap:6px}.premium-gm-score .premium-factor-row b{font-size:10px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}.premium-gm-score .premium-track{min-width:54px}.premium-gm-score .premium-factor-row strong{font-size:10px;min-width:24px}
     @keyframes ringSweep{to{transform:rotate(360deg)}}
     @media (prefers-reduced-motion:reduce){.bar,.bar:after,.premium-fill,.premium-fill:after,.premium-score-ring:after{animation:none!important}}
+    @media (max-width:1400px){.ceo-flow-compact{grid-template-columns:minmax(260px,.42fr) minmax(0,1fr)}.ceo-focus-rail{grid-template-columns:repeat(3,minmax(0,1fr))}}
+    @media (max-width:900px){.wrap{padding:18px 14px 34px}.grid,.g2,.g3,.g4,.g70,.g60,.kpi-grid,.chart-kpis,.summary-grid{grid-template-columns:1fr!important}.card{padding:14px}.card-head{align-items:flex-start;flex-wrap:wrap}.card-head .btn{min-height:34px}.ceo-flow-compact,.command-layout,.hero,.profile-hero,.finance-intro{grid-template-columns:1fr!important}.ceo-focus-rail,.ceo-module-compact{grid-template-columns:1fr!important}.alert-row,.timeline-step,.quick-command{grid-template-columns:1fr}.premium-score-card{grid-template-columns:1fr}.premium-score-ring{margin:auto}.premium-factor-row{grid-template-columns:minmax(92px,1fr) minmax(74px,1fr) 30px}.table-wrap,.marketing-table-wrap,.finance-table-wrap{max-width:100%;overflow:auto}.top{padding-left:14px;padding-right:14px}}
+    @media (max-width:520px){.wrap{padding:14px 10px 28px}.kpi-card{grid-template-columns:1fr;min-height:auto}.kpi-line{display:block}.kpi-value{font-size:24px}.ceo-score-top b{font-size:22px}.premium-gm-score .premium-factor-row{grid-template-columns:1fr 72px 28px}.premium-gm-score .premium-factor-row b{-webkit-line-clamp:1}.hero h1{font-size:23px}.btn{white-space:normal}.dashboard-signal-grid .exec-card .card-head{grid-template-columns:1fr}.dashboard-signal-grid .exec-card .btn{width:100%;justify-content:center}.dashboard-signal-grid .exec-metrics{grid-template-columns:1fr!important}}
     .alert-center-collapsible{display:grid;gap:9px;margin-top:9px}
     .alert-center-collapsible .alert-center-more{order:1;margin-top:0}
     .alert-center-collapsible summary{order:2}
@@ -341,7 +345,7 @@
 <body>
   <div class="app">
     <aside class="side">
-      <div class="brand-row"><a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.54</small></div></a><button class="theme-toggle" type="button" data-theme-toggle title="Koyu temaya geç" aria-label="Tema değiştir"><i data-lucide="sun-moon"></i><span id="themeToggleText">Açık</span></button></div>
+      <div class="brand-row"><a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.55</small></div></a><button class="theme-toggle" type="button" data-theme-toggle title="Koyu temaya geç" aria-label="Tema değiştir"><i data-lucide="sun-moon"></i><span id="themeToggleText">Açık</span></button></div>
       <div class="nav" id="nav"></div>
     </aside>
 
@@ -2145,7 +2149,7 @@
         status:b.risk==='Yüksek'?'İnceleme':b.risk==='Orta'?'Takip':'Stabil'
       }));
       out.demoDataHealth={
-        version:'SVK v1.0.54',
+        version:'SVK v1.0.55',
         branchUniverse:'10 şube / 4 aktif bölge',
         packagePriceBand:'5.000 TL - 15.000 TL',
         avgTicketBand:'8.350 TL - 9.900 TL',
