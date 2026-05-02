@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="ototr-version" content="SVK v1.0.27-crisis-governance" />
+  <meta name="ototr-version" content="SVK v1.0.28-branch-kpi-map" />
   <title>OTOTR Genel Merkez ERP + CRM</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -120,6 +120,7 @@
     .academy-ai{border:1px solid #dbe7ff;background:#f6f9ff;border-radius:11px;padding:12px}.academy-ai b{display:block}.academy-ai p{margin:6px 0 0;color:#3f4754;font-size:12px;line-height:1.45}
     .academy-chart-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:14px;margin-top:14px}.academy-chart-card{min-height:300px}.academy-chart-card canvas{max-height:260px}.academy-chart-card.compact canvas{max-height:220px}.academy-chart-note{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}.academy-chart-note span{border:1px solid var(--line);border-radius:999px;background:#fff;padding:4px 8px;font-size:10px;font-weight:850;color:#4d5563}
     .branch-map-layout{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:14px;align-items:stretch}.branch-map-canvas{min-height:560px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#eef1f5}.branch-map-side{display:grid;grid-template-rows:auto auto 1fr;gap:10px;min-height:560px}.branch-map-filters{display:grid;grid-template-columns:1fr 1fr;gap:8px}.branch-map-filters select,.branch-map-filters input{height:38px;border:1px solid var(--line);border-radius:8px;background:#fff;padding:0 10px;font-weight:800;color:#303641}.branch-map-summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.branch-map-summary div{border:1px solid var(--line);border-radius:9px;background:#fff;padding:8px}.branch-map-summary span{display:block;color:var(--muted);font-size:9px;font-weight:900;text-transform:uppercase}.branch-map-summary b{font-size:16px}.branch-map-list{display:grid;gap:8px;align-content:start;max-height:470px;overflow:auto;padding-right:2px}.branch-map-item{border:1px solid var(--line);border-radius:10px;background:#fff;padding:10px;text-align:left;display:grid;gap:7px}.branch-map-item:hover,.branch-map-item.active{border-color:#cbd5e1;box-shadow:0 10px 24px rgba(17,19,24,.06);transform:translateY(-1px)}.branch-map-item.active{background:#fff7f8;border-color:#ffc5ca}.branch-map-item b{font-size:13px}.branch-map-item span{font-size:11px;color:var(--muted);line-height:1.35}.branch-map-status{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:950;border-radius:999px;padding:4px 8px;border:1px solid var(--line);background:#fff;width:max-content}.branch-map-status:before{content:"";width:8px;height:8px;border-radius:50%;background:#111318}.branch-map-status.open:before{background:var(--green)}.branch-map-status.target:before{background:var(--blue)}.branch-map-status.candidate:before{background:#7c3aed}.branch-map-status.priority:before{background:var(--red)}.branch-map-status.hold:before{background:#64748b}.branch-map-status.competition:before{background:var(--amber)}.branch-map-status.company:before{background:#0f766e}.branch-map-marker{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:#111318;color:#fff;border:3px solid #fff;box-shadow:0 10px 24px rgba(17,19,24,.22);font-size:10px;font-weight:950}.branch-map-marker.good,.branch-map-marker.open{background:var(--green)}.branch-map-marker.warn,.branch-map-marker.competition{background:var(--amber)}.branch-map-marker.bad,.branch-map-marker.priority{background:var(--red)}.branch-map-marker.target{background:var(--blue)}.branch-map-marker.candidate{background:#7c3aed}.branch-map-marker.hold{background:#64748b}.branch-map-marker.company{background:#0f766e}.branch-map-popup{display:grid;gap:7px;min-width:250px}.branch-map-popup b{font-size:14px}.branch-map-popup span{color:#4d5563;font-size:12px}.branch-map-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.branch-map-metrics div{border:1px solid var(--line);border-radius:8px;background:#f8fafc;padding:6px}.branch-map-metrics small{display:block;color:var(--muted);font-size:9px;font-weight:900;text-transform:uppercase}.branch-map-metrics strong{font-size:12px}.growth-status-legend{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}.growth-status-legend span{border:1px solid var(--line);border-radius:999px;background:#fff;padding:5px 8px;font-size:10px;font-weight:850;color:#4d5563}.leaflet-container{font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}.leaflet-popup-content-wrapper{border-radius:10px}.leaflet-popup-content{margin:12px}
+    .branch-kpi-map{display:grid;gap:12px}.branch-kpi-controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.branch-kpi-controls select{height:38px;border:1px solid var(--line);border-radius:9px;background:#fff;padding:0 10px;font-size:12px;font-weight:850;color:#303641}.branch-kpi-layout{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(300px,.65fr);gap:14px;align-items:start}.branch-kpi-canvas{position:relative;min-height:430px;border:1px solid #dbe3ee;border-radius:14px;background:radial-gradient(circle at 28% 30%,rgba(215,25,32,.10),transparent 16%),linear-gradient(135deg,#fff,#eef3f9);overflow:hidden}.branch-kpi-canvas:before{content:"";position:absolute;inset:42px 52px;border:1px dashed #cbd5e1;border-radius:44% 52% 43% 49%;transform:rotate(-8deg);background:rgba(255,255,255,.38)}.branch-kpi-region-label{position:absolute;left:var(--x);top:var(--y);transform:translate(-50%,-50%);border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.88);padding:8px 9px;min-width:108px;box-shadow:0 10px 22px rgba(17,19,24,.07);z-index:2}.branch-kpi-region-label b{display:block;font-size:12px}.branch-kpi-region-label span{display:block;color:var(--muted);font-size:10px;margin-top:2px}.branch-marker{position:absolute;left:var(--x);top:var(--y);width:18px;height:18px;border:2px solid #fff;border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 8px 18px rgba(17,19,24,.16);cursor:pointer;z-index:3}.branch-marker:after{content:attr(data-label);position:absolute;left:50%;top:22px;transform:translateX(-50%);white-space:nowrap;border:1px solid var(--line);border-radius:999px;background:#fff;padding:3px 7px;font-size:10px;font-weight:900;color:#303641;opacity:0;pointer-events:none;transition:.15s}.branch-marker:hover:after,.branch-marker.active:after{opacity:1}.branch-marker.healthy{background:var(--green)}.branch-marker.watch{background:#f3b116}.branch-marker.risky{background:#f97316}.branch-marker.critical{background:var(--red)}.branch-marker.soft-pulse{animation:branchSoftPulse 2s ease-in-out infinite}.branch-marker.critical-pulse{animation:branchCriticalPulse 1.65s ease-in-out infinite}.branch-marker.glow-warning{box-shadow:0 0 0 5px rgba(243,177,22,.14),0 8px 18px rgba(17,19,24,.16)}@keyframes branchSoftPulse{0%,100%{box-shadow:0 0 0 0 rgba(249,115,22,.28),0 8px 18px rgba(17,19,24,.16)}50%{box-shadow:0 0 0 10px rgba(249,115,22,.04),0 8px 18px rgba(17,19,24,.16)}}@keyframes branchCriticalPulse{0%,100%{box-shadow:0 0 0 0 rgba(215,25,32,.34),0 8px 18px rgba(17,19,24,.18)}50%{box-shadow:0 0 0 13px rgba(215,25,32,.06),0 8px 18px rgba(17,19,24,.18)}}.branch-kpi-side{display:grid;gap:12px}.branch-kpi-detail,.branch-kpi-alarm,.branch-kpi-legend{border:1px solid var(--line);border-radius:12px;background:#fff;padding:13px}.branch-kpi-detail h3,.branch-kpi-alarm h3,.branch-kpi-legend h3{margin:0 0 8px;font-size:14px}.branch-kpi-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.branch-kpi-detail-grid div{border:1px solid var(--line);border-radius:9px;background:#f8fafc;padding:8px}.branch-kpi-detail-grid span{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;font-weight:900}.branch-kpi-detail-grid b{display:block;font-size:12px;margin-top:3px}.branch-kpi-alarm-list{display:grid;gap:8px}.branch-kpi-alarm-row{border:1px solid var(--line);border-left:4px solid #dfe3e8;border-radius:10px;background:#fff;padding:10px;display:grid;gap:7px}.branch-kpi-alarm-row.critical{border-left-color:var(--red);background:#fff7f8;animation:branchAlarmGlow 2.4s ease-in-out infinite}.branch-kpi-alarm-row.risky{border-left-color:#f97316;background:#fff8f1;animation:branchAlarmSoft 2.8s ease-in-out infinite}.branch-kpi-alarm-row.watch{border-left-color:#f3b116;background:#fffdf4}@keyframes branchAlarmGlow{0%,100%{box-shadow:0 0 0 rgba(215,25,32,0)}50%{box-shadow:0 0 18px rgba(215,25,32,.12)}}@keyframes branchAlarmSoft{0%,100%{box-shadow:0 0 0 rgba(249,115,22,0)}50%{box-shadow:0 0 14px rgba(249,115,22,.10)}}.branch-region-kpi-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}.branch-region-kpi-card{border:1px solid var(--line);border-top:3px solid #dfe3e8;border-radius:11px;background:#fff;padding:11px;display:grid;gap:6px}.branch-region-kpi-card.healthy{border-top-color:var(--green)}.branch-region-kpi-card.watch{border-top-color:#f3b116}.branch-region-kpi-card.risky{border-top-color:#f97316;animation:branchAlarmSoft 3s ease-in-out infinite}.branch-region-kpi-card.critical{border-top-color:var(--red);animation:branchAlarmGlow 2.4s ease-in-out infinite}.branch-region-kpi-card b{font-size:13px}.branch-region-kpi-card span{color:var(--muted);font-size:11px}.branch-kpi-legend-list{display:flex;gap:8px;flex-wrap:wrap}.branch-kpi-legend-list span{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:850;border:1px solid var(--line);border-radius:999px;padding:5px 8px;background:#fff}.branch-kpi-legend-list i{width:9px;height:9px;border-radius:50%;display:inline-block}
     .complaints-main-grid{display:grid;gap:16px;margin-top:16px;align-items:start}
     .complaints-main-grid > .card{min-width:0}
     .complaint-table-wrap{width:100%;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:10px;background:#fff}
@@ -165,12 +166,12 @@
       .top-actions{width:100%;justify-content:flex-end;flex-wrap:wrap}.api{margin-right:auto}.search{display:none}.hero-search{display:flex;width:100%}
       .wrap{padding:18px 18px 40px}.hero{grid-template-columns:1fr;padding:20px;gap:16px}.hero h1{font-size:25px}.hero p{font-size:13px}.hero-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
       .command-dock{top:auto;bottom:18px;width:min(360px,calc(100vw - 10px));transform:translateX(calc(100% - 40px))}.dock-tab{width:40px;min-height:126px}.dock-panel{max-height:min(74vh,640px)}
-      .g2,.g70,.g60,.kanban,.module-grid,.dept-grid,.ai-insight .insight-grid,.score-box,.ops-room,.fr-command,.fr-next-grid,.fr-visual-grid,.fr-roadmap,.fr-map-grid,.crm-layout,.action-layout,.action-filters,.decision-layout,.decision-filters,.crisis-compact-grid,.marketing-layout,#page-marketing .marketing-top-grid,#page-marketing .marketing-lower-grid,#page-marketing .marketing-wide-grid,#page-marketing .marketing-bottom-grid,.marketing-overview-grid,.team-children,.performance-grid,.rhythm-grid,.marketing-performance-layout,.performance-board,.branch-perf-layout,.marketing-insight-row{grid-template-columns:1fr}
+      .g2,.g70,.g60,.kanban,.module-grid,.dept-grid,.ai-insight .insight-grid,.score-box,.ops-room,.fr-command,.fr-next-grid,.fr-visual-grid,.fr-roadmap,.fr-map-grid,.crm-layout,.action-layout,.action-filters,.decision-layout,.decision-filters,.crisis-compact-grid,.branch-kpi-layout,.marketing-layout,#page-marketing .marketing-top-grid,#page-marketing .marketing-lower-grid,#page-marketing .marketing-wide-grid,#page-marketing .marketing-bottom-grid,.marketing-overview-grid,.team-children,.performance-grid,.rhythm-grid,.marketing-performance-layout,.performance-board,.branch-perf-layout,.marketing-insight-row{grid-template-columns:1fr}
       .academy-command{grid-template-columns:1fr}.academy-rail{position:static}.academy-course-grid,.academy-chart-grid,.branch-map-layout{grid-template-columns:1fr}
       .fr-side,.crm-rail,.action-side,.decision-side,.marketing-rail{position:static}
-      .g4,.g3,.chart-kpis,.kpi-grid,.region-grid,.region-grid.compact,.summary-grid,.decision-strip,.action-grid,.action-kpis,.action-module-grid,.action-info-grid,.action-performance-grid,.decision-kpis,.decision-module-grid,.decision-meta-grid,.crisis-drill-grid,.crisis-info-grid,.crisis-link-grid,.crisis-auth-grid,.crisis-drill-score-grid,.region-extra,.branch-score-board,.branch-map-summary,.crm-kpis,.crm-card-grid,.slot-grid,.academy-kpis,.academy-region-grid,.academy-cert-grid,.marketing-kpis,.marketing-card-list,.marketing-mini-grid,.ad-channel-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .g4,.g3,.chart-kpis,.kpi-grid,.region-grid,.region-grid.compact,.summary-grid,.decision-strip,.action-grid,.action-kpis,.action-module-grid,.action-info-grid,.action-performance-grid,.decision-kpis,.decision-module-grid,.decision-meta-grid,.crisis-drill-grid,.crisis-info-grid,.crisis-link-grid,.crisis-auth-grid,.crisis-drill-score-grid,.region-extra,.branch-score-board,.branch-map-summary,.branch-region-kpi-grid,.branch-kpi-detail-grid,.crm-kpis,.crm-card-grid,.slot-grid,.academy-kpis,.academy-region-grid,.academy-cert-grid,.marketing-kpis,.marketing-card-list,.marketing-mini-grid,.ad-channel-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
       .crisis-source-row{grid-template-columns:1fr 54px 54px}.crisis-source-row .crisis-source-risk,.crisis-source-row .micro-btn{grid-column:1/-1}
-      .alert-row,.funnel-step{grid-template-columns:1fr}.factor{grid-template-columns:1fr}.executive-toolbar{align-items:flex-start;flex-direction:column}.map-canvas{min-height:360px}
+      .alert-row,.funnel-step{grid-template-columns:1fr}.factor{grid-template-columns:1fr}.executive-toolbar{align-items:flex-start;flex-direction:column}.map-canvas{min-height:360px}.branch-kpi-canvas{min-height:360px}
     }
     @media (max-width:700px){
       .side{max-height:132px;padding:9px 10px 8px}.nav button{padding:8px 9px;font-size:12px}.nav button .count{font-size:10px;padding:1px 6px}.nav i{width:15px;height:15px}
@@ -178,12 +179,12 @@
       .top-filters{display:none}.api{order:4;width:100%;justify-content:center;margin-right:0}.top-actions{order:3;width:auto;justify-content:flex-start}.top>.btn:not(.primary){display:none}.top>.btn.primary{order:3;margin-left:auto}.icon-btn{width:36px;height:36px}.btn{padding:9px 11px}
       .module-page-head{align-items:flex-start;flex-direction:column}.module-page-actions{justify-content:flex-start}
       .wrap{padding:14px 12px 34px}.hero{padding:17px;border-radius:12px;margin-bottom:14px}.hero h1{font-size:22px}.hero-metrics{grid-template-columns:1fr}.hero-metrics b{font-size:20px}#page-marketing{margin:-14px -12px -34px;padding:14px 12px 34px}#page-marketing .marketing-hero h2{font-size:23px}
-      .g4,.g3,.g2,.g70,.g60,.kanban,.module-grid,.dept-grid,.chart-kpis,.ai-insight .insight-grid,.kpi-grid,.region-grid,.region-grid.compact,.summary-grid,.score-box,.ops-room,.drill,.form,.matrix,.heat,.decision-strip,.profile-hero,.action-grid,.action-kpis,.action-module-grid,.action-info-grid,.action-performance-grid,.action-layout,.action-filters,.decision-layout,.decision-filters,.decision-kpis,.decision-module-grid,.decision-meta-grid,.crisis-drill-grid,.crisis-info-grid,.crisis-link-grid,.crisis-auth-grid,.crisis-drill-score-grid,.crisis-compact-grid,.region-extra,.impact-grid,.branch-score-board,.branch-map-summary,.fr-visual-grid,.fr-roadmap,.fr-map-grid,.crm-kpis,.crm-card-grid,.slot-grid,.academy-kpis,.academy-region-grid,.academy-cert-grid,.academy-chart-grid,.branch-map-layout,.marketing-kpis,.marketing-card-list,.marketing-mini-grid,.marketing-form-grid,.marketing-content-row,.ad-channel-grid,.marketing-performance-layout,.performance-board,.branch-perf-layout,.marketing-insight-row{grid-template-columns:1fr}
+      .g4,.g3,.g2,.g70,.g60,.kanban,.module-grid,.dept-grid,.chart-kpis,.ai-insight .insight-grid,.kpi-grid,.region-grid,.region-grid.compact,.summary-grid,.score-box,.ops-room,.drill,.form,.matrix,.heat,.decision-strip,.profile-hero,.action-grid,.action-kpis,.action-module-grid,.action-info-grid,.action-performance-grid,.action-layout,.action-filters,.decision-layout,.decision-filters,.decision-kpis,.decision-module-grid,.decision-meta-grid,.crisis-drill-grid,.crisis-info-grid,.crisis-link-grid,.crisis-auth-grid,.crisis-drill-score-grid,.crisis-compact-grid,.branch-kpi-layout,.branch-region-kpi-grid,.branch-kpi-detail-grid,.region-extra,.impact-grid,.branch-score-board,.branch-map-summary,.fr-visual-grid,.fr-roadmap,.fr-map-grid,.crm-kpis,.crm-card-grid,.slot-grid,.academy-kpis,.academy-region-grid,.academy-cert-grid,.academy-chart-grid,.branch-map-layout,.marketing-kpis,.marketing-card-list,.marketing-mini-grid,.marketing-form-grid,.marketing-content-row,.ad-channel-grid,.marketing-performance-layout,.performance-board,.branch-perf-layout,.marketing-insight-row{grid-template-columns:1fr}
       .crisis-source-row,.crisis-escalation-row,.crisis-notice{grid-template-columns:1fr}.crisis-source-row .crisis-source-risk,.crisis-source-row .micro-btn{grid-column:auto}
       .marketing-hero{display:grid}
       .profile-hero h2{font-size:23px}.profile-score{width:100%;height:auto;min-height:86px}
       .card{padding:15px;overflow-x:auto}.card-head{align-items:flex-start;flex-direction:column}.toolbar select,.toolbar input{min-width:0;width:100%}
-      table{min-width:640px}.profile-head,.stage{grid-template-columns:1fr}.command-dock{bottom:14px;align-items:flex-end}.dock-panel{max-height:72vh}.dock-tab span{font-size:10px}
+      table{min-width:640px}.profile-head,.stage{grid-template-columns:1fr}.command-dock{bottom:14px;align-items:flex-end}.dock-panel{max-height:72vh}.dock-tab span{font-size:10px}.branch-kpi-canvas{min-height:320px}.branch-marker:after{display:none}
       .drawer-panel{width:100%;padding:18px}.modal{padding:12px}.actions{flex-wrap:wrap}.actions .btn{flex:1 1 auto;justify-content:center}
     }
     @media (max-width:1100px){.hr-hero{display:grid}.hr-data-grid,.hr-card-grid,.hr-card-grid.two,.hr-settings-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.hr-kanban{grid-template-columns:repeat(3,minmax(220px,1fr))}.ototr-quality-page{margin:-18px -18px -40px;padding:18px}.ototr-quality-hero,.ototr-quality-grid-2,.ototr-quality-grid-3,.ototr-quality-grid-4{grid-template-columns:1fr}.ototr-quality-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.ototr-quality-hero .quick-actions{justify-content:flex-start}.ototr-quality-heatmap{grid-template-columns:repeat(2,minmax(0,1fr))}.ototr-quality-check-row{grid-template-columns:1fr 86px 96px}.ototr-quality-check-row input,.ototr-quality-upload{grid-column:1/-1}.ototr-quality-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
@@ -1994,7 +1995,7 @@
         status:b.risk==='Yüksek'?'İnceleme':b.risk==='Orta'?'Takip':'Stabil'
       }));
       out.demoDataHealth={
-        version:'SVK v1.0.27',
+        version:'SVK v1.0.28',
         branchUniverse:'10 şube / 4 aktif bölge',
         packagePriceBand:'5.000 TL - 15.000 TL',
         avgTicketBand:'8.350 TL - 9.900 TL',
@@ -2155,6 +2156,7 @@
                 <div class="card"><div class="card-head"><div><div class="card-title">Kalite ve Kontrol Merkezi Özeti</div><div class="card-sub">Denetim, bulgu, CAPA, Academy ve şikayet sinyalleri tek kalite skoruna bağlanır</div></div><button class="btn" data-route="quality">Kaliteye git</button></div>${QualityDashboardSummary()}</div>
                 <div class="card"><div class="card-head"><div><div class="card-title">Canlı Operasyon Merkezi</div><div class="card-sub">Türkiye yoğunluğu, bekleyen araçlar, SLA ve şube akışı tek yönetim ekranında</div></div><button class="btn" data-route="operations">Operasyona git</button></div>${LiveOperationCenter()}</div>
                 <div class="card"><div class="card-head"><div><div class="card-title">Türkiye / Şube Genel Görünümü</div><div class="card-sub">Bölge kartları: araç adedi, şube sayısı, memnuniyet ve risk sinyali</div></div><button class="btn" data-route="branches">Şube ekranına git</button></div>${TurkeyBranchOverview()}</div>
+                <div class="card"><div class="card-head"><div><div class="card-title">Şube KPI Alarmı</div><div class="card-sub">Problemli şubeleri harita üzerinde canlı alarm mantığıyla izleyin</div></div><button class="btn" data-route="branches">Bayiler & Şubeler'e git</button></div>${BranchKpiDashboardSummary()}</div>
                 <div class="grid g2">
                   <div class="card"><div class="card-head"><div><div class="card-title">En İyi 10 Şube</div><div class="card-sub">Günlük performans + OTOTR Güven Skoru</div></div></div>${BranchPerformanceTable('best')}</div>
                   <div class="card"><div class="card-head"><div><div class="card-title">En Riskli 10 Şube</div><div class="card-sub">CEO takip ve düzeltme planı gerektiren şubeler</div></div></div>${BranchPerformanceTable('risk')}</div>
@@ -2181,7 +2183,7 @@
         pageShell('franchise', franchiseDashboard())+
         pageShell('crm', crmDashboard())+
         pageShell('complaints', ComplaintsCenterPage())+
-        pageShell('branches', `<div class="grid g4">${stat('Aktif Şube',DB.branches.filter(b=>b.status==='Aktif').length,'Aktif işletme ağı')}${stat('Ortalama EBITDA',compactTL(Math.round(DB.branches.reduce((s,b)=>s+(DB.branchDetails[b.id]?.profit||0),0)/Math.max(1,DB.branches.length))),'Şube kârlılığı')}${stat('Ortalama NPS',Math.round(DB.branches.filter(b=>b.nps).reduce((s,b)=>s+b.nps,0)/4),'+6 puan','green')}${stat('Riskli Bayi',DB.branches.filter(b=>b.risk==='Yüksek').length,'Hukuk/kalite takip','amber')}</div><div class="card"><div class="card-head"><div><div class="card-title">Bayi & Bölge Skor Panosu</div><div class="card-sub">Aktif şube ağı; ciro, kârlılık, kalite, operasyon SLA, Academy ve hukuk riskiyle okunur.</div></div></div>${BranchRegionScoreBoard()}</div><div class="card"><div class="card-head"><div><div class="card-title">Canlı Türkiye Şube Haritası</div><div class="card-sub">Bu ekran yalnız aktif işletmeleri gösterir. Şehir bazlı yeni açılış kararları Büyüme Haritası sayfasındadır.</div></div><button class="btn" data-route="growth">Büyüme haritasına git</button></div>${ActiveBranchTurkeyMap()}</div><div class="grid g70"><div class="card"><div class="card-head"><div><div class="card-title">Bayi Performans ve Royalty Tablosu</div><div class="card-sub">Satıra tıklayınca şube karnesi açılır; profil butonu tam sayfaya taşır.</div></div></div>${branchesTable(DB.branches)}</div><div class="card"><div class="card-head"><div><div class="card-title">Şube Sayfası İçin Tasarım Notları</div><div class="card-sub">Bir sonraki turda birlikte tasarlayacağımız alt başlık önerileri</div></div></div>${BranchPageRecommendations()}</div></div>`)+
+        pageShell('branches', `<div class="grid g4">${stat('Aktif Şube',DB.branches.filter(b=>b.status==='Aktif').length,'Aktif işletme ağı')}${stat('Ortalama EBITDA',compactTL(Math.round(DB.branches.reduce((s,b)=>s+(DB.branchDetails[b.id]?.profit||0),0)/Math.max(1,DB.branches.length))),'Şube kârlılığı')}${stat('Ortalama NPS',Math.round(DB.branches.filter(b=>b.nps).reduce((s,b)=>s+b.nps,0)/4),'+6 puan','green')}${stat('Riskli Bayi',DB.branches.filter(b=>b.risk==='Yüksek').length,'Hukuk/kalite takip','amber')}</div><div class="card"><div class="card-head"><div><div class="card-title">Bayi & Bölge Skor Panosu</div><div class="card-sub">Aktif şube ağı; ciro, kârlılık, kalite, operasyon SLA, Academy ve hukuk riskiyle okunur.</div></div></div>${BranchRegionScoreBoard()}</div><div class="card"><div class="card-head"><div><div class="card-title">Türkiye Bölge Performans Haritası</div><div class="card-sub">Bölge, il ve şube KPI skorlarını canlı alarm mantığıyla izleyin. Kritik ve riskli noktalar kontrollü şekilde öne çıkarılır.</div></div><button class="btn" data-route="growth">Büyüme haritasına git</button></div>${ActiveBranchTurkeyMap()}</div><div class="grid g70"><div class="card"><div class="card-head"><div><div class="card-title">Bayi Performans ve Royalty Tablosu</div><div class="card-sub">Satıra tıklayınca şube karnesi açılır; profil butonu tam sayfaya taşır.</div></div></div>${branchesTable(DB.branches)}</div><div class="card"><div class="card-head"><div><div class="card-title">Şube Sayfası İçin Tasarım Notları</div><div class="card-sub">Bir sonraki turda birlikte tasarlayacağımız alt başlık önerileri</div></div></div>${BranchPageRecommendations()}</div></div>`)+
         pageShell('branchProfile', BranchProfilePage())+
         pageShell('operations', `<div class="grid g3">${moduleCard('Araç Kabul','Plaka, müşteri, paket, tahmini süre ve satış kanalı tek kayda bağlanır.','car-front')}${moduleCard('Test Sıralaması','Dyno, boya, mekanik, elektronik, yol testi ve EV kontrolleri standart akışa alınır.','list-checks')}${moduleCard('Teslim Prosedürü','Rapor anlatımı, risk dili, noter öncesi kontrol ve satış sonrası destek kapanışı yapılır.','clipboard-check')}</div><div class="card"><div class="card-head"><div><div class="card-title">Operasyon Darboğaz Haritası</div><div class="card-sub">Şube bazlı günlük kapasite, bekleme ve teslim süresi</div></div></div><canvas id="chartOps" height="120"></canvas></div>`)+
         pageShell('quality', QualityDashboard())+
@@ -2471,9 +2473,119 @@
       const statuses=Object.entries(growthStatusLabels);
       return `<div class="growth-status-legend">${statuses.map(([k,v])=>`<span><i class="branch-map-status ${k}" style="padding:0;border:0;background:transparent">${v}</i></span>`).join('')}</div><div class="branch-map-layout"><div id="ototrTurkeyMap" class="branch-map-canvas" aria-label="OTOTR Türkiye büyüme haritası"><div class="mini" style="margin:16px">${icon('map')}<div><b>Harita hazırlanıyor</b><span>Leaflet yüklenmezse şehir listesi ve karar matrisi üzerinden seçim yapılabilir.</span></div></div></div><div class="branch-map-side"><div class="branch-map-filters"><select id="branchMapRegion"><option value="">Tüm bölgeler</option>${regions.map(r=>`<option>${r}</option>`).join('')}</select><select id="branchMapStatus"><option value="">Tüm statüler</option>${statuses.map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select><input id="branchMapSearch" placeholder="Şehir, karar, sahip veya aksiyon ara" style="grid-column:1/-1"></div><div id="branchMapSummary">${BranchGrowthSummary(rows)}</div><div id="branchMapList" class="branch-map-list">${branchMapList(rows)}</div></div></div>${BranchGrowthDecisionPanel()}`;
     }
-    function ActiveBranchTurkeyMap(){
-      const rows=activeBranchMapRows(), regions=[...new Set(rows.map(b=>b.region))], statuses=[...new Set(rows.flatMap(b=>[b.status,b.risk]))];
-      return `<div class="branch-map-layout"><div id="ototrTurkeyMap" class="branch-map-canvas" aria-label="OTOTR aktif bayi ve şube haritası"></div><div class="branch-map-side"><div class="branch-map-filters"><select id="branchMapRegion"><option value="">Tüm bölgeler</option>${regions.map(r=>`<option>${r}</option>`).join('')}</select><select id="branchMapStatus"><option value="">Durum / risk</option>${statuses.map(s=>`<option>${s}</option>`).join('')}</select><input id="branchMapSearch" placeholder="Şube, il, müdür, durum veya risk ara" style="grid-column:1/-1"></div><div class="branch-map-summary"><div><span>Aktif şube</span><b>${rows.filter(x=>x.status==='Aktif').length}</b></div><div><span>Ortalama SLA</span><b>%${Math.round(rows.reduce((s,x)=>s+x.sla,0)/Math.max(1,rows.length))}</b></div><div><span>Academy</span><b>%${Math.round(rows.reduce((s,x)=>s+x.academy,0)/Math.max(1,rows.length))}</b></div><div><span>Hukuk riski</span><b>${rows.filter(x=>x.legalRisk==='Yüksek').length}</b></div></div><div id="branchMapList" class="branch-map-list">${branchMapList(rows)}</div></div></div>`;
+    let branchKpiFilters={status:'',region:''}, selectedBranchKpiId='BKP-001';
+    function branchMapKpiData(){
+      return {
+        regions:[
+          {region:'Marmara',score:82,status:'İzlenmeli',branches:4,problemBranches:3,x:29,y:22},
+          {region:'İç Anadolu',score:76,status:'İzlenmeli',branches:3,problemBranches:1,x:53,y:40},
+          {region:'Ege',score:88,status:'Sağlıklı',branches:2,problemBranches:0,x:25,y:55},
+          {region:'Akdeniz',score:69,status:'Riskli',branches:2,problemBranches:1,x:49,y:72},
+          {region:'Karadeniz',score:73,status:'İzlenmeli',branches:1,problemBranches:0,x:56,y:23},
+          {region:'Güneydoğu Anadolu',score:64,status:'Riskli',branches:1,problemBranches:1,x:72,y:67}
+        ],
+        branches:[
+          {id:'BKP-001',city:'İstanbul',branch:'İstanbul Ataşehir',region:'Marmara',score:58,status:'Kritik',riskLevel:'Kritik',problemType:'Müşteri memnuniyeti düşük',revenueKpi:72,complaintKpi:48,slaKpi:61,googleScore:4.1,appointmentConversion:27,recommendedAction:'Şube kalite düzeltme planı, müşteri arama ve Google yorum kurtarma aksiyonu başlat.',markerX:28,markerY:28},
+          {id:'BKP-002',city:'İstanbul',branch:'İstanbul Bağcılar',region:'Marmara',score:78,status:'İzlenmeli',riskLevel:'Orta',problemType:'Randevu dönüşümü izleniyor',revenueKpi:82,complaintKpi:78,slaKpi:76,googleScore:4.4,appointmentConversion:33,recommendedAction:'CRM randevu dönüşüm akışı ve WhatsApp ilk cevap süresi takip edilmeli.',markerX:26,markerY:27},
+          {id:'BKP-003',city:'Ankara',branch:'Ankara Çukurambar',region:'İç Anadolu',score:68,status:'Riskli',riskLevel:'Yüksek',problemType:'Personel kapasite sorunu',revenueKpi:71,complaintKpi:69,slaKpi:62,googleScore:4.2,appointmentConversion:31,recommendedAction:'Vardiya planı, teknisyen doluluğu ve randevu slotları yeniden dengelenmeli.',markerX:48,markerY:43},
+          {id:'BKP-004',city:'Antalya',branch:'Antalya Kepez',region:'Akdeniz',score:64,status:'Riskli',riskLevel:'Yüksek',problemType:'Rapor teslim SLA sorunu',revenueKpi:67,complaintKpi:63,slaKpi:54,googleScore:4.0,appointmentConversion:29,recommendedAction:'Rapor teslim darboğazı için operasyon denetimi ve ikinci kontrol görevi açılmalı.',markerX:44,markerY:72},
+          {id:'BKP-005',city:'İzmir',branch:'İzmir Bornova',region:'Ege',score:86,status:'Sağlıklı',riskLevel:'Düşük',problemType:'Kritik sorun yok',revenueKpi:88,complaintKpi:90,slaKpi:84,googleScore:4.7,appointmentConversion:39,recommendedAction:'Mevcut performans korunmalı, referans kampanyası ile büyüme fırsatı izlenmeli.',markerX:22,markerY:56},
+          {id:'BKP-006',city:'Kocaeli',branch:'Kocaeli İzmit',region:'Marmara',score:72,status:'İzlenmeli',riskLevel:'Orta',problemType:'Google puanı geriledi',revenueKpi:76,complaintKpi:70,slaKpi:73,googleScore:4.2,appointmentConversion:34,recommendedAction:'Son 30 gün düşük yorumlar ayrıştırılıp müşteri memnuniyeti araması yapılmalı.',markerX:31,markerY:29},
+          {id:'BKP-007',city:'Bursa',branch:'Bursa Nilüfer',region:'Marmara',score:74,status:'İzlenmeli',riskLevel:'Orta',problemType:'Satış dönüşüm oranı düşük',revenueKpi:70,complaintKpi:82,slaKpi:79,googleScore:4.5,appointmentConversion:30,recommendedAction:'Paket anlatımı, fiyat itirazı ve lead dönüşüm eğitimleri şube ekibine atanmalı.',markerX:27,markerY:34},
+          {id:'BKP-008',city:'Konya',branch:'Konya Selçuklu',region:'İç Anadolu',score:81,status:'Sağlıklı',riskLevel:'Düşük',problemType:'Kritik sorun yok',revenueKpi:79,complaintKpi:84,slaKpi:83,googleScore:4.6,appointmentConversion:36,recommendedAction:'Fiyat hassasiyeti izlenmeli, standart paket satış kalitesi korunmalı.',markerX:49,markerY:55}
+        ]
+      };
+    }
+    function getKpiStatus(score){ return score>=85?'Sağlıklı':score>=70?'İzlenmeli':score>=60?'Riskli':'Kritik'; }
+    function getKpiClass(score){ return score>=85?'healthy':score>=70?'watch':score>=60?'risky':'critical'; }
+    function getKpiPriority(score){ return score<60?'Kritik':score<70?'Yüksek':score<85?'Orta':'Düşük'; }
+    function getKpiSla(score){ return score<60?'4 saat':score<70?'24 saat':score<85?'48 saat':'72 saat'; }
+    function kpiBadge(status){ return `<span class="badge ${status==='Kritik'?'b-red':status==='Riskli'?'b-amber':status==='İzlenmeli'?'b-blue':'b-green'}">${status}</span>`; }
+    function filteredBranchKpiRows(){
+      const rows=branchMapKpiData().branches.map(b=>({...b,status:getKpiStatus(b.score),riskLevel:getKpiPriority(b.score)}));
+      return rows.filter(b=>(!branchKpiFilters.status||b.status===branchKpiFilters.status) && (!branchKpiFilters.region||b.region===branchKpiFilters.region));
+    }
+    function selectedBranchKpi(rows=filteredBranchKpiRows()){
+      return rows.find(b=>b.id===selectedBranchKpiId) || rows[0] || branchMapKpiData().branches[0];
+    }
+    function BranchKpiDashboardSummary(){
+      const data=branchMapKpiData(), branches=data.branches, regions=data.regions;
+      const problematic=branches.filter(b=>b.score<85), critical=branches.filter(b=>b.score<60), riskRegions=regions.filter(r=>r.score<70), low=[...branches].sort((a,b)=>a.score-b.score)[0];
+      return `<div class="branch-map-summary">
+        <div><span>Problemli Şube</span><b>${problematic.length}</b></div>
+        <div><span>Kritik Şube</span><b>${critical.length}</b></div>
+        <div><span>Riskli Bölge</span><b>${riskRegions.length}</b></div>
+        <div><span>En Düşük KPI</span><b>${low.branch} / ${low.score}</b></div>
+      </div><div class="quick-actions" style="margin-top:10px"><button class="btn primary" data-route="branches">Problemli şubeleri haritada gör</button></div>`;
+    }
+    function ActiveBranchTurkeyMap(){ return renderBranchKpiMap(); }
+    function renderBranchKpiMap(){
+      const data=branchMapKpiData(), rows=filteredBranchKpiRows(), selected=selectedBranchKpi(rows);
+      const regionOptions=data.regions.map(r=>`<option ${branchKpiFilters.region===r.region?'selected':''}>${r.region}</option>`).join('');
+      return `<div class="branch-kpi-map" id="branchKpiMapPanel">
+        <div class="branch-kpi-controls">
+          <select id="branchKpiStatusFilter" aria-label="Durum filtresi"><option value="">Tüm Durumlar</option>${['Kritik','Riskli','İzlenmeli','Sağlıklı'].map(s=>`<option ${branchKpiFilters.status===s?'selected':''}>${s}</option>`).join('')}</select>
+          <select id="branchKpiRegionFilter" aria-label="Bölge filtresi"><option value="">Tüm Bölgeler</option>${regionOptions}</select>
+          <span class="sync-chip"><span class="dot pulse"></span>Mock KPI bağlı</span>
+        </div>
+        ${renderBranchKpiRegionCards(data.regions)}
+        <div class="branch-kpi-layout">
+          ${renderBranchKpiCanvas(data.regions,rows,selected)}
+          <div class="branch-kpi-side">${renderBranchKpiDetail(selected)}${renderBranchKpiAlarmList(rows)}${renderBranchKpiLegend()}</div>
+        </div>
+      </div>`;
+    }
+    function renderBranchKpiRegionCards(regions){
+      return `<div class="branch-region-kpi-grid">${regions.map(r=>`<div class="branch-region-kpi-card ${getKpiClass(r.score)}"><b>${r.region}</b><span>KPI ${r.score}/100 · ${r.branches} şube</span><div class="split"><small>${kpiBadge(getKpiStatus(r.score))}</small><small>${r.problemBranches} problemli</small></div></div>`).join('')}</div>`;
+    }
+    function renderBranchKpiCanvas(regions,rows,selected){
+      const labels=regions.map(r=>`<div class="branch-kpi-region-label ${getKpiClass(r.score)}" style="--x:${r.x}%;--y:${r.y}%"><b>${r.region}</b><span>KPI ${r.score} · ${r.problemBranches} alarm</span></div>`).join('');
+      const markers=rows.map(b=>{
+        const cls=getKpiClass(b.score), pulse=cls==='critical'?'critical-pulse':cls==='risky'?'soft-pulse':cls==='watch'?'glow-warning':'';
+        return `<button class="branch-marker ${cls} ${pulse} ${selected?.id===b.id?'active':''}" style="--x:${b.markerX}%;--y:${b.markerY}%" data-label="${b.branch}" data-branch-kpi-select="${b.id}" title="${b.branch} · KPI ${b.score}"></button>`;
+      }).join('');
+      return `<div class="branch-kpi-canvas" aria-label="Türkiye Bölge Performans Haritası">${labels}${markers}</div>`;
+    }
+    function renderBranchKpiDetail(item){
+      if(!item) return `<div class="branch-kpi-detail"><h3>Seçili Şube Detayı</h3><p class="card-sub">Filtreye uygun kayıt bulunamadı.</p></div>`;
+      return `<div class="branch-kpi-detail"><div class="split"><h3>Seçili Şube Detayı</h3>${kpiBadge(getKpiStatus(item.score))}</div><b>${item.branch}</b><p class="card-sub">${item.city} · ${item.region} · ${item.problemType}</p><div class="branch-kpi-detail-grid"><div><span>Genel KPI</span><b>${item.score}/100</b></div><div><span>Risk</span><b>${getKpiPriority(item.score)}</b></div><div><span>Ciro KPI</span><b>${item.revenueKpi}/100</b></div><div><span>Şikayet KPI</span><b>${item.complaintKpi}/100</b></div><div><span>Operasyon SLA</span><b>${item.slaKpi}/100</b></div><div><span>Google</span><b>${item.googleScore}/5</b></div><div><span>Randevu Dönüşüm</span><b>%${item.appointmentConversion}</b></div><div><span>SLA Hedefi</span><b>${getKpiSla(item.score)}</b></div></div><p style="margin:10px 0 0"><b>Önerilen aksiyon:</b> ${item.recommendedAction}</p><button class="btn primary" data-branch-kpi-action="${item.id}" style="margin-top:10px;width:100%;justify-content:center">${icon('plus')}Aksiyon Aç</button></div>`;
+    }
+    function renderBranchKpiAlarmList(rows){
+      const sorted=[...rows].filter(b=>b.score<85).sort((a,b)=>a.score-b.score).slice(0,5);
+      const content=sorted.length ? sorted.map(b=>`<div class="branch-kpi-alarm-row ${getKpiClass(b.score)}"><div class="split"><b>${b.branch}</b>${kpiBadge(getKpiStatus(b.score))}</div><span class="card-sub">${b.region} · KPI ${b.score} · ${b.problemType}</span><button class="btn" data-branch-kpi-action="${b.id}">Aksiyon Aç</button></div>`).join('') : `<p class="card-sub">Filtreye uygun KPI alarmı yok.</p>`;
+      return `<div class="branch-kpi-alarm"><h3>KPI Alarm Listesi</h3><div class="branch-kpi-alarm-list">${content}</div></div>`;
+    }
+    function renderBranchKpiLegend(){
+      return `<div class="branch-kpi-legend"><h3>KPI Renk Açıklaması</h3><div class="branch-kpi-legend-list"><span><i style="background:var(--green)"></i>Yeşil: Sağlıklı</span><span><i style="background:#f3b116"></i>Sarı: İzlenmeli</span><span><i style="background:#f97316"></i>Turuncu: Riskli</span><span><i style="background:var(--red)"></i>Kırmızı: Kritik</span></div><p class="card-sub" style="margin:8px 0 0">Yanıp sönen noktalar acil müdahale gerektiren KPI sorunlarını gösterir.</p></div>`;
+    }
+    function openBranchKpiActionModal(id){
+      const item=branchMapKpiData().branches.find(b=>b.id===id);
+      if(!item) return;
+      openActionModal('Şube kalite düzeltme planı');
+      const form=document.getElementById('actionForm');
+      if(!form) return;
+      const priority=getKpiPriority(item.score), sla=parseInt(getKpiSla(item.score),10)||48;
+      const set=(name,value)=>{ if(form.elements[name]) form.elements[name].value=value; };
+      set('template','Şube kalite düzeltme planı');
+      set('title',`KPI düzeltme planı - ${item.branch}`);
+      set('category','Bayiler & Şubeler');
+      set('sourceModule','Bayiler & Şubeler');
+      set('region',item.region);
+      set('branch',item.branch);
+      set('priority',priority);
+      set('riskLevel',priority);
+      set('slaTargetHours',String(sla));
+      set('linkedRecordType','Şube Profili');
+      set('linkedRecordTitle',`${item.branch} KPI Performans Kaydı`);
+      set('description',`${item.branch} için KPI skoru ${item.score}. Sorun: ${item.problemType}. Önerilen aksiyon: ${item.recommendedAction}`);
+      set('actionNote',`${item.branch} için KPI skoru ${item.score}. Sorun: ${item.problemType}. Önerilen aksiyon: ${item.recommendedAction}`);
+      set('nextAction',item.recommendedAction);
+      set('closingCriteria','Şube KPI düzeltme planı tamamlandı, kanıt eklendi ve bölge sorumlusu tarafından onaylandı.');
+      set('evidenceRequired','true');
+      set('approvalRequired',item.score<70?'true':'false');
+      const d=new Date(Date.now()+sla*60*60*1000);
+      set('deadline',d.toISOString().slice(0,16));
+      toast(`${item.branch} için KPI aksiyonu hazırlandı.`);
     }
     function GrowthMapPage(){
       const rows=branchMapRows();
@@ -2522,6 +2634,25 @@
       if(openProfile) openBranchProfile(id);
     }
     function bindBranchMapEvents(){
+      const statusFilter=document.getElementById('branchKpiStatusFilter'), regionFilter=document.getElementById('branchKpiRegionFilter');
+      if(statusFilter && statusFilter.dataset.mapBound!=='1'){
+        statusFilter.dataset.mapBound='1';
+        statusFilter.addEventListener('change',()=>{ branchKpiFilters.status=statusFilter.value; const rows=filteredBranchKpiRows(); selectedBranchKpiId=rows[0]?.id || 'BKP-001'; renderPages(); route('branches'); });
+      }
+      if(regionFilter && regionFilter.dataset.mapBound!=='1'){
+        regionFilter.dataset.mapBound='1';
+        regionFilter.addEventListener('change',()=>{ branchKpiFilters.region=regionFilter.value; const rows=filteredBranchKpiRows(); selectedBranchKpiId=rows[0]?.id || 'BKP-001'; renderPages(); route('branches'); });
+      }
+      document.querySelectorAll('[data-branch-kpi-select]').forEach(btn=>{
+        if(btn.dataset.mapBound==='1') return;
+        btn.dataset.mapBound='1';
+        btn.addEventListener('click',e=>{ e.preventDefault(); e.stopPropagation(); selectedBranchKpiId=btn.dataset.branchKpiSelect; renderPages(); route('branches'); });
+      });
+      document.querySelectorAll('[data-branch-kpi-action]').forEach(btn=>{
+        if(btn.dataset.mapBound==='1') return;
+        btn.dataset.mapBound='1';
+        btn.addEventListener('click',e=>{ e.preventDefault(); e.stopPropagation(); openBranchKpiActionModal(btn.dataset.branchKpiAction); });
+      });
       ['branchMapRegion','branchMapStatus','branchMapSearch'].forEach(id=>{
         const el=document.getElementById(id);
         if(!el || el.dataset.mapBound==='1') return;
