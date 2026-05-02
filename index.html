@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="ototr-version" content="SVK v1.0.56-dashboard-signal-actions" />
+  <meta name="ototr-version" content="SVK v1.0.57-risk-map-details" />
   <title>OTOTR Genel Merkez ERP + CRM</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -46,6 +46,7 @@
     body.dark-mode .score-ring{background:conic-gradient(var(--green) calc(var(--score)*1%),#243247 0)}body.dark-mode .score-ring div{background:#0f1b2d;border:1px solid #2b3c56}
     body.dark-mode .risk-impact-score,body.dark-mode .risk-impact-row{background:#111f33!important;border-color:#2b3c56!important;color:#f1f5f9!important}
     body.dark-mode .risk-impact-score small,body.dark-mode .risk-impact-module span,body.dark-mode .risk-next,body.dark-mode .risk-impact-head,body.dark-mode .risk-matrix-title,body.dark-mode .risk-axis-label,body.dark-mode .risk-matrix-legend span{color:#aab7ca!important}
+    body.dark-mode .risk-impact-detail{background:#111f33;border-color:#2b3c56;color:#f1f5f9}body.dark-mode .risk-impact-detail span{color:#aab7ca}
     body.dark-mode .risk-cell.low{background:#0b3a2a;color:#9df2c6;border-color:#1f7a4d}body.dark-mode .risk-cell.mid{background:#10284f;color:#b9d3ff;border-color:#2d5caa}body.dark-mode .risk-cell.high{background:#3b260b;color:#ffd58a;border-color:#9a650f}body.dark-mode .risk-cell.critical{background:#3b1118;color:#ffb4bc;border-color:#8a2630}
     body.dark-mode .risk-matrix-cell{border-color:#2b3c56!important}
     body.dark-mode .risk-matrix-cell.l1{background:#0b3a2a!important;color:#9df2c6!important}body.dark-mode .risk-matrix-cell.l2{background:#10284f!important;color:#b9d3ff!important}body.dark-mode .risk-matrix-cell.l3{background:#3b3216!important;color:#fcd34d!important}body.dark-mode .risk-matrix-cell.l4{background:#3b260b!important;color:#ffd58a!important}body.dark-mode .risk-matrix-cell.l5{background:#3b1118!important;color:#ffb4bc!important}
@@ -303,7 +304,8 @@
     .risk-impact-grid{display:grid;gap:6px}
     .risk-impact-head,.risk-impact-row{display:grid;grid-template-columns:132px repeat(5,minmax(38px,.7fr)) 1.15fr auto;gap:6px;align-items:center}
     .risk-impact-head{color:var(--muted);font-size:9px;font-weight:950;text-transform:uppercase;padding:0 4px}.risk-impact-row{border:1px solid var(--line);border-radius:11px;background:#fff;padding:7px}
-    .risk-impact-module b{display:block;font-size:11px}.risk-impact-module span{display:block;color:var(--muted);font-size:9px;margin-top:2px}.risk-cell{height:24px;border-radius:7px;display:grid;place-items:center;font-size:10px;font-weight:950;border:1px solid transparent}.risk-cell.low{background:#ecfdf3;color:#067647;border-color:#abefc6}.risk-cell.mid{background:#eff6ff;color:#185abc;border-color:#bfdbfe}.risk-cell.high{background:#fffaeb;color:#b54708;border-color:#fedf89}.risk-cell.critical{background:#fef3f2;color:#b42318;border-color:#fecdca}.risk-next{font-size:10px;color:#4d5563;font-weight:800;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.risk-impact-row .micro-btn{padding:5px 7px;font-size:10px}
+    .risk-impact-module b{display:block;font-size:11px}.risk-impact-module span{display:block;color:var(--muted);font-size:9px;margin-top:2px}.risk-cell{height:24px;border-radius:7px;display:grid;place-items:center;font-size:10px;font-weight:950;border:1px solid transparent}.risk-cell.low{background:#ecfdf3;color:#067647;border-color:#abefc6}.risk-cell.mid{background:#eff6ff;color:#185abc;border-color:#bfdbfe}.risk-cell.high{background:#fffaeb;color:#b54708;border-color:#fedf89}.risk-cell.critical{background:#fef3f2;color:#b42318;border-color:#fecdca}.risk-cell,.risk-matrix-cell{cursor:pointer;transition:.15s}.risk-cell:hover,.risk-cell.active,.risk-matrix-cell:hover,.risk-matrix-cell.active{transform:translateY(-1px);box-shadow:0 8px 18px rgba(17,19,24,.12);outline:2px solid rgba(215,25,32,.16);outline-offset:1px}.risk-next{font-size:10px;color:#4d5563;font-weight:800;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.risk-impact-row .micro-btn{padding:5px 7px;font-size:10px}
+    [data-risk-tip]{position:relative}.risk-impact-map [data-risk-tip]:hover:after{content:attr(data-risk-tip);position:absolute;left:50%;bottom:calc(100% + 8px);transform:translateX(-50%);z-index:10;width:max-content;max-width:260px;border:1px solid #222936;border-radius:9px;background:#111318;color:#fff;padding:8px 10px;font-size:10px;line-height:1.35;box-shadow:0 16px 36px rgba(17,19,24,.22);white-space:normal;text-align:left}.risk-impact-map [data-risk-tip]:hover:before{content:"";position:absolute;left:50%;bottom:calc(100% + 3px);transform:translateX(-50%);z-index:11;border:5px solid transparent;border-top-color:#111318}.risk-impact-detail{grid-column:1/-1;border:1px solid #dbe7ff;background:linear-gradient(135deg,#fff,#f7fbff);border-radius:12px;padding:11px 12px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center}.risk-impact-detail b{display:block;font-size:13px}.risk-impact-detail span{display:block;color:#4d5563;font-size:11px;margin-top:3px;line-height:1.4}.risk-impact-detail strong{font-size:18px;color:var(--red);white-space:nowrap}
     .progress{position:relative}.bar{position:relative;overflow:hidden;transform-origin:left;animation:barGrow .7s cubic-bezier(.2,.8,.2,1) both}.bar:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.46),transparent);transform:translateX(-110%);animation:barSheen 2.4s ease-in-out infinite}
     @keyframes barGrow{from{transform:scaleX(.08);opacity:.68}to{transform:scaleX(1);opacity:1}}@keyframes barSheen{0%,38%{transform:translateX(-110%)}70%,100%{transform:translateX(110%)}}
     .premium-score-card{display:grid;grid-template-columns:142px minmax(0,1fr);gap:14px;align-items:center}
@@ -347,7 +349,7 @@
 <body>
   <div class="app">
     <aside class="side">
-      <div class="brand-row"><a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.56</small></div></a><button class="theme-toggle" type="button" data-theme-toggle title="Koyu temaya geç" aria-label="Tema değiştir"><i data-lucide="sun-moon"></i><span id="themeToggleText">Açık</span></button></div>
+      <div class="brand-row"><a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.57</small></div></a><button class="theme-toggle" type="button" data-theme-toggle title="Koyu temaya geç" aria-label="Tema değiştir"><i data-lucide="sun-moon"></i><span id="themeToggleText">Açık</span></button></div>
       <div class="nav" id="nav"></div>
     </aside>
 
@@ -2151,7 +2153,7 @@
         status:b.risk==='Yüksek'?'İnceleme':b.risk==='Orta'?'Takip':'Stabil'
       }));
       out.demoDataHealth={
-        version:'SVK v1.0.56',
+        version:'SVK v1.0.57',
         branchUniverse:'10 şube / 4 aktif bölge',
         packagePriceBand:'5.000 TL - 15.000 TL',
         avgTicketBand:'8.350 TL - 9.900 TL',
@@ -3476,6 +3478,11 @@
       return `<div class="ceo-module-compact">${cards.map(c=>`<article class="ceo-module-card ${c.risk==='Kritik'?'critical':c.risk==='Yüksek'?'high':'watch'}"><span>${c.title}</span><b>${c.value}</b><small>${c.sub}</small><div class="quick-actions"><button class="micro-btn" data-route="${c.route}">Git</button><button class="micro-btn" data-unified-action="${c.title}">Aksiyon</button></div></article>`).join('')}</div>`;
     }
     function riskCellClass(v){ return v>=85?'critical':v>=70?'high':v>=50?'mid':'low'; }
+    function riskAttr(title,score,copy,route='intelligence'){
+      const enc=s=>String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      const tip=`${title}: ${score}/100 · ${copy}`;
+      return `data-risk-title="${enc(title)}" data-risk-score="${enc(score)}" data-risk-copy="${enc(copy)}" data-risk-route="${enc(route)}" data-risk-tip="${enc(tip)}" title="${enc(tip)}"`;
+    }
     function DashboardRiskMatrixVisual(rows){
       const axis=['Çok Düşük','Düşük','Orta','Yüksek','Çok Yüksek'];
       const markers=rows.slice(0,6).map(r=>{
@@ -3492,7 +3499,10 @@
         return `<div class="risk-axis-label">${label}</div>${axis.map((_,colIndex)=>{
           const c=colIndex+1;
           const value=Math.min(5,Math.max(1,Math.ceil((p+c)/2)));
-          return `<div class="risk-matrix-cell l${value}">${value}${dot(p,c)}</div>`;
+          const hits=markers.filter(m=>m.probability===p&&m.impact===c);
+          const title=hits.length?`Matris hücresi: ${hits.map(h=>h.module).join(' / ')}`:`Matris hücresi: ${label} olasılık`;
+          const copy=hits.length?`${hits.map(h=>`${h.module} ${h.score}/100`).join(', ')}. İlgili modül alarmı üst öncelik diline bağlandı.`:`Etki seviyesi ${axis[colIndex]}, olasılık ${label}. Bu hücrede canlı kritik modül işareti yok.`;
+          return `<div class="risk-matrix-cell l${value}" ${riskAttr(title,value*20,copy,'intelligence')}>${value}${dot(p,c)}</div>`;
         }).join('')}`;
       }).join('');
       return `<div class="risk-matrix-mini"><div class="risk-matrix-title"><span>Olasılık × Etki</span><span>Canlı risk noktaları</span></div><div class="risk-matrix-grid">${grid}</div><div class="risk-matrix-legend">${markers.map(m=>`<span><i></i>${m.module}</span>`).join('')}</div></div>`;
@@ -3514,7 +3524,8 @@
       ].map(r=>({...r,score:Math.round(r.vals.reduce((s,v)=>s+v,0)/r.vals.length)})).sort((a,b)=>b.score-a.score);
       const avg=Math.round(rows.reduce((s,r)=>s+r.score,0)/rows.length);
       const labels=['Etki','Aciliyet','SLA','Finans','İtibar'];
-      return `<div class="risk-impact-map"><div class="risk-impact-score"><span>Ağ Risk Skoru</span><b>${avg}/100</b><div class="progress"><div class="bar ${avg>=82?'red':avg>=68?'amber':'green'}" style="width:${avg}%"></div></div><small>Skor; görev, kriz, şikayet, operasyon, royalty, Academy ve şube KPI sinyallerinden hesaplanır.</small>${DashboardRiskMatrixVisual(rows)}</div><div class="risk-impact-grid"><div class="risk-impact-head"><span>Modül</span>${labels.map(x=>`<span>${x}</span>`).join('')}<span>Sonraki aksiyon</span><span></span></div>${rows.map(r=>`<div class="risk-impact-row"><div class="risk-impact-module"><b>${r.module}</b><span>${r.status} · ${r.score}/100</span></div>${r.vals.map(v=>`<div class="risk-cell ${riskCellClass(v)}">${v}</div>`).join('')}<div class="risk-next">${r.next}</div><button class="micro-btn" data-route="${r.route}">Git</button></div>`).join('')}</div></div>`;
+      const first=rows[0]||{};
+      return `<div class="risk-impact-map"><div class="risk-impact-score"><span>Ağ Risk Skoru</span><b>${avg}/100</b><div class="progress"><div class="bar ${avg>=82?'red':avg>=68?'amber':'green'}" style="width:${avg}%"></div></div><small>Skor; görev, kriz, şikayet, operasyon, royalty, Academy ve şube KPI sinyallerinden hesaplanır.</small>${DashboardRiskMatrixVisual(rows)}</div><div class="risk-impact-grid"><div class="risk-impact-head"><span>Modül</span>${labels.map(x=>`<span>${x}</span>`).join('')}<span>Sonraki aksiyon</span><span></span></div>${rows.map(r=>`<div class="risk-impact-row"><div class="risk-impact-module"><b>${r.module}</b><span>${r.status} · ${r.score}/100</span></div>${r.vals.map((v,i)=>`<div class="risk-cell ${riskCellClass(v)}" ${riskAttr(`${r.module} · ${labels[i]}`,v,`${r.status}. ${labels[i]} skoru ${v}/100. Sonraki aksiyon: ${r.next}`,r.route)}>${v}</div>`).join('')}<div class="risk-next">${r.next}</div><button class="micro-btn" data-route="${r.route}">Git</button></div>`).join('')}</div><div class="risk-impact-detail" id="riskImpactDetail"><div><b>${first.module||'Ağ risk detayı'} · ${first.score||avg}/100</b><span>${first.next||'Rakamların üzerine gelin veya tıklayın; modül, skor sebebi ve önerilen aksiyon burada görünür.'}</span></div><button class="micro-btn" data-route="${first.route||'intelligence'}">İlgili modül</button></div></div>`;
     }
     function IntegratedSignalMatrix(){
       const rows=systemIntegrationSignals();
@@ -5907,7 +5918,25 @@
       document.getElementById('drawerContent').innerHTML=html; document.getElementById('drawer').classList.add('open'); if(window.lucide) lucide.createIcons();
     }
     function closeDrawer(){ document.getElementById('drawer').classList.remove('open'); }
+    function showRiskImpactDetail(el){
+      const panel=document.getElementById('riskImpactDetail');
+      if(!panel || !el) return;
+      document.querySelectorAll('[data-risk-title].active').forEach(x=>x.classList.remove('active'));
+      el.classList.add('active');
+      const title=el.dataset.riskTitle||'Risk detayı';
+      const score=el.dataset.riskScore||el.textContent.trim();
+      const copy=el.dataset.riskCopy||'Bu skor ilgili modül sinyallerinden hesaplandı.';
+      const routeId=el.dataset.riskRoute||'intelligence';
+      panel.innerHTML=`<div><b>${title} · ${score}/100</b><span>${copy}</span></div><button class="micro-btn" data-route="${routeId}">İlgili modül</button>`;
+    }
     document.addEventListener('click',e=>{
+      const riskEl=e.target.closest('[data-risk-title]');
+      if(riskEl){
+        e.preventDefault();
+        e.stopPropagation();
+        showRiskImpactDetail(riskEl);
+        return;
+      }
       const actionEl=e.target.closest('[data-action]');
       if(actionEl){
         e.preventDefault();
