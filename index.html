@@ -43,8 +43,10 @@
     body.dark-mode .severity.critical{background:#3b1118;color:#ffb4bc}body.dark-mode .severity.high{background:#3b260b;color:#ffd58a}body.dark-mode .severity.medium{background:#10284f;color:#b9d3ff}
     body.dark-mode .score-ring{background:conic-gradient(var(--green) calc(var(--score)*1%),#243247 0)}body.dark-mode .score-ring div{background:#0f1b2d;border:1px solid #2b3c56}
     body.dark-mode .risk-impact-score,body.dark-mode .risk-impact-row{background:#111f33!important;border-color:#2b3c56!important;color:#f1f5f9!important}
-    body.dark-mode .risk-impact-score small,body.dark-mode .risk-impact-module span,body.dark-mode .risk-next,body.dark-mode .risk-impact-head{color:#aab7ca!important}
+    body.dark-mode .risk-impact-score small,body.dark-mode .risk-impact-module span,body.dark-mode .risk-next,body.dark-mode .risk-impact-head,body.dark-mode .risk-matrix-title,body.dark-mode .risk-axis-label,body.dark-mode .risk-matrix-legend span{color:#aab7ca!important}
     body.dark-mode .risk-cell.low{background:#0b3a2a;color:#9df2c6;border-color:#1f7a4d}body.dark-mode .risk-cell.mid{background:#10284f;color:#b9d3ff;border-color:#2d5caa}body.dark-mode .risk-cell.high{background:#3b260b;color:#ffd58a;border-color:#9a650f}body.dark-mode .risk-cell.critical{background:#3b1118;color:#ffb4bc;border-color:#8a2630}
+    body.dark-mode .risk-matrix-cell{border-color:#2b3c56!important}
+    body.dark-mode .risk-matrix-cell.l1{background:#0b3a2a!important;color:#9df2c6!important}body.dark-mode .risk-matrix-cell.l2{background:#10284f!important;color:#b9d3ff!important}body.dark-mode .risk-matrix-cell.l3{background:#3b3216!important;color:#fcd34d!important}body.dark-mode .risk-matrix-cell.l4{background:#3b260b!important;color:#ffd58a!important}body.dark-mode .risk-matrix-cell.l5{background:#3b1118!important;color:#ffb4bc!important}
     body.dark-mode canvas{filter:saturate(1.08)}
     .theme-toggle{border:1px solid rgba(255,255,255,.16);border-radius:999px;background:rgba(255,255,255,.08);color:#fff;padding:7px 8px;display:inline-flex;align-items:center;justify-content:center;gap:0;font-size:0;font-weight:950;min-width:32px;height:32px;flex:0 0 auto}
     .theme-toggle i{width:15px;height:15px}.theme-toggle:hover{transform:translateY(-1px)}
@@ -268,9 +270,17 @@
     .dashboard-signal-grid .signal-complaints .exec-hero{background:linear-gradient(135deg,#111318,#2b1722 72%,rgba(215,25,32,.86))}
     .dashboard-signal-grid .signal-branch-kpi{grid-column:auto}
     .dashboard-signal-grid .signal-branch-kpi .exec-hero{background:linear-gradient(135deg,#111318,#203145 70%,rgba(24,90,188,.82))}
-    .risk-impact-map{display:grid;grid-template-columns:190px minmax(0,1fr);gap:10px;margin-top:10px}
+    .risk-impact-map{display:grid;grid-template-columns:270px minmax(0,1fr);gap:10px;margin-top:10px}
     .risk-impact-score{border:1px solid #dbe7ff;background:linear-gradient(135deg,#fff,#f8fbff);border-radius:12px;padding:12px;display:grid;align-content:center;gap:8px}
     .risk-impact-score span{font-size:10px;color:var(--muted);font-weight:950;text-transform:uppercase}.risk-impact-score b{font-size:34px;letter-spacing:-.05em}.risk-impact-score small{color:#4d5563;font-weight:800;line-height:1.35}
+    .risk-matrix-mini{display:grid;gap:5px;margin-top:2px}
+    .risk-matrix-title{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:9px;color:var(--muted);font-weight:950;text-transform:uppercase}
+    .risk-matrix-grid{display:grid;grid-template-columns:54px repeat(5,1fr);gap:4px;align-items:center}
+    .risk-axis-label{font-size:8px;color:var(--muted);font-weight:950;text-align:right;line-height:1.05}
+    .risk-matrix-cell{height:26px;border-radius:7px;border:1px solid rgba(17,19,24,.08);display:grid;place-items:center;position:relative;font-size:9px;font-weight:950}
+    .risk-matrix-cell.l1{background:#ecfdf3;color:#067647}.risk-matrix-cell.l2{background:#eff6ff;color:#185abc}.risk-matrix-cell.l3{background:#fffaeb;color:#b54708}.risk-matrix-cell.l4{background:#fff4e5;color:#c45100}.risk-matrix-cell.l5{background:#fef3f2;color:#b42318}
+    .risk-matrix-dot{position:absolute;right:3px;top:3px;width:6px;height:6px;border-radius:999px;background:#d71920;box-shadow:0 0 0 2px rgba(215,25,32,.12)}
+    .risk-matrix-legend{display:flex;flex-wrap:wrap;gap:5px;margin-top:2px}.risk-matrix-legend span{display:inline-flex;align-items:center;gap:4px;font-size:8px;color:#4d5563;font-weight:850;text-transform:none}.risk-matrix-legend i{width:6px;height:6px;border-radius:999px;background:#d71920;display:inline-block}
     .risk-impact-grid{display:grid;gap:6px}
     .risk-impact-head,.risk-impact-row{display:grid;grid-template-columns:132px repeat(5,minmax(38px,.7fr)) 1.15fr auto;gap:6px;align-items:center}
     .risk-impact-head{color:var(--muted);font-size:9px;font-weight:950;text-transform:uppercase;padding:0 4px}.risk-impact-row{border:1px solid var(--line);border-radius:11px;background:#fff;padding:7px}
@@ -3417,11 +3427,31 @@
       return `<div class="ceo-module-compact">${cards.map(c=>`<article class="ceo-module-card ${c.risk==='Kritik'?'critical':c.risk==='Yüksek'?'high':'watch'}"><span>${c.title}</span><b>${c.value}</b><small>${c.sub}</small><div class="quick-actions"><button class="micro-btn" data-route="${c.route}">Git</button><button class="micro-btn" data-unified-action="${c.title}">Aksiyon</button></div></article>`).join('')}</div>`;
     }
     function riskCellClass(v){ return v>=85?'critical':v>=70?'high':v>=50?'mid':'low'; }
+    function DashboardRiskMatrixVisual(rows){
+      const axis=['Çok Düşük','Düşük','Orta','Yüksek','Çok Yüksek'];
+      const markers=rows.slice(0,6).map(r=>{
+        const impact=Math.max(1,Math.min(5,Math.ceil((r.vals[0]||r.score)/20)));
+        const probability=Math.max(1,Math.min(5,Math.ceil((r.vals[1]||r.score)/20)));
+        return {...r,impact,probability};
+      });
+      const dot=(p,c)=>{
+        const hits=markers.filter(m=>m.probability===p&&m.impact===c);
+        return hits.length?`<i class="risk-matrix-dot" title="${hits.map(h=>h.module).join(' / ')}"></i>`:'';
+      };
+      const grid=[...axis].reverse().map((label,rowIndex)=>{
+        const p=5-rowIndex;
+        return `<div class="risk-axis-label">${label}</div>${axis.map((_,colIndex)=>{
+          const c=colIndex+1;
+          const value=Math.min(5,Math.max(1,Math.ceil((p+c)/2)));
+          return `<div class="risk-matrix-cell l${value}">${value}${dot(p,c)}</div>`;
+        }).join('')}`;
+      }).join('');
+      return `<div class="risk-matrix-mini"><div class="risk-matrix-title"><span>Olasılık × Etki</span><span>Canlı risk noktaları</span></div><div class="risk-matrix-grid">${grid}</div><div class="risk-matrix-legend">${markers.map(m=>`<span><i></i>${m.module}</span>`).join('')}</div></div>`;
+    }
     function DashboardRiskImpactMap(){
-      const cc=complaintCenter(), complaints=cc.complaintTickets||[], tasks=actionTasks(), crises=crisisCases(), ai=aiRecommendations(), ops=dashboardOpsMetrics(), finance=financeRoyaltyModel(), branchData=branchMapKpiData();
+      const cc=complaintCenter(), complaints=cc.complaintTickets||[], crises=crisisCases(), ops=dashboardOpsMetrics(), finance=financeRoyaltyModel(), branchData=branchMapKpiData();
       const openComplaints=complaints.filter(x=>x.status!=='Kapandı'), legalComplaints=complaints.filter(x=>['Yüksek','CEO takip','Orta'].includes(x.legalRisk));
       const criticalCrises=crises.filter(c=>crisisLevelNumber(c.crisisLevel)>=4 || c.ceoFollowUp);
-      const lateTasks=tasks.filter(t=>t.slaStatus==='SLA İhlali'||t.status==='Gecikti');
       const lowBranch=[...branchData.branches].sort((a,b)=>a.score-b.score)[0]||{};
       const supportDealers=finance.dealers.filter(d=>d.supportBudget>0||d.score<70);
       const academyRisk=typeof academySeed==='function' ? academySeed().people.filter(p=>p.overdue>0).length : 0;
@@ -3435,7 +3465,7 @@
       ].map(r=>({...r,score:Math.round(r.vals.reduce((s,v)=>s+v,0)/r.vals.length)})).sort((a,b)=>b.score-a.score);
       const avg=Math.round(rows.reduce((s,r)=>s+r.score,0)/rows.length);
       const labels=['Etki','Aciliyet','SLA','Finans','İtibar'];
-      return `<div class="risk-impact-map"><div class="risk-impact-score"><span>Ağ Risk Skoru</span><b>${avg}/100</b><div class="progress"><div class="bar ${avg>=82?'red':avg>=68?'amber':'green'}" style="width:${avg}%"></div></div><small>Skor; görev, kriz, şikayet, operasyon, royalty, Academy ve şube KPI sinyallerinden hesaplanır.</small></div><div class="risk-impact-grid"><div class="risk-impact-head"><span>Modül</span>${labels.map(x=>`<span>${x}</span>`).join('')}<span>Sonraki aksiyon</span><span></span></div>${rows.map(r=>`<div class="risk-impact-row"><div class="risk-impact-module"><b>${r.module}</b><span>${r.status} · ${r.score}/100</span></div>${r.vals.map(v=>`<div class="risk-cell ${riskCellClass(v)}">${v}</div>`).join('')}<div class="risk-next">${r.next}</div><button class="micro-btn" data-route="${r.route}">Git</button></div>`).join('')}</div></div>`;
+      return `<div class="risk-impact-map"><div class="risk-impact-score"><span>Ağ Risk Skoru</span><b>${avg}/100</b><div class="progress"><div class="bar ${avg>=82?'red':avg>=68?'amber':'green'}" style="width:${avg}%"></div></div><small>Skor; görev, kriz, şikayet, operasyon, royalty, Academy ve şube KPI sinyallerinden hesaplanır.</small>${DashboardRiskMatrixVisual(rows)}</div><div class="risk-impact-grid"><div class="risk-impact-head"><span>Modül</span>${labels.map(x=>`<span>${x}</span>`).join('')}<span>Sonraki aksiyon</span><span></span></div>${rows.map(r=>`<div class="risk-impact-row"><div class="risk-impact-module"><b>${r.module}</b><span>${r.status} · ${r.score}/100</span></div>${r.vals.map(v=>`<div class="risk-cell ${riskCellClass(v)}">${v}</div>`).join('')}<div class="risk-next">${r.next}</div><button class="micro-btn" data-route="${r.route}">Git</button></div>`).join('')}</div></div>`;
     }
     function IntegratedSignalMatrix(){
       const rows=systemIntegrationSignals();
