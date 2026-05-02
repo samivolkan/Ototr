@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="ototr-version" content="SVK v1.0.23-enterprise-flow" />
+  <meta name="ototr-version" content="SVK v1.0.24-crisis-center" />
   <title>OTOTR Genel Merkez ERP + CRM</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -190,7 +190,7 @@
 <body>
   <div class="app">
     <aside class="side">
-      <a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.23</small></div></a>
+      <a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.24</small></div></a>
       <div class="nav" id="nav"></div>
     </aside>
 
@@ -1813,7 +1813,7 @@
         status:b.risk==='Yüksek'?'İnceleme':b.risk==='Orta'?'Takip':'Stabil'
       }));
       out.demoDataHealth={
-        version:'SVK v1.0.23',
+        version:'SVK v1.0.24',
         branchUniverse:'10 şube / 4 aktif bölge',
         packagePriceBand:'5.000 TL - 15.000 TL',
         avgTicketBand:'8.350 TL - 9.900 TL',
@@ -2010,7 +2010,7 @@
         pageShell('academy', AcademyDashboard())+
         pageShell('hr', renderHRRoom())+
         pageShell('legal', `<div class="grid g4">${LegalStats()}</div><div class="grid g3">${moduleCard('Franchise Sözleşmesi','Bölge koruma, marka kullanımı, royalty, denetim hakkı ve fesih eşikleri.','file-signature','Franchise Hukuku')}${moduleCard('Hatalı Rapor Sorumluluğu','Tazmin, itiraz, sigorta, kayıt saklama ve kök neden prosedürü.','shield-alert','Rapor Sorumluluğu')}${moduleCard('KVKK & Veri Sahipliği','Müşteri, rapor, bayi performansı ve merkezi CRM verisinin mülkiyeti.','database','Veri Hukuku')}</div><div class="grid g60"><div class="card"><div class="card-head"><div><div class="card-title">Hukuki Dosya ve Sözleşme Envanteri</div><div class="card-sub">Satıra tıklayınca madde bazlı kontrol listesi açılır.</div></div></div>${legalTable()}</div><div class="card"><div class="card-head"><div><div class="card-title">Risk Matrisi</div><div class="card-sub">Hukuk, operasyon ve itibar riski</div></div></div><div class="matrix"><div class="risk low"><b>Düşük</b>Marka tescil yenileme, standart sözleşme revizyonları</div><div class="risk mid"><b>Orta</b>Royalty gecikmesi, Google puan düşüşü, rapor itirazları</div><div class="risk high"><b>Yüksek</b>Hatalı rapor tazmini, bayi skandalı, sosyal medya krizi</div></div><hr style="border:0;border-top:1px solid var(--line);margin:16px 0">${legalPlaybook()}</div></div><div class="card" style="margin-top:16px"><div class="card-head"><div><div class="card-title">Şikayetten Hukuka Dönen Dosyalar</div><div class="card-sub">Müşteri şikayeti, ihtar, arabuluculuk ve dava riskine döndüğünde hukuk kuyruğuna otomatik aktarılır.</div></div><button class="btn" data-route="complaints">Şikayet merkezine git</button></div>${ComplaintLegalRiskTable()}</div><div class="grid g2" style="margin-top:16px"><div class="card"><div class="card-head"><div><div class="card-title">Sözleşme Durumları</div><div class="card-sub">Aktif, yenileme ve ihlal sinyalleri</div></div></div>${LegalContractTable()}</div><div class="card"><div class="card-head"><div><div class="card-title">Hukuki Alarmlar</div><div class="card-sub">Rol filtresiyle beslenecek hukuki alarm kuyruğu</div></div></div>${LegalAlertList()}</div></div>`)+
-        pageShell('crisis', `<div class="grid g4">${stat('Açık Ticket',DB.tickets.length,'Merkez takipte')}${stat('Kritik',riskCount,'Bugün çözülmeli','amber')}${stat('SLA Uyum','%91','Hedef %95','green')}${stat('Tekrar Eden Kök Neden',2,'Rapor anlatımı + SLA','red')}</div><div class="card"><div class="card-head"><div><div class="card-title">Kriz ve Alarm Merkezi</div><div class="card-sub">Yanlış rapor, sosyal medya, bayi skandalı, hukuki kriz ve acil eylem</div></div></div>${ticketsTable()}</div>`)+
+        pageShell('crisis', CrisisCenterPage())+
         pageShell('actions', `<div class="grid g4">${stat('Açık Görev',DB.ceoDashboard.actionTasks.filter(t=>t.status!=='Tamamlandı').length,'Canlı takip','blue')}${stat('Geciken',DB.ceoDashboard.actionTasks.filter(t=>t.status==='Gecikti').length,'SLA riski','red')}${stat('Tamamlanan',DB.ceoDashboard.actionTasks.filter(t=>t.status==='Tamamlandı').length,'Bu demo oturumunda','green')}${stat('En Hızlı Çözen','Elif Kaya','Kalite aksiyonları','green')}</div><div class="grid g60"><div class="card"><div class="card-head"><div><div class="card-title">Aksiyon Motoru</div><div class="card-sub">Görev oluştur, sorumlu ata, deadline ver ve takip et</div></div><button class="btn primary" data-open-action-modal="Yeni aksiyon">Yeni Aksiyon</button></div>${ActionCommandGrid()}</div><div class="card"><div class="card-head"><div><div class="card-title">Görev Takip Motoru</div><div class="card-sub">Açık, geciken ve tamamlanan görevler</div></div></div>${ActionTaskPanel()}</div></div>`)+
         pageShell('ai', `<div class="grid g4">${stat('AI Öneri',DB.ceoDashboard.aiRecommendations.length,'Aksiyon bekliyor','blue')}${stat('Yüksek Etki',3,'CEO önceliği','green')}${stat('Yüksek Risk',2,'Kriz önleme','amber')}${stat('Göreve Dönüşüm','%42','Hedef %60','blue')}</div><div class="card"><div class="card-head"><div><div class="card-title">AI Öneri Motoru</div><div class="card-sub">Beklenen etki, risk ve aksiyon butonu birlikte</div></div><button class="btn primary" data-open-action-modal="AI önerisi">Öneriden görev oluştur</button></div>${AIRecommendationPanel()}</div>`)+
         pageShell('growth', GrowthMapPage())+
@@ -3054,6 +3054,119 @@
       document.querySelectorAll('[data-academy-person]').forEach(el=>el.addEventListener('click',e=>{if(e.target.closest('button')) return; e.stopPropagation();openDetail('academyPerson:'+el.dataset.academyPerson);}));
     }
     function ticketsTable(){ return `<table><thead><tr><th>ID</th><th>Konu</th><th>Şube</th><th>Önem</th><th>SLA</th><th>Sorumlu</th></tr></thead><tbody>${DB.tickets.map(t=>`<tr><td>${t.id}</td><td>${t.title}</td><td>${t.branch}</td><td>${badge(t.severity)}</td><td>${t.sla}</td><td>${t.owner}</td></tr>`).join('')}</tbody></table>`; }
+    function crisisCases(){
+      const complaintRisks=(DB.complaintsCenter?.complaintTickets||[])
+        .filter(c=>['P0','P1'].includes(c.priority) || c.legalRisk==='Yüksek' || c.brandRisk==='Yüksek' || c.brandRisk==='CEO takip')
+        .slice(0,4)
+        .map((c,i)=>({
+          id:`CR-CMP-${i+1}`,
+          title:c.type,
+          branch:c.branch,
+          category:c.legalRisk==='Yüksek'?'Hukuk + Müşteri':'Müşteri Deneyimi',
+          level:c.priority==='P0'?'Kırmızı':'Turuncu',
+          owner:c.team,
+          commander:c.priority==='P0'?'CEO + Hukuk':'Kalite Lideri',
+          opened:c.opened,
+          deadline:c.priority==='P0'?'3 saat':'24 saat',
+          amount:c.amountRisk||0,
+          status:c.status,
+          source:c.source,
+          summary:c.summary,
+          next:c.nextAction,
+          route:c.legalRisk==='Yüksek'?'legal':'complaints',
+          evidence:['Şikayet kaydı','Rapor bağlantısı','Müşteri iletişimi','Şube savunması'],
+          playbook:['Müşteri ilk temas','Kanıtları kilitle','Şube savunması al','Yazılı cevap taslağı','CEO kapanış kararı']
+        }));
+      const ticketCases=(DB.tickets||[]).filter(t=>t.severity==='Yüksek').map((t,i)=>({
+        id:`CR-TK-${i+1}`,
+        title:t.title,
+        branch:t.branch,
+        category:t.owner,
+        level:'Turuncu',
+        owner:t.owner,
+        commander:t.owner.includes('Hukuk')?'Hukuk Lideri':'Operasyon Lideri',
+        opened:'Bugün',
+        deadline:t.sla,
+        amount:t.title.includes('Royalty')?42000:0,
+        status:'Açık',
+        source:'Dashboard alarmı',
+        summary:`${t.branch} için ${t.title.toLocaleLowerCase('tr-TR')} alarmı kriz kuyruğuna alındı.`,
+        next:'Sorumlu ve kanıt paketi güncellenecek.',
+        route:t.owner.includes('Finans')?'finance':t.owner.includes('Hukuk')?'legal':'operations',
+        evidence:['Dashboard alarmı','SLA kaydı','Sorumlu notu'],
+        playbook:['Sahip ata','İlk aksiyon','Kök neden','Kapanış kanıtı']
+      }));
+      const brandCase={
+        id:'CR-BRAND-01',
+        title:'Sosyal medya marka riski',
+        branch:'İzmir Bornova',
+        category:'Marka İtibarı',
+        level:'Turuncu',
+        owner:'Pazarlama + Müşteri Deneyimi',
+        commander:'Kriz Masası',
+        opened:'Bugün 11:22',
+        deadline:'6 saat',
+        amount:0,
+        status:'Yanıt onayı bekliyor',
+        source:'Google / Instagram',
+        summary:'Bekleme süresi şikayeti sosyal yorumlara taşındı; yanıt dili ve telafi planı onay bekliyor.',
+        next:'Onaylı yanıt, müşteri araması ve operasyon düzeltme notu.',
+        route:'marketing',
+        evidence:['Yorum ekran görüntüsü','CRM müşteri kartı','Operasyon bekleme verisi'],
+        playbook:['Yorumu kopyala','Müşteriyi ara','Yanıt taslağı hazırla','Operasyon kök neden','Kapanış sonrası takip']
+      };
+      return [...complaintRisks,...ticketCases,brandCase].slice(0,8);
+    }
+    function crisisTone(level){ return level==='Kırmızı'?'bad':level==='Turuncu'?'warn':'good'; }
+    function CrisisCenterPage(){
+      const cases=crisisCases();
+      const red=cases.filter(c=>c.level==='Kırmızı').length, orange=cases.filter(c=>c.level==='Turuncu').length;
+      const amount=cases.reduce((s,c)=>s+(Number(c.amount)||0),0);
+      const open=cases.filter(c=>!['Kapandı','Tamamlandı'].includes(c.status)).length;
+      return `<div class="grid g4">${stat('Açık Kriz',open,'CEO ve lider ekip takipte','red')}${stat('Kırmızı Seviye',red,'İlk 3 saat kritik','red')}${stat('Turuncu Seviye',orange,'24 saat içinde aksiyon','amber')}${stat('Risk Tutarı',fmtTL(amount),'Hukuk + telafi potansiyeli','amber')}</div>
+      <div class="grid g60">
+        <div class="card"><div class="card-head"><div><div class="card-title">Kriz Komuta Masası</div><div class="card-sub">Yüksek etkili müşteri, hukuk, marka, operasyon, finans ve bayi olayları tek kriz protokolünde yönetilir.</div></div><button class="btn primary" data-open-action-modal="Yeni kriz kaydı">${icon('siren')}Kriz kaydı aç</button></div>${CrisisCaseBoard(cases)}</div>
+        <div class="card"><div class="card-head"><div><div class="card-title">İlk 60 Dakika Protokolü</div><div class="card-sub">Kriz büyümeden kanıt, sahip, iletişim ve CEO kararını kilitle.</div></div></div>${CrisisFirstHour()}</div>
+      </div>
+      <div class="grid g3" style="margin-top:16px">
+        <div class="card"><div class="card-head"><div><div class="card-title">Kriz Rolleri</div><div class="card-sub">Her kriz için tek komutan ve bağlı ekipler</div></div></div>${CrisisRoleMatrix()}</div>
+        <div class="card"><div class="card-head"><div><div class="card-title">İletişim Onay Odası</div><div class="card-sub">Müşteri, Google, sosyal medya ve bayi metinleri onaysız çıkmaz.</div></div></div>${CrisisCommsPanel()}</div>
+        <div class="card"><div class="card-head"><div><div class="card-title">Kapanış Kriterleri</div><div class="card-sub">Kriz dosyası kanıt ve tekrar kontrol olmadan kapanmaz.</div></div></div>${CrisisClosureChecklist()}</div>
+      </div>
+      <div class="grid g2" style="margin-top:16px">
+        <div class="card"><div class="card-head"><div><div class="card-title">Krizden Göreve Dönüşenler</div><div class="card-sub">Aksiyon & Görev motorunda takip edilecek açık işler</div></div><button class="btn" data-route="actions">Görev motoruna git</button></div>${ActionTaskPanel('compact')}</div>
+        <div class="card"><div class="card-head"><div><div class="card-title">Kriz AI Önerileri</div><div class="card-sub">Kriz tipine göre önerilen ilk aksiyon</div></div></div>${CrisisAiPanel(cases)}</div>
+      </div>
+      <div class="card" style="margin-top:16px"><div class="card-head"><div><div class="card-title">Kriz Ticket Envanteri</div><div class="card-sub">Mevcut ticket kayıtları, kriz dosyalarıyla eşleştirilir.</div></div></div>${ticketsTable()}</div>`;
+    }
+    function CrisisCaseBoard(cases){
+      return `<div class="task-list">${cases.map(c=>`<div class="task-card ${c.level==='Kırmızı'?'risk-row':''}"><div class="task-head"><div><b>${c.title}</b><div class="card-sub">${c.branch} · ${c.category} · ${c.source}</div></div>${badge(c.level==='Kırmızı'?'Kritik':'Yüksek')}</div><p style="margin:8px 0;color:var(--muted);line-height:1.45">${c.summary}</p><div class="task-meta"><span>Komutan: ${c.commander}</span><span>Sahip: ${c.owner}</span><span>Deadline: ${c.deadline}</span><span>${c.status}</span></div><div class="quick-actions"><button class="micro-btn" data-detail="crisis:${c.id}">Kriz odası</button><button class="micro-btn" data-open-action-modal="${c.branch} kriz aksiyonu">Görev oluştur</button><button class="micro-btn" data-route="${c.route}">Kaynak modül</button><button class="micro-btn" data-action="${c.id} CEO onay kuyruğuna alındı.">CEO onayı</button></div></div>`).join('')}</div>`;
+    }
+    function CrisisFirstHour(){
+      const rows=[['0-10 dk','Kriz komutanı atanır','Tek kişi konuşur, tek dosya açılır.'],['10-20 dk','Kanıtlar kilitlenir','Rapor, fotoğraf, kamera, çağrı, WhatsApp ve ödeme kayıtları korunur.'],['20-35 dk','İlk temas yapılır','Müşteri veya bayi aranır; taahhüt değil, süreç bilgisi verilir.'],['35-45 dk','Risk seviyesi belirlenir','Hukuk, kalite, marka ve finans etkisi puanlanır.'],['45-60 dk','CEO karar notu hazırlanır','Telafi, yanıt, denetim, hukuki cevap veya kriz büyütme kararı alınır.']];
+      return `<div class="action-timeline">${rows.map(r=>`<div class="timeline-step"><span class="step-icon">${icon('timer')}</span><div><b>${r[1]}</b><span>${r[2]}</span></div><strong>${r[0]}</strong></div>`).join('')}</div>`;
+    }
+    function CrisisRoleMatrix(){
+      const rows=[['CEO','Kırmızı krizlerde son karar ve marka riski onayı'],['Kriz Komutanı','Tüm aksiyon, saat ve kanıt akışını tek elden yönetir'],['Hukuk','İhtar, dava, KVKK, sözleşme ve yazılı cevap riskini kontrol eder'],['Kalite','Rapor, kök neden, ikinci uzman ve CAPA sürecini yürütür'],['CRM','Müşteri araması, WhatsApp, memnuniyet ve telafi temasını yönetir'],['Pazarlama','Google/sosyal medya yanıtı ve itibar takibini yürütür'],['Finans','İade, telafi, royalty veya bütçe etkisini hesaplar']];
+      return `<div class="mini-list">${rows.map(r=>`<div class="mini">${icon(r[0]==='CEO'?'crown':'user-check')}<div><b>${r[0]}</b><span>${r[1]}</span></div></div>`).join('')}</div>`;
+    }
+    function CrisisCommsPanel(){
+      const rows=[['Müşteri arama metni','CRM + Hukuk onayı','Kişisel ve sakin dil; sorumluluk kabulü yok, süreç sözü var.'],['Google yorum yanıtı','Pazarlama + Kalite','Savunma dili yok; çözüm ve iletişim daveti var.'],['Bayi müdürü notu','Operasyon','Kanıt, süre, savunma ve düzeltme planı istenir.'],['Hukuki yazılı cevap','Hukuk','Teknik delil ve sözleşme sınırıyla yazılır.']];
+      return `<div class="mini-list">${rows.map(r=>`<div class="mini">${icon('message-square-text')}<div><b>${r[0]}</b><span>${r[1]} · ${r[2]}</span><div class="quick-actions" style="margin-top:7px"><button class="micro-btn" data-open-action-modal="${r[0]} onay görevi">Onay görevi</button><button class="micro-btn" data-action="${r[0]} taslak kuyruğuna alındı.">Taslak hazırla</button></div></div></div>`).join('')}</div>`;
+    }
+    function CrisisClosureChecklist(){
+      const rows=['Kriz tipi ve seviyesi doğru sınıflandırıldı','Sorumlu ve kriz komutanı atandı','Tüm kanıtlar dosyaya bağlandı','İlk müşteri/bayi teması yapıldı','Hukuk ve kalite notu eklendi','Telafi veya resmi cevap kararı yazıldı','Kök neden ve kalıcı aksiyon açıldı','CEO kapanış veya takip kararı verildi','7 gün sonra tekrar kontrol tarihi oluşturuldu'];
+      return `<div class="mini-list">${rows.map((r,i)=>`<div class="mini">${icon(i<5?'check-circle-2':'circle-dot')}<div><b>${r}</b><span>${i<5?'Aktif dosyada zorunlu ilk kontrol.':'Kapanış öncesi tamamlanmalı.'}</span></div></div>`).join('')}</div>`;
+    }
+    function CrisisAiPanel(cases){
+      const suggestions=[
+        ['Antalya Kepez','Şikayet + hukuk riski aynı dosyada; yazılı cevap çıkmadan telafi önerisi müşteri aramasıyla sunulmalı.','Hukuk + CRM görevi aç'],
+        ['Bursa Nilüfer','Düşen şube skoru kriz değil ama 30 gün içinde düzelmezse marka/operasyon krizi doğurur.','Düzeltme planı aç'],
+        ['İzmir Bornova','Sosyal medya yanıtı operasyon kök nedeni ile birlikte verilmeli; sadece yorum yanıtı yetersiz.','Yanıt onayı aç'],
+        ['Ağ geneli','Tekrarlayan rapor dili şikayetleri Academy eğitimine otomatik bağlanmalı.','Academy ataması yap']
+      ];
+      return `<div class="mini-list">${suggestions.map(s=>`<div class="mini">${icon('sparkles')}<div><b>${s[0]}</b><span>${s[1]}</span><div class="quick-actions" style="margin-top:7px"><button class="micro-btn" data-open-action-modal="${s[2]}">${s[2]}</button></div></div></div>`).join('')}</div>`;
+    }
     function moduleCard(title,body,ic,detail=title){ return `<div class="module" data-detail="module:${detail}" onclick="openDetail(this.dataset.detail);event.stopPropagation()">${icon(ic)}<h3>${title}</h3><p>${body}</p><button class="btn detail-btn" data-detail="module:${detail}" onclick="openDetail(this.dataset.detail);event.stopPropagation()">Aç</button></div>`; }
     function roomsGrid(){ return `<div class="dept-grid">${rooms.map(r=>`<div class="dept-card" data-detail="room:${r.id}" onclick="openDetail(this.dataset.detail);event.stopPropagation()"><h3>${r.title}</h3><p>${r.mission}</p><div class="dept-meta"><span class="pill">${r.owner}</span><span class="pill">${r.kpis[0]}</span><button class="btn detail-btn" data-detail="room:${r.id}" onclick="openDetail(this.dataset.detail);event.stopPropagation()">Aç</button></div></div>`).join('')}</div>`; }
     function legacyManifesto(){ return `<div class="mini-list"><div class="mini">${icon('quote')}<div><b>Biz araç bakmıyoruz.</b><span>İnsanların güvenle karar vermesine yardım ediyoruz.</span></div></div><div class="mini">${icon('pen-line')}<div><b>Her rapor bir kâğıt değil, bir vicdan imzasıdır.</b><span>Teknik kalite kadar ahlaki sorumluluk da markanın parçasıdır.</span></div></div><div class="mini">${icon('shield-check')}<div><b>Kazançtan önce itibar.</b><span>Büyümeden önce sistem, tabeladan önce güven kurulur.</span></div></div></div>`; }
@@ -4107,6 +4220,7 @@
       if(type==='legal'){ const l=DB.legal.find(x=>x.id===id); html=`<div class="card-head"><div><div class="card-title">${l.title}</div><div class="card-sub">${l.area} - ${l.owner}</div></div><button class="btn" onclick="closeDrawer()">Kapat</button></div><div class="grid g2">${stat('Risk',l.risk,'Hukuki öncelik')}${stat('Durum',l.status,'Sahip: '+l.owner,'blue')}</div><div class="card" style="margin-top:14px"><div class="card-head"><div><div class="card-title">Madde Bazlı Kontrol Listesi</div><div class="card-sub">Bu başlık sözleşme/dosya içinde mutlaka görünmeli.</div></div></div><div class="mini-list">${l.items.map(x=>`<div class="mini">${icon('check-square')}<div><b>${x}</b><span>Metin, sorumluluk, yaptırım ve kayıt ispatı birlikte tasarlanmalı.</span></div></div>`).join('')}</div></div><div class="card" style="margin-top:14px"><div class="card-title">CEO Notu</div><p style="color:var(--muted);line-height:1.6">Hukuk ekranı yalnız arşiv değil; franchise kalitesini koruyan fren sistemi olmalı. Her dosyada eşik, sahip, süre, kanıt ve yaptırım net yazılmalı.</p></div>`; }
       if(type==='insight'){ const i=DB.intelligence.find(x=>x.id===id); html=`<div class="card-head"><div><div class="card-title">${i.title}</div><div class="card-sub">${i.owner}</div></div><button class="btn" onclick="closeDrawer()">Kapat</button></div><div class="grid g2">${stat('Etki',i.impact,'Finansal / operasyonel')}${stat('Sinyal',i.signal,'Veri merkezi alarmı','blue')}</div><div class="card" style="margin-top:14px"><div class="card-title">Önerilen Karar</div><p style="color:var(--muted);line-height:1.6">${i.action}. Bu içgörü haftalık CEO toplantısında karar maddesine çevrilmeli; aksiyon sahibi, hedef tarih ve ölçüm kriteri girilmeli.</p></div>`; }
       if(type==='task'){ const t=DB.ceoDashboard.actionTasks.find(x=>x.id===id); html=`<div class="card-head"><div><div class="card-title">${t?.title||'Görev Detayı'}</div><div class="card-sub">${t?.category||'Aksiyon'} · ${t?.owner||'Sorumlu'} · ${t?.branch||'Şube'}</div></div><button class="btn" onclick="closeDrawer()">Kapat</button></div><div class="grid g2">${stat('Öncelik',t?.priority||'-','Görev takip')}${stat('Deadline',t?.deadline||'-',t?.status||'Açık','amber')}</div><div class="card" style="margin-top:14px"><div class="card-title">Kapanış Kriteri</div><p style="color:var(--muted);line-height:1.6">${t?.note||'Kanıt, not ve tekrar kontrol sonucu olmadan görev kapanmamalı.'}</p></div><button class="btn primary" style="margin-top:14px" onclick="openActionModal('${(t?.title||'Görev devam aksiyonu').replace(/'/g,'')}');closeDrawer()">Devam aksiyonu aç</button>`; }
+      if(type==='crisis'){ const c=crisisCases().find(x=>x.id===id); if(!c){toast('Kriz kaydı bulunamadı.'); return;} html=`<div class="card-head"><div><div class="card-title">${c.title}</div><div class="card-sub">${c.branch} · ${c.category} · ${c.level} seviye</div></div><button class="btn" onclick="closeDrawer()">Kapat</button></div><div class="grid g2">${stat('Kriz Komutanı',c.commander,c.owner,'red')}${stat('Deadline',c.deadline,c.status,'amber')}${stat('Kaynak',c.source,c.opened,'blue')}${stat('Risk Tutarı',fmtTL(c.amount||0),c.amount?'Finans/Hukuk etkisi':'İtibar etkisi','amber')}</div><div class="card" style="margin-top:14px"><div class="card-title">Kriz Özeti</div><p style="color:var(--muted);line-height:1.6">${c.summary}</p><p style="color:var(--muted);line-height:1.6"><b>Sonraki aksiyon:</b> ${c.next}</p></div><div class="grid g2" style="margin-top:14px"><div class="card"><div class="card-head"><div><div class="card-title">Kanıt Paketi</div><div class="card-sub">Dosya kapanmadan tamamlanmalı</div></div></div><div class="mini-list">${c.evidence.map(e=>`<div class="mini">${icon('paperclip')}<div><b>${e}</b><span>Kriz dosyasına bağlanır ve tarihçelenir.</span></div></div>`).join('')}</div></div><div class="card"><div class="card-head"><div><div class="card-title">Kriz Playbook</div><div class="card-sub">Sıralı aksiyon akışı</div></div></div><div class="mini-list">${c.playbook.map((p,i)=>`<div class="mini">${icon(i===0?'play-circle':'arrow-right-circle')}<div><b>${p}</b><span>${i<2?'İlk saat içinde tamamlanmalı.':'Kapanış kanıtına bağlanmalı.'}</span></div></div>`).join('')}</div></div></div><div class="quick-actions" style="margin-top:14px"><button class="btn primary" onclick="openActionModal('${c.branch.replace(/'/g,'')} kriz görevi');closeDrawer()">Görev oluştur</button><button class="btn" onclick="route('${c.route}');closeDrawer()">Kaynak modüle git</button><button class="btn" data-action="${c.id} CEO onay kaydı oluşturuldu.">CEO onayı</button></div>`; }
       if(type==='ai'){ const ai=DB.ceoDashboard.aiRecommendations.find(x=>x.title===id); html=`<div class="card-head"><div><div class="card-title">${ai?.title||id}</div><div class="card-sub">${ai?.category||'AI Öneri Motoru'}</div></div><button class="btn" onclick="closeDrawer()">Kapat</button></div><div class="grid g2">${stat('Beklenen Etki',ai?.impact||'-','Karar etkisi','green')}${stat('Risk',ai?.risk||'-','Uygulama riski','amber')}</div><button class="btn primary" style="margin-top:14px" onclick="openActionModal('${(ai?.action||'AI önerisi').replace(/'/g,'')}');closeDrawer()">Aksiyona çevir</button>`; }
       if(type==='hrEmployee'){ openEmployeeDetail(id); return; }
       if(type==='hrBranch'){ openBranchHRDetail(id); return; }
