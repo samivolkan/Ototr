@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="ototr-version" content="SVK v1.0.30-action-views" />
+  <meta name="ototr-version" content="SVK v1.0.31-operations-center" />
   <title>OTOTR Genel Merkez ERP + CRM</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -192,6 +192,7 @@
     @media (max-width:1100px){.hr-hero{display:grid}.hr-data-grid,.hr-card-grid,.hr-card-grid.two,.hr-settings-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.hr-kanban{grid-template-columns:repeat(3,minmax(220px,1fr))}.ototr-quality-page{margin:-18px -18px -40px;padding:18px}.ototr-quality-hero,.ototr-quality-grid-2,.ototr-quality-grid-3,.ototr-quality-grid-4{grid-template-columns:1fr}.ototr-quality-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.ototr-quality-hero .quick-actions{justify-content:flex-start}.ototr-quality-heatmap{grid-template-columns:repeat(2,minmax(0,1fr))}.ototr-quality-check-row{grid-template-columns:1fr 86px 96px}.ototr-quality-check-row input,.ototr-quality-upload{grid-column:1/-1}.ototr-quality-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
     @media (max-width:700px){.hr-data-grid,.hr-card-grid,.hr-card-grid.two,.hr-settings-grid{grid-template-columns:1fr}.hr-hero{padding:16px}.hr-hero h2{font-size:22px}.hr-score-row{grid-template-columns:1fr}.hr-kanban{grid-template-columns:repeat(2,minmax(210px,1fr))}.hr-tree-node.child{margin-left:10px}.ototr-quality-page{margin:-14px -12px -34px;padding:14px 12px 34px}.ototr-quality-hero{padding:17px;border-radius:14px}.ototr-quality-hero h2{font-size:23px}.ototr-quality-kpis,.ototr-quality-heatmap,.ototr-quality-summary{grid-template-columns:1fr}.ototr-quality-check-row{grid-template-columns:1fr}.ototr-quality-table{min-width:900px}.ototr-quality-flow{grid-template-columns:repeat(10,136px)}}
     .ototr-quality-page{color:var(--ink);background:transparent;margin:0;padding:0;border-radius:0}
+    .ops-center{display:grid;gap:14px}.ops-hero{position:relative;overflow:hidden;border:1px solid #222938;border-radius:14px;background:linear-gradient(135deg,#0b0d12,#202635 76%,#d71920 150%);color:#fff;padding:22px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:end;box-shadow:var(--shadow)}.ops-hero:after{content:"";position:absolute;right:-70px;top:-86px;width:250px;height:250px;border:42px solid rgba(255,255,255,.055);border-radius:50%;pointer-events:none}.ops-hero h2{margin:0 0 8px;font-size:28px;letter-spacing:0}.ops-hero p{margin:0;color:#d7dce6;line-height:1.55;max-width:920px}.ops-hero-actions{position:relative;z-index:1;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}.ops-hero .btn{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);color:#fff}.ops-hero .btn.primary{background:var(--red);border-color:var(--red)}.ops-kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}.ops-kpi{border-top:3px solid #dfe3e8}.ops-kpi.good{border-top-color:var(--green)}.ops-kpi.warn{border-top-color:var(--amber)}.ops-kpi.bad{border-top-color:var(--red)}.ops-pipeline{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}.ops-stage-card{border:1px solid var(--line);border-top:3px solid #dfe3e8;border-radius:11px;background:#fff;padding:12px;display:grid;gap:8px;min-width:0}.ops-stage-card.good{border-top-color:var(--green)}.ops-stage-card.warn{border-top-color:var(--amber);background:#fffaf0}.ops-stage-card.bad{border-top-color:var(--red);background:#fff7f8}.ops-stage-head{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}.ops-stage-head b{font-size:12px;line-height:1.25}.ops-stage-no{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:#111318;color:#fff;font-size:10px;font-weight:950;flex:0 0 auto}.ops-stage-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.ops-stage-metrics div{border:1px solid var(--line);border-radius:8px;background:#f8fafc;padding:7px}.ops-stage-metrics span{display:block;color:var(--muted);font-size:9px;font-weight:900;text-transform:uppercase}.ops-stage-metrics strong{display:block;font-size:12px;margin-top:2px}.ops-capacity-list,.ops-work-list,.ops-bar-list{display:grid;gap:9px}.ops-capacity-row{display:grid;grid-template-columns:1.25fr .8fr repeat(4,.68fr) auto;gap:8px;align-items:center;border:1px solid var(--line);border-radius:11px;background:#fff;padding:10px}.ops-capacity-row.risk,.ops-work-row.risk{background:#fff7f8;border-color:#ffc5ca}.ops-capacity-row.watch,.ops-work-row.watch{background:#fffaf0;border-color:#ffe0a6}.ops-capacity-row span,.ops-work-row span{display:block;color:var(--muted);font-size:10px;font-weight:900;text-transform:uppercase}.ops-capacity-row b,.ops-work-row b{display:block;font-size:12px;margin-top:2px}.ops-bar-row{display:grid;grid-template-columns:150px minmax(0,1fr) 62px;gap:10px;align-items:center}.ops-bar-track{height:12px;border-radius:999px;background:#eef1f5;overflow:hidden}.ops-bar-fill{height:100%;border-radius:999px;background:var(--green)}.ops-bar-fill.warn{background:var(--amber)}.ops-bar-fill.risky{background:#f97316}.ops-bar-fill.critical{background:var(--red)}.ops-bottleneck-grid,.ops-signal-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.ops-bottleneck-card,.ops-signal-card{border:1px solid var(--line);border-left:4px solid #dfe3e8;border-radius:11px;background:#fff;padding:12px;display:grid;gap:9px;min-width:0}.ops-bottleneck-card.risk,.ops-signal-card.risk{border-left-color:var(--red);background:#fff7f8}.ops-bottleneck-card.watch,.ops-signal-card.watch{border-left-color:var(--amber);background:#fffaf0}.ops-bottleneck-card.good,.ops-signal-card.good{border-left-color:var(--green)}.ops-bottleneck-card h3,.ops-signal-card h3{font-size:13px;margin:0}.ops-bottleneck-card p,.ops-signal-card p{margin:0;color:var(--muted);font-size:12px;line-height:1.45}.ops-card-actions{display:flex;gap:7px;flex-wrap:wrap}.ops-work-row{display:grid;grid-template-columns:1.1fr 1fr .85fr auto;gap:10px;align-items:center;border:1px solid var(--line);border-radius:11px;background:#fff;padding:11px}.ops-chip-list{display:flex;gap:6px;flex-wrap:wrap}.ops-chip{border:1px solid var(--line);border-radius:999px;background:#f8fafc;color:#4d5563;padding:4px 7px;font-size:10px;font-weight:850}.ops-summary-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.ops-summary-tile{border:1px solid var(--line);border-radius:10px;background:#fff;padding:10px}.ops-summary-tile span{display:block;color:var(--muted);font-size:10px;font-weight:900;text-transform:uppercase}.ops-summary-tile b{display:block;font-size:18px;margin-top:4px}.ops-day-summary{scroll-margin-top:100px}@media (max-width:1200px){.ops-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.ops-pipeline,.ops-bottleneck-grid,.ops-signal-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.ops-capacity-row,.ops-work-row{grid-template-columns:1fr}.ops-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media (max-width:700px){.ops-hero{grid-template-columns:1fr;padding:18px}.ops-hero h2{font-size:24px}.ops-hero-actions{justify-content:flex-start}.ops-kpis,.ops-pipeline,.ops-bottleneck-grid,.ops-signal-grid,.ops-summary-grid{grid-template-columns:1fr}.ops-bar-row{grid-template-columns:1fr}.ops-card-actions .btn,.ops-hero-actions .btn{width:100%;justify-content:center}}
   </style>
 </head>
 <body>
@@ -1997,7 +1998,7 @@
         status:b.risk==='Yüksek'?'İnceleme':b.risk==='Orta'?'Takip':'Stabil'
       }));
       out.demoDataHealth={
-        version:'SVK v1.0.30',
+        version:'SVK v1.0.31',
         branchUniverse:'10 şube / 4 aktif bölge',
         packagePriceBand:'5.000 TL - 15.000 TL',
         avgTicketBand:'8.350 TL - 9.900 TL',
@@ -2156,7 +2157,7 @@
                 <div class="card"><div class="card-head"><div><div class="card-title">CRM & Randevu Operasyon Özeti</div><div class="card-sub">Bugünkü randevu, WhatsApp SLA, no-show riski ve kritik müşteri sinyalleri</div></div><button class="btn" data-route="crm">CRM'e git</button></div>${CRMExecutiveSummary()}</div>
                 <div class="card"><div class="card-head"><div><div class="card-title">OTOTR Academy Kontrol Özeti</div><div class="card-sub">Bölge, şube, eğitmen ve kişi bazlı eğitim SLA / KPI sinyalleri</div></div><button class="btn" data-route="academy">Academy'ye git</button></div>${AcademyExecutiveSummary()}</div>
                 <div class="card"><div class="card-head"><div><div class="card-title">Kalite ve Kontrol Merkezi Özeti</div><div class="card-sub">Denetim, bulgu, CAPA, Academy ve şikayet sinyalleri tek kalite skoruna bağlanır</div></div><button class="btn" data-route="quality">Kaliteye git</button></div>${QualityDashboardSummary()}</div>
-                <div class="card"><div class="card-head"><div><div class="card-title">Canlı Operasyon Merkezi</div><div class="card-sub">Türkiye yoğunluğu, bekleyen araçlar, SLA ve şube akışı tek yönetim ekranında</div></div><button class="btn" data-route="operations">Operasyona git</button></div>${LiveOperationCenter()}</div>
+                <div class="card"><div class="card-head"><div><div class="card-title">Operasyon Alarmı</div><div class="card-sub">Bugünkü üretim hattı, geciken rapor, SLA ve kapasite riski özeti</div></div><button class="btn" data-route="operations">Operasyona git</button></div>${OperationAlarmSummary()}</div>
                 <div class="card"><div class="card-head"><div><div class="card-title">Türkiye / Şube Genel Görünümü</div><div class="card-sub">Bölge kartları: araç adedi, şube sayısı, memnuniyet ve risk sinyali</div></div><button class="btn" data-route="branches">Şube ekranına git</button></div>${TurkeyBranchOverview()}</div>
                 <div class="card"><div class="card-head"><div><div class="card-title">Şube KPI Alarmı</div><div class="card-sub">Problemli şubeleri harita üzerinde canlı alarm mantığıyla izleyin</div></div><button class="btn" data-route="branches">Bayiler & Şubeler'e git</button></div>${BranchKpiDashboardSummary()}</div>
                 <div class="grid g2">
@@ -2187,7 +2188,7 @@
         pageShell('complaints', ComplaintsCenterPage())+
         pageShell('branches', `<div class="grid g4">${stat('Aktif Şube',DB.branches.filter(b=>b.status==='Aktif').length,'Aktif işletme ağı')}${stat('Ortalama EBITDA',compactTL(Math.round(DB.branches.reduce((s,b)=>s+(DB.branchDetails[b.id]?.profit||0),0)/Math.max(1,DB.branches.length))),'Şube kârlılığı')}${stat('Ortalama NPS',Math.round(DB.branches.filter(b=>b.nps).reduce((s,b)=>s+b.nps,0)/4),'+6 puan','green')}${stat('Riskli Bayi',DB.branches.filter(b=>b.risk==='Yüksek').length,'Hukuk/kalite takip','amber')}</div><div class="card"><div class="card-head"><div><div class="card-title">Bayi & Bölge Skor Panosu</div><div class="card-sub">Aktif şube ağı; ciro, kârlılık, kalite, operasyon SLA, Academy ve hukuk riskiyle okunur.</div></div></div>${BranchRegionScoreBoard()}</div><div class="card"><div class="card-head"><div><div class="card-title">Türkiye Bölge Performans Haritası</div><div class="card-sub">Bölge, il ve şube KPI skorlarını canlı alarm mantığıyla izleyin. Kritik ve riskli noktalar kontrollü şekilde öne çıkarılır.</div></div><button class="btn" data-route="growth">Büyüme haritasına git</button></div>${ActiveBranchTurkeyMap()}</div><div class="grid g70"><div class="card"><div class="card-head"><div><div class="card-title">Bayi Performans ve Royalty Tablosu</div><div class="card-sub">Satıra tıklayınca şube karnesi açılır; profil butonu tam sayfaya taşır.</div></div></div>${branchesTable(DB.branches)}</div><div class="card"><div class="card-head"><div><div class="card-title">Şube Sayfası İçin Tasarım Notları</div><div class="card-sub">Bir sonraki turda birlikte tasarlayacağımız alt başlık önerileri</div></div></div>${BranchPageRecommendations()}</div></div>`)+
         pageShell('branchProfile', BranchProfilePage())+
-        pageShell('operations', `<div class="grid g3">${moduleCard('Araç Kabul','Plaka, müşteri, paket, tahmini süre ve satış kanalı tek kayda bağlanır.','car-front')}${moduleCard('Test Sıralaması','Dyno, boya, mekanik, elektronik, yol testi ve EV kontrolleri standart akışa alınır.','list-checks')}${moduleCard('Teslim Prosedürü','Rapor anlatımı, risk dili, noter öncesi kontrol ve satış sonrası destek kapanışı yapılır.','clipboard-check')}</div><div class="card"><div class="card-head"><div><div class="card-title">Operasyon Darboğaz Haritası</div><div class="card-sub">Şube bazlı günlük kapasite, bekleme ve teslim süresi</div></div></div><canvas id="chartOps" height="120"></canvas></div>`)+
+        pageShell('operations', OperationsCenterPage())+
         pageShell('quality', QualityDashboard())+
         pageShell('finance', `<div class="grid g4">${stat('Merkez Geliri',fmtTL(royalty+109120),'Royalty + reklam katkı')}${stat('Royalty Oranı',royaltyRateLabel(),royaltyGrossLabel(),'green')}${stat('Reklam Katkı','%2','Ulusal fon','blue')}${stat('Gecikme',fmtTL(royaltyAmount(DB.branches.find(b=>b.id==='BR-003')?.revenue||0)),'1 bayi takipte','amber')}</div><div class="grid g2"><div class="card"><div class="card-head"><div><div class="card-title">Merkez Gelir Kalemleri</div><div class="card-sub">Franchise, royalty, reklam fonu ve yazılım lisansı</div></div></div><canvas id="chartFinance" height="170"></canvas></div><div class="card"><div class="card-head"><div><div class="card-title">Tahsilat ve Aksiyon</div></div></div>${financeActions()}</div></div>`)+
         pageShell('marketing', typeof MarketingDashboard==='function' ? MarketingDashboard() : `<div class="grid g4">${stat('Pazarlama Harcaması',fmtTL(368000),'Nisan kampanyaları')}${stat('Toplam Lead',1314,'Çapraz kanal','green')}${stat('En İyi ROI','6.6x','Google Maps','blue')}${stat('CPL Ort.',fmtTL(268),'- %11 düşüş','green')}</div><div class="card"><div class="card-head"><div><div class="card-title">Kanal Performansı</div><div class="card-sub">Google Maps dominasyonu, sosyal medya, remarketing</div></div></div>${marketingTable()}</div>`)+
@@ -2679,6 +2680,192 @@
         <div class="map-board"><div class="map-board-head"><b>Türkiye Yoğunluk Haritası</b><span class="sync-chip"><span class="dot pulse"></span>Canlı</span></div><div class="map-canvas">${nodes}</div></div>
         <div><table class="live-ops-table"><thead><tr><th>Şube</th><th class="num">Araç</th><th class="num">Bekleyen</th><th>Ort. süre</th><th>SLA</th><th>Durum</th></tr></thead><tbody>${rows}</tbody></table></div>
       </div>`;
+    }
+    function operationDemoData(){
+      return {
+        kpis:[
+          ['Bugünkü Ekspertiz','184','Planlanan günlük üretim','+12 işlem','good','car'],
+          ['İşlemdeki Araç','31','Şubelerde aktif süreç','5 araç beklemede','warn','activity'],
+          ['Tamamlanan İşlem','153','Raporu teslim edilen kayıt','%83 tamamlandı','good','clipboard-check'],
+          ['Geciken Rapor','11','SLA hedefini aşan rapor','Aksiyon gerekli','bad','alert-triangle'],
+          ['Ortalama İşlem Süresi','42 dk','Araç kabulden rapora','Hedef 45 dk','good','timer'],
+          ['SLA İçinde Tamamlama','%87','Rapor teslim disiplini','Hedef %92','warn','gauge']
+        ],
+        pipeline:[
+          ['Randevu Alındı',218,'4 dk',0,'Sağlıklı'],
+          ['Araç Kabul Edildi',184,'7 dk',1,'Sağlıklı'],
+          ['Ön Kontrol',169,'9 dk',2,'İzlenmeli'],
+          ['Ekspertiz Başladı',156,'11 dk',2,'Sağlıklı'],
+          ['Mekanik Kontrol',143,'18 dk',3,'İzlenmeli'],
+          ['Kaporta / Boya',139,'21 dk',4,'Riskli'],
+          ['Dyno / Fren / Süspansiyon',126,'24 dk',5,'Riskli'],
+          ['Rapor Hazırlanıyor',42,'31 dk',8,'Riskli'],
+          ['Rapor Teslim Edildi',153,'38 dk',3,'Sağlıklı'],
+          ['Geri Bildirim Bekleniyor',28,'12 dk',1,'İzlenmeli']
+        ],
+        capacity:[
+          {id:'CAP-001',branch:'İstanbul Ataşehir',region:'Marmara',capacity:24,today:27,occupancy:112,waiting:6,risk:'Kritik',action:'Vardiya ve rapor onay sorumlusu ekle'},
+          {id:'CAP-002',branch:'Ankara Çukurambar',region:'İç Anadolu',capacity:18,today:21,occupancy:117,waiting:5,risk:'Kritik',action:'Dyno ve kabul slotlarını yeniden planla'},
+          {id:'CAP-003',branch:'Antalya Kepez',region:'Akdeniz',capacity:20,today:18,occupancy:90,waiting:4,risk:'İzlenmeli',action:'Bekleyen araç sırasını dengele'},
+          {id:'CAP-004',branch:'Bursa Nilüfer',region:'Marmara',capacity:18,today:16,occupancy:88,waiting:3,risk:'İzlenmeli',action:'Rapor onay gecikmesini takip et'},
+          {id:'CAP-005',branch:'İzmir Bornova',region:'Ege',capacity:22,today:15,occupancy:68,waiting:1,risk:'Sağlıklı',action:'Boş kapasiteyi CRM randevuya aç'}
+        ],
+        reportSla:[
+          {id:'SLA-001',branch:'İstanbul Ataşehir',region:'Marmara',minutes:62,risk:'Riskli'},
+          {id:'SLA-002',branch:'Antalya Kepez',region:'Akdeniz',minutes:58,risk:'İzlenmeli'},
+          {id:'SLA-003',branch:'Ankara Çukurambar',region:'İç Anadolu',minutes:54,risk:'İzlenmeli'},
+          {id:'SLA-004',branch:'Bursa Nilüfer',region:'Marmara',minutes:47,risk:'İzlenmeli'},
+          {id:'SLA-005',branch:'İzmir Bornova',region:'Ege',minutes:36,risk:'Sağlıklı'}
+        ],
+        bottlenecks:[
+          {id:'BOT-001',title:'Kaporta uzmanı eksikliği',branch:'İstanbul Ataşehir',region:'Marmara',impact:'Ortalama işlem süresi +18 dk',risk:'Riskli',module:'Academy',route:'academy',action:'Kaporta uzmanı için hızlı eğitim ve yedek personel planı'},
+          {id:'BOT-002',title:'Dyno istasyonu yoğunluğu',branch:'Ankara Çukurambar',region:'İç Anadolu',impact:'Bekleme +38 dk',risk:'Riskli',module:'Operasyon',route:'operations',action:'Dyno slot planı ve araç sıralaması güncelle'},
+          {id:'BOT-003',title:'Lift arızası',branch:'Antalya Kepez',region:'Akdeniz',impact:'Kapasite -%22',risk:'Kritik',module:'Kalite + Operasyon',route:'quality',action:'Bakım kaydı aç ve geçici istasyon planı yap'},
+          {id:'BOT-004',title:'Rapor onay gecikmesi',branch:'Bursa Nilüfer',region:'Marmara',impact:'SLA riski',risk:'İzlenmeli',module:'Operasyon',route:'operations',action:'Onay sorumlusu ata ve rapor kuyruğunu kapat'},
+          {id:'BOT-005',title:'Kalibrasyon tarihi yaklaşan cihaz',branch:'Kocaeli İzmit',region:'Marmara',impact:'Kalite riski',risk:'İzlenmeli',module:'Kalite',route:'quality',action:'Kalibrasyon takibi ve cihaz kontrolü planla'}
+        ],
+        delayed:[
+          {id:'DEL-001',branch:'İstanbul Ataşehir',region:'Marmara',topic:'Rapor teslimi 92 dk gecikti',impact:'Müşteri bekliyor',risk:'Kritik',action:'Geciken raporları kapat',signals:['Şikayet riski','Kaliteye aktarılmalı']},
+          {id:'DEL-002',branch:'Antalya Kepez',region:'Akdeniz',topic:'Lift arızası kapasiteyi düşürdü',impact:'Randevu birikiyor',risk:'Kritik',action:'Bakım aksiyonu aç',signals:['Kaliteye aktarılmalı','Kriz eşiğine yakın']},
+          {id:'DEL-003',branch:'Ankara Çukurambar',region:'İç Anadolu',topic:'Dyno test bekleme 38 dk',impact:'İşlem süresi uzuyor',risk:'Riskli',action:'İstasyon planı yap',signals:['Şikayet riski']},
+          {id:'DEL-004',branch:'Bursa Nilüfer',region:'Marmara',topic:'Rapor onay gecikmesi',impact:'SLA riski var',risk:'İzlenmeli',action:'Onay sorumlusu ata',signals:['Şikayet riski']},
+          {id:'DEL-005',branch:'Kocaeli İzmit',region:'Marmara',topic:'Kalibrasyon tarihi yaklaşıyor',impact:'Kalite riski var',risk:'İzlenmeli',action:'Kalibrasyon takibi aç',signals:['Kaliteye aktarılmalı','Hukuki risk olabilir']}
+        ],
+        signals:[
+          {title:'Şikayete Dönüşme Riski',value:'5 kayıt',why:'Operasyon gecikmesi müşteriye yansımadan takip edilmeli.',route:'complaints',risk:'watch'},
+          {title:'Kalite Uygunsuzluğu Sinyali',value:'6 kayıt',why:'Rapor, cihaz ve kontrol standardı kalite tarafında doğrulanmalı.',route:'quality',risk:'watch'},
+          {title:'Hukuki Riske Dönüşebilir',value:'2 kayıt',why:'Rapor gecikmesi ve kanıt eksikliği hukuk ön incelemesine aday.',route:'legal',risk:'risk'},
+          {title:'Kriz Eşiğine Yakın Operasyon',value:'1 kayıt',why:'Aynı gün içinde müşteri, operasyon ve itibar etkisi birleşti.',route:'crisis',risk:'risk'},
+          {title:'Eğitim İhtiyacı Doğuran Darboğaz',value:'4 ekip',why:'Uzman eksikliği ve vardiya zayıflığı Academy planına bağlanmalı.',route:'academy',risk:'watch'},
+          {title:'Şube KPI Etkisi',value:'3 şube',why:'Operasyon SLA düşüşü şube genel KPI skorunu aşağı çekiyor.',route:'branches',risk:'good'}
+        ]
+      };
+    }
+    function operationRiskClass(risk){
+      if(['Kritik','Yüksek','Riskli'].includes(risk)) return risk==='Kritik'?'risk':'watch';
+      if(['İzlenmeli','Orta'].includes(risk)) return 'watch';
+      return 'good';
+    }
+    function operationTone(risk){ return ['Kritik','Riskli','Yüksek'].includes(risk)?'bad':(['İzlenmeli','Orta'].includes(risk)?'warn':'good'); }
+    function operationPriority(risk){ return risk==='Kritik'?'Kritik':(['Riskli','Yüksek'].includes(risk)?'Yüksek':(['İzlenmeli','Orta'].includes(risk)?'Orta':'Düşük')); }
+    function operationSlaHours(risk){ return risk==='Kritik'?4:(['Riskli','Yüksek'].includes(risk)?24:(['İzlenmeli','Orta'].includes(risk)?48:72)); }
+    function operationActionById(id){
+      const data=operationDemoData();
+      return [...data.capacity,...data.bottlenecks,...data.delayed,...data.reportSla].find(x=>x.id===id) || data.delayed[0];
+    }
+    function OperationAlarmSummary(){
+      return `<div class="ops-summary-grid">
+        <div class="ops-summary-tile"><span>Bugünkü Ekspertiz</span><b>184</b></div>
+        <div class="ops-summary-tile"><span>Geciken Rapor</span><b style="color:var(--red)">11</b></div>
+        <div class="ops-summary-tile"><span>SLA İçinde Tamamlama</span><b>%87</b></div>
+        <div class="ops-summary-tile"><span>Kapasite Riski</span><b>2 şube</b></div>
+      </div>`;
+    }
+    function OperationsCenterPage(){
+      return `<div class="ops-center">
+        <section class="ops-hero">
+          <div><h2>Operasyon Merkezi</h2><p>Randevu, araç kabul, ekspertiz akışı, test istasyonları ve rapor teslim süreçlerini günlük operasyon disipliniyle yönetin.</p></div>
+          <div class="ops-hero-actions">
+            <button class="btn primary" data-operation-action="SLA-001:delayed-report">${icon('clipboard-plus')}Geciken Rapor Aksiyonu Aç</button>
+            <button class="btn" data-operation-action="CAP-001:capacity-warning">${icon('alert-triangle')}Kapasite Uyarısı Oluştur</button>
+            <button class="btn" data-operation-scroll>${icon('list-checks')}Gün Sonu Operasyon Özeti</button>
+          </div>
+        </section>
+        ${OperationKpis()}
+        ${OperationPipeline()}
+        ${OperationCapacitySummary()}
+        ${OperationReportSla()}
+        ${OperationBottlenecks()}
+        ${OperationDelayedWorkList()}
+        ${OperationRiskSignals()}
+      </div>`;
+    }
+    function OperationKpis(){
+      const rows=operationDemoData().kpis.map(k=>`<div class="card stat ops-kpi ${k[4]}"><div class="label">${icon(k[5])}${k[0]}</div><div class="value">${k[1]}</div><div class="trend ${k[4]==='bad'?'down':''}">${k[3]} · ${k[2]}</div></div>`).join('');
+      return `<div class="ops-kpis">${rows}</div>`;
+    }
+    function OperationPipeline(){
+      const rows=operationDemoData().pipeline.map((p,i)=>{ const cls=operationTone(p[4]); return `<div class="ops-stage-card ${cls==='bad'?'bad':cls==='warn'?'warn':'good'}">
+        <div class="ops-stage-head"><b>${p[0]}</b><span class="ops-stage-no">${i+1}</span></div>
+        <div class="ops-stage-metrics"><div><span>Kayıt</span><strong>${p[1]}</strong></div><div><span>Bekleme</span><strong>${p[2]}</strong></div><div><span>Geciken</span><strong>${p[3]}</strong></div></div>
+        ${badge(p[4])}
+      </div>`; }).join('');
+      return `<div class="card"><div class="card-head"><div><div class="card-title">Günlük Ekspertiz Akışı</div><div class="card-sub">CRM listesini tekrar etmeden, araç kabulden rapor teslimine kadar üretim hattı sinyali.</div></div></div><div class="ops-pipeline">${rows}</div></div>`;
+    }
+    function OperationCapacitySummary(){
+      const rows=operationDemoData().capacity.map(x=>`<div class="ops-capacity-row ${operationRiskClass(x.risk)}">
+        <div><span>Şube</span><b>${x.branch}</b></div><div><span>Bölge</span><b>${x.region}</b></div><div><span>Kapasite</span><b>${x.capacity}</b></div><div><span>Bugünkü</span><b>${x.today}</b></div><div><span>Doluluk</span><b>%${x.occupancy}</b></div><div><span>Bekleyen</span><b>${x.waiting}</b></div>
+        <div class="ops-card-actions">${badge(x.risk)}<button class="btn" data-operation-action="${x.id}:capacity-warning">Aksiyon Aç</button></div>
+      </div>`).join('');
+      return `<div class="card"><div class="card-head"><div><div class="card-title">Randevu ve Kapasite Operasyon Özeti</div><div class="card-sub">CRM randevu detayını kopyalamadan, şube kapasite ve bekleyen araç sinyali.</div></div></div><div class="ops-capacity-list">${rows}</div></div>`;
+    }
+    function OperationReportSla(){
+      const rows=operationDemoData().reportSla.map(x=>{ const cls=x.minutes>90?'critical':x.minutes>60?'risky':x.minutes>45?'warn':''; return `<div class="ops-bar-row"><b>${x.branch}</b><div class="ops-bar-track"><div class="ops-bar-fill ${cls}" style="width:${Math.min(100,Math.round(x.minutes/90*100))}%"></div></div><strong>${x.minutes} dk</strong></div>`; }).join('');
+      return `<div class="grid g60">
+        <div class="card"><div class="card-head"><div><div class="card-title">Rapor Teslim SLA Takibi</div><div class="card-sub">Operasyonun özgün teslim disiplini. Şikayet detayı burada değil, sadece risk sinyali olarak görünür.</div></div><button class="btn primary" data-operation-action="SLA-001:delayed-report">Geciken Rapor Aksiyonu Aç</button></div>
+          <div class="grid g3">${stat('SLA Hedefi','45 dk','Standart teslim')}${stat('SLA İçinde Teslim','%87','Hedef %92','amber')}${stat('Şikayet Riski','5 kayıt','Detay şikayet modülünde','amber')}</div>
+          <div class="ops-bar-list" style="margin-top:12px">${rows}</div>
+        </div>
+        <div class="card ops-day-summary" id="operationDaySummary"><div class="card-head"><div><div class="card-title">Gün Sonu Operasyon Özeti</div><div class="card-sub">Üretim hattı kapanışında kontrol edilecek operasyon maddeleri.</div></div></div>
+          <div class="mini-list"><div class="mini">${icon('clock')}<div><b>60 dk üstü rapor</b><span>8 kayıt, üçü 90 dk sınırını geçti.</span></div></div><div class="mini">${icon('gauge')}<div><b>Ortalama rapor hazırlama</b><span>38 dk; hedef içinde fakat Ataşehir ve Antalya yakından izlenmeli.</span></div></div><div class="mini">${icon('route')}<div><b>Operasyon kapanış notu</b><span>Geciken rapor ve kapasite aksiyonları kapatılmadan gün sonu tamam sayılmamalı.</span></div></div></div>
+        </div>
+      </div>`;
+    }
+    function OperationBottlenecks(){
+      const rows=operationDemoData().bottlenecks.map(x=>`<div class="ops-bottleneck-card ${operationRiskClass(x.risk)}">
+        <h3>${x.title}</h3><p><b>${x.branch}</b> · ${x.impact}</p><div class="ops-chip-list">${badge(x.risk)}<span class="ops-chip">${x.module}</span></div>
+        <div class="ops-card-actions"><button class="btn primary" data-operation-action="${x.id}:station-bottleneck">Operasyon Aksiyonu Aç</button><button class="btn" data-route="${x.route}">İlgili Modüle Git</button></div>
+      </div>`).join('');
+      return `<div class="card"><div class="card-head"><div><div class="card-title">Operasyon Darboğazları</div><div class="card-sub">Günlük akışı yavaşlatan personel, istasyon, ekipman ve onay darboğazları. Detaylar ilgili modüle yönlenir.</div></div></div><div class="ops-bottleneck-grid">${rows}</div></div>`;
+    }
+    function OperationDelayedWorkList(){
+      const rows=operationDemoData().delayed.slice(0,5).map(x=>`<div class="ops-work-row ${operationRiskClass(x.risk)}">
+        <div><span>Şube / Konu</span><b>${x.branch}</b><p class="card-sub" style="margin:4px 0 0">${x.topic}</p></div>
+        <div><span>Müşteri etkisi</span><b>${x.impact}</b><div class="ops-chip-list" style="margin-top:6px">${x.signals.map(s=>`<span class="ops-chip">${s}</span>`).join('')}</div></div>
+        <div><span>Risk</span><b>${badge(x.risk)}</b></div>
+        <button class="btn primary" data-operation-action="${x.id}:delayed-report">Aksiyon Aç</button>
+      </div>`).join('');
+      return `<div class="card"><div class="card-head"><div><div class="card-title">Geciken İşler ve Müdahale Listesi</div><div class="card-sub">Sadece operasyon aksiyonu gerektiren ilk 5 kayıt. Diğer modül detayları rozet olarak kalır.</div></div></div><div class="ops-work-list">${rows}</div></div>`;
+    }
+    function OperationRiskSignals(){
+      const rows=operationDemoData().signals.map(x=>`<div class="ops-signal-card ${x.risk==='risk'?'risk':x.risk==='watch'?'watch':'good'}"><h3>${x.title}</h3><strong>${x.value}</strong><p>${x.why}</p><button class="btn" data-route="${x.route}">İlgili modüle git</button></div>`).join('');
+      return `<div class="card"><div class="card-head"><div><div class="card-title">Operasyon Kaynaklı Risk Sinyalleri</div><div class="card-sub">Detay listelemeden, operasyonun diğer modüllere etkisini özet rozet ve yönlendirmeyle gösterir.</div></div></div><div class="ops-signal-grid">${rows}</div></div>`;
+    }
+    function openOperationActionModal(operationId, actionType='delayed-report'){
+      const item=typeof operationId==='object' ? operationId : operationActionById(operationId);
+      const template=actionType==='delayed-report' ? 'Operasyon geciken rapor kapatma' : 'Yeni aksiyon';
+      openActionModal(template);
+      const form=document.getElementById('actionForm');
+      if(!form) return;
+      const risk=item.risk || 'Yüksek', priority=operationPriority(risk), sla=operationSlaHours(risk);
+      const titleMap={
+        'delayed-report':`Geciken rapor operasyon aksiyonu - ${item.branch}`,
+        'capacity-warning':`Kapasite uyarısı - ${item.branch}`,
+        'station-bottleneck':`Operasyon darboğaz aksiyonu - ${item.branch}`,
+        'equipment-risk':`Ekipman riski aksiyonu - ${item.branch}`,
+        'approval-delay':`Rapor onay gecikmesi - ${item.branch}`,
+        'calibration-risk':`Kalibrasyon takip aksiyonu - ${item.branch}`
+      };
+      const set=(name,value)=>{ if(form.elements[name]) form.elements[name].value=value; };
+      set('title',titleMap[actionType] || `Operasyon aksiyonu - ${item.branch}`);
+      set('template', actionType==='delayed-report' ? 'Operasyon geciken rapor kapatma' : '');
+      set('category','Operasyon');
+      set('sourceModule','Operasyon');
+      set('region',item.region || '');
+      set('branch',item.branch || '');
+      set('priority',priority);
+      set('riskLevel',priority);
+      set('slaTargetHours',sla);
+      set('linkedRecordType','Operasyon Kaydı');
+      set('linkedRecordTitle',`${item.branch || 'Şube'} - ${item.topic || item.title || item.action || 'Operasyon kaydı'}`);
+      set('evidenceRequired',['Kritik','Yüksek'].includes(priority)?'true':'false');
+      set('approvalRequired',priority==='Kritik'?'true':'false');
+      set('nextAction',item.action || 'Operasyon sorumlusu atanıp gün içinde kapanış planı yapılmalı.');
+      set('closingCriteria','Operasyon aksiyonu tamamlandı, müşteri/şube bilgilendirildi ve SLA riski kapatıldı.');
+      set('actionNote',`${item.branch || 'Şube'} için operasyon sinyali: ${item.topic || item.title || item.impact || 'SLA ve kapasite riski'}. Önerilen aksiyon: ${item.action || 'Operasyon müdahalesi aç.'}`);
+      const d=new Date(Date.now()+sla*60*60*1000);
+      set('deadline',d.toISOString().slice(0,16));
+      toast('Operasyon aksiyonu hazırlandı.');
     }
     function normalizeBranchRow(row){ return {name:row[0],cars:row[1],revenue:row[2],satisfaction:row[3],complaints:row[4],trust:row[5],status:row[6],packageAvg:row[7]}; }
     function calculateTrustScore(b){
@@ -4774,6 +4961,8 @@
       document.querySelectorAll('[data-route]').forEach(el=>el.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();route(el.dataset.route);toggleCommandDock(false);}));
       document.querySelectorAll('[data-action]').forEach(el=>el.addEventListener('click',e=>{ e.stopPropagation(); toast(el.dataset.action); }));
       document.querySelectorAll('[data-open-action-modal]').forEach(el=>el.addEventListener('click',e=>{ e.preventDefault(); e.stopPropagation(); openActionModal(el.dataset.openActionModal || 'Yeni aksiyon'); toggleCommandDock(false); }));
+      document.querySelectorAll('[data-operation-action]').forEach(el=>el.addEventListener('click',e=>{ e.preventDefault(); e.stopPropagation(); const [id,type]=String(el.dataset.operationAction||'').split(':'); openOperationActionModal(id,type||'delayed-report'); toggleCommandDock(false); }));
+      document.querySelectorAll('[data-operation-scroll]').forEach(el=>el.addEventListener('click',e=>{ e.preventDefault(); e.stopPropagation(); document.getElementById('operationDaySummary')?.scrollIntoView({behavior:'smooth',block:'start'}); toast('Gün sonu operasyon özeti alanına gidildi.'); }));
       document.querySelectorAll('[data-complete-task]').forEach(el=>el.addEventListener('click',async e=>{ e.preventDefault(); e.stopPropagation(); await completeActionTask(el.dataset.completeTask); }));
       document.querySelectorAll('[data-action-view]').forEach(el=>el.addEventListener('click',e=>{ e.preventDefault(); actionView=el.dataset.actionView; renderPages(); route('actions'); }));
       document.querySelectorAll('[data-action-filter]').forEach(el=>el.addEventListener('input',()=>{ actionFilters[el.dataset.actionFilter]=el.value; if(el.tagName==='INPUT'){ clearTimeout(actionFilterTimer); actionFilterTimer=setTimeout(()=>{ renderPages(); route('actions'); },350); } }));
