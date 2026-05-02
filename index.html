@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="ototr-version" content="SVK v1.0.59-legal-ceo-strip" />
+  <meta name="ototr-version" content="SVK v1.0.60-legal-ceo-alert" />
   <title>OTOTR Genel Merkez ERP + CRM</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -47,6 +47,7 @@
     body.dark-mode .risk-impact-score,body.dark-mode .risk-impact-row{background:#111f33!important;border-color:#2b3c56!important;color:#f1f5f9!important}
     body.dark-mode .risk-impact-score small,body.dark-mode .risk-impact-module span,body.dark-mode .risk-next,body.dark-mode .risk-impact-head,body.dark-mode .risk-matrix-title,body.dark-mode .risk-axis-label,body.dark-mode .risk-matrix-legend span{color:#aab7ca!important}
     body.dark-mode .risk-impact-detail{background:#111f33;border-color:#2b3c56;color:#f1f5f9}body.dark-mode .risk-impact-detail span{color:#aab7ca}
+    body.dark-mode .legal-ceo-alert{background:linear-gradient(90deg,#1a1522,#111f33 62%,#0f1c2f);border-color:#4b2b36;color:#f1f5f9}body.dark-mode .legal-ceo-alert span{color:#aab7ca}
     body.dark-mode .risk-cell.low{background:#0b3a2a;color:#9df2c6;border-color:#1f7a4d}body.dark-mode .risk-cell.mid{background:#10284f;color:#b9d3ff;border-color:#2d5caa}body.dark-mode .risk-cell.high{background:#3b260b;color:#ffd58a;border-color:#9a650f}body.dark-mode .risk-cell.critical{background:#3b1118;color:#ffb4bc;border-color:#8a2630}
     body.dark-mode .risk-matrix-cell{border-color:#2b3c56!important}
     body.dark-mode .risk-matrix-cell.l1{background:#0b3a2a!important;color:#9df2c6!important}body.dark-mode .risk-matrix-cell.l2{background:#10284f!important;color:#b9d3ff!important}body.dark-mode .risk-matrix-cell.l3{background:#3b3216!important;color:#fcd34d!important}body.dark-mode .risk-matrix-cell.l4{background:#3b260b!important;color:#ffd58a!important}body.dark-mode .risk-matrix-cell.l5{background:#3b1118!important;color:#ffb4bc!important}
@@ -311,6 +312,12 @@
     .legal-ceo-actions{position:relative;z-index:1;display:flex;gap:7px;justify-content:flex-end;flex-wrap:wrap}
     .legal-ceo-actions .btn{min-height:30px;padding:7px 10px;border-color:rgba(255,255,255,.22);background:rgba(255,255,255,.08);color:#fff}
     .legal-ceo-actions .btn.primary{background:var(--red);border-color:var(--red)}
+    .legal-ceo-alert{margin-top:8px;border:1px solid #ffc5ca;background:linear-gradient(90deg,#fff7f8,#fff 58%,#f7fbff);border-radius:10px;padding:9px 10px;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;min-width:0}
+    .legal-ceo-alert i{width:28px;height:28px;border-radius:999px;background:#ffeaec;color:var(--red);display:grid;place-items:center;flex:0 0 auto}
+    .legal-ceo-alert b{font-size:12px;line-height:1.35;overflow-wrap:anywhere}
+    .legal-ceo-alert span{display:block;color:#4d5563;font-size:11px;line-height:1.35;margin-top:2px}
+    .legal-ceo-alert-actions{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}
+    .legal-ceo-alert .micro-btn{white-space:nowrap}
     .risk-matrix-mini{display:grid;gap:5px;margin-top:2px}
     .risk-matrix-title{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:9px;color:var(--muted);font-weight:950;text-transform:uppercase}
     .risk-matrix-grid{display:grid;grid-template-columns:54px repeat(5,1fr);gap:4px;align-items:center}
@@ -363,7 +370,8 @@
     @media (max-width:760px){.dashboard-signal-grid .exec-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.dashboard-signal-grid .exec-insight{grid-column:1/-1}}
     @media (max-width:640px){.exec-card{padding:12px}.exec-card .btn{width:100%;justify-content:center}.exec-metrics{grid-template-columns:1fr}.dashboard-signal-grid .exec-summary{grid-template-columns:1fr}.dashboard-signal-grid .exec-hero{grid-template-columns:minmax(0,1fr) auto auto}.dashboard-signal-grid .exec-hero small{grid-column:1 / 3;text-align:left}.dashboard-signal-grid .exec-hero-btn{grid-column:3;grid-row:1 / span 2;align-self:center}.dashboard-signal-grid .exec-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.bi-region-grid,.bi-profit-bridge{grid-template-columns:1fr}.bi-visual-card canvas{max-height:200px}}
     @media (max-width:900px){.legal-ceo-strip{grid-template-columns:1fr;align-items:start}.legal-ceo-actions{justify-content:flex-start}.legal-ceo-score,.legal-ceo-meta{white-space:normal}}
-    @media (max-width:560px){.legal-ceo-card{padding:8px}.legal-ceo-strip{padding:10px}.legal-ceo-title,.legal-ceo-score{white-space:normal;flex-wrap:wrap}.legal-ceo-meta span{white-space:normal}}
+    @media (max-width:720px){.legal-ceo-alert{grid-template-columns:auto 1fr}.legal-ceo-alert-actions{grid-column:1/-1;justify-content:flex-start}}
+    @media (max-width:560px){.legal-ceo-card{padding:8px}.legal-ceo-strip{padding:10px}.legal-ceo-title,.legal-ceo-score{white-space:normal;flex-wrap:wrap}.legal-ceo-meta span{white-space:normal}.legal-ceo-alert{grid-template-columns:1fr}.legal-ceo-alert i{display:none}}
     @media (max-width:1100px){.hr-hero{display:grid}.hr-data-grid,.hr-card-grid,.hr-card-grid.two,.hr-settings-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.hr-kanban{grid-template-columns:repeat(3,minmax(220px,1fr))}.ototr-quality-page{margin:-18px -18px -40px;padding:18px}.ototr-quality-hero,.ototr-quality-grid-2,.ototr-quality-grid-3,.ototr-quality-grid-4{grid-template-columns:1fr}.ototr-quality-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.ototr-quality-hero .quick-actions{justify-content:flex-start}.ototr-quality-heatmap{grid-template-columns:repeat(2,minmax(0,1fr))}.ototr-quality-check-row{grid-template-columns:1fr 86px 96px}.ototr-quality-check-row input,.ototr-quality-upload{grid-column:1/-1}.ototr-quality-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.legal-hero,.legal-panel-grid{grid-template-columns:1fr}.legal-kpi-grid,.legal-filters,.legal-mini-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.legal-case-row{grid-template-columns:1fr 1fr}.legal-actions{justify-content:flex-start}}
     @media (max-width:700px){.hr-data-grid,.hr-card-grid,.hr-card-grid.two,.hr-settings-grid{grid-template-columns:1fr}.hr-hero{padding:16px}.hr-hero h2{font-size:22px}.hr-score-row{grid-template-columns:1fr}.hr-kanban{grid-template-columns:repeat(2,minmax(210px,1fr))}.hr-tree-node.child{margin-left:10px}.ototr-quality-page{margin:-14px -12px -34px;padding:14px 12px 34px}.ototr-quality-hero{padding:17px;border-radius:14px}.ototr-quality-hero h2{font-size:23px}.ototr-quality-kpis,.ototr-quality-heatmap,.ototr-quality-summary{grid-template-columns:1fr}.ototr-quality-check-row{grid-template-columns:1fr}.ototr-quality-table{min-width:900px}.ototr-quality-flow{grid-template-columns:repeat(10,136px)}.legal-hero{padding:17px;border-radius:12px}.legal-hero h2{font-size:23px}.legal-kpi-grid,.legal-filters,.legal-mini-grid,.legal-case-row{grid-template-columns:1fr}.legal-progress-row{grid-template-columns:1fr}.legal-table{min-width:920px}}
   </style>
@@ -371,7 +379,7 @@
 <body>
   <div class="app">
     <aside class="side">
-      <div class="brand-row"><a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.59</small></div></a><button class="theme-toggle" type="button" data-theme-toggle title="Koyu temaya geç" aria-label="Tema değiştir"><i data-lucide="sun-moon"></i><span id="themeToggleText">Açık</span></button></div>
+      <div class="brand-row"><a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.60</small></div></a><button class="theme-toggle" type="button" data-theme-toggle title="Koyu temaya geç" aria-label="Tema değiştir"><i data-lucide="sun-moon"></i><span id="themeToggleText">Açık</span></button></div>
       <div class="nav" id="nav"></div>
     </aside>
 
@@ -2175,7 +2183,7 @@
         status:b.risk==='Yüksek'?'İnceleme':b.risk==='Orta'?'Takip':'Stabil'
       }));
       out.demoDataHealth={
-        version:'SVK v1.0.59',
+        version:'SVK v1.0.60',
         branchUniverse:'10 şube / 4 aktif bölge',
         packagePriceBand:'5.000 TL - 15.000 TL',
         avgTicketBand:'8.350 TL - 9.900 TL',
@@ -4648,7 +4656,9 @@
       const rows=legalCasesData(), s=legalSummaryData();
       const high=rows.filter(x=>x.riskLevel==='Yüksek').length;
       const score=Math.max(42,Math.min(96,100-(s.criticalRiskCases*12)-(high*6)-(s.slaBreached*8)-(s.ceoApprovalWaiting*4)));
-      return `<div class="legal-ceo-strip"><div class="legal-ceo-title"><i></i><span>Hukuk & Risk CEO Özeti</span></div><div class="legal-ceo-score"><span>CEO hukuk risk skoru</span><b>${score}/100</b></div><div class="legal-ceo-meta"><span>${s.criticalRiskCases} kritik dosya</span><span>${s.ceoApprovalWaiting} CEO onayı</span><span>${fmtTL(s.financialExposure)} tahmini risk</span><span>${s.slaBreached} SLA aşımı</span></div><div class="legal-ceo-actions"><button class="btn primary" data-open-action-modal="Hukuk CEO risk takip aksiyonu">Aksiyon Oluştur</button><button class="btn" data-route="crisis">Komuta Merkezi</button><button class="btn" data-route="legal">Hukuka git</button></div></div>`;
+      const alarm=rows.slice().sort((a,b)=>((b.ceoApprovalRequired?80:0)+(b.riskLevel==='Kritik'?70:b.riskLevel==='Yüksek'?45:15)+safeNum(b.financialExposure)/10000+String(b.sla).includes('Aşıldı')*25)-((a.ceoApprovalRequired?80:0)+(a.riskLevel==='Kritik'?70:a.riskLevel==='Yüksek'?45:15)+safeNum(a.financialExposure)/10000+String(a.sla).includes('Aşıldı')*25))[0]||rows[0];
+      const alarmText=alarm?`${alarm.branch} · ${alarm.type} · ${fmtTL(alarm.financialExposure)} risk · ${alarm.nextAction}`:'Hukuk alarmı bulunmuyor.';
+      return `<div class="legal-ceo-strip"><div class="legal-ceo-title"><i></i><span>Hukuk & Risk CEO Özeti</span></div><div class="legal-ceo-score"><span>CEO hukuk risk skoru</span><b>${score}/100</b></div><div class="legal-ceo-meta"><span>${s.criticalRiskCases} kritik dosya</span><span>${s.ceoApprovalWaiting} CEO onayı</span><span>${fmtTL(s.financialExposure)} tahmini risk</span><span>${s.slaBreached} SLA aşımı</span></div><div class="legal-ceo-actions"><button class="btn primary" data-open-action-modal="Hukuk CEO risk takip aksiyonu">Aksiyon Oluştur</button><button class="btn" data-route="crisis">Komuta Merkezi</button><button class="btn" data-route="legal">Hukuka git</button></div></div><div class="legal-ceo-alert"><i>${icon('scale')}</i><div><b>CEO Hukuk Alarmı: ${alarm?.title||'Kritik hukuk dosyası'}</b><span>${alarmText}</span></div><div class="legal-ceo-alert-actions"><button class="micro-btn" data-detail="legal:${alarm?.id||''}">Dosyaya Git</button><button class="micro-btn" data-open-action-modal="${alarm?.title||'Hukuk alarmı'}">Görev Aç</button></div></div>`;
     }
     function legalKpi(label,value,sub,risk,trend){
       return `<div class="legal-kpi ${legalRiskClass(risk)}"><div class="label">${label}</div><b>${value}</b><div class="legal-kpi-foot">${legalRiskBadge(risk)}<small>${sub}</small>${legalTrend(trend)}</div></div>`;
