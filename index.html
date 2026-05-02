@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="ototr-version" content="SVK v1.0.52-premium-visuals" />
+  <meta name="ototr-version" content="SVK v1.0.53-compact-exec-summary" />
   <title>OTOTR Genel Merkez ERP + CRM</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -271,16 +271,17 @@
     .dashboard-signal-grid .exec-card .card-sub{position:absolute;left:0;top:calc(100% + 6px);z-index:6;max-width:min(420px,80vw);padding:7px 9px;border:1px solid var(--line);border-radius:9px;background:#111318;color:#fff;font-size:10px;line-height:1.35;box-shadow:0 12px 28px rgba(17,19,24,.18);opacity:0;pointer-events:none;transform:translateY(-3px);transition:.14s}
     .dashboard-signal-grid .exec-card .card-head:hover .card-sub{opacity:1;transform:none}
     .dashboard-signal-grid .exec-card .btn{min-height:30px;padding:6px 9px;font-size:11px}
-    .dashboard-signal-grid .exec-summary{grid-template-columns:92px minmax(0,1fr);gap:7px}
-    .dashboard-signal-grid .exec-hero{min-height:76px;padding:8px;border-radius:11px}
+    .dashboard-signal-grid .exec-summary{grid-template-columns:86px minmax(0,1fr);gap:7px}
+    .dashboard-signal-grid .exec-hero{min-height:54px;padding:8px;border-radius:11px;background:linear-gradient(135deg,#111318,#242936 68%,rgba(215,25,32,.86));align-content:center}
     .dashboard-signal-grid .exec-hero span{font-size:8px}
-    .dashboard-signal-grid .exec-hero b{font-size:20px}
     .dashboard-signal-grid .exec-hero small{font-size:9px;-webkit-line-clamp:2}
-    .dashboard-signal-grid .exec-hero .micro-btn{padding:4px 6px;font-size:9px}
-    .dashboard-signal-grid .exec-metrics{grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;min-width:0}
+    .dashboard-signal-grid .exec-metrics{grid-template-columns:repeat(6,minmax(0,1fr));gap:5px;min-width:0}
     .dashboard-signal-grid .exec-metric{min-height:42px;padding:6px;border-radius:9px;overflow:hidden;align-content:center}
+    .dashboard-signal-grid .exec-metric.primary{background:linear-gradient(135deg,#111318,#262c38 65%,rgba(215,25,32,.78));border-color:#303641;color:#fff}
     .dashboard-signal-grid .exec-metric span{font-size:8px}
     .dashboard-signal-grid .exec-metric b{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .dashboard-signal-grid .exec-metric.primary b{font-size:20px;color:#fff}
+    .dashboard-signal-grid .exec-metric.primary span,.dashboard-signal-grid .exec-metric.primary small{color:#d7dce6}
     .dashboard-signal-grid .exec-metric small{font-size:8.5px}
     .dashboard-signal-grid .exec-insight{grid-column:auto;padding:6px 7px;min-height:42px;overflow:hidden}
     .dashboard-signal-grid .exec-insight b{font-size:9.5px}
@@ -333,7 +334,7 @@
     .bi-tech-list{display:grid;gap:8px}.bi-tech-row{display:grid;grid-template-columns:34px minmax(0,1fr) 54px;gap:9px;align-items:center;border:1px solid var(--line);border-radius:10px;background:#f8fafc;padding:8px}.bi-tech-rank{width:28px;height:28px;border-radius:999px;display:grid;place-items:center;background:#111318;color:#fff;font-size:10px;font-weight:950}.bi-tech-row b{font-size:12px}.bi-tech-row span{display:block;color:var(--muted);font-size:10px;margin-top:2px}.bi-tech-row strong{font-size:14px;text-align:right}
     .bi-profit-bridge{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:7px;align-items:end;min-height:190px}.bi-profit-step{display:grid;gap:6px;justify-items:center}.bi-profit-bar{width:100%;max-width:42px;border-radius:9px 9px 4px 4px;background:var(--green);min-height:18px}.bi-profit-bar.neg{background:var(--red)}.bi-profit-bar.total{background:var(--blue)}.bi-profit-step b{font-size:11px}.bi-profit-step span{font-size:9px;color:var(--muted);text-align:center;line-height:1.15}
     @media (max-width:1100px){.exec-card .card-head{grid-template-columns:1fr}.exec-summary{grid-template-columns:1fr}.exec-hero{min-height:auto}.exec-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
-    @media (max-width:1280px){.dashboard-signal-grid{grid-template-columns:1fr}.dashboard-signal-grid .signal-branch-kpi{grid-column:auto;grid-row:auto}.dashboard-signal-grid .exec-summary{grid-template-columns:122px minmax(0,1fr)}.risk-impact-map{grid-template-columns:1fr}.risk-impact-head{display:none}.risk-impact-row{grid-template-columns:1fr repeat(5,minmax(42px,1fr));}.risk-next,.risk-impact-row .micro-btn{grid-column:1/-1}}
+    @media (max-width:1280px){.dashboard-signal-grid{grid-template-columns:1fr}.dashboard-signal-grid .signal-branch-kpi{grid-column:auto;grid-row:auto}.dashboard-signal-grid .exec-summary{grid-template-columns:96px minmax(0,1fr)}.risk-impact-map{grid-template-columns:1fr}.risk-impact-head{display:none}.risk-impact-row{grid-template-columns:1fr repeat(5,minmax(42px,1fr));}.risk-next,.risk-impact-row .micro-btn{grid-column:1/-1}}
     @media (max-width:1100px){.bi-visual-grid{grid-template-columns:1fr}.bi-region-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
     @media (max-width:760px){.dashboard-signal-grid .exec-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.dashboard-signal-grid .exec-insight{grid-column:1/-1}}
     @media (max-width:640px){.exec-card{padding:12px}.exec-card .btn{width:100%;justify-content:center}.exec-metrics{grid-template-columns:1fr}.dashboard-signal-grid .exec-summary{grid-template-columns:1fr}.dashboard-signal-grid .exec-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.bi-region-grid,.bi-profit-bridge{grid-template-columns:1fr}.bi-visual-card canvas{max-height:200px}}
@@ -342,7 +343,7 @@
 <body>
   <div class="app">
     <aside class="side">
-      <div class="brand-row"><a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.52</small></div></a><button class="theme-toggle" type="button" data-theme-toggle title="Koyu temaya geç" aria-label="Tema değiştir"><i data-lucide="sun-moon"></i><span id="themeToggleText">Açık</span></button></div>
+      <div class="brand-row"><a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.53</small></div></a><button class="theme-toggle" type="button" data-theme-toggle title="Koyu temaya geç" aria-label="Tema değiştir"><i data-lucide="sun-moon"></i><span id="themeToggleText">Açık</span></button></div>
       <div class="nav" id="nav"></div>
     </aside>
 
@@ -2146,7 +2147,7 @@
         status:b.risk==='Yüksek'?'İnceleme':b.risk==='Orta'?'Takip':'Stabil'
       }));
       out.demoDataHealth={
-        version:'SVK v1.0.52',
+        version:'SVK v1.0.53',
         branchUniverse:'10 şube / 4 aktif bölge',
         packagePriceBand:'5.000 TL - 15.000 TL',
         avgTicketBand:'8.350 TL - 9.900 TL',
@@ -2547,7 +2548,7 @@
     function alertSla(a){ return a.severity==='critical'?'3 saat':a.severity==='high'?'24 saat':'48 saat'; }
     function ExecutiveSummaryBlock(cfg){
       const items=cfg.items||[];
-      return `<div class="exec-summary"><div class="exec-hero"><div><span>${cfg.eyebrow||'Yönetici özeti'}</span><b>${cfg.value}</b><small>${cfg.label}</small></div><button class="micro-btn" data-route="${cfg.route}">${cfg.button||'Detay'}</button></div><div class="exec-metrics">${items.map(i=>`<div class="exec-metric ${i.tone||''}"><span>${i.label}</span><b>${i.value}</b><small>${i.note||''}</small></div>`).join('')}${cfg.insight?`<div class="exec-insight">${icon(cfg.icon||'sparkles')}<div><b>${cfg.insight}</b><span>${cfg.next||''}</span></div></div>`:''}</div></div>`;
+      return `<div class="exec-summary"><div class="exec-hero"><div><span>${cfg.eyebrow||'Yönetici özeti'}</span><small>${cfg.label}</small></div></div><div class="exec-metrics"><div class="exec-metric primary"><span>${cfg.eyebrow||'Skor'}</span><b>${cfg.value}</b><small>${cfg.label}</small></div>${items.map(i=>`<div class="exec-metric ${i.tone||''}"><span>${i.label}</span><b>${i.value}</b><small>${i.note||''}</small></div>`).join('')}${cfg.insight?`<div class="exec-insight">${icon(cfg.icon||'sparkles')}<div><b>${cfg.insight}</b><span>${cfg.next||''}</span></div></div>`:''}</div></div>`;
     }
     function dashboardOpsMetrics(){
       const net=DB?.ceoDashboard?.network||{};
