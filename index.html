@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="ototr-version" content="SVK v1.0.48-compact-dashboard-signals" />
+  <meta name="ototr-version" content="SVK v1.0.49-polished-dark-mode" />
   <title>OTOTR Genel Merkez ERP + CRM</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -29,6 +29,20 @@
     body.dark-mode table th{background:#111f33;color:#cbd5e1}body.dark-mode table td{border-color:#26364f}body.dark-mode tbody tr:nth-child(even) td{background:#111827}body.dark-mode tbody tr:hover td{background:#17243a}
     body.dark-mode .search,body.dark-mode .search-results,body.dark-mode .search-hit,body.dark-mode .modal-box,body.dark-mode .drawer-panel{background:#0f1b2d;border-color:#26364f;color:var(--ink)}
     body.dark-mode .progress,body.dark-mode .bi-mini-track,body.dark-mode .ops-bar-track{background:#1e2f49}
+    body.dark-mode .top,body.dark-mode .executive-toolbar,body.dark-mode .dock-panel{background:#0b1220;border-color:#26364f}
+    body.dark-mode .hero,body.dark-mode .module-page-head,body.dark-mode .profile-hero,body.dark-mode .finance-philosophy,body.dark-mode .finance-balance-card{background:linear-gradient(135deg,#070b12,#111827 62%,#3d1218)!important;color:#f8fafc!important;border-color:#334155!important}
+    body.dark-mode .card-title,body.dark-mode .finance-card-title,body.dark-mode .finance-kpi .value,body.dark-mode .summary-tile b,body.dark-mode .mini b,body.dark-mode .deal b,body.dark-mode .kpi-value,body.dark-mode .exec-metric b,body.dark-mode .ceo-module-card b,body.dark-mode .ceo-focus-chip b,body.dark-mode .finance-mini b,body.dark-mode .ops-stage-head b,body.dark-mode .ops-capacity-row b,body.dark-mode .ops-work-row b,body.dark-mode .branch-kpi-detail-grid b,body.dark-mode .branch-region-kpi-card b,body.dark-mode .bi-region-tile b,body.dark-mode .bi-tech-row b,body.dark-mode td b{color:#f8fafc!important}
+    body.dark-mode .card-sub,body.dark-mode .finance-kpi .trend,body.dark-mode .finance-table th,body.dark-mode .finance-mini-row span,body.dark-mode .ceo-note,body.dark-mode .ai-insight p,body.dark-mode .exec-metric small,body.dark-mode .ceo-module-card small,body.dark-mode .ceo-focus-chip small,body.dark-mode .branch-kpi-detail-grid span,body.dark-mode .branch-region-kpi-card span,body.dark-mode .alert-flow span,body.dark-mode .compact-meta span{color:#aab7ca!important}
+    body.dark-mode [style*="background:#fff"],body.dark-mode [style*="background: #fff"],body.dark-mode [style*="background:#f8fafc"],body.dark-mode [style*="background: #f8fafc"],body.dark-mode [style*="background:#f6f9ff"],body.dark-mode [style*="background: #f6f9ff"]{background:#111f33!important;border-color:#2b3c56!important;color:#f1f5f9!important}
+    body.dark-mode [style*="color:#101828"],body.dark-mode [style*="color: #101828"],body.dark-mode [style*="color:#111318"],body.dark-mode [style*="color: #111318"],body.dark-mode [style*="color:#303641"],body.dark-mode [style*="color: #303641"],body.dark-mode [style*="color:#3f4754"],body.dark-mode [style*="color: #3f4754"],body.dark-mode [style*="color:#4d5563"],body.dark-mode [style*="color: #4d5563"],body.dark-mode [style*="color:#667085"],body.dark-mode [style*="color: #667085"]{color:#d6deeb!important}
+    body.dark-mode .kpi-card,body.dark-mode .exec-metric,body.dark-mode .ceo-focus-chip,body.dark-mode .ceo-module-card,body.dark-mode .alert-row,body.dark-mode .region-card,body.dark-mode .decision-tile,body.dark-mode .finance-rule,body.dark-mode .finance-chip,body.dark-mode .finance-table-wrap,body.dark-mode .complaint-table-wrap,body.dark-mode .branch-kpi-detail-grid div,body.dark-mode .branch-kpi-legend,body.dark-mode .branch-kpi-legend-list span,body.dark-mode .branch-kpi-region-label,body.dark-mode .branch-kpi-canvas,body.dark-mode .control-chip,body.dark-mode .profile-chip,body.dark-mode .icon-btn,body.dark-mode .metric-toggle,body.dark-mode .seg,body.dark-mode .col{background:#111f33!important;border-color:#2b3c56!important;color:#f1f5f9!important;box-shadow:none}
+    body.dark-mode .exec-metric.red,body.dark-mode .alert-row.critical,body.dark-mode .ceo-focus-chip.p0,body.dark-mode .ceo-module-card.critical,body.dark-mode .ops-stage-card.bad,body.dark-mode .ops-capacity-row.risk,body.dark-mode .ops-work-row.risk,body.dark-mode .ops-bottleneck-card.risk,body.dark-mode .ops-signal-card.risk,body.dark-mode .branch-kpi-alarm-row.critical,body.dark-mode .finance-row-protect{background:#2a1118!important;border-color:#7f1d2a!important}
+    body.dark-mode .exec-metric.amber,body.dark-mode .alert-row.high,body.dark-mode .ceo-focus-chip.p1,body.dark-mode .ceo-module-card.high,body.dark-mode .ops-stage-card.warn,body.dark-mode .ops-capacity-row.watch,body.dark-mode .ops-work-row.watch,body.dark-mode .ops-bottleneck-card.watch,body.dark-mode .ops-signal-card.watch,body.dark-mode .branch-kpi-alarm-row.risky,body.dark-mode .branch-kpi-alarm-row.watch,body.dark-mode .finance-row-support,body.dark-mode .finance-row-watch{background:#2a1f0e!important;border-color:#854d0e!important}
+    body.dark-mode .exec-metric.green,body.dark-mode .ceo-module-card.watch,body.dark-mode .ceo-focus-chip.p2,body.dark-mode .exec-metric.blue,body.dark-mode .finance-mini.positive,body.dark-mode .ops-stage-card.good{background:#0d2233!important;border-color:#1d4ed8!important}
+    body.dark-mode .b-green{background:#0b3a2a;color:#9df2c6;border-color:#1f7a4d}body.dark-mode .b-red{background:#3b1118;color:#ffb4bc;border-color:#8a2630}body.dark-mode .b-amber{background:#3b260b;color:#ffd58a;border-color:#9a650f}body.dark-mode .b-blue{background:#10284f;color:#b9d3ff;border-color:#2d5caa}body.dark-mode .b-gray{background:#1f2937;color:#cbd5e1;border-color:#475569}body.dark-mode .b-violet{background:#2b1f4f;color:#d8c8ff;border-color:#6d55b8}
+    body.dark-mode .severity.critical{background:#3b1118;color:#ffb4bc}body.dark-mode .severity.high{background:#3b260b;color:#ffd58a}body.dark-mode .severity.medium{background:#10284f;color:#b9d3ff}
+    body.dark-mode .score-ring{background:conic-gradient(var(--green) calc(var(--score)*1%),#243247 0)}body.dark-mode .score-ring div{background:#0f1b2d;border:1px solid #2b3c56}
+    body.dark-mode canvas{filter:saturate(1.08)}
     .theme-toggle{border:1px solid rgba(255,255,255,.16);border-radius:999px;background:rgba(255,255,255,.08);color:#fff;padding:7px 8px;display:inline-flex;align-items:center;justify-content:center;gap:0;font-size:0;font-weight:950;min-width:32px;height:32px;flex:0 0 auto}
     .theme-toggle i{width:15px;height:15px}.theme-toggle:hover{transform:translateY(-1px)}
     body.dark-mode .theme-toggle{background:rgba(255,255,255,.14);color:#f1f5f9;border-color:rgba(255,255,255,.24)}
@@ -280,7 +294,7 @@
 <body>
   <div class="app">
     <aside class="side">
-      <div class="brand-row"><a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.48</small></div></a><button class="theme-toggle" type="button" data-theme-toggle title="Koyu temaya geç" aria-label="Tema değiştir"><i data-lucide="sun-moon"></i><span id="themeToggleText">Açık</span></button></div>
+      <div class="brand-row"><a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.49</small></div></a><button class="theme-toggle" type="button" data-theme-toggle title="Koyu temaya geç" aria-label="Tema değiştir"><i data-lucide="sun-moon"></i><span id="themeToggleText">Açık</span></button></div>
       <div class="nav" id="nav"></div>
     </aside>
 
@@ -2084,7 +2098,7 @@
         status:b.risk==='Yüksek'?'İnceleme':b.risk==='Orta'?'Takip':'Stabil'
       }));
       out.demoDataHealth={
-        version:'SVK v1.0.48',
+        version:'SVK v1.0.49',
         branchUniverse:'10 şube / 4 aktif bölge',
         packagePriceBand:'5.000 TL - 15.000 TL',
         avgTicketBand:'8.350 TL - 9.900 TL',
