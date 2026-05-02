@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="ototr-version" content="SVK v1.0.31-operations-center" />
+  <meta name="ototr-version" content="SVK v1.0.32-franchise-live-funnel" />
   <title>OTOTR Genel Merkez ERP + CRM</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -452,7 +452,7 @@
           {stage:'Satışa dönen',count:486,rate:80}
         ],
         financeSummary:{todayRevenue:14820000,monthRevenue:318600000,expectedMonthEnd:462000000,royaltyHealth:98.7,royaltyRiskBranches:3,royaltyBlockedAmount:42800,royaltyStatus:'Sorun yok',topRevenue:[['İstanbul Maslak',219400],['İstanbul Ataşehir',203200],['Bursa Nilüfer',173500],['Kocaeli İzmit',149800],['Ankara Söğütözü',139700]]},
-        franchiseSummary:{newApplications:74,inTalks:38,contractStage:11,openingPrep:7,riskyCandidates:5},
+        franchiseSummary:{newApplications:8,inTalks:5,contractStage:1,openingPrep:1,riskyCandidates:3},
         trustFactors:[
           ['Müşteri memnuniyeti',92],
           ['Şikayet oranı',78],
@@ -1978,6 +1978,7 @@
           royaltyStatus:delayedRoyalty?'Çekim tekrarı var':'Sorun yok',
           topRevenue:branchMetrics.slice().sort((a,b)=>b.dailyRevenue-a.dailyRevenue).slice(0,5).map(m=>[m.branch.name,m.dailyRevenue])
         },
+        franchiseSummary:franchiseSummaryFromCandidates(franchiseCandidateRecords(out)),
         trustFactors:[
           ['Müşteri memnuniyeti',Math.round(avgGoogle*20)],
           ['Şikayet oranı',Math.max(55,100-openComplaints*2)],
@@ -1998,7 +1999,7 @@
         status:b.risk==='Yüksek'?'İnceleme':b.risk==='Orta'?'Takip':'Stabil'
       }));
       out.demoDataHealth={
-        version:'SVK v1.0.31',
+        version:'SVK v1.0.32',
         branchUniverse:'10 şube / 4 aktif bölge',
         packagePriceBand:'5.000 TL - 15.000 TL',
         avgTicketBand:'8.350 TL - 9.900 TL',
@@ -2012,6 +2013,7 @@
     function normalizeRoyalty(db){
       db=enrichComplaintCenter(db);
       const normalized={...db};
+      normalized.leads=ensureFranchiseLeadUniverse(normalized.leads||[]);
       normalized.branches=(normalized.branches||[]).map(b=>({...b,royalty:royaltyAmount(b.revenue)}));
       normalized.finance=(normalized.finance||[]).map(f=>({...f,royalty:royaltyAmount(f.revenue)}));
       normalized.financeHistory=(normalized.financeHistory||[]).map(f=>({...f,royalty:royaltyAmount(f.revenue)}));
@@ -2023,6 +2025,21 @@
         normalized.ceoDashboard={...normalized.ceoDashboard,network:{...normalized.ceoDashboard.network,monthlyRoyalty:royaltyAmount(monthRevenue)}};
       }
       return stabilizeDemoData(normalized);
+    }
+
+    function franchiseLiveCandidateSeeds(){
+      return [
+        {id:'LD-FR-01',name:'Ahmet Yılmaz',city:'Bursa',type:'Franchise adayı',stage:'Yeni Lead',score:84,budget:'7M - 9M TL',source:'Franchise formu',owner:'Franchise Satış',next:'İlk temas araması',phone:'0532 111 24 16'},
+        {id:'LD-FR-02',name:'Mehmet Kaya',city:'Eskişehir',type:'Franchise adayı',stage:'Ön Görüşme',score:78,budget:'5M - 7M TL',source:'Referans',owner:'Franchise Satış',next:'Yatırımcı sunumu',phone:'0544 222 35 27'},
+        {id:'LD-FR-03',name:'Selin Arslan',city:'Gaziantep',type:'Franchise adayı',stage:'Yatırımcı Sunumu',score:91,budget:'9M - 12M TL',source:'LinkedIn',owner:'CEO Ofisi',next:'Finansal yeterlilik',phone:'0530 333 46 38'},
+        {id:'LD-FR-04',name:'Burak Şahin',city:'Trabzon',type:'Franchise adayı',stage:'Teklif',score:72,budget:'4.5M - 6M TL',source:'Web',owner:'Finans',next:'Lokasyon dosyası',phone:'0555 444 57 49'},
+        {id:'LD-FR-05',name:'Volkan Otomotiv',city:'Ankara',type:'Franchise adayı',stage:'Sözleşme',score:88,budget:'8M - 10M TL',source:'Fuar',owner:'Hukuk',next:'Sözleşme final görüşmesi',phone:'0312 555 20 26'}
+      ];
+    }
+    function ensureFranchiseLeadUniverse(leads){
+      const map=new Map((leads||[]).map(x=>[x.id,x]));
+      franchiseLiveCandidateSeeds().forEach(x=>{ if(!map.has(x.id)) map.set(x.id,x); });
+      return [...map.values()];
     }
 
     const Backend = {
@@ -3094,15 +3111,8 @@
       }
       return `<h4>${icon('sparkles')}Yapay Zeka Finans Yorumu</h4><p>${headline}</p><div class="insight-grid">${chips.map(c=>`<div class="insight-chip"><b>${c[0]}</b><span>${c[1]}</span></div>`).join('')}</div>`;
     }
-    function franchiseCandidates(){
-      const extra=[
-        {id:'LD-FR-01',name:'Ahmet Yılmaz',city:'Bursa',type:'Franchise adayı',stage:'Yeni Lead',score:84,budget:'7M - 9M TL',source:'Franchise formu',owner:'Franchise Satış',next:'İlk temas araması',phone:'0532 111 24 16'},
-        {id:'LD-FR-02',name:'Mehmet Kaya',city:'Eskişehir',type:'Franchise adayı',stage:'Ön Görüşme',score:78,budget:'5M - 7M TL',source:'Referans',owner:'Franchise Satış',next:'Yatırımcı sunumu',phone:'0544 222 35 27'},
-        {id:'LD-FR-03',name:'Selin Arslan',city:'Gaziantep',type:'Franchise adayı',stage:'Yatırımcı Sunumu',score:91,budget:'9M - 12M TL',source:'LinkedIn',owner:'CEO Ofisi',next:'Finansal yeterlilik',phone:'0530 333 46 38'},
-        {id:'LD-FR-04',name:'Burak Şahin',city:'Trabzon',type:'Franchise adayı',stage:'Teklif',score:72,budget:'4.5M - 6M TL',source:'Web',owner:'Finans',next:'Lokasyon dosyası',phone:'0555 444 57 49'},
-        {id:'LD-FR-05',name:'Volkan Otomotiv',city:'Ankara',type:'Franchise adayı',stage:'Sözleşme',score:88,budget:'8M - 10M TL',source:'Fuar',owner:'Hukuk',next:'Sözleşme final görüşmesi',phone:'0312 555 20 26'}
-      ];
-      const sourceLeads=[...DB.leads.filter(l=>l.type.toLowerCase().includes('franchise')), ...extra];
+    function franchiseCandidateRecords(db=DB){
+      const sourceLeads=ensureFranchiseLeadUniverse((db&&db.leads)||[]).filter(l=>String(l.type||'').toLowerCase().includes('franchise'));
       const stages={ 'Yeni Lead':'Başvuru', 'Ön Görüşme':'İlk Temas', 'Yatırımcı Sunumu':'Sunum', 'Teklif':'Lokasyon Analizi', 'Sözleşme':'Sözleşme' };
       const gate={ 'Yeni Lead':'Franchise Satış', 'Ön Görüşme':'Franchise Satış', 'Yatırımcı Sunumu':'CEO Ofisi', 'Teklif':'Finans', 'Sözleşme':'Hukuk' };
       return sourceLeads.map((l,i)=>{
@@ -3112,15 +3122,33 @@
         return {...l,lifecycle,nextStage:franchiseNextStage(lifecycle),gateOwner:gate[l.stage]||l.owner,days,sla,risk};
       });
     }
+    function franchiseCandidates(){ return franchiseCandidateRecords(DB); }
     function franchiseStageOrder(){ return ['Başvuru','İlk Temas','Ön Değerlendirme','Sunum','Finansal Yeterlilik','Lokasyon Analizi','Due Diligence','Sözleşme','Kurulum','Eğitim','Açılış','Aktif Bayi']; }
     function franchiseNextStage(stage){ const order=franchiseStageOrder(), i=order.indexOf(stage); return i>=0 && i<order.length-1 ? order[i+1] : 'Aktif takip'; }
+    function franchisePipelineMetrics(c){
+      const order=franchiseStageOrder(), idx=stage=>order.indexOf(stage);
+      const applications=c.length;
+      const qualified=c.filter(x=>x.score>=75).length;
+      const contacted=c.filter(x=>idx(x.lifecycle)>=idx('İlk Temas')).length;
+      const meetings=c.filter(x=>idx(x.lifecycle)>=idx('Sunum')).length;
+      const finance=Math.max(c.filter(x=>x.score>=82 && idx(x.lifecycle)>=idx('Sunum')).length,c.filter(x=>idx(x.lifecycle)>=idx('Lokasyon Analizi')).length);
+      const contract=c.filter(x=>idx(x.lifecycle)>=idx('Sözleşme')).length;
+      const openingPrep=Math.max(1,c.filter(x=>['Kurulum','Eğitim','Açılış'].includes(x.lifecycle)).length);
+      const traffic=Math.max(160,Math.round(applications/0.045));
+      const opened=1;
+      return {traffic,applications,qualified,contacted,meetings,finance,contract,openingPrep,opened};
+    }
+    function franchiseSummaryFromCandidates(c){
+      const m=franchisePipelineMetrics(c);
+      return {newApplications:m.applications,inTalks:m.contacted,contractStage:m.contract,openingPrep:m.openingPrep,riskyCandidates:c.filter(x=>x.risk==='Yüksek').length};
+    }
     function franchiseDashboard(){
-      const c=franchiseCandidates(), active=c.filter(x=>x.lifecycle!=='Aktif Bayi'), delayed=c.filter(x=>x.days>x.sla&&x.sla>0), opened=3, avgOpen=72;
+      const c=franchiseCandidates(), metrics=franchisePipelineMetrics(c), active=c.filter(x=>x.lifecycle!=='Aktif Bayi'), delayed=c.filter(x=>x.days>x.sla&&x.sla>0), opened=metrics.opened, avgOpen=68;
       const score=Math.max(0,Math.min(100,Math.round(86-delayed.length*3+opened*2)));
       return `<div class="fr-tabs"><button class="fr-tab active" data-fr-tab="dashboard">Dashboard</button><button class="fr-tab" data-fr-tab="leads">Başvuru & Lead Havuzu</button><button class="fr-tab" data-fr-tab="pipeline">Pipeline</button><button class="fr-tab" data-fr-tab="tasks">Görevler</button><button class="fr-tab" data-fr-tab="growthPlan">Büyüme Planı</button><button class="fr-tab" data-fr-tab="location">Lokasyon Analizi</button><button class="fr-tab" data-fr-tab="financeCheck">Finansal Yeterlilik</button><button class="fr-tab" data-fr-tab="contract">Sözleşme</button><button class="fr-tab" data-fr-tab="setup">Kurulum</button><button class="fr-tab" data-fr-tab="academyOpen">Eğitim & Açılış</button><button class="fr-tab" data-fr-tab="activeBranches">Aktif Bayiler</button><button class="fr-tab" data-fr-tab="royalty">Royalty</button></div>
       <div class="fr-tab-pane active" id="fr-tab-dashboard">
         ${franchiseVisualCommand(c,delayed.length,opened,score)}
-        <div class="grid g3" style="margin-top:16px">${stat('Toplam Aday',c.length,'Lead + aktif süreç')}${stat('Aktif Süreç',active.length,delayed.length+' gecikme','amber')}${stat('Bu Ay Açılan Bayi',opened,'Hedef 5 / gerçekleşen 3','green')}</div>
+        <div class="grid g3" style="margin-top:16px">${stat('Toplam Aday',c.length,'Canlı pipeline')}${stat('Aktif Süreç',active.length,delayed.length+' gecikme','amber')}${stat('Bu Ay Açılan Bayi',opened,'Hedef 2 / gerçekleşen 1','green')}</div>
         <div class="grid g3" style="margin-top:16px">${stat('Ort. Açılış Süresi',avgOpen+' gün','Hedef 60 gün','blue')}${stat('Geciken Süreç',delayed.length,'SLA üstü aday','amber')}${stat('Franchise GM Skoru',score+'/100',score>=85?'Sağlıklı':'Takip gerekli','green')}</div>
 
         <div class="card fr-wide"><div class="card-head"><div><div class="card-title">Franchise Lifecycle Pipeline</div><div class="card-sub">Tam genişlikte aşama akışı: adayın mevcut durumu, bekleyen sonraki aşama, SLA ve risk etiketi birlikte izlenir.</div></div><button class="btn" data-fr-tab-trigger="pipeline">Pipeline sayfası</button></div>${franchiseLifecyclePipeline(c,true)}</div>
@@ -3179,9 +3207,18 @@
       return `<div class="mini-list">${c.slice().sort((a,b)=>b.score-a.score).slice(0,4).map(x=>`<div class="fr-score-card"><div class="fr-score" style="--score:${x.score}"><div>${x.score}</div></div><div><b>${x.name}</b><span class="card-sub">${x.city} · ${x.budget}</span><div class="compact-meta"><span>Yatırım gücü</span><span>Şehir potansiyeli</span><span>Marka uyumu</span></div></div></div>`).join('')}</div>`;
     }
     function franchiseFunnelVisual(c){
-      const total=8400, lead=Math.max(248,c.length*22), qualified=Math.round(lead*.71), called=Math.round(qualified*.86), meeting=Math.round(called*.74), finance=Math.round(meeting*.75), contract=Math.max(8,Math.round(finance*.63)), opened=Math.max(3,Math.round(contract*.64));
-      const rows=[['Trafik',total,'+18 bu hafta','#3b82f6'],['Lead',lead,'%12 artış','#38bdf8'],['Nitelikli',qualified,'Hedefin %86 sı','#4ade80'],['Arandı',called,'%73,68 dönüşüm','#65c843'],['Görüşme',meeting,'%75,00 dönüşüm','#f5bd21'],['Finans',finance,'%72,62 dönüşüm','#f97316'],['Sözleşme',contract,'%63,93 dönüşüm','#d94670'],['Açılış',opened,'Bu ay +3','#8b5cf6']];
-      return `<div class="card fr-dark-panel"><div class="card-head"><div><div class="card-title">Franchise Satış Funnel'ı</div><div class="card-sub">Trafikten açılışa kayıp noktaları ve dönüşüm halkaları</div></div><button class="btn dark" data-fr-tab-trigger="pipeline">${icon('route')}Pipeline</button></div><div class="fr-funnel">${rows.map(r=>`<div class="fr-funnel-step"><b>${r[0]}</b><strong>${fmt(r[1])}</strong><div class="fr-funnel-bar" style="--c:${r[3]}"></div><em>${r[2]}</em><small>${r[0]==='Görüşme'?'Zayıf halka takip':r[0]==='Açılış'?'Kurulum checklist':'Aşama verisi'}</small></div>`).join('')}</div><div class="fr-funnel-alert">${icon('triangle-alert')}<div><b>Zayıf halka: Görüşme -> Finansal Yeterlilik</b><br><span>Yatırım bütçesi kanıtı ve banka referansı ilk 48 saatte istenmeli.</span></div></div></div>`;
+      const m=franchisePipelineMetrics(c);
+      const rows=[
+        ['Trafik',m.traffic,'Franchise sayfası + form','#3b82f6'],
+        ['Başvuru',m.applications,`Form dönüşümü %${Math.round(m.applications/m.traffic*100)}`,'#38bdf8'],
+        ['Nitelikli',m.qualified,`%${Math.round(m.qualified/Math.max(1,m.applications)*100)} uygun aday`,'#4ade80'],
+        ['İlk Temas',m.contacted,`%${Math.round(m.contacted/Math.max(1,m.qualified)*100)} erişildi`,'#65c843'],
+        ['Görüşme',m.meetings,`%${Math.round(m.meetings/Math.max(1,m.contacted)*100)} sunuma geçti`,'#f5bd21'],
+        ['Finans',m.finance,`%${Math.round(m.finance/Math.max(1,m.meetings)*100)} yeterlilik`,'#f97316'],
+        ['Sözleşme',m.contract,`%${Math.round(m.contract/Math.max(1,m.finance)*100)} final`,'#d94670'],
+        ['Açılış',m.openingPrep,'1 bayi açılış planında','#8b5cf6']
+      ];
+      return `<div class="card fr-dark-panel"><div class="card-head"><div><div class="card-title">Franchise Satış Funnel'ı</div><div class="card-sub">30 günlük franchise satış akışı; ekspertiz müşteri leadleri bu sayıya dahil değildir.</div></div><button class="btn dark" data-fr-tab-trigger="pipeline">${icon('route')}Pipeline</button></div><div class="fr-funnel">${rows.map((r,i)=>`<div class="fr-funnel-step"><b>${r[0]}</b><strong>${fmt(r[1])}</strong><div class="fr-funnel-bar" style="--c:${r[3]};opacity:${Math.max(.42,1-i*.07)}"></div><em>${r[2]}</em><small>${r[0]==='Finans'?'Yatırım gücü kapısı':r[0]==='Açılış'?'Kurulum checklist':'Canlıya yakın demo veri'}</small></div>`).join('')}</div><div class="fr-funnel-alert">${icon('triangle-alert')}<div><b>Zayıf halka: Başvuru -> Nitelikli aday</b><br><span>Franchise formunda sermaye, şehir ve lokasyon ön filtresi güçlendirilirse ekip sadece gerçek yatırımcıyla görüşür.</span></div></div></div>`;
     }
     function franchisePlanVisual(c,delayed,opened,score){
       const regionRows=[['Marmara',92,'good'],['İç Anadolu',76,'warn'],['Ege',83,'good'],['Akdeniz',69,'bad'],['Karadeniz',79,'warn']];
