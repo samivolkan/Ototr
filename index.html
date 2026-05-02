@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="ototr-version" content="SVK v1.0.36-finance-header-cleanup" />
+  <meta name="ototr-version" content="SVK v1.0.37-system-integration" />
   <title>OTOTR Genel Merkez ERP + CRM</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -199,7 +199,7 @@
 <body>
   <div class="app">
     <aside class="side">
-      <a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.36</small></div></a>
+      <a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.37</small></div></a>
       <div class="nav" id="nav"></div>
     </aside>
 
@@ -1792,7 +1792,10 @@
         ['ACT-DEMO-012','Gaziantep yeni şube açılış checklist takibi','Franchise','Büyüme Haritası','Kritik','Genel Merkez','Franchise Satış','Franchise Sorumlusu',60,168,'Yüksek',88,70,'Yeni şube açılış checklist adımları tamamlanmalı.'],
         ['ACT-DEMO-013','Eskişehir bölge kalite raporu','Kalite','Kalite','Orta','Genel Merkez','Elif Kaya','Kalite Sorumlusu',24,72,'Orta',58,54,'Haftalık bölge kalite raporu hazırlanmalı.',true,'Haftalık'],
         ['ACT-DEMO-014','Samsun Academy sertifika yenileme takibi','Academy','Academy','Orta','Genel Merkez','Academy','Academy Sorumlusu',36,72,'Orta',61,52,'Sertifika süresi yaklaşan personel için yenileme takibi yapılmalı.',true,'Aylık'],
-        ['ACT-DEMO-015','Adana kriz adayı sosyal medya şikayeti kontrolü','Kriz Merkezi','Kriz Merkezi','Kritik','Genel Merkez','Kriz Masası','Departman Sorumlusu',-1,4,'Kritik',94,96,'Sosyal medya şikayeti kriz eşiğine gelmeden yanıt ve kök neden hazırlanmalı.']
+        ['ACT-DEMO-015','Adana kriz adayı sosyal medya şikayeti kontrolü','Kriz Merkezi','Kriz Merkezi','Kritik','Genel Merkez','Kriz Masası','Departman Sorumlusu',-1,4,'Kritik',94,96,'Sosyal medya şikayeti kriz eşiğine gelmeden yanıt ve kök neden hazırlanmalı.'],
+        ['ACT-DEMO-016','Antalya Kepez sistemsel düşüş destek planı kontrolü','Finans','Finans','Yüksek','Antalya Kepez','Finans','Finans Sorumlusu',18,48,'Yüksek',86,74,'Sistemsel düşüş desteği, bayi sorumlulukları ve 45 günlük toparlanma hedefi birlikte izlenmeli.'],
+        ['ACT-DEMO-017','İstanbul Ataşehir bayi özel müdahale komitesi','Finans','Finans','Kritik','İstanbul Ataşehir','Finans','Finans Sorumlusu',-4,8,'Kritik',92,88,'Koruma modu ve kronik performans riski için finans, kalite, operasyon ve hukuk birlikte karar vermeli.'],
+        ['ACT-DEMO-018','Bursa Nilüfer royalty yeniden başlatma kriter kontrolü','Finans','Finans','Orta','Bursa Nilüfer','Finans','Finans Sorumlusu',72,168,'Orta',66,48,'Yeniden başlatma kriterleri 7/8 seviyesinde; genel merkez onayı öncesi son kontrol yapılmalı.']
       ];
       return raw.map((r,i)=>normalizeActionTask({
         id:r[0],title:r[1],category:r[2],sourceModule:r[3],priority:r[4],branch:r[5],owner:r[6],ownerRole:r[7],
@@ -2000,7 +2003,7 @@
         status:b.risk==='Yüksek'?'İnceleme':b.risk==='Orta'?'Takip':'Stabil'
       }));
       out.demoDataHealth={
-        version:'SVK v1.0.36',
+        version:'SVK v1.0.37',
         branchUniverse:'10 şube / 4 aktif bölge',
         packagePriceBand:'5.000 TL - 15.000 TL',
         avgTicketBand:'8.350 TL - 9.900 TL',
@@ -2164,6 +2167,7 @@
         pageShell('dashboard', `
           <div class="ceo-stack">
             <div class="kpi-grid">${DB.ceoDashboard.kpis.map(KPICard).join('')}</div>
+            <div class="card"><div class="card-head"><div><div class="card-title">Entegre Yönetim Sinyal Haritası</div><div class="card-sub">Finans, operasyon, kriz, AI, aksiyon ve şube sinyalleri aynı karar dilinde özetlenir.</div></div><button class="btn" data-route="intelligence">İş Zekası'na git</button></div>${ExecutiveIntegrationStrip()}</div>
             <div class="command-layout">
               <div class="command-main">
                 <div class="grid g70">
@@ -2212,7 +2216,7 @@
         pageShell('quality', QualityDashboard())+
         pageShell('finance', FinanceRoyaltyHealthCenterPage())+
         pageShell('marketing', typeof MarketingDashboard==='function' ? MarketingDashboard() : `<div class="grid g4">${stat('Pazarlama Harcaması',fmtTL(368000),'Nisan kampanyaları')}${stat('Toplam Lead',1314,'Çapraz kanal','green')}${stat('En İyi ROI','6.6x','Google Maps','blue')}${stat('CPL Ort.',fmtTL(268),'- %11 düşüş','green')}</div><div class="card"><div class="card-head"><div><div class="card-title">Kanal Performansı</div><div class="card-sub">Google Maps dominasyonu, sosyal medya, remarketing</div></div></div>${marketingTable()}</div>`)+
-        pageShell('intelligence', `<div class="grid g4">${stat('Bileşik Ağ Skoru','87/100','Ciro + kalite + itibar')}${stat('Fiyat Fırsatı',fmtTL(420000),'Premium paket optimizasyonu','green')}${stat('Erken Uyarı',DB.complaints.filter(c=>c.risk==='Yüksek').length,'Kritik kök neden','amber')}${stat('Büyüme Sinyali','2 Şube','İkinci lokasyon adayı','blue')}</div><div class="grid g60"><div class="card"><div class="card-head"><div><div class="card-title">İş Zekası İçgörü Akışı</div><div class="card-sub">Tıklanabilir stratejik öneriler ve sahipleri</div></div></div>${insightTable()}</div><div class="card"><div class="card-head"><div><div class="card-title">Canlı Isı Haritası</div><div class="card-sub">CEO'nun ilk bakışta göreceği sinyaller</div></div></div>${heatMap()}</div></div><div class="grid g2"><div class="card"><div class="card-head"><div><div class="card-title">Bölge Performans Karşılaştırması</div><div class="card-sub">Ciro, rapor adedi ve kalite bileşik skoru</div></div></div><canvas id="chartBI" height="120"></canvas></div><div class="card"><div class="card-head"><div><div class="card-title">Şikayet Kök Neden Analizi</div><div class="card-sub">Kriz oluşmadan müdahale edilecek alanlar</div></div></div>${complaintsTable()}</div></div><div class="card"><div class="card-head"><div><div class="card-title">Şube Karşılaştırmalı Karar Tablosu</div><div class="card-sub">Ciro değil, kârlılık + kalite + itibar birlikte okunur.</div></div></div>${branchDecisionTable()}</div>`)+
+        pageShell('intelligence', IntelligencePage())+
         pageShell('academy', AcademyDashboard())+
         pageShell('hr', renderHRRoom())+
         pageShell('legal', `<div class="grid g4">${LegalStats()}</div><div class="grid g3">${moduleCard('Franchise Sözleşmesi','Bölge koruma, marka kullanımı, royalty, denetim hakkı ve fesih eşikleri.','file-signature','Franchise Hukuku')}${moduleCard('Hatalı Rapor Sorumluluğu','Tazmin, itiraz, sigorta, kayıt saklama ve kök neden prosedürü.','shield-alert','Rapor Sorumluluğu')}${moduleCard('KVKK & Veri Sahipliği','Müşteri, rapor, bayi performansı ve merkezi CRM verisinin mülkiyeti.','database','Veri Hukuku')}</div><div class="grid g60"><div class="card"><div class="card-head"><div><div class="card-title">Hukuki Dosya ve Sözleşme Envanteri</div><div class="card-sub">Satıra tıklayınca madde bazlı kontrol listesi açılır.</div></div></div>${legalTable()}</div><div class="card"><div class="card-head"><div><div class="card-title">Risk Matrisi</div><div class="card-sub">Hukuk, operasyon ve itibar riski</div></div></div><div class="matrix"><div class="risk low"><b>Düşük</b>Marka tescil yenileme, standart sözleşme revizyonları</div><div class="risk mid"><b>Orta</b>Royalty gecikmesi, Google puan düşüşü, rapor itirazları</div><div class="risk high"><b>Yüksek</b>Hatalı rapor tazmini, bayi skandalı, sosyal medya krizi</div></div><hr style="border:0;border-top:1px solid var(--line);margin:16px 0">${legalPlaybook()}</div></div><div class="card" style="margin-top:16px"><div class="card-head"><div><div class="card-title">Şikayetten Hukuka Dönen Dosyalar</div><div class="card-sub">Müşteri şikayeti, ihtar, arabuluculuk ve dava riskine döndüğünde hukuk kuyruğuna otomatik aktarılır.</div></div><button class="btn" data-route="complaints">Şikayet merkezine git</button></div>${ComplaintLegalRiskTable()}</div><div class="grid g2" style="margin-top:16px"><div class="card"><div class="card-head"><div><div class="card-title">Sözleşme Durumları</div><div class="card-sub">Aktif, yenileme ve ihlal sinyalleri</div></div></div>${LegalContractTable()}</div><div class="card"><div class="card-head"><div><div class="card-title">Hukuki Alarmlar</div><div class="card-sub">Rol filtresiyle beslenecek hukuki alarm kuyruğu</div></div></div>${LegalAlertList()}</div></div>`)+
@@ -3172,6 +3176,38 @@
       const signals=[['Operasyon Etkisi','3 şube','Kapasite ve SLA sorunları kârlılığı etkiliyor.','operations'],['Şube Sağlığı','2 şube','Finansal sağlık skoru düşük.','branches'],['Pazarlama Etkisi','3 bayi','Reklam desteği öneriliyor.','marketing'],['Müşteri Deneyimi','5 kayıt','Telafi/iade maliyeti oluşturuyor.','complaints'],['Kalite Etkisi','4 kayıt','Tekrar işlem maliyeti var.','quality'],['Academy Etkisi','2 ekip','Eğitim desteği öneriliyor.','academy'],['Hukuk Etkisi','2 kayıt','Royalty itirazı veya sözleşmesel inceleme gerekli.','legal']];
       return financeSection('Modüller Arası Finansal Sinyaller','Detay kopyalamadan sadece finansal etki sinyali ve ilgili modüle yönlendirme yapılır.',`<div class="finance-signal-grid">${signals.map(s=>`<div class="finance-signal-card"><b>${s[0]}</b><span class="finance-pill blue">${s[1]}</span><p class="card-sub">${s[2]}</p><button class="btn" data-route="${s[3]}">İlgili modüle git</button></div>`).join('')}</div>`);
     }
+    function systemIntegrationSignals(){
+      const finance=financeRoyaltyModel(), tasks=actionTasks(), crises=crisisCases();
+      const ai=typeof aiRecommendations==='function' ? aiRecommendations() : [];
+      const openTasks=tasks.filter(t=>!['Tamamlandı','İptal'].includes(t.status));
+      return [
+        {module:'Finans & Royalty',status:'Kriz uyumlu destek',risk:'Yüksek',signal:'Antalya ve Ataşehir destek/koruma kararları Aksiyon Merkezi’nde takipte.',next:'Finans kararını onaya gönder',route:'finance',owner:'Finans'},
+        {module:'Operasyon',status:'SLA baskısı',risk:'Yüksek',signal:'Geciken rapor ve kapasite riski şube sağlığına etki ediyor.',next:'Geciken rapor aksiyonu aç',route:'operations',owner:'Operasyon'},
+        {module:'Kriz Merkezi',status:`${crises.filter(c=>crisisLevelNumber(c.crisisLevel)>=4).length} kritik`,risk:'Kritik',signal:'Seviye 4 krizlerde CEO ve hukuk onayı görünür durumda.',next:'Kriz aksiyon planını kapat',route:'crisis',owner:'Kriz Masası'},
+        {module:'AI Öneri',status:`${ai.filter(a=>a.ceoFollowUp).length} CEO takibi`,risk:'Yüksek',signal:'AI önerileri finans, kriz ve kalite aksiyonlarına dönüşüyor.',next:'Öneriyi aksiyona çevir',route:'ai',owner:'AI Motoru'},
+        {module:'Aksiyon & Görev',status:`${openTasks.length} açık görev`,risk:openTasks.some(t=>t.priority==='Kritik')?'Kritik':'Yüksek',signal:'Finans, kriz, kalite ve operasyon görevleri tek icra kuyruğunda.',next:'Gecikenleri kapat',route:'actions',owner:'Genel Merkez'},
+        {module:'Bayiler & Şubeler',status:'KPI alarm haritası',risk:'Orta',signal:'Şube KPI sorunları finans, kalite ve operasyon etkisiyle birlikte okunuyor.',next:'Şube 360 kontrolü',route:'branches',owner:'Bölge'}
+      ];
+    }
+    function ExecutiveIntegrationStrip(){
+      const rows=systemIntegrationSignals();
+      return `<div class="summary-grid">${rows.map(r=>`<div class="summary-tile"><span>${r.module}</span><b>${r.status}</b><small class="card-sub">${r.signal}</small><div class="quick-actions" style="margin-top:8px"><button class="micro-btn" data-route="${r.route}">${r.next}</button></div></div>`).join('')}</div>`;
+    }
+    function IntegratedSignalMatrix(){
+      const rows=systemIntegrationSignals();
+      return `<table><thead><tr><th>Modül</th><th>Durum</th><th>Risk</th><th>Sinyal</th><th>Sahip</th><th>Aksiyon</th></tr></thead><tbody>${rows.map(r=>`<tr><td><b>${r.module}</b></td><td>${r.status}</td><td>${badge(r.risk)}</td><td>${r.signal}</td><td>${r.owner}</td><td><button class="btn detail-btn" data-route="${r.route}">${r.next}</button></td></tr>`).join('')}</tbody></table>`;
+    }
+    function IntegratedBiKpis(){
+      const tasks=actionTasks(), crises=crisisCases(), ai=aiRecommendations(), finance=financeRoyaltyModel();
+      const late=tasks.filter(t=>t.slaStatus==='SLA İhlali'||t.status==='Gecikti').length;
+      const criticalCrises=crises.filter(c=>crisisLevelNumber(c.crisisLevel)>=4).length;
+      const ceoAi=ai.filter(a=>a.ceoFollowUp).length;
+      const support=finance.dealers.filter(x=>x.supportBudget>0).length;
+      return `<div class="grid g4">${stat('Entegre Ağ Skoru','84/100','Finans + kriz + aksiyon + şube')}${stat('Kritik Kriz',criticalCrises,'CEO / hukuk takibi','red')}${stat('Geciken Görev',late,'Aksiyon Merkezi','amber')}${stat('AI CEO Önerisi',ceoAi,'Karar bekleyen sinyal','blue')}${stat('Destek Planındaki Bayi',support,'Finans/Royalty sağlık','amber')}${stat('Operasyon SLA','%87','Rapor teslim disiplini','green')}${stat('Şube KPI Alarmı','5','Harita alarm katmanı','red')}${stat('Veri Omurgası','Tek kayıt','Görev, kriz, AI ve finans bağlı','green')}</div>`;
+    }
+    function IntelligencePage(){
+      return `${IntegratedBiKpis()}<div class="grid g60"><div class="card"><div class="card-head"><div><div class="card-title">Entegre Yönetim Sinyal Matrisi</div><div class="card-sub">Dashboard ne oluyor sorusunu cevaplar; bu ekran nedenini, sahibini ve aksiyon yolunu gösterir.</div></div></div>${IntegratedSignalMatrix()}</div><div class="card"><div class="card-head"><div><div class="card-title">Derin Analiz Isı Haritası</div><div class="card-sub">Finans, operasyon, kalite, Academy, kriz ve AI sinyalleri aynı karar dilinde okunur.</div></div></div>${heatMap()}</div></div><div class="grid g2"><div class="card"><div class="card-head"><div><div class="card-title">Finansal Sağlık ve Kriz Etkisi</div><div class="card-sub">Royalty kararları, kriz ve aksiyon etkisiyle birlikte analiz edilir.</div></div><button class="btn" data-route="finance">Finansa git</button></div>${FinanceRoyaltyDashboardSummary()}</div><div class="card"><div class="card-head"><div><div class="card-title">AI / Aksiyon Dönüşüm Analizi</div><div class="card-sub">Öneriler, görevler ve kriz adayları arasındaki icra hattı.</div></div><button class="btn" data-route="ai">AI'a git</button></div>${AIRecommendationPanel('compact')}</div></div><div class="grid g2"><div class="card"><div class="card-head"><div><div class="card-title">Şikayet Kök Neden Analizi</div><div class="card-sub">Kriz oluşmadan müdahale edilecek alanlar</div></div></div>${complaintsTable()}</div><div class="card"><div class="card-head"><div><div class="card-title">Şube Karşılaştırmalı Karar Tablosu</div><div class="card-sub">Ciro, kârlılık, operasyon, eğitim ve risk birlikte okunur.</div></div></div>${branchDecisionTable()}</div></div>`;
+    }
     function FranchiseSummary(){
       const f=DB.ceoDashboard.franchiseSummary;
       return `<div class="summary-grid"><div class="summary-tile"><span>Yeni başvuru</span><b>${f.newApplications}</b></div><div class="summary-tile"><span>Görüşmede</span><b>${f.inTalks}</b></div><div class="summary-tile"><span>Sözleşme</span><b>${f.contractStage}</b></div><div class="summary-tile"><span>Açılış hazırlığı</span><b>${f.openingPrep}</b></div><div class="summary-tile"><span>Riskli aday</span><b>${f.riskyCandidates}</b></div><div class="summary-tile"><span>Pipeline</span><b>${f.newApplications+f.inTalks+f.contractStage}</b></div></div><div class="mini" style="margin-top:10px">${icon('map-pinned')}<div><b>Kontrollü büyüme notu</b><span>Riskli adaylar finansal güç, lokasyon ve marka uyumu üzerinden tekrar skorlanmalı.</span></div></div>`;
@@ -3870,7 +3906,7 @@
         ${renderCrisisFilters()}
         <div class="decision-layout">
           <main class="decision-main">${renderCrisisList(rows)}</main>
-          <aside class="decision-side">${renderCrisisCommandRoom(rows[0])}${renderCrisisLevelDefinitions()}${renderCrisisLinkedModules()}</aside>
+          <aside class="decision-side">${renderCrisisCommandRoom(rows[0])}${renderCrisisSystemLinkPanel()}${renderCrisisLevelDefinitions()}${renderCrisisLinkedModules()}</aside>
         </div>
         ${renderCrisisDrillScoreCard()}
         ${renderCrisisDrillScenarios()}
@@ -3904,6 +3940,10 @@
     function renderCrisisCommandRoom(c){
       if(!c) return '';
       return `<div class="crisis-command-card"><div class="card-head"><div><div class="card-title">Kriz Komuta Ekibi</div><div class="card-sub">En yüksek skorlu kriz için aktif komuta planı</div></div></div><div class="crisis-team-list">${[['Komutan',c.crisisCommander,'siren'],['Hukuk',c.legalOwner,'scale'],['Finans',c.financeOwner,'banknote'],['İletişim',c.communicationOwner,'message-square-text'],['Operasyon',c.operationOwner,'workflow'],['Kalite',c.qualityOwner,'badge-check'],['CEO',c.ceoFollowUp?'Takipte':'Bilgilendirilecek','crown']].map(r=>`<div class="crisis-team-member">${icon(r[2])}<div><b>${r[0]}</b><span>${r[1]}</span></div></div>`).join('')}</div><div class="quick-actions" style="margin-top:10px"><button class="btn" data-action="${c.id}: Komuta ekibi toplantısı loglandı.">Komuta Ekibi Toplandı</button></div></div>`;
+    }
+    function renderCrisisSystemLinkPanel(){
+      const finance=financeRoyaltyModel(), ai=aiRecommendations().filter(a=>a.crisisCandidate).length, action=actionTasks().filter(t=>t.sourceModule==='Kriz Merkezi'||t.status==='Krize Dönüştü').length;
+      return `<div class="card"><div class="card-head"><div><div class="card-title">Kriz Entegrasyon Bağlantısı</div><div class="card-sub">Krizler artık AI, Finans/Royalty ve Aksiyon Merkeziyle aynı kayıt diliyle izlenir.</div></div></div><div class="mini-list"><div class="mini">${icon('sparkles')}<div><b>${ai} AI kriz adayı</b><span>AI Öneri’den Kriz Merkezi’ne çevrilebilir.</span></div></div><div class="mini">${icon('banknote')}<div><b>${finance.dealers.filter(x=>x.score<70).length} finansal sağlık riski</b><span>Koruma modu ve destek planları kriz etkisiyle birlikte okunur.</span></div></div><div class="mini">${icon('clipboard-list')}<div><b>${action} kriz bağlantılı görev</b><span>Krizden doğan aksiyonlar merkezi görev kuyruğuna düşer.</span></div></div></div></div>`;
     }
     function renderCrisisCommandPlan(c){ return `<div class="action-timeline">${[['İlk 30 dakika',c.first30MinuteAction],['İlk 2 saat',c.first2HourAction],['İlk 24 saat',c.first24HourAction],['Kapanış kriteri',c.closingCriteria]].map(r=>`<div class="timeline-step"><span class="step-icon">${icon('timer')}</span><div><b>${r[0]}</b><span>${r[1]}</span></div><strong>Takip</strong></div>`).join('')}</div>`; }
     function renderCrisisActionPlan(c){ const actions=['Müşteri ilk dönüş araması','Kanıt dosyası tamamlama','Hukuk ön değerlendirme','Şube savunması alma','Kök neden analizi','Düzeltici faaliyet planı','CEO bilgilendirme notu','Finansal etki hesaplama']; return `<div class="mini-list">${actions.map(a=>`<div class="mini">${icon('clipboard-check')}<div><b>${a}</b><span>${c.relatedBranch} kriz dosyası için Aksiyon & Görev Merkezi bağlantılı.</span></div></div>`).join('')}</div><button class="btn primary" style="margin-top:10px" data-crisis-action="${c.id}">Aksiyon planı oluştur</button>`; }
@@ -4104,7 +4144,12 @@
     let aiFilters={};
     let crisisFilters={};
     function actionTasks(){ return (DB.ceoDashboard.actionTasks||[]).map((t,i)=>normalizeActionTask(t,i)).sort((a,b)=>(b.actionPriorityScore||0)-(a.actionPriorityScore||0)); }
-    function getActionRouteBySourceModule(module){ return ACTION_SOURCE_ROUTES[module] || 'actions'; }
+    function getActionRouteBySourceModule(module){
+      const text=String(module||'');
+      if(ACTION_SOURCE_ROUTES[text]) return ACTION_SOURCE_ROUTES[text];
+      const found=Object.entries(ACTION_SOURCE_ROUTES).find(([key])=>text.includes(key) || key.includes(text.split(' ')[0]));
+      return found?.[1] || 'actions';
+    }
     function getActionPriorityBadge(value){ return badge(value||'Orta'); }
     function getActionStatusBadge(value){ return badge(value||'Açık'); }
     function renderRecurringTaskBadge(t){ return t.isRecurring ? badge(t.recurrenceType || 'Periyodik') : ''; }
@@ -4118,7 +4163,7 @@
           (!actionFilters.priority || t.priority===actionFilters.priority) &&
           (!actionFilters.status || t.status===actionFilters.status) &&
           (!actionFilters.owner || t.owner===actionFilters.owner) &&
-          (!actionFilters.sourceModule || t.sourceModule===actionFilters.sourceModule) &&
+          (!actionFilters.sourceModule || t.sourceModule===actionFilters.sourceModule || String(t.sourceModule||'').includes(String(actionFilters.sourceModule||'').split(' ')[0]) || String(actionFilters.sourceModule||'').includes(String(t.sourceModule||'').split(' ')[0])) &&
           (!actionFilters.slaStatus || t.slaStatus===actionFilters.slaStatus) &&
           (!actionFilters.evidenceStatus || t.evidenceStatus===actionFilters.evidenceStatus) &&
           (!actionFilters.approvalStatus || t.approvalStatus===actionFilters.approvalStatus) &&
@@ -4240,7 +4285,11 @@
     }
     function renderActionsPage(){
       const view=actionView==='kanban'?renderActionKanbanView():actionView==='calendar'?renderActionCalendarView():renderActionListView();
-      return `<div class="action-center">${renderActionKpiCards()}${renderActionFilters()}${renderActionModuleSummary()}<div class="action-layout"><main>${view}</main><aside class="action-side">${renderCriticalActionPanel()}${renderActionAiSuggestions()}${renderActionHealthPanel()}</aside></div>${renderActionPerformanceReport()}</div>`;
+      return `<div class="action-center">${renderActionKpiCards()}${renderActionSystemBridge()}${renderActionFilters()}${renderActionModuleSummary()}<div class="action-layout"><main>${view}</main><aside class="action-side">${renderCriticalActionPanel()}${renderActionAiSuggestions()}${renderActionHealthPanel()}</aside></div>${renderActionPerformanceReport()}</div>`;
+    }
+    function renderActionSystemBridge(){
+      const rows=systemIntegrationSignals();
+      return `<div class="card"><div class="card-head"><div><div class="card-title">Sistemden Gelen İcra Akışı</div><div class="card-sub">Finans, kriz, AI, operasyon ve şube sinyalleri görev modeline aynı alanlarla düşer: kaynak, sorumlu, SLA, kanıt, onay ve bağlı kayıt.</div></div></div><div class="action-module-grid">${rows.map(r=>`<button class="action-module-card" data-action-module-filter="${r.module}"><span>${r.module}</span><b>${r.risk}</b><small class="card-sub">${r.next}</small></button>`).join('')}</div></div>`;
     }
     function ActionTaskPanel(mode='full'){
       const tasks=actionTasks(), open=tasks.filter(t=>!['Tamamlandı','İptal'].includes(t.status)), late=tasks.filter(t=>t.slaStatus==='SLA İhlali'||t.status==='Gecikti'), critical=tasks.filter(t=>t.priority==='Kritik');
@@ -4277,7 +4326,10 @@
         ['AI-012','Eskişehir bölge pazarlama CPL değeri yükseldi','Kampanya bütçe ve hedefleme revizyonu yap.','Pazarlama','Pazarlama Önerisi','Eskişehir Tepebaşı','İç Anadolu','Pazarlama','Pazarlama Sorumlusu','CPL Artışı','MKT-402','Kampanya bütçesi','Orta','Orta',76,95000,58,'Yeni','3 gün','Pazarlama Lideri','Pazarlama Sorumlusu','CPL hedefleme revizyonu','marketing',false,'',false,'CPL artışı randevu başı maliyeti yükseltiyor.','Bütçe kaybı ve yanlış lead azalır.','Dönüşüm verisi eksikse karar gecikebilir.',['CPL %38 arttı.','Randevu dönüşümü %8 düştü.']],
         ['AI-013','İstanbul Bağcılar bayi sözleşme yenileme tarihi yaklaşıyor','Sözleşme yenileme hazırlığı için hukuk görevi aç.','Hukuk & Risk','Hukuk & Risk Önerisi','İstanbul Bağcılar','Marmara','Hukuk','Hukuk Sorumlusu','Sözleşme Yenileme','LEG-333','Bayi sözleşmesi','Yüksek','Orta',85,260000,72,'İnceleniyor','10 gün','Hukuk Sorumlusu','Hukuk Sorumlusu','Bayi sözleşme yenileme hazırlığı','legal',false,'',false,'Yenileme tarihi yaklaşırken ticari madde riski oluşuyor.','Fesih ve uyuşmazlık riski azalır.','Bayi madde itirazı görüşme gerektirebilir.',['Sözleşme bitişine 38 gün kaldı.','Royalty maddesi revizyon bekliyor.']],
         ['AI-014','Gaziantep yeni şube açılışında eğitim ve kalite bağımlılığı var','Açılış checklist görevleri oluştur.','Büyüme Haritası / Academy / Kalite','Büyüme Haritası Önerisi','Gaziantep Şehitkamil','Doğu & Güneydoğu','Kurulum Ekibi','Franchise Sorumlusu','Yeni Şube Açılışı','GR-901','Gaziantep açılış bağımlılığı','Yüksek','Çok yüksek',90,340000,84,'Yeni','5 gün','Kurulum Lideri','Franchise Sorumlusu','Açılış checklist görevleri','growth',false,'',false,'Eğitim ve kalite tamamlanmadan açılış onayı verilmemeli.','Açılış standardı ve marka deneyimi korunur.','Süreç uzarsa yatırımcı memnuniyeti düşebilir.',['Academy %68 tamamlandı.','Kalite ön denetimi bekliyor.']],
-        ['AI-015','Şube müdürü performans görüşmeleri gecikiyor','Bölge müdürü takip görevi oluştur.','İnsan Kaynakları','İnsan Kaynakları Önerisi','Ağ Geneli','Tüm Bölgeler','İK','İnsan Kaynakları','Performans Görüşmesi','HR-611','Müdür görüşmeleri','Orta','Orta',81,70000,56,'Yeni','14 gün','İK Lideri','İnsan Kaynakları','Şube müdürü performans görüşmesi takip planı','hr',false,'',false,'Geciken görüşmeler prim ve performans kararlarını zayıflatıyor.','Müdür performansı ve kariyer takibi netleşir.','Bölge müdürü takvimi yoğun olabilir.',['Müdür görüşmelerinin %34’ü gecikti.','Prim simülasyonu bekleyen 6 şube var.']]
+        ['AI-015','Şube müdürü performans görüşmeleri gecikiyor','Bölge müdürü takip görevi oluştur.','İnsan Kaynakları','İnsan Kaynakları Önerisi','Ağ Geneli','Tüm Bölgeler','İK','İnsan Kaynakları','Performans Görüşmesi','HR-611','Müdür görüşmeleri','Orta','Orta',81,70000,56,'Yeni','14 gün','İK Lideri','İnsan Kaynakları','Şube müdürü performans görüşmesi takip planı','hr',false,'',false,'Geciken görüşmeler prim ve performans kararlarını zayıflatıyor.','Müdür performansı ve kariyer takibi netleşir.','Bölge müdürü takvimi yoğun olabilir.',['Müdür görüşmelerinin %34’ü gecikti.','Prim simülasyonu bekleyen 6 şube var.']],
+        ['AI-016','Antalya Kepez sistemsel düşüş desteğinde kalmalı','Bölgesel kriz etkisi yüksek; royalty baskısı yerine süreli destek ve bayi sorumluluk takibi önerilir.','Finans & Royalty','Finans Önerisi','Antalya Kepez','Akdeniz','Finans','Finans Sorumlusu','Bayi Finansal Sağlık','RF-005','Sistemsel düşüş desteği','Yüksek','Yüksek',90,280000,78,'Yeni','48 saat','Finans Direktörü','Finans Sorumlusu','Sistemsel düşüş destek planı kontrolü','finance',false,'',false,'Bayi düşüşü bölgesel referans düşüşle uyumlu; karar adil paylaşım matrisine göre verilmeli.','Bayi para kazanır noktaya taşınır, genel merkez desteği süreli kalır.','Bayi sorumlulukları takip edilmezse destek süresi uzayabilir.',['Bölge ciro endeksi -%21.','Bayi finansal sağlık skoru 54/100.','Koruma modu süresi 90 günle sınırlı.']],
+        ['AI-017','İstanbul Ataşehir bayi özel müdahale planı gerektiriyor','Bayi düşüşü marka ve bölge trendinden çok daha kötü; koruma modu tek başına yeterli değil.','Finans & Royalty / Bayiler & Şubeler','Finans Önerisi','İstanbul Ataşehir','Marmara','Finans','Finans Sorumlusu','Bayi Finansal Sağlık','RF-006','Bayi özel müdahale','Kritik','Çok yüksek',92,340000,88,'Kriz Adayı','Bugün 16:00','Finans Direktörü','Finans Sorumlusu','Bayi özel müdahale komitesi oluştur','finance',false,'',true,'Sapma endeksi -19; finans, kalite, operasyon ve hukuk birlikte değerlendirmeli.','Kronik performans riski erken yönetilir.','Müdahale gecikirse kriz ve sözleşmesel değerlendirme riski büyür.',['Bayi ciro düşüşü -%34.','Sapma endeksi -19.','Net operasyon kârı zayıf.']],
+        ['AI-018','Bursa Nilüfer royalty yeniden başlatma adayı','Kriterlerin 7/8’i tamamlandı; yeniden başlatma kararı için son finans kontrolü yapılabilir.','Finans & Royalty','Finans Önerisi','Bursa Nilüfer','Marmara','Finans','Finans Sorumlusu','Royalty Yeniden Başlatma','RF-003','Yeniden başlatma takibi','Düşük','Orta',84,26000,42,'İzlemeye Alındı','7 gün','Finans Sorumlusu','Finans Sorumlusu','Royalty yeniden başlatma kriter kontrolü','finance',false,'',false,'Toparlanma göstergeleri olumlu; karar genel merkez onayıyla süreli izlenmeli.','Ertelenen royalty kontrollü şekilde yeniden başlar.','Erken başlatma bayi nakit akışını tekrar bozabilir.',['7/8 yeniden başlatma kriteri tamamlandı.','Sabit gider karşılama 1.12 seviyesinde.']]
       ];
       return rows.map(r=>{ const a={id:r[0],title:r[1],summary:r[2],detail:r[2],sourceModule:r[3],recommendationType:r[4],relatedBranch:r[5],relatedRegion:r[6],relatedPerson:r[7],relatedRole:r[8],relatedRecordType:r[9],relatedRecordId:r[10],relatedRecordTitle:r[11],riskLevel:r[12],impactLevel:r[13],confidenceScore:r[14],financialImpact:r[15],urgencyScore:r[16],status:r[17],createdAt:new Date(Date.now()-Number(r[0].slice(-2))*29*60000).toISOString(),suggestedDeadline:r[18],suggestedOwner:r[19],suggestedOwnerRole:r[20],suggestedAction:r[21],suggestedRoute:r[22],actionCreated:r[23],linkedActionId:r[24],crisisCandidate:r[25],crisisReason:r[25]?'Kriz sinyali taşıyan yüksek riskli öneri':'',ceoFollowUp:r[25]||r[12]==='Kritik'||r[15]>400000,rejectionReason:'',aiReasoningSummary:r[26]||r[2],expectedBenefit:r[27],possibleRisk:r[28],evidenceSignals:Array.isArray(r[29])?r[29]:[],nextStep:r[21],tags:[r[3],r[4],r[6]],auditLog:[{time:'Bugün',user:'AI Demo Motoru',action:'Öneri üretildi.'}]}; a.priorityScore=calculateAiRecommendationPriorityScore(a); return a; });
     }
@@ -4307,7 +4359,11 @@
     }
     function renderAiPage(){
       const rows=aiFilterRecommendations();
-      return `<div class="decision-center">${renderAiKpiCards()}${renderAiFilters()}${renderAiModuleSummary()}<div class="decision-layout"><main class="decision-main">${renderAiRecommendationList(rows)}</main><aside class="decision-side">${renderAiHealthPanel()}${renderAiReasoningPanel(rows[0])}${renderAiEvidenceSignals(rows[0])}</aside></div>${renderAiPerformanceAnalysis()}</div>`;
+      return `<div class="decision-center">${renderAiKpiCards()}${renderAiDecisionBridge()}${renderAiFilters()}${renderAiModuleSummary()}<div class="decision-layout"><main class="decision-main">${renderAiRecommendationList(rows)}</main><aside class="decision-side">${renderAiHealthPanel()}${renderAiReasoningPanel(rows[0])}${renderAiEvidenceSignals(rows[0])}</aside></div>${renderAiPerformanceAnalysis()}</div>`;
+    }
+    function renderAiDecisionBridge(){
+      const finance=financeRoyaltyModel(), risky=finance.dealers.filter(x=>x.score<70), crisis=crisisCases().filter(c=>c.aiGenerated), tasks=actionTasks().filter(t=>t.sourceModule==='AI Öneri');
+      return `<div class="card"><div class="card-head"><div><div class="card-title">AI Karar Köprüsü</div><div class="card-sub">AI önerileri artık yalnız öneri değil; finans kararı, kriz adayı veya aksiyon görevine dönüşen yönetim sinyalidir.</div></div></div><div class="summary-grid"><div class="summary-tile"><span>Finans/Royalty riski</span><b>${risky.length} bayi</b><small class="card-sub">Koruma, destek veya özel müdahale önerisi</small></div><div class="summary-tile"><span>AI kaynaklı kriz</span><b>${crisis.length}</b><small class="card-sub">Kriz Merkezi ile bağlı kayıt</small></div><div class="summary-tile"><span>AI kaynaklı görev</span><b>${tasks.length}</b><small class="card-sub">Aksiyon Merkezi kuyruğu</small></div><div class="summary-tile"><span>Bugünkü karar odağı</span><b>Ataşehir</b><small class="card-sub">Kronik bayi performans riski</small></div></div></div>`;
     }
     function renderAiKpiCards(){
       const rows=aiRecommendations(), critical=rows.filter(a=>a.riskLevel==='Kritik'), action=rows.filter(a=>a.actionCreated), rejected=rows.filter(a=>a.status==='Reddedildi'), watch=rows.filter(a=>a.status==='İzlemeye Alındı'), crisis=rows.filter(a=>a.crisisCandidate), totalImpact=rows.reduce((s,a)=>s+(Number(a.financialImpact)||0),0), avg=Math.round(rows.reduce((s,a)=>s+a.confidenceScore,0)/rows.length), today=rows.filter(a=>new Date(a.createdAt).toDateString()===new Date().toDateString()), ceo=rows.filter(a=>a.ceoFollowUp);
