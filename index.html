@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="ototr-version" content="SVK v1.0.33-compact-ops-action" />
+  <meta name="ototr-version" content="SVK v1.0.34-clean-funnel-copy" />
   <title>OTOTR Genel Merkez ERP + CRM</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1999,7 +1999,7 @@
         status:b.risk==='Yüksek'?'İnceleme':b.risk==='Orta'?'Takip':'Stabil'
       }));
       out.demoDataHealth={
-        version:'SVK v1.0.33',
+        version:'SVK v1.0.34',
         branchUniverse:'10 şube / 4 aktif bölge',
         packagePriceBand:'5.000 TL - 15.000 TL',
         avgTicketBand:'8.350 TL - 9.900 TL',
@@ -3211,7 +3211,7 @@
         ['Sözleşme',m.contract,`%${Math.round(m.contract/Math.max(1,m.finance)*100)} final`,'#d94670'],
         ['Açılış',m.openingPrep,'1 bayi açılış planında','#8b5cf6']
       ];
-      return `<div class="card fr-dark-panel"><div class="card-head"><div><div class="card-title">Franchise Satış Funnel'ı</div><div class="card-sub">30 günlük franchise satış akışı; ekspertiz müşteri leadleri bu sayıya dahil değildir.</div></div><button class="btn dark" data-fr-tab-trigger="pipeline">${icon('route')}Pipeline</button></div><div class="fr-funnel">${rows.map((r,i)=>`<div class="fr-funnel-step"><b>${r[0]}</b><strong>${fmt(r[1])}</strong><div class="fr-funnel-bar" style="--c:${r[3]};opacity:${Math.max(.42,1-i*.07)}"></div><em>${r[2]}</em><small>${r[0]==='Finans'?'Yatırım gücü kapısı':r[0]==='Açılış'?'Kurulum checklist':'Canlıya yakın demo veri'}</small></div>`).join('')}</div><div class="fr-funnel-alert">${icon('triangle-alert')}<div><b>Zayıf halka: Başvuru -> Nitelikli aday</b><br><span>Franchise formunda sermaye, şehir ve lokasyon ön filtresi güçlendirilirse ekip sadece gerçek yatırımcıyla görüşür.</span></div></div></div>`;
+      return `<div class="card fr-dark-panel"><div class="card-head"><div><div class="card-title">Franchise Satış Funnel'ı</div><div class="card-sub">30 günlük franchise satış akışı; ekspertiz müşteri leadleri bu sayıya dahil değildir.</div></div><button class="btn dark" data-fr-tab-trigger="pipeline">${icon('route')}Pipeline</button></div><div class="fr-funnel">${rows.map((r,i)=>`<div class="fr-funnel-step"><b>${r[0]}</b><strong>${fmt(r[1])}</strong><div class="fr-funnel-bar" style="--c:${r[3]};opacity:${Math.max(.42,1-i*.07)}"></div><em>${r[2]}</em><small>${r[0]==='Finans'?'Yatırım gücü kapısı':r[0]==='Açılış'?'Kurulum checklist':'Aşama takibi'}</small></div>`).join('')}</div><div class="fr-funnel-alert">${icon('triangle-alert')}<div><b>Zayıf halka: Başvuru -> Nitelikli aday</b><br><span>Franchise formunda sermaye, şehir ve lokasyon ön filtresi güçlendirilirse ekip sadece gerçek yatırımcıyla görüşür.</span></div></div></div>`;
     }
     function franchisePlanVisual(c,delayed,opened,score){
       const regionRows=[['Marmara',92,'good'],['İç Anadolu',76,'warn'],['Ege',83,'good'],['Akdeniz',69,'bad'],['Karadeniz',79,'warn']];
