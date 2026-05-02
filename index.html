@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="ototr-version" content="SVK v1.0.57-risk-map-details" />
+  <meta name="ototr-version" content="SVK v1.0.58-risk-map-colors" />
   <title>OTOTR Genel Merkez ERP + CRM</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -299,8 +299,8 @@
     .risk-axis-label{font-size:8px;color:var(--muted);font-weight:950;text-align:right;line-height:1.05}
     .risk-matrix-cell{height:26px;border-radius:7px;border:1px solid rgba(17,19,24,.08);display:grid;place-items:center;position:relative;font-size:9px;font-weight:950}
     .risk-matrix-cell.l1{background:#ecfdf3;color:#067647}.risk-matrix-cell.l2{background:#eff6ff;color:#185abc}.risk-matrix-cell.l3{background:#fffaeb;color:#b54708}.risk-matrix-cell.l4{background:#fff4e5;color:#c45100}.risk-matrix-cell.l5{background:#fef3f2;color:#b42318}
-    .risk-matrix-dot{position:absolute;right:3px;top:3px;width:6px;height:6px;border-radius:999px;background:#d71920;box-shadow:0 0 0 2px rgba(215,25,32,.12)}
-    .risk-matrix-legend{display:flex;flex-wrap:wrap;gap:5px;margin-top:2px}.risk-matrix-legend span{display:inline-flex;align-items:center;gap:4px;font-size:8px;color:#4d5563;font-weight:850;text-transform:none}.risk-matrix-legend i{width:6px;height:6px;border-radius:999px;background:#d71920;display:inline-block}
+    .risk-matrix-dot{position:absolute;right:3px;top:3px;width:6px;height:6px;border-radius:999px;background:var(--risk-color,#d71920);box-shadow:0 0 0 2px color-mix(in srgb,var(--risk-color,#d71920) 18%,transparent)}
+    .risk-matrix-legend{display:flex;flex-wrap:wrap;gap:5px;margin-top:2px}.risk-matrix-legend span{display:inline-flex;align-items:center;gap:4px;font-size:8px;color:#4d5563;font-weight:850;text-transform:none}.risk-matrix-legend i{width:6px;height:6px;border-radius:999px;background:var(--risk-color,#d71920);display:inline-block}
     .risk-impact-grid{display:grid;gap:6px}
     .risk-impact-head,.risk-impact-row{display:grid;grid-template-columns:132px repeat(5,minmax(38px,.7fr)) 1.15fr auto;gap:6px;align-items:center}
     .risk-impact-head{color:var(--muted);font-size:9px;font-weight:950;text-transform:uppercase;padding:0 4px}.risk-impact-row{border:1px solid var(--line);border-radius:11px;background:#fff;padding:7px}
@@ -349,7 +349,7 @@
 <body>
   <div class="app">
     <aside class="side">
-      <div class="brand-row"><a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.57</small></div></a><button class="theme-toggle" type="button" data-theme-toggle title="Koyu temaya geç" aria-label="Tema değiştir"><i data-lucide="sun-moon"></i><span id="themeToggleText">Açık</span></button></div>
+      <div class="brand-row"><a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.58</small></div></a><button class="theme-toggle" type="button" data-theme-toggle title="Koyu temaya geç" aria-label="Tema değiştir"><i data-lucide="sun-moon"></i><span id="themeToggleText">Açık</span></button></div>
       <div class="nav" id="nav"></div>
     </aside>
 
@@ -2153,7 +2153,7 @@
         status:b.risk==='Yüksek'?'İnceleme':b.risk==='Orta'?'Takip':'Stabil'
       }));
       out.demoDataHealth={
-        version:'SVK v1.0.57',
+        version:'SVK v1.0.58',
         branchUniverse:'10 şube / 4 aktif bölge',
         packagePriceBand:'5.000 TL - 15.000 TL',
         avgTicketBand:'8.350 TL - 9.900 TL',
@@ -3478,6 +3478,17 @@
       return `<div class="ceo-module-compact">${cards.map(c=>`<article class="ceo-module-card ${c.risk==='Kritik'?'critical':c.risk==='Yüksek'?'high':'watch'}"><span>${c.title}</span><b>${c.value}</b><small>${c.sub}</small><div class="quick-actions"><button class="micro-btn" data-route="${c.route}">Git</button><button class="micro-btn" data-unified-action="${c.title}">Aksiyon</button></div></article>`).join('')}</div>`;
     }
     function riskCellClass(v){ return v>=85?'critical':v>=70?'high':v>=50?'mid':'low'; }
+    function riskModuleColor(module){
+      const map={
+        'Kriz Merkezi':'#d71920',
+        'Şikayet & İtibar':'#ef4444',
+        'Finans & Royalty':'#b76b00',
+        'Operasyon':'#0ea5e9',
+        'Şube KPI':'#185abc',
+        'Academy':'#7c3aed'
+      };
+      return map[module]||'#4d5563';
+    }
     function riskAttr(title,score,copy,route='intelligence'){
       const enc=s=>String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
       const tip=`${title}: ${score}/100 · ${copy}`;
@@ -3492,7 +3503,7 @@
       });
       const dot=(p,c)=>{
         const hits=markers.filter(m=>m.probability===p&&m.impact===c);
-        return hits.length?`<i class="risk-matrix-dot" title="${hits.map(h=>h.module).join(' / ')}"></i>`:'';
+        return hits.map(h=>`<i class="risk-matrix-dot" style="--risk-color:${riskModuleColor(h.module)}" title="${h.module}"></i>`).join('');
       };
       const grid=[...axis].reverse().map((label,rowIndex)=>{
         const p=5-rowIndex;
@@ -3500,12 +3511,13 @@
           const c=colIndex+1;
           const value=Math.min(5,Math.max(1,Math.ceil((p+c)/2)));
           const hits=markers.filter(m=>m.probability===p&&m.impact===c);
-          const title=hits.length?`Matris hücresi: ${hits.map(h=>h.module).join(' / ')}`:`Matris hücresi: ${label} olasılık`;
+          const impactLabel=axis[colIndex];
+          const title=hits.length?`${label} olasılık · ${impactLabel} etki: ${hits.map(h=>h.module).join(' / ')}`:`${label} olasılık · ${impactLabel} etki`;
           const copy=hits.length?`${hits.map(h=>`${h.module} ${h.score}/100`).join(', ')}. İlgili modül alarmı üst öncelik diline bağlandı.`:`Etki seviyesi ${axis[colIndex]}, olasılık ${label}. Bu hücrede canlı kritik modül işareti yok.`;
           return `<div class="risk-matrix-cell l${value}" ${riskAttr(title,value*20,copy,'intelligence')}>${value}${dot(p,c)}</div>`;
         }).join('')}`;
       }).join('');
-      return `<div class="risk-matrix-mini"><div class="risk-matrix-title"><span>Olasılık × Etki</span><span>Canlı risk noktaları</span></div><div class="risk-matrix-grid">${grid}</div><div class="risk-matrix-legend">${markers.map(m=>`<span><i></i>${m.module}</span>`).join('')}</div></div>`;
+      return `<div class="risk-matrix-mini"><div class="risk-matrix-title"><span>Olasılık × Etki</span><span>Canlı risk noktaları</span></div><div class="risk-matrix-grid">${grid}</div><div class="risk-matrix-legend">${markers.map(m=>`<span><i style="--risk-color:${riskModuleColor(m.module)}"></i>${m.module}</span>`).join('')}</div></div>`;
     }
     function DashboardRiskImpactMap(){
       const cc=complaintCenter(), complaints=cc.complaintTickets||[], crises=crisisCases(), ops=dashboardOpsMetrics(), finance=financeRoyaltyModel(), branchData=branchMapKpiData();
