@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="ototr-version" content="SVK v1.0.21-module-architecture" />
+  <meta name="ototr-version" content="SVK v1.0.22-accessibility-refresh" />
   <title>OTOTR Genel Merkez ERP + CRM</title>
+  <meta name="description" content="OTOTR genel merkez ERP + CRM demo paneli: franchise, CRM, operasyon, kalite, finans, hukuk ve pazarlama yönetimi tek ekranda.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -190,7 +191,7 @@
 <body>
   <div class="app">
     <aside class="side">
-      <a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.21</small></div></a>
+      <a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.22</small></div></a>
       <div class="nav" id="nav"></div>
     </aside>
 
@@ -204,7 +205,7 @@
           <div>
             <h1>Türkiye ekspertiz zinciri için genel merkez işletim sistemi.</h1>
             <p>OTOTR Master Book içeriğine göre tasarlanmış bu demo; franchise satışı, bayi operasyonu, CRM, kalite denetimi, finans, hukuk, pazarlama ve iş zekasını tek yönetim ekranında toplar.</p>
-            <div class="search hero-search"><i data-lucide="search"></i><input id="globalSearch" autocomplete="off" placeholder="Bayi, müşteri, plaka, aday veya rapor ara"><div class="search-results" id="searchResults"></div></div>
+            <div class="search hero-search"><i data-lucide="search"></i><label class="sr-only" for="globalSearch">Global arama</label><input id="globalSearch" autocomplete="off" placeholder="Bayi, müşteri, plaka, aday veya rapor ara" aria-label="Global arama"><div class="search-results" id="searchResults" role="listbox" aria-label="Arama sonuçları"></div></div>
           </div>
           <div class="hero-metrics" id="heroMetrics"></div>
         </section>
@@ -255,7 +256,7 @@
   <script>
     const fmtTL = n => new Intl.NumberFormat('tr-TR',{style:'currency',currency:'TRY',maximumFractionDigits:0}).format(n);
     const fmt = n => new Intl.NumberFormat('tr-TR').format(n);
-    const today = '27 Nisan 2026';
+    const today = new Intl.DateTimeFormat('tr-TR',{day:'numeric',month:'long',year:'numeric'}).format(new Date());
     const ROYALTY_RATE = .10;
     const KDV_RATE = .20;
     const ROYALTY_TOTAL_RATE = ROYALTY_RATE * (1 + KDV_RATE);
