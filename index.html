@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="ototr-version" content="SVK v1.0.35-finance-health-center" />
+  <meta name="ototr-version" content="SVK v1.0.36-finance-header-cleanup" />
   <title>OTOTR Genel Merkez ERP + CRM</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -199,7 +199,7 @@
 <body>
   <div class="app">
     <aside class="side">
-      <a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.25</small></div></a>
+      <a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.36</small></div></a>
       <div class="nav" id="nav"></div>
     </aside>
 
@@ -2000,7 +2000,7 @@
         status:b.risk==='Yüksek'?'İnceleme':b.risk==='Orta'?'Takip':'Stabil'
       }));
       out.demoDataHealth={
-        version:'SVK v1.0.35',
+        version:'SVK v1.0.36',
         branchUniverse:'10 şube / 4 aktif bölge',
         packagePriceBand:'5.000 TL - 15.000 TL',
         avgTicketBand:'8.350 TL - 9.900 TL',
@@ -2117,7 +2117,7 @@
       franchise:['Gelir · Franchise Satış','Franchise Satış / Aday Room','Yatırımcı adayı, bütçe, şehir, finansal yeterlilik, marka uyumu, sözleşme ve açılış pipelineını yönetin.'],
       crm:['Operasyon · CRM & Randevu','CRM & Randevu / Müşteri Room','Ekspertiz müşterisi lead, WhatsApp, randevu, teklif, kapora, şube atama, müşteri 360 ve no-show süreçlerini yönetin.'],
       complaints:['Operasyon · Müşteri Deneyimi','Müşteri Şikayetleri / Deneyim Room','Şikayet, Google yorum, SLA, hukuki risk ve memnuniyet sinyallerini aksiyona bağlayın.'],
-      finance:['Gelir · Finans & Royalty','Finans & Royalty Sağlık Merkezi','Bayi kârlılığı, royalty uygunluğu, destek bütçeleri ve genel merkez gelir kalitesini sürdürülebilir marka büyümesi için birlikte yönetin.'],
+      finance:['Gelir · Finans & Royalty','Finans & Royalty Sağlık Merkezi','Sağlıklı bayi → sağlıklı genel merkez → güçlü marka. Bayi kârlılığı, royalty uygunluğu, destek bütçeleri ve genel merkez gelir kalitesini birlikte yönetin.'],
       marketing:['Pazarlama · Growth','Pazarlama / Lead Üretim Room','Google, Meta, WhatsApp, SEO, CPL, ROAS ve şehir/şube bazlı kampanya katkısını izleyin; leadleri CRM veya Franchise Satışa aktarın.'],
       quality:['Kontrol · Kalite Güvence','Kalite & Müşteri Deneyimi Merkezi','Şube denetimi, rapor kalitesi, gizli müşteri, şikayet, ISO 10002 ve düzeltici faaliyetleri kalite sistemi altında yönetin.'],
       academy:['Kontrol · Academy','OTOTR Academy / Eğitim Room','Kişi, şube, bölge ve genel merkez seviyesinde eğitim ataması, deadline, başarı oranı ve sertifika skorlarını yönetin.'],
@@ -3096,7 +3096,6 @@
     function FinanceRoyaltyHealthCenterPage(){
       const m=financeRoyaltyModel();
       return `<div class="finance-health-page">
-        <div class="finance-intro"><div class="finance-philosophy"><h3>Sağlıklı bayi, sağlıklı genel merkez, güçlü marka.</h3><p>Royalty kararları otomatik tahsilat baskısı olarak değil; bayinin kârlılığı, genel merkez sürdürülebilirliği, bölgesel/marka ciro trendi ve süreli destek planı birlikte okunarak verilir.</p></div><div class="finance-balance-card"><div class="finance-card-title">Adil Royalty Dengesi</div><div class="finance-card-sub">Royalty kararları, bayi kârlılığı ile genel merkez sürdürülebilirliğini birlikte koruyacak şekilde alınır.</div><div class="finance-balance-indicators"><div><b>Bayi Sağlığı</b><span>%73</span></div><div><b>Marka Trendi</b><span>-%18</span></div><div><b>GM Gelir Baskısı</b><span>Orta</span></div></div><div class="finance-action-row"><span class="finance-pill amber">Son öneri: Kriz uyumlu royalty</span></div></div></div>
         ${financeKpiGrid(m.hqKpis)}
         ${financeKpiGrid(m.dealerKpis)}
         <div class="finance-grid-2">${FinanceBrandIndex(m)}${FinanceRegionIndex(m)}</div>
