@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="ototr-version" content="SVK v1.0.43-intelligence-visual-analytics" />
+  <meta name="ototr-version" content="SVK v1.0.44-theme-visual-charts" />
   <title>OTOTR Genel Merkez ERP + CRM</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,6 +20,18 @@
     }
     *{box-sizing:border-box} html{scroll-behavior:smooth}
     body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;background:#eef1f5;color:var(--ink);font-size:14px;overflow-x:hidden}
+    body.dark-mode{--ink:#f1f5f9;--muted:#94a3b8;--soft:#111827;--line:#26364f;--panel:#0f1b2d;background:#060e1c;color:var(--ink)}
+    body.dark-mode .main,body.dark-mode .wrap{background:#060e1c}
+    body.dark-mode .card,body.dark-mode .rail-card,body.dark-mode .summary-tile,body.dark-mode .mini,body.dark-mode .deal,body.dark-mode .module,body.dark-mode .dept-card,body.dark-mode .chart-kpi,body.dark-mode .finance-card,body.dark-mode .finance-kpi,body.dark-mode .finance-mini,body.dark-mode .finance-region-card,body.dark-mode .finance-decision-card,body.dark-mode .finance-support-card,body.dark-mode .finance-signal-card,body.dark-mode .finance-mini-row,body.dark-mode .ops-stage-card,body.dark-mode .ops-capacity-row,body.dark-mode .ops-work-row,body.dark-mode .ops-bottleneck-card,body.dark-mode .ops-signal-card,body.dark-mode .branch-region-kpi-card,body.dark-mode .branch-kpi-detail,body.dark-mode .branch-kpi-alarm-row,body.dark-mode .bi-visual-card,body.dark-mode .bi-region-tile,body.dark-mode .bi-tech-row{background:#0f1b2d;border-color:#26364f;color:var(--ink);box-shadow:none}
+    body.dark-mode .card-sub,body.dark-mode .mini span,body.dark-mode .finance-card-sub,body.dark-mode .finance-mini span,body.dark-mode .bi-visual-title span,body.dark-mode .bi-region-tile span,body.dark-mode .bi-tech-row span,body.dark-mode .alert-row span,body.dark-mode .task-card span{color:var(--muted)}
+    body.dark-mode .btn,body.dark-mode .micro-btn,body.dark-mode select,body.dark-mode input,body.dark-mode textarea,body.dark-mode .seg button.active,body.dark-mode .toolbar select,body.dark-mode .toolbar input,body.dark-mode .filter-bar input,body.dark-mode .filter-bar select{background:#111f33;border-color:#2b3c56;color:var(--ink)}
+    body.dark-mode .btn.primary{background:var(--red);border-color:var(--red);color:#fff}
+    body.dark-mode table th{background:#111f33;color:#cbd5e1}body.dark-mode table td{border-color:#26364f}body.dark-mode tbody tr:nth-child(even) td{background:#111827}body.dark-mode tbody tr:hover td{background:#17243a}
+    body.dark-mode .search,body.dark-mode .search-results,body.dark-mode .search-hit,body.dark-mode .modal-box,body.dark-mode .drawer-panel{background:#0f1b2d;border-color:#26364f;color:var(--ink)}
+    body.dark-mode .progress,body.dark-mode .bi-mini-track,body.dark-mode .ops-bar-track{background:#1e2f49}
+    .theme-toggle{position:fixed;right:18px;bottom:72px;z-index:1100;border:1px solid var(--line);border-radius:999px;background:#fff;color:#111318;box-shadow:0 12px 32px rgba(17,19,24,.18);padding:9px 12px;display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:950}
+    .theme-toggle i{width:15px;height:15px}.theme-toggle:hover{transform:translateY(-1px)}
+    body.dark-mode .theme-toggle{background:#111f33;color:#f1f5f9;border-color:#2b3c56}
     button,input,select,textarea{font:inherit}
     button{cursor:pointer}
     .app{display:grid;grid-template-columns:var(--side-w) minmax(0,1fr);min-height:100vh;width:100%;max-width:100vw;overflow-x:hidden}
@@ -241,7 +253,7 @@
 <body>
   <div class="app">
     <aside class="side">
-      <a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.43</small></div></a>
+      <a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.44</small></div></a>
       <div class="nav" id="nav"></div>
     </aside>
 
@@ -263,6 +275,7 @@
       </div>
     </main>
   </div>
+  <button class="theme-toggle" type="button" data-theme-toggle><i data-lucide="sun-moon"></i><span id="themeToggleText">Açık</span></button>
 
   <div class="drawer" id="drawer"><div class="drawer-panel"><div id="drawerContent"></div></div></div>
   <div class="modal" id="leadModal">
@@ -2045,7 +2058,7 @@
         status:b.risk==='Yüksek'?'İnceleme':b.risk==='Orta'?'Takip':'Stabil'
       }));
       out.demoDataHealth={
-        version:'SVK v1.0.43',
+        version:'SVK v1.0.44',
         branchUniverse:'10 şube / 4 aktif bölge',
         packagePriceBand:'5.000 TL - 15.000 TL',
         avgTicketBand:'8.350 TL - 9.900 TL',
@@ -2855,12 +2868,19 @@
     function OperationsCenterPage(){
       return `<div class="ops-center">
         ${OperationKpis()}
+        ${OperationVisualAnalytics()}
         ${OperationPipeline()}
         ${OperationCapacitySummary()}
         ${OperationReportSla()}
         ${OperationBottlenecks()}
         ${OperationDelayedWorkList()}
         ${OperationRiskSignals()}
+      </div>`;
+    }
+    function OperationVisualAnalytics(){
+      return `<div class="bi-visual-grid">
+        <div class="bi-visual-card"><div class="bi-visual-title"><div><b>Operasyon Üretim Hattı Grafiği</b><span>Randevudan rapor teslimine kadar kayıt, bekleme ve gecikme birlikte okunur.</span></div><button class="micro-btn" data-operation-action="SLA-001:delayed-report">Aksiyon aç</button></div><canvas id="chartOpsFlow" height="125"></canvas></div>
+        <div class="bi-visual-card"><div class="bi-visual-title"><div><b>Rapor Teslim SLA Profili</b><span>45 dk hedef çizgisiyle şube bazlı teslim süresi.</span></div><button class="micro-btn" data-route="complaints">Şikayet etkisi</button></div><canvas id="chartOpsSlaProfile" height="125"></canvas></div>
       </div>`;
     }
     function OperationKpis(){
@@ -3169,6 +3189,7 @@
       return `<div class="finance-health-page">
         ${financeKpiGrid(m.hqKpis)}
         ${financeKpiGrid(m.dealerKpis)}
+        ${FinanceVisualAnalytics(m)}
         <div class="finance-grid-2">${FinanceBrandIndex(m)}${FinanceRegionIndex(m)}</div>
         <div class="finance-grid-2">${FinanceDecisionEngine(m)}${FinanceFairSharingMatrix()}</div>
         ${FinanceDealerHealthTable(m)}
@@ -3177,6 +3198,12 @@
         <div class="finance-grid-3">${FinanceSustainabilityPanel()}${FinanceContractRules()}${FinanceChronicRisk()}</div>
         <div class="finance-grid-2">${FinanceObjectionDesk(m)}${FinanceApprovalMatrix()}</div>
         <div class="finance-grid-2">${FinanceAccountingStatus()}${FinanceModuleSignals()}</div>
+      </div>`;
+    }
+    function FinanceVisualAnalytics(m){
+      return `<div class="bi-visual-grid">
+        <div class="bi-visual-card"><div class="bi-visual-title"><div><b>Bayi Finansal Sağlık Grafiği</b><span>Skor, gerçekleşme ve destek bütçesi aynı eksende izlenir.</span></div><button class="micro-btn" data-royalty-action="RF-006:support-plan">Destek planı</button></div><canvas id="chartFinanceDealerHealth" height="125"></canvas></div>
+        <div class="bi-visual-card"><div class="bi-visual-title"><div><b>Royalty Karar Dağılımı</b><span>Normal, kriz uyumlu, kısmi ve koruma kararları.</span></div><button class="micro-btn" data-route="actions">Onay kuyruğu</button></div><canvas id="chartFinanceRoyaltyDecision" height="125"></canvas></div>
       </div>`;
     }
     function FinanceBrandIndex(m){
@@ -5547,6 +5574,16 @@
       const blob=new Blob([JSON.stringify(DB,null,2)],{type:'application/json'});
       const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='ototr-demo-veri.json'; a.click(); URL.revokeObjectURL(a.href); toast('Demo veri seti indirildi.');
     }
+    function applyTheme(mode){
+      const dark=mode==='dark';
+      document.body.classList.toggle('dark-mode',dark);
+      localStorage.setItem('ototr-theme',dark?'dark':'light');
+      const text=document.getElementById('themeToggleText');
+      if(text) text.textContent=dark?'Koyu':'Açık';
+      if(typeof DB!=='undefined' && DB) setTimeout(()=>{renderCharts(); if(window.lucide) lucide.createIcons();},30);
+    }
+    function toggleTheme(){ applyTheme(document.body.classList.contains('dark-mode')?'light':'dark'); }
+    function initTheme(){ applyTheme(localStorage.getItem('ototr-theme')==='dark'?'dark':'light'); }
     function wirePageEvents(){
       document.querySelectorAll('[data-route]').forEach(el=>el.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();route(el.dataset.route);toggleCommandDock(false);}));
       document.querySelectorAll('[data-action]').forEach(el=>el.addEventListener('click',e=>{ e.stopPropagation(); toast(el.dataset.action); }));
@@ -5637,6 +5674,7 @@
       document.querySelectorAll('[data-quality-calc]').forEach(el=>el.addEventListener('click',e=>{ e.preventDefault(); calculateQualityChecklist(); }));
       document.querySelectorAll('[data-quality-score]').forEach(el=>el.addEventListener('change',calculateQualityChecklist));
       document.querySelectorAll('[data-quality-risk-alarm]').forEach(el=>el.addEventListener('click',e=>{ e.preventDefault(); toast('Risk alarmı üretildi: Konya Meram ve Samsun İlkadım CEO takip kuyruğuna alındı.'); }));
+      document.querySelectorAll('[data-theme-toggle]').forEach(el=>{ if(el.dataset.boundTheme==='1') return; el.dataset.boundTheme='1'; el.addEventListener('click',e=>{ e.preventDefault(); e.stopPropagation(); toggleTheme(); }); });
       const qModal=document.getElementById('qualityAuditModal');
       if(qModal && !qModal.dataset.bound){ qModal.dataset.bound='1'; qModal.addEventListener('click',e=>{ if(e.target.id==='qualityAuditModal') closeQualityAudit(); }); }
     }
@@ -5834,7 +5872,8 @@
 
     function renderCharts(){
       Object.values(charts).forEach(c=>c.destroy()); charts={};
-      const make=(id,type,data,options={})=>{ const el=document.getElementById(id); if(!el) return; if(window.Chart) charts[id]=new Chart(el,{type,data,options:{responsive:true,plugins:{legend:{position:'bottom'}},...options}}); else fallbackChart(el,data); };
+      const theme=chartTheme();
+      const make=(id,type,data,options={})=>{ const el=document.getElementById(id); if(!el) return; if(window.Chart) charts[id]=new Chart(el,{type,data,options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{position:'bottom',labels:{color:theme.text}}},scales:{x:{ticks:{color:theme.muted},grid:{color:theme.grid}},y:{ticks:{color:theme.muted},grid:{color:theme.grid}}},...options}}); else fallbackChart(el,data); };
       const trend=revenueTrendState(), colors={2024:'#69707d',2025:'#d71920',2026:'#185abc'}, periodLabels={month:['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'],quarter:['Ocak-Mart','Nisan-Haziran','Temmuz-Eylül','Ekim-Aralık'],half:['İlk 6 Ay','Son 6 Ay']};
       const kpis=document.getElementById('revenueTrendKpis'); if(kpis) kpis.innerHTML=revenueTrendKpis(trend.years,trend.period);
       const insight=document.getElementById('revenueAiInsight'); if(insight) insight.innerHTML=revenueAiInsight(trend.years,trend.period);
@@ -5867,6 +5906,12 @@
       make('chartBiRevenueArea','line',{labels:['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'],datasets:[{label:'Ciro',data:[8.2,7.8,9.4,10.1,11.3,12.7,13.4,12.1,14.2,15.8,16.4,17.1],borderColor:'#d71920',backgroundColor:'rgba(215,25,32,.12)',fill:true,tension:.36,pointRadius:0},{label:'GM payı',data:[2.1,1.9,2.4,2.6,2.9,3.2,3.4,3.1,3.6,4.0,4.2,4.3],borderColor:'#185abc',backgroundColor:'rgba(24,90,188,.08)',fill:true,tension:.36,pointRadius:0},{label:'Net katkı',data:[6.1,5.9,7.0,7.5,8.4,9.5,10.0,9.0,10.6,11.8,12.2,12.8],borderColor:'#14804a',backgroundColor:'rgba(20,128,74,.08)',fill:false,tension:.36,pointRadius:0}]},{plugins:{legend:{position:'bottom',labels:{usePointStyle:true,boxWidth:8}}},scales:{x:{grid:{display:false}},y:{ticks:{callback:v=>'₺'+v+'M',maxTicksLimit:5}}}});
       make('chartBiPackageStack','bar',{labels:['İstanbul','Ankara','İzmir','Bursa','Antalya','Konya'],datasets:[{label:'Mini',data:[45,32,28,21,18,16],backgroundColor:'#69707d',borderRadius:5},{label:'Standart',data:[78,56,44,38,31,26],backgroundColor:'#185abc',borderRadius:5},{label:'Detay',data:[34,24,18,15,12,9],backgroundColor:'#14804a',borderRadius:5},{label:'Premium/Full',data:[12,8,6,4,3,2],backgroundColor:'#b76b00',borderRadius:5}]},{plugins:{legend:{position:'bottom'}},scales:{x:{stacked:true,grid:{display:false}},y:{stacked:true,beginAtZero:true}}});
       make('chartBiOpsRadar','radar',{labels:['Ekspertiz Kalitesi','Müşteri İletişimi','Süreç Hızı','Belge Uyumu','Fiyat Doğruluğu','Teknik Bilgi'],datasets:[{label:'Operasyon skoru',data:[85,72,68,91,78,88],borderColor:'#d71920',backgroundColor:'rgba(215,25,32,.14)',pointBackgroundColor:'#d71920'}]},{plugins:{legend:{display:false}},scales:{r:{min:0,max:100,ticks:{stepSize:25,display:false},pointLabels:{font:{size:10}}}}});
+      const opsData=operationDemoData();
+      make('chartOpsFlow','bar',{labels:opsData.pipeline.map(x=>x[0]),datasets:[{label:'Kayıt',data:opsData.pipeline.map(x=>x[1]),backgroundColor:'#185abc',borderRadius:7},{label:'Geciken',data:opsData.pipeline.map(x=>x[3]),backgroundColor:'#d71920',borderRadius:7}]},{plugins:{legend:{position:'bottom'}},scales:{x:{grid:{display:false},ticks:{color:theme.muted,maxRotation:45,minRotation:0}},y:{beginAtZero:true,grid:{color:theme.grid},ticks:{color:theme.muted}}}});
+      make('chartOpsSlaProfile','line',{labels:opsData.reportSla.map(x=>x.branch.replace('İstanbul ','İST ').replace('Ankara ','ANK ')),datasets:[{label:'Ortalama teslim dk',data:opsData.reportSla.map(x=>x.minutes),borderColor:'#d71920',backgroundColor:'rgba(215,25,32,.12)',fill:true,tension:.35},{label:'SLA hedefi',data:opsData.reportSla.map(()=>45),borderColor:'#14804a',borderDash:[5,5],pointRadius:0,tension:0}]},{plugins:{legend:{position:'bottom'}},scales:{x:{grid:{display:false},ticks:{color:theme.muted}},y:{beginAtZero:true,grid:{color:theme.grid},ticks:{color:theme.muted,callback:v=>v+' dk'}}}});
+      const fm=financeRoyaltyModel(), decisionCounts=fm.dealers.reduce((acc,d)=>{ const k=getRoyaltyDecision(d).replace(' + Bayi Özel Müdahale',''); acc[k]=(acc[k]||0)+1; return acc; },{});
+      make('chartFinanceDealerHealth','bar',{labels:fm.dealers.map(d=>d.branch.replace('İstanbul ','İST ').replace('Ankara ','ANK ')),datasets:[{label:'Sağlık skoru',data:fm.dealers.map(d=>d.score),backgroundColor:fm.dealers.map(d=>d.score<60?'#d71920':d.score<70?'#b76b00':d.score<85?'#185abc':'#14804a'),borderRadius:8},{type:'line',label:'Gerçekleşme %',data:fm.dealers.map(d=>d.realization),borderColor:'#111318',backgroundColor:'rgba(17,19,24,.08)',tension:.35,pointRadius:3}]},{plugins:{legend:{position:'bottom'}},scales:{x:{grid:{display:false},ticks:{color:theme.muted}},y:{min:40,max:115,grid:{color:theme.grid},ticks:{color:theme.muted}}}});
+      make('chartFinanceRoyaltyDecision','doughnut',{labels:Object.keys(decisionCounts),datasets:[{data:Object.values(decisionCounts),backgroundColor:['#14804a','#185abc','#b76b00','#d71920','#6d3fc8'],borderColor:theme.panel,borderWidth:2}]},{cutout:'62%',plugins:{legend:{position:'bottom',labels:{color:theme.text,boxWidth:10}}}});
       const cc=complaintCenter();
       make('chartComplaintTypes','doughnut',{labels:(cc.complaintCategories||[]).map(x=>x[0]),datasets:[{data:(cc.complaintCategories||[]).map(x=>x[1]),backgroundColor:['#d71920','#111318','#185abc','#14804a','#b76b00','#6d3fc8']}]});
       make('chartComplaintBranches','bar',{labels:(cc.complaintBranchScore||[]).map(x=>x.branch.replace('İstanbul ','').replace('Ankara ','')),datasets:[{label:'Açık şikayet',data:(cc.complaintBranchScore||[]).map(x=>x.open),backgroundColor:'#d71920'},{label:'Şikayet sağlığı skoru',data:(cc.complaintBranchScore||[]).map(x=>x.score/10),backgroundColor:'#111318'}]});
@@ -5885,6 +5930,14 @@
       make('chartQualityRegion','bar',{labels:qRegions,datasets:[{label:'Kalite skoru',data:qRegions.map(r=>Math.round(q.branches.filter(b=>b.region===r).reduce((s,b)=>s+b.score,0)/q.branches.filter(b=>b.region===r).length)),backgroundColor:'#d71920',borderRadius:8},{label:'Academy tamamlama',data:qRegions.map(r=>Math.round(q.branches.filter(b=>b.region===r).reduce((s,b)=>s+b.academy,0)/q.branches.filter(b=>b.region===r).length)),backgroundColor:'#111318',borderRadius:8}]},{scales:{y:{min:60,max:100}}});
       make('chartQualityTrend','line',{labels:['Aralık','Ocak','Şubat','Mart','Nisan','Mayıs'],datasets:[{label:'Bursa Nilüfer',data:[88,86,84,81,78,74],borderColor:'#d71920',backgroundColor:'rgba(215,25,32,.10)',tension:.35,fill:true},{label:'Samsun İlkadım',data:[83,81,78,75,72,70],borderColor:'#111318',backgroundColor:'rgba(17,19,24,.08)',tension:.35,fill:false},{label:'Eskişehir Tepebaşı',data:[91,93,94,95,97,98],borderColor:'#14804a',backgroundColor:'rgba(20,128,74,.08)',tension:.35,fill:false}]},{scales:{y:{min:60,max:100}}});
       make('chartQualityErrors','doughnut',{labels:['Rapor dili','Academy eksiği','Geciken CAPA','CRM veri kalitesi','Marka kullanımı','Hukuki/uyum'],datasets:[{data:[24,17,14,12,9,7],backgroundColor:['#d71920','#111318','#b76b00','#185abc','#14804a','#6d3fc8']}]});
+    }
+    function chartTheme(){
+      const dark=document.body.classList.contains('dark-mode');
+      if(window.Chart){
+        Chart.defaults.color=dark?'#cbd5e1':'#303641';
+        Chart.defaults.borderColor=dark?'rgba(148,163,184,.18)':'rgba(17,19,24,.08)';
+      }
+      return {dark,text:dark?'#e5edf8':'#303641',muted:dark?'#94a3b8':'#69707d',grid:dark?'rgba(148,163,184,.16)':'rgba(17,19,24,.08)',panel:dark?'#0f1b2d':'#fff'};
     }
     function fallbackChart(canvas,data){
       const ctx=canvas.getContext('2d'), w=canvas.width=canvas.clientWidth*2, h=canvas.height=(canvas.clientHeight||220)*2;
@@ -5906,6 +5959,7 @@
       }else{
         current=titles[initial]?initial:'dashboard';
       }
+      initTheme();
       renderAll(); route(initialHR?initial:current);
     })();
     window.addEventListener('hashchange',()=>{
