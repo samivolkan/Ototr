@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="ototr-version" content="SVK v1.0.45-dashboard-signal-grid" />
+  <meta name="ototr-version" content="SVK v1.0.46-dashboard-complaint-signal" />
   <title>OTOTR Genel Merkez ERP + CRM</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -246,6 +246,7 @@
     .dashboard-signal-grid .exec-insight{padding:7px 8px}
     .dashboard-signal-grid .exec-insight b{font-size:10px}
     .dashboard-signal-grid .exec-insight span{font-size:9px}
+    .dashboard-signal-grid .signal-complaints .exec-hero{background:linear-gradient(135deg,#111318,#2b1722 72%,rgba(215,25,32,.86))}
     .dashboard-signal-grid .signal-branch-kpi{grid-column:1/-1}
     .dashboard-signal-grid .signal-branch-kpi .exec-hero{background:linear-gradient(135deg,#111318,#203145 70%,rgba(24,90,188,.82))}
     .alert-center-collapsible{display:grid;gap:9px;margin-top:9px}
@@ -276,7 +277,7 @@
 <body>
   <div class="app">
     <aside class="side">
-      <a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.45</small></div></a>
+      <a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.46</small></div></a>
       <div class="nav" id="nav"></div>
     </aside>
 
@@ -2081,7 +2082,7 @@
         status:b.risk==='Yüksek'?'İnceleme':b.risk==='Orta'?'Takip':'Stabil'
       }));
       out.demoDataHealth={
-        version:'SVK v1.0.45',
+        version:'SVK v1.0.46',
         branchUniverse:'10 şube / 4 aktif bölge',
         packagePriceBand:'5.000 TL - 15.000 TL',
         avgTicketBand:'8.350 TL - 9.900 TL',
@@ -2258,6 +2259,7 @@
                 </div>
                 <div class="dashboard-signal-grid">
                   <div class="card exec-card"><div class="card-head"><div><div class="card-title">CRM & Randevu Operasyon Özeti</div><div class="card-sub">Bugünkü randevu, WhatsApp SLA, no-show riski ve kritik müşteri sinyalleri</div></div><button class="btn" data-route="crm">CRM</button></div>${CRMExecutiveSummary()}</div>
+                  <div class="card exec-card signal-complaints"><div class="card-head"><div><div class="card-title">Müşteri Şikayetleri & İtibar Alarmı</div><div class="card-sub">Açık şikayet, SLA, Google/sosyal medya ve hukuki risk sinyalleri</div></div><button class="btn" data-route="complaints">Şikayetler</button></div>${ComplaintExecutiveSummary()}</div>
                   <div class="card exec-card"><div class="card-head"><div><div class="card-title">OTOTR Academy Kontrol Özeti</div><div class="card-sub">Bölge, şube, eğitmen ve kişi bazlı eğitim SLA / KPI sinyalleri</div></div><button class="btn" data-route="academy">Academy</button></div>${AcademyExecutiveSummary()}</div>
                   <div class="card exec-card"><div class="card-head"><div><div class="card-title">Kalite ve Kontrol Merkezi Özeti</div><div class="card-sub">Denetim, bulgu, CAPA, Academy ve şikayet sinyalleri tek kalite skoruna bağlanır</div></div><button class="btn" data-route="quality">Kalite</button></div>${QualityDashboardSummary()}</div>
                   <div class="card exec-card"><div class="card-head"><div><div class="card-title">Operasyon Alarmı</div><div class="card-sub">Bugünkü üretim hattı, geciken rapor, SLA ve kapasite riski özeti</div></div><button class="btn" data-route="operations">Operasyon</button></div>${OperationAlarmSummary()}</div>
@@ -2313,6 +2315,22 @@
     }
 
     function complaintCenter(){ return DB.complaintsCenter || seed.complaintsCenter || {}; }
+    function ComplaintExecutiveSummary(){
+      const c=complaintCenter(), rows=c.complaintTickets||[];
+      const open=rows.filter(x=>x.status!=='Kapandı').length;
+      const critical=rows.filter(x=>x.priority==='P0'||x.priority==='P1').length;
+      const late=rows.filter(x=>x.sla==='Aşıldı'||String(x.status||'').includes('gecik')).length;
+      const legal=rows.filter(x=>['Yüksek','CEO takip','Orta'].includes(x.legalRisk)).length;
+      const reputation=rows.filter(x=>String(x.source||'').includes('Google')||String(x.type||'').includes('Sosyal')||String(x.type||'').includes('Google')).length;
+      const highest=[...rows].sort((a,b)=>(b.amountRisk||0)-(a.amountRisk||0))[0]||{};
+      const totalRisk=rows.reduce((s,x)=>s+(Number(x.amountRisk)||0),0);
+      return ExecutiveSummaryBlock({eyebrow:'Şikayet & İtibar',value:open,label:'Açık müşteri dosyası',route:'complaints',button:'Şikayet',items:[
+        {label:'Kritik',value:critical,note:'P0 / P1',tone:critical?'red':'green'},
+        {label:'SLA geciken',value:late,note:'Dönüş süresi',tone:late?'red':'green'},
+        {label:'Hukuki risk',value:legal,note:'Hukuk bağlantılı',tone:legal?'amber':'green'},
+        {label:'İtibar riski',value:reputation,note:'Google / sosyal',tone:reputation?'amber':'green'}
+      ],insight:`En yüksek risk: ${highest.branch||'Şikayet merkezi'} · ${highest.type||'Açık dosya'} · ${fmtTL(totalRisk)} potansiyel etki`,next:'Kritik şikayetler kalite, hukuk ve kriz eşiğiyle birlikte takip edilir.',icon:'message-circle-warning'});
+    }
     function complaintTone(text){
       return text==='P0'||text==='Yüksek'||text==='Aşıldı'||text==='CEO takip'||text==='Riskli' ? 'b-red' : text==='P1'||text==='Kritik'||text==='Orta'||text==='Hukuk incelemesinde'||text==='Şube savunması bekleniyor'||text==='Yeniden açıldı' ? 'b-amber' : text==='P2'||text==='İçinde'||text==='Takipte'||text==='Kalite incelemesinde'||text==='İncelemede'||text==='Müşteriye dönüş yapıldı' ? 'b-blue' : 'b-green';
     }
@@ -2439,6 +2457,7 @@
     }
     function alertOwner(a){
       if(a.route==='legal') return 'Hukuk + Kalite';
+      if(a.route==='complaints') return 'Müşteri Deneyimi + Kalite';
       if(a.route==='finance') return 'Finans';
       if(a.route==='operations') return 'Operasyon';
       if(a.route==='crm') return 'Müşteri Deneyimi';
