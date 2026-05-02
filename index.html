@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="ototr-version" content="SVK v1.0.42-dashboard-compact-summaries" />
+  <meta name="ototr-version" content="SVK v1.0.43-intelligence-visual-analytics" />
   <title>OTOTR Genel Merkez ERP + CRM</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -220,14 +220,28 @@
     .alert-center-collapsible[open] .alert-center-more{animation:alertSlideDown .18s ease-out}
     .alert-center-toggle{padding:8px 10px;background:#f8fafc}
     @keyframes alertSlideDown{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+    .bi-visual-grid{display:grid;grid-template-columns:1.45fr .9fr;gap:14px;margin:14px 0}
+    .bi-visual-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;box-shadow:var(--soft-shadow);min-width:0}
+    .bi-visual-card canvas{max-height:230px}
+    .bi-visual-title{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:10px}
+    .bi-visual-title b{font-size:14px}.bi-visual-title span{display:block;color:var(--muted);font-size:11px;margin-top:2px;line-height:1.35}
+    .bi-rank-list{display:grid;gap:7px}.bi-rank-row{display:grid;grid-template-columns:26px minmax(0,1fr) 46px;gap:8px;align-items:center}
+    .bi-rank-row em{font-style:normal;color:var(--muted);font-size:10px;font-weight:950;text-align:right}.bi-rank-row b{font-size:11px}.bi-rank-row strong{font-size:12px;text-align:right}
+    .bi-mini-track{height:6px;border-radius:999px;background:#eef1f5;overflow:hidden;margin-top:4px}.bi-mini-fill{height:100%;border-radius:999px;background:var(--green)}.bi-mini-fill.warn{background:var(--amber)}.bi-mini-fill.bad{background:var(--red)}
+    .bi-region-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:10px}
+    .bi-region-tile{border:1px solid var(--line);border-radius:10px;background:#f8fafc;padding:9px}.bi-region-tile b{display:flex;justify-content:space-between;gap:6px;font-size:11px}.bi-region-tile span{display:block;color:var(--muted);font-size:10px;margin-top:3px}
+    .bi-heat-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:4px}.bi-heat-cell{height:34px;border-radius:7px;border:1px solid var(--line);display:grid;place-items:center;font-size:10px;font-weight:950}.bi-heat-cell.l1{background:#ecfdf3;color:#067647}.bi-heat-cell.l2{background:#eff6ff;color:#185abc}.bi-heat-cell.l3{background:#fffaeb;color:#b54708}.bi-heat-cell.l4{background:#fff4e5;color:#c45100}.bi-heat-cell.l5{background:#fef3f2;color:#b42318}
+    .bi-tech-list{display:grid;gap:8px}.bi-tech-row{display:grid;grid-template-columns:34px minmax(0,1fr) 54px;gap:9px;align-items:center;border:1px solid var(--line);border-radius:10px;background:#f8fafc;padding:8px}.bi-tech-rank{width:28px;height:28px;border-radius:999px;display:grid;place-items:center;background:#111318;color:#fff;font-size:10px;font-weight:950}.bi-tech-row b{font-size:12px}.bi-tech-row span{display:block;color:var(--muted);font-size:10px;margin-top:2px}.bi-tech-row strong{font-size:14px;text-align:right}
+    .bi-profit-bridge{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:7px;align-items:end;min-height:190px}.bi-profit-step{display:grid;gap:6px;justify-items:center}.bi-profit-bar{width:100%;max-width:42px;border-radius:9px 9px 4px 4px;background:var(--green);min-height:18px}.bi-profit-bar.neg{background:var(--red)}.bi-profit-bar.total{background:var(--blue)}.bi-profit-step b{font-size:11px}.bi-profit-step span{font-size:9px;color:var(--muted);text-align:center;line-height:1.15}
     @media (max-width:1100px){.exec-card .card-head{grid-template-columns:1fr}.exec-summary{grid-template-columns:1fr}.exec-hero{min-height:auto}.exec-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
-    @media (max-width:640px){.exec-card{padding:12px}.exec-card .btn{width:100%;justify-content:center}.exec-metrics{grid-template-columns:1fr}}
+    @media (max-width:1100px){.bi-visual-grid{grid-template-columns:1fr}.bi-region-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media (max-width:640px){.exec-card{padding:12px}.exec-card .btn{width:100%;justify-content:center}.exec-metrics{grid-template-columns:1fr}.bi-region-grid,.bi-profit-bridge{grid-template-columns:1fr}.bi-visual-card canvas{max-height:200px}}
   </style>
 </head>
 <body>
   <div class="app">
     <aside class="side">
-      <a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.42</small></div></a>
+      <a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.43</small></div></a>
       <div class="nav" id="nav"></div>
     </aside>
 
@@ -2031,7 +2045,7 @@
         status:b.risk==='Yüksek'?'İnceleme':b.risk==='Orta'?'Takip':'Stabil'
       }));
       out.demoDataHealth={
-        version:'SVK v1.0.42',
+        version:'SVK v1.0.43',
         branchUniverse:'10 şube / 4 aktif bölge',
         packagePriceBand:'5.000 TL - 15.000 TL',
         avgTicketBand:'8.350 TL - 9.900 TL',
@@ -3340,7 +3354,21 @@
       return `<div class="grid g2"><div class="card"><div class="card-head"><div><div class="card-title">AI Öneri Dönüşüm Oranı</div><div class="card-sub">Öneri → aksiyon → CEO onayı → ölçüm yaşam döngüsü.</div></div><button class="btn" data-route="ai">AI'a git</button></div><div class="summary-grid">${rows.slice(2,4).map(r=>`<div class="summary-tile"><span>${r[0]}</span><b>${r[1]}</b></div>`).join('')}</div>${AIRecommendationPanel('compact')}</div><div class="card"><div class="card-head"><div><div class="card-title">Aksiyon Kapanış Performansı</div><div class="card-sub">SLA, kritik görev, CEO onayı ve kapanış etkisi.</div></div><button class="btn" data-route="actions">Görevlere git</button></div><div class="summary-grid">${rows.map(r=>`<div class="summary-tile"><span>${r[0]}</span><b>${r[1]}</b></div>`).join('')}</div></div></div>`;
     }
     function IntelligencePage(){
-      return `${IntegratedBiKpis()}${IntelligenceTrendPanels()}<div class="grid g60"><div class="card"><div class="card-head"><div><div class="card-title">Entegre Yönetim Sinyal Matrisi</div><div class="card-sub">Dashboard ne oluyor sorusunu cevaplar; bu ekran nedenini, sahibini ve aksiyon yolunu gösterir.</div></div></div>${IntegratedSignalMatrix()}</div><div class="card"><div class="card-head"><div><div class="card-title">Derin Analiz Isı Haritası</div><div class="card-sub">Finans, operasyon, kalite, Academy, kriz ve AI sinyalleri aynı karar dilinde okunur.</div></div></div>${heatMap()}</div></div>${UnifiedDataLanguagePanel()}${IntelligenceCauseEffect()}${IntelligenceActionPerformance()}<div class="grid g2"><div class="card"><div class="card-head"><div><div class="card-title">Şube KPI Karşılaştırması</div><div class="card-sub">Harita detayları kopyalanmaz; en iyi, en riskli ve toparlanan şubeler karşılaştırılır.</div></div><button class="btn" data-route="branches">Şubelere git</button></div>${branchDecisionTable()}</div>${IntelligenceEarlyWarningPanel()}</div>`;
+      return `${IntegratedBiKpis()}${IntelligenceVisualAnalytics()}${IntelligenceTrendPanels()}<div class="grid g60"><div class="card"><div class="card-head"><div><div class="card-title">Entegre Yönetim Sinyal Matrisi</div><div class="card-sub">Dashboard ne oluyor sorusunu cevaplar; bu ekran nedenini, sahibini ve aksiyon yolunu gösterir.</div></div></div>${IntegratedSignalMatrix()}</div><div class="card"><div class="card-head"><div><div class="card-title">Derin Analiz Isı Haritası</div><div class="card-sub">Finans, operasyon, kalite, Academy, kriz ve AI sinyalleri aynı karar dilinde okunur.</div></div></div>${heatMap()}</div></div>${UnifiedDataLanguagePanel()}${IntelligenceCauseEffect()}${IntelligenceActionPerformance()}<div class="grid g2"><div class="card"><div class="card-head"><div><div class="card-title">Şube KPI Karşılaştırması</div><div class="card-sub">Harita detayları kopyalanmaz; en iyi, en riskli ve toparlanan şubeler karşılaştırılır.</div></div><button class="btn" data-route="branches">Şubelere git</button></div>${branchDecisionTable()}</div>${IntelligenceEarlyWarningPanel()}</div>`;
+    }
+    function IntelligenceVisualAnalytics(){
+      const branches=[...DB.branches].slice(0,10).map(b=>({name:b.name.replace('İstanbul ','İST ').replace('Ankara ','ANK ').replace('İzmir ','İZM '),score:Math.round((b.quality||80)*.55+((b.google||4.3)*20)*.25+(b.risk==='Yüksek'?58:b.risk==='Orta'?74:90)*.2),reports:b.reports||0,risk:b.risk}));
+      const regions=[['Marmara',82,4],['Ege',88,2],['İç Anadolu',76,3],['Akdeniz',69,2],['Karadeniz',73,1],['Güneydoğu',64,1],['Doğu Anadolu',58,0],['Genel Merkez',91,1]];
+      return `<div class="bi-visual-grid">
+        <div class="bi-visual-card"><div class="bi-visual-title"><div><b>CEO Analitik Panosu</b><span>Ciro, kârlılık, paket dağılımı ve operasyon sinyalleri grafik olarak okunur.</span></div><button class="micro-btn" data-route="dashboard">Kokpite dön</button></div><canvas id="chartBiRevenueArea" height="118"></canvas></div>
+        <div class="bi-visual-card"><div class="bi-visual-title"><div><b>Şube Sıralaması</b><span>Genel skor + rapor hacmi</span></div><button class="micro-btn" data-route="branches">Şube 360</button></div><div class="bi-rank-list">${branches.slice().sort((a,b)=>b.score-a.score).map((b,i)=>`<div class="bi-rank-row"><em>#${i+1}</em><div><b>${b.name}</b><div class="bi-mini-track"><div class="bi-mini-fill ${b.score<70?'bad':b.score<82?'warn':''}" style="width:${b.score}%"></div></div></div><strong>${b.score}</strong></div>`).join('')}</div></div>
+        <div class="bi-visual-card"><div class="bi-visual-title"><div><b>Paket Satış Analizi</b><span>Şehir bazlı Mini, Standart, Detay, Premium ve Full dağılımı</span></div></div><canvas id="chartBiPackageStack" height="125"></canvas></div>
+        <div class="bi-visual-card"><div class="bi-visual-title"><div><b>Operasyon Kalite Radarı</b><span>Kalite, hız, belge uyumu ve müşteri iletişimi</span></div></div><canvas id="chartBiOpsRadar" height="125"></canvas></div>
+        <div class="bi-visual-card"><div class="bi-visual-title"><div><b>Türkiye Bölgesel Skorları</b><span>Harita detayına girmeden bölge sağlığı</span></div></div><div class="bi-region-grid">${regions.map(r=>`<div class="bi-region-tile"><b>${r[0]} <strong style="color:${r[1]<70?'var(--red)':r[1]<82?'var(--amber)':'var(--green)'}">${r[1]}</strong></b><span>${r[2]} aktif şube · ${r[1]<70?'Riskli':r[1]<82?'İzlenmeli':'Sağlıklı'}</span><div class="bi-mini-track"><div class="bi-mini-fill ${r[1]<70?'bad':r[1]<82?'warn':''}" style="width:${r[1]}%"></div></div></div>`).join('')}</div></div>
+        <div class="bi-visual-card"><div class="bi-visual-title"><div><b>Risk Matrisi</b><span>Olasılık x etki sinyalleri</span></div></div><div class="bi-heat-grid">${[3,4,5,5,5,2,3,4,5,5,1,2,3,4,5,1,1,2,3,4,1,1,1,2,3].map(v=>`<div class="bi-heat-cell l${v}">${v}</div>`).join('')}</div><div class="card-sub" style="margin-top:9px">Kırmızı alanlar kriz ve aksiyon merkezine taşınacak P0/P1 konuları gösterir.</div></div>
+        <div class="bi-visual-card"><div class="bi-visual-title"><div><b>Teknisyen Performansı</b><span>Araç adedi, şikayet ve kalite skoru</span></div></div><div class="bi-tech-list">${[['Ahmet Y.',94,234,'İST'],['Mehmet K.',91,218,'ANK'],['Ali D.',88,201,'İZM'],['Mustafa E.',85,189,'BRS'],['Hasan Ö.',79,167,'ADA']].map((t,i)=>`<div class="bi-tech-row"><div class="bi-tech-rank">${i+1}</div><div><b>${t[0]}</b><span>${t[3]} · ${t[2]} araç</span></div><strong style="color:${t[1]>=85?'var(--green)':t[1]>=75?'var(--amber)':'var(--red)'}">${t[1]}</strong></div>`).join('')}</div></div>
+        <div class="bi-visual-card"><div class="bi-visual-title"><div><b>Bayi Kârlılık Köprüsü</b><span>Brüt cirodan net katkıya sade finans köprüsü</span></div></div><div class="bi-profit-bridge">${[['Brüt Ciro',412,'total'],['Paket Maliyet',128,'neg'],['Personel',87,'neg'],['Genel Gider',52,'neg'],['GM Payı',41,'neg'],['Vergi',28,'neg'],['Net Kâr',76,'pos']].map(x=>`<div class="bi-profit-step"><div class="bi-profit-bar ${x[2]==='neg'?'neg':x[2]==='total'?'total':''}" style="height:${Math.max(24,Math.min(150,x[1]/3))}px"></div><b>${x[2]==='neg'?'-':''}₺${x[1]}K</b><span>${x[0]}</span></div>`).join('')}</div></div>
+      </div>`;
     }
     function FranchiseSummary(){
       const f=DB.ceoDashboard.franchiseSummary;
@@ -5836,6 +5864,9 @@
       make('chartOps','bar',{labels:DB.branches.map(b=>b.city),datasets:[{label:'Rapor adedi',data:DB.branches.map(b=>b.reports),backgroundColor:'#d71920'},{label:'Kalite skoru',data:DB.branches.map(b=>b.quality*8),backgroundColor:'#111318'}]});
       make('chartFinance','doughnut',{labels:['Royalty','Reklam Katkı','Yazılım Lisansı','Eğitim'],datasets:[{data:[royaltyAmount(5456000),109120,72000,46000],backgroundColor:['#d71920','#111318','#185abc','#14804a']}]});
       make('chartBI','radar',{labels:DB.branches.slice(0,4).map(b=>b.city),datasets:[{label:'Ciro endeksi',data:DB.branches.slice(0,4).map(b=>Math.round(b.revenue/20000)),borderColor:'#d71920',backgroundColor:'rgba(215,25,32,.12)'},{label:'Kalite',data:DB.branches.slice(0,4).map(b=>b.quality),borderColor:'#185abc',backgroundColor:'rgba(24,90,188,.10)'}]});
+      make('chartBiRevenueArea','line',{labels:['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'],datasets:[{label:'Ciro',data:[8.2,7.8,9.4,10.1,11.3,12.7,13.4,12.1,14.2,15.8,16.4,17.1],borderColor:'#d71920',backgroundColor:'rgba(215,25,32,.12)',fill:true,tension:.36,pointRadius:0},{label:'GM payı',data:[2.1,1.9,2.4,2.6,2.9,3.2,3.4,3.1,3.6,4.0,4.2,4.3],borderColor:'#185abc',backgroundColor:'rgba(24,90,188,.08)',fill:true,tension:.36,pointRadius:0},{label:'Net katkı',data:[6.1,5.9,7.0,7.5,8.4,9.5,10.0,9.0,10.6,11.8,12.2,12.8],borderColor:'#14804a',backgroundColor:'rgba(20,128,74,.08)',fill:false,tension:.36,pointRadius:0}]},{plugins:{legend:{position:'bottom',labels:{usePointStyle:true,boxWidth:8}}},scales:{x:{grid:{display:false}},y:{ticks:{callback:v=>'₺'+v+'M',maxTicksLimit:5}}}});
+      make('chartBiPackageStack','bar',{labels:['İstanbul','Ankara','İzmir','Bursa','Antalya','Konya'],datasets:[{label:'Mini',data:[45,32,28,21,18,16],backgroundColor:'#69707d',borderRadius:5},{label:'Standart',data:[78,56,44,38,31,26],backgroundColor:'#185abc',borderRadius:5},{label:'Detay',data:[34,24,18,15,12,9],backgroundColor:'#14804a',borderRadius:5},{label:'Premium/Full',data:[12,8,6,4,3,2],backgroundColor:'#b76b00',borderRadius:5}]},{plugins:{legend:{position:'bottom'}},scales:{x:{stacked:true,grid:{display:false}},y:{stacked:true,beginAtZero:true}}});
+      make('chartBiOpsRadar','radar',{labels:['Ekspertiz Kalitesi','Müşteri İletişimi','Süreç Hızı','Belge Uyumu','Fiyat Doğruluğu','Teknik Bilgi'],datasets:[{label:'Operasyon skoru',data:[85,72,68,91,78,88],borderColor:'#d71920',backgroundColor:'rgba(215,25,32,.14)',pointBackgroundColor:'#d71920'}]},{plugins:{legend:{display:false}},scales:{r:{min:0,max:100,ticks:{stepSize:25,display:false},pointLabels:{font:{size:10}}}}});
       const cc=complaintCenter();
       make('chartComplaintTypes','doughnut',{labels:(cc.complaintCategories||[]).map(x=>x[0]),datasets:[{data:(cc.complaintCategories||[]).map(x=>x[1]),backgroundColor:['#d71920','#111318','#185abc','#14804a','#b76b00','#6d3fc8']}]});
       make('chartComplaintBranches','bar',{labels:(cc.complaintBranchScore||[]).map(x=>x.branch.replace('İstanbul ','').replace('Ankara ','')),datasets:[{label:'Açık şikayet',data:(cc.complaintBranchScore||[]).map(x=>x.open),backgroundColor:'#d71920'},{label:'Şikayet sağlığı skoru',data:(cc.complaintBranchScore||[]).map(x=>x.score/10),backgroundColor:'#111318'}]});
