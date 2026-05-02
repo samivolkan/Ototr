@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="ototr-version" content="SVK v1.0.44-theme-visual-charts" />
+  <meta name="ototr-version" content="SVK v1.0.45-dashboard-signal-grid" />
   <title>OTOTR Genel Merkez ERP + CRM</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -226,6 +226,28 @@
     .exec-insight i{width:15px;height:15px}
     .exec-insight b{font-size:11px;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
     .exec-insight span{font-size:10px;margin-top:1px;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+    .dashboard-signal-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}
+    .dashboard-signal-grid .exec-card{padding:11px 12px;border-radius:13px}
+    .dashboard-signal-grid .exec-card .card-head{margin-bottom:7px}
+    .dashboard-signal-grid .exec-card .card-title{font-size:13px}
+    .dashboard-signal-grid .exec-card .card-sub{font-size:10px}
+    .dashboard-signal-grid .exec-card .btn{min-height:30px;padding:6px 9px;font-size:11px}
+    .dashboard-signal-grid .exec-summary{grid-template-columns:112px minmax(0,1fr);gap:7px}
+    .dashboard-signal-grid .exec-hero{min-height:86px;padding:9px;border-radius:11px}
+    .dashboard-signal-grid .exec-hero span{font-size:8px}
+    .dashboard-signal-grid .exec-hero b{font-size:22px}
+    .dashboard-signal-grid .exec-hero small{font-size:9px;-webkit-line-clamp:2}
+    .dashboard-signal-grid .exec-hero .micro-btn{padding:4px 6px;font-size:9px}
+    .dashboard-signal-grid .exec-metrics{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+    .dashboard-signal-grid .exec-metric{min-height:47px;padding:7px;border-radius:9px}
+    .dashboard-signal-grid .exec-metric span{font-size:8px}
+    .dashboard-signal-grid .exec-metric b{font-size:16px}
+    .dashboard-signal-grid .exec-metric small{font-size:9px}
+    .dashboard-signal-grid .exec-insight{padding:7px 8px}
+    .dashboard-signal-grid .exec-insight b{font-size:10px}
+    .dashboard-signal-grid .exec-insight span{font-size:9px}
+    .dashboard-signal-grid .signal-branch-kpi{grid-column:1/-1}
+    .dashboard-signal-grid .signal-branch-kpi .exec-hero{background:linear-gradient(135deg,#111318,#203145 70%,rgba(24,90,188,.82))}
     .alert-center-collapsible{display:grid;gap:9px;margin-top:9px}
     .alert-center-collapsible .alert-center-more{order:1;margin-top:0}
     .alert-center-collapsible summary{order:2}
@@ -246,14 +268,15 @@
     .bi-tech-list{display:grid;gap:8px}.bi-tech-row{display:grid;grid-template-columns:34px minmax(0,1fr) 54px;gap:9px;align-items:center;border:1px solid var(--line);border-radius:10px;background:#f8fafc;padding:8px}.bi-tech-rank{width:28px;height:28px;border-radius:999px;display:grid;place-items:center;background:#111318;color:#fff;font-size:10px;font-weight:950}.bi-tech-row b{font-size:12px}.bi-tech-row span{display:block;color:var(--muted);font-size:10px;margin-top:2px}.bi-tech-row strong{font-size:14px;text-align:right}
     .bi-profit-bridge{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:7px;align-items:end;min-height:190px}.bi-profit-step{display:grid;gap:6px;justify-items:center}.bi-profit-bar{width:100%;max-width:42px;border-radius:9px 9px 4px 4px;background:var(--green);min-height:18px}.bi-profit-bar.neg{background:var(--red)}.bi-profit-bar.total{background:var(--blue)}.bi-profit-step b{font-size:11px}.bi-profit-step span{font-size:9px;color:var(--muted);text-align:center;line-height:1.15}
     @media (max-width:1100px){.exec-card .card-head{grid-template-columns:1fr}.exec-summary{grid-template-columns:1fr}.exec-hero{min-height:auto}.exec-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media (max-width:1280px){.dashboard-signal-grid{grid-template-columns:1fr}.dashboard-signal-grid .signal-branch-kpi{grid-column:auto;grid-row:auto}.dashboard-signal-grid .exec-summary{grid-template-columns:132px minmax(0,1fr)}}
     @media (max-width:1100px){.bi-visual-grid{grid-template-columns:1fr}.bi-region-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-    @media (max-width:640px){.exec-card{padding:12px}.exec-card .btn{width:100%;justify-content:center}.exec-metrics{grid-template-columns:1fr}.bi-region-grid,.bi-profit-bridge{grid-template-columns:1fr}.bi-visual-card canvas{max-height:200px}}
+    @media (max-width:640px){.exec-card{padding:12px}.exec-card .btn{width:100%;justify-content:center}.exec-metrics{grid-template-columns:1fr}.dashboard-signal-grid .exec-summary{grid-template-columns:1fr}.dashboard-signal-grid .exec-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.bi-region-grid,.bi-profit-bridge{grid-template-columns:1fr}.bi-visual-card canvas{max-height:200px}}
   </style>
 </head>
 <body>
   <div class="app">
     <aside class="side">
-      <a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.44</small></div></a>
+      <a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.45</small></div></a>
       <div class="nav" id="nav"></div>
     </aside>
 
@@ -2058,7 +2081,7 @@
         status:b.risk==='Yüksek'?'İnceleme':b.risk==='Orta'?'Takip':'Stabil'
       }));
       out.demoDataHealth={
-        version:'SVK v1.0.44',
+        version:'SVK v1.0.45',
         branchUniverse:'10 şube / 4 aktif bölge',
         packagePriceBand:'5.000 TL - 15.000 TL',
         avgTicketBand:'8.350 TL - 9.900 TL',
@@ -2233,12 +2256,14 @@
                     ${SlaPulsePanel()}
                   </div>
                 </div>
-                <div class="card exec-card"><div class="card-head"><div><div class="card-title">CRM & Randevu Operasyon Özeti</div><div class="card-sub">Bugünkü randevu, WhatsApp SLA, no-show riski ve kritik müşteri sinyalleri</div></div><button class="btn" data-route="crm">CRM</button></div>${CRMExecutiveSummary()}</div>
-                <div class="card exec-card"><div class="card-head"><div><div class="card-title">OTOTR Academy Kontrol Özeti</div><div class="card-sub">Bölge, şube, eğitmen ve kişi bazlı eğitim SLA / KPI sinyalleri</div></div><button class="btn" data-route="academy">Academy</button></div>${AcademyExecutiveSummary()}</div>
-                <div class="card exec-card"><div class="card-head"><div><div class="card-title">Kalite ve Kontrol Merkezi Özeti</div><div class="card-sub">Denetim, bulgu, CAPA, Academy ve şikayet sinyalleri tek kalite skoruna bağlanır</div></div><button class="btn" data-route="quality">Kalite</button></div>${QualityDashboardSummary()}</div>
-                <div class="card exec-card"><div class="card-head"><div><div class="card-title">Operasyon Alarmı</div><div class="card-sub">Bugünkü üretim hattı, geciken rapor, SLA ve kapasite riski özeti</div></div><button class="btn" data-route="operations">Operasyon</button></div>${OperationAlarmSummary()}</div>
+                <div class="dashboard-signal-grid">
+                  <div class="card exec-card"><div class="card-head"><div><div class="card-title">CRM & Randevu Operasyon Özeti</div><div class="card-sub">Bugünkü randevu, WhatsApp SLA, no-show riski ve kritik müşteri sinyalleri</div></div><button class="btn" data-route="crm">CRM</button></div>${CRMExecutiveSummary()}</div>
+                  <div class="card exec-card"><div class="card-head"><div><div class="card-title">OTOTR Academy Kontrol Özeti</div><div class="card-sub">Bölge, şube, eğitmen ve kişi bazlı eğitim SLA / KPI sinyalleri</div></div><button class="btn" data-route="academy">Academy</button></div>${AcademyExecutiveSummary()}</div>
+                  <div class="card exec-card"><div class="card-head"><div><div class="card-title">Kalite ve Kontrol Merkezi Özeti</div><div class="card-sub">Denetim, bulgu, CAPA, Academy ve şikayet sinyalleri tek kalite skoruna bağlanır</div></div><button class="btn" data-route="quality">Kalite</button></div>${QualityDashboardSummary()}</div>
+                  <div class="card exec-card"><div class="card-head"><div><div class="card-title">Operasyon Alarmı</div><div class="card-sub">Bugünkü üretim hattı, geciken rapor, SLA ve kapasite riski özeti</div></div><button class="btn" data-route="operations">Operasyon</button></div>${OperationAlarmSummary()}</div>
+                  <div class="card exec-card signal-branch-kpi"><div class="card-head"><div><div class="card-title">Şube KPI Alarmı</div><div class="card-sub">Problemli şubeleri harita üzerinde canlı alarm mantığıyla izleyin</div></div><button class="btn" data-route="branches">Şubeler</button></div>${BranchKpiDashboardSummary()}</div>
+                </div>
                 <div class="card"><div class="card-head"><div><div class="card-title">Türkiye / Şube Genel Görünümü</div><div class="card-sub">Bölge kartları: araç adedi, şube sayısı, memnuniyet ve risk sinyali</div></div><button class="btn" data-route="branches">Şube ekranına git</button></div>${TurkeyBranchOverview()}</div>
-                <div class="card exec-card"><div class="card-head"><div><div class="card-title">Şube KPI Alarmı</div><div class="card-sub">Problemli şubeleri harita üzerinde canlı alarm mantığıyla izleyin</div></div><button class="btn" data-route="branches">Şubeler</button></div>${BranchKpiDashboardSummary()}</div>
                 <div class="grid g2">
                   <div class="card"><div class="card-head"><div><div class="card-title">En İyi 10 Şube</div><div class="card-sub">Günlük performans + OTOTR Güven Skoru</div></div></div>${BranchPerformanceTable('best')}</div>
                   <div class="card"><div class="card-head"><div><div class="card-title">En Riskli 10 Şube</div><div class="card-sub">CEO takip ve düzeltme planı gerektiren şubeler</div></div></div>${BranchPerformanceTable('risk')}</div>
