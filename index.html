@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="ototr-version" content="SVK v1.0.49-polished-dark-mode" />
+  <meta name="ototr-version" content="SVK v1.0.50-dashboard-risk-map" />
   <title>OTOTR Genel Merkez ERP + CRM</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -42,6 +42,9 @@
     body.dark-mode .b-green{background:#0b3a2a;color:#9df2c6;border-color:#1f7a4d}body.dark-mode .b-red{background:#3b1118;color:#ffb4bc;border-color:#8a2630}body.dark-mode .b-amber{background:#3b260b;color:#ffd58a;border-color:#9a650f}body.dark-mode .b-blue{background:#10284f;color:#b9d3ff;border-color:#2d5caa}body.dark-mode .b-gray{background:#1f2937;color:#cbd5e1;border-color:#475569}body.dark-mode .b-violet{background:#2b1f4f;color:#d8c8ff;border-color:#6d55b8}
     body.dark-mode .severity.critical{background:#3b1118;color:#ffb4bc}body.dark-mode .severity.high{background:#3b260b;color:#ffd58a}body.dark-mode .severity.medium{background:#10284f;color:#b9d3ff}
     body.dark-mode .score-ring{background:conic-gradient(var(--green) calc(var(--score)*1%),#243247 0)}body.dark-mode .score-ring div{background:#0f1b2d;border:1px solid #2b3c56}
+    body.dark-mode .risk-impact-score,body.dark-mode .risk-impact-row{background:#111f33!important;border-color:#2b3c56!important;color:#f1f5f9!important}
+    body.dark-mode .risk-impact-score small,body.dark-mode .risk-impact-module span,body.dark-mode .risk-next,body.dark-mode .risk-impact-head{color:#aab7ca!important}
+    body.dark-mode .risk-cell.low{background:#0b3a2a;color:#9df2c6;border-color:#1f7a4d}body.dark-mode .risk-cell.mid{background:#10284f;color:#b9d3ff;border-color:#2d5caa}body.dark-mode .risk-cell.high{background:#3b260b;color:#ffd58a;border-color:#9a650f}body.dark-mode .risk-cell.critical{background:#3b1118;color:#ffb4bc;border-color:#8a2630}
     body.dark-mode canvas{filter:saturate(1.08)}
     .theme-toggle{border:1px solid rgba(255,255,255,.16);border-radius:999px;background:rgba(255,255,255,.08);color:#fff;padding:7px 8px;display:inline-flex;align-items:center;justify-content:center;gap:0;font-size:0;font-weight:950;min-width:32px;height:32px;flex:0 0 auto}
     .theme-toggle i{width:15px;height:15px}.theme-toggle:hover{transform:translateY(-1px)}
@@ -248,23 +251,30 @@
     .dashboard-signal-grid .exec-card .card-sub{position:absolute;left:0;top:calc(100% + 6px);z-index:6;max-width:min(420px,80vw);padding:7px 9px;border:1px solid var(--line);border-radius:9px;background:#111318;color:#fff;font-size:10px;line-height:1.35;box-shadow:0 12px 28px rgba(17,19,24,.18);opacity:0;pointer-events:none;transform:translateY(-3px);transition:.14s}
     .dashboard-signal-grid .exec-card .card-head:hover .card-sub{opacity:1;transform:none}
     .dashboard-signal-grid .exec-card .btn{min-height:30px;padding:6px 9px;font-size:11px}
-    .dashboard-signal-grid .exec-summary{grid-template-columns:104px minmax(0,1fr);gap:7px}
-    .dashboard-signal-grid .exec-hero{min-height:86px;padding:9px;border-radius:11px}
+    .dashboard-signal-grid .exec-summary{grid-template-columns:92px minmax(0,1fr);gap:7px}
+    .dashboard-signal-grid .exec-hero{min-height:76px;padding:8px;border-radius:11px}
     .dashboard-signal-grid .exec-hero span{font-size:8px}
-    .dashboard-signal-grid .exec-hero b{font-size:22px}
+    .dashboard-signal-grid .exec-hero b{font-size:20px}
     .dashboard-signal-grid .exec-hero small{font-size:9px;-webkit-line-clamp:2}
     .dashboard-signal-grid .exec-hero .micro-btn{padding:4px 6px;font-size:9px}
-    .dashboard-signal-grid .exec-metrics{grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
-    .dashboard-signal-grid .exec-metric{min-height:47px;padding:7px;border-radius:9px}
+    .dashboard-signal-grid .exec-metrics{grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;min-width:0}
+    .dashboard-signal-grid .exec-metric{min-height:42px;padding:6px;border-radius:9px;overflow:hidden;align-content:center}
     .dashboard-signal-grid .exec-metric span{font-size:8px}
-    .dashboard-signal-grid .exec-metric b{font-size:16px}
-    .dashboard-signal-grid .exec-metric small{font-size:9px}
-    .dashboard-signal-grid .exec-insight{grid-column:auto;padding:7px 8px;min-height:47px}
-    .dashboard-signal-grid .exec-insight b{font-size:10px}
-    .dashboard-signal-grid .exec-insight span{font-size:9px}
+    .dashboard-signal-grid .exec-metric b{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .dashboard-signal-grid .exec-metric small{font-size:8.5px}
+    .dashboard-signal-grid .exec-insight{grid-column:auto;padding:6px 7px;min-height:42px;overflow:hidden}
+    .dashboard-signal-grid .exec-insight b{font-size:9.5px}
+    .dashboard-signal-grid .exec-insight span{font-size:8.5px}
     .dashboard-signal-grid .signal-complaints .exec-hero{background:linear-gradient(135deg,#111318,#2b1722 72%,rgba(215,25,32,.86))}
-    .dashboard-signal-grid .signal-branch-kpi{grid-column:1/-1}
+    .dashboard-signal-grid .signal-branch-kpi{grid-column:auto}
     .dashboard-signal-grid .signal-branch-kpi .exec-hero{background:linear-gradient(135deg,#111318,#203145 70%,rgba(24,90,188,.82))}
+    .risk-impact-map{display:grid;grid-template-columns:190px minmax(0,1fr);gap:10px;margin-top:10px}
+    .risk-impact-score{border:1px solid #dbe7ff;background:linear-gradient(135deg,#fff,#f8fbff);border-radius:12px;padding:12px;display:grid;align-content:center;gap:8px}
+    .risk-impact-score span{font-size:10px;color:var(--muted);font-weight:950;text-transform:uppercase}.risk-impact-score b{font-size:34px;letter-spacing:-.05em}.risk-impact-score small{color:#4d5563;font-weight:800;line-height:1.35}
+    .risk-impact-grid{display:grid;gap:6px}
+    .risk-impact-head,.risk-impact-row{display:grid;grid-template-columns:132px repeat(5,minmax(38px,.7fr)) 1.15fr auto;gap:6px;align-items:center}
+    .risk-impact-head{color:var(--muted);font-size:9px;font-weight:950;text-transform:uppercase;padding:0 4px}.risk-impact-row{border:1px solid var(--line);border-radius:11px;background:#fff;padding:7px}
+    .risk-impact-module b{display:block;font-size:11px}.risk-impact-module span{display:block;color:var(--muted);font-size:9px;margin-top:2px}.risk-cell{height:24px;border-radius:7px;display:grid;place-items:center;font-size:10px;font-weight:950;border:1px solid transparent}.risk-cell.low{background:#ecfdf3;color:#067647;border-color:#abefc6}.risk-cell.mid{background:#eff6ff;color:#185abc;border-color:#bfdbfe}.risk-cell.high{background:#fffaeb;color:#b54708;border-color:#fedf89}.risk-cell.critical{background:#fef3f2;color:#b42318;border-color:#fecdca}.risk-next{font-size:10px;color:#4d5563;font-weight:800;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.risk-impact-row .micro-btn{padding:5px 7px;font-size:10px}
     .alert-center-collapsible{display:grid;gap:9px;margin-top:9px}
     .alert-center-collapsible .alert-center-more{order:1;margin-top:0}
     .alert-center-collapsible summary{order:2}
@@ -285,7 +295,7 @@
     .bi-tech-list{display:grid;gap:8px}.bi-tech-row{display:grid;grid-template-columns:34px minmax(0,1fr) 54px;gap:9px;align-items:center;border:1px solid var(--line);border-radius:10px;background:#f8fafc;padding:8px}.bi-tech-rank{width:28px;height:28px;border-radius:999px;display:grid;place-items:center;background:#111318;color:#fff;font-size:10px;font-weight:950}.bi-tech-row b{font-size:12px}.bi-tech-row span{display:block;color:var(--muted);font-size:10px;margin-top:2px}.bi-tech-row strong{font-size:14px;text-align:right}
     .bi-profit-bridge{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:7px;align-items:end;min-height:190px}.bi-profit-step{display:grid;gap:6px;justify-items:center}.bi-profit-bar{width:100%;max-width:42px;border-radius:9px 9px 4px 4px;background:var(--green);min-height:18px}.bi-profit-bar.neg{background:var(--red)}.bi-profit-bar.total{background:var(--blue)}.bi-profit-step b{font-size:11px}.bi-profit-step span{font-size:9px;color:var(--muted);text-align:center;line-height:1.15}
     @media (max-width:1100px){.exec-card .card-head{grid-template-columns:1fr}.exec-summary{grid-template-columns:1fr}.exec-hero{min-height:auto}.exec-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
-    @media (max-width:1280px){.dashboard-signal-grid{grid-template-columns:1fr}.dashboard-signal-grid .signal-branch-kpi{grid-column:auto;grid-row:auto}.dashboard-signal-grid .exec-summary{grid-template-columns:132px minmax(0,1fr)}}
+    @media (max-width:1280px){.dashboard-signal-grid{grid-template-columns:1fr}.dashboard-signal-grid .signal-branch-kpi{grid-column:auto;grid-row:auto}.dashboard-signal-grid .exec-summary{grid-template-columns:122px minmax(0,1fr)}.risk-impact-map{grid-template-columns:1fr}.risk-impact-head{display:none}.risk-impact-row{grid-template-columns:1fr repeat(5,minmax(42px,1fr));}.risk-next,.risk-impact-row .micro-btn{grid-column:1/-1}}
     @media (max-width:1100px){.bi-visual-grid{grid-template-columns:1fr}.bi-region-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
     @media (max-width:760px){.dashboard-signal-grid .exec-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.dashboard-signal-grid .exec-insight{grid-column:1/-1}}
     @media (max-width:640px){.exec-card{padding:12px}.exec-card .btn{width:100%;justify-content:center}.exec-metrics{grid-template-columns:1fr}.dashboard-signal-grid .exec-summary{grid-template-columns:1fr}.dashboard-signal-grid .exec-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.bi-region-grid,.bi-profit-bridge{grid-template-columns:1fr}.bi-visual-card canvas{max-height:200px}}
@@ -294,7 +304,7 @@
 <body>
   <div class="app">
     <aside class="side">
-      <div class="brand-row"><a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.49</small></div></a><button class="theme-toggle" type="button" data-theme-toggle title="Koyu temaya geç" aria-label="Tema değiştir"><i data-lucide="sun-moon"></i><span id="themeToggleText">Açık</span></button></div>
+      <div class="brand-row"><a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.50</small></div></a><button class="theme-toggle" type="button" data-theme-toggle title="Koyu temaya geç" aria-label="Tema değiştir"><i data-lucide="sun-moon"></i><span id="themeToggleText">Açık</span></button></div>
       <div class="nav" id="nav"></div>
     </aside>
 
@@ -2098,7 +2108,7 @@
         status:b.risk==='Yüksek'?'İnceleme':b.risk==='Orta'?'Takip':'Stabil'
       }));
       out.demoDataHealth={
-        version:'SVK v1.0.49',
+        version:'SVK v1.0.50',
         branchUniverse:'10 şube / 4 aktif bölge',
         packagePriceBand:'5.000 TL - 15.000 TL',
         avgTicketBand:'8.350 TL - 9.900 TL',
@@ -2273,6 +2283,7 @@
                     ${SlaPulsePanel()}
                   </div>
                 </div>
+                <div class="card"><div class="card-head"><div><div class="card-title">CEO Risk ve Etki Haritası</div><div class="card-sub">Finans, operasyon, şikayet, kriz, şube KPI ve eğitim sinyalleri aynı öncelik dilinde okunur.</div></div><button class="btn" data-route="intelligence">Analize git</button></div>${DashboardRiskImpactMap()}</div>
                 <div class="dashboard-signal-grid">
                   <div class="card exec-card"><div class="card-head"><div><div class="card-title">CRM & Randevu Operasyon Özeti</div><div class="card-sub">Bugünkü randevu, WhatsApp SLA, no-show riski ve kritik müşteri sinyalleri</div></div><button class="btn" data-route="crm">CRM</button></div>${CRMExecutiveSummary()}</div>
                   <div class="card exec-card signal-complaints"><div class="card-head"><div><div class="card-title">Müşteri Şikayetleri & İtibar Alarmı</div><div class="card-sub">Açık şikayet, SLA, Google/sosyal medya ve hukuki risk sinyalleri</div></div><button class="btn" data-route="complaints">Şikayetler</button></div>${ComplaintExecutiveSummary()}</div>
@@ -3404,6 +3415,27 @@
         {title:'Erken Uyarı',route:'intelligence',risk:'Yüksek',value:earlyWarningSignals().length,sub:'Kriz oluşmadan önce finans, SLA, itibar ve AI gecikmesi yakalanır',next:'Erken uyarıları İş Zekası’nda analiz et',meta:['Finansal sağlık düşüşü 2','SLA yaklaşan 5','Royalty itiraz riski 2']}
       ];
       return `<div class="ceo-module-compact">${cards.map(c=>`<article class="ceo-module-card ${c.risk==='Kritik'?'critical':c.risk==='Yüksek'?'high':'watch'}"><span>${c.title}</span><b>${c.value}</b><small>${c.sub}</small><div class="quick-actions"><button class="micro-btn" data-route="${c.route}">Git</button><button class="micro-btn" data-unified-action="${c.title}">Aksiyon</button></div></article>`).join('')}</div>`;
+    }
+    function riskCellClass(v){ return v>=85?'critical':v>=70?'high':v>=50?'mid':'low'; }
+    function DashboardRiskImpactMap(){
+      const cc=complaintCenter(), complaints=cc.complaintTickets||[], tasks=actionTasks(), crises=crisisCases(), ai=aiRecommendations(), ops=dashboardOpsMetrics(), finance=financeRoyaltyModel(), branchData=branchMapKpiData();
+      const openComplaints=complaints.filter(x=>x.status!=='Kapandı'), legalComplaints=complaints.filter(x=>['Yüksek','CEO takip','Orta'].includes(x.legalRisk));
+      const criticalCrises=crises.filter(c=>crisisLevelNumber(c.crisisLevel)>=4 || c.ceoFollowUp);
+      const lateTasks=tasks.filter(t=>t.slaStatus==='SLA İhlali'||t.status==='Gecikti');
+      const lowBranch=[...branchData.branches].sort((a,b)=>a.score-b.score)[0]||{};
+      const supportDealers=finance.dealers.filter(d=>d.supportBudget>0||d.score<70);
+      const academyRisk=typeof academySeed==='function' ? academySeed().people.filter(p=>p.overdue>0).length : 0;
+      const rows=[
+        {module:'Şikayet & İtibar',route:'complaints',status:`${openComplaints.length} açık`,vals:[82,78,openComplaints.length?74:42,Math.min(95,openComplaints.reduce((s,x)=>s+(x.amountRisk||0),0)/9000),legalComplaints.length?88:52],next:'Kritik şikayetleri hukuk ve kaliteyle kapat'},
+        {module:'Finans & Royalty',route:'finance',status:`${supportDealers.length} destek`,vals:[86,72,64,90,48],next:'Koruma modu ve kriz uyumlu royalty kararını izle'},
+        {module:'Operasyon',route:'operations',status:`${ops.delayedReports} geciken`,vals:[74,80,88,58,62],next:'Geciken rapor ve kapasite aksiyonunu aç'},
+        {module:'Kriz Merkezi',route:'crisis',status:`${criticalCrises.length} CEO`,vals:[92,86,78,82,90],next:'CEO takip krizlerinde iletişim ve hukuk onayı al'},
+        {module:'Şube KPI',route:'branches',status:`${lowBranch.score||0} en düşük`,vals:[78,70,66,64,74],next:`${lowBranch.branch||'Riskli şube'} için 30 günlük düzeltme planı`},
+        {module:'Academy',route:'academy',status:`${academyRisk} geciken`,vals:[56,62,academyRisk?76:46,38,42],next:'Geciken eğitimleri şube KPI riskine bağla'}
+      ].map(r=>({...r,score:Math.round(r.vals.reduce((s,v)=>s+v,0)/r.vals.length)})).sort((a,b)=>b.score-a.score);
+      const avg=Math.round(rows.reduce((s,r)=>s+r.score,0)/rows.length);
+      const labels=['Etki','Aciliyet','SLA','Finans','İtibar'];
+      return `<div class="risk-impact-map"><div class="risk-impact-score"><span>Ağ Risk Skoru</span><b>${avg}/100</b><div class="progress"><div class="bar ${avg>=82?'red':avg>=68?'amber':'green'}" style="width:${avg}%"></div></div><small>Skor; görev, kriz, şikayet, operasyon, royalty, Academy ve şube KPI sinyallerinden hesaplanır.</small></div><div class="risk-impact-grid"><div class="risk-impact-head"><span>Modül</span>${labels.map(x=>`<span>${x}</span>`).join('')}<span>Sonraki aksiyon</span><span></span></div>${rows.map(r=>`<div class="risk-impact-row"><div class="risk-impact-module"><b>${r.module}</b><span>${r.status} · ${r.score}/100</span></div>${r.vals.map(v=>`<div class="risk-cell ${riskCellClass(v)}">${v}</div>`).join('')}<div class="risk-next">${r.next}</div><button class="micro-btn" data-route="${r.route}">Git</button></div>`).join('')}</div></div>`;
     }
     function IntegratedSignalMatrix(){
       const rows=systemIntegrationSignals();
