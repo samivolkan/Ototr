@@ -102,22 +102,49 @@ Durumlar:
 - No-show
 - Iptal
 
-### inspection_reports
+### expertise_cases
+
+Ekspertiz, sistemin ana veri kaynagidir. Randevudan dogar ama sadece PDF raporu degildir; arac kabul, tablet kontrol, usta notu, fotograf, olcum, kalite onayi, teslim, sikayet, garanti ve hukuk kayitlarini birbirine baglar.
 
 - id
 - branch_id
+- dealer_id
 - appointment_id
 - customer_id
 - vehicle_id
-- expert_user_id
 - report_no
-- score
+- work_order_no
+- package_id
+- status
 - risk_level
-- result_summary
-- pdf_url
-- public_link
-- locked_at
+- overall_result
+- report_quality_score
+- customer_summary
+- opened_at
+- inspection_started_at
+- inspection_completed_at
+- report_approved_at
+- report_published_at
+- delivered_at
 - created_at
+
+Alt tablolar:
+
+- work_orders
+- inspection_tasks
+- inspection_items
+- inspection_results
+- body_paint_results
+- measurements
+- obd_scans
+- media_assets
+- report_documents
+- report_revisions
+- report_delivery_events
+- warranty_records
+- expertise_disputes
+
+Detayli tasarim: `docs/ekspertiz-data-backbone-v1.md`
 
 ### leads
 
@@ -236,7 +263,7 @@ Tipler:
 - Bir subenin cok kullanicisi, randevusu, raporu, finans kaydi ve kalite denetimi olur.
 - Bir musteri cok arac ve cok randevuya sahip olabilir.
 - Bir randevu bir araca, bir musterine, bir subeye ve bir pakete baglanir.
-- Bir rapor randevudan dogar.
+- Bir randevu gelise dondugunde `expertise_cases` kaydi acilir; rapor, tablet kontrolu, fotograf, olcum, teslim ve itiraz kayitlari bu ana dosyanin altinda tutulur.
 - Bir franchise adayi once `leads`, sonra uygun bulunursa `franchise_applications` kaydina donusur.
 - Kalite, kriz ve finans kayitlari CEO kokpitine alarm olarak akar.
 

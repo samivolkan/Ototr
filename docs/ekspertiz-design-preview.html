@@ -1,0 +1,616 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OTOTR Ekspertiz Tasarım Önizleme</title>
+  <style>
+    :root{
+      --red:#d71920;
+      --ink:#151922;
+      --muted:#667085;
+      --line:#dfe4ea;
+      --bg:#f4f6f8;
+      --panel:#fff;
+      --green:#14804a;
+      --amber:#b7791f;
+      --blue:#2454d6;
+      --violet:#6941c6;
+      --soft-red:#fff0f1;
+      --soft-green:#edf8f2;
+      --soft-blue:#eef4ff;
+      --soft-amber:#fff7e6;
+      --shadow:0 18px 50px rgba(17,24,39,.10);
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,Arial,sans-serif}
+    button,input,select,textarea{font:inherit}
+    .app{display:grid;grid-template-columns:292px minmax(0,1fr);min-height:100vh}
+    .rail{background:#111318;color:#fff;padding:24px 18px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:22px}
+    .brand{display:flex;align-items:center;gap:12px}.mark{width:44px;height:44px;border-radius:10px;background:var(--red);display:grid;place-items:center;font-size:25px;font-weight:950}.brand b{display:block;font-size:18px}.brand span{display:block;color:#b8beca;font-size:12px;margin-top:2px}
+    .nav{display:grid;gap:8px}.nav button{border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:#d9dde6;border-radius:10px;padding:11px 12px;text-align:left;font-weight:850;display:flex;gap:9px;align-items:center}.nav button.active{background:#fff;color:#111318}.nav .ico{width:22px;text-align:center}
+    .rail-card{border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:12px;color:#c8ced8;font-size:12px;line-height:1.5;background:rgba(255,255,255,.04)}.rail-card b{display:block;color:#fff;margin-bottom:6px}.rail-card ul{margin:8px 0 0;padding-left:18px}.rail-card li{margin:5px 0}
+    .main{padding:22px 28px 42px;display:grid;gap:18px;min-width:0}
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:15px 16px;box-shadow:0 1px 0 rgba(17,24,39,.03)}
+    .topbar h1{font-size:23px;margin:0;letter-spacing:-.02em}.topbar p{margin:5px 0 0;color:var(--muted);font-size:13px;line-height:1.45;max-width:920px}.actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+    .btn{border:1px solid var(--line);border-radius:9px;background:#fff;color:#202631;padding:10px 12px;font-weight:850}.btn.primary{background:var(--red);border-color:var(--red);color:#fff}.btn.dark{background:#111318;color:#fff}.btn.blue{background:var(--blue);border-color:var(--blue);color:#fff}
+    .metrics{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}.metric{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}.metric span{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;font-weight:950;letter-spacing:.06em}.metric b{display:block;font-size:23px;margin:7px 0 3px;letter-spacing:-.02em}.metric small{color:var(--green);font-weight:850}
+    .section{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:0 1px 0 rgba(17,24,39,.03);min-width:0}
+    .section-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}.section-title{font-weight:950}.section-sub{color:var(--muted);font-size:12px;margin-top:3px;line-height:1.45}
+    .workbench{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(380px,.85fr);gap:18px;align-items:start}
+    .report-shell{display:grid;gap:12px}.report-sheet{background:#fff;border:1px solid #cad2dd;border-radius:9px;box-shadow:var(--shadow);overflow:hidden}.report-band{background:#111318;color:#fff;padding:16px 18px;display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center}.report-band h2{margin:0;font-size:21px}.report-band span{color:#cbd2dd;font-size:12px}.qr{width:72px;height:72px;border-radius:8px;background:repeating-linear-gradient(90deg,#fff 0 7px,#111 7px 12px),repeating-linear-gradient(0deg,transparent 0 8px,rgba(215,25,32,.9) 8px 13px);border:6px solid #fff}
+    .report-body{padding:16px;display:grid;gap:14px}.report-kicker{display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid var(--line);background:#f8fafc;border-radius:10px;padding:10px}.report-kicker b{font-size:13px}.report-kicker span{color:var(--muted);font-size:11px}
+    .vehicle-row{display:grid;grid-template-columns:230px 1fr;gap:14px;align-items:stretch}.vehicle-photo{border-radius:10px;min-height:164px;background:linear-gradient(135deg,#202631,#3b4352);position:relative;overflow:hidden}.vehicle-photo:before{content:"";position:absolute;left:35px;right:35px;top:58px;height:58px;border:4px solid #fff;border-radius:45px 45px 18px 18px;box-shadow:0 22px 0 -4px #fff}.vehicle-photo:after{content:"OTOTR ONAYLI FOTO";position:absolute;left:10px;bottom:10px;border-radius:999px;background:rgba(255,255,255,.94);color:#111318;padding:6px 9px;font-size:10px;font-weight:950}
+    .info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.info{border:1px solid var(--line);border-radius:9px;padding:9px;background:#f8fafc}.info span{display:block;color:var(--muted);font-size:10px;font-weight:950;text-transform:uppercase}.info b{display:block;margin-top:4px;font-size:13px}
+    .decision{display:grid;grid-template-columns:1.1fr 1fr 1fr;gap:9px}.decision div{border-radius:10px;padding:11px;border:1px solid var(--line)}.decision b{display:block;font-size:13px}.decision span{display:block;font-size:11px;color:#4d5563;margin-top:4px;line-height:1.4}.ok{background:var(--soft-green);border-color:#cdebd9!important}.warn{background:var(--soft-amber);border-color:#f2d9a8!important}.bad{background:var(--soft-red);border-color:#ffc6cb!important}.bluebox{background:var(--soft-blue);border-color:#c9d9ff!important}
+    .result-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.result-item{border:1px solid var(--line);border-radius:10px;padding:10px;background:#fff}.result-item span{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;font-weight:950}.result-item b{display:block;margin-top:5px;font-size:15px}
+    .body-map{display:grid;grid-template-columns:180px 1fr;gap:14px;align-items:start}.car-map{height:260px;border:1px solid var(--line);border-radius:12px;background:linear-gradient(180deg,#f8fafc,#eef2f7);position:relative}.car-outline{position:absolute;left:50%;top:50%;width:82px;height:198px;transform:translate(-50%,-50%);border:3px solid #242936;border-radius:42px 42px 24px 24px;background:#fff}.panel-dot{position:absolute;width:27px;height:27px;border-radius:8px;display:grid;place-items:center;color:#fff;font-size:10px;font-weight:950}.panel-dot.green{background:var(--green)}.panel-dot.amber{background:var(--amber)}.panel-dot.red{background:var(--red)}.p1{left:28px;top:52px}.p2{right:28px;top:52px}.p3{left:28px;top:132px}.p4{right:28px;top:132px}.p5{left:76px;bottom:28px}
+    .table-wrap{overflow:auto;border:1px solid var(--line);border-radius:11px}.table{width:100%;border-collapse:collapse;min-width:560px}.table th{background:#f7f8fa;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.05em;text-align:left}.table th,.table td{border-bottom:1px solid var(--line);padding:9px;font-size:12px;vertical-align:top}.table tr:last-child td{border-bottom:0}
+    .badge{display:inline-flex;border-radius:999px;padding:4px 8px;font-size:10px;font-weight:950;white-space:nowrap}.badge.green{background:#eaf7f0;color:var(--green)}.badge.amber{background:#fff3d8;color:var(--amber)}.badge.red{background:#ffeaec;color:var(--red)}.badge.gray{background:#eef1f5;color:#4d5563}.badge.blue{background:#eaf1ff;color:var(--blue)}.badge.violet{background:#f2eafd;color:var(--violet)}
+    .mini-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.mini-card{border:1px solid var(--line);border-radius:10px;padding:10px;background:#fff}.mini-card b{display:block;font-size:12px}.mini-card span{display:block;color:var(--muted);font-size:11px;margin-top:4px;line-height:1.35}
+    .evidence-row{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}.evidence{min-height:82px;border-radius:10px;background:linear-gradient(135deg,#111318,#384050);position:relative;overflow:hidden}.evidence:after{content:attr(data-label);position:absolute;left:7px;right:7px;bottom:7px;border-radius:8px;background:rgba(255,255,255,.92);font-size:10px;font-weight:950;padding:5px 6px}.evidence:nth-child(2){background:linear-gradient(135deg,#5f1217,#d71920)}.evidence:nth-child(3){background:linear-gradient(135deg,#12345f,#2454d6)}.evidence:nth-child(4){background:linear-gradient(135deg,#4d3a07,#b7791f)}.evidence:nth-child(5){background:linear-gradient(135deg,#0c3b24,#14804a)}
+    .tablet{background:#111318;border-radius:24px;padding:13px;box-shadow:var(--shadow)}.screen{background:#f8fafc;border-radius:16px;padding:14px;min-height:760px;display:grid;gap:12px}.screen-top{display:flex;justify-content:space-between;gap:10px;align-items:center}.screen-top b{font-size:14px}.screen-top span{color:var(--muted);font-size:11px}.step-list{display:grid;gap:8px}.step{display:grid;grid-template-columns:30px 1fr auto;gap:9px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:11px;padding:10px}.num{width:28px;height:28px;border-radius:8px;background:#eef1f5;display:grid;place-items:center;font-size:11px;font-weight:950}.step.done .num{background:#eaf7f0;color:var(--green)}.step.active .num{background:#ffeaec;color:var(--red)}.step b{font-size:12px}.step span{display:block;color:var(--muted);font-size:11px;margin-top:3px}.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.field{display:grid;gap:5px}.field label{font-size:10px;text-transform:uppercase;color:var(--muted);font-weight:950}.field input,.field select,.field textarea{width:100%;border:1px solid var(--line);border-radius:9px;padding:9px;background:#fff;font-size:12px}.field textarea{min-height:78px;resize:none}.field.wide{grid-column:1/-1}.capture-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.capture{height:72px;border:1px dashed #c5ced8;border-radius:10px;background:#fff;display:grid;place-items:center;text-align:center;color:#4d5563;font-size:10px;font-weight:950;padding:8px}
+    .flow{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}.flow-item{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;min-height:116px;display:grid;align-content:start;gap:8px}.flow-item strong{font-size:13px}.flow-item span{font-size:11px;color:var(--muted);line-height:1.35}.flow-dot{width:30px;height:30px;border-radius:9px;background:#111318;color:#fff;display:grid;place-items:center;font-weight:950}.flow-item:nth-child(2) .flow-dot,.flow-item:nth-child(4) .flow-dot{background:var(--red)}.flow-item:nth-child(3) .flow-dot,.flow-item:nth-child(5) .flow-dot{background:var(--blue)}.flow-item:nth-child(6) .flow-dot{background:var(--green)}
+    .page-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}.page-card{border:1px solid var(--line);border-radius:12px;background:#fff;padding:12px;min-height:145px;display:grid;align-content:start;gap:8px}.page-card strong{font-size:13px}.page-card span{font-size:11px;color:var(--muted);line-height:1.35}.page-no{width:30px;height:30px;border-radius:9px;background:#111318;color:#fff;display:grid;place-items:center;font-weight:950}
+    .quality-layout{display:grid;grid-template-columns:1fr 1fr;gap:14px}.rule-list{display:grid;gap:8px}.rule{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;border:1px solid var(--line);border-radius:10px;background:#fff;padding:10px}.rule b{font-size:12px}.rule span{display:block;color:var(--muted);font-size:11px;margin-top:3px}.signature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.signature{border:1px solid var(--line);border-radius:10px;background:#fff;padding:12px}.signature b{display:block;font-size:12px}.signature span{display:block;color:var(--muted);font-size:11px;margin-top:5px}.signature-line{height:38px;border-bottom:2px solid #111318;margin-top:12px}
+    .modules{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.module{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px}.module b{display:block;font-size:13px}.module span{display:block;color:var(--muted);font-size:11px;line-height:1.4;margin-top:5px}.module small{display:inline-flex;margin-top:10px;border-radius:999px;background:#f1f3f6;padding:5px 8px;font-weight:950;font-size:10px}
+    .standard-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}.standard{border:1px solid var(--line);border-radius:12px;background:#fff;padding:12px}.standard b{display:block;font-size:12px}.standard span{display:block;color:var(--muted);font-size:11px;margin-top:5px;line-height:1.35}
+    .dossier-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:14px}.dossier-card{border:1px solid var(--line);border-radius:12px;background:#fff;padding:14px;display:grid;gap:12px}.dossier-card h3{margin:0;font-size:14px}.dossier-fields{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.dossier-field{border:1px solid var(--line);border-radius:9px;background:#f8fafc;padding:9px}.dossier-field span{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;font-weight:950}.dossier-field b{display:block;margin-top:4px;font-size:12px}.consent-list{display:grid;gap:8px}.consent{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;border:1px solid var(--line);border-radius:9px;padding:9px;background:#fff}.consent b{font-size:12px}.consent span{display:block;color:var(--muted);font-size:11px;margin-top:3px}
+    .deep-layout{display:grid;grid-template-columns:1fr 1fr;gap:14px}.deep-card{border:1px solid var(--line);border-radius:12px;background:#fff;overflow:hidden}.deep-card-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line);background:#f8fafc}.deep-card-head b{font-size:13px}.deep-body{padding:12px 14px}.check-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--line);border-radius:10px;overflow:hidden}.check{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 10px;border-bottom:1px solid var(--line);background:#fff}.check:nth-child(odd){border-right:1px solid var(--line)}.check:nth-last-child(1),.check:nth-last-child(2){border-bottom:0}.check span{font-size:12px}.check b{font-size:11px;white-space:nowrap}.measure-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.measure{border:1px solid var(--line);border-radius:10px;background:#fff;padding:11px}.measure span{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;font-weight:950}.measure b{display:block;font-size:18px;margin-top:5px}.measure small{display:block;color:var(--muted);font-size:11px;margin-top:4px}.meter{height:7px;border-radius:999px;background:#edf1f6;overflow:hidden;margin-top:9px}.meter div{height:100%;border-radius:999px;background:var(--green);width:var(--w)}.meter .amber{background:var(--amber)}.meter .red{background:var(--red)}
+    .obd-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.obd{border:1px solid var(--line);border-radius:10px;background:#fff;padding:10px}.obd b{display:block;font-size:12px}.obd span{display:block;font-size:11px;margin-top:5px}.obd small{display:block;color:var(--muted);font-size:10px;margin-top:4px}.damage-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.damage{border:1px solid var(--line);border-radius:10px;background:#fff;padding:10px}.damage span{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;font-weight:950}.damage b{display:block;font-size:13px;margin-top:4px}
+    .coverage-layout{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}.coverage{border:1px solid var(--line);border-radius:12px;background:#fff;padding:13px}.coverage h3{margin:0 0 8px;font-size:14px}.coverage p{margin:0;color:var(--muted);font-size:11px;line-height:1.45}.coverage ul{margin:10px 0 0;padding-left:18px;color:#3f4754;font-size:11px}.coverage li{margin:5px 0}.copy-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.copy-card{border:1px solid var(--line);border-radius:12px;background:#fff;padding:12px}.copy-card b{display:block;font-size:12px}.copy-card span{display:block;color:var(--muted);font-size:11px;line-height:1.35;margin-top:5px}.copy-card small{display:inline-flex;margin-top:10px;border-radius:999px;background:#f1f3f6;padding:5px 8px;font-weight:950;font-size:10px}
+    .benchmark-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.benchmark-card{border:1px solid var(--line);border-radius:12px;background:#fff;padding:13px;display:grid;gap:8px}.benchmark-card h3{margin:0;font-size:14px}.benchmark-card p{margin:0;color:var(--muted);font-size:11px;line-height:1.45}.benchmark-card ul{margin:0;padding-left:18px;color:#3f4754;font-size:11px}.benchmark-card li{margin:5px 0}.benchmark-card strong{font-size:12px}
+    .verification-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.verify{border:1px solid var(--line);border-radius:12px;background:#fff;padding:12px;display:grid;gap:8px}.verify b{font-size:12px}.verify span{color:var(--muted);font-size:11px;line-height:1.35}.verify-code{font-family:ui-monospace,Consolas,monospace;border:1px solid var(--line);border-radius:8px;background:#f8fafc;padding:8px;font-size:11px;font-weight:850}
+    .legend-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}.legend{border:1px solid var(--line);border-radius:10px;background:#fff;padding:9px}.legend b{display:block;font-size:12px}.legend span{display:block;color:var(--muted);font-size:10px;margin-top:4px;line-height:1.3}.legend .chip{display:inline-flex;border-radius:8px;background:#111318;color:#fff;padding:4px 7px;font-weight:950;font-size:10px;margin-bottom:5px}
+    .coverage-map{display:grid;gap:10px}.coverage-row{display:grid;grid-template-columns:1.05fr 1.15fr .9fr .8fr;gap:10px;align-items:stretch}.coverage-cell{border:1px solid var(--line);border-radius:10px;background:#fff;padding:10px;min-width:0}.coverage-cell span{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;font-weight:950}.coverage-cell b{display:block;margin-top:5px;font-size:12px;line-height:1.35}.coverage-cell small{display:block;margin-top:5px;color:#4d5563;font-size:11px;line-height:1.35}.coverage-row.head .coverage-cell{background:#111318;color:#fff}.coverage-row.head .coverage-cell span,.coverage-row.head .coverage-cell small{color:#cbd2dd}.field-cluster-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.field-cluster{border:1px solid var(--line);border-radius:12px;background:#fff;padding:12px}.field-cluster h3{margin:0 0 8px;font-size:13px}.field-cluster ul{margin:0;padding-left:18px;color:#3f4754;font-size:11px;line-height:1.35}.field-cluster li{margin:5px 0}.point-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}.point{border:1px solid var(--line);border-radius:10px;background:#fff;padding:9px}.point b{display:block;font-size:12px}.point span{display:block;color:var(--muted);font-size:10px;line-height:1.3;margin-top:4px}.point small{display:inline-flex;margin-top:7px;border-radius:999px;background:#f1f3f6;padding:4px 7px;font-size:10px;font-weight:950}
+    @media(max-width:1180px){.app{grid-template-columns:1fr}.rail{position:relative;height:auto}.workbench,.vehicle-row,.body-map,.flow,.modules,.metrics,.page-grid,.quality-layout,.standard-grid,.dossier-grid,.deep-layout,.measure-grid,.obd-grid,.damage-grid,.coverage-layout,.copy-grid,.benchmark-grid,.verification-grid,.legend-grid,.field-cluster-grid,.point-grid{grid-template-columns:1fr}.coverage-row{grid-template-columns:1fr}.field-grid,.info-grid,.decision,.mini-grid,.result-strip,.signature-grid,.capture-grid,.evidence-row,.dossier-fields,.check-grid{grid-template-columns:1fr}.check:nth-child(odd){border-right:0}.check:nth-last-child(2){border-bottom:1px solid var(--line)}.main{padding:16px}.topbar{align-items:flex-start;flex-direction:column}.actions{justify-content:flex-start}.table{min-width:0}.rail-card{margin-top:0}}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="rail">
+      <div class="brand"><div class="mark">*</div><div><b>OTOTR</b><span>Ekspertiz veri omurgası</span></div></div>
+      <nav class="nav">
+        <button class="active"><span class="ico">01</span><span>Premium Rapor</span></button>
+        <button><span class="ico">02</span><span>Tablet Veri Girişi</span></button>
+        <button><span class="ico">03</span><span>Kalite Yayın Kapısı</span></button>
+        <button><span class="ico">04</span><span>Database Akışı</span></button>
+        <button><span class="ico">05</span><span>Modül Besleme</span></button>
+      </nav>
+      <div class="rail-card">
+        <b>Tasarım hedefi</b>
+        Rapor; müşteriye güven veren bir çıktı, bayiye operasyon ekranı, genel merkeze de ölçülebilir veri kaynağı olmalı.
+      </div>
+      <div class="rail-card">
+        <b>Rakiplerden ayrışma</b>
+        <ul>
+          <li>İlk sayfada karar özeti</li>
+          <li>Kanıt ve ölçüm zorunluluğu</li>
+          <li>Rapor versiyon geçmişi</li>
+          <li>Garanti ve hukuk motoru</li>
+        </ul>
+      </div>
+    </aside>
+
+    <main class="main">
+      <section class="topbar">
+        <div>
+          <h1>OTOTR Ekspertiz Tasarım Sistemi</h1>
+          <p>Bu önizleme, ekspertiz raporunu statik PDF olmaktan çıkarıp; müşteri kabul, usta tablet verisi, rapor yazımı, kalite onayı, garanti, hukuk ve yönetim analitiğini tek dosyada birleştirir.</p>
+        </div>
+        <div class="actions">
+          <button class="btn primary">Müşteri raporu</button>
+          <button class="btn">Bayi nüshası</button>
+          <button class="btn blue">Kalite kontrol</button>
+          <button class="btn dark">Veri modeli</button>
+        </div>
+      </section>
+
+      <section class="metrics">
+        <div class="metric"><span>Ekspertiz dosyası</span><b>EXP-2605-001</b><small>Tek ana kayıt</small></div>
+        <div class="metric"><span>Rapor kalite skoru</span><b>96/100</b><small>Yayına uygun</small></div>
+        <div class="metric"><span>Kanıt tamamlığı</span><b>%100</b><small>Foto + ölçüm</small></div>
+        <div class="metric"><span>Yayın versiyonu</span><b>v1.0</b><small>Hash kilitli</small></div>
+        <div class="metric"><span>Risk seviyesi</span><b>Orta</b><small style="color:var(--amber)">2 takip maddesi</small></div>
+      </section>
+
+      <section class="workbench">
+        <div class="report-shell">
+          <div class="report-sheet">
+            <div class="report-band">
+              <div>
+                <h2>OTOTR Premium Ekspertiz Raporu</h2>
+                <span>Rapor No: OTR-2605-0048 · İş Emri: WO-2605-118 · Şube: Bursa Nilüfer · Paket: Premium Plus</span>
+              </div>
+              <div class="qr" aria-label="QR doğrulama"></div>
+            </div>
+
+            <div class="report-body">
+              <div class="report-kicker">
+                <div><b>Doğrulanabilir dijital rapor</b><span>QR, zaman damgası, şube imzası ve versiyon geçmişiyle yayınlanır.</span></div>
+                <span class="badge green">Yayınlanabilir</span>
+              </div>
+
+              <div class="report-kicker">
+                <div><b>Recall, kilometre ve kayıt sorgusu</b><span>Üretici geri çağırma, SBM/Tramer, muayene kilometre ve paket dışı airbag kontrol uyarısı raporun karar özetinde açıkça görünür.</span></div>
+                <span class="badge amber">3 dış sorgu bağlı</span>
+              </div>
+
+              <div class="vehicle-row">
+                <div class="vehicle-photo"></div>
+                <div class="info-grid">
+                  <div class="info"><span>Plaka</span><b>34 OTR 048</b></div>
+                  <div class="info"><span>Şasi</span><b>VF1****1109</b></div>
+                  <div class="info"><span>Giriş km</span><b>56.725</b></div>
+                  <div class="info"><span>Marka / Model</span><b>Volvo XC40</b></div>
+                  <div class="info"><span>Yakıt / Vites</span><b>Benzin · Otomatik</b></div>
+                  <div class="info"><span>Kabul / Teslim</span><b>09:12 · 10:48</b></div>
+                  <div class="info"><span>Yedek anahtar</span><b>Var</b></div>
+                  <div class="info"><span>Ruhsat</span><b>Aslı görüldü</b></div>
+                  <div class="info"><span>Garanti</span><b>Kaporta boya dahil</b></div>
+                </div>
+              </div>
+
+              <div class="decision">
+                <div class="ok"><b>Alım Kararı Özeti</b><span>Alım kararını tek başına engelleyen kritik bulgu yok. Araç genel olarak kullanılabilir durumda.</span></div>
+                <div class="warn"><b>Pazarlık / Servis Notu</b><span>Sol arka çamurluk lokal boya, akü sağlık seviyesi ve sağ ön disk aşınması fiyat görüşmesinde dikkate alınmalı.</span></div>
+                <div class="bluebox"><b>Müşteriye Anlatım</b><span>Rapor tesliminde boya geçmişi, OBD geçmiş hata ve bakım önerileri sade dille açıklanmalı.</span></div>
+              </div>
+
+              <div class="result-strip">
+                <div class="result-item"><span>Kaporta boya</span><b>1 lokal boya</b></div>
+                <div class="result-item"><span>Mekanik</span><b>Bakım önerilir</b></div>
+                <div class="result-item"><span>OBD</span><b>1 geçmiş kayıt</b></div>
+                <div class="result-item"><span>Fren test</span><b>Limit içinde</b></div>
+              </div>
+
+              <div class="result-strip">
+                <div class="result-item"><span>Recall</span><b>Servisten sorgulat</b></div>
+                <div class="result-item"><span>Airbag kapsamı</span><b>Paket dışı uyarı</b></div>
+                <div class="result-item"><span>SBM</span><b>Detay QR ile</b></div>
+                <div class="result-item"><span>Muayene km</span><b>Tutarlı</b></div>
+              </div>
+
+              <div class="body-map">
+                <div class="car-map">
+                  <div class="car-outline"></div>
+                  <div class="panel-dot green p1">O</div><div class="panel-dot amber p2">L</div><div class="panel-dot green p3">O</div><div class="panel-dot red p4">K</div><div class="panel-dot amber p5">B</div>
+                </div>
+                <div class="table-wrap">
+                  <table class="table">
+                    <thead><tr><th>Parça</th><th>Durum</th><th>Mikron</th><th>Önem</th><th>Kanıt</th></tr></thead>
+                    <tbody>
+                      <tr><td>Sol ön çamurluk</td><td><span class="badge green">Orijinal</span></td><td>80-105</td><td>Bilgi</td><td>Foto + ölçüm</td></tr>
+                      <tr><td>Sağ ön kapı</td><td><span class="badge amber">Lokal boya</span></td><td>145-180</td><td>Önemli</td><td>Foto + ölçüm</td></tr>
+                      <tr><td>Sağ podye</td><td><span class="badge red">2. kontrol</span></td><td>-</td><td>Kritik kontrol</td><td>İkinci usta onayı</td></tr>
+                      <tr><td>Tavan</td><td><span class="badge green">Orijinal</span></td><td>90-110</td><td>Bilgi</td><td>Foto + ölçüm</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div class="mini-grid">
+                <div class="mini-card"><b>Mekanik check-up</b><span>Motor sesi normal. Akü sağlık seviyesi takip edilmeli. Yağ kaçağı görülmedi.</span></div>
+                <div class="mini-card"><b>Elektronik / OBD</b><span>Geçmiş düşük voltaj kaydı var; aktif arıza kodu görülmedi.</span></div>
+                <div class="mini-card"><b>Yol testi</b><span>Vites geçişleri normal. Direksiyon ve fren tepkisi limit içinde.</span></div>
+              </div>
+
+              <div class="evidence-row">
+                <div class="evidence" data-label="Ön genel foto"></div>
+                <div class="evidence" data-label="Hasar yakın plan"></div>
+                <div class="evidence" data-label="OBD ekranı"></div>
+                <div class="evidence" data-label="Fren test çıktısı"></div>
+                <div class="evidence" data-label="Müşteri imzası"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tablet">
+          <div class="screen">
+            <div class="screen-top"><div><b>Tablet Veri Giriş Ekranı</b><span>Aktif modül: Kaporta 0-58 nokta formu</span></div><span class="badge red">Canlı</span></div>
+            <div class="step-list">
+              <div class="step done"><div class="num">1</div><div><b>İş emri ve taraflar</b><span>Alıcı, satıcı, ruhsat sahibi, vekil, paket, tutar, bayi</span></div><span class="badge green">Tamam</span></div>
+              <div class="step done"><div class="num">2</div><div><b>Kabul ve rıza</b><span>Ruhsat, yedek anahtar, km, yakıt, KVKK, yol testi, airbag uyarısı</span></div><span class="badge green">Tamam</span></div>
+              <div class="step done"><div class="num">3</div><div><b>Dış sorgular</b><span>SBM/Tramer, hasar QR, recall, HGS/PTT km, garanti/sigorta teklifi</span></div><span class="badge green">Tamam</span></div>
+              <div class="step active"><div class="num">4</div><div><b>Kaporta 0-58</b><span>Nokta no, parça, kod, mikron, fotoğraf, usta kanaati</span></div><span class="badge red">Açık</span></div>
+              <div class="step"><div class="num">5</div><div><b>Alt taban ve airbag</b><span>Alt ön/orta/arka foto, airbag ışığı, ağır işlem, dolu/ezik</span></div><span class="badge gray">Sırada</span></div>
+              <div class="step"><div class="num">6</div><div><b>Test cihazları</b><span>Fren, süspansiyon, yanal kayma, dyno, mekanik, OBD</span></div><span class="badge gray">Sırada</span></div>
+              <div class="step"><div class="num">7</div><div><b>Kalite ve teslim</b><span>Özet usta görüşü, garanti kapsamı, rapor nüshaları, imzalar</span></div><span class="badge gray">Sırada</span></div>
+            </div>
+            <div class="field-grid">
+              <div class="field"><label>Nokta no</label><select><option>29 · Sağ arka kapı</option><option>41 · Arka iç panel</option><option>24 · Ön cam</option><option>17 · Ağır işlem görüşü</option></select></div>
+              <div class="field"><label>Durum kodu</label><select><option>B · Boyalı</option><option>O · Orijinal</option><option>D · Değişim</option><option>EM · Ezik mevcut</option><option>KÇBD · Boya bozmadan düzeltme</option></select></div>
+              <div class="field"><label>Mikron min</label><input value="145"></div>
+              <div class="field"><label>Mikron max</label><input value="180"></div>
+              <div class="field"><label>Kanıt durumu</label><select><option>Foto + mikron zorunlu</option><option>Sadece foto</option><option>Cihaz ekranı</option><option>İkinci usta gerekli</option></select></div>
+              <div class="field"><label>Rapor görünümü</label><select><option>Müşteri + bayi + kalite</option><option>Sadece bayi/kalite</option><option>Hukuk nüshası</option></select></div>
+              <div class="field wide"><label>Usta notu ve müşteri dili</label><textarea>29 numaralı sağ arka kapıda boya tespit edildi. Müşteri özetinde pazarlık notu olarak gösterilecek; şasi, podye ve direk tarafında ağır işlem bulgusu ayrıca işaretlenmedi.</textarea></div>
+            </div>
+            <div class="capture-grid">
+              <div class="capture">Parça fotoğrafı + yakın plan</div>
+              <div class="capture">Mikron cihaz ekranı</div>
+              <div class="capture">Karalama kağıdı eki</div>
+            </div>
+            <button class="btn primary">Kaydet ve rapor taslağına işle</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <div><div class="section-title">Araç Kabul, İş Emri ve Rıza Dosyası</div><div class="section-sub">Raporun teknik kısmından önce müşteri karşılama personeli tarafından açılan operasyon ve hukuki kabul katmanı.</div></div>
+          <span class="badge blue">Bayi + müşteri nüshası</span>
+        </div>
+        <div class="dossier-grid">
+          <div class="dossier-card">
+            <h3>İş emri bilgileri</h3>
+            <div class="dossier-fields">
+              <div class="dossier-field"><span>İş emri no</span><b>WO-2605-118</b></div>
+              <div class="dossier-field"><span>Rapor no</span><b>OTR-2605-0048</b></div>
+              <div class="dossier-field"><span>İşi açan</span><b>Müşteri Kabul · Elif Kaya</b></div>
+              <div class="dossier-field"><span>Teknisyen</span><b>Kaporta: Kadir Baş</b></div>
+              <div class="dossier-field"><span>Araç kabul</span><b>04.05.2026 · 09:12</b></div>
+              <div class="dossier-field"><span>Araç teslim</span><b>04.05.2026 · 10:48</b></div>
+              <div class="dossier-field"><span>Giriş / çıkış km</span><b>56.725 / 56.728</b></div>
+              <div class="dossier-field"><span>Yakıt seviyesi</span><b>%42</b></div>
+            </div>
+          </div>
+          <div class="dossier-card">
+            <h3>Müşteri ve paket</h3>
+            <div class="dossier-fields">
+              <div class="dossier-field"><span>Talep eden</span><b>Alıcı · Bireysel</b></div>
+              <div class="dossier-field"><span>Araç sahibi</span><b>Ruhsatta yazan kişi</b></div>
+              <div class="dossier-field"><span>Satıcı / vekil</span><b>Satıcı temsilcisi görüldü</b></div>
+              <div class="dossier-field"><span>Paket</span><b>Premium Plus</b></div>
+              <div class="dossier-field"><span>Paket tutarı</span><b>₺6.500</b></div>
+              <div class="dossier-field"><span>Ödeme</span><b>Kart · Tahsil edildi</b></div>
+              <div class="dossier-field"><span>Yedek anahtar</span><b>Var</b></div>
+              <div class="dossier-field"><span>Ruhsat aslı</span><b>Görüldü</b></div>
+            </div>
+          </div>
+        </div>
+        <div class="consent-list" style="margin-top:12px">
+          <div class="consent"><div><b>KVKK ve rapor paylaşım rızası</b><span>Rapor linki, SMS/WhatsApp teslimi ve arşiv erişimi için açık rıza kaydedildi.</span></div><span class="badge green">İmzalı</span></div>
+          <div class="consent"><div><b>Ekspertiz kapsam kabulü</b><span>Paket dışı kontroller, test yapılamayan alanlar ve sökme/takma yapılmadığı müşteriye bildirildi.</span></div><span class="badge green">Onaylı</span></div>
+          <div class="consent"><div><b>Garanti ve sigorta teklif tercihi</b><span>Kaporta/boya garanti kapsamı teklif edildi; müşteri dijital şartları rapor sonunda görecek.</span></div><span class="badge amber">Teklif var</span></div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <div><div class="section-title">Otorapor Veri Giriş Kapsam Haritası</div><div class="section-sub">Yeni hedef: Otorapor'da veri girilen hiçbir nokta dışarıda kalmayacak. OTOTR aynı alanları alır; ayrıca rol, kanıt, kalite kuralı ve modül etkisi ekler.</div></div>
+          <span class="badge red">Eksiksiz + daha fazla temas</span>
+        </div>
+        <div class="coverage-map">
+          <div class="coverage-row head">
+            <div class="coverage-cell"><span>Otorapor alan grubu</span><b>Görülen veri girişi</b></div>
+            <div class="coverage-cell"><span>OTOTR karşılığı</span><b>Bizde nasıl tutulacak</b></div>
+            <div class="coverage-cell"><span>Eklediğimiz kontrol</span><b>Otorapor üstü fark</b></div>
+            <div class="coverage-cell"><span>Beslediği modül</span><b>Çıktı ve kullanım</b></div>
+          </div>
+          <div class="coverage-row">
+            <div class="coverage-cell"><span>İş emri ve kimlik</span><b>İş emri no, rapor no, plaka, şasi, motor no, rapor tarihi, bayi, adres, telefon, franchise sorumluluğu.</b></div>
+            <div class="coverage-cell"><span>expertise_case</span><b>Tek ana dosya; her sayfa ve nüsha aynı dosyaya bağlı, QR ve hash ile doğrulanır.</b><small>Alanlar: work_order_no, report_no, branch_id, dealer_tax_no, produced_by, verification_hash.</small></div>
+            <div class="coverage-cell"><span>Versiyon kilidi</span><b>Yayın sonrası değişiklik revizyon açar; el yazısı/manuel ek geçersiz uyarısı dijital olarak izlenir.</b></div>
+            <div class="coverage-cell"><span>Bayi + hukuk</span><b>Şube performansı, itiraz dosyası, rapor doğrulama.</b></div>
+          </div>
+          <div class="coverage-row">
+            <div class="coverage-cell"><span>Araç kabul</span><b>Kabul/kapanış tarih-saat, giriş/çıkış km, yakıt, yedek anahtar, ruhsat aslı, teknisyen, paket tutarı.</b></div>
+            <div class="coverage-cell"><span>intake_record</span><b>Karşılama personeli tabletinden operasyon formu; müşteri raporu, bayi nüshası ve kalite ekranına ayrıştırılır.</b><small>Ek: teslim alan, teslim eden, ödeme kanalı, kasa fiş no, teslim fotoğrafı.</small></div>
+            <div class="coverage-cell"><span>Tutarlılık kuralı</span><b>Çıkış km giriş km'den düşük olamaz; paket tutarı ve ödeme onayı olmadan rapor yayınlanmaz.</b></div>
+            <div class="coverage-cell"><span>Finans + operasyon</span><b>Ciro, gecikme, teslim SLA, paket analitiği.</b></div>
+          </div>
+          <div class="coverage-row">
+            <div class="coverage-cell"><span>Taraf bilgileri</span><b>Alıcı, alıcı vekili, satıcı/kullanan kişi, ruhsat sahibi, telefon, T.C./vergi no, adres, e-posta, imza.</b></div>
+            <div class="coverage-cell"><span>case_parties</span><b>Her taraf ayrı kişi kaydı; rol bazlı imza, vekalet, teslim ve rapor erişim yetkisi tutulur.</b><small>Ek: galeri/kurumsal tipi, MERSİS, iletişim izni, temsilci doğrulaması.</small></div>
+            <div class="coverage-cell"><span>Yetki ayrımı</span><b>Raporu gören, teslim alan, itiraz açan ve garanti talep eden kişi ayrı izlenir.</b></div>
+            <div class="coverage-cell"><span>CRM + hukuk</span><b>Müşteri 360, KVKK, uyuşmazlık kanıtı.</b></div>
+          </div>
+          <div class="coverage-row">
+            <div class="coverage-cell"><span>Beyan, rıza ve uyarı</span><b>Araç sahibi beyanı, yol testi onayı, dinamometre sorumluluğu, airbag paket dışı uyarısı, ekspertiz kapsam şartları.</b></div>
+            <div class="coverage-cell"><span>consent_bundle</span><b>Metinler imzalı kutucuklar halinde; paket, araç tipi ve test durumuna göre dinamik üretilir.</b><small>Ek: hangi metni kim, hangi saatte, hangi cihazdan onayladı.</small></div>
+            <div class="coverage-cell"><span>Dinamik hukuk motoru</span><b>Airbag paketi yoksa servis uyarısı, dyno yapılmadıysa farklı sorumluluk metni otomatik gelir.</b></div>
+            <div class="coverage-cell"><span>Hukuk + kalite</span><b>Kapsam dışı alan, itiraz savunması, imza zinciri.</b></div>
+          </div>
+          <div class="coverage-row">
+            <div class="coverage-cell"><span>Dış sorgular</span><b>Recall, SBM/Tramer, HGS/PTT kilometre, hasar QR, paket kapsamı, garanti ve sigorta teklif tercihleri.</b></div>
+            <div class="coverage-cell"><span>external_queries</span><b>Sorgu sonucu, kaynak, kapsam sınırı, ekran görüntüsü, QR linki ve müşteri uyarısı ayrı veri olur.</b><small>Ek: sorgu yapılamadı nedeni, sağlayıcı hatası, tekrar sorgu zamanı.</small></div>
+            <div class="coverage-cell"><span>Karar özeti</span><b>Bu bilgiler rapor sonunda değil ilk sayfadaki risk panelinde görünür.</b></div>
+            <div class="coverage-cell"><span>CRM + garanti</span><b>Teklif, takip araması, risk sınıflandırması.</b></div>
+          </div>
+          <div class="coverage-row">
+            <div class="coverage-cell"><span>Kaporta nokta listesi</span><b>0-58 arası parça ve soru: sol/sağ/üst/şasi, podye, kule, panel, cam, tampon, dolu, kuş pisliği, ağır işlem, airbag kanaati.</b></div>
+            <div class="coverage-cell"><span>body_points</span><b>Her nokta kod, mikron, fotoğraf, usta notu, müşteri dili, önem seviyesi ve ikinci kontrol kuralı ile tutulur.</b><small>Ek: parça geometrisi, boya aralığı, plastik parça istisnası, değişim belge talebi.</small></div>
+            <div class="coverage-cell"><span>Kanıt zorunluluğu</span><b>İşlemli, kritik veya ağır işlem şüphesi olan nokta fotoğrafsız kapanamaz.</b></div>
+            <div class="coverage-cell"><span>Rapor + Academy</span><b>Parça bazlı rapor, usta hata analizi, eğitim ihtiyacı.</b></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <div><div class="section-title">Veri Giriş Modülleri</div><div class="section-sub">Tablet uygulaması ayrı tasarlanacak; burada hangi başlıklardan veri alınacağını eksiksiz hale getiriyoruz.</div></div>
+          <span class="badge blue">Karşılama + usta + kalite</span>
+        </div>
+        <div class="field-cluster-grid">
+          <div class="field-cluster">
+            <h3>1. Karşılama formu</h3>
+            <ul>
+              <li>Randevu, iş emri, rapor no, bayi, şube, belge no</li>
+              <li>Alıcı, satıcı, ruhsat sahibi, vekil, kullanan kişi</li>
+              <li>Paket, paket tutarı, ödeme, garanti/sigorta teklif tercihleri</li>
+              <li>Kabul/teslim saatleri, giriş/çıkış km, yakıt, ruhsat, yedek anahtar</li>
+            </ul>
+          </div>
+          <div class="field-cluster">
+            <h3>2. Beyan ve rıza</h3>
+            <ul>
+              <li>Araç sahibi beyanı ve ekspertiz öncesi gözlemler</li>
+              <li>Yol testi, dyno, cihaz kullanımı, sökme/takma yapılmadı onayı</li>
+              <li>KVKK, pazarlama izni, rapor paylaşım ve mobil arşiv izni</li>
+              <li>Airbag paket kapsamı, servis kontrol uyarısı, kriminal inceleme dışı metni</li>
+            </ul>
+          </div>
+          <div class="field-cluster">
+            <h3>3. Sorgu ve garanti</h3>
+            <ul>
+              <li>SBM/Tramer liste, hasar detay QR, ceza/kayıt, muayene km</li>
+              <li>Recall/yetkili servis uyarısı, HGS/PTT veya cihaz km kontrolü</li>
+              <li>Garanti teklifi, garanti kapsamı, aynı gün noter satış şartı</li>
+              <li>Şikayet/itiraz linki, garanti sağlayıcı, teminat limitleri</li>
+            </ul>
+          </div>
+          <div class="field-cluster">
+            <h3>4. Teknik istasyonlar</h3>
+            <ul>
+              <li>Kaporta 0-58 nokta listesi, mikron, kod, fotoğraf, usta kanaati</li>
+              <li>Alt taban, alt ön/orta/arka fotoğraflar, şasi/podye/kule kontrolleri</li>
+              <li>Fren, süspansiyon, yanal kayma, dyno, mekanik, OBD</li>
+              <li>Özet usta görüşleri, müşteri anlatımı, müdür kalite onayı</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <div><div class="section-title">Doğrulama, Dış Sorgular ve Uyarı Paneli</div><div class="section-sub">Raporun ilk sayfasında müşterinin kararını etkileyen dış sorgular net, kısa ve kanıt bağlantılı gösterilir.</div></div>
+          <span class="badge blue">QR + API + belge</span>
+        </div>
+        <div class="verification-grid">
+          <div class="verify"><b>Üretici recall sorgusu</b><span>Geri çağırma kaydı yetkili servis üzerinden sorgulatılmalı uyarısı müşteri karar özetine taşınır.</span><div class="verify-code">recall.status: servis_sorgusu_gerekli</div></div>
+          <div class="verify"><b>SBM / Tramer kapsamı</b><span>Hasar listeleme kapsamı ve detay sınırlaması açık belirtilir; QR ile detay sayfası bağlanır.</span><div class="verify-code">damage.query: no_claim_found</div></div>
+          <div class="verify"><b>Muayene km tutarlılığı</b><span>TÜVTÜRK ve giriş km karşılaştırılır, sapma varsa kalite alarmı açılır.</span><div class="verify-code">km.delta: normal</div></div>
+          <div class="verify"><b>TSE / HYB ve bayi kimliği</b><span>Şube belge no, bayi kodu, rapor üreticisi ve franchise sorumluluk alanı görünür olur.</span><div class="verify-code">hyb: 16-HYB-OTR</div></div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <div><div class="section-title">Detaylı Teknik Rapor İçeriği</div><div class="section-sub">Diğer raporlardaki kaporta, hasar, mekanik, ölçüm ve OBD başlıkları OTOTR formatında daha temiz ve veri tabanına uygun hale getirildi.</div></div>
+          <span class="badge violet">Tablet kaynaklı</span>
+        </div>
+        <div class="deep-layout">
+          <div class="deep-card">
+            <div class="deep-card-head"><b>Kaza / hasar ve ön tespit</b><span class="badge amber">1 takip</span></div>
+            <div class="deep-body">
+              <div class="damage-grid">
+                <div class="damage"><span>SBM hasar</span><b>Kayıt yok</b></div>
+                <div class="damage"><span>Haciz / rehin</span><b>Sorgu bekliyor</b></div>
+                <div class="damage"><span>Km sorgusu</span><b>Tutarlı</b></div>
+                <div class="damage"><span>Ön cam</span><b>Taş izi mevcut</b></div>
+                <div class="damage"><span>Far / stop</span><b>Sorunsuz</b></div>
+                <div class="damage"><span>Ekspertiz öncesi</span><b>Sağ ön kapı çizik</b></div>
+              </div>
+            </div>
+          </div>
+          <div class="deep-card">
+            <div class="deep-card-head"><b>Mekanik kontrol checklist</b><span class="badge green">14/16 iyi</span></div>
+            <div class="deep-body">
+              <div class="check-grid">
+                <div class="check"><span>Motor ve yağ seviyesi</span><b class="badge green">İyi</b></div>
+                <div class="check"><span>Şanzıman</span><b class="badge green">İyi</b></div>
+                <div class="check"><span>Fren sistemi</span><b class="badge green">İyi</b></div>
+                <div class="check"><span>Direksiyon sistemi</span><b class="badge green">İyi</b></div>
+                <div class="check"><span>Soğutma sistemi</span><b class="badge green">İyi</b></div>
+                <div class="check"><span>Akü</span><b class="badge amber">%72</b></div>
+                <div class="check"><span>Lastik ve jant</span><b class="badge green">İyi</b></div>
+                <div class="check"><span>Rot / balans</span><b class="badge amber">Önerilir</b></div>
+                <div class="check"><span>Yürür aksam</span><b class="badge green">İyi</b></div>
+                <div class="check"><span>Elektrik elektronik</span><b class="badge green">İyi</b></div>
+              </div>
+            </div>
+          </div>
+          <div class="deep-card">
+            <div class="deep-card-head"><b>Ölçüm değerleri</b><span class="badge blue">Cihaz verisi</span></div>
+            <div class="deep-body">
+              <div class="measure-grid">
+                <div class="measure"><span>Ön fren farkı</span><b>%4</b><small>Limit: %25 altı</small><div class="meter"><div style="--w:18%"></div></div></div>
+                <div class="measure"><span>Arka fren farkı</span><b>%8</b><small>Limit: %25 altı</small><div class="meter"><div style="--w:28%"></div></div></div>
+                <div class="measure"><span>El freni farkı</span><b>%18</b><small>Limit: %50 altı</small><div class="meter"><div class="amber" style="--w:42%"></div></div></div>
+                <div class="measure"><span>Yanal kayma</span><b>0,4</b><small>m/km · kabul aralığında</small><div class="meter"><div style="--w:22%"></div></div></div>
+                <div class="measure"><span>Dyno güç</span><b>118 kw</b><small>Ruhsat: 120 kw</small><div class="meter"><div style="--w:92%"></div></div></div>
+                <div class="measure"><span>Lastik diş</span><b>5,8 mm</b><small>Ortalama değer</small><div class="meter"><div style="--w:68%"></div></div></div>
+              </div>
+            </div>
+          </div>
+          <div class="deep-card">
+            <div class="deep-card-head"><b>OBD / elektronik tarama</b><span class="badge green">Aktif hata yok</span></div>
+            <div class="deep-body">
+              <div class="obd-grid">
+                <div class="obd"><b>ECM</b><span class="badge green">Tamam</span><small>Motor kontrol</small></div>
+                <div class="obd"><b>TCM</b><span class="badge green">Tamam</span><small>Şanzıman</small></div>
+                <div class="obd"><b>SRS</b><span class="badge green">Tamam</span><small>Airbag</small></div>
+                <div class="obd"><b>ABS / ESC</b><span class="badge green">Tamam</span><small>Fren güvenlik</small></div>
+                <div class="obd"><b>HVAC</b><span class="badge green">Tamam</span><small>Klima</small></div>
+                <div class="obd"><b>BMS</b><span class="badge amber">Geçmiş</span><small>Düşük voltaj</small></div>
+                <div class="obd"><b>CEM</b><span class="badge green">Tamam</span><small>Merkezi modül</small></div>
+                <div class="obd"><b>Gösterge</b><span class="badge green">Tamam</span><small>Km okunur</small></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <div><div class="section-title">Kaporta Kod Sözlüğü ve Detay Sayfa Sistemi</div><div class="section-sub">Otorapor'daki kodlu kaporta yaklaşımı korunur; OTOTR'de her kod açıklamalı, renkli, filtrelenebilir ve müşteriye anlaşılır hale gelir.</div></div>
+          <span class="badge amber">Sol · Üst · Sağ · Şasi</span>
+        </div>
+        <div class="legend-grid">
+          <div class="legend"><span class="chip">O</span><b>Orijinal</b><span>Fabrika boya ve parça yapısı korunmuş.</span></div>
+          <div class="legend"><span class="chip">B</span><b>Boyalı</b><span>Parçada boya işlemi tespit edildi.</span></div>
+          <div class="legend"><span class="chip">LB</span><b>Lokal boya</b><span>Kısmi yüzey boyası, müşteri özetinde pazarlık notu.</span></div>
+          <div class="legend"><span class="chip">D</span><b>Değişen</b><span>Parça değişimi; belge ve fotoğraf zorunlu.</span></div>
+          <div class="legend"><span class="chip">EM</span><b>Ezik mevcut</b><span>Kozmetik veya yapısal etki ayrımı yapılır.</span></div>
+          <div class="legend"><span class="chip">KÇBD</span><b>Boya bozmadan düzeltme</b><span>Kuru çekiç/PDR işlemi notlanır.</span></div>
+          <div class="legend"><span class="chip">PP</span><b>Plastik parça</b><span>Mikron beklenmez; boya/deformasyon ayrı tutulur.</span></div>
+          <div class="legend"><span class="chip">ST</span><b>Sök tak</b><span>Bağlantı/vida izi ve parça hizası kontrol edilir.</span></div>
+          <div class="legend"><span class="chip">AİG</span><b>Ağır işlem görüşü</b><span>Usta kanaati + ikinci usta onayı zorunlu.</span></div>
+          <div class="legend"><span class="chip">TK</span><b>Test kapsamı dışı</b><span>Paket dışı veya teknik nedenle yapılamadı.</span></div>
+          <div class="legend"><span class="chip">AF</span><b>Airbag fiziki kontrol</b><span>Paket varsa sökme/onay akışı; yoksa servis uyarısı.</span></div>
+          <div class="legend"><span class="chip">F</span><b>Fotoğraf kanıtı</b><span>Rapor linkinde ilgili maddeye bağlı görünür.</span></div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <div><div class="section-title">Kaporta 0-58 Nokta Seti</div><div class="section-sub">Otorapor'da kaporta-boya tarafında veri girilen tüm görünen noktalar OTOTR'de nokta bazlı form olarak açılır; eksik numara varsa sistem bunu pasif/rezerv alan olarak saklar.</div></div>
+          <span class="badge red">Tüm noktalar kapsanır</span>
+        </div>
+        <div class="point-grid">
+          <div class="point"><b>0 Genel yüzey</b><span>Dolu onarımı, kuş pisliği ve boya bozulması.</span><small>2 soru</small></div>
+          <div class="point"><b>1-4 Ön uç iç kontroller</b><span>Sol/sağ ön şasi ucu, sol/sağ ön kapı içi.</span><small>4 nokta</small></div>
+          <div class="point"><b>5-11 Kanıt ve airbag</b><span>Dolu hasarı, airbag usta kanaati, alt arka/orta/ön fotoğraflar, airbag ışığı.</span><small>foto + kanaat</small></div>
+          <div class="point"><b>13-18 Üst/alt yapı</b><span>Sol/sağ frangart, karalama kağıdı, alt taban, ağır işlem görüşü, araç temizliği.</span><small>kritik</small></div>
+          <div class="point"><b>19-24 Arka/üst parçalar</b><span>Sol/sağ marşbiyel, arka bagaj, arka cam, sunroof, ön cam.</span><small>mikron + kod</small></div>
+          <div class="point"><b>25-32 Sağ taraf</b><span>Sağ ön çamurluk, sağ ön kapı, sağ orta/arka iç direk, sağ arka kapı içi, fitiller, sağ arka çamurluk.</span><small>8 nokta</small></div>
+          <div class="point"><b>33-40 Sol taraf ve arka şasi</b><span>Sol arka çamurluk, sol arka kapı, sol arka kapı içi, sol orta/ön iç direk, sol ön kapı, sol ön çamurluk, arka havuz.</span><small>8 nokta</small></div>
+          <div class="point"><b>41-49 Paneller ve kuleler</b><span>Arka iç panel, arka sağ/sol şasi, ön panel, sağ/sol kule, sağ/sol podye, sağ ön şasi.</span><small>9 nokta</small></div>
+          <div class="point"><b>50-55 Kaput/tavan/tampon</b><span>Sol ön şasi, ön kaput, tavan tipi, tavan, arka tampon, ön tampon.</span><small>6 nokta</small></div>
+          <div class="point"><b>56-58 Ek bulgular</b><span>Noktasal ezik-çizik fotoğrafı, tavanda göçük, ön panjur deformasyonu.</span><small>3 bulgu</small></div>
+          <div class="point"><b>Rezerv noktalar</b><span>PDF metninde görünmeyen 6 ve 12 gibi numaralar sistemde pasif tutulur; farklı paketlerde açılabilir.</span><small>paket bazlı</small></div>
+          <div class="point"><b>OTOTR ilavesi</b><span>Her noktaya foto, video, cihaz, ikinci usta, müşteri dili, garanti etkisi ve eğitim etiketi eklenir.</span><small>üst katman</small></div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <div><div class="section-title">Tam Rapor Sayfa Mimarisi</div><div class="section-sub">Müşteri PDF'i sadece tablo değil; karar, kanıt, teknik detay, garanti ve doğrulama katmanlarından oluşur.</div></div>
+        </div>
+        <div class="page-grid">
+          <div class="page-card"><div class="page-no">1</div><strong>Kapak ve doğrulama</strong><span>QR, rapor no, araç fotoğrafı, şube, paket, versiyon.</span></div>
+          <div class="page-card"><div class="page-no">2</div><strong>Hızlı karar özeti</strong><span>Alım kararı, kritik bulgu, pazarlık notu, müşteri dili.</span></div>
+          <div class="page-card"><div class="page-no">3</div><strong>Kabul ve iş emri</strong><span>Alıcı/satıcı, ruhsat, yedek anahtar, ödeme, rıza.</span></div>
+          <div class="page-card"><div class="page-no">4</div><strong>Dış sorgular</strong><span>Recall, SBM, muayene km, ceza/kayıt, TSE/HYB.</span></div>
+          <div class="page-card"><div class="page-no">5</div><strong>Kaporta boya</strong><span>Sol, üst, sağ, şasi/podye, mikron, kod sözlüğü.</span></div>
+          <div class="page-card"><div class="page-no">6</div><strong>Fotoğraf albümü</strong><span>Ruhsat, araç açıları, hasar yakın plan, cihaz ekranları.</span></div>
+          <div class="page-card"><div class="page-no">7</div><strong>Süspansiyon ve fren</strong><span>Referans değerler, sol/sağ fark, yanal kayma.</span></div>
+          <div class="page-card"><div class="page-no">8</div><strong>Dyno ve mekanik</strong><span>Motor gücü, kayıp güç, motor/mekanik kontrol.</span></div>
+          <div class="page-card"><div class="page-no">9</div><strong>OBD ve elektronik</strong><span>Modül listesi, aktif/geçmiş hata, airbag kapsam uyarısı.</span></div>
+          <div class="page-card"><div class="page-no">10</div><strong>Usta görüşleri</strong><span>Özet usta görüşü, müşteri anlatımı, bakım tavsiyesi.</span></div>
+          <div class="page-card"><div class="page-no">11</div><strong>Garanti ve hukuk</strong><span>Kapsam, istisnalar, teslim imzası, versiyon geçmişi.</span></div>
+          <div class="page-card"><div class="page-no">12</div><strong>Modül verisi</strong><span>CRM, bayi paneli, kalite, hukuk ve Academy tetikleyicileri.</span></div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <div><div class="section-title">Kalite Yayın Kapısı</div><div class="section-sub">Rapor yayınlanmadan önce sistem otomatik kontrol yapar; eksik kanıt veya riskli ifade varsa rapor kilitlenir.</div></div>
+          <span class="badge green">96/100</span>
+        </div>
+        <div class="quality-layout">
+          <div class="rule-list">
+            <div class="rule"><div><b>Kritik bulgu fotoğrafı</b><span>Sağ podye kontrolü için ikinci usta fotoğrafı eklendi.</span></div><span class="badge green">Tamam</span></div>
+            <div class="rule"><div><b>OBD ve cihaz çıktısı</b><span>Aktif hata yok; geçmiş düşük voltaj kaydı rapora işlendi.</span></div><span class="badge green">Tamam</span></div>
+            <div class="rule"><div><b>Riskli rapor dili</b><span>Serbest metin müşteri dostu dile çevrildi.</span></div><span class="badge blue">Düzeltildi</span></div>
+            <div class="rule"><div><b>Garanti kapsamı</b><span>Paket kapsamına uygun garanti metni seçildi.</span></div><span class="badge green">Uygun</span></div>
+          </div>
+          <div class="signature-grid">
+            <div class="signature"><b>Usta imzası</b><span>Kaporta/Boya Uzmanı</span><div class="signature-line"></div></div>
+            <div class="signature"><b>Şube müdürü</b><span>Yayın onayı</span><div class="signature-line"></div></div>
+            <div class="signature"><b>Müşteri teslim</b><span>Rapor anlatımı yapıldı</span><div class="signature-line"></div></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <div><div class="section-title">Garanti, Hukuk ve Rapor Nüshaları</div><div class="section-sub">Raporun değerini yükselten kritik fark: garanti kapsamı, imza zinciri, yayın versiyonu ve her paydaş için doğru nüsha.</div></div>
+          <span class="badge red">Savunulabilir kayıt</span>
+        </div>
+        <div class="coverage-layout">
+          <div class="coverage">
+            <h3>Garanti kapsam özeti</h3>
+            <p>Paket kapsamına göre garanti metni otomatik oluşur; müşteri ilk sayfada kapsamı görür, detay koşullar sona alınır.</p>
+            <ul>
+              <li>Kaporta/boya teminatı: 12 ay / 1.000 km</li>
+              <li>Teminat limiti: paket bazlı</li>
+              <li>Noter satış ve aynı gün şartı kontrol edilir</li>
+            </ul>
+          </div>
+          <div class="coverage">
+            <h3>Hukuki koruma</h3>
+            <p>Her rapor zaman damgası, QR kodu, versiyon no ve değişiklik geçmişiyle saklanır. Yayın sonrası düzeltme yeni revizyon olarak açılır.</p>
+            <ul>
+              <li>KVKK ve paylaşım rızası</li>
+              <li>Test yapılamadı nedenleri</li>
+              <li>Paket dışı alan uyarısı</li>
+            </ul>
+          </div>
+          <div class="coverage">
+            <h3>Müşteri teslim dili</h3>
+            <p>Usta ham notu doğrudan müşteriye verilmez; sistem teknik bulguyu sade, ölçülü ve hukuken dengeli dile çevirir.</p>
+            <ul>
+              <li>Alım kararı özeti</li>
+              <li>Pazarlık ve bakım önerisi</li>
+              <li>Riskli ifadelerde müdür onayı</li>
+            </ul>
+          </div>
+        </div>
+        <div class="copy-grid" style="margin-top:12px">
+          <div class="copy-card"><b>Müşteri raporu</b><span>Karar özeti, sade teknik detay, fotoğraf kanıtı, garanti ve QR doğrulama.</span><small>PDF + mobil link</small></div>
+          <div class="copy-card"><b>Bayi nüshası</b><span>İş emri, kabul/teslim, ödeme, imza, personel ve operasyon kayıtları.</span><small>İç kayıt</small></div>
+          <div class="copy-card"><b>Kalite nüshası</b><span>Eksik kanıt, ikinci usta, riskli ifade ve rapor kalite puanı.</span><small>Denetim</small></div>
+          <div class="copy-card"><b>Hukuk nüshası</b><span>Rıza, kapsam, garanti, versiyon geçmişi ve itiraz dosyası bağlantısı.</span><small>Arşiv</small></div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <div><div class="section-title">Database Akışı</div><div class="section-sub">Tek ekspertiz dosyası, tüm modülleri besleyen olay ve veri zincirine dönüşür.</div></div>
+        </div>
+        <div class="flow">
+          <div class="flow-item"><div class="flow-dot">1</div><strong>Randevu</strong><span>CRM, müşteri, araç ve paket bilgisi.</span></div>
+          <div class="flow-item"><div class="flow-dot">2</div><strong>İş Emri</strong><span>Kabul, ödeme, imza, giriş km ve bayi nüshası.</span></div>
+          <div class="flow-item"><div class="flow-dot">3</div><strong>Tablet Girişi</strong><span>Usta kontrolü, ölçüm, fotoğraf ve cihaz verisi.</span></div>
+          <div class="flow-item"><div class="flow-dot">4</div><strong>Rapor Motoru</strong><span>Teknik veriden müşteri dili ve risk özeti.</span></div>
+          <div class="flow-item"><div class="flow-dot">5</div><strong>Kalite Onayı</strong><span>Eksik kanıt, riskli ifade, ikinci usta kontrolü.</span></div>
+          <div class="flow-item"><div class="flow-dot">6</div><strong>Teslim</strong><span>QR link, WhatsApp, imza, memnuniyet ve itiraz takibi.</span></div>
+        </div>
+      </section>
+
+      <section class="modules">
+        <div class="module"><b>CRM</b><span>Müşteri 360, tekrar satış, rapor teslim araması ve memnuniyet.</span><small>customer_summary</small></div>
+        <div class="module"><b>Bayi Paneli</b><span>Günlük araç, geciken rapor, usta verimliliği ve kalite skoru.</span><small>work_order</small></div>
+        <div class="module"><b>Kalite</b><span>Eksik fotoğraf, itiraz kök nedeni, ikinci kontrol ve eğitim ihtiyacı.</span><small>inspection_results</small></div>
+        <div class="module"><b>Hukuk</b><span>Rıza, imza, rapor versiyonu, garanti şartı ve uyuşmazlık dosyası.</span><small>report_revisions</small></div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <div><div class="section-title">OTOTR Çıktı Standardı</div><div class="section-sub">Bu raporu daha kaliteli yapan şey görsellikten önce; eksiksiz veri, kanıt, denetlenebilirlik ve müşteri dilidir.</div></div>
+        </div>
+        <div class="standard-grid">
+          <div class="standard"><b>Karar özeti</b><span>Müşteri ilk sayfada ne yapması gerektiğini anlar.</span></div>
+          <div class="standard"><b>Kanıt zorunluluğu</b><span>Kritik bulgu fotoğraf ve ölçüm olmadan yayınlanmaz.</span></div>
+          <div class="standard"><b>Versiyon kilidi</b><span>Yayın sonrası her değişiklik revizyon olarak saklanır.</span></div>
+          <div class="standard"><b>Garanti motoru</b><span>Paket kapsamına göre doğru garanti/hukuk metni üretilir.</span></div>
+          <div class="standard"><b>Modül besleme</b><span>Rapor; CRM, kalite, hukuk, bayi ve finans verisine dönüşür.</span></div>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
