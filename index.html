@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="ototr-version" content="SVK v1.0.61-hr-trial-academy" />
+  <meta name="ototr-version" content="SVK v1.0.62-academy-course-assignment" />
   <title>OTOTR Genel Merkez ERP + CRM</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -119,7 +119,7 @@
     .ops-room{display:grid;grid-template-columns:.95fr 1.05fr;gap:16px}.map-board{border:1px solid var(--line);border-radius:12px;background:#f8fafc;padding:14px;min-height:310px;display:grid;grid-template-rows:auto 1fr}.map-board-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}.map-board-head b{font-size:13px}.map-canvas{position:relative;border:1px solid #dbe3ee;border-radius:12px;background:linear-gradient(135deg,#fff,#eef3f9);overflow:hidden}.map-canvas:before{content:"";position:absolute;inset:20px;border:1px dashed #d6dde8;border-radius:44% 52% 42% 48%;transform:rotate(-8deg)}.map-node{position:absolute;left:var(--x);top:var(--y);transform:translate(-50%,-50%);border:1px solid #d6dde8;border-radius:12px;background:#fff;color:#1f2630;padding:9px 10px;min-width:92px;box-shadow:0 12px 24px rgba(17,19,24,.08);text-align:left}.map-node.good{border-color:#c5ead5;background:#f6fcf8}.map-node.warn{border-color:#ffe0a6;background:#fffaf0}.map-node.bad{border-color:#ffc5ca;background:#fff7f8}.map-node span{display:block;font-size:10px;color:var(--muted);font-weight:850;text-transform:uppercase}.map-node b{font-size:15px}.map-node small{display:block;margin-top:2px;color:#69707d;font-size:10px;font-weight:800}.live-ops-table td,.live-ops-table th{padding:10px}.ops-status{display:inline-flex;align-items:center;gap:6px;font-weight:900}.ops-status:before{content:"";width:8px;height:8px;border-radius:50%;background:var(--green)}.ops-status.warn:before{background:var(--amber)}.ops-status.bad:before{background:var(--red)}.review-board{display:grid;gap:10px;margin-top:10px}.review-card{display:grid;grid-template-columns:44px 1fr;gap:10px;border:1px solid var(--line);border-radius:10px;background:#fff;padding:10px}.review-card.bad{border-color:#ffc5ca;background:#fff7f8}.review-card.warn{border-color:#ffe0a6;background:#fffaf0}.review-score{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;background:#111318;color:#fff;font-weight:900}.review-card.bad .review-score{background:var(--red)}.review-card.warn .review-score{background:var(--amber)}.review-card b{font-size:13px}.review-card p{margin:2px 0 8px;color:#4d5563;font-size:12px;line-height:1.45}.review-actions{display:flex;gap:6px;flex-wrap:wrap}.micro-btn{border:1px solid var(--line);border-radius:999px;background:#fff;color:#3f4754;padding:5px 8px;font-size:10px;font-weight:900}.micro-btn:hover{color:var(--red);border-color:#ffc5ca}.rail-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px;box-shadow:0 1px 0 rgba(17,19,24,.03)}.rail-title{display:flex;align-items:center;gap:8px;font-weight:900;margin-bottom:10px}.rail-title i{width:17px;height:17px;color:var(--red)}.quick-stack{display:grid;gap:8px}.quick-command{width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;color:#202631;padding:10px 11px;display:grid;grid-template-columns:28px 1fr auto;gap:9px;align-items:center;text-align:left}.quick-command:hover{border-color:#cbd5e1;box-shadow:0 10px 22px rgba(17,19,24,.07);transform:translateY(-1px)}.quick-command i{width:16px;height:16px}.quick-icon{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;background:#f3f4f6;color:var(--red)}.quick-command.green .quick-icon{background:#eaf7f0;color:var(--green)}.quick-command.amber .quick-icon{background:#fff4df;color:var(--amber)}.quick-command.blue .quick-icon{background:#eaf1ff;color:var(--blue)}.quick-command strong{font-size:12px}.quick-command span{display:block;margin-top:2px;color:var(--muted);font-size:11px}.pulse-list{display:grid;gap:8px}.pulse-item{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;border:1px solid var(--line);border-radius:10px;background:#fff;padding:9px}.pulse-item b{font-size:12px}.pulse-item span{display:block;color:var(--muted);font-size:11px;margin-top:2px}.pulse-score{font-weight:950;color:var(--green)}.pulse-score.warn{color:var(--amber)}.pulse-score.bad{color:var(--red)}.sla-strip{display:grid;gap:8px}.sla-item{display:grid;grid-template-columns:1fr 44px;gap:8px;align-items:center}.sla-item b{font-size:12px}.sla-item span{color:var(--muted);font-size:11px}.sla-meter{height:7px;border-radius:999px;background:#eef1f5;overflow:hidden;margin-top:6px}.sla-meter div{height:100%;border-radius:999px;background:var(--green)}.sla-meter .warn{background:var(--amber)}.sla-meter .bad{background:var(--red)}
     .route-link{color:var(--red);font-weight:800;text-decoration:none}.route-link:hover{text-decoration:underline}
     .drawer{position:fixed;inset:0;pointer-events:none;z-index:20}.drawer.open{pointer-events:auto}.drawer:before{content:"";position:absolute;inset:0;background:rgba(11,13,18,.34);opacity:0;transition:.18s}.drawer.open:before{opacity:1}.drawer-panel{position:absolute;right:0;top:0;height:100%;width:min(560px,100%);background:#fff;box-shadow:-24px 0 60px rgba(17,19,24,.22);transform:translateX(100%);transition:.22s;padding:24px;overflow:auto}.drawer.open .drawer-panel{transform:none}
-    .modal{position:fixed;inset:0;background:rgba(11,13,18,.42);z-index:30;display:none;place-items:center;padding:18px}.modal.open{display:grid}.modal-box{width:min(680px,100%);background:#fff;border-radius:14px;padding:22px;box-shadow:var(--shadow)}#actionModal{z-index:45}#actionModal .modal-box{width:min(1040px,calc(100vw - 24px));max-height:min(88vh,820px);padding:0;display:grid;grid-template-rows:auto minmax(0,1fr) auto;overflow:hidden}#actionModal .card-head{position:sticky;top:0;z-index:2;background:linear-gradient(135deg,#fff,#f8fafc);padding:16px 18px;border-bottom:1px solid var(--line);margin:0}#actionModal .form{padding:16px 18px;overflow:auto;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;align-content:start}#actionModal .field{gap:5px;min-width:0}#actionModal .field label{font-size:10px}#actionModal .field input,#actionModal .field select,#actionModal .field textarea{min-height:38px;font-size:12px;padding:8px 9px}#actionModal .field textarea{min-height:82px;resize:vertical}#actionModal .field.wide{grid-column:span 3}#actionModal .actions{position:sticky;bottom:0;background:#fff;padding:12px 18px;border-top:1px solid var(--line);margin:0;justify-content:flex-end}
+    .modal{position:fixed;inset:0;background:rgba(11,13,18,.42);z-index:30;display:none;place-items:center;padding:18px}.modal.open{display:grid}.modal-box{width:min(680px,100%);max-height:calc(100vh - 36px);overflow:auto;background:#fff;border-radius:14px;padding:22px;box-shadow:var(--shadow)}#actionModal{z-index:45}#actionModal .modal-box{width:min(1040px,calc(100vw - 24px));max-height:min(88vh,820px);padding:0;display:grid;grid-template-rows:auto minmax(0,1fr) auto;overflow:hidden}#actionModal .card-head{position:sticky;top:0;z-index:2;background:linear-gradient(135deg,#fff,#f8fafc);padding:16px 18px;border-bottom:1px solid var(--line);margin:0}#actionModal .form{padding:16px 18px;overflow:auto;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;align-content:start}#actionModal .field{gap:5px;min-width:0}#actionModal .field label{font-size:10px}#actionModal .field input,#actionModal .field select,#actionModal .field textarea{min-height:38px;font-size:12px;padding:8px 9px}#actionModal .field textarea{min-height:82px;resize:vertical}#actionModal .field.wide{grid-column:span 3}#actionModal .actions{position:sticky;bottom:0;background:#fff;padding:12px 18px;border-top:1px solid var(--line);margin:0;justify-content:flex-end}
     .form{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field{display:flex;flex-direction:column;gap:6px}.field label{font-size:11px;text-transform:uppercase;color:var(--muted);font-weight:800;letter-spacing:.06em}.field input,.field select,.field textarea{border:1px solid var(--line);border-radius:8px;padding:11px}.field.wide{grid-column:1/-1}.actions{display:flex;justify-content:flex-end;gap:10px;margin-top:16px}
     .toast{position:fixed;right:22px;bottom:22px;background:#111318;color:#fff;border-radius:10px;padding:13px 15px;box-shadow:var(--shadow);display:none;z-index:40}.toast.show{display:block}
     .module-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.module{padding:16px;border:1px solid var(--line);border-radius:12px;background:#fff}.module i{color:var(--red)}.module h3{font-size:15px;margin:10px 0 7px}.module p{color:var(--muted);font-size:13px;line-height:1.5;margin:0}
@@ -164,6 +164,7 @@
     .academy-cert-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.academy-cert{border:1px solid var(--line);border-radius:11px;background:#fff;padding:12px;display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:start}.academy-cert-icon{width:34px;height:34px;border-radius:10px;background:#f3f4f6;display:grid;place-items:center;color:var(--red)}.academy-cert b{display:block;font-size:12px}.academy-cert span{display:block;color:var(--muted);font-size:11px;margin-top:3px}
     .academy-ai{border:1px solid #dbe7ff;background:#f6f9ff;border-radius:11px;padding:12px}.academy-ai b{display:block}.academy-ai p{margin:6px 0 0;color:#3f4754;font-size:12px;line-height:1.45}
     .academy-chart-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:14px;margin-top:14px}.academy-chart-card{min-height:300px}.academy-chart-card canvas{max-height:260px}.academy-chart-card.compact canvas{max-height:220px}.academy-chart-note{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}.academy-chart-note span{border:1px solid var(--line);border-radius:999px;background:#fff;padding:4px 8px;font-size:10px;font-weight:850;color:#4d5563}
+    .academy-target-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.academy-target-box{border:1px solid var(--line);border-radius:8px;background:#fff;padding:10px;min-height:128px}.academy-target-box b{display:block;margin-bottom:8px}.academy-check-list{display:grid;gap:6px;max-height:150px;overflow:auto}.academy-check-list label{display:flex;gap:7px;align-items:center;font-size:12px;color:#3f4754}.academy-check-list input{width:auto}.academy-inbox{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.academy-inbox-card{border:1px solid var(--line);border-radius:8px;background:#fff;padding:11px}.academy-inbox-card h3{margin:0 0 4px;font-size:14px}.academy-inbox-list{display:grid;gap:7px;margin-top:9px}.academy-inbox-item{border:1px solid #e6edf7;background:#f8fbff;border-radius:8px;padding:8px;display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.academy-inbox-item span{display:block;color:var(--muted);font-size:12px;margin-top:2px}
     .branch-map-layout{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:14px;align-items:stretch}.branch-map-canvas{min-height:560px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#eef1f5}.branch-map-side{display:grid;grid-template-rows:auto auto 1fr;gap:10px;min-height:560px}.branch-map-filters{display:grid;grid-template-columns:1fr 1fr;gap:8px}.branch-map-filters select,.branch-map-filters input{height:38px;border:1px solid var(--line);border-radius:8px;background:#fff;padding:0 10px;font-weight:800;color:#303641}.branch-map-summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.branch-map-summary div{border:1px solid var(--line);border-radius:9px;background:#fff;padding:8px}.branch-map-summary span{display:block;color:var(--muted);font-size:9px;font-weight:900;text-transform:uppercase}.branch-map-summary b{font-size:16px}.branch-map-list{display:grid;gap:8px;align-content:start;max-height:470px;overflow:auto;padding-right:2px}.branch-map-item{border:1px solid var(--line);border-radius:10px;background:#fff;padding:10px;text-align:left;display:grid;gap:7px}.branch-map-item:hover,.branch-map-item.active{border-color:#cbd5e1;box-shadow:0 10px 24px rgba(17,19,24,.06);transform:translateY(-1px)}.branch-map-item.active{background:#fff7f8;border-color:#ffc5ca}.branch-map-item b{font-size:13px}.branch-map-item span{font-size:11px;color:var(--muted);line-height:1.35}.branch-map-status{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:950;border-radius:999px;padding:4px 8px;border:1px solid var(--line);background:#fff;width:max-content}.branch-map-status:before{content:"";width:8px;height:8px;border-radius:50%;background:#111318}.branch-map-status.open:before{background:var(--green)}.branch-map-status.target:before{background:var(--blue)}.branch-map-status.candidate:before{background:#7c3aed}.branch-map-status.priority:before{background:var(--red)}.branch-map-status.hold:before{background:#64748b}.branch-map-status.competition:before{background:var(--amber)}.branch-map-status.company:before{background:#0f766e}.branch-map-marker{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:#111318;color:#fff;border:3px solid #fff;box-shadow:0 10px 24px rgba(17,19,24,.22);font-size:10px;font-weight:950}.branch-map-marker.good,.branch-map-marker.open{background:var(--green)}.branch-map-marker.warn,.branch-map-marker.competition{background:var(--amber)}.branch-map-marker.bad,.branch-map-marker.priority{background:var(--red)}.branch-map-marker.target{background:var(--blue)}.branch-map-marker.candidate{background:#7c3aed}.branch-map-marker.hold{background:#64748b}.branch-map-marker.company{background:#0f766e}.branch-map-popup{display:grid;gap:7px;min-width:250px}.branch-map-popup b{font-size:14px}.branch-map-popup span{color:#4d5563;font-size:12px}.branch-map-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.branch-map-metrics div{border:1px solid var(--line);border-radius:8px;background:#f8fafc;padding:6px}.branch-map-metrics small{display:block;color:var(--muted);font-size:9px;font-weight:900;text-transform:uppercase}.branch-map-metrics strong{font-size:12px}.growth-status-legend{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}.growth-status-legend span{border:1px solid var(--line);border-radius:999px;background:#fff;padding:5px 8px;font-size:10px;font-weight:850;color:#4d5563}.leaflet-container{font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}.leaflet-popup-content-wrapper{border-radius:10px}.leaflet-popup-content{margin:12px}
     .branch-kpi-map{display:grid;gap:12px}.branch-kpi-controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.branch-kpi-controls select{height:38px;border:1px solid var(--line);border-radius:9px;background:#fff;padding:0 10px;font-size:12px;font-weight:850;color:#303641}.branch-kpi-layout{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(300px,.65fr);gap:14px;align-items:start}.branch-kpi-canvas{position:relative;min-height:430px;border:1px solid #dbe3ee;border-radius:14px;background:radial-gradient(circle at 28% 30%,rgba(215,25,32,.10),transparent 16%),linear-gradient(135deg,#fff,#eef3f9);overflow:hidden}.branch-kpi-canvas:before{content:"";position:absolute;inset:42px 52px;border:1px dashed #cbd5e1;border-radius:44% 52% 43% 49%;transform:rotate(-8deg);background:rgba(255,255,255,.38)}.branch-kpi-region-label{position:absolute;left:var(--x);top:var(--y);transform:translate(-50%,-50%);border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.88);padding:8px 9px;min-width:108px;box-shadow:0 10px 22px rgba(17,19,24,.07);z-index:2}.branch-kpi-region-label b{display:block;font-size:12px}.branch-kpi-region-label span{display:block;color:var(--muted);font-size:10px;margin-top:2px}.branch-marker{position:absolute;left:var(--x);top:var(--y);width:18px;height:18px;border:2px solid #fff;border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 8px 18px rgba(17,19,24,.16);cursor:pointer;z-index:3}.branch-marker:after{content:attr(data-label);position:absolute;left:50%;top:22px;transform:translateX(-50%);white-space:nowrap;border:1px solid var(--line);border-radius:999px;background:#fff;padding:3px 7px;font-size:10px;font-weight:900;color:#303641;opacity:0;pointer-events:none;transition:.15s}.branch-marker:hover:after,.branch-marker.active:after{opacity:1}.branch-marker.healthy{background:var(--green)}.branch-marker.watch{background:#f3b116}.branch-marker.risky{background:#f97316}.branch-marker.critical{background:var(--red)}.branch-marker.soft-pulse{animation:branchSoftPulse 2s ease-in-out infinite}.branch-marker.critical-pulse{animation:branchCriticalPulse 1.65s ease-in-out infinite}.branch-marker.glow-warning{box-shadow:0 0 0 5px rgba(243,177,22,.14),0 8px 18px rgba(17,19,24,.16)}@keyframes branchSoftPulse{0%,100%{box-shadow:0 0 0 0 rgba(249,115,22,.28),0 8px 18px rgba(17,19,24,.16)}50%{box-shadow:0 0 0 10px rgba(249,115,22,.04),0 8px 18px rgba(17,19,24,.16)}}@keyframes branchCriticalPulse{0%,100%{box-shadow:0 0 0 0 rgba(215,25,32,.34),0 8px 18px rgba(17,19,24,.18)}50%{box-shadow:0 0 0 13px rgba(215,25,32,.06),0 8px 18px rgba(17,19,24,.18)}}.branch-kpi-side{display:grid;gap:12px}.branch-kpi-detail,.branch-kpi-alarm,.branch-kpi-legend{border:1px solid var(--line);border-radius:12px;background:#fff;padding:13px}.branch-kpi-detail h3,.branch-kpi-alarm h3,.branch-kpi-legend h3{margin:0 0 8px;font-size:14px}.branch-kpi-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.branch-kpi-detail-grid div{border:1px solid var(--line);border-radius:9px;background:#f8fafc;padding:8px}.branch-kpi-detail-grid span{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;font-weight:900}.branch-kpi-detail-grid b{display:block;font-size:12px;margin-top:3px}.branch-kpi-alarm-list{display:grid;gap:8px}.branch-kpi-alarm-row{border:1px solid var(--line);border-left:4px solid #dfe3e8;border-radius:10px;background:#fff;padding:10px;display:grid;gap:7px}.branch-kpi-alarm-row.critical{border-left-color:var(--red);background:#fff7f8;animation:branchAlarmGlow 2.4s ease-in-out infinite}.branch-kpi-alarm-row.risky{border-left-color:#f97316;background:#fff8f1;animation:branchAlarmSoft 2.8s ease-in-out infinite}.branch-kpi-alarm-row.watch{border-left-color:#f3b116;background:#fffdf4}@keyframes branchAlarmGlow{0%,100%{box-shadow:0 0 0 rgba(215,25,32,0)}50%{box-shadow:0 0 18px rgba(215,25,32,.12)}}@keyframes branchAlarmSoft{0%,100%{box-shadow:0 0 0 rgba(249,115,22,0)}50%{box-shadow:0 0 14px rgba(249,115,22,.10)}}.branch-region-kpi-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}.branch-region-kpi-card{border:1px solid var(--line);border-top:3px solid #dfe3e8;border-radius:11px;background:#fff;padding:11px;display:grid;gap:6px}.branch-region-kpi-card.healthy{border-top-color:var(--green)}.branch-region-kpi-card.watch{border-top-color:#f3b116}.branch-region-kpi-card.risky{border-top-color:#f97316;animation:branchAlarmSoft 3s ease-in-out infinite}.branch-region-kpi-card.critical{border-top-color:var(--red);animation:branchAlarmGlow 2.4s ease-in-out infinite}.branch-region-kpi-card b{font-size:13px}.branch-region-kpi-card span{color:var(--muted);font-size:11px}.branch-kpi-legend-list{display:flex;gap:8px;flex-wrap:wrap}.branch-kpi-legend-list span{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:850;border:1px solid var(--line);border-radius:999px;padding:5px 8px;background:#fff}.branch-kpi-legend-list i{width:9px;height:9px;border-radius:50%;display:inline-block}
     .complaints-main-grid{display:grid;gap:16px;margin-top:16px;align-items:start}
@@ -232,7 +233,7 @@
       .wrap{padding:18px 18px 40px}.hero{grid-template-columns:1fr;padding:20px;gap:16px}.hero h1{font-size:25px}.hero p{font-size:13px}.hero-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
       .command-dock{top:auto;bottom:18px;width:min(360px,calc(100vw - 10px));transform:translateX(calc(100% - 40px))}.dock-tab{width:40px;min-height:126px}.dock-panel{max-height:min(74vh,640px)}
       .g2,.g70,.g60,.kanban,.module-grid,.dept-grid,.ai-insight .insight-grid,.score-box,.ops-room,.fr-command,.fr-next-grid,.fr-visual-grid,.fr-roadmap,.fr-map-grid,.crm-layout,.action-layout,.action-filters,.decision-layout,.decision-filters,.crisis-compact-grid,.crisis-card-bottom,.branch-kpi-layout,.marketing-layout,#page-marketing .marketing-top-grid,#page-marketing .marketing-lower-grid,#page-marketing .marketing-wide-grid,#page-marketing .marketing-bottom-grid,.marketing-overview-grid,.team-children,.performance-grid,.rhythm-grid,.marketing-performance-layout,.performance-board,.branch-perf-layout,.marketing-insight-row{grid-template-columns:1fr}
-      .academy-command{grid-template-columns:1fr}.academy-rail{position:static}.academy-course-grid,.academy-chart-grid,.branch-map-layout{grid-template-columns:1fr}
+      .academy-command{grid-template-columns:1fr}.academy-rail{position:static}.academy-course-grid,.academy-chart-grid,.academy-target-grid,.academy-inbox,.branch-map-layout{grid-template-columns:1fr}
       .fr-side,.crm-rail,.action-side,.decision-side,.marketing-rail{position:static}
       .g4,.g3,.chart-kpis,.kpi-grid,.region-grid,.region-grid.compact,.summary-grid,.decision-strip,.action-grid,.action-kpis,.action-module-grid,.action-info-grid,.action-performance-grid,.decision-kpis,.decision-module-grid,.decision-meta-grid,.crisis-drill-grid,.crisis-info-grid,.crisis-link-grid,.crisis-auth-grid,.crisis-drill-score-grid,.region-extra,.branch-score-board,.branch-map-summary,.branch-region-kpi-grid,.branch-kpi-detail-grid,.crm-kpis,.crm-card-grid,.slot-grid,.academy-kpis,.academy-region-grid,.academy-cert-grid,.marketing-kpis,.marketing-card-list,.marketing-mini-grid,.ad-channel-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
       .crisis-source-row{grid-template-columns:1fr 54px 54px}.crisis-source-row .crisis-source-risk,.crisis-source-row .micro-btn{grid-column:1/-1}
@@ -398,7 +399,7 @@
 <body>
   <div class="app">
     <aside class="side">
-      <div class="brand-row"><a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.61</small></div></a><button class="theme-toggle" type="button" data-theme-toggle title="Koyu temaya geç" aria-label="Tema değiştir"><i data-lucide="sun-moon"></i><span id="themeToggleText">Açık</span></button></div>
+      <div class="brand-row"><a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.62</small></div></a><button class="theme-toggle" type="button" data-theme-toggle title="Koyu temaya geç" aria-label="Tema değiştir"><i data-lucide="sun-moon"></i><span id="themeToggleText">Açık</span></button></div>
       <div class="nav" id="nav"></div>
     </aside>
 
@@ -2566,7 +2567,7 @@
         status:b.risk==='Yüksek'?'İnceleme':b.risk==='Orta'?'Takip':'Stabil'
       }));
       out.demoDataHealth={
-        version:'SVK v1.0.61',
+        version:'SVK v1.0.62',
         branchUniverse:'10 şube / 4 aktif bölge',
         packagePriceBand:'5.000 TL - 15.000 TL',
         avgTicketBand:'8.350 TL - 9.900 TL',
@@ -7956,14 +7957,109 @@
 
 <script>
 (function(){
+  const academyCoursesKey='ototrAcademyCourses.v1';
+  const academyAssignmentsKey='ototr-academy-assignments';
   function academyBase(){
     const base = (typeof academySeed === 'function') ? academySeed() : {courses:[],people:[],live:[]};
-    const saved = JSON.parse(localStorage.getItem('ototr-academy-assignments') || '[]');
-    return {...base, assignments:saved};
+    const saved = academyReadJson(academyAssignmentsKey, []);
+    const customCourses = academyStoredCourses();
+    const customLiveCourses = customCourses.map((course,i)=>academyCustomCourseToLive(course,i,base));
+    const courseIds = new Set(customLiveCourses.map(c=>c.id));
+    return {...base, courses:[...customLiveCourses, ...(base.courses||[]).filter(c=>!courseIds.has(c.id))], customCourses, assignments:saved};
   }
-  function saveAssignments(list){ localStorage.setItem('ototr-academy-assignments', JSON.stringify(list)); }
+  function academyReadJson(key,fallback){ try{return JSON.parse(localStorage.getItem(key)||JSON.stringify(fallback))||fallback}catch(e){return fallback} }
+  function saveAssignments(list){ localStorage.setItem(academyAssignmentsKey, JSON.stringify(list)); }
   function personInitials(name){ return String(name||'').split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase(); }
   function academyEsc(v){ return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;'); }
+  function academyStoredCourses(){ return academyReadJson(academyCoursesKey, []); }
+  function saveAcademyCourses(list){ localStorage.setItem(academyCoursesKey, JSON.stringify(list||[])); }
+  function academyCustomCourseToLive(course,i,base){
+    const regions=academyAudienceOptions(base).regions;
+    const branches=academyAudienceOptions(base).branches;
+    const role=(course.targetRoles||[])[0] || 'Hedef kitle seçili';
+    return {
+      id:course.id,
+      title:course.title,
+      cat:course.category||'Academy',
+      role,
+      region:(course.targetRegions||[])[0] || regions[i%Math.max(1,regions.length)] || 'Genel Merkez',
+      branch:(course.targetBranches||[])[0] || branches[i%Math.max(1,branches.length)] || 'Genel Merkez',
+      status:course.requirement||'Zorunlu',
+      progress:Math.max(18,Math.min(100,30 + ((i+3)*13)%45)),
+      duration:course.duration||'2 saat',
+      modules:(course.modules||[]).length||1,
+      owner:course.owner||'Academy',
+      score:'4.8',
+      desc:course.desc||'Academy sorumlusu tarafından tanımlanan hedef kitle eğitimidir.',
+      targetSummary:academyTargetSummary(course)
+    };
+  }
+  function academyAudienceOptions(base=academyBase()){
+    const people=base.people||[];
+    const hrRoles=(typeof HR_ROLES!=='undefined'?HR_ROLES.map(r=>r.name):[]);
+    const roles=[...new Set([...people.map(p=>p.role),...hrRoles,'Teknisyen','Müşteri Kabul','Destek Personeli'].filter(Boolean))].sort((a,b)=>a.localeCompare(b,'tr'));
+    const regions=[...new Set(people.map(p=>p.region).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'tr'));
+    const branches=[...new Set(people.map(p=>p.branch).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'tr'));
+    const levels=['L0','L1','L2','L3','L4','L5','L6'];
+    const departments=['Yönetim','Academy','İnsan Kaynakları','Operasyon','Teknik Operasyon','Müşteri Kabul','Kalite','CRM','Franchise','Finans','Hukuk','Pazarlama','Destek Operasyon'];
+    return {roles,regions,branches,levels,departments};
+  }
+  function academyPersonLevel(p){
+    const role=String(p.role||'');
+    if(role.includes('Bölge')) return 'L4';
+    if(role.includes('Şube Müdürü')||role.includes('Kalite')) return 'L3';
+    if(role.includes('Ekspertiz')||role.includes('Teknisyen')||role.includes('CRM')||role.includes('Operasyon')) return 'L2';
+    return 'L1';
+  }
+  function academyPersonDepartment(p){
+    const role=String(p.role||'');
+    if(role.includes('Ekspertiz')||role.includes('Teknisyen')) return 'Teknik Operasyon';
+    if(role.includes('CRM')) return 'CRM';
+    if(role.includes('Kalite')) return 'Kalite';
+    if(role.includes('Bölge')||role.includes('Operasyon')) return 'Operasyon';
+    if(role.includes('Şube')) return 'Operasyon';
+    return 'Academy';
+  }
+  function academyRoleAliases(role){
+    const r=String(role||'');
+    const out=[r];
+    if(r.includes('Ekspertiz')) out.push('Teknisyen');
+    if(r.includes('CRM')) out.push('Müşteri Kabul');
+    if(r.includes('Operasyon')) out.push('Şube Müdürü');
+    return out;
+  }
+  function academyTargetSummary(course){
+    const parts=[
+      (course.targetRoles||[]).length?`${course.targetRoles.length} rol`:'',
+      (course.targetRegions||[]).length?`${course.targetRegions.length} bölge`:'',
+      (course.targetBranches||[]).length?`${course.targetBranches.length} şube`:'',
+      (course.targetLevels||[]).length?course.targetLevels.join(', '):'',
+      (course.targetDepartments||[]).length?`${course.targetDepartments.length} departman`:''
+    ].filter(Boolean);
+    return parts.join(' · ') || 'Tüm uygun kişiler';
+  }
+  function academyMatchesTarget(person,course){
+    const roles=course.targetRoles||[], regions=course.targetRegions||[], branches=course.targetBranches||[], levels=course.targetLevels||[], departments=course.targetDepartments||[];
+    const roleOk=!roles.length || academyRoleAliases(person.role).some(r=>roles.includes(r));
+    const regionOk=!regions.length || regions.includes(person.region);
+    const branchOk=!branches.length || branches.includes(person.branch);
+    const levelOk=!levels.length || levels.includes(academyPersonLevel(person));
+    const deptOk=!departments.length || departments.includes(academyPersonDepartment(person));
+    return roleOk && regionOk && branchOk && levelOk && deptOk;
+  }
+  function academyPeopleForCourse(course,base=academyBase()){
+    return (base.people||[]).filter(p=>academyMatchesTarget(p,course));
+  }
+  function academyCheckedValues(form,name){
+    return Array.from(form.querySelectorAll(`input[name="${name}"]:checked`)).map(x=>x.value);
+  }
+  function academyCheckGroup(title,name,values,selected=[]){
+    return `<div class="academy-target-box"><b>${academyEsc(title)}</b><div class="academy-check-list">${values.map(v=>`<label><input type="checkbox" name="${academyEsc(name)}" value="${academyEsc(v)}" ${selected.includes(v)?'checked':''}>${academyEsc(v)}</label>`).join('')}</div></div>`;
+  }
+  function academyCourseCreateModalHtml(){
+    const opts=academyAudienceOptions();
+    return `<div class="modal" id="academyCourseCreateModal"><div class="modal-box"><div class="card-head"><div><div class="card-title">Yeni Academy Eğitimi Oluştur</div><div class="card-sub">Academy sorumlusu eğitimi tanımlar, kimlerin alacağını seçer ve eğitim ilgili kişilerin ekranına düşer.</div></div><button class="btn" data-academy-close-course-create>Kapat</button></div><form id="academyCourseCreateForm" class="form"><div class="field"><label>Eğitim adı</label><input name="title" required placeholder="Örn. Yeni Rapor Kanıt Standardı"></div><div class="field"><label>Kategori</label><select name="category">${Object.keys(academyCategoryPlaybook).map(x=>`<option>${academyEsc(x)}</option>`).join('')}</select></div><div class="field"><label>Süre</label><input name="duration" value="2 saat"></div><div class="field"><label>Zorunluluk</label><select name="requirement"><option>Zorunlu</option><option>Önerilen</option><option>Planlandı</option></select></div><div class="field"><label>Minimum seviye</label><select name="minLevel">${opts.levels.map(x=>`<option>${x}</option>`).join('')}</select></div><div class="field"><label>Geçme puanı</label><input name="passScore" type="number" min="0" max="100" value="80"></div><div class="field"><label>Sertifika</label><select name="certificateRequired"><option>Gerekli</option><option>Gerekli değil</option><option>Yenileme gerektirir</option></select></div><div class="field"><label>Yenileme</label><select name="renewal"><option>Yıllık</option><option>6 ay</option><option>Kalite bulgusunda</option><option>Gerekmez</option></select></div><div class="field wide"><label>Açıklama</label><textarea name="desc" rows="3" placeholder="Eğitimin amacı, hangi riski kapattığı ve beklenen çıktı"></textarea></div><div class="field wide"><label>Modüller</label><textarea name="modules" rows="3" placeholder="Her satıra bir modül yaz: Giriş, Uygulama, Sınav"></textarea></div><div class="field"><label>Eğitmen / sahip</label><select name="owner"><option>Academy</option><option>Teknik Eğitim</option><option>Kalite</option><option>Operasyon</option><option>Hukuk</option><option>CRM</option></select></div><div class="field"><label>Hedef tarih</label><input name="dueDate" type="date" value="2026-05-20"></div><div class="field wide"><label>Hedef kitle</label><div class="academy-target-grid">${academyCheckGroup('Roller','targetRoles',opts.roles,['Teknisyen'])}${academyCheckGroup('Bölgeler','targetRegions',opts.regions)}${academyCheckGroup('Şubeler','targetBranches',opts.branches)}${academyCheckGroup('Yetki seviyeleri','targetLevels',opts.levels)}${academyCheckGroup('Departmanlar','targetDepartments',opts.departments)}</div></div><div class="field wide"><label>Atama notu</label><textarea name="note" rows="2" placeholder="Bu eğitimin atanma nedeni ve takip notu"></textarea></div></form><div class="actions"><button class="btn" data-academy-close-course-create>Vazgeç</button><button class="btn primary" data-academy-save-course>${icon('send')}Eğitimi Oluştur ve Ata</button></div></div></div>`;
+  }
   function slaClass(v){ return v>=90?'green':v>=80?'blue':v>=70?'amber':'red'; }
   function statusFrom(v){ return v>=90?'Hedef üstü':v>=80?'İçinde':v>=70?'Yaklaşıyor':'Aşıldı'; }
   const academyCategoryPlaybook={
@@ -7986,7 +8082,11 @@
     Kültür:{practice:'İyi/kötü davranış örnekleri üzerinden doğru marka dili ve hizmet standardı seçilir.',output:'Kültür el kitabı, davranış checklisti ve quiz paketi hazırlanır.',system:'Tüm roller için temel kullanıcı aktivasyonuna bağlanır.',kpi:'Oryantasyon tamamlama, disiplin riski ve müşteri memnuniyeti.'},
     Satış:{practice:'Lead, paket, fiyat itirazı veya B2B vaka üzerinden görüşme ve takip planı yazılır.',output:'Satış scripti, teklif/follow-up notu ve dönüşüm kontrol listesi hazırlanır.',system:'CRM, franchise pipeline ve pazarlama lead kayıtlarına bağlanır.',kpi:'Dönüşüm, ortalama sepet, teklif kapanış ve takip SLA.'}
   };
-  function academyCourseSource(id){ return (typeof HR_ACADEMY_COURSES!=='undefined'?HR_ACADEMY_COURSES:[]).find(c=>c.id===id) || null; }
+  function academyCourseSource(id){
+    const custom=academyStoredCourses().find(c=>c.id===id);
+    if(custom) return {id:custom.id,title:custom.title,category:custom.category,requiredForRoles:custom.targetRoles||[],minLevel:Number(String(custom.minLevel||'L1').replace('L',''))||1,duration:custom.duration,modules:custom.modules||[],passScore:custom.passScore,status:custom.requirement,desc:custom.desc,customCourse:true,targetSummary:academyTargetSummary(custom),certificateRequired:custom.certificateRequired,renewal:custom.renewal};
+    return (typeof HR_ACADEMY_COURSES!=='undefined'?HR_ACADEMY_COURSES:[]).find(c=>c.id===id) || null;
+  }
   function academyCourseDetailModel(id){
     const d=academyBase();
     const live=(d.courses||[]).find(c=>c.id===id) || {};
@@ -8005,6 +8105,7 @@
       desc:source.desc || live.desc || 'Bu eğitim için içerik paketi sisteme tanımlandı.',
       role:live.role || source.requiredForRoles?.[0] || 'Tüm Roller',
       requiredForRoles:source.requiredForRoles || [],
+      targetSummary:source.targetSummary || live.targetSummary || '',
       modules,
       practice:playbook.practice,
       output:playbook.output,
@@ -8018,7 +8119,7 @@
   function academyDetailPill(label,value){ return `<div class="hr-data-card"><span>${academyEsc(label)}</span><b>${academyEsc(value)}</b></div>`; }
   function academyCourseDetailBody(id){
     const c=academyCourseDetailModel(id);
-    return `<div class="card-head"><div><div class="card-title">${academyEsc(c.title)}</div><div class="card-sub">${academyEsc(c.id)} · ${academyEsc(c.category)} · ${academyEsc(c.status)}</div></div><button class="btn" data-academy-close-course>Kapat</button></div><div class="hr-data-grid">${academyDetailPill('Süre',c.duration)}${academyDetailPill('Seviye','L'+c.minLevel)}${academyDetailPill('Geçme puanı',c.passScore)}${academyDetailPill('Modül',c.modules.length)}</div><div class="academy-ai" style="margin:12px 0"><b>${icon('book-open-check')} Eğitim amacı</b><p>${academyEsc(c.desc)}</p></div><div class="card" style="box-shadow:none;margin:0 0 12px;border-radius:8px"><div class="card-head"><div><div class="card-title">Ders Akışı</div><div class="card-sub">Modül başlıkları ve anlatım odağı</div></div></div><div class="academy-path">${c.modules.map(m=>`<div class="academy-path-step active"><div class="academy-path-num">${m.step}</div><div><b>${academyEsc(m.title)}</b><span>${academyEsc(m.desc)}</span></div>${badge('Modül')}</div>`).join('')}</div></div><div class="grid g2"><div class="mini-list"><div class="mini">${icon('target')}<div><b>Uygulama</b><span>${academyEsc(c.practice)}</span></div></div><div class="mini">${icon('clipboard-check')}<div><b>Ölçme</b><span>${academyEsc(c.assessment)}</span></div></div><div class="mini">${icon('award')}<div><b>Sertifika</b><span>${academyEsc(c.certificate)} ${academyEsc(c.renewal)}</span></div></div></div><div class="mini-list"><div class="mini">${icon('file-check-2')}<div><b>Çıktı</b><span>${academyEsc(c.output)}</span></div></div><div class="mini">${icon('database')}<div><b>Sistem Bağlantısı</b><span>${academyEsc(c.system)}</span></div></div><div class="mini">${icon('activity')}<div><b>KPI Etkisi</b><span>${academyEsc(c.kpi)}</span></div></div></div></div><div class="card" style="box-shadow:none;margin-top:12px;border-radius:8px"><div class="card-head"><div><div class="card-title">Rol Atama Kuralı</div><div class="card-sub">${academyEsc(c.requiredForRoles.length?c.requiredForRoles.join(', '):c.role)}</div></div></div><div class="quick-actions"><button class="btn primary" data-academy-open-assign="${academyEsc(c.id)}">${icon('plus')}Katılımcıya Ata</button><button class="btn" data-action="${academyEsc(c.title)} sertifika kuralı görüntülendi.">${icon('award')}Sertifika Kuralı</button></div></div>`;
+    return `<div class="card-head"><div><div class="card-title">${academyEsc(c.title)}</div><div class="card-sub">${academyEsc(c.id)} · ${academyEsc(c.category)} · ${academyEsc(c.status)}</div></div><button class="btn" data-academy-close-course>Kapat</button></div><div class="hr-data-grid">${academyDetailPill('Süre',c.duration)}${academyDetailPill('Seviye','L'+c.minLevel)}${academyDetailPill('Geçme puanı',c.passScore)}${academyDetailPill('Modül',c.modules.length)}</div><div class="academy-ai" style="margin:12px 0"><b>${icon('book-open-check')} Eğitim amacı</b><p>${academyEsc(c.desc)}</p></div><div class="card" style="box-shadow:none;margin:0 0 12px;border-radius:8px"><div class="card-head"><div><div class="card-title">Ders Akışı</div><div class="card-sub">Modül başlıkları ve anlatım odağı</div></div></div><div class="academy-path">${c.modules.map(m=>`<div class="academy-path-step active"><div class="academy-path-num">${m.step}</div><div><b>${academyEsc(m.title)}</b><span>${academyEsc(m.desc)}</span></div>${badge('Modül')}</div>`).join('')}</div></div><div class="grid g2"><div class="mini-list"><div class="mini">${icon('target')}<div><b>Uygulama</b><span>${academyEsc(c.practice)}</span></div></div><div class="mini">${icon('clipboard-check')}<div><b>Ölçme</b><span>${academyEsc(c.assessment)}</span></div></div><div class="mini">${icon('award')}<div><b>Sertifika</b><span>${academyEsc(c.certificate)} ${academyEsc(c.renewal)}</span></div></div></div><div class="mini-list"><div class="mini">${icon('file-check-2')}<div><b>Çıktı</b><span>${academyEsc(c.output)}</span></div></div><div class="mini">${icon('database')}<div><b>Sistem Bağlantısı</b><span>${academyEsc(c.system)}</span></div></div><div class="mini">${icon('activity')}<div><b>KPI Etkisi</b><span>${academyEsc(c.kpi)}</span></div></div></div></div><div class="card" style="box-shadow:none;margin-top:12px;border-radius:8px"><div class="card-head"><div><div class="card-title">Rol ve Hedef Kitle Kuralı</div><div class="card-sub">${academyEsc(c.targetSummary || (c.requiredForRoles.length?c.requiredForRoles.join(', '):c.role))}</div></div></div><div class="quick-actions"><button class="btn primary" data-academy-open-assign="${academyEsc(c.id)}">${icon('plus')}Katılımcıya Ata</button><button class="btn" data-academy-open-course-create>${icon('users')}Yeni Hedefli Eğitim</button><button class="btn" data-action="${academyEsc(c.title)} sertifika kuralı görüntülendi.">${icon('award')}Sertifika Kuralı</button></div></div>`;
   }
   function academyCourseDetailModalHtml(){ return `<div class="modal" id="academyCourseModal"><div class="modal-box"><div id="academyCourseDetailBody">${academyCourseDetailBody('AC-01')}</div></div></div>`; }
   function openAcademyCourseDetail(id){
@@ -8085,11 +8186,17 @@
   function academyCourseCardPro(c){
     const tone=c.progress>=85?'green':c.progress>=55?'blue':c.progress>=35?'amber':'red';
     const cat=(typeof academyCatBadge==='function')?academyCatBadge(c.cat):'b-blue';
-    return `<div class="academy-course" data-academy-open-course="${c.id}"><div class="academy-course-head"><div><span class="badge ${cat}">${c.cat}</span><b>${c.title}</b></div>${badge(c.status)}</div><p>${c.desc}</p><div class="academy-meta"><span>${c.role}</span><span>${c.region}</span><span>${c.branch}</span><span>Eğitmen: ${c.owner}</span><span>${c.duration}</span><span>${c.modules} modül</span><span>⭐ ${c.score}</span></div><div><div class="card-sub" style="display:flex;justify-content:space-between"><span>Hedef gerçekleşme</span><b>%${c.progress}</b></div><div class="academy-progress"><div class="${tone}" style="width:${c.progress}%"></div></div></div><div class="academy-meta"><button class="micro-btn" data-academy-open-assign="${c.id}">Katılımcıya ata</button><button class="micro-btn" data-academy-open-course="${c.id}">Detay</button></div></div>`;
+    return `<div class="academy-course" data-academy-open-course="${c.id}"><div class="academy-course-head"><div><span class="badge ${cat}">${c.cat}</span><b>${c.title}</b></div>${badge(c.status)}</div><p>${c.desc}</p><div class="academy-meta"><span>${c.role}</span><span>${c.region}</span><span>${c.branch}</span><span>Eğitmen: ${c.owner}</span><span>${c.duration}</span><span>${c.modules} modül</span><span>⭐ ${c.score}</span>${c.targetSummary?`<span>${academyEsc(c.targetSummary)}</span>`:''}</div><div><div class="card-sub" style="display:flex;justify-content:space-between"><span>Hedef gerçekleşme</span><b>%${c.progress}</b></div><div class="academy-progress"><div class="${tone}" style="width:${c.progress}%"></div></div></div><div class="academy-meta"><button class="micro-btn" data-academy-open-assign="${c.id}">Katılımcıya ata</button><button class="micro-btn" data-academy-open-course="${c.id}">Detay</button></div></div>`;
   }
   function academyCourseGridPro(){
     const courses=filteredAcademyCourses();
-    return `<div class="academy-course-grid" id="academyCourseGrid">${courses.map(academyCourseCardPro).join('')||'<div class="card-sub">Filtrelere uygun eğitim bulunamadı.</div>'}</div>`;
+    return `<div class="card" style="box-shadow:none;margin-bottom:12px"><div class="card-head" style="margin-bottom:0"><div><div class="card-title">Eğitim Kataloğu ve Hedef Kitle</div><div class="card-sub">Yeni eğitimler localStorage’da saklanır; seçilen rol, bölge, şube, seviye ve departmana göre kişilere atanır.</div></div><button class="btn primary" data-academy-open-course-create>${icon('book-plus')}Yeni Eğitim Oluştur</button></div></div><div class="academy-course-grid" id="academyCourseGrid">${courses.map(academyCourseCardPro).join('')||'<div class="card-sub">Filtrelere uygun eğitim bulunamadı.</div>'}</div>`;
+  }
+  function academyPersonalTrainingInbox(){
+    const d=academyBase();
+    const people=d.people||[], assignments=d.assignments||[];
+    const rows=people.map(p=>({person:p,items:assignments.filter(a=>a.personId===p.id)})).filter(x=>x.items.length).slice(0,6);
+    return `<div class="card"><div class="card-head"><div><div class="card-title">Personel Ekranına Yansıyan Eğitimler</div><div class="card-sub">Academy sorumlusu hedef kitle seçtiğinde eğitimler ilgili kişinin eğitim ekranına burada görünür.</div></div><button class="btn primary" data-academy-open-course-create>${icon('book-plus')}Yeni Eğitim</button></div>${rows.length?`<div class="academy-inbox">${rows.map(row=>`<div class="academy-inbox-card"><h3>${academyEsc(row.person.name)}</h3><div class="card-sub">${academyEsc(row.person.role)} · ${academyEsc(row.person.branch)}</div><div class="academy-inbox-list">${row.items.slice(0,4).map(a=>`<div class="academy-inbox-item"><div><b>${academyEsc(a.courseTitle)}</b><span>${academyEsc(a.instructor)} · hedef ${academyEsc(a.dueDate)}</span></div>${badge(a.status)}</div>`).join('')}</div></div>`).join('')}</div>`:`<div class="mini">${icon('inbox')}<div><b>Henüz kişiye yansıyan atama yok</b><span>Yeni eğitim oluşturup hedef kitle seçtiğinde bu alan personel bazlı dolacak.</span></div></div>`}</div>`;
   }
   function academyPeopleTablePro(){
     const d=academyBase();
@@ -8104,7 +8211,7 @@
   function academyAssignmentsPanel(){
     const d=academyBase();
     const rows=(d.assignments||[]).slice(0,20);
-    return `<div class="card"><div class="card-head"><div><div class="card-title">Atanan Eğitim Planları</div><div class="card-sub">Eğitmen listeden katılımcı seçer ve eğitim kişinin planına eklenir.</div></div><button class="btn primary" data-academy-open-assign>${icon('plus')}Eğitim Ata</button></div>${rows.length?`<table><thead><tr><th>Kişi</th><th>Eğitim</th><th>Eğitmen</th><th>Hedef Tarih</th><th>Durum</th></tr></thead><tbody>${rows.map(a=>`<tr><td><b>${a.personName}</b><br><span class="card-sub">${a.branch}</span></td><td>${a.courseTitle}</td><td>${a.instructor}</td><td>${a.dueDate}</td><td>${badge(a.status)}</td></tr>`).join('')}</tbody></table>`:`<div class="mini">${icon('graduation-cap')}<div><b>Henüz atama yok</b><span>“Eğitim Ata” butonuyla bir katılımcının planına eğitim ekleyebilirsin.</span></div></div>`}</div>`;
+    return `<div class="card"><div class="card-head"><div><div class="card-title">Atanan Eğitim Planları</div><div class="card-sub">Tekil atama veya hedef kitleye toplu atama sonrası eğitimler kişinin ekranına eklenir.</div></div><div class="quick-actions"><button class="btn primary" data-academy-open-course-create>${icon('book-plus')}Yeni Eğitim ve Toplu Atama</button><button class="btn" data-academy-open-assign>${icon('plus')}Tekil Atama</button></div></div>${rows.length?`<table><thead><tr><th>Kişi</th><th>Eğitim</th><th>Eğitmen</th><th>Hedef Tarih</th><th>Kaynak</th><th>Durum</th></tr></thead><tbody>${rows.map(a=>`<tr><td><b>${a.personName}</b><br><span class="card-sub">${a.branch}</span></td><td>${a.courseTitle}</td><td>${a.instructor}</td><td>${a.dueDate}</td><td>${academyEsc(a.source||'Tekil atama')}</td><td>${badge(a.status)}</td></tr>`).join('')}</tbody></table>`:`<div class="mini">${icon('graduation-cap')}<div><b>Henüz atama yok</b><span>“Yeni Eğitim ve Toplu Atama” butonuyla rol, bölge, şube veya seviye bazlı eğitim dağıtabilirsin.</span></div></div>`}</div>`;
   }
   function academyRegionsPro(){
     const s=calcSla();
@@ -8113,7 +8220,7 @@
   function academyRailPro(){
     const d=academyBase();
     const live=d.live||[];
-    return `<div class="card"><div class="card-head"><div><div class="card-title">Academy AI Önerisi</div><div class="card-sub">SLA + KPI + performans sinyali</div></div></div><div class="academy-ai"><b>${icon('sparkles')} Eğitim atama önerisi</b><p>Geciken eğitimleri olan kişiler için eğitmen SLA takibi açılmalı; düşük şube SLA’sı operasyon KPI’ına bağlanmalı.</p></div></div><div class="card"><div class="card-head"><div><div class="card-title">Yaklaşan Canlı Eğitimler</div></div></div><div class="academy-live-list">${live.map(x=>`<div class="academy-live"><div class="academy-date"><div><b>${x.day}</b><span>${x.mon}</span></div></div><div><strong>${x.title}</strong><small>${x.meta}</small></div>${badge(x.owner)}</div>`).join('')}</div></div><div class="card"><div class="card-head"><div><div class="card-title">Hızlı Aksiyon</div></div></div><div class="quick-actions"><button class="btn primary" data-academy-open-assign>${icon('plus')}Eğitim Ata</button><button class="btn" data-action="Academy raporu hazırlandı.">${icon('download')}Rapor</button></div></div>`;
+    return `<div class="card"><div class="card-head"><div><div class="card-title">Academy AI Önerisi</div><div class="card-sub">SLA + KPI + performans sinyali</div></div></div><div class="academy-ai"><b>${icon('sparkles')} Eğitim atama önerisi</b><p>Geciken eğitimleri olan kişiler için eğitmen SLA takibi açılmalı; düşük şube SLA’sı operasyon KPI’ına bağlanmalı.</p></div></div><div class="card"><div class="card-head"><div><div class="card-title">Yaklaşan Canlı Eğitimler</div></div></div><div class="academy-live-list">${live.map(x=>`<div class="academy-live"><div class="academy-date"><div><b>${x.day}</b><span>${x.mon}</span></div></div><div><strong>${x.title}</strong><small>${x.meta}</small></div>${badge(x.owner)}</div>`).join('')}</div></div><div class="card"><div class="card-head"><div><div class="card-title">Hızlı Aksiyon</div></div></div><div class="quick-actions"><button class="btn primary" data-academy-open-course-create>${icon('book-plus')}Yeni Eğitim</button><button class="btn" data-academy-open-assign>${icon('plus')}Tekil Ata</button><button class="btn" data-action="Academy raporu hazırlandı.">${icon('download')}Rapor</button></div></div>`;
   }
   const academyReadyKey='ototrAcademyGoLiveChecklist.v1';
   const academyReadyState={group:'all',open:{}};
@@ -8241,7 +8348,7 @@
     if(tab==='go-live') return academyReadyPage();
     if(tab==='courses') return academyCourseGridPro();
     if(tab==='onboarding') return (typeof academyOnboarding==='function'?academyOnboarding():'') + `<div style="margin-top:14px">${academyAssignmentsPanel()}</div>`;
-    if(tab==='people') return academyPeopleTablePro();
+    if(tab==='people') return `${academyPersonalTrainingInbox()}<div style="margin-top:14px">${academyPeopleTablePro()}</div>`;
     if(tab==='regions') return academyRegionsPro();
     if(tab==='sla') return academySlaDashboard();
     if(tab==='assignments') return academyAssignmentsPanel();
@@ -8264,12 +8371,64 @@
     const activeRoom=currentAcademyRoom();
     const activeTab=activeRoom.tab || 'overview';
     if(activeTab==='go-live') return academyReadyPage();
-    return `<div class="card" style="border-color:#ffc5ca;background:#fff7f8;margin-bottom:14px"><div class="card-head" style="margin-bottom:0"><div><div class="card-title">Academy SLA Uyarısı</div><div class="card-sub">${overdue} eğitim görevi SLA sınırını geçti veya yaklaştı. Bölge, şube ve eğitmen bazlı takip aktif.</div></div>${badge(overdue>3?'Kritik':'Takipte')}</div></div><div class="academy-kpis">${academyProKpi('Bölge SLA','%'+regionAvg,'Hedef: %90',regionAvg,slaClass(regionAvg))}${academyProKpi('Şube SLA','%'+branchAvg,'Hedef: %85',branchAvg,slaClass(branchAvg))}${academyProKpi('Eğitmen SLA','%'+instructorAvg,'Zamanında planlama',instructorAvg,slaClass(instructorAvg))}${academyProKpi('Hedef Gerçekleşme','%'+avg,'Tüm katılımcılar',avg,slaClass(avg))}${academyProKpi('Aktif Eğitim',d.courses.length,'Rol bazlı katalog',Math.min(100,d.courses.length*10),'blue')}${academyProKpi('Geciken Eğitim',overdue,'SLA dışı eğitim görevi',Math.max(8,100-overdue*15),overdue>3?'red':'amber')}${academyProKpi('Sertifika',certs,'Geçerli aktif sertifika',Math.min(100,certs*8),'green')}${academyProKpi('Atanan Plan',d.assignments.length,'Eğitmen tarafından atanan',Math.min(100,Math.max(5,d.assignments.length*12)),d.assignments.length?'blue':'amber')}</div><div class="academy-tabs"><button class="academy-tab active" data-academy-tab="overview">Akademi Kokpiti</button><button class="academy-tab" data-academy-tab="courses">Eğitim Kataloğu</button><button class="academy-tab" data-academy-tab="onboarding">İşe Başlama</button><button class="academy-tab" data-academy-tab="people">Kişi Takibi</button><button class="academy-tab" data-academy-tab="regions">Bölge / Şube SLA</button><button class="academy-tab" data-academy-tab="sla">SLA & KPI</button><button class="academy-tab" data-academy-tab="assignments">Eğitim Atama</button><button class="academy-tab" data-academy-tab="certs">Sertifikalar</button><button class="academy-tab" data-academy-tab="settings">Ayarlar</button></div><div class="academy-command"><div class="academy-main"><div class="card"><div class="card-head"><div><div class="card-title">Academy Kontrol Merkezi</div><div class="card-sub">İşe girişten sürekli eğitime kadar; bölge, şube, eğitmen ve kişi bazlı KPI/SLA takip ekranı</div></div><button class="btn primary" data-academy-open-assign>${icon('plus')}Eğitim Ata</button></div>${academyProToolbar()}<div id="academyMain">${academyPanePro('overview')}</div></div></div><div class="academy-rail">${academyRailPro()}</div></div>${academyAssignModalHtml()}${academyCourseDetailModalHtml()}`;
+    return `<div class="card" style="border-color:#ffc5ca;background:#fff7f8;margin-bottom:14px"><div class="card-head" style="margin-bottom:0"><div><div class="card-title">Academy SLA Uyarısı</div><div class="card-sub">${overdue} eğitim görevi SLA sınırını geçti veya yaklaştı. Bölge, şube ve eğitmen bazlı takip aktif.</div></div>${badge(overdue>3?'Kritik':'Takipte')}</div></div><div class="academy-kpis">${academyProKpi('Bölge SLA','%'+regionAvg,'Hedef: %90',regionAvg,slaClass(regionAvg))}${academyProKpi('Şube SLA','%'+branchAvg,'Hedef: %85',branchAvg,slaClass(branchAvg))}${academyProKpi('Eğitmen SLA','%'+instructorAvg,'Zamanında planlama',instructorAvg,slaClass(instructorAvg))}${academyProKpi('Hedef Gerçekleşme','%'+avg,'Tüm katılımcılar',avg,slaClass(avg))}${academyProKpi('Aktif Eğitim',d.courses.length,'Rol bazlı katalog',Math.min(100,d.courses.length*10),'blue')}${academyProKpi('Geciken Eğitim',overdue,'SLA dışı eğitim görevi',Math.max(8,100-overdue*15),overdue>3?'red':'amber')}${academyProKpi('Sertifika',certs,'Geçerli aktif sertifika',Math.min(100,certs*8),'green')}${academyProKpi('Atanan Plan',d.assignments.length,'Eğitmen tarafından atanan',Math.min(100,Math.max(5,d.assignments.length*12)),d.assignments.length?'blue':'amber')}</div><div class="academy-tabs"><button class="academy-tab active" data-academy-tab="overview">Akademi Kokpiti</button><button class="academy-tab" data-academy-tab="courses">Eğitim Kataloğu</button><button class="academy-tab" data-academy-tab="onboarding">İşe Başlama</button><button class="academy-tab" data-academy-tab="people">Kişi Takibi</button><button class="academy-tab" data-academy-tab="regions">Bölge / Şube SLA</button><button class="academy-tab" data-academy-tab="sla">SLA & KPI</button><button class="academy-tab" data-academy-tab="assignments">Eğitim Atama</button><button class="academy-tab" data-academy-tab="certs">Sertifikalar</button><button class="academy-tab" data-academy-tab="settings">Ayarlar</button></div><div class="academy-command"><div class="academy-main"><div class="card"><div class="card-head"><div><div class="card-title">Academy Kontrol Merkezi</div><div class="card-sub">İşe girişten sürekli eğitime kadar; bölge, şube, eğitmen ve kişi bazlı KPI/SLA takip ekranı</div></div><div class="quick-actions"><button class="btn primary" data-academy-open-course-create>${icon('book-plus')}Yeni Eğitim</button><button class="btn" data-academy-open-assign>${icon('plus')}Tekil Atama</button></div></div>${academyProToolbar()}<div id="academyMain">${academyPanePro('overview')}</div></div></div><div class="academy-rail">${academyRailPro()}</div></div>${academyAssignModalHtml()}${academyCourseCreateModalHtml()}${academyCourseDetailModalHtml()}`;
   };
   window.academyPane=academyPanePro;
   function academyAssignModalHtml(){
     const d=academyBase();
     return `<div class="modal" id="academyAssignModal"><div class="modal-box"><div class="card-head"><div><div class="card-title">Eğitim Planı Ata</div><div class="card-sub">Eğitmen, katılımcıyı listeden seçer ve eğitim kişinin planına eklenir.</div></div><button class="btn" data-academy-close-assign>Kapat</button></div><form id="academyAssignForm" class="form"><div class="field"><label>Katılımcı</label><select name="personId" id="academyAssignPerson">${(d.people||[]).map(p=>`<option value="${p.id}">${p.name} · ${p.branch}</option>`).join('')}</select></div><div class="field"><label>Eğitim</label><select name="courseId" id="academyAssignCourse">${(d.courses||[]).map(c=>`<option value="${c.id}">${c.title}</option>`).join('')}</select></div><div class="field"><label>Eğitmen</label><select name="instructor">${[...new Set((d.courses||[]).map(c=>c.owner))].map(o=>`<option>${o}</option>`).join('')}</select></div><div class="field"><label>Hedef Tarih</label><input name="dueDate" type="date" value="2026-05-15"></div><div class="field wide"><label>Not</label><textarea name="note" rows="3" placeholder="Bu eğitimin atanma nedeni, hedef KPI ve takip notu"></textarea></div></form><div class="actions"><button class="btn" data-academy-close-assign>Vazgeç</button><button class="btn primary" data-academy-save-assignment>Planına Ekle</button></div></div></div>`;
+  }
+  function openAcademyCourseCreate(){
+    const modal=document.getElementById('academyCourseCreateModal');
+    if(!modal) return;
+    modal.classList.add('open');
+    if(window.lucide) lucide.createIcons();
+  }
+  function closeAcademyCourseCreate(){ document.getElementById('academyCourseCreateModal')?.classList.remove('open'); }
+  function saveAcademyCourse(){
+    const f=document.getElementById('academyCourseCreateForm'); if(!f) return;
+    if(!f.reportValidity()) return;
+    const fd=new FormData(f);
+    const modules=String(fd.get('modules')||'').split(/\n|,/).map(x=>x.trim()).filter(Boolean);
+    const course={
+      id:'AC-CUSTOM-'+Date.now(),
+      title:String(fd.get('title')||'Yeni Academy Eğitimi').trim(),
+      category:String(fd.get('category')||'Academy'),
+      duration:String(fd.get('duration')||'2 saat'),
+      requirement:String(fd.get('requirement')||'Zorunlu'),
+      minLevel:String(fd.get('minLevel')||'L1'),
+      passScore:Number(fd.get('passScore')||80),
+      certificateRequired:String(fd.get('certificateRequired')||'Gerekli'),
+      renewal:String(fd.get('renewal')||'Yıllık'),
+      desc:String(fd.get('desc')||'Academy sorumlusu tarafından canlı süreç için oluşturulan eğitim.').trim(),
+      modules:modules.length?modules:['Giriş','Uygulama','Kısa değerlendirme'],
+      owner:String(fd.get('owner')||'Academy'),
+      dueDate:String(fd.get('dueDate')||'2026-05-20'),
+      note:String(fd.get('note')||''),
+      targetRoles:academyCheckedValues(f,'targetRoles'),
+      targetRegions:academyCheckedValues(f,'targetRegions'),
+      targetBranches:academyCheckedValues(f,'targetBranches'),
+      targetLevels:academyCheckedValues(f,'targetLevels'),
+      targetDepartments:academyCheckedValues(f,'targetDepartments'),
+      createdAt:new Date().toISOString()
+    };
+    const savedCourses=academyStoredCourses();
+    savedCourses.unshift(course);
+    saveAcademyCourses(savedCourses);
+    const base=academyBase();
+    const people=academyPeopleForCourse(course,base);
+    const list=base.assignments||[];
+    let added=0;
+    people.forEach(person=>{
+      if(list.some(a=>a.personId===person.id && a.courseId===course.id)) return;
+      list.unshift({id:'ASN-'+Date.now()+'-'+person.id,personId:person.id,personName:person.name,branch:person.branch,region:person.region,courseId:course.id,courseTitle:course.title,instructor:course.owner,dueDate:course.dueDate,status:'Planlandı',source:'Hedef kitle ataması',targetSummary:academyTargetSummary(course),note:course.note});
+      added++;
+    });
+    saveAssignments(list);
+    closeAcademyCourseCreate();
+    f.reset();
+    if(typeof toast==='function') toast(`${course.title} oluşturuldu; ${added} kişinin eğitim ekranına atandı.`);
+    if(current==='academy') rerenderAcademyRoom();
   }
   function openAcademyAssign(pref={}){
     const modal=document.getElementById('academyAssignModal');
@@ -8286,7 +8445,7 @@
     const person=(d.people||[]).find(p=>p.id===data.personId), course=(d.courses||[]).find(c=>c.id===data.courseId);
     if(!person||!course) return;
     const list=d.assignments||[];
-    list.unshift({id:'ASN-'+Date.now(),personId:person.id,personName:person.name,branch:person.branch,region:person.region,courseId:course.id,courseTitle:course.title,instructor:data.instructor||course.owner,dueDate:data.dueDate||'2026-05-15',status:'Planlandı',note:data.note||''});
+    list.unshift({id:'ASN-'+Date.now(),personId:person.id,personName:person.name,branch:person.branch,region:person.region,courseId:course.id,courseTitle:course.title,instructor:data.instructor||course.owner,dueDate:data.dueDate||'2026-05-15',status:'Planlandı',source:'Tekil atama',note:data.note||''});
     saveAssignments(list);
     closeAcademyAssign();
     if(typeof toast==='function') toast(`${person.name} kişisinin eğitim planına “${course.title}” eklendi.`);
@@ -8326,8 +8485,11 @@
     syncAcademyRoomView();
   };
   document.addEventListener('click',function(e){
-    const t=e.target.closest('[data-academy-open-assign],[data-academy-open-assign-person],[data-academy-close-assign],[data-academy-save-assignment],[data-academy-open-course],[data-academy-close-course]');
+    const t=e.target.closest('[data-academy-open-course-create],[data-academy-close-course-create],[data-academy-save-course],[data-academy-open-assign],[data-academy-open-assign-person],[data-academy-close-assign],[data-academy-save-assignment],[data-academy-open-course],[data-academy-close-course]');
     if(!t) return;
+    if(t.matches('[data-academy-open-course-create]')) openAcademyCourseCreate();
+    if(t.matches('[data-academy-close-course-create]')) closeAcademyCourseCreate();
+    if(t.matches('[data-academy-save-course]')) saveAcademyCourse();
     if(t.matches('[data-academy-open-assign]')) openAcademyAssign(t.dataset.academyOpenAssign?{courseId:t.dataset.academyOpenAssign}:{});
     if(t.matches('[data-academy-open-assign-person]')) openAcademyAssign({personId:t.dataset.academyOpenAssignPerson});
     if(t.matches('[data-academy-close-assign]')) closeAcademyAssign();
