@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="ototr-version" content="SVK v1.0.60-legal-ceo-alert" />
+  <meta name="ototr-version" content="SVK v1.0.61-hr-trial-academy" />
   <title>OTOTR Genel Merkez ERP + CRM</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -398,7 +398,7 @@
 <body>
   <div class="app">
     <aside class="side">
-      <div class="brand-row"><a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.60</small></div></a><button class="theme-toggle" type="button" data-theme-toggle title="Koyu temaya geç" aria-label="Tema değiştir"><i data-lucide="sun-moon"></i><span id="themeToggleText">Açık</span></button></div>
+      <div class="brand-row"><a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.61</small></div></a><button class="theme-toggle" type="button" data-theme-toggle title="Koyu temaya geç" aria-label="Tema değiştir"><i data-lucide="sun-moon"></i><span id="themeToggleText">Açık</span></button></div>
       <div class="nav" id="nav"></div>
     </aside>
 
@@ -2566,7 +2566,7 @@
         status:b.risk==='Yüksek'?'İnceleme':b.risk==='Orta'?'Takip':'Stabil'
       }));
       out.demoDataHealth={
-        version:'SVK v1.0.60',
+        version:'SVK v1.0.61',
         branchUniverse:'10 şube / 4 aktif bölge',
         packagePriceBand:'5.000 TL - 15.000 TL',
         avgTicketBand:'8.350 TL - 9.900 TL',
@@ -5564,6 +5564,9 @@
         req.academyStatus=req.trainingRequired?'Tamamlandı':'Gerekli Değil';
         req.academyProgress=100;
         req.academyCompletedAt=req.academyCompletedAt || new Date().toISOString();
+        req.trialStatus=req.trialStatus && req.trialStatus!=='Beklemede' ? req.trialStatus : 'Deneme Devam Ediyor';
+        req.trialProgress=Math.max(req.trialProgress||0,25);
+        req.trialStartedAt=req.trialStartedAt || new Date().toISOString();
         req.nextAction='Deneme süreci ve performans takibi başlatıldı.';
         req.currentApprovalOwner='Tamamlandı';
       }
@@ -5573,7 +5576,7 @@
           const academyActive=active.currentApprovalStep?.includes('Academy');
           return {...p,status:academyActive?'Onboarding':'Onay bekliyor',trainingStatus:academyActive?`Academy kilitli: ${(req.trainingPackage||[]).join(', ')}`:p.trainingStatus,lastAction:req.nextAction,accessStatus:academyActive?'Academy kilitli':p.accessStatus||'Açılmadı'};
         }
-        return {...p,status:'Deneme sürecinde',trainingStatus:req.trainingRequired?'Academy/onboarding tamamlandı':'Onboarding gerekli değil',accessStatus:p.loginAccess==='Hayır'?'Erişim yok':'Açıldı',lastAction:'İşe alım ve Academy kilidi tamamlandı; deneme süreci başladı.'};
+        return {...p,status:req.trialStatus==='Aktif Personel'?'Aktif':'Deneme sürecinde',trainingStatus:req.trainingRequired?'Academy/onboarding tamamlandı':'Onboarding gerekli değil',accessStatus:p.loginAccess==='Hayır'?'Erişim yok':'Açıldı',lastAction:'İşe alım ve Academy kilidi tamamlandı; deneme süreci başladı.'};
       });
       saveHRData(d);
       return req;
@@ -6030,6 +6033,7 @@
           ${renderHRAutomaticActionBridge()}
           ${renderHRActiveApprovalQueue()}
           ${renderHRAcademyOnboardingLockPanel()}
+          ${renderHRTrialActivationPanel()}
           ${renderHRAcademyGatePanel()}
           ${renderPersonnelLifecycleFlow()}
           <div class="hr-life-grid two"><div class="card"><div class="card-head"><div><div class="card-title">Yeni Personel Giriş Süreci</div><div class="card-sub">Talep açılır → İK inceler → pozisyon/gider/yetki/onay belirlenir → aday ve onboarding başlar.</div></div><button class="btn primary" data-hr-open-personnel-drawer>Talep Oluştur</button></div>${renderPersonnelRequestSummary()}</div>${renderNewPositionRequestPanel()}</div>
@@ -6112,6 +6116,50 @@
         req.academyCompletedAt=new Date().toISOString();
         saveHRData(d);
         await completeHRApprovalTask(task.id);
+      };
+      const hrTrialChecklistForPosition = position => {
+        const base=['Görev disiplini','Şube uyumu','Müşteri iletişimi','Academy uygulama başarısı'];
+        if(['Teknisyen','Kaporta Ustası'].includes(position)) return [...base,'Teknik yeterlilik','Rapor dili','Kanıt/fotoğraf standardı'];
+        if(['Müşteri Kabul','Satış / CRM Personeli'].includes(position)) return [...base,'CRM kayıt disiplini','Randevu takibi','Şikayet karşılama dili'];
+        if(position==='Şube Müdürü') return [...base,'Ekip yönetimi','Gider disiplini','Kalite aksiyon takibi'];
+        return [...base,'İş tanımı uyumu','Devam ve sorumluluk'];
+      };
+      const hrTrialGateStatus = request => {
+        if(request.trialStatus==='Aktif Personel') return {status:'Aktif Personel',progress:100,done:true,canDecide:false};
+        if(request.trialStatus==='Deneme Uzatıldı') return {status:'Deneme Uzatıldı',progress:Math.max(request.trialProgress||65,65),done:false,canDecide:true};
+        if(request.trialStatus==='Pasif / Çıkış Süreci') return {status:'Pasif / Çıkış Süreci',progress:100,done:true,canDecide:false};
+        if(request.stage==='Deneme sürecinde' || request.academyStatus==='Tamamlandı') return {status:'Deneme Devam Ediyor',progress:Math.max(request.trialProgress||25,25),done:false,canDecide:true};
+        return {status:'Deneme Bekliyor',progress:0,done:false,canDecide:false};
+      };
+      const hrContextCanFinalizeTrial = (request,ctx=hrActiveContext()) => {
+        const role=String(ctx.role||'');
+        if(['CEO','İnsan Kaynakları'].includes(role)) return true;
+        if(role==='Bölge Müdürü') return hrLocationMatchesContext(request.location,ctx);
+        if(['Şube Müdürü','Bayi','Bayi + Şube Müdürü'].includes(role)) return hrLocationMatchesContext(request.location,ctx);
+        return false;
+      };
+      const renderHRTrialActivationPanel = () => {
+        const requests=hrScopedPersonnelRequests(data().personnelRequests||[]).filter(r=>r.academyStatus==='Tamamlandı' || r.stage==='Deneme sürecinde' || ['Aktif Personel','Deneme Uzatıldı','Pasif / Çıkış Süreci'].includes(r.trialStatus)).slice(0,6);
+        const ctx=hrActiveContext();
+        return `<div class="card"><div class="card-head"><div><div class="card-title">Deneme Süreci ve Aktif Personel Kararı</div><div class="card-sub">Academy tamamlandıktan sonra deneme performansı izlenir; başarılı aday aktif personel olur, eksik adayın denemesi uzatılır veya çıkış süreci başlar.</div></div>${hrBadge(ctx.label)}</div><div class="hr-data-grid">${[['Denemede',requests.filter(r=>hrTrialGateStatus(r).status==='Deneme Devam Ediyor').length],['Uzatılan',requests.filter(r=>r.trialStatus==='Deneme Uzatıldı').length],['Aktifleşen',requests.filter(r=>r.trialStatus==='Aktif Personel').length],['Çıkış süreci',requests.filter(r=>r.trialStatus==='Pasif / Çıkış Süreci').length]].map(x=>`<div class="hr-data-card"><span>${x[0]}</span><b>${x[1]}</b></div>`).join('')}</div><div class="hr-card-grid two" style="margin-top:10px">${requests.map(r=>{const gate=hrTrialGateStatus(r), can=gate.canDecide&&hrContextCanFinalizeTrial(r,ctx), checklist=hrTrialChecklistForPosition(r.position);return `<div class="hr-info-card"><div class="card-head" style="margin:0"><div><h3>${r.candidateName}</h3><p>${r.position} · ${r.location}</p></div>${getHrStatusBadge(gate.status)}</div><div class="progress"><div class="bar ${gate.done?'green':gate.status==='Deneme Uzatıldı'?'amber':'blue'}" style="width:${gate.progress}%"></div></div><div class="compact-meta"><span>${r.trialPeriod||'3 ay'}</span><span>${gate.progress}% deneme</span><span>${can?'Bu rol karar verir':'Bu rol izler'}</span></div><b>Deneme kontrol checklisti</b><div class="hr-life-timeline">${checklist.map(x=>`<span>${esc(x)}</span>`).join('')}</div><div class="quick-actions">${can?`<button class="micro-btn" data-hr-trial-decision="${r.id}:active">Aktif yap</button><button class="micro-btn" data-hr-trial-decision="${r.id}:extend">Deneme uzat</button><button class="micro-btn" data-hr-trial-decision="${r.id}:exit">Çıkış süreci</button>`:gate.status==='Deneme Bekliyor'?`<button class="micro-btn" disabled>Academy tamamlanınca açılır</button>`:`<span class="badge b-gray">Karar yetkisi yok</span>`}</div></div>`}).join('') || `<div class="hr-empty">Deneme sürecine geçmiş personel yok. Academy tamamlanınca burada görünür.</div>`}</div></div>`;
+      };
+      const applyTrialDecision = (requestId,decision) => {
+        const d=data(), req=(d.personnelRequests||[]).find(r=>r.id===requestId);
+        if(!req){ toast('Personel talebi bulunamadı.'); return; }
+        if(!hrContextCanFinalizeTrial(req)){ toast('Bu rol deneme süreci kararını veremez.'); return; }
+        const map={
+          active:{trialStatus:'Aktif Personel',stage:'Aktif Personel',trialProgress:100,approvalStatus:'Aktif Personel',nextAction:'Kalıcı rol ve performans takibi açıldı.'},
+          extend:{trialStatus:'Deneme Uzatıldı',stage:'Deneme Uzatıldı',trialProgress:65,approvalStatus:'Deneme Uzatıldı',nextAction:'Eksik alanlar için 30 günlük gelişim planı takip edilecek.'},
+          exit:{trialStatus:'Pasif / Çıkış Süreci',stage:'Pasif / Çıkış Süreci',trialProgress:100,approvalStatus:'Çıkış Süreci',nextAction:'İşten çıkış, erişim kapatma ve devir teslim checklisti başlatıldı.'}
+        };
+        Object.assign(req,map[decision]||map.extend,{trialDecidedAt:new Date().toISOString(),trialDecisionBy:hrActiveContext().label});
+        d.personnelStatus=(d.personnelStatus||[]).map(p=>{
+          if(p.person!==req.candidateName || p.position!==req.position) return p;
+          if(decision==='active') return {...p,status:'Aktif',performance:'Deneme başarılı',accessStatus:p.loginAccess==='Hayır'?'Erişim yok':'Kalıcı erişim açık',lastAction:req.nextAction};
+          if(decision==='exit') return {...p,status:'Pasif',performance:'Uygun değil',accessStatus:'Kapatılacak',lastAction:req.nextAction};
+          return {...p,status:'Deneme uzatıldı',performance:'Gelişim planı',accessStatus:p.accessStatus||'Açıldı',lastAction:req.nextAction};
+        });
+        saveHRData(d); renderAll(); selectHRRoom('personnel-lifecycle',false); toast(`Deneme kararı işlendi: ${req.trialStatus}`);
       };
       const renderHRAcademyGatePanel = () => {
         const sample=['Teknisyen','Müşteri Kabul','Satış / CRM Personeli','Şube Müdürü'];
@@ -6209,7 +6257,7 @@
         const actionChain=hrActionableApprovalChain(decision,{requestedBy:obj.requestedBy||defaults.requestedBy});
         const currentApprovalStep=actionChain[0]||decision.approvalChain[0]||'İK İncelemesi';
         const trainingRequired=obj.academyRequired!=='Hayır';
-        const request={id,candidateName:obj.candidateName||'Yeni Demo Aday',position,location:obj.location||obj.city||defaults.location,requestedBy:obj.requestedBy||defaults.requestedBy,workScope:obj.workScope||defaults.workScope,urgency:obj.urgency||'Orta',stage:currentApprovalStep,interviewer:decision.flowType==='Şube Personeli'?'Şube Müdürü + Bayi':'İK + Departman',technicalReview:obj.technicalCert==='Evet'?'Sertifika kontrolü gerekli':position.includes('Teknisyen')||position.includes('Kaporta')?'Academy teknik sınav gerekli':'Değerlendirilecek',salaryExpectation:obj.salaryBudget||'-',loginAccess:obj.loginAccess||defaults.loginAccess,expenseCenter:obj.expenseCenter||defaults.expenseCenter,trainingRequired,trainingPackage,academyStatus:trainingRequired?'Planlandı':'Gerekli Değil',academyProgress:trainingRequired?0:100,academyCompletedItems:[],trialPeriod:obj.trialPeriod||'3 ay',approvalStatus:`${currentApprovalStep} Bekliyor`,nextAction:`${currentApprovalStep} görevi tamamlanacak.`,riskNote:`${risk} erişim riski · ${decision.flowType} · Gider: ${decision.costOwner} · Finans onayı: ${decision.financeRequired}`,approvalChain:decision.approvalChain,actionChain,flowType:decision.flowType,costOwner:decision.costOwner,financeRequired:decision.financeRequired,hqApprovalRequired:decision.hqApprovalRequired,academyGate:decision.academyGate,progress:0,completedApprovalCount:0,totalApprovalCount:actionChain.length,currentApprovalStep,currentApprovalOwner:hrActionOwnerForStep(currentApprovalStep).owner};
+        const request={id,candidateName:obj.candidateName||'Yeni Demo Aday',position,location:obj.location||obj.city||defaults.location,requestedBy:obj.requestedBy||defaults.requestedBy,workScope:obj.workScope||defaults.workScope,urgency:obj.urgency||'Orta',stage:currentApprovalStep,interviewer:decision.flowType==='Şube Personeli'?'Şube Müdürü + Bayi':'İK + Departman',technicalReview:obj.technicalCert==='Evet'?'Sertifika kontrolü gerekli':position.includes('Teknisyen')||position.includes('Kaporta')?'Academy teknik sınav gerekli':'Değerlendirilecek',salaryExpectation:obj.salaryBudget||'-',loginAccess:obj.loginAccess||defaults.loginAccess,expenseCenter:obj.expenseCenter||defaults.expenseCenter,trainingRequired,trainingPackage,academyStatus:trainingRequired?'Planlandı':'Gerekli Değil',academyProgress:trainingRequired?0:100,academyCompletedItems:[],trialPeriod:obj.trialPeriod||'3 ay',trialStatus:'Beklemede',trialProgress:0,approvalStatus:`${currentApprovalStep} Bekliyor`,nextAction:`${currentApprovalStep} görevi tamamlanacak.`,riskNote:`${risk} erişim riski · ${decision.flowType} · Gider: ${decision.costOwner} · Finans onayı: ${decision.financeRequired}`,approvalChain:decision.approvalChain,actionChain,flowType:decision.flowType,costOwner:decision.costOwner,financeRequired:decision.financeRequired,hqApprovalRequired:decision.hqApprovalRequired,academyGate:decision.academyGate,progress:0,completedApprovalCount:0,totalApprovalCount:actionChain.length,currentApprovalStep,currentApprovalOwner:hrActionOwnerForStep(currentApprovalStep).owner};
         let createdTasks=[];
         try{ createdTasks=await syncHRPersonnelTasksToActionCenter(request,decision,risk); }catch(e){ createdTasks=[]; }
         d.actions=[...(d.actions||[]),...createdTasks.map(t=>({id:t.id,title:t.title,owner:t.owner,status:t.status,source:'Aksiyon & Görev',requestId:id,createdAt:t.createdAt}))];
@@ -6224,7 +6272,7 @@
         const trainingPackage=hrTrainingPackageForPosition(position);
         const actionChain=hrActionableApprovalChain(decision,{requestedBy:'Şube Müdürü'});
         const currentApprovalStep=actionChain[0]||'Bayi Onayı';
-        const request={id,candidateName:'Şube Alım Test Adayı',position,location:'Bursa Nilüfer',requestedBy:'Şube Müdürü',workScope:'Şube',urgency:'Yüksek',stage:currentApprovalStep,interviewer:'Şube Müdürü + Bayi',technicalReview:'Müşteri kabul rol simülasyonu ve Academy paketi gerekli',salaryExpectation:'Demo şart',loginAccess:'Sınırlı',expenseCenter:'Şube',trainingRequired:true,trainingPackage,academyStatus:'Planlandı',academyProgress:0,academyCompletedItems:[],trialPeriod:'3 ay',approvalStatus:`${currentApprovalStep} Bekliyor`,nextAction:`${currentApprovalStep} görevi tamamlanacak.`,riskNote:`Orta erişim riski · ${decision.flowType} · Gider: ${decision.costOwner} · Finans onayı: ${decision.financeRequired}`,approvalChain:decision.approvalChain,actionChain,flowType:decision.flowType,costOwner:decision.costOwner,financeRequired:decision.financeRequired,hqApprovalRequired:decision.hqApprovalRequired,academyGate:decision.academyGate,progress:0,completedApprovalCount:0,totalApprovalCount:actionChain.length,currentApprovalStep,currentApprovalOwner:hrActionOwnerForStep(currentApprovalStep).owner};
+        const request={id,candidateName:'Şube Alım Test Adayı',position,location:'Bursa Nilüfer',requestedBy:'Şube Müdürü',workScope:'Şube',urgency:'Yüksek',stage:currentApprovalStep,interviewer:'Şube Müdürü + Bayi',technicalReview:'Müşteri kabul rol simülasyonu ve Academy paketi gerekli',salaryExpectation:'Demo şart',loginAccess:'Sınırlı',expenseCenter:'Şube',trainingRequired:true,trainingPackage,academyStatus:'Planlandı',academyProgress:0,academyCompletedItems:[],trialPeriod:'3 ay',trialStatus:'Beklemede',trialProgress:0,approvalStatus:`${currentApprovalStep} Bekliyor`,nextAction:`${currentApprovalStep} görevi tamamlanacak.`,riskNote:`Orta erişim riski · ${decision.flowType} · Gider: ${decision.costOwner} · Finans onayı: ${decision.financeRequired}`,approvalChain:decision.approvalChain,actionChain,flowType:decision.flowType,costOwner:decision.costOwner,financeRequired:decision.financeRequired,hqApprovalRequired:decision.hqApprovalRequired,academyGate:decision.academyGate,progress:0,completedApprovalCount:0,totalApprovalCount:actionChain.length,currentApprovalStep,currentApprovalOwner:hrActionOwnerForStep(currentApprovalStep).owner};
         let createdTasks=[];
         try{ createdTasks=await syncHRPersonnelTasksToActionCenter(request,decision,'Orta'); }catch(e){ createdTasks=[]; }
         d.actions=[...(d.actions||[]),...createdTasks.map(t=>({id:t.id,title:t.title,owner:t.owner,status:t.status,source:'Aksiyon & Görev',requestId:id,createdAt:t.createdAt}))];
@@ -6247,7 +6295,7 @@
       const getHrStatusBadge = status => hrBadge(['Kritik','Eksik bilgi'].includes(status)?status:String(status||'Bekliyor'));
       const getAccessRiskBadge = risk => hrBadge(String(risk||'Düşük').includes('Kritik')?'Kritik':risk);
       const getApprovalBadge = status => hrBadge(String(status||'Onay Bekliyor').includes('Onay')&&!String(status).includes('Bekliyor')?'Onaylandı':status);
-      return {renderPersonnelLifecycleTab,renderPersonnelLifecycleFlow,renderNewPersonnelRequestForm,renderNewPositionRequestPanel,renderNewDepartmentRequestPanel,renderAccessWizard,renderHiringPipelineTable,renderPersonnelStatusTable,renderHrAutomationRules,renderHrGoLiveChecklist,openPersonnelRequestDrawer,openPositionRequestDrawer,openDepartmentRequestDrawer,applyAccessTemplate,calculateApprovalChain,calculateAccessRisk,addDemoPersonnelRequest,startDemoBranchHiringScenario,completeAcademyOnboarding,addDemoPositionRequest,addDemoDepartmentRequest,getHrStatusBadge,getAccessRiskBadge,getApprovalBadge,state,hrGoLiveState,hrGoLiveSaved,hrGoLiveSave,hrGoLiveChecklist};
+      return {renderPersonnelLifecycleTab,renderPersonnelLifecycleFlow,renderNewPersonnelRequestForm,renderNewPositionRequestPanel,renderNewDepartmentRequestPanel,renderAccessWizard,renderHiringPipelineTable,renderPersonnelStatusTable,renderHrAutomationRules,renderHrGoLiveChecklist,openPersonnelRequestDrawer,openPositionRequestDrawer,openDepartmentRequestDrawer,applyAccessTemplate,calculateApprovalChain,calculateAccessRisk,addDemoPersonnelRequest,startDemoBranchHiringScenario,completeAcademyOnboarding,applyTrialDecision,addDemoPositionRequest,addDemoDepartmentRequest,getHrStatusBadge,getAccessRiskBadge,getApprovalBadge,state,hrGoLiveState,hrGoLiveSaved,hrGoLiveSave,hrGoLiveChecklist};
     })();
     function hrScoreClass(score){
       const s = safeNum(score);
@@ -7075,6 +7123,16 @@
         if(el.dataset.hrBound==='1') return;
         el.dataset.hrBound='1';
         el.addEventListener('click',e=>{ e.preventDefault(); e.stopPropagation(); OTOTR_HR.completeAcademyOnboarding(el.dataset.hrCompleteAcademy); });
+      });
+      document.querySelectorAll('[data-hr-trial-decision]').forEach(el=>{
+        if(el.dataset.hrBound==='1') return;
+        el.dataset.hrBound='1';
+        el.addEventListener('click',e=>{
+          e.preventDefault();
+          e.stopPropagation();
+          const [id,decision]=el.dataset.hrTrialDecision.split(':');
+          OTOTR_HR.applyTrialDecision(id,decision);
+        });
       });
       document.querySelectorAll('#hrPersonnelRequestForm [name="position"]').forEach(el=>{
         if(el.dataset.hrBound==='1') return;
@@ -7905,8 +7963,73 @@
   }
   function saveAssignments(list){ localStorage.setItem('ototr-academy-assignments', JSON.stringify(list)); }
   function personInitials(name){ return String(name||'').split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase(); }
+  function academyEsc(v){ return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;'); }
   function slaClass(v){ return v>=90?'green':v>=80?'blue':v>=70?'amber':'red'; }
   function statusFrom(v){ return v>=90?'Hedef üstü':v>=80?'İçinde':v>=70?'Yaklaşıyor':'Aşıldı'; }
+  const academyCategoryPlaybook={
+    Teknik:{practice:'Saha/arac vakası üzerinde kontrol, kanıt toplama ve rapor notu yazma uygulaması yapılır.',output:'Teknik kontrol listesi, kanıt standardı ve örnek rapor notu hazırlanır.',system:'Teknik yetki, rapor kilidi ve kalite denetimiyle bağlantılıdır.',kpi:'Rapor kalitesi, hatalı rapor riski ve ikinci kontrol oranı.'},
+    Kalite:{practice:'Gerçekçi şube bulgusu üzerinden kök neden, aksiyon sahibi ve kapanış kanıtı yazılır.',output:'Audit checklisti, CAPA formu ve kapanış kriteri oluşturulur.',system:'Kalite, şikayet ve Academy yeniden eğitim akışına bağlanır.',kpi:'Kalite skoru, tekrar eden bulgu, SLA ve şube sağlık skoru.'},
+    Franchise:{practice:'Yeni şube veya bayi vakası üzerinden sorumluluk, açılış ve takip planı çıkarılır.',output:'Franchise sorumluluk matrisi, açılış checklisti veya 90 gün takip planı hazırlanır.',system:'Franchise pipeline, bayi kartı ve açılış onayıyla bağlantılıdır.',kpi:'Açılış hazırlığı, royalty disiplini, kalite ve ilk 90 gün performansı.'},
+    Finans:{practice:'Örnek şube verisinden royalty, reklam katkısı, gider ve karlılık yorumu yapılır.',output:'Hesaplama formu, vade takip listesi ve finans aksiyon notu hazırlanır.',system:'Finans/royalty ekranı, şube sağlık skoru ve gecikme alarmına bağlanır.',kpi:'Royalty sağlığı, EBITDA, gider disiplini ve tahsilat gecikmesi.'},
+    Pazarlama:{practice:'Yerel kampanya, Google yorumu veya lansman vakası için cevap ve aksiyon planı yazılır.',output:'Kampanya planı, yorum yanıt şablonu ve kanal takip tablosu hazırlanır.',system:'Pazarlama, CRM lead ve Google/itibar dashboarduna bağlanır.',kpi:'Lead, CPL, Google puanı, yorum yanıt SLA ve yerel görünürlük.'},
+    CRM:{practice:'Lead, randevu, teyit ve no-show senaryosu üzerinden iletişim akışı uygulanır.',output:'Arama/WhatsApp scripti, randevu teyit ve takip şablonu hazırlanır.',system:'CRM, randevu, müşteri 360 ve SLA kayıtlarına bağlanır.',kpi:'Randevu dönüşümü, no-show oranı, ilk temas SLA ve müşteri memnuniyeti.'},
+    'Müşteri Deneyimi':{practice:'Zor müşteri, rapor itirazı veya negatif yorum vakası rol oyunu ile çözülür.',output:'Konuşma scripti, telafi planı ve kapanış notu hazırlanır.',system:'Şikayet, Google, CRM ve kalite aksiyonlarına bağlanır.',kpi:'SLA içinde çözüm, Google puanı, geri kazanım ve şikayet tekrar oranı.'},
+    Hukuk:{practice:'Hukuki risk taşıyan rapor/sikayet dosyasında kanıt ve yazılı cevap planı çıkarılır.',output:'Risk checklisti, kanıt dosyası ve cevap taslağı hazırlanır.',system:'Hukuk, kalite, rapor kilidi ve şikayet eskalasyonuna bağlanır.',kpi:'Hukuki risk, tazmin ihtimali, kanıt tamlığı ve kapanış süresi.'},
+    Uyum:{practice:'Veri, gizlilik veya etik vaka üzerinden doğru aksiyon ve bildirim akışı seçilir.',output:'Uyum checklisti, bildirim akışı ve davranış rehberi hazırlanır.',system:'KVKK, rol erişimi, müşteri verisi ve İK disiplin kayıtlarına bağlanır.',kpi:'Yetkisiz erişim riski, veri izin tamlığı ve disiplin kapanışları.'},
+    Operasyon:{practice:'Günlük şube veya araç kabul vakasında checklist, sorumlu ve kanıt alanları doldurulur.',output:'Operasyon checklisti, devir formu ve günlük takip planı hazırlanır.',system:'Operasyon, randevu, kalite ve şube sağlık skoruna bağlanır.',kpi:'Kapasite, bekleme süresi, teslim süresi ve operasyon sapması.'},
+    Liderlik:{practice:'Riskli şube veya ekip performansı vakasında 30 günlük aksiyon planı yazılır.',output:'Liderlik planı, görüşme notu ve takip dashboardu hazırlanır.',system:'Şube 360, İK, performans, prim ve bölge takip ekranlarına bağlanır.',kpi:'Şube sağlık skoru, personel performansı, SLA ve kalite.'},
+    İK:{practice:'Yeni personel/onboarding vakasında eğitim yolu, deneme süreci ve yetki kilidi kurulur.',output:'Onboarding matrisi, deneme kontrol listesi ve eğitim atama kuralı hazırlanır.',system:'İK personel yaşam döngüsü ve Academy atama ekranına bağlanır.',kpi:'Onboarding tamamlama, deneme başarı oranı ve eksik sertifika.'},
+    Academy:{practice:'Eğitim atama, eğitmen SLA veya sertifika yenileme vakası üzerinden takip akışı kurulur.',output:'Eğitim planı, sınav kuralı ve eğitmen değerlendirme formu hazırlanır.',system:'Academy katalog, atama, sertifika ve SLA ekranlarına bağlanır.',kpi:'Tamamlama oranı, geçme puanı, geciken eğitim ve eğitmen SLA.'},
+    Sistem:{practice:'Panel ekranları üzerinde kayıt oluşturma, filtreleme, aksiyon ve raporlama uygulanır.',output:'Ekran kullanım rehberi, demo senaryosu ve kontrol listesi hazırlanır.',system:'ERP/CRM rol yetkileri, audit ve dashboard kayıtlarına bağlanır.',kpi:'Kayıt tamlığı, görev kapanışı, rol bazlı kullanım ve veri kalitesi.'},
+    Tedarik:{practice:'Açılış veya arıza vakasında cihaz, sarf, teslim ve eksik malzeme planı çıkarılır.',output:'Tedarik takip formu, cihaz teslim checklisti ve arıza bildirimi hazırlanır.',system:'Açılış checklisti, operasyon ve finans gider kayıtlarına bağlanır.',kpi:'Stok hazır olma, teslim gecikmesi, arıza süresi ve açılış riski.'},
+    Yönetim:{practice:'CEO dashboardu üzerinden haftalık karar listesi, sahip ve hedef tarih çıkarılır.',output:'Karar notu, KPI yorum rehberi ve aksiyon listesi hazırlanır.',system:'CEO kokpiti, aksiyon merkezi ve departman raporlarına bağlanır.',kpi:'Network ciro, kalite, finans, franchise pipeline ve kritik alarm.'},
+    Kültür:{practice:'İyi/kötü davranış örnekleri üzerinden doğru marka dili ve hizmet standardı seçilir.',output:'Kültür el kitabı, davranış checklisti ve quiz paketi hazırlanır.',system:'Tüm roller için temel kullanıcı aktivasyonuna bağlanır.',kpi:'Oryantasyon tamamlama, disiplin riski ve müşteri memnuniyeti.'},
+    Satış:{practice:'Lead, paket, fiyat itirazı veya B2B vaka üzerinden görüşme ve takip planı yazılır.',output:'Satış scripti, teklif/follow-up notu ve dönüşüm kontrol listesi hazırlanır.',system:'CRM, franchise pipeline ve pazarlama lead kayıtlarına bağlanır.',kpi:'Dönüşüm, ortalama sepet, teklif kapanış ve takip SLA.'}
+  };
+  function academyCourseSource(id){ return (typeof HR_ACADEMY_COURSES!=='undefined'?HR_ACADEMY_COURSES:[]).find(c=>c.id===id) || null; }
+  function academyCourseDetailModel(id){
+    const d=academyBase();
+    const live=(d.courses||[]).find(c=>c.id===id) || {};
+    const source=academyCourseSource(id) || {};
+    const category=source.category || live.cat || 'Academy';
+    const playbook=academyCategoryPlaybook[category] || academyCategoryPlaybook.Academy;
+    const modules=(source.modules||[]).map((module,i)=>({title:module,desc:`${module} başlığı; örnek, kontrol listesi, uygulama ve kısa değerlendirme ile ${source.title||live.title} eğitimine bağlanır.`,step:i+1}));
+    return {
+      id,
+      title:source.title || live.title || id,
+      category,
+      status:source.status || live.status || 'Planlandı',
+      minLevel:source.minLevel || 1,
+      duration:source.duration || live.duration || '-',
+      passScore:source.passScore || 80,
+      desc:source.desc || live.desc || 'Bu eğitim için içerik paketi sisteme tanımlandı.',
+      role:live.role || source.requiredForRoles?.[0] || 'Tüm Roller',
+      requiredForRoles:source.requiredForRoles || [],
+      modules,
+      practice:playbook.practice,
+      output:playbook.output,
+      system:playbook.system,
+      kpi:playbook.kpi,
+      assessment:`Geçme puanı ${source.passScore||80}. Başarısızlıkta eğitim tekrar atanır ve ilgili yetki kilidi açık kalır.`,
+      certificate:`${source.status==='Zorunlu'?'Zorunlu':'Önerilen'} sertifika kuralı. L${source.minLevel||1} seviye eğitim olarak Academy kaydına işlenir.`,
+      renewal:category==='Teknik' || category==='Uyum' || category==='Hukuk' ? 'Yıllık yenileme önerilir.' : 'Performans veya kalite bulgusu oluşursa yeniden eğitim atanır.'
+    };
+  }
+  function academyDetailPill(label,value){ return `<div class="hr-data-card"><span>${academyEsc(label)}</span><b>${academyEsc(value)}</b></div>`; }
+  function academyCourseDetailBody(id){
+    const c=academyCourseDetailModel(id);
+    return `<div class="card-head"><div><div class="card-title">${academyEsc(c.title)}</div><div class="card-sub">${academyEsc(c.id)} · ${academyEsc(c.category)} · ${academyEsc(c.status)}</div></div><button class="btn" data-academy-close-course>Kapat</button></div><div class="hr-data-grid">${academyDetailPill('Süre',c.duration)}${academyDetailPill('Seviye','L'+c.minLevel)}${academyDetailPill('Geçme puanı',c.passScore)}${academyDetailPill('Modül',c.modules.length)}</div><div class="academy-ai" style="margin:12px 0"><b>${icon('book-open-check')} Eğitim amacı</b><p>${academyEsc(c.desc)}</p></div><div class="card" style="box-shadow:none;margin:0 0 12px;border-radius:8px"><div class="card-head"><div><div class="card-title">Ders Akışı</div><div class="card-sub">Modül başlıkları ve anlatım odağı</div></div></div><div class="academy-path">${c.modules.map(m=>`<div class="academy-path-step active"><div class="academy-path-num">${m.step}</div><div><b>${academyEsc(m.title)}</b><span>${academyEsc(m.desc)}</span></div>${badge('Modül')}</div>`).join('')}</div></div><div class="grid g2"><div class="mini-list"><div class="mini">${icon('target')}<div><b>Uygulama</b><span>${academyEsc(c.practice)}</span></div></div><div class="mini">${icon('clipboard-check')}<div><b>Ölçme</b><span>${academyEsc(c.assessment)}</span></div></div><div class="mini">${icon('award')}<div><b>Sertifika</b><span>${academyEsc(c.certificate)} ${academyEsc(c.renewal)}</span></div></div></div><div class="mini-list"><div class="mini">${icon('file-check-2')}<div><b>Çıktı</b><span>${academyEsc(c.output)}</span></div></div><div class="mini">${icon('database')}<div><b>Sistem Bağlantısı</b><span>${academyEsc(c.system)}</span></div></div><div class="mini">${icon('activity')}<div><b>KPI Etkisi</b><span>${academyEsc(c.kpi)}</span></div></div></div></div><div class="card" style="box-shadow:none;margin-top:12px;border-radius:8px"><div class="card-head"><div><div class="card-title">Rol Atama Kuralı</div><div class="card-sub">${academyEsc(c.requiredForRoles.length?c.requiredForRoles.join(', '):c.role)}</div></div></div><div class="quick-actions"><button class="btn primary" data-academy-open-assign="${academyEsc(c.id)}">${icon('plus')}Katılımcıya Ata</button><button class="btn" data-action="${academyEsc(c.title)} sertifika kuralı görüntülendi.">${icon('award')}Sertifika Kuralı</button></div></div>`;
+  }
+  function academyCourseDetailModalHtml(){ return `<div class="modal" id="academyCourseModal"><div class="modal-box"><div id="academyCourseDetailBody">${academyCourseDetailBody('AC-01')}</div></div></div>`; }
+  function openAcademyCourseDetail(id){
+    const modal=document.getElementById('academyCourseModal');
+    const body=document.getElementById('academyCourseDetailBody');
+    if(!modal||!body) return;
+    body.innerHTML=academyCourseDetailBody(id);
+    modal.classList.add('open');
+    if(window.lucide) lucide.createIcons();
+  }
+  function closeAcademyCourseDetail(){ document.getElementById('academyCourseModal')?.classList.remove('open'); }
   function calcSla(){
     const d=academyBase();
     const people=d.people||[];
@@ -7962,7 +8085,7 @@
   function academyCourseCardPro(c){
     const tone=c.progress>=85?'green':c.progress>=55?'blue':c.progress>=35?'amber':'red';
     const cat=(typeof academyCatBadge==='function')?academyCatBadge(c.cat):'b-blue';
-    return `<div class="academy-course" data-academy-course="${c.id}"><div class="academy-course-head"><div><span class="badge ${cat}">${c.cat}</span><b>${c.title}</b></div>${badge(c.status)}</div><p>${c.desc}</p><div class="academy-meta"><span>${c.role}</span><span>${c.region}</span><span>${c.branch}</span><span>Eğitmen: ${c.owner}</span><span>${c.duration}</span><span>${c.modules} modül</span><span>⭐ ${c.score}</span></div><div><div class="card-sub" style="display:flex;justify-content:space-between"><span>Hedef gerçekleşme</span><b>%${c.progress}</b></div><div class="academy-progress"><div class="${tone}" style="width:${c.progress}%"></div></div></div><div class="academy-meta"><button class="micro-btn" data-academy-open-assign="${c.id}">Katılımcıya ata</button><button class="micro-btn" data-academy-course="${c.id}">Detay</button></div></div>`;
+    return `<div class="academy-course" data-academy-open-course="${c.id}"><div class="academy-course-head"><div><span class="badge ${cat}">${c.cat}</span><b>${c.title}</b></div>${badge(c.status)}</div><p>${c.desc}</p><div class="academy-meta"><span>${c.role}</span><span>${c.region}</span><span>${c.branch}</span><span>Eğitmen: ${c.owner}</span><span>${c.duration}</span><span>${c.modules} modül</span><span>⭐ ${c.score}</span></div><div><div class="card-sub" style="display:flex;justify-content:space-between"><span>Hedef gerçekleşme</span><b>%${c.progress}</b></div><div class="academy-progress"><div class="${tone}" style="width:${c.progress}%"></div></div></div><div class="academy-meta"><button class="micro-btn" data-academy-open-assign="${c.id}">Katılımcıya ata</button><button class="micro-btn" data-academy-open-course="${c.id}">Detay</button></div></div>`;
   }
   function academyCourseGridPro(){
     const courses=filteredAcademyCourses();
@@ -8141,7 +8264,7 @@
     const activeRoom=currentAcademyRoom();
     const activeTab=activeRoom.tab || 'overview';
     if(activeTab==='go-live') return academyReadyPage();
-    return `<div class="card" style="border-color:#ffc5ca;background:#fff7f8;margin-bottom:14px"><div class="card-head" style="margin-bottom:0"><div><div class="card-title">Academy SLA Uyarısı</div><div class="card-sub">${overdue} eğitim görevi SLA sınırını geçti veya yaklaştı. Bölge, şube ve eğitmen bazlı takip aktif.</div></div>${badge(overdue>3?'Kritik':'Takipte')}</div></div><div class="academy-kpis">${academyProKpi('Bölge SLA','%'+regionAvg,'Hedef: %90',regionAvg,slaClass(regionAvg))}${academyProKpi('Şube SLA','%'+branchAvg,'Hedef: %85',branchAvg,slaClass(branchAvg))}${academyProKpi('Eğitmen SLA','%'+instructorAvg,'Zamanında planlama',instructorAvg,slaClass(instructorAvg))}${academyProKpi('Hedef Gerçekleşme','%'+avg,'Tüm katılımcılar',avg,slaClass(avg))}${academyProKpi('Aktif Eğitim',d.courses.length,'Rol bazlı katalog',Math.min(100,d.courses.length*10),'blue')}${academyProKpi('Geciken Eğitim',overdue,'SLA dışı eğitim görevi',Math.max(8,100-overdue*15),overdue>3?'red':'amber')}${academyProKpi('Sertifika',certs,'Geçerli aktif sertifika',Math.min(100,certs*8),'green')}${academyProKpi('Atanan Plan',d.assignments.length,'Eğitmen tarafından atanan',Math.min(100,Math.max(5,d.assignments.length*12)),d.assignments.length?'blue':'amber')}</div><div class="academy-tabs"><button class="academy-tab active" data-academy-tab="overview">Akademi Kokpiti</button><button class="academy-tab" data-academy-tab="courses">Eğitim Kataloğu</button><button class="academy-tab" data-academy-tab="onboarding">İşe Başlama</button><button class="academy-tab" data-academy-tab="people">Kişi Takibi</button><button class="academy-tab" data-academy-tab="regions">Bölge / Şube SLA</button><button class="academy-tab" data-academy-tab="sla">SLA & KPI</button><button class="academy-tab" data-academy-tab="assignments">Eğitim Atama</button><button class="academy-tab" data-academy-tab="certs">Sertifikalar</button><button class="academy-tab" data-academy-tab="settings">Ayarlar</button></div><div class="academy-command"><div class="academy-main"><div class="card"><div class="card-head"><div><div class="card-title">Academy Kontrol Merkezi</div><div class="card-sub">İşe girişten sürekli eğitime kadar; bölge, şube, eğitmen ve kişi bazlı KPI/SLA takip ekranı</div></div><button class="btn primary" data-academy-open-assign>${icon('plus')}Eğitim Ata</button></div>${academyProToolbar()}<div id="academyMain">${academyPanePro('overview')}</div></div></div><div class="academy-rail">${academyRailPro()}</div></div>${academyAssignModalHtml()}`;
+    return `<div class="card" style="border-color:#ffc5ca;background:#fff7f8;margin-bottom:14px"><div class="card-head" style="margin-bottom:0"><div><div class="card-title">Academy SLA Uyarısı</div><div class="card-sub">${overdue} eğitim görevi SLA sınırını geçti veya yaklaştı. Bölge, şube ve eğitmen bazlı takip aktif.</div></div>${badge(overdue>3?'Kritik':'Takipte')}</div></div><div class="academy-kpis">${academyProKpi('Bölge SLA','%'+regionAvg,'Hedef: %90',regionAvg,slaClass(regionAvg))}${academyProKpi('Şube SLA','%'+branchAvg,'Hedef: %85',branchAvg,slaClass(branchAvg))}${academyProKpi('Eğitmen SLA','%'+instructorAvg,'Zamanında planlama',instructorAvg,slaClass(instructorAvg))}${academyProKpi('Hedef Gerçekleşme','%'+avg,'Tüm katılımcılar',avg,slaClass(avg))}${academyProKpi('Aktif Eğitim',d.courses.length,'Rol bazlı katalog',Math.min(100,d.courses.length*10),'blue')}${academyProKpi('Geciken Eğitim',overdue,'SLA dışı eğitim görevi',Math.max(8,100-overdue*15),overdue>3?'red':'amber')}${academyProKpi('Sertifika',certs,'Geçerli aktif sertifika',Math.min(100,certs*8),'green')}${academyProKpi('Atanan Plan',d.assignments.length,'Eğitmen tarafından atanan',Math.min(100,Math.max(5,d.assignments.length*12)),d.assignments.length?'blue':'amber')}</div><div class="academy-tabs"><button class="academy-tab active" data-academy-tab="overview">Akademi Kokpiti</button><button class="academy-tab" data-academy-tab="courses">Eğitim Kataloğu</button><button class="academy-tab" data-academy-tab="onboarding">İşe Başlama</button><button class="academy-tab" data-academy-tab="people">Kişi Takibi</button><button class="academy-tab" data-academy-tab="regions">Bölge / Şube SLA</button><button class="academy-tab" data-academy-tab="sla">SLA & KPI</button><button class="academy-tab" data-academy-tab="assignments">Eğitim Atama</button><button class="academy-tab" data-academy-tab="certs">Sertifikalar</button><button class="academy-tab" data-academy-tab="settings">Ayarlar</button></div><div class="academy-command"><div class="academy-main"><div class="card"><div class="card-head"><div><div class="card-title">Academy Kontrol Merkezi</div><div class="card-sub">İşe girişten sürekli eğitime kadar; bölge, şube, eğitmen ve kişi bazlı KPI/SLA takip ekranı</div></div><button class="btn primary" data-academy-open-assign>${icon('plus')}Eğitim Ata</button></div>${academyProToolbar()}<div id="academyMain">${academyPanePro('overview')}</div></div></div><div class="academy-rail">${academyRailPro()}</div></div>${academyAssignModalHtml()}${academyCourseDetailModalHtml()}`;
   };
   window.academyPane=academyPanePro;
   function academyAssignModalHtml(){
@@ -8203,12 +8326,14 @@
     syncAcademyRoomView();
   };
   document.addEventListener('click',function(e){
-    const t=e.target.closest('[data-academy-open-assign],[data-academy-open-assign-person],[data-academy-close-assign],[data-academy-save-assignment]');
+    const t=e.target.closest('[data-academy-open-assign],[data-academy-open-assign-person],[data-academy-close-assign],[data-academy-save-assignment],[data-academy-open-course],[data-academy-close-course]');
     if(!t) return;
     if(t.matches('[data-academy-open-assign]')) openAcademyAssign(t.dataset.academyOpenAssign?{courseId:t.dataset.academyOpenAssign}:{});
     if(t.matches('[data-academy-open-assign-person]')) openAcademyAssign({personId:t.dataset.academyOpenAssignPerson});
     if(t.matches('[data-academy-close-assign]')) closeAcademyAssign();
     if(t.matches('[data-academy-save-assignment]')) saveAcademyAssignment();
+    if(t.matches('[data-academy-open-course]')) openAcademyCourseDetail(t.dataset.academyOpenCourse);
+    if(t.matches('[data-academy-close-course]')) closeAcademyCourseDetail();
   });
   setTimeout(()=>{ if(typeof DB!=='undefined' && DB && current==='academy'){ rerenderAcademyRoom(); } },700);
 })();

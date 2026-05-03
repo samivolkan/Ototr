@@ -70,6 +70,15 @@ for (const route of navRoutes) {
   await page.waitForSelector(`#page-${pageRoute}.active`);
 }
 
+await page.locator('#nav [data-nav-route="academy"]').click();
+await page.waitForSelector("#page-academy.active");
+await page.locator('#page-academy.active [data-academy-tab="courses"]').click();
+await page.locator("#page-academy.active .micro-btn[data-academy-open-course]").first().click();
+await page.waitForSelector("#academyCourseModal.open");
+const academyDetailTitle = await page.locator("#academyCourseDetailBody .card-title").first().innerText();
+await page.locator("#academyCourseModal [data-academy-close-course]").click();
+await page.waitForSelector("#academyCourseModal.open", { state: "hidden", timeout: 5000 });
+
 await page.locator('#nav [data-nav-route="franchise"]').click();
 await page.waitForSelector("#page-franchise.active");
 const leadBefore = await page.locator("#page-franchise.active .deal").count();
@@ -149,6 +158,7 @@ const result = {
   leadAfterReset,
   drawerTitle,
   searchRoute,
+  academyDetailTitle,
   mobileNavCount,
   errors,
   mobileErrors,
