@@ -78,6 +78,35 @@ await page.waitForSelector("#academyCourseModal.open");
 const academyDetailTitle = await page.locator("#academyCourseDetailBody .card-title").first().innerText();
 await page.locator("#academyCourseModal [data-academy-close-course]").click();
 await page.waitForSelector("#academyCourseModal.open", { state: "hidden", timeout: 5000 });
+await page.locator('#page-academy.active [data-academy-open-assign]').first().click();
+await page.waitForSelector("#academyAssignModal.open");
+await page.locator("#academyAssignModal [data-academy-save-assignment]").click();
+await page.waitForSelector("#academyAssignModal.open", { state: "hidden", timeout: 5000 });
+await page.locator('#page-academy.active [data-academy-tab="assignments"]').click();
+await page.locator("#page-academy.active [data-academy-complete-assignment]").first().click();
+page.once("dialog", async (dialog) => {
+  await dialog.accept("92");
+});
+await page.locator("#page-academy.active [data-academy-exam-assignment]").first().click();
+await page.locator("#page-academy.active [data-academy-cert-assignment]").first().click();
+await page.waitForFunction(() => {
+  const rows = JSON.parse(localStorage.getItem("ototr-academy-assignments") || "[]");
+  return rows.some((row) => row.status === "Sertifika Verildi" && row.certificateStatus === "Geçerli");
+});
+const academyAssignmentLifecycle = await page.evaluate(() => {
+  const rows = JSON.parse(localStorage.getItem("ototr-academy-assignments") || "[]");
+  const row = rows.find((item) => item.status === "Sertifika Verildi");
+  return `${row?.status || ""} / ${row?.certificateStatus || ""}`;
+});
+await page.locator('#page-academy.active [data-academy-tab="people"]').click();
+await page.locator("#page-academy.active").getByText("Personel Ekranına Yansıyan Eğitimler").first().waitFor();
+await page.locator("#page-academy.active").getByText("Zorunlu Eğitim Yetki Kilidi").first().waitFor();
+await page.locator('#page-academy.active [data-academy-tab="sla"]').click();
+await page.locator("#page-academy.active").getByText("Academy Raporlama").first().waitFor();
+await page.locator('#page-academy.active [data-academy-tab="certs"]').click();
+await page.locator("#page-academy.active").getByText("Sertifika Yenileme Takvimi").first().waitFor();
+await page.locator('#page-academy.active [data-academy-tab="assignments"]').click();
+await page.locator("#page-academy.active").getByText("Kalite / Şikayet Kaynaklı Yeniden Eğitim").first().waitFor();
 
 await page.locator('#nav [data-nav-route="franchise"]').click();
 await page.waitForSelector("#page-franchise.active");
@@ -159,6 +188,7 @@ const result = {
   drawerTitle,
   searchRoute,
   academyDetailTitle,
+  academyAssignmentLifecycle,
   mobileNavCount,
   errors,
   mobileErrors,

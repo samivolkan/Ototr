@@ -7969,6 +7969,85 @@
   }
   function academyReadJson(key,fallback){ try{return JSON.parse(localStorage.getItem(key)||JSON.stringify(fallback))||fallback}catch(e){return fallback} }
   function saveAssignments(list){ localStorage.setItem(academyAssignmentsKey, JSON.stringify(list)); }
+  function academyTodayIso(){ return new Date().toISOString().slice(0,10); }
+  function academyAddMonths(date,months){ const d=new Date(date||Date.now()); d.setMonth(d.getMonth()+months); return d.toISOString().slice(0,10); }
+  function academyCoursePassScore(courseId){ return Number(academyCourseSource(courseId)?.passScore || 80); }
+  function academyAssignmentStatusTone(status){
+    const s=String(status||'Planlandı');
+    if(s.includes('Sertifika')) return 'Geçerli';
+    if(s.includes('Geçti')||s.includes('Tamamlandı')) return 'Tamamlandı';
+    if(s.includes('Kaldı')) return 'Kritik';
+    if(s.includes('Gecikti')) return 'Gecikti';
+    if(s.includes('Devam')) return 'Devam';
+    return 'Planlandı';
+  }
+  function academyNormalizeAssignment(a){
+    const status=a.status||'Planlandı';
+    const passScore=academyCoursePassScore(a.courseId);
+    const score=Number(a.examScore||0);
+    const passed=typeof a.examPassed==='boolean' ? a.examPassed : (score ? score>=passScore : false);
+    return {
+      certificateStatus:'Bekliyor',
+      attempts:0,
+      progress:status==='Sertifika Verildi'?100:status==='Sınav Geçti'?95:status==='Tamamlandı'?85:status==='Devam Ediyor'?45:0,
+      passScore,
+      examPassed:passed,
+      ...a
+    };
+  }
+  function academyUpdateAssignment(id,patch){
+    const d=academyBase();
+    const list=(d.assignments||[]).map(a=>a.id===id?academyNormalizeAssignment({...a,...patch,updatedAt:new Date().toISOString()}):a);
+    saveAssignments(list);
+    if(current==='academy') rerenderAcademyRoom();
+  }
+  function academyStartAssignment(id){ academyUpdateAssignment(id,{status:'Devam Ediyor',progress:45,startedAt:new Date().toISOString()}); if(typeof toast==='function') toast('Eğitim devam ediyor durumuna alındı.'); }
+  function academyCompleteAssignment(id){ academyUpdateAssignment(id,{status:'Tamamlandı',progress:85,completedAt:new Date().toISOString()}); if(typeof toast==='function') toast('Eğitim tamamlandı; sınav sonucu bekleniyor.'); }
+  function academyEnterExamResult(id){
+    const d=academyBase();
+    const item=(d.assignments||[]).find(a=>a.id===id);
+    if(!item) return;
+    const passScore=academyCoursePassScore(item.courseId);
+    const raw=prompt(`${item.personName} için sınav puanı girin. Geçme puanı: ${passScore}`, item.examScore || passScore);
+    if(raw===null) return;
+    const score=Math.max(0,Math.min(100,Number(raw)||0));
+    const passed=score>=passScore;
+    academyUpdateAssignment(id,{status:passed?'Sınav Geçti':'Sınav Kaldı',progress:passed?95:65,examScore:score,examPassed:passed,attempts:Number(item.attempts||0)+1,examAt:new Date().toISOString(),certificateStatus:passed?'Sertifika Hazır':'Tekrar Gerekli'});
+    if(typeof toast==='function') toast(passed?`Sınav geçti: ${score}`:`Sınav kaldı: ${score}. Tekrar eğitim gerekli.`);
+  }
+  function academyIssueCertificate(id){
+    const d=academyBase();
+    const item=(d.assignments||[]).find(a=>a.id===id);
+    if(!item) return;
+    if(item.examScore && Number(item.examScore)<academyCoursePassScore(item.courseId)){ if(typeof toast==='function') toast('Sertifika verilemez: sınav geçme puanı altında.'); return; }
+    const issued=academyTodayIso();
+    academyUpdateAssignment(id,{status:'Sertifika Verildi',progress:100,certificateStatus:'Geçerli',certificateNo:'OTR-'+String(Date.now()).slice(-8),certificateIssuedAt:issued,certificateExpiresAt:academyAddMonths(issued,12)});
+    if(typeof toast==='function') toast(`${item.personName} için sertifika verildi.`);
+  }
+  function academyAssignCourseToPerson(personId,courseId,source='Zorunlu eğitim kilidi'){
+    const d=academyBase();
+    const person=(d.people||[]).find(p=>p.id===personId), course=(d.courses||[]).find(c=>c.id===courseId) || {id:courseId,title:academyCourseTitleById(courseId),owner:'Academy'};
+    if(!person||!course) return false;
+    const list=d.assignments||[];
+    if(list.some(a=>a.personId===person.id && a.courseId===course.id && !['Sertifika Verildi','Sınav Geçti'].includes(a.status))) return true;
+    list.unshift(academyNormalizeAssignment({id:'ASN-'+Date.now()+'-'+person.id,personId:person.id,personName:person.name,branch:person.branch,region:person.region,courseId:course.id,courseTitle:course.title,instructor:course.owner||'Academy',dueDate:academyAddMonths(academyTodayIso(),1),status:'Planlandı',source,note:source}));
+    saveAssignments(list);
+    if(current==='academy') rerenderAcademyRoom();
+    return true;
+  }
+  function academyRenewCertificate(id){
+    const d=academyBase();
+    const item=(d.assignments||[]).find(a=>a.id===id);
+    if(!item) return;
+    academyAssignCourseToPerson(item.personId,item.courseId,'Sertifika yenileme');
+    if(typeof toast==='function') toast('Yenileme eğitimi atandı.');
+  }
+  function academyAssignRetraining(index){
+    const rec=academyRetrainingRecommendations()[Number(index)||0];
+    if(!rec?.person) return;
+    academyAssignCourseToPerson(rec.person.id,rec.courseId,'Kalite/şikayet yeniden eğitim');
+    if(typeof toast==='function') toast(`${rec.person.name} için ${rec.courseTitle} yeniden eğitim olarak atandı.`);
+  }
   function personInitials(name){ return String(name||'').split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase(); }
   function academyEsc(v){ return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;'); }
   function academyStoredCourses(){ return academyReadJson(academyCoursesKey, []); }
@@ -8201,8 +8280,8 @@
   function academyPeopleTablePro(){
     const d=academyBase();
     const people=d.people||[];
-    const assignments=d.assignments||[];
-    return `<div class="crm-mini-table"><table class="academy-person-table"><thead><tr><th>Personel</th><th>Rol</th><th>Bölge / Şube</th><th>Eğitim Planı</th><th>Hedef Gerçek.</th><th>Sınav</th><th>Sertifika</th><th>Gecikme</th><th>SLA</th><th>Aksiyon</th></tr></thead><tbody>${people.map(p=>{const cls=p.completion>=80?'good':p.completion>=60?'warn':'bad'; const count=assignments.filter(a=>a.personId===p.id).length; const sla=p.overdue>2?'Kritik':p.overdue>0?'Yaklaşıyor':'İçinde'; return `<tr data-academy-person="${p.id}"><td><div class="academy-person"><div class="academy-avatar">${personInitials(p.name)}</div><div><b>${p.name}</b><span class="card-sub">Sıradaki: ${p.next}</span></div></div></td><td>${p.role}</td><td>${p.region}<br><span class="card-sub">${p.branch}</span></td><td>${p.path}<br><span class="card-sub">Listeye eklenen: ${count}</span></td><td><span class="academy-score ${cls}">%${p.completion}</span><div class="progress"><div class="bar ${cls==='bad'?'red':cls==='warn'?'amber':'green'}" style="width:${p.completion}%"></div></div></td><td>${p.exam}</td><td>${p.cert}</td><td>${p.overdue}</td><td>${badge(sla)}</td><td><button class="micro-btn" data-academy-open-assign-person="${p.id}">Eğitim ata</button></td></tr>`;}).join('')}</tbody></table></div>`;
+    const assignments=(d.assignments||[]).map(academyNormalizeAssignment);
+    return `<div class="crm-mini-table"><table class="academy-person-table"><thead><tr><th>Personel</th><th>Rol</th><th>Bölge / Şube</th><th>Eğitim Planı</th><th>Hedef Gerçek.</th><th>Sınav</th><th>Sertifika</th><th>Gecikme</th><th>SLA</th><th>Aksiyon</th></tr></thead><tbody>${people.map(p=>{const own=assignments.filter(a=>a.personId===p.id); const done=own.filter(a=>['Tamamlandı','Sınav Geçti','Sertifika Verildi'].includes(a.status)).length; const issued=own.filter(a=>a.status==='Sertifika Verildi').length; const failed=own.filter(a=>a.status==='Sınav Kaldı').length; const dynamicCompletion=own.length?Math.round(own.reduce((s,a)=>s+(a.progress||0),0)/own.length):p.completion; const cls=dynamicCompletion>=80?'good':dynamicCompletion>=60?'warn':'bad'; const sla=p.overdue>2||failed?'Kritik':p.overdue>0?'Yaklaşıyor':'İçinde'; return `<tr data-academy-person="${p.id}"><td><div class="academy-person"><div class="academy-avatar">${personInitials(p.name)}</div><div><b>${p.name}</b><span class="card-sub">Sıradaki: ${p.next}</span></div></div></td><td>${p.role}</td><td>${p.region}<br><span class="card-sub">${p.branch}</span></td><td>${p.path}<br><span class="card-sub">${done}/${own.length||0} atama tamamlandı</span></td><td><span class="academy-score ${cls}">%${dynamicCompletion}</span><div class="progress"><div class="bar ${cls==='bad'?'red':cls==='warn'?'amber':'green'}" style="width:${dynamicCompletion}%"></div></div></td><td>${own.length?`${own.filter(a=>a.examScore).length}/${own.length}`:p.exam}</td><td>${issued||p.cert}</td><td>${p.overdue}</td><td>${badge(sla)}</td><td><button class="micro-btn" data-academy-open-assign-person="${p.id}">Eğitim ata</button></td></tr>`;}).join('')}</tbody></table></div>`;
   }
   function academySlaDashboard(){
     const s=calcSla();
@@ -8210,8 +8289,80 @@
   }
   function academyAssignmentsPanel(){
     const d=academyBase();
-    const rows=(d.assignments||[]).slice(0,20);
-    return `<div class="card"><div class="card-head"><div><div class="card-title">Atanan Eğitim Planları</div><div class="card-sub">Tekil atama veya hedef kitleye toplu atama sonrası eğitimler kişinin ekranına eklenir.</div></div><div class="quick-actions"><button class="btn primary" data-academy-open-course-create>${icon('book-plus')}Yeni Eğitim ve Toplu Atama</button><button class="btn" data-academy-open-assign>${icon('plus')}Tekil Atama</button></div></div>${rows.length?`<table><thead><tr><th>Kişi</th><th>Eğitim</th><th>Eğitmen</th><th>Hedef Tarih</th><th>Kaynak</th><th>Durum</th></tr></thead><tbody>${rows.map(a=>`<tr><td><b>${a.personName}</b><br><span class="card-sub">${a.branch}</span></td><td>${a.courseTitle}</td><td>${a.instructor}</td><td>${a.dueDate}</td><td>${academyEsc(a.source||'Tekil atama')}</td><td>${badge(a.status)}</td></tr>`).join('')}</tbody></table>`:`<div class="mini">${icon('graduation-cap')}<div><b>Henüz atama yok</b><span>“Yeni Eğitim ve Toplu Atama” butonuyla rol, bölge, şube veya seviye bazlı eğitim dağıtabilirsin.</span></div></div>`}</div>`;
+    const rows=(d.assignments||[]).map(academyNormalizeAssignment).slice(0,20);
+    const stat=[
+      ['Planlanan',rows.filter(a=>a.status==='Planlandı').length],
+      ['Devam',rows.filter(a=>a.status==='Devam Ediyor').length],
+      ['Sınav bekleyen',rows.filter(a=>a.status==='Tamamlandı').length],
+      ['Sertifika',rows.filter(a=>a.status==='Sertifika Verildi').length]
+    ];
+    return `<div class="card"><div class="card-head"><div><div class="card-title">Atanan Eğitim Planları</div><div class="card-sub">Eğitim yaşam döngüsü: atama, tamamlama, sınav sonucu ve sertifika.</div></div><div class="quick-actions"><button class="btn primary" data-academy-open-course-create>${icon('book-plus')}Yeni Eğitim ve Toplu Atama</button><button class="btn" data-academy-open-assign>${icon('plus')}Tekil Atama</button></div></div><div class="hr-data-grid" style="margin-bottom:10px">${stat.map(x=>`<div class="hr-data-card"><span>${x[0]}</span><b>${x[1]}</b></div>`).join('')}</div>${rows.length?`<table><thead><tr><th>Kişi</th><th>Eğitim</th><th>Hedef</th><th>İlerleme</th><th>Sınav</th><th>Sertifika</th><th>Durum</th><th>Aksiyon</th></tr></thead><tbody>${rows.map(a=>{const score=a.examScore||'-'; return `<tr><td><b>${academyEsc(a.personName)}</b><br><span class="card-sub">${academyEsc(a.branch)} · ${academyEsc(a.source||'Tekil atama')}</span></td><td>${academyEsc(a.courseTitle)}<br><span class="card-sub">Eğitmen: ${academyEsc(a.instructor)}</span></td><td>${academyEsc(a.dueDate||'-')}</td><td><b>%${a.progress||0}</b><div class="progress"><div class="bar ${a.status==='Sınav Kaldı'?'red':a.status==='Sertifika Verildi'?'green':'blue'}" style="width:${a.progress||0}%"></div></div></td><td>${score}<br><span class="card-sub">Geçme: ${a.passScore}</span></td><td>${badge(a.certificateStatus||'Bekliyor')}<br><span class="card-sub">${academyEsc(a.certificateExpiresAt||'')}</span></td><td>${badge(academyAssignmentStatusTone(a.status))}</td><td><div class="quick-actions"><button class="micro-btn" data-academy-start-assignment="${a.id}">Başlat</button><button class="micro-btn" data-academy-complete-assignment="${a.id}">Tamamla</button><button class="micro-btn" data-academy-exam-assignment="${a.id}">Sınav</button><button class="micro-btn" data-academy-cert-assignment="${a.id}">Sertifika</button></div></td></tr>`;}).join('')}</tbody></table>`:`<div class="mini">${icon('graduation-cap')}<div><b>Henüz atama yok</b><span>“Yeni Eğitim ve Toplu Atama” butonuyla rol, bölge, şube veya seviye bazlı eğitim dağıtabilirsin.</span></div></div>`}</div>`;
+  }
+  function academyCertificatesPanelPro(){
+    const d=academyBase();
+    const assignments=(d.assignments||[]).map(academyNormalizeAssignment);
+    const certRows=assignments.filter(a=>a.status==='Sertifika Verildi' || a.certificateStatus==='Geçerli' || a.certificateStatus==='Sertifika Hazır');
+    const expiring=certRows.filter(a=>a.certificateExpiresAt && new Date(a.certificateExpiresAt) <= academyAddMonths(academyTodayIso(),2)).length;
+    return `<div class="card"><div class="card-head"><div><div class="card-title">Sertifika ve Sınav Sonuçları</div><div class="card-sub">Atama bazlı sınav sonucu, sertifika ve yenileme takvimi.</div></div>${badge(expiring?'Yenileme Var':'Stabil')}</div><div class="hr-data-grid" style="margin-bottom:10px">${[['Sertifika verilen',certRows.filter(a=>a.status==='Sertifika Verildi').length],['Sertifika hazır',certRows.filter(a=>a.certificateStatus==='Sertifika Hazır').length],['Sınav kaldı',assignments.filter(a=>a.status==='Sınav Kaldı').length],['Yaklaşan yenileme',expiring]].map(x=>`<div class="hr-data-card"><span>${x[0]}</span><b>${x[1]}</b></div>`).join('')}</div>${certRows.length?`<table><thead><tr><th>Personel</th><th>Eğitim</th><th>Sınav</th><th>Sertifika</th><th>Veriliş</th><th>Yenileme</th><th>Aksiyon</th></tr></thead><tbody>${certRows.map(a=>`<tr><td><b>${academyEsc(a.personName)}</b><br><span class="card-sub">${academyEsc(a.branch)}</span></td><td>${academyEsc(a.courseTitle)}</td><td>${a.examScore||'-'}<br><span class="card-sub">Geçme: ${a.passScore}</span></td><td>${badge(a.certificateStatus||'Bekliyor')}<br><span class="card-sub">${academyEsc(a.certificateNo||'')}</span></td><td>${academyEsc(a.certificateIssuedAt||'-')}</td><td>${academyEsc(a.certificateExpiresAt||'-')}</td><td>${a.status==='Sertifika Verildi'?'<span class="badge b-green">Geçerli</span>':`<button class="micro-btn" data-academy-cert-assignment="${a.id}">Sertifika ver</button>`}</td></tr>`).join('')}</tbody></table>`:`<div class="mini">${icon('award')}<div><b>Henüz sertifika kaydı yok</b><span>Sınavı geçen atamalar burada sertifika bekleyen kayıt olarak görünür.</span></div></div>`}</div>`;
+  }
+  const academyLockRules=[
+    {role:'Teknisyen',course:'AC-15',permission:'Rapor kilitleme',reason:'Fotoğraf, kanıt ve rapor kilitleme standardı tamamlanmalı.'},
+    {role:'Ekspertiz',course:'AC-14',permission:'Kritik rapor notu',reason:'Rapor dili ve müşteri anlatımı sertifikası gerekli.'},
+    {role:'Müşteri Kabul',course:'AC-05',permission:'Müşteri verisi görüntüleme',reason:'KVKK ve müşteri izni eğitimi tamamlanmalı.'},
+    {role:'CRM',course:'AC-10',permission:'CRM iletişim başlatma',reason:'Telefon/WhatsApp karşılama dili tamamlanmalı.'},
+    {role:'Şube Müdürü',course:'AC-31',permission:'Şube aksiyon kapatma',reason:'Şube Müdürü 30 Gün Programı L3 yetki şartı.'},
+    {role:'Bölge Müdürü',course:'AC-37',permission:'Bölge düzeltme planı onayı',reason:'Bölge Müdürü Operasyon Okulu tamamlanmalı.'}
+  ];
+  function academyCourseTitleById(id){ return academyCourseSource(id)?.title || (academyBase().courses||[]).find(c=>c.id===id)?.title || id; }
+  function academyPersonHasCourse(personId,courseId){
+    return (academyBase().assignments||[]).some(a=>a.personId===personId && a.courseId===courseId && ['Sertifika Verildi','Sınav Geçti'].includes(a.status));
+  }
+  function academyPermissionLocks(){
+    const d=academyBase();
+    return (d.people||[]).flatMap(person=>academyLockRules.filter(rule=>String(person.role||'').includes(rule.role)).map(rule=>({
+      person, rule, locked:!academyPersonHasCourse(person.id,rule.course)
+    })));
+  }
+  function academyMandatoryLockPanel(){
+    const locks=academyPermissionLocks();
+    const locked=locks.filter(x=>x.locked);
+    return `<div class="card"><div class="card-head"><div><div class="card-title">Zorunlu Eğitim Yetki Kilidi</div><div class="card-sub">Kritik yetkiler, ilgili eğitim sınavı veya sertifikası tamamlanmadan açık sayılmaz.</div></div>${badge(locked.length?'Kilit Var':'Temiz')}</div><div class="hr-data-grid" style="margin-bottom:10px">${[['Toplam kontrol',locks.length],['Kilitli yetki',locked.length],['Açık yetki',locks.length-locked.length],['Kritik rol',new Set(locks.map(x=>x.person.role)).size]].map(x=>`<div class="hr-data-card"><span>${x[0]}</span><b>${x[1]}</b></div>`).join('')}</div>${locks.length?`<table><thead><tr><th>Personel</th><th>Yetki</th><th>Zorunlu eğitim</th><th>Durum</th><th>Aksiyon</th></tr></thead><tbody>${locks.slice(0,12).map(x=>`<tr><td><b>${academyEsc(x.person.name)}</b><br><span class="card-sub">${academyEsc(x.person.role)} · ${academyEsc(x.person.branch)}</span></td><td>${academyEsc(x.rule.permission)}</td><td>${academyEsc(academyCourseTitleById(x.rule.course))}<br><span class="card-sub">${academyEsc(x.rule.reason)}</span></td><td>${badge(x.locked?'Kilitli':'Açık')}</td><td>${x.locked?`<button class="micro-btn" data-academy-lock-assign="${x.person.id}" data-course-id="${x.rule.course}">Eğitim ata</button>`:'<span class="badge b-green">Yetki açık</span>'}</td></tr>`).join('')}</tbody></table>`:`<div class="mini">${icon('shield-check')}<div><b>Yetki kilidi kuralı yok</b><span>Rol bazlı zorunlu eğitim kuralı tanımlandığında burada görünür.</span></div></div>`}</div>`;
+  }
+  function academyRenewalCalendarPanel(){
+    const rows=(academyBase().assignments||[]).map(academyNormalizeAssignment).filter(a=>a.certificateExpiresAt);
+    const sorted=rows.slice().sort((a,b)=>String(a.certificateExpiresAt).localeCompare(String(b.certificateExpiresAt)));
+    const today=academyTodayIso(), soon=academyAddMonths(today,2);
+    return `<div class="card"><div class="card-head"><div><div class="card-title">Sertifika Yenileme Takvimi</div><div class="card-sub">Yaklaşan ve geciken sertifikalar için yenileme eğitimi atanır.</div></div>${badge(sorted.filter(a=>a.certificateExpiresAt<=soon).length?'Takip':'Stabil')}</div>${sorted.length?`<table><thead><tr><th>Personel</th><th>Eğitim</th><th>Sertifika</th><th>Yenileme</th><th>Durum</th><th>Aksiyon</th></tr></thead><tbody>${sorted.map(a=>{const status=a.certificateExpiresAt<today?'Gecikti':a.certificateExpiresAt<=soon?'Yaklaşıyor':'Geçerli'; return `<tr><td><b>${academyEsc(a.personName)}</b><br><span class="card-sub">${academyEsc(a.branch)}</span></td><td>${academyEsc(a.courseTitle)}</td><td>${academyEsc(a.certificateNo||'-')}</td><td>${academyEsc(a.certificateExpiresAt)}</td><td>${badge(status)}</td><td><button class="micro-btn" data-academy-renew-cert="${a.id}">Yenileme ata</button></td></tr>`;}).join('')}</tbody></table>`:`<div class="mini">${icon('calendar-clock')}<div><b>Yenileme takvimi boş</b><span>Sertifika verildikçe yenileme tarihi burada izlenecek.</span></div></div>`}</div>`;
+  }
+  const academyRetrainingMap=[
+    {match:'rapor dili',course:'AC-14',reason:'Rapor dili kaynaklı şikayet'},
+    {match:'eksik açıklama',course:'AC-13',reason:'Rapor teslim konuşması güçlendirilmeli'},
+    {match:'iletişim hatası',course:'AC-10',reason:'İlk karşılama ve iletişim dili tekrarı'},
+    {match:'teknik yorum farkı',course:'AC-20',reason:'Teknik sorumluluk ve hatalı rapor riski'},
+    {match:'operasyon gecikmesi',course:'AC-32',reason:'Günlük operasyon rutini'},
+    {match:'rapor sorumluluğu',course:'AC-27',reason:'Hukuki riske dönen şikayet yönetimi'}
+  ];
+  function academyRetrainingRecommendations(){
+    const roots=(typeof complaintCenter==='function' ? (complaintCenter().complaintRootCauses||[]) : []);
+    const findings=(typeof ensureQuality==='function' ? (ensureQuality().findings||[]).map(f=>[String(f.title||f.issue||f.finding||'kalite bulgusu').toLowerCase(),1]) : []);
+    const rows=[...roots,...findings].map(item=>{
+      const label=String(item[0]||'').toLowerCase();
+      const map=academyRetrainingMap.find(x=>label.includes(x.match)) || (label.includes('foto')||label.includes('kanıt')?{course:'AC-15',reason:'Fotoğraf/kanıt standardı tekrarı'}:null);
+      if(!map) return null;
+      const person=(academyBase().people||[]).find(p=>String(p.role||'').includes('Ekspertiz')||String(p.role||'').includes('CRM')) || (academyBase().people||[])[0];
+      return {label:item[0],count:item[1]||1,courseId:map.course,courseTitle:academyCourseTitleById(map.course),reason:map.reason,person};
+    }).filter(Boolean).slice(0,8);
+    return rows;
+  }
+  function academyRetrainingPanel(){
+    const rows=academyRetrainingRecommendations();
+    return `<div class="card"><div class="card-head"><div><div class="card-title">Kalite / Şikayet Kaynaklı Yeniden Eğitim</div><div class="card-sub">Kök neden eşleşirse ilgili personele eğitim önerisi veya ataması yapılır.</div></div>${badge(rows.length?'Öneri Var':'Temiz')}</div>${rows.length?`<table><thead><tr><th>Kök neden</th><th>Önerilen eğitim</th><th>Hedef kişi</th><th>Neden</th><th>Aksiyon</th></tr></thead><tbody>${rows.map((r,i)=>`<tr><td><b>${academyEsc(r.label)}</b><br><span class="card-sub">${r.count} sinyal</span></td><td>${academyEsc(r.courseTitle)}</td><td>${academyEsc(r.person?.name||'Academy havuzu')}<br><span class="card-sub">${academyEsc(r.person?.branch||'')}</span></td><td>${academyEsc(r.reason)}</td><td><button class="micro-btn" data-academy-retraining-assign="${i}">Ata</button></td></tr>`).join('')}</tbody></table>`:`<div class="mini">${icon('shield-check')}<div><b>Yeniden eğitim önerisi yok</b><span>Kalite veya şikayet kök nedeni eşleştiğinde öneriler burada oluşur.</span></div></div>`}</div>`;
+  }
+  function academyReportingPanel(){
+    const d=academyBase(), assignments=(d.assignments||[]).map(academyNormalizeAssignment);
+    const group=(keyFn)=>Object.values(assignments.reduce((acc,a)=>{const key=keyFn(a)||'-'; acc[key]=acc[key]||{key,total:0,done:0,cert:0,late:0}; acc[key].total++; if(['Tamamlandı','Sınav Geçti','Sertifika Verildi'].includes(a.status)) acc[key].done++; if(a.status==='Sertifika Verildi') acc[key].cert++; if(a.status==='Gecikti'||(a.dueDate&&a.dueDate<academyTodayIso()&&!['Sertifika Verildi','Sınav Geçti'].includes(a.status))) acc[key].late++; return acc;},{})).slice(0,8);
+    const rows=[['Şube',group(a=>a.branch)],['Eğitim',group(a=>a.courseTitle)],['Eğitmen',group(a=>a.instructor)],['Durum',group(a=>a.status)]];
+    return `<div class="card"><div class="card-head"><div><div class="card-title">Academy Raporlama</div><div class="card-sub">Şube, eğitim, eğitmen ve durum bazlı tamamlanma / sertifika / gecikme kırılımları.</div></div>${badge(assignments.length?assignments.length+' kayıt':'Boş')}</div><div class="grid g2">${rows.map(([title,list])=>`<div class="card" style="box-shadow:none;border-radius:8px"><div class="card-head"><div><div class="card-title">${title}</div></div></div>${list.length?`<table><thead><tr><th>Kırılım</th><th>Toplam</th><th>Tamam.</th><th>Sert.</th><th>Gecikme</th></tr></thead><tbody>${list.map(r=>`<tr><td>${academyEsc(r.key)}</td><td>${r.total}</td><td>${r.done}</td><td>${r.cert}</td><td>${r.late}</td></tr>`).join('')}</tbody></table>`:`<div class="card-sub">Henüz raporlanacak atama yok.</div>`}</div>`).join('')}</div></div>`;
   }
   function academyRegionsPro(){
     const s=calcSla();
@@ -8348,13 +8499,13 @@
     if(tab==='go-live') return academyReadyPage();
     if(tab==='courses') return academyCourseGridPro();
     if(tab==='onboarding') return (typeof academyOnboarding==='function'?academyOnboarding():'') + `<div style="margin-top:14px">${academyAssignmentsPanel()}</div>`;
-    if(tab==='people') return `${academyPersonalTrainingInbox()}<div style="margin-top:14px">${academyPeopleTablePro()}</div>`;
+    if(tab==='people') return `${academyPersonalTrainingInbox()}<div style="margin-top:14px">${academyMandatoryLockPanel()}</div><div style="margin-top:14px">${academyPeopleTablePro()}</div>`;
     if(tab==='regions') return academyRegionsPro();
-    if(tab==='sla') return academySlaDashboard();
-    if(tab==='assignments') return academyAssignmentsPanel();
-    if(tab==='certs') return typeof academyCerts==='function'?academyCerts():'';
+    if(tab==='sla') return `${academySlaDashboard()}<div style="margin-top:14px">${academyReportingPanel()}</div>`;
+    if(tab==='assignments') return `${academyAssignmentsPanel()}<div style="margin-top:14px">${academyRetrainingPanel()}</div><div style="margin-top:14px">${academyMandatoryLockPanel()}</div>`;
+    if(tab==='certs') return `${academyCertificatesPanelPro()}<div style="margin-top:14px">${academyRenewalCalendarPanel()}</div>`;
     if(tab==='settings') return typeof academySettings==='function'?academySettings():'';
-    return `${academyChartsPanel()}<div class="grid g2" style="margin-top:14px"><div>${academyCourseGridPro()}</div><div>${typeof academyOnboarding==='function'?academyOnboarding():''}</div></div><div style="margin-top:14px">${academySlaDashboard()}</div><div style="margin-top:14px">${academyAssignmentsPanel()}</div><div class="card" style="margin-top:14px"><div class="card-head"><div><div class="card-title">Kişi Bazlı Hedef Gerçekleştirme</div><div class="card-sub">Eğitime tabi herkesin hedef oranı, SLA durumu ve atanan eğitim planı</div></div></div>${academyPeopleTablePro()}</div>`;
+    return `${academyChartsPanel()}<div class="grid g2" style="margin-top:14px"><div>${academyCourseGridPro()}</div><div>${typeof academyOnboarding==='function'?academyOnboarding():''}</div></div><div style="margin-top:14px">${academyMandatoryLockPanel()}</div><div style="margin-top:14px">${academyRetrainingPanel()}</div><div style="margin-top:14px">${academySlaDashboard()}</div><div style="margin-top:14px">${academyReportingPanel()}</div><div style="margin-top:14px">${academyAssignmentsPanel()}</div><div class="card" style="margin-top:14px"><div class="card-head"><div><div class="card-title">Kişi Bazlı Hedef Gerçekleştirme</div><div class="card-sub">Eğitime tabi herkesin hedef oranı, SLA durumu ve atanan eğitim planı</div></div></div>${academyPeopleTablePro()}</div>`;
   }
   function academyChartsPanel(){
     return `<div class="academy-chart-grid"><div class="card academy-chart-card"><div class="card-head"><div><div class="card-title">Bölge Bazlı Academy Skoru</div><div class="card-sub">Bölge SLA, tamamlanma ve gecikme etkisi birlikte okunur</div></div></div><canvas id="chartAcademyRegion" height="128"></canvas><div class="academy-chart-note"><span>Yeşil: hedef üstü</span><span>Turuncu: takip</span><span>Kırmızı: müdahale</span></div></div><div class="card academy-chart-card compact"><div class="card-head"><div><div class="card-title">Sertifika Durumu</div><div class="card-sub">Geçerli, yenileme ve eksik sertifikalar</div></div></div><canvas id="chartAcademyCert" height="128"></canvas></div><div class="card academy-chart-card"><div class="card-head"><div><div class="card-title">Eğitim Tamamlama Trendi</div><div class="card-sub">Son 6 ay atanan, tamamlanan ve geciken eğitim akışı</div></div></div><canvas id="chartAcademyTrend" height="120"></canvas></div><div class="card academy-chart-card compact"><div class="card-head"><div><div class="card-title">Deadline Risk Dağılımı</div><div class="card-sub">Zamanında, yaklaşan, aşan ve kritik eğitimler</div></div></div><canvas id="chartAcademyDeadline" height="128"></canvas></div></div>`;
@@ -8363,7 +8514,7 @@
     const d=academyBase();
     const avg=Math.round((d.people||[]).reduce((sum,p)=>sum+p.completion,0)/Math.max(1,(d.people||[]).length));
     const overdue=(d.people||[]).reduce((sum,p)=>sum+p.overdue,0);
-    const certs=(d.people||[]).reduce((sum,p)=>sum+p.cert,0);
+    const certs=(d.assignments||[]).filter(a=>a.status==='Sertifika Verildi' || a.certificateStatus==='Geçerli').length || (d.people||[]).reduce((sum,p)=>sum+p.cert,0);
     const s=calcSla();
     const regionAvg=Math.round(s.regions.reduce((x,r)=>x+r.sla,0)/Math.max(1,s.regions.length));
     const branchAvg=Math.round(s.branches.reduce((x,r)=>x+r.sla,0)/Math.max(1,s.branches.length));
@@ -8421,7 +8572,7 @@
     let added=0;
     people.forEach(person=>{
       if(list.some(a=>a.personId===person.id && a.courseId===course.id)) return;
-      list.unshift({id:'ASN-'+Date.now()+'-'+person.id,personId:person.id,personName:person.name,branch:person.branch,region:person.region,courseId:course.id,courseTitle:course.title,instructor:course.owner,dueDate:course.dueDate,status:'Planlandı',source:'Hedef kitle ataması',targetSummary:academyTargetSummary(course),note:course.note});
+      list.unshift(academyNormalizeAssignment({id:'ASN-'+Date.now()+'-'+person.id,personId:person.id,personName:person.name,branch:person.branch,region:person.region,courseId:course.id,courseTitle:course.title,instructor:course.owner,dueDate:course.dueDate,status:'Planlandı',source:'Hedef kitle ataması',targetSummary:academyTargetSummary(course),note:course.note}));
       added++;
     });
     saveAssignments(list);
@@ -8445,7 +8596,7 @@
     const person=(d.people||[]).find(p=>p.id===data.personId), course=(d.courses||[]).find(c=>c.id===data.courseId);
     if(!person||!course) return;
     const list=d.assignments||[];
-    list.unshift({id:'ASN-'+Date.now(),personId:person.id,personName:person.name,branch:person.branch,region:person.region,courseId:course.id,courseTitle:course.title,instructor:data.instructor||course.owner,dueDate:data.dueDate||'2026-05-15',status:'Planlandı',source:'Tekil atama',note:data.note||''});
+    list.unshift(academyNormalizeAssignment({id:'ASN-'+Date.now(),personId:person.id,personName:person.name,branch:person.branch,region:person.region,courseId:course.id,courseTitle:course.title,instructor:data.instructor||course.owner,dueDate:data.dueDate||'2026-05-15',status:'Planlandı',source:'Tekil atama',note:data.note||''}));
     saveAssignments(list);
     closeAcademyAssign();
     if(typeof toast==='function') toast(`${person.name} kişisinin eğitim planına “${course.title}” eklendi.`);
@@ -8485,7 +8636,7 @@
     syncAcademyRoomView();
   };
   document.addEventListener('click',function(e){
-    const t=e.target.closest('[data-academy-open-course-create],[data-academy-close-course-create],[data-academy-save-course],[data-academy-open-assign],[data-academy-open-assign-person],[data-academy-close-assign],[data-academy-save-assignment],[data-academy-open-course],[data-academy-close-course]');
+    const t=e.target.closest('[data-academy-open-course-create],[data-academy-close-course-create],[data-academy-save-course],[data-academy-open-assign],[data-academy-open-assign-person],[data-academy-close-assign],[data-academy-save-assignment],[data-academy-open-course],[data-academy-close-course],[data-academy-start-assignment],[data-academy-complete-assignment],[data-academy-exam-assignment],[data-academy-cert-assignment],[data-academy-lock-assign],[data-academy-renew-cert],[data-academy-retraining-assign]');
     if(!t) return;
     if(t.matches('[data-academy-open-course-create]')) openAcademyCourseCreate();
     if(t.matches('[data-academy-close-course-create]')) closeAcademyCourseCreate();
@@ -8496,6 +8647,13 @@
     if(t.matches('[data-academy-save-assignment]')) saveAcademyAssignment();
     if(t.matches('[data-academy-open-course]')) openAcademyCourseDetail(t.dataset.academyOpenCourse);
     if(t.matches('[data-academy-close-course]')) closeAcademyCourseDetail();
+    if(t.matches('[data-academy-start-assignment]')) academyStartAssignment(t.dataset.academyStartAssignment);
+    if(t.matches('[data-academy-complete-assignment]')) academyCompleteAssignment(t.dataset.academyCompleteAssignment);
+    if(t.matches('[data-academy-exam-assignment]')) academyEnterExamResult(t.dataset.academyExamAssignment);
+    if(t.matches('[data-academy-cert-assignment]')) academyIssueCertificate(t.dataset.academyCertAssignment);
+    if(t.matches('[data-academy-lock-assign]')) { academyAssignCourseToPerson(t.dataset.academyLockAssign,t.dataset.courseId,'Zorunlu eğitim kilidi'); if(typeof toast==='function') toast('Zorunlu eğitim kilidi için eğitim atandı.'); }
+    if(t.matches('[data-academy-renew-cert]')) academyRenewCertificate(t.dataset.academyRenewCert);
+    if(t.matches('[data-academy-retraining-assign]')) academyAssignRetraining(t.dataset.academyRetrainingAssign);
   });
   setTimeout(()=>{ if(typeof DB!=='undefined' && DB && current==='academy'){ rerenderAcademyRoom(); } },700);
 })();
