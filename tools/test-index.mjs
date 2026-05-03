@@ -66,7 +66,8 @@ const navRoutes = await page.$$eval("#nav [data-nav-route]", (buttons) =>
 
 for (const route of navRoutes) {
   await page.locator(`#nav [data-nav-route="${route}"]`).click();
-  await page.waitForSelector(`#page-${route}.active`);
+  const pageRoute = route.split("/")[0] === "ik" ? "hr" : route.split("/")[0];
+  await page.waitForSelector(`#page-${pageRoute}.active`);
 }
 
 await page.locator('#nav [data-nav-route="franchise"]').click();
@@ -75,11 +76,11 @@ const leadBefore = await page.locator("#page-franchise.active .deal").count();
 
 await page.locator("#openLead2").click();
 await page.waitForSelector("#leadModal.open");
-await page.locator('input[name="name"]').fill("Test Franchise Adayi");
-await page.locator('input[name="phone"]').fill("05550000000");
-await page.locator('input[name="city"]').fill("Bursa");
-await page.locator('textarea[name="note"]').fill("Otomatik test kaydi");
-await page.locator('button[form="leadForm"]').click();
+await page.locator('#leadModal input[name="name"]').fill("Test Franchise Adayi");
+await page.locator('#leadModal input[name="phone"]').fill("05550000000");
+await page.locator('#leadModal input[name="city"]').fill("Bursa");
+await page.locator('#leadModal textarea[name="note"]').fill("Otomatik test kaydi");
+await page.locator('#leadModal button[form="leadForm"]').click();
 await page.waitForSelector("#leadModal.open", { state: "hidden", timeout: 5000 });
 
 const leadAfter = await page.locator("#page-franchise.active .deal").count();
@@ -116,7 +117,7 @@ await page.waitForSelector("#page-settings.active");
 await page.locator("#resetDemo").click();
 await page.waitForFunction(
   () => {
-    const value = localStorage.getItem("ototr-demo-db-v2-profit-risk");
+    const value = localStorage.getItem("ototr-demo-db-v3-consistent-live");
     return value && !value.includes("Test Franchise Adayi");
   }
 );
