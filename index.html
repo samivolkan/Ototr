@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="ototr-version" content="SVK v1.0.62-academy-course-assignment" />
+  <meta name="ototr-version" content="SVK v1.0.63-report-nav" />
   <title>OTOTR Genel Merkez ERP + CRM</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -411,7 +411,7 @@
 <body>
   <div class="app">
     <aside class="side">
-      <div class="brand-row"><a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.62</small></div></a><button class="theme-toggle" type="button" data-theme-toggle title="Koyu temaya geç" aria-label="Tema değiştir"><i data-lucide="sun-moon"></i><span id="themeToggleText">Açık</span></button></div>
+      <div class="brand-row"><a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.63</small></div></a><button class="theme-toggle" type="button" data-theme-toggle title="Koyu temaya geç" aria-label="Tema değiştir"><i data-lucide="sun-moon"></i><span id="themeToggleText">Açık</span></button></div>
       <div class="nav" id="nav"></div>
     </aside>
 
@@ -1965,10 +1965,14 @@
     }
 
     const navGroups = [
-      ['Komuta', [['dashboard','Yönetim Kokpiti','layout-dashboard'],['intelligence','İş Zekası','chart-no-axes-column'],['branches','Bayiler & Şubeler','building-2'],['dealer','Bayi Paneli','tablet-smartphone'],['operations','Operasyon','workflow']]],
-      ['Gelir', [['franchise','Franchise Satış','handshake'],['crm','CRM & Randevu','users'],['complaints','Müşteri Şikayetleri','message-circle-warning'],['finance','Finans & Royalty','banknote'],['marketing','Pazarlama','megaphone']]],
-      ['Kontrol', [['quality','Kalite Denetim','shield-check'],['report-design','Ekspertiz Rapor Tasarımı','file-check-2'],['academy','OTOTR Academy','graduation-cap'],['hr','İnsan Kaynakları','badge-check'],['legal','Hukuk & Risk','scale'],['crisis','Kriz Merkezi','siren']]],
-      ['Strateji', [['actions','Aksiyon & Görev','target'],['ai','AI Öneri','sparkles'],['growth','Büyüme Haritası','map'],['legacy','Legacy Room','landmark'],['architecture','Sistem Mimarisi','network'],['settings','Ayarlar','settings']]]
+      ['Genel Merkez', [['dashboard','Yönetim Kokpiti','layout-dashboard'],['intelligence','İş Zekası','chart-no-axes-column'],['actions','Aksiyon & Görev','target'],['ai','AI Öneri','sparkles']]],
+      ['Bayi & Şube Yönetimi', [['branches','Bayiler & Şubeler','building-2'],['dealer','Bayi Paneli','tablet-smartphone'],['operations','Operasyon','workflow'],['growth','Büyüme Haritası','map']]],
+      ['Ekspertiz & Rapor', [['report-design','Ekspertiz Rapor Tasarımı','file-check-2'],['quality','Kalite Denetim','shield-check']]],
+      ['Müşteri & Satış', [['crm','CRM & Randevu','users'],['complaints','Müşteri Şikayetleri','message-circle-warning'],['marketing','Pazarlama','megaphone']]],
+      ['Franchise & Finans', [['franchise','Franchise Satış','handshake'],['finance','Finans & Royalty','banknote']]],
+      ['OTOTR Academy', [['academy','OTOTR Academy','graduation-cap']]],
+      ['Kurumsal Yönetim', [['hr','İnsan Kaynakları','badge-check'],['legal','Hukuk & Risk','scale'],['crisis','Kriz Merkezi','siren']]],
+      ['Ayarlar', [['architecture','Sistem Mimarisi','network'],['settings','Ayarlar','settings'],['legacy','Legacy Room','landmark']]]
     ];
     const titles = {dashboard:'Yönetim Kokpiti',intelligence:'İş Zekası',branches:'Bayiler & Şubeler',dealer:'Bayi Paneli',operations:'Operasyon',franchise:'Franchise Satış',crm:'CRM & Randevu',complaints:'Müşteri Şikayetleri',finance:'Finans & Royalty',marketing:'Pazarlama',quality:'Kalite Denetim','report-design':'Ekspertiz Rapor Tasarımı',academy:'OTOTR Academy',hr:'İnsan Kaynakları',legal:'Hukuk & Risk',crisis:'Kriz Merkezi',actions:'Aksiyon & Görev',ai:'AI Öneri',growth:'Büyüme Haritası',legacy:'Legacy Room',architecture:'Sistem Mimarisi',settings:'Ayarlar',branchProfile:'Şube Profili',franchiseProfile:'Aday Değerlendirme',customerProfile:'Müşteri 360'};
     const rooms = [
@@ -2584,7 +2588,7 @@
         status:b.risk==='Yüksek'?'İnceleme':b.risk==='Orta'?'Takip':'Stabil'
       }));
       out.demoDataHealth={
-        version:'SVK v1.0.62',
+        version:'SVK v1.0.63',
         branchUniverse:'10 şube / 4 aktif bölge',
         packagePriceBand:'5.000 TL - 15.000 TL',
         avgTicketBand:'8.350 TL - 9.900 TL',
