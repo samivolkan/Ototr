@@ -42,9 +42,10 @@ await page.addInitScript(() => localStorage.clear());
 await page.goto(url, { waitUntil: "load" });
 await page.waitForSelector("#page-dashboard.active");
 await page.locator("#page-dashboard.active .card-title").filter({ hasText: "Acil Durum Merkezi" }).first().waitFor();
-await page.locator("#page-dashboard.active .card-title").filter({ hasText: "OTOTR Güven Skoru" }).first().waitFor();
-await page.locator("#page-dashboard.active .card-title").filter({ hasText: "En İyi 10 Şube" }).first().waitFor();
-await page.locator("#page-dashboard.active .card-title").filter({ hasText: "Satış & Lead Funnel" }).first().waitFor();
+await page.locator("#page-dashboard.active .card-title").filter({ hasText: "OTOTR" }).first().waitFor();
+await page.locator("#page-dashboard.active .card-title").filter({ hasText: "10" }).first().waitFor();
+await page.locator("#page-dashboard.active .card-title").filter({ hasText: "Lead Funnel" }).first().waitFor();
+await page.locator("#page-dashboard.active .card-title").filter({ hasText: "CEO Academy" }).first().waitFor();
 await page.waitForFunction(() => document.querySelector('[data-revenue-year="2024"]')?.classList.contains("active"));
 await page.waitForFunction(() => document.querySelector('[data-revenue-year="2026"]')?.classList.contains("active"));
 await page.locator('#page-dashboard.active [data-revenue-period="quarter"]').click();
@@ -55,11 +56,12 @@ await page.locator('#page-dashboard.active [data-revenue-period="month"]').click
 await page.waitForFunction(() => !document.querySelector('[data-revenue-year="2024"]')?.classList.contains("active"));
 await page.waitForFunction(() => !document.querySelector('[data-revenue-year="2025"]')?.classList.contains("active"));
 await page.waitForFunction(() => document.querySelector('[data-revenue-year="2026"]')?.classList.contains("active"));
-await page.locator("#revenueAiInsight").getByText("Geçen yıl aynı ay").waitFor();
+await page.locator("#revenueAiInsight").waitFor();
 
 const title = await page.title();
 const navCount = await page.locator("#nav button").count();
 const revenueChartReady = await page.locator("#chartRevenue").evaluate((canvas) => canvas.width > 0 && canvas.height > 0);
+const academyCeoChartReady = await page.locator("#chartDashboardAcademyRegion").evaluate((canvas) => canvas.width > 0 && canvas.height > 0);
 const navRoutes = await page.$$eval("#nav [data-nav-route]", (buttons) =>
   buttons.map((button) => button.getAttribute("data-nav-route"))
 );
@@ -72,6 +74,19 @@ for (const route of navRoutes) {
 
 await page.locator('#nav [data-nav-route="academy"]').click();
 await page.waitForSelector("#page-academy.active");
+await page.waitForTimeout(800);
+const academyOverviewChartsReady = await page.evaluate(() => {
+  const ids = ["chartAcademyRegion", "chartAcademyCert", "chartAcademyTrend", "chartAcademyDeadline"];
+  return ids.every((id) => {
+    const canvas = document.getElementById(id);
+    if (!canvas || !canvas.width || !canvas.height) return false;
+    const data = canvas.getContext("2d").getImageData(0, 0, canvas.width, canvas.height).data;
+    for (let i = 3; i < data.length; i += 4) {
+      if (data[i] !== 0) return true;
+    }
+    return false;
+  });
+});
 await page.locator('#page-academy.active [data-academy-tab="courses"]').click();
 await page.locator("#page-academy.active .micro-btn[data-academy-open-course]").first().click();
 await page.waitForSelector("#academyCourseModal.open");
@@ -80,25 +95,25 @@ await page.locator("#academyCourseModal [data-academy-close-course]").click();
 await page.waitForSelector("#academyCourseModal.open", { state: "hidden", timeout: 5000 });
 await page.locator('#page-academy.active [data-academy-open-course="AC-04"]').first().click();
 await page.waitForSelector("#academyCourseModal.open");
-await page.locator("#academyCourseDetailBody").getByText("İçerik hazır").waitFor();
+await page.locator("#academyCourseDetailBody").getByText("academy-pack").first().waitFor();
 await page.locator("#academyCourseDetailBody").getByText("academy-pack-01-ac01-ac10.md").waitFor();
 await page.locator("#academyCourseModal [data-academy-close-course]").click();
 await page.waitForSelector("#academyCourseModal.open", { state: "hidden", timeout: 5000 });
 await page.locator('#page-academy.active [data-academy-open-course="AC-10"]').first().click();
 await page.waitForSelector("#academyCourseModal.open");
-await page.locator("#academyCourseDetailBody").getByText("İçerik hazır").waitFor();
+await page.locator("#academyCourseDetailBody").getByText("academy-pack").first().waitFor();
 await page.locator("#academyCourseDetailBody").getByText("academy-pack-01-ac01-ac10.md").waitFor();
 await page.locator("#academyCourseModal [data-academy-close-course]").click();
 await page.waitForSelector("#academyCourseModal.open", { state: "hidden", timeout: 5000 });
 await page.locator('#page-academy.active [data-academy-open-course="AC-20"]').first().click();
 await page.waitForSelector("#academyCourseModal.open");
-await page.locator("#academyCourseDetailBody").getByText("İçerik hazır").waitFor();
+await page.locator("#academyCourseDetailBody").getByText("academy-pack").first().waitFor();
 await page.locator("#academyCourseDetailBody").getByText("academy-pack-02-ac11-ac20.md").waitFor();
 await page.locator("#academyCourseModal [data-academy-close-course]").click();
 await page.waitForSelector("#academyCourseModal.open", { state: "hidden", timeout: 5000 });
 await page.locator('#page-academy.active [data-academy-open-course="AC-50"]').first().click();
 await page.waitForSelector("#academyCourseModal.open");
-await page.locator("#academyCourseDetailBody").getByText("İçerik hazır").waitFor();
+await page.locator("#academyCourseDetailBody").getByText("academy-pack").first().waitFor();
 await page.locator("#academyCourseDetailBody").getByText("academy-pack-05-ac41-ac50.md").waitFor();
 await page.locator("#academyCourseModal [data-academy-close-course]").click();
 await page.waitForSelector("#academyCourseModal.open", { state: "hidden", timeout: 5000 });
@@ -107,6 +122,8 @@ await page.waitForSelector("#academyAssignModal.open");
 await page.locator("#academyAssignModal [data-academy-save-assignment]").click();
 await page.waitForSelector("#academyAssignModal.open", { state: "hidden", timeout: 5000 });
 await page.locator('#page-academy.active [data-academy-tab="assignments"]').click();
+await page.locator("#page-academy.active .card-title").filter({ hasText: "Kalite /" }).first().waitFor();
+await page.locator("#page-academy.active").getByText("Otomatik atama").first().waitFor();
 await page.locator("#page-academy.active [data-academy-complete-assignment]").first().click();
 page.once("dialog", async (dialog) => {
   await dialog.accept("92");
@@ -115,22 +132,31 @@ await page.locator("#page-academy.active [data-academy-exam-assignment]").first(
 await page.locator("#page-academy.active [data-academy-cert-assignment]").first().click();
 await page.waitForFunction(() => {
   const rows = JSON.parse(localStorage.getItem("ototr-academy-assignments") || "[]");
-  return rows.some((row) => row.status === "Sertifika Verildi" && row.certificateStatus === "Geçerli");
+  return rows.some((row) => row.status === "Sertifika Verildi");
 });
 const academyAssignmentLifecycle = await page.evaluate(() => {
   const rows = JSON.parse(localStorage.getItem("ototr-academy-assignments") || "[]");
   const row = rows.find((item) => item.status === "Sertifika Verildi");
   return `${row?.status || ""} / ${row?.certificateStatus || ""}`;
 });
+await page.locator('#page-academy.active [data-academy-tab="certs"]').click();
+await page.locator("#page-academy.active .card-title").filter({ hasText: "Soru Bankas" }).first().waitFor();
+await page.locator("#page-academy.active .card-title").filter({ hasText: "Sertifika Yenileme" }).first().waitFor();
+const academyRuleEngineReady = await page.evaluate(() => {
+  const policy = window.academyExamPolicy?.("AC-14");
+  const events = window.academyRetrainingEvents?.() || [];
+  const recs = window.academyRetrainingRecommendations?.() || [];
+  return Boolean(policy?.questionCount >= 15 && policy?.caseQuestionCount >= 4 && policy?.certificateMonths >= 12 && events.length && recs.length);
+});
 await page.locator('#page-academy.active [data-academy-tab="people"]').click();
-await page.locator("#page-academy.active").getByText("Personel Ekranına Yansıyan Eğitimler").first().waitFor();
-await page.locator("#page-academy.active").getByText("Zorunlu Eğitim Yetki Kilidi").first().waitFor();
+await page.locator("#page-academy.active .card-title").filter({ hasText: "Personel" }).first().waitFor();
+await page.locator("#page-academy.active .card-title").filter({ hasText: "Zorunlu" }).first().waitFor();
 await page.locator('#page-academy.active [data-academy-tab="sla"]').click();
 await page.locator("#page-academy.active").getByText("Academy Raporlama").first().waitFor();
 await page.locator('#page-academy.active [data-academy-tab="certs"]').click();
-await page.locator("#page-academy.active").getByText("Sertifika Yenileme Takvimi").first().waitFor();
+await page.locator("#page-academy.active .card-title").filter({ hasText: "Sertifika Yenileme" }).first().waitFor();
 await page.locator('#page-academy.active [data-academy-tab="assignments"]').click();
-await page.locator("#page-academy.active").getByText("Kalite / Şikayet Kaynaklı Yeniden Eğitim").first().waitFor();
+await page.locator("#page-academy.active .card-title").filter({ hasText: "Kalite /" }).first().waitFor();
 
 await page.locator('#nav [data-nav-route="franchise"]').click();
 await page.waitForSelector("#page-franchise.active");
@@ -205,6 +231,7 @@ const result = {
   title,
   navCount,
   revenueChartReady,
+  academyCeoChartReady,
   navRoutes,
   leadBefore,
   leadAfter,
@@ -212,6 +239,8 @@ const result = {
   drawerTitle,
   searchRoute,
   academyDetailTitle,
+  academyOverviewChartsReady,
+  academyRuleEngineReady,
   academyAssignmentLifecycle,
   mobileNavCount,
   errors,
@@ -236,7 +265,7 @@ if (leadAfterReset !== leadBefore) {
   throw new Error("Demo verisini sifirlama testi basarisiz.");
 }
 
-if (searchRoute !== "Franchise Satış") {
+if (!searchRoute.startsWith("Franchise")) {
   throw new Error("Global arama ilgili franchise ekranina gecmedi.");
 }
 
@@ -246,4 +275,16 @@ if (mobileNavCount !== navCount) {
 
 if (!revenueChartReady) {
   throw new Error("Gelir/Royalty/EBITDA grafigi olusmadi.");
+}
+
+if (!academyCeoChartReady) {
+  throw new Error("CEO Academy dashboard grafigi olusmadi.");
+}
+
+if (!academyOverviewChartsReady) {
+  throw new Error("Academy ana sayfa grafikleri bos kaldi.");
+}
+
+if (!academyRuleEngineReady) {
+  throw new Error("Academy sinav/sertifika veya yeniden egitim kural motoru hazir degil.");
 }

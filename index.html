@@ -304,6 +304,7 @@
     .dashboard-signal-grid .signal-complaints .exec-hero{background:linear-gradient(135deg,#111318,#2b1722 72%,rgba(215,25,32,.86))}
     .dashboard-signal-grid .signal-branch-kpi{grid-column:auto}
     .dashboard-signal-grid .signal-branch-kpi .exec-hero{background:linear-gradient(135deg,#111318,#203145 70%,rgba(24,90,188,.82))}
+    .dashboard-academy-ceo{display:grid;gap:13px}.dashboard-academy-top{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:12px;align-items:start}.dashboard-academy-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.dashboard-academy-kpi{border:1px solid var(--line);border-radius:10px;background:#fff;padding:10px;min-width:0}.dashboard-academy-kpi span{display:block;color:var(--muted);font-size:10px;font-weight:900;text-transform:uppercase}.dashboard-academy-kpi b{display:block;font-size:21px;margin:4px 0 2px;letter-spacing:-.03em}.dashboard-academy-kpi small{display:block;color:#4d5563;font-size:11px;line-height:1.3}.dashboard-academy-body{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:12px;align-items:start}.dashboard-academy-charts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.dashboard-academy-chart{border:1px solid var(--line);border-radius:11px;background:#fff;padding:11px;min-width:0}.dashboard-academy-chart b{display:block;font-size:12px;margin-bottom:8px}.dashboard-academy-chart canvas{max-height:215px}.dashboard-academy-live{display:grid;gap:8px}.dashboard-academy-step{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;border:1px solid var(--line);border-radius:10px;background:#fff;padding:9px}.dashboard-academy-step b{display:block;font-size:12px}.dashboard-academy-step span{display:block;color:var(--muted);font-size:11px;margin-top:2px}.dashboard-academy-risk{display:grid;gap:8px}.dashboard-academy-risk .mini{align-items:center}.dashboard-academy-risk .mini b{font-size:12px}.dashboard-academy-risk .mini span{font-size:11px}
     .risk-impact-map{display:grid;grid-template-columns:270px minmax(0,1fr);gap:10px;margin-top:10px}
     .risk-impact-score{border:1px solid #dbe7ff;background:linear-gradient(135deg,#fff,#f8fbff);border-radius:12px;padding:12px;display:grid;align-content:center;gap:8px}
     .risk-impact-score span{font-size:10px;color:var(--muted);font-weight:950;text-transform:uppercase}.risk-impact-score b{font-size:34px;letter-spacing:-.05em}.risk-impact-score small{color:#4d5563;font-weight:800;line-height:1.35}
@@ -376,7 +377,8 @@
     @media (max-width:1280px){.dashboard-signal-grid{grid-template-columns:1fr}.dashboard-signal-grid .signal-branch-kpi{grid-column:auto;grid-row:auto}.dashboard-signal-grid .exec-summary{grid-template-columns:1fr}.risk-impact-map{grid-template-columns:1fr}.risk-impact-head{display:none}.risk-impact-row{grid-template-columns:1fr repeat(5,minmax(42px,1fr));}.risk-next,.risk-impact-row .micro-btn{grid-column:1/-1}}
     @media (max-width:1100px){.bi-visual-grid{grid-template-columns:1fr}.bi-region-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
     @media (max-width:760px){.dashboard-signal-grid .exec-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.dashboard-signal-grid .exec-insight{grid-column:1/-1}}
-    @media (max-width:640px){.exec-card{padding:12px}.exec-card .btn{width:100%;justify-content:center}.exec-metrics{grid-template-columns:1fr}.dashboard-signal-grid .exec-summary{grid-template-columns:1fr}.dashboard-signal-grid .exec-hero{grid-template-columns:minmax(0,1fr) auto auto}.dashboard-signal-grid .exec-hero small{grid-column:1 / 3;text-align:left}.dashboard-signal-grid .exec-hero-btn{grid-column:3;grid-row:1 / span 2;align-self:center}.dashboard-signal-grid .exec-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.bi-region-grid,.bi-profit-bridge{grid-template-columns:1fr}.bi-visual-card canvas{max-height:200px}}
+    @media (max-width:900px){.dashboard-academy-top,.dashboard-academy-body,.dashboard-academy-charts{grid-template-columns:1fr}.dashboard-academy-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media (max-width:640px){.exec-card{padding:12px}.exec-card .btn{width:100%;justify-content:center}.exec-metrics{grid-template-columns:1fr}.dashboard-signal-grid .exec-summary{grid-template-columns:1fr}.dashboard-signal-grid .exec-hero{grid-template-columns:minmax(0,1fr) auto auto}.dashboard-signal-grid .exec-hero small{grid-column:1 / 3;text-align:left}.dashboard-signal-grid .exec-hero-btn{grid-column:3;grid-row:1 / span 2;align-self:center}.dashboard-signal-grid .exec-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.dashboard-academy-kpis{grid-template-columns:1fr}.bi-region-grid,.bi-profit-bridge{grid-template-columns:1fr}.bi-visual-card canvas{max-height:200px}}
     @media (max-width:900px){.legal-ceo-strip{grid-template-columns:1fr;align-items:start}.legal-ceo-actions{justify-content:flex-start}.legal-ceo-score,.legal-ceo-meta{white-space:normal}}
     @media (max-width:720px){.legal-ceo-alert{grid-template-columns:auto 1fr}.legal-ceo-alert-actions{grid-column:1/-1;justify-content:flex-start}}
     @media (max-width:560px){.legal-ceo-card{padding:8px}.legal-ceo-strip{padding:10px}.legal-ceo-title,.legal-ceo-score{white-space:normal;flex-wrap:wrap}.legal-ceo-meta span{white-space:normal}.legal-ceo-alert{grid-template-columns:1fr}.legal-ceo-alert i{display:none}}
@@ -3049,6 +3051,7 @@
                   <div class="card exec-card">${OperationAlarmSummary()}</div>
                   <div class="card exec-card signal-branch-kpi">${BranchKpiDashboardSummary()}</div>
                 </div>
+                ${AcademyCeoDashboardPanel()}
                 <div class="card"><div class="card-head"><div><div class="card-title">Türkiye / Şube Genel Görünümü</div><div class="card-sub">Bölge kartları: araç adedi, şube sayısı, memnuniyet ve risk sinyali</div></div><button class="btn" data-route="branches">Şube ekranına git</button></div>${TurkeyBranchOverview()}</div>
                 <div class="grid g2">
                   <div class="card"><div class="card-head"><div><div class="card-title">En İyi 10 Şube</div><div class="card-sub">Günlük performans + OTOTR Güven Skoru</div></div></div>${BranchPerformanceTable('best')}</div>
@@ -4929,6 +4932,44 @@
         {label:'Sertifika',value:certs,note:'Geçerli kayıt',tone:'green'},
         {label:'EV hazırlık',value:evReady,note:'Teknik kapasite',tone:'amber'}
       ],insight:`${low.branch||'Academy'} eğitim SLA takibi`,next:`${low.name||'Personel'} için hedef gerçekleşme %${low.completion||0}; geciken eğitimler dashboard alarmına bağlandı.`,icon:'graduation-cap'});
+    }
+
+    function academyCeoDashboardData(){
+      const d=typeof academyBase==='function' ? academyBase() : (typeof academySeed==='function' ? academySeed() : {people:[],courses:[],assignments:[]});
+      const people=d.people||[], courses=d.courses||[], assignments=(d.assignments||[]).map(a=>typeof academyNormalizeAssignment==='function'?academyNormalizeAssignment(a):a);
+      const catalog=typeof HR_ACADEMY_COURSES!=='undefined' ? HR_ACADEMY_COURSES : courses;
+      const avg=Math.round(people.reduce((s,p)=>s+(p.completion||0),0)/Math.max(1,people.length));
+      const overdue=people.reduce((s,p)=>s+(p.overdue||0),0);
+      const certs=people.reduce((s,p)=>s+(p.cert||0),0);
+      const mandatory=catalog.filter(c=>c.status==='Zorunlu' || (c.requiredForRoles||[]).length).length;
+      const completed=assignments.filter(a=>['Tamamlandı','Sınav Geçti','Sertifika Verildi'].includes(a.status)).length;
+      const failed=assignments.filter(a=>a.status==='Sınav Kaldı').length;
+      const certRenew=Math.max(3,people.filter(p=>(p.completion||0)<75).length);
+      const certExpired=Math.max(1,people.filter(p=>(p.overdue||0)>1).length);
+      const lowBranches=(typeof calcSla==='function'?calcSla().branches:[]).sort((a,b)=>a.sla-b.sla).slice(0,3);
+      const riskPeople=people.slice().sort((a,b)=>((b.overdue||0)*20+(100-(b.completion||0)))-((a.overdue||0)*20+(100-(a.completion||0)))).slice(0,4);
+      const readiness=[
+        {title:'50 eğitim içerik paketi',value:`${catalog.length}/50`,state:catalog.length>=50?'Hazır':'Eksik',tone:catalog.length>=50?'b-green':'b-red',desc:'V1 içerik Academy kataloğuna bağlı'},
+        {title:'Tamamlama, sınav ve sertifika akışı',value:assignments.length?`${completed}/${assignments.length}`:'Demo aktif',state:failed?'Risk':'Hazır',tone:failed?'b-amber':'b-green',desc:'Geçti/kaldı, sertifika ve tekrar kuralı işleniyor'},
+        {title:'Zorunlu eğitim yetki kilidi',value:`${mandatory} kural`,state:'Pilot',tone:'b-amber',desc:'Canlı rol/yetki servisinde tam aktif statüsüne bağlanacak'},
+        {title:'Sertifika yenileme takvimi',value:`${certRenew+certExpired} takip`,state:'Pilot',tone:'b-amber',desc:'Yaklaşan ve geciken yenilemeler CEO alarmına çıkacak'},
+        {title:'Kalite ve şikayet kaynaklı yeniden eğitim',value:'Bağ hazır',state:'Pilot',tone:'b-amber',desc:'Şikayet, kalite hatası ve CAPA sonucuna göre otomatik atama'},
+        {title:'Canlı veri modeli ve migrasyon',value:'Backend',state:'Canlı öncesi',tone:'b-blue',desc:'course, assignment, exam, certificate ve completion tabloları kesinleşecek'}
+      ];
+      return {people,courses,catalog,assignments,avg,overdue,certs,mandatory,completed,failed,certRenew,certExpired,lowBranches,riskPeople,readiness};
+    }
+
+    function AcademyCeoDashboardPanel(){
+      const m=academyCeoDashboardData();
+      const kpis=[
+        {label:'Network uyum skoru',value:`%${m.avg}`,note:'CEO hedefi %90'},
+        {label:'Zorunlu eğitim',value:m.mandatory,note:'Rol bazlı kilit kuralı'},
+        {label:'Geciken eğitim',value:m.overdue,note:'Deadline aşımı'},
+        {label:'Sertifika riski',value:m.certRenew+m.certExpired,note:'Yenileme + süresi dolan'}
+      ];
+      const riskRows=m.riskPeople.map(p=>`<div class="mini">${icon((p.overdue||0)>1?'triangle-alert':'user-check')}<div><b>${p.name}</b><span>${p.branch} · ${p.role} · tamamlama %${p.completion} · gecikme ${p.overdue}</span></div>${badge((p.overdue||0)>1?'Kritik':(p.completion||0)<75?'Riskli':'Takipte')}</div>`).join('');
+      const branchRows=m.lowBranches.map(b=>`<div class="dashboard-academy-step"><div><b>${b.branch}</b><span>${b.region} · SLA %${b.sla} · gecikme ${b.overdue}</span></div>${badge(b.sla<70?'Kritik':b.sla<85?'Riskli':'Takipte')}</div>`).join('');
+      return `<div class="card dashboard-academy-ceo"><div class="card-head"><div><div class="card-title">CEO Academy Canlıya Geçiş</div><div class="card-sub">Zorunlu eğitim kilidi, sertifika yenileme, kalite kaynaklı yeniden eğitim ve canlı veri hazırlığı CEO seviyesinde izlenir.</div></div><button class="btn" data-route="academy">${icon('graduation-cap')}Academy ekranı</button></div><div class="dashboard-academy-top"><div><div class="dashboard-academy-kpis">${kpis.map(x=>`<div class="dashboard-academy-kpi"><span>${x.label}</span><b>${x.value}</b><small>${x.note}</small></div>`).join('')}</div><div class="ceo-note" style="margin-top:10px"><b>Canlıya geçmeden kalan ana işler:</b> backend tablo modeli ve migrasyon, gerçek rol/yetki kilidi, soru bankası nihai revizyonu, pilot şube UAT, alarm eşikleri ve operasyon izleme.</div></div><div class="dashboard-academy-risk"><div class="label">CEO risk kuyruğu</div>${riskRows||'<div class="mini"><div><b>Risk görünmüyor</b><span>Atama ve deadline verisi temiz.</span></div></div>'}</div></div><div class="dashboard-academy-body"><div class="dashboard-academy-charts"><div class="dashboard-academy-chart"><b>Bölge Academy SLA</b><canvas id="chartDashboardAcademyRegion" height="150"></canvas></div><div class="dashboard-academy-chart"><b>Canlıya geçiş hazırlığı</b><canvas id="chartDashboardAcademyReadiness" height="150"></canvas></div></div><div class="dashboard-academy-live"><div class="label">Go-live kontrol listesi</div>${m.readiness.map(step=>`<div class="dashboard-academy-step"><div><b>${step.title}</b><span>${step.value} · ${step.desc}</span></div><span class="badge ${step.tone}">${step.state}</span></div>`).join('')}${branchRows?`<div class="label" style="margin-top:6px">En düşük SLA şubeleri</div>${branchRows}`:''}</div></div></div>`;
     }
 
     function academySeed(){
@@ -7845,6 +7886,11 @@
         make('chartAcademyCert','doughnut',{labels:ac.certs.map(x=>x.label),datasets:[{data:ac.certs.map(x=>x.value),backgroundColor:['#14804a','#b76b00','#d71920','#69707d'],borderWidth:2,borderColor:'#fff'}]},{cutout:'62%'});
         make('chartAcademyTrend','line',{labels:ac.trend.labels,datasets:[{label:'Atanan',data:ac.trend.assigned,borderColor:'#185abc',backgroundColor:'rgba(24,90,188,.12)',tension:.35,fill:true},{label:'Tamamlanan',data:ac.trend.completed,borderColor:'#14804a',backgroundColor:'rgba(20,128,74,.10)',tension:.35,fill:true},{label:'Geciken',data:ac.trend.overdue,borderColor:'#d71920',backgroundColor:'rgba(215,25,32,.10)',tension:.35,fill:false}]},{interaction:{mode:'index',intersect:false},scales:{y:{beginAtZero:true},x:{grid:{display:false}}}});
         make('chartAcademyDeadline','polarArea',{labels:ac.deadline.map(x=>x.label),datasets:[{data:ac.deadline.map(x=>x.value),backgroundColor:['rgba(20,128,74,.72)','rgba(24,90,188,.72)','rgba(183,107,0,.72)','rgba(215,25,32,.72)'],borderColor:['#14804a','#185abc','#b76b00','#d71920'],borderWidth:1}]},{plugins:{legend:{position:'bottom'}}});
+        const ceoAcademy=typeof academyCeoDashboardData==='function'?academyCeoDashboardData():{readiness:[]};
+        const readinessLabels=['Hazır','Pilot','Canlı öncesi','Eksik'];
+        const readinessCounts=readinessLabels.map(label=>(ceoAcademy.readiness||[]).filter(x=>x.state===label).length);
+        make('chartDashboardAcademyRegion','bar',{labels:ac.regions.map(x=>x.label),datasets:[{label:'SLA',data:ac.regions.map(x=>x.score),backgroundColor:ac.regions.map(x=>x.score>=90?'#14804a':x.score>=80?'#185abc':x.score>=70?'#b76b00':'#d71920'),borderRadius:8},{type:'line',label:'CEO hedefi',data:ac.regions.map(()=>90),borderColor:'#111318',borderDash:[5,5],pointRadius:0,borderWidth:2}]},{plugins:{legend:{position:'bottom'}},scales:{y:{min:45,max:100,ticks:{callback:v=>'%'+v}},x:{grid:{display:false}}}});
+        make('chartDashboardAcademyReadiness','doughnut',{labels:readinessLabels,datasets:[{data:readinessCounts,backgroundColor:['#14804a','#b76b00','#185abc','#d71920'],borderColor:theme.panel,borderWidth:2}]},{cutout:'62%',plugins:{legend:{position:'bottom',labels:{color:theme.text,boxWidth:10}}}});
       }
       const q=ensureQuality(), qRegions=uniq(q.branches.map(b=>b.region));
       make('chartQualityRegion','bar',{labels:qRegions,datasets:[{label:'Kalite skoru',data:qRegions.map(r=>Math.round(q.branches.filter(b=>b.region===r).reduce((s,b)=>s+b.score,0)/q.branches.filter(b=>b.region===r).length)),backgroundColor:'#d71920',borderRadius:8},{label:'Academy tamamlama',data:qRegions.map(r=>Math.round(q.branches.filter(b=>b.region===r).reduce((s,b)=>s+b.academy,0)/q.branches.filter(b=>b.region===r).length)),backgroundColor:'#111318',borderRadius:8}]},{scales:{y:{min:60,max:100}}});
@@ -8063,6 +8109,68 @@
   function academyTodayIso(){ return new Date().toISOString().slice(0,10); }
   function academyAddMonths(date,months){ const d=new Date(date||Date.now()); d.setMonth(d.getMonth()+months); return d.toISOString().slice(0,10); }
   function academyCoursePassScore(courseId){ return Number(academyCourseSource(courseId)?.passScore || 80); }
+  function academyRenewalMonths(courseId){
+    const course=academyCourseSource(courseId)||{};
+    const text=String(course.renewal||course.certificateRequired||'').toLowerCase();
+    if(text.includes('gerekmez')||text.includes('gerekli değil')) return 0;
+    if(text.includes('6 ay')) return 6;
+    if(text.includes('24 ay')||text.includes('2 yıl')) return 24;
+    if(['Teknik','Kalite','Hukuk','Uyum'].includes(course.category)) return 12;
+    return course.status==='Zorunlu' ? 12 : 18;
+  }
+  function academyExamPolicy(courseId){
+    const course=academyCourseSource(courseId)||{};
+    const category=course.category||'Academy';
+    const pass=academyCoursePassScore(courseId);
+    const critical=['Teknik','Kalite','Hukuk','Uyum','Operasyon'].includes(category);
+    const modules=(course.modules||[]).length || 3;
+    return {
+      courseId,
+      title:course.title||academyCourseTitleById(courseId),
+      category,
+      passScore:pass,
+      questionCount:critical?20:15,
+      caseQuestionCount:critical?6:4,
+      practicalCheck:critical?'Zorunlu uygulama kontrol listesi':'Kısa vaka değerlendirmesi',
+      attemptsBeforeLock:2,
+      retryAfterHours:24,
+      failAction:critical?'Tekrar eğitim + eğitmen onayı':'Tekrar sınav + eksik konu tekrarı',
+      certificateMonths:academyRenewalMonths(courseId),
+      renewalWindowDays:45,
+      bankVersion:`${courseId}-QB-v1`,
+      moduleCoverage:modules,
+      mix:[
+        ['Bilgi ölçümü',critical?8:6],
+        ['Vaka yorumu',critical?6:4],
+        ['Süreç/SLA kuralı',3],
+        ['Riskli ifade / hata ayıklama',critical?3:2]
+      ]
+    };
+  }
+  function academyExamQuestionBank(courseId){
+    const p=academyExamPolicy(courseId), course=academyCourseSource(courseId)||{};
+    const modules=(course.modules||['Giriş','Uygulama','Değerlendirme']).slice(0,4);
+    const sample=[
+      {type:'Vaka',level:'Kritik',q:`${p.title} kapsamında müşteri/operasyon riski oluştuğunda ilk kayıt hangi sistemde açılmalıdır?`,a:'İlgili operasyon kaydı, Academy ataması ve aksiyon notu aynı dosyada bağlanır.'},
+      {type:'Süreç',level:'Orta',q:`${modules[0]} modülünde anlatılan standart uygulanmazsa hangi KPI etkilenir?`,a:'Tamamlama, SLA, kalite skoru ve şikayet kök nedeni birlikte etkilenir.'},
+      {type:'Riskli ifade',level:'Kritik',q:'Personelin kesin sonuç veya garanti içeren ifade kullanması neden hatalıdır?',a:'Hukuki ve marka riski doğurur; bulgu kanıta dayalı ve rapor diliyle aktarılmalıdır.'},
+      {type:'Uygulama',level:'Orta',q:`${modules[1]||modules[0]} adımı için eğitmen hangi kanıtı görmek ister?`,a:'Kontrol listesi, sistem kaydı, vaka çözümü veya müşteri/operasyon çıktısı.'}
+    ];
+    return {policy:p,sample};
+  }
+  function academyExamPolicyPanel(){
+    const d=academyBase();
+    const courses=(d.courses||[]).slice(0,10).map(c=>academyExamPolicy(c.id));
+    const selected=academyExamQuestionBank(courses[0]?.courseId || 'AC-01');
+    const summary=[
+      ['Soru bankası kapsamı','50 eğitim'],
+      ['Varsayılan geçme','%80+'],
+      ['Tekrar bekleme','24 saat'],
+      ['Yenileme penceresi','45 gün'],
+      ['Kilit eşiği','2 başarısız deneme']
+    ];
+    return `<div class="card"><div class="card-head"><div><div class="card-title">Sınav Soru Bankası ve Sertifika Kuralları</div><div class="card-sub">Her eğitim için soru kompozisyonu, geçme puanı, tekrar kuralı, sertifika geçerliliği ve yetki kilidi etkisi netleşti.</div></div>${badge('Canlıya hazır taslak')}</div><div class="hr-data-grid" style="margin-bottom:10px">${summary.map(x=>`<div class="hr-data-card"><span>${x[0]}</span><b>${x[1]}</b></div>`).join('')}</div><div class="grid g2"><div><table><thead><tr><th>Eğitim</th><th>Soru</th><th>Vaka</th><th>Geçme</th><th>Sertifika</th><th>Tekrar</th></tr></thead><tbody>${courses.map(p=>`<tr><td><b>${academyEsc(p.courseId)}</b><br><span class="card-sub">${academyEsc(p.title)}</span></td><td>${p.questionCount}</td><td>${p.caseQuestionCount}</td><td>%${p.passScore}</td><td>${p.certificateMonths?p.certificateMonths+' ay':'Yok'}</td><td>${p.retryAfterHours} saat</td></tr>`).join('')}</tbody></table></div><div class="mini-list"><div class="mini">${icon('clipboard-list')}<div><b>Kompozisyon</b><span>${selected.policy.mix.map(x=>`${x[0]}: ${x[1]}`).join(' · ')}</span></div></div>${selected.sample.map(q=>`<div class="mini">${icon(q.level==='Kritik'?'triangle-alert':'circle-help')}<div><b>${academyEsc(q.type)} · ${academyEsc(q.level)}</b><span>${academyEsc(q.q)}</span><small class="card-sub">${academyEsc(q.a)}</small></div></div>`).join('')}</div></div></div>`;
+  }
   function academyAssignmentStatusTone(status){
     const s=String(status||'Planlandı');
     if(s.includes('Sertifika')) return 'Geçerli';
@@ -8098,12 +8206,16 @@
     const d=academyBase();
     const item=(d.assignments||[]).find(a=>a.id===id);
     if(!item) return;
-    const passScore=academyCoursePassScore(item.courseId);
-    const raw=prompt(`${item.personName} için sınav puanı girin. Geçme puanı: ${passScore}`, item.examScore || passScore);
+    const policy=academyExamPolicy(item.courseId);
+    const passScore=policy.passScore;
+    const raw=prompt(`${item.personName} için sınav puanı girin.\nGeçme puanı: ${passScore}\nSoru: ${policy.questionCount} · Vaka: ${policy.caseQuestionCount} · Tekrar: ${policy.retryAfterHours} saat`, item.examScore || passScore);
     if(raw===null) return;
     const score=Math.max(0,Math.min(100,Number(raw)||0));
     const passed=score>=passScore;
-    academyUpdateAssignment(id,{status:passed?'Sınav Geçti':'Sınav Kaldı',progress:passed?95:65,examScore:score,examPassed:passed,attempts:Number(item.attempts||0)+1,examAt:new Date().toISOString(),certificateStatus:passed?'Sertifika Hazır':'Tekrar Gerekli'});
+    const attempts=Number(item.attempts||0)+1;
+    const examAt=new Date();
+    const nextRetryAt=new Date(examAt.getTime()+policy.retryAfterHours*60*60*1000).toISOString();
+    academyUpdateAssignment(id,{status:passed?'Sınav Geçti':'Sınav Kaldı',progress:passed?95:65,examScore:score,examPassed:passed,attempts,examAt:examAt.toISOString(),nextRetryAt:passed?'':nextRetryAt,examBankVersion:policy.bankVersion,questionCount:policy.questionCount,caseQuestionCount:policy.caseQuestionCount,failAction:passed?'':policy.failAction,certificateStatus:passed?'Sertifika Hazır':attempts>=policy.attemptsBeforeLock?'Eğitmen Onayı Gerekli':'Tekrar Gerekli'});
     if(typeof toast==='function') toast(passed?`Sınav geçti: ${score}`:`Sınav kaldı: ${score}. Tekrar eğitim gerekli.`);
   }
   function academyIssueCertificate(id){
@@ -8112,7 +8224,8 @@
     if(!item) return;
     if(item.examScore && Number(item.examScore)<academyCoursePassScore(item.courseId)){ if(typeof toast==='function') toast('Sertifika verilemez: sınav geçme puanı altında.'); return; }
     const issued=academyTodayIso();
-    academyUpdateAssignment(id,{status:'Sertifika Verildi',progress:100,certificateStatus:'Geçerli',certificateNo:'OTR-'+String(Date.now()).slice(-8),certificateIssuedAt:issued,certificateExpiresAt:academyAddMonths(issued,12)});
+    const policy=academyExamPolicy(item.courseId);
+    academyUpdateAssignment(id,{status:'Sertifika Verildi',progress:100,certificateStatus:policy.certificateMonths?'Geçerli':'Sertifika Gerekmez',certificateNo:'OTR-'+String(Date.now()).slice(-8),certificateIssuedAt:issued,certificateExpiresAt:policy.certificateMonths?academyAddMonths(issued,policy.certificateMonths):'',renewalWindowDays:policy.renewalWindowDays,certificatePolicy:`${policy.certificateMonths||0} ay · ${policy.renewalWindowDays} gün önce uyarı`});
     if(typeof toast==='function') toast(`${item.personName} için sertifika verildi.`);
   }
   function academyAssignCourseToPerson(personId,courseId,source='Zorunlu eğitim kilidi'){
@@ -8136,7 +8249,7 @@
   function academyAssignRetraining(index){
     const rec=academyRetrainingRecommendations()[Number(index)||0];
     if(!rec?.person) return;
-    academyAssignCourseToPerson(rec.person.id,rec.courseId,'Kalite/şikayet yeniden eğitim');
+    academyAssignCourseToPerson(rec.person.id,rec.courseId,`${rec.source} tetikli yeniden eğitim`);
     if(typeof toast==='function') toast(`${rec.person.name} için ${rec.courseTitle} yeniden eğitim olarak atandı.`);
   }
   function personInitials(name){ return String(name||'').split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase(); }
@@ -8401,7 +8514,7 @@
     const assignments=(d.assignments||[]).map(academyNormalizeAssignment);
     const certRows=assignments.filter(a=>a.status==='Sertifika Verildi' || a.certificateStatus==='Geçerli' || a.certificateStatus==='Sertifika Hazır');
     const expiring=certRows.filter(a=>a.certificateExpiresAt && new Date(a.certificateExpiresAt) <= academyAddMonths(academyTodayIso(),2)).length;
-    return `<div class="card"><div class="card-head"><div><div class="card-title">Sertifika ve Sınav Sonuçları</div><div class="card-sub">Atama bazlı sınav sonucu, sertifika ve yenileme takvimi.</div></div>${badge(expiring?'Yenileme Var':'Stabil')}</div><div class="hr-data-grid" style="margin-bottom:10px">${[['Sertifika verilen',certRows.filter(a=>a.status==='Sertifika Verildi').length],['Sertifika hazır',certRows.filter(a=>a.certificateStatus==='Sertifika Hazır').length],['Sınav kaldı',assignments.filter(a=>a.status==='Sınav Kaldı').length],['Yaklaşan yenileme',expiring]].map(x=>`<div class="hr-data-card"><span>${x[0]}</span><b>${x[1]}</b></div>`).join('')}</div>${certRows.length?`<table><thead><tr><th>Personel</th><th>Eğitim</th><th>Sınav</th><th>Sertifika</th><th>Veriliş</th><th>Yenileme</th><th>Aksiyon</th></tr></thead><tbody>${certRows.map(a=>`<tr><td><b>${academyEsc(a.personName)}</b><br><span class="card-sub">${academyEsc(a.branch)}</span></td><td>${academyEsc(a.courseTitle)}</td><td>${a.examScore||'-'}<br><span class="card-sub">Geçme: ${a.passScore}</span></td><td>${badge(a.certificateStatus||'Bekliyor')}<br><span class="card-sub">${academyEsc(a.certificateNo||'')}</span></td><td>${academyEsc(a.certificateIssuedAt||'-')}</td><td>${academyEsc(a.certificateExpiresAt||'-')}</td><td>${a.status==='Sertifika Verildi'?'<span class="badge b-green">Geçerli</span>':`<button class="micro-btn" data-academy-cert-assignment="${a.id}">Sertifika ver</button>`}</td></tr>`).join('')}</tbody></table>`:`<div class="mini">${icon('award')}<div><b>Henüz sertifika kaydı yok</b><span>Sınavı geçen atamalar burada sertifika bekleyen kayıt olarak görünür.</span></div></div>`}</div>`;
+    return `<div class="card"><div class="card-head"><div><div class="card-title">Sertifika ve Sınav Sonuçları</div><div class="card-sub">Atama bazlı sınav sonucu, soru bankası versiyonu, sertifika ve yenileme takvimi.</div></div>${badge(expiring?'Yenileme Var':'Stabil')}</div><div class="hr-data-grid" style="margin-bottom:10px">${[['Sertifika verilen',certRows.filter(a=>a.status==='Sertifika Verildi').length],['Sertifika hazır',certRows.filter(a=>a.certificateStatus==='Sertifika Hazır').length],['Sınav kaldı',assignments.filter(a=>a.status==='Sınav Kaldı').length],['Yaklaşan yenileme',expiring]].map(x=>`<div class="hr-data-card"><span>${x[0]}</span><b>${x[1]}</b></div>`).join('')}</div>${certRows.length?`<table><thead><tr><th>Personel</th><th>Eğitim</th><th>Sınav</th><th>Soru Bankası</th><th>Sertifika</th><th>Veriliş</th><th>Yenileme</th><th>Aksiyon</th></tr></thead><tbody>${certRows.map(a=>`<tr><td><b>${academyEsc(a.personName)}</b><br><span class="card-sub">${academyEsc(a.branch)}</span></td><td>${academyEsc(a.courseTitle)}</td><td>${a.examScore||'-'}<br><span class="card-sub">Geçme: ${a.passScore} · Deneme: ${a.attempts||0}</span></td><td>${academyEsc(a.examBankVersion||academyExamPolicy(a.courseId).bankVersion)}<br><span class="card-sub">${a.questionCount||academyExamPolicy(a.courseId).questionCount} soru · ${a.caseQuestionCount||academyExamPolicy(a.courseId).caseQuestionCount} vaka</span></td><td>${badge(a.certificateStatus||'Bekliyor')}<br><span class="card-sub">${academyEsc(a.certificateNo||'')}</span></td><td>${academyEsc(a.certificateIssuedAt||'-')}</td><td>${academyEsc(a.certificateExpiresAt||'-')}</td><td>${a.status==='Sertifika Verildi'?'<span class="badge b-green">Geçerli</span>':`<button class="micro-btn" data-academy-cert-assignment="${a.id}">Sertifika ver</button>`}</td></tr>`).join('')}</tbody></table>`:`<div class="mini">${icon('award')}<div><b>Henüz sertifika kaydı yok</b><span>Sınavı geçen atamalar burada sertifika bekleyen kayıt olarak görünür.</span></div></div>`}</div>`;
   }
   const academyLockRules=[
     {role:'Teknisyen',course:'AC-15',permission:'Rapor kilitleme',reason:'Fotoğraf, kanıt ve rapor kilitleme standardı tamamlanmalı.'},
@@ -8430,31 +8543,81 @@
     const rows=(academyBase().assignments||[]).map(academyNormalizeAssignment).filter(a=>a.certificateExpiresAt);
     const sorted=rows.slice().sort((a,b)=>String(a.certificateExpiresAt).localeCompare(String(b.certificateExpiresAt)));
     const today=academyTodayIso(), soon=academyAddMonths(today,2);
-    return `<div class="card"><div class="card-head"><div><div class="card-title">Sertifika Yenileme Takvimi</div><div class="card-sub">Yaklaşan ve geciken sertifikalar için yenileme eğitimi atanır.</div></div>${badge(sorted.filter(a=>a.certificateExpiresAt<=soon).length?'Takip':'Stabil')}</div>${sorted.length?`<table><thead><tr><th>Personel</th><th>Eğitim</th><th>Sertifika</th><th>Yenileme</th><th>Durum</th><th>Aksiyon</th></tr></thead><tbody>${sorted.map(a=>{const status=a.certificateExpiresAt<today?'Gecikti':a.certificateExpiresAt<=soon?'Yaklaşıyor':'Geçerli'; return `<tr><td><b>${academyEsc(a.personName)}</b><br><span class="card-sub">${academyEsc(a.branch)}</span></td><td>${academyEsc(a.courseTitle)}</td><td>${academyEsc(a.certificateNo||'-')}</td><td>${academyEsc(a.certificateExpiresAt)}</td><td>${badge(status)}</td><td><button class="micro-btn" data-academy-renew-cert="${a.id}">Yenileme ata</button></td></tr>`;}).join('')}</tbody></table>`:`<div class="mini">${icon('calendar-clock')}<div><b>Yenileme takvimi boş</b><span>Sertifika verildikçe yenileme tarihi burada izlenecek.</span></div></div>`}</div>`;
+    const policyRows=sorted.map(a=>{const policy=academyExamPolicy(a.courseId); const warnDate=academyAddMonths(a.certificateExpiresAt,-Math.max(1,Math.round((policy.renewalWindowDays||45)/30))); const status=a.certificateExpiresAt<today?'Gecikti':a.certificateExpiresAt<=soon?'Yaklaşıyor':'Geçerli'; return {...a,policy,warnDate,status,owner:a.instructor||'Academy'};});
+    return `<div class="card"><div class="card-head"><div><div class="card-title">Sertifika Yenileme Takvimi</div><div class="card-sub">Yaklaşan, geciken ve kural gereği yeniden sınav isteyen sertifikalar canlı alarm mantığıyla izlenir.</div></div>${badge(policyRows.filter(a=>a.certificateExpiresAt<=soon).length?'Takip':'Stabil')}</div>${policyRows.length?`<table><thead><tr><th>Personel</th><th>Eğitim</th><th>Sertifika</th><th>Uyarı / Bitiş</th><th>Kural</th><th>Durum</th><th>Aksiyon</th></tr></thead><tbody>${policyRows.map(a=>`<tr><td><b>${academyEsc(a.personName)}</b><br><span class="card-sub">${academyEsc(a.branch)}</span></td><td>${academyEsc(a.courseTitle)}<br><span class="card-sub">Sahip: ${academyEsc(a.owner)}</span></td><td>${academyEsc(a.certificateNo||'-')}</td><td>${academyEsc(a.warnDate)}<br><span class="card-sub">${academyEsc(a.certificateExpiresAt)}</span></td><td>${a.policy.certificateMonths} ay<br><span class="card-sub">${a.policy.renewalWindowDays} gün önce uyar</span></td><td>${badge(a.status)}</td><td><button class="micro-btn" data-academy-renew-cert="${a.id}">Yenileme ata</button></td></tr>`).join('')}</tbody></table>`:`<div class="mini">${icon('calendar-clock')}<div><b>Yenileme takvimi boş</b><span>Sertifika verildikçe yenileme tarihi, uyarı penceresi ve sorumlu eğitmen burada izlenecek.</span></div></div>`}</div>`;
   }
   const academyRetrainingMap=[
-    {match:'rapor dili',course:'AC-14',reason:'Rapor dili kaynaklı şikayet'},
-    {match:'eksik açıklama',course:'AC-13',reason:'Rapor teslim konuşması güçlendirilmeli'},
-    {match:'iletişim hatası',course:'AC-10',reason:'İlk karşılama ve iletişim dili tekrarı'},
-    {match:'teknik yorum farkı',course:'AC-20',reason:'Teknik sorumluluk ve hatalı rapor riski'},
-    {match:'operasyon gecikmesi',course:'AC-32',reason:'Günlük operasyon rutini'},
-    {match:'rapor sorumluluğu',course:'AC-27',reason:'Hukuki riske dönen şikayet yönetimi'}
+    {match:'rapor dili',course:'AC-14',role:'Ekspertiz',reason:'Rapor dili kaynaklı şikayet',threshold:2,severity:'P1'},
+    {match:'eksik açıklama',course:'AC-13',role:'Müşteri Kabul',reason:'Rapor teslim konuşması güçlendirilmeli',threshold:2,severity:'P1'},
+    {match:'iletişim hatası',course:'AC-10',role:'Müşteri Kabul',reason:'İlk karşılama ve iletişim dili tekrarı',threshold:1,severity:'P2'},
+    {match:'teknik yorum farkı',course:'AC-20',role:'Ekspertiz',reason:'Teknik sorumluluk ve hatalı rapor riski',threshold:1,severity:'P0'},
+    {match:'operasyon gecikmesi',course:'AC-32',role:'Operasyon',reason:'Günlük operasyon rutini',threshold:2,severity:'P1'},
+    {match:'rapor sorumluluğu',course:'AC-27',role:'Şube Müdürü',reason:'Hukuki riske dönen şikayet yönetimi',threshold:1,severity:'P0'},
+    {match:'foto',course:'AC-15',role:'Ekspertiz',reason:'Fotoğraf/kanıt standardı tekrarı',threshold:1,severity:'P1'},
+    {match:'kanıt',course:'AC-15',role:'Ekspertiz',reason:'Kanıt standardı ve rapor kilidi tekrarı',threshold:1,severity:'P1'}
   ];
+  function academyRetrainingEvents(){
+    const complaints=(typeof complaintCenter==='function' ? (complaintCenter().complaintTickets||[]) : []).map(t=>({
+      id:t.id,
+      source:'Şikayet',
+      label:String(t.rootCause||t.type||'').toLowerCase(),
+      branch:t.branch,
+      region:t.region,
+      priority:t.priority,
+      legalRisk:t.legalRisk,
+      count:t.priority==='P0'?3:t.priority==='P1'?2:1,
+      summary:t.summary||t.nextAction||'Şikayet kök nedeni',
+      record:t
+    }));
+    const roots=(typeof complaintCenter==='function' ? (complaintCenter().complaintRootCauses||[]) : []).map((r,i)=>({
+      id:'ROOT-'+i,
+      source:'Kök Neden',
+      label:String(r[0]||'').toLowerCase(),
+      branch:'Network',
+      region:'Tüm bölgeler',
+      priority:Number(r[1]||0)>=8?'P1':'P2',
+      legalRisk:'-',
+      count:Number(r[1]||1),
+      summary:`Son dönem ${r[1]||1} tekrar`,
+      record:{}
+    }));
+    const findings=(typeof ensureQuality==='function' ? (ensureQuality().findings||[]) : []).map((f,i)=>({
+      id:f.id||'QLT-'+i,
+      source:'Kalite',
+      label:String(f.rootCause||f.title||f.issue||f.finding||'kalite bulgusu').toLowerCase(),
+      branch:f.branch||'Kalite denetimi',
+      region:f.region||'-',
+      priority:f.priority||'P1',
+      legalRisk:f.legalRisk||'-',
+      count:2,
+      summary:f.summary||f.note||'Kalite bulgusu',
+      record:f
+    }));
+    return [...complaints,...roots,...findings];
+  }
+  function academyRetrainingPersonFor(event,map){
+    const people=academyBase().people||[];
+    const role=map.role||'';
+    const branchMatch=people.find(p=>event.branch && p.branch===event.branch && String(p.role||'').includes(role));
+    return branchMatch || people.find(p=>String(p.role||'').includes(role)) || people.find(p=>String(p.role||'').includes('Ekspertiz')||String(p.role||'').includes('CRM')) || people[0];
+  }
   function academyRetrainingRecommendations(){
-    const roots=(typeof complaintCenter==='function' ? (complaintCenter().complaintRootCauses||[]) : []);
-    const findings=(typeof ensureQuality==='function' ? (ensureQuality().findings||[]).map(f=>[String(f.title||f.issue||f.finding||'kalite bulgusu').toLowerCase(),1]) : []);
-    const rows=[...roots,...findings].map(item=>{
-      const label=String(item[0]||'').toLowerCase();
-      const map=academyRetrainingMap.find(x=>label.includes(x.match)) || (label.includes('foto')||label.includes('kanıt')?{course:'AC-15',reason:'Fotoğraf/kanıt standardı tekrarı'}:null);
+    const rows=academyRetrainingEvents().map(event=>{
+      const label=String(event.label||'').toLowerCase();
+      const map=academyRetrainingMap.find(x=>label.includes(x.match));
       if(!map) return null;
-      const person=(academyBase().people||[]).find(p=>String(p.role||'').includes('Ekspertiz')||String(p.role||'').includes('CRM')) || (academyBase().people||[])[0];
-      return {label:item[0],count:item[1]||1,courseId:map.course,courseTitle:academyCourseTitleById(map.course),reason:map.reason,person};
-    }).filter(Boolean).slice(0,8);
+      const priorityWeight={P0:40,P1:25,P2:12}[event.priority]||12;
+      const legalWeight=['Yüksek','CEO takip'].includes(event.legalRisk)?25:event.legalRisk==='Orta'?12:0;
+      const score=Math.min(100,Math.round((event.count||1)*8+priorityWeight+legalWeight));
+      const person=academyRetrainingPersonFor(event,map);
+      return {id:event.id,label:event.label,count:event.count||1,source:event.source,branch:event.branch,region:event.region,priority:event.priority,legalRisk:event.legalRisk,summary:event.summary,courseId:map.course,courseTitle:academyCourseTitleById(map.course),reason:map.reason,threshold:map.threshold,trigger:score>=70?'Otomatik atama':'Academy onayı',score,person};
+    }).filter(Boolean).sort((a,b)=>b.score-a.score).slice(0,10);
     return rows;
   }
   function academyRetrainingPanel(){
     const rows=academyRetrainingRecommendations();
-    return `<div class="card"><div class="card-head"><div><div class="card-title">Kalite / Şikayet Kaynaklı Yeniden Eğitim</div><div class="card-sub">Kök neden eşleşirse ilgili personele eğitim önerisi veya ataması yapılır.</div></div>${badge(rows.length?'Öneri Var':'Temiz')}</div>${rows.length?`<table><thead><tr><th>Kök neden</th><th>Önerilen eğitim</th><th>Hedef kişi</th><th>Neden</th><th>Aksiyon</th></tr></thead><tbody>${rows.map((r,i)=>`<tr><td><b>${academyEsc(r.label)}</b><br><span class="card-sub">${r.count} sinyal</span></td><td>${academyEsc(r.courseTitle)}</td><td>${academyEsc(r.person?.name||'Academy havuzu')}<br><span class="card-sub">${academyEsc(r.person?.branch||'')}</span></td><td>${academyEsc(r.reason)}</td><td><button class="micro-btn" data-academy-retraining-assign="${i}">Ata</button></td></tr>`).join('')}</tbody></table>`:`<div class="mini">${icon('shield-check')}<div><b>Yeniden eğitim önerisi yok</b><span>Kalite veya şikayet kök nedeni eşleştiğinde öneriler burada oluşur.</span></div></div>`}</div>`;
+    const stats=[['Canlı olay',academyRetrainingEvents().length],['Eşleşen tetik',rows.length],['Otomatik atama',rows.filter(r=>r.trigger==='Otomatik atama').length],['Academy onayı',rows.filter(r=>r.trigger!=='Otomatik atama').length]];
+    return `<div class="card"><div class="card-head"><div><div class="card-title">Kalite / Şikayet Kaynaklı Yeniden Eğitim</div><div class="card-sub">Şikayet, kök neden ve kalite bulgusu canlı olay gibi okunur; eşik aşılırsa ilgili personele eğitim önerisi veya ataması oluşur.</div></div>${badge(rows.length?'Öneri Var':'Temiz')}</div><div class="hr-data-grid" style="margin-bottom:10px">${stats.map(x=>`<div class="hr-data-card"><span>${x[0]}</span><b>${x[1]}</b></div>`).join('')}</div>${rows.length?`<table><thead><tr><th>Olay / kaynak</th><th>Skor</th><th>Önerilen eğitim</th><th>Hedef kişi</th><th>Tetik kuralı</th><th>Aksiyon</th></tr></thead><tbody>${rows.map((r,i)=>`<tr><td><b>${academyEsc(r.label)}</b><br><span class="card-sub">${academyEsc(r.source)} · ${academyEsc(r.branch)} · ${academyEsc(r.priority)} · ${r.count} sinyal</span></td><td><b>%${r.score}</b><div class="progress"><div class="bar ${r.score>=70?'red':r.score>=50?'amber':'blue'}" style="width:${r.score}%"></div></div></td><td>${academyEsc(r.courseTitle)}<br><span class="card-sub">${academyEsc(r.reason)}</span></td><td>${academyEsc(r.person?.name||'Academy havuzu')}<br><span class="card-sub">${academyEsc(r.person?.branch||'')} · ${academyEsc(r.person?.role||'')}</span></td><td>${badge(r.trigger)}<br><span class="card-sub">Eşik: ${r.threshold} tekrar · ${academyEsc(r.summary)}</span></td><td><button class="micro-btn" data-academy-retraining-assign="${i}">${r.trigger==='Otomatik atama'?'Otomatik ata':'Atama aç'}</button></td></tr>`).join('')}</tbody></table>`:`<div class="mini">${icon('shield-check')}<div><b>Yeniden eğitim önerisi yok</b><span>Kalite veya şikayet kök nedeni eşleştiğinde öneriler burada oluşur.</span></div></div>`}</div>`;
   }
   function academyReportingPanel(){
     const d=academyBase(), assignments=(d.assignments||[]).map(academyNormalizeAssignment);
@@ -8482,8 +8645,8 @@
       {id:'academy-region-path',title:'Bölge müdürü eğitim yolu',desc:'Bölge performansı, şube skor analizi, düzeltme planı, franchise açılış ve kriz yönetimi içerikleri hazırlanır.',tags:['Bölge']}
     ]},
     {id:'academy-cert-exam',title:'Sertifika ve Sınav Hazırlığı',priority:'Yüksek',owner:'Academy + Kalite',items:[
-      {id:'academy-cert-rules',title:'Sertifika ve sınav mantığı',desc:'Her eğitim için süre, zorunlu/opsiyonel durum, sınav, geçerlilik ve yenileme periyodu tanımlanır.',tags:['Sertifika']},
-      {id:'academy-pass-score',title:'Geçme puanı ve tekrar kuralı',desc:'Her eğitim için minimum geçme puanı, başarısızlıkta tekrar eğitim/sınav akışı ve kilit etkisi yazılır.',tags:['Sınav']},
+      {id:'academy-cert-rules',title:'Sertifika ve sınav mantığı',desc:'Her eğitim için soru sayısı, vaka ağırlığı, geçme puanı, sertifika geçerliliği, yenileme penceresi ve eğitmen sorumlusu tanımlanır.',tags:['Sertifika']},
+      {id:'academy-pass-score',title:'Geçme puanı ve tekrar kuralı',desc:'Başarısızlıkta 24 saat tekrar bekleme, 2 başarısız denemede eğitmen onayı ve kritik eğitimlerde zorunlu uygulama kontrolü çalışır.',tags:['Sınav']},
       {id:'academy-permission-lock',title:'Operasyon yetki kilidi',desc:'Sertifika veya zorunlu eğitim eksikse ilgili operasyon/rapor yetkisinin açılmaması kuralı hazırlanır.',tags:['Yetki Kilidi']},
       {id:'academy-renewal-calendar',title:'Yenileme takvimi',desc:'Sertifika bitiş tarihi, yaklaşan yenileme uyarısı ve sorumlu eğitmen takibi canlı öncesi hazırlanır.',tags:['Yenileme']}
     ]},
@@ -8497,7 +8660,7 @@
       {id:'academy-region-sla',title:'Bölge/şube SLA hedefleri',desc:'Bölge ve şube bazlı eğitim tamamlama hedefleri, gecikme eşiği ve risk rengi belirlenir.',tags:['SLA']},
       {id:'academy-instructor-sla',title:'Eğitmen SLA takibi',desc:'Eğitmenin planlama, tamamlama, sınav ve yenileme sorumlulukları ölçülebilir hale getirilir.',tags:['Eğitmen']},
       {id:'academy-dashboard-kpi',title:'Dashboard KPI bağlantısı',desc:'Geciken eğitim, sertifika riski ve yetki kilidi Dashboard/İK/kalite ekranlarına sinyal üretir.',tags:['KPI']},
-      {id:'academy-quality-link',title:'Kalite bulgusu eğitim bağlantısı',desc:'Kalite denetimi veya müşteri şikayeti tekrar eden hatada otomatik eğitim aksiyonuna bağlanır.',tags:['Kalite']}
+      {id:'academy-quality-link',title:'Kalite bulgusu eğitim bağlantısı',desc:'Şikayet, kök neden ve kalite bulguları canlı olay olarak okunur; eşik aşılırsa ilgili role otomatik yeniden eğitim önerisi/ataması oluşur.',tags:['Kalite']}
     ]},
     {id:'academy-content-assets',title:'İçerik ve Doküman Omurgası',priority:'Orta',owner:'Academy',items:[
       {id:'academy-module-library',title:'Modül kütüphanesi',desc:'Video, PDF, quiz, görev, uygulama kontrol listesi ve eğitmen notu tek katalog yapısına alınır.',tags:['İçerik']},
@@ -8601,7 +8764,7 @@
     if(tab==='regions') return academyRegionsPro();
     if(tab==='sla') return `${academySlaDashboard()}<div style="margin-top:14px">${academyReportingPanel()}</div>`;
     if(tab==='assignments') return `${academyAssignmentsPanel()}<div style="margin-top:14px">${academyRetrainingPanel()}</div><div style="margin-top:14px">${academyMandatoryLockPanel()}</div>`;
-    if(tab==='certs') return `${academyCertificatesPanelPro()}<div style="margin-top:14px">${academyRenewalCalendarPanel()}</div>`;
+    if(tab==='certs') return `${academyExamPolicyPanel()}<div style="margin-top:14px">${academyCertificatesPanelPro()}</div><div style="margin-top:14px">${academyRenewalCalendarPanel()}</div>`;
     if(tab==='settings') return typeof academySettings==='function'?academySettings():'';
     return `${academyChartsPanel()}<div class="grid g2" style="margin-top:14px"><div>${academyCourseGridPro()}</div><div>${typeof academyOnboarding==='function'?academyOnboarding():''}</div></div><div style="margin-top:14px">${academyMandatoryLockPanel()}</div><div style="margin-top:14px">${academyRetrainingPanel()}</div><div style="margin-top:14px">${academySlaDashboard()}</div><div style="margin-top:14px">${academyReportingPanel()}</div><div style="margin-top:14px">${academyAssignmentsPanel()}</div><div class="card" style="margin-top:14px"><div class="card-head"><div><div class="card-title">Kişi Bazlı Hedef Gerçekleştirme</div><div class="card-sub">Eğitime tabi herkesin hedef oranı, SLA durumu ve atanan eğitim planı</div></div></div>${academyPeopleTablePro()}</div>`;
   }
@@ -8752,6 +8915,15 @@
     if(t.matches('[data-academy-lock-assign]')) { academyAssignCourseToPerson(t.dataset.academyLockAssign,t.dataset.courseId,'Zorunlu eğitim kilidi'); if(typeof toast==='function') toast('Zorunlu eğitim kilidi için eğitim atandı.'); }
     if(t.matches('[data-academy-renew-cert]')) academyRenewCertificate(t.dataset.academyRenewCert);
     if(t.matches('[data-academy-retraining-assign]')) academyAssignRetraining(t.dataset.academyRetrainingAssign);
+  });
+  Object.assign(window,{
+    academyBase,
+    academyNormalizeAssignment,
+    calcSla,
+    academyChartData,
+    academyExamPolicy,
+    academyRetrainingRecommendations,
+    academyRetrainingEvents
   });
   setTimeout(()=>{ if(typeof DB!=='undefined' && DB && current==='academy'){ rerenderAcademyRoom(); } },700);
 })();
