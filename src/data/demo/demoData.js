@@ -1,7 +1,7 @@
 (function(global){
   const DAY_COUNT = 30;
   const ROYALTY_RATE = 0.10;
-  const TODAY = "2026-04-29";
+  const TODAY = "2026-05-04";
 
   const packages = [
     { id:"mini", name:"Mini Paket", price:5000, baseShare:28 },
@@ -293,7 +293,12 @@
       const [year, month] = ym.split("-").map(Number);
       return { year, month:monthName(month-1), revenue:sum(rows,"grossRevenue"), royalty:sum(rows,"royalty"), ad:sum(rows,"adCost"), ebitda:sum(rows,"ebitda"), status:"actual" };
     });
-    const base2026 = current[0] || { revenue:0, royalty:0, ad:0, ebitda:0 };
+    const base2026 = {
+      revenue:sum(operations,"grossRevenue"),
+      royalty:sum(operations,"royalty"),
+      ad:sum(operations,"adCost"),
+      ebitda:sum(operations,"ebitda")
+    };
     const forecast2026 = Array.from({length:12}, (_,i) => {
       const factor = 0.72 + i*.045;
       return { year:2026, month:monthName(i), revenue:money(base2026.revenue*factor), royalty:money(base2026.royalty*factor), ad:money(base2026.ad*factor), ebitda:money(base2026.ebitda*factor), status:i<4?"actual":"forecast" };
@@ -319,7 +324,8 @@
     const legalKpis = externalKpiService?.calculateLegalKPIs ? externalKpiService.calculateLegalKPIs(legalModule, summary.totalMonthlyRevenue || 1) : {};
     const legalDashboardSummary = {...legalSummary(legalModule), ...legalKpis};
     const topRevenue = branchRows.slice().sort((a,b)=>b.dailyRevenue-a.dailyRevenue).slice(0,5).map(b=>[b.displayName,b.dailyRevenue]);
-    const network = { branchCount:branchRows.length, activeBranches:branchRows.length, offlineBranches:0, todayCars:summary.totalDailyVehicles, todayRevenue:summary.totalDailyRevenue, avgTicket:summary.averageTicket, avgSatisfaction:Number((summary.customerSatisfaction/20).toFixed(2)), openComplaints:summary.totalComplaints, todayLeads:sum(latestRows(operations),"leads"), monthlyRoyalty:summary.totalRoyalty, trustScore:Math.round(sum(branchRows,"trustScore")/branchRows.length) };
+    const onlineUsers = clamp(branchRows.length*2 + Math.round(summary.totalDailyVehicles*.12) + Math.ceil(summary.totalComplaints*.22), 28, 62);
+    const network = { branchCount:branchRows.length, activeBranches:branchRows.length, offlineBranches:0, onlineUsers, todayCars:summary.totalDailyVehicles, todayRevenue:summary.totalDailyRevenue, avgTicket:summary.averageTicket, avgSatisfaction:Number((summary.customerSatisfaction/20).toFixed(2)), openComplaints:summary.totalComplaints, todayLeads:sum(latestRows(operations),"leads"), monthlyRoyalty:summary.totalRoyalty, trustScore:Math.round(sum(branchRows,"trustScore")/branchRows.length), liveUpdatedAt:"04.05.2026 14:35" };
     return {
       operations, kpiTargets:targets, riskAlerts:alerts, demoPackages:packages, users, legalModule, legalSummary:legalDashboardSummary,
       branches: branchRows.map(b => ({ id:b.id, name:b.displayName, city:b.city, region:b.region, regionId:b.regionId, status:"Aktif", manager:b.manager, revenue:b.monthlyRevenue, royalty:Math.round(b.monthlyRevenue*ROYALTY_RATE), reports:b.monthlyVehicles, nps:b.satisfactionPercent-20, google:b.google, quality:b.trustScore, risk:b.status==="Fix"||b.status==="Replace"?"Yuksek":b.status==="Watch"?"Orta":"Dusuk", growth:b.growth, late:b.royaltyDelay ? 1 : 0 })),

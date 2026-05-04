@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="ototr-version" content="SVK v1.0.66-online-count" />
+  <meta name="ototr-version" content="SVK v1.0.67-realistic-live-data" />
   <title>OTOTR Genel Merkez ERP + CRM</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -418,7 +418,7 @@
 <body>
   <div class="app">
     <aside class="side">
-      <div class="brand-row"><a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.66</small></div></a><div class="brand-actions"><button class="theme-toggle" type="button" data-theme-toggle title="Koyu temaya geç" aria-label="Tema değiştir"><i data-lucide="sun-moon"></i><span id="themeToggleText">Açık</span></button><div class="online-pill" title="Online kullanıcı sayısı"><span class="online-dot"></span><b data-online-count>42</b><small>kişi</small></div></div></div>
+      <div class="brand-row"><a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.67</small></div></a><div class="brand-actions"><button class="theme-toggle" type="button" data-theme-toggle title="Koyu temaya geç" aria-label="Tema değiştir"><i data-lucide="sun-moon"></i><span id="themeToggleText">Açık</span></button><div class="online-pill" title="Online kullanıcı sayısı"><span class="online-dot"></span><b data-online-count>42</b><small>kişi</small></div></div></div>
       <div class="nav" id="nav"></div>
     </aside>
 
@@ -503,7 +503,7 @@
   <script>
     const fmtTL = n => new Intl.NumberFormat('tr-TR',{style:'currency',currency:'TRY',maximumFractionDigits:0}).format(n);
     const fmt = n => new Intl.NumberFormat('tr-TR').format(n);
-    const today = '27 Nisan 2026';
+    const today = '4 Mayıs 2026';
     const ROYALTY_RATE = .10;
     const KDV_RATE = .20;
     const ROYALTY_TOTAL_RATE = ROYALTY_RATE * (1 + KDV_RATE);
@@ -592,16 +592,16 @@
         {year:2026,month:'Aralık',revenue:19240000,royalty:royaltyAmount(19240000),ad:384800,ebitda:7180000,status:'forecast'}
       ],
       ceoDashboard:{
-        network:{branchCount:162,activeBranches:148,offlineBranches:3,onlineUsers:42,todayCars:3864,todayRevenue:14820000,avgTicket:3835,avgSatisfaction:4.62,openComplaints:87,todayLeads:326,monthlyRoyalty:18640000,trustScore:86},
+        network:{branchCount:10,activeBranches:10,offlineBranches:0,onlineUsers:42,todayCars:118,todayRevenue:1086500,avgTicket:9208,avgSatisfaction:4.53,openComplaints:31,todayLeads:307,monthlyRoyalty:3864000,trustScore:81},
         kpis:[
-          {label:'Bugünkü Ekspertiz',value:'3.864',change:'+%8.4',direction:'up',icon:'car-front',tone:'good',hint:'düne göre'},
-          {label:'Bugünkü Ciro',value:'₺14,82M',change:'+%11.2',direction:'up',icon:'banknote',tone:'good',hint:'düne göre'},
-          {label:'Araç Başı Ortalama Gelir',value:'₺3.835',change:'+%3.1',direction:'up',icon:'receipt',tone:'info',hint:'ciro / araç'},
-          {label:'Aktif Şube',value:'148/162',change:'3 offline',direction:'down',icon:'building-2',tone:'warn',hint:'canlı ağ'},
-          {label:'Memnuniyet',value:'4.62/5',change:'-%0.3',direction:'down',icon:'smile',tone:'warn',hint:'7 gün'},
-          {label:'Açık Şikayet',value:'87',change:'+14',direction:'down',icon:'message-circle-warning',tone:'warn',hint:'24 saat'},
-          {label:'Bugünkü Lead',value:'326',change:'+%18',direction:'up',icon:'user-plus',tone:'good',hint:'reklam + organik'},
-          {label:'Royalty Sağlığı',value:'%98,7',change:'Sorun yok',direction:'up',icon:'shield-check',tone:'good',hint:'otomatik çekim'}
+          {label:'Bugünkü Ekspertiz',value:'118',change:'+%4.8',direction:'up',icon:'car-front',tone:'good',hint:'canlı şube akışı'},
+          {label:'Bugünkü Ciro',value:'₺1,09M',change:'+%6.2',direction:'up',icon:'banknote',tone:'good',hint:'POS + paket'},
+          {label:'Araç Başı Ortalama Gelir',value:'₺9.208',change:'+%2.4',direction:'up',icon:'receipt',tone:'info',hint:'paket ort.'},
+          {label:'Aktif Şube',value:'10/10',change:'canlı demo',direction:'flat',icon:'building-2',tone:'good',hint:'aktif ağ'},
+          {label:'Memnuniyet',value:'4.53/5',change:'stabil',direction:'up',icon:'smile',tone:'good',hint:'Google ağı'},
+          {label:'Açık Şikayet',value:'31',change:'+ risk',direction:'down',icon:'message-circle-warning',tone:'warn',hint:'şube toplam'},
+          {label:'Bugünkü Lead',value:'307',change:'+%9.1',direction:'up',icon:'user-plus',tone:'good',hint:'CRM + reklam'},
+          {label:'Royalty Sağlığı',value:'%95,5',change:'çekim takibi',direction:'down',icon:'shield-check',tone:'warn',hint:'otomatik çekim'}
         ],
         alerts:[
           {severity:'critical',branch:'İstanbul Ataşehir',text:'1 yıldız Google yorumu ve hatalı rapor iddiası aynı dosyada birleşti.',time:'Bugün 10:42',route:'crisis'},
@@ -665,13 +665,13 @@
         ],
         customerExperience:{google:4.62,negative24h:18,open:87,resolved:143,avgResolution:'3s 18dk',positiveLift:'+0.07 puan',recoveredReviews:12},
         funnel:[
-          {stage:'Reklam lead',count:2140,rate:100},
-          {stage:'WhatsApp görüşme',count:1328,rate:62},
-          {stage:'Randevu',count:748,rate:56},
-          {stage:'Şubeye gelen',count:604,rate:81},
-          {stage:'Satışa dönen',count:486,rate:80}
+          {stage:'Web/Çağrı Trafiği',count:9517,rate:100},
+          {stage:'Lead',count:307,rate:100},
+          {stage:'Nitelikli',count:218,rate:71},
+          {stage:'Randevu',count:141,rate:46},
+          {stage:'Satışa Dönen',count:82,rate:58}
         ],
-        financeSummary:{todayRevenue:14820000,monthRevenue:318600000,expectedMonthEnd:462000000,royaltyHealth:98.7,royaltyRiskBranches:3,royaltyBlockedAmount:42800,royaltyStatus:'Sorun yok',topRevenue:[['İstanbul Maslak',219400],['İstanbul Ataşehir',203200],['Bursa Nilüfer',173500],['Kocaeli İzmit',149800],['Ankara Söğütözü',139700]]},
+        financeSummary:{todayRevenue:1086500,monthRevenue:30619800,expectedMonthEnd:33069400,royaltyHealth:95.5,royaltyRiskBranches:1,royaltyBlockedAmount:104900,royaltyStatus:'Çekim tekrarı var',topRevenue:[['İstanbul Kadıköy',153000],['İzmir Karşıyaka',151200],['İstanbul Bağcılar',118600],['Ankara Çankaya',105400],['İzmir Bornova',104700]]},
         franchiseSummary:{newApplications:8,inTalks:5,contractStage:1,openingPrep:1,riskyCandidates:3},
         trustFactors:[
           ['Müşteri memnuniyeti',92],
@@ -682,12 +682,12 @@
           ['Finansal disiplin',84]
         ],
         liveOperations:[
-          {branch:'İstanbul Ataşehir',city:'İstanbul',cars:48,waiting:9,avgTime:'38 dk',sla:89,status:'Risk',tone:'bad',owner:'Selin K.'},
-          {branch:'Bursa Nilüfer',city:'Bursa',cars:42,waiting:3,avgTime:'21 dk',sla:97,status:'Akış iyi',tone:'good',owner:'Kadir B.'},
-          {branch:'Ankara Çukurambar',city:'Ankara',cars:27,waiting:11,avgTime:'44 dk',sla:84,status:'CEO takip',tone:'bad',owner:'Emre T.'},
-          {branch:'Kocaeli İzmit',city:'Kocaeli',cars:36,waiting:2,avgTime:'18 dk',sla:98,status:'Lider',tone:'good',owner:'Mehmet A.'},
-          {branch:'İzmir Bornova',city:'İzmir',cars:20,waiting:7,avgTime:'36 dk',sla:88,status:'Dikkat',tone:'warn',owner:'Derya K.'},
-          {branch:'Antalya Kepez',city:'Antalya',cars:18,waiting:12,avgTime:'47 dk',sla:72,status:'Offline risk',tone:'bad',owner:'Atama bekliyor'}
+          {branch:'İstanbul Kadıköy',city:'İstanbul',cars:15,waiting:2,avgTime:'24 dk',sla:96,status:'Lider',tone:'good',owner:'Elif'},
+          {branch:'İstanbul Bağcılar',city:'İstanbul',cars:14,waiting:2,avgTime:'29 dk',sla:88,status:'Sağlıklı',tone:'good',owner:'Serkan'},
+          {branch:'Ankara Çankaya',city:'Ankara',cars:13,waiting:2,avgTime:'27 dk',sla:92,status:'Sağlıklı',tone:'good',owner:'Burak'},
+          {branch:'İzmir Karşıyaka',city:'İzmir',cars:13,waiting:1,avgTime:'24 dk',sla:94,status:'Lider',tone:'good',owner:'Selin'},
+          {branch:'İzmir Bornova',city:'İzmir',cars:12,waiting:2,avgTime:'33 dk',sla:82,status:'Takipte',tone:'warn',owner:'Derya'},
+          {branch:'Antalya Kepez',city:'Antalya',cars:10,waiting:3,avgTime:'46 dk',sla:69,status:'Riskli',tone:'bad',owner:'Canan'}
         ],
         quickActions:[
           {label:'Yeni şube ekle',hint:'Açılış checklist başlat',icon:'building-2',tone:'blue',route:'branches'},
@@ -2474,6 +2474,14 @@
       const avgGoogle=branchMetrics.reduce((s,m)=>s+m.google,0)/Math.max(1,branchMetrics.length);
       const avgTrust=Math.round(branchMetrics.reduce((s,m)=>s+m.trust,0)/Math.max(1,branchMetrics.length));
       const delayedRoyalty=out.branches.filter(b=>b.risk==='Yüksek').length;
+      const activeBranchCount=out.branches.filter(b=>b.status==='Aktif').length;
+      const inServiceCars=branchMetrics.reduce((s,m,i)=>s+liveClamp(Math.ceil(m.dailyCars*.18)+(i%4===0?1:0),1,4),0);
+      const waitingCars=branchMetrics.reduce((s,m,i)=>s+liveClamp(Math.floor(m.dailyCars*.09)+(i%5===0?1:0),0,3),0);
+      const delayedReports=branchMetrics.filter(m=>m.sla<82).length;
+      const completedCars=Math.max(0,todayCars-inServiceCars-waitingCars);
+      const todayLeads=Math.round(todayCars*2.55);
+      const onlineUsers=liveClamp(activeBranchCount*2 + Math.round(todayCars*.12) + Math.ceil(openComplaints*.22),28,62);
+      const liveUpdatedAt='04.05.2026 14:35';
 
       const regionMap=new Map();
       branchMetrics.forEach(m=>{
@@ -2537,25 +2545,31 @@
         network:{
           ...(out.ceoDashboard?.network||{}),
           branchCount:out.branches.length,
-          activeBranches:out.branches.filter(b=>b.status==='Aktif').length,
+          activeBranches:activeBranchCount,
           offlineBranches:0,
+          onlineUsers,
           todayCars,
           todayRevenue,
           avgTicket,
           avgSatisfaction:Number(avgGoogle.toFixed(2)),
           openComplaints,
-          todayLeads:Math.round(todayCars*2.6),
+          todayLeads,
+          inServiceCars,
+          waitingCars,
+          completedCars,
+          delayedReports,
+          liveUpdatedAt,
           monthlyRoyalty:royaltyAmount(monthRevenue),
           trustScore:avgTrust
         },
         kpis:[
-          {label:'Bugünkü Ekspertiz',value:todayCars.toLocaleString('tr-TR'),change:'+%4.8',direction:'up',icon:'car-front',tone:'good',hint:'10 şube demo'},
-          {label:'Bugünkü Ciro',value:fmtShortTL(todayRevenue),change:'+%6.2',direction:'up',icon:'banknote',tone:'good',hint:'günlük tahmin'},
+          {label:'Bugünkü Ekspertiz',value:todayCars.toLocaleString('tr-TR'),change:'+%4.8',direction:'up',icon:'car-front',tone:'good',hint:'canlı şube akışı'},
+          {label:'Bugünkü Ciro',value:fmtShortTL(todayRevenue),change:'+%6.2',direction:'up',icon:'banknote',tone:'good',hint:'POS + paket'},
           {label:'Araç Başı Ortalama Gelir',value:`₺${avgTicket.toLocaleString('tr-TR')}`,change:'+%2.4',direction:'up',icon:'receipt',tone:'info',hint:'paket ort.'},
-          {label:'Aktif Şube',value:`${out.branches.filter(b=>b.status==='Aktif').length}/${out.branches.length}`,change:'canlı demo',direction:'flat',icon:'building-2',tone:'good',hint:'aktif ağ'},
+          {label:'Aktif Şube',value:`${activeBranchCount}/${out.branches.length}`,change:'canlı demo',direction:'flat',icon:'building-2',tone:'good',hint:'aktif ağ'},
           {label:'Memnuniyet',value:`${avgGoogle.toFixed(2)}/5`,change:avgGoogle<4.4?'risk':'stabil',direction:avgGoogle<4.4?'down':'up',icon:'smile',tone:avgGoogle<4.4?'warn':'good',hint:'Google ağı'},
           {label:'Açık Şikayet',value:String(openComplaints),change:openComplaints>25?'+ risk':'kontrol',direction:openComplaints>25?'down':'flat',icon:'message-circle-warning',tone:openComplaints>25?'warn':'good',hint:'şube toplam'},
-          {label:'Bugünkü Lead',value:String(Math.round(todayCars*2.6)),change:'+%9.1',direction:'up',icon:'user-plus',tone:'good',hint:'CRM + reklam'},
+          {label:'Bugünkü Lead',value:String(todayLeads),change:'+%9.1',direction:'up',icon:'user-plus',tone:'good',hint:'CRM + reklam'},
           {label:'Royalty Sağlığı',value:delayedRoyalty?`%${(100-delayedRoyalty*4.5).toFixed(1).replace('.',',')}`:'%100',change:delayedRoyalty?'çekim takibi':'Sorun yok',direction:delayedRoyalty?'down':'up',icon:'shield-check',tone:delayedRoyalty?'warn':'good',hint:'otomatik çekim'}
         ],
         alerts:[...generatedAlerts,...existingComplaintAlerts].slice(0,10),
@@ -2563,6 +2577,14 @@
         bestBranches,
         riskyBranches,
         customerExperience:{...(out.ceoDashboard?.customerExperience||{}),google:Number(avgGoogle.toFixed(2)),open:openComplaints,negative24h:Math.max(3,Math.round(openComplaints*.38)),resolved:Math.round(openComplaints*1.7),avgResolution:'3s 05dk',positiveLift:'+0,05 puan'},
+        funnel:[
+          {stage:'Web/Çağrı Trafiği',count:Math.round(todayLeads*31),rate:100},
+          {stage:'Lead',count:todayLeads,rate:100},
+          {stage:'Nitelikli',count:Math.round(todayLeads*.71),rate:71},
+          {stage:'Randevu',count:Math.round(todayLeads*.46),rate:46},
+          {stage:'Şubeye Gelen',count:Math.round(todayLeads*.34),rate:74},
+          {stage:'Satışa Dönen',count:completedCars,rate:Math.round(completedCars/Math.max(1,Math.round(todayLeads*.34))*100)}
+        ],
         financeSummary:{
           ...(out.ceoDashboard?.financeSummary||{}),
           todayRevenue,
@@ -2574,6 +2596,17 @@
           royaltyStatus:delayedRoyalty?'Çekim tekrarı var':'Sorun yok',
           topRevenue:branchMetrics.slice().sort((a,b)=>b.dailyRevenue-a.dailyRevenue).slice(0,5).map(m=>[m.branch.name,m.dailyRevenue])
         },
+        liveOperations:branchMetrics.slice().sort((a,b)=>b.dailyCars-a.dailyCars).slice(0,6).map((m,i)=>({
+          branch:m.branch.name,
+          city:m.branch.city,
+          cars:m.dailyCars,
+          waiting:liveClamp(Math.floor(m.dailyCars*.12)+(i%2),0,4),
+          avgTime:m.sla<75?'46 dk':m.sla<84?'33 dk':'24 dk',
+          sla:m.sla,
+          status:m.trust>=90?'Lider':m.trust>=84?'Sağlıklı':m.trust>=74?'Takipte':'Riskli',
+          tone:m.trust<74?'bad':m.trust<84?'warn':'good',
+          owner:(m.branch.manager||'Şube').split(' ')[0]
+        })),
         franchiseSummary:franchiseSummaryFromCandidates(franchiseCandidateRecords(out)),
         trustFactors:[
           ['Müşteri memnuniyeti',Math.round(avgGoogle*20)],
@@ -2595,10 +2628,12 @@
         status:b.risk==='Yüksek'?'İnceleme':b.risk==='Orta'?'Takip':'Stabil'
       }));
       out.demoDataHealth={
-        version:'SVK v1.0.66',
-        branchUniverse:'10 şube / 4 aktif bölge',
+        version:'SVK v1.0.67',
+        branchUniverse:'10 aktif şube / 4 bölge',
         packagePriceBand:'5.000 TL - 15.000 TL',
         avgTicketBand:'8.350 TL - 9.900 TL',
+        liveSnapshot:'04.05.2026 14:35',
+        realismNote:'Dashboard, şube, finans, operasyon ve pazarlama metrikleri aynı canlı demo evreninden normalize edilir.',
         lastNormalizedAt:new Date().toISOString()
       };
       out.moduleOwnership=moduleOwnershipModel;
@@ -2639,7 +2674,7 @@
     }
 
     const Backend = {
-      key:'ototr-demo-db-v3-consistent-live',
+      key:'ototr-demo-db-v4-realistic-live',
       async connect(){
         await wait(220);
         const old=localStorage.getItem(this.key), parsed=old ? JSON.parse(old) : null;
@@ -3349,10 +3384,11 @@
     }
     function dashboardOpsMetrics(){
       const net=DB?.ceoDashboard?.network||{};
-      const today=Number(String(net.todayCars||'').replace(/\D/g,'')) || 3864;
-      const inProcess=Math.max(31,Math.round(today*.08));
-      const delayed=Math.max(11,Math.round(today*.029));
-      return {todayCars:today,inProcess,completed:Math.max(0,today-inProcess),delayedReports:delayed,sla:87,capacityRisk:2,avgTime:'42 dk'};
+      const today=Number(String(net.todayCars||'').replace(/\D/g,'')) || 118;
+      const inProcess=Number(net.inServiceCars)||Math.max(8,Math.round(today*.16));
+      const waiting=Number(net.waitingCars)||Math.max(3,Math.round(today*.07));
+      const delayed=Number(net.delayedReports)||Math.max(2,Math.round(today*.02));
+      return {todayCars:today,inProcess,waiting,completed:Number(net.completedCars)||Math.max(0,today-inProcess-waiting),delayedReports:delayed,sla:87,capacityRisk:2,avgTime:'32 dk'};
     }
     function TurkeyBranchOverview(){
       const regions=(DB.ceoDashboard.regions||[]).map(regionLiveData);
@@ -9272,11 +9308,11 @@
 <!-- OTOTR Sales & Marketing Machine Patch -->
 <script>
 (function(){
-  const KEY='ototr-marketing-machine-v1';
+  const KEY='ototr-marketing-machine-v2-realistic-live';
   const PACKAGES=['Standart Ekspertiz','Full Ekspertiz','Premium Ekspertiz','Kurumsal/Filo Kontrolü','EV/Hibrit Kontrol'];
   const SOURCES=['Google Search','Google Maps','Meta Ads','Instagram','WhatsApp','SEO','Referans','Galeri/Bayi','Walk-in'];
   const STATUSES=['Yeni','Nitelikli','Arandı','WhatsApp','Randevu','Geldi','Satış','Kaybedildi','Yorum İstendi'];
-  const BRANCHES=['Bursa Nilüfer','Bursa Osmangazi','İstanbul Ataşehir','Ankara Çankaya','İzmir Bornova'];
+  const BRANCHES=['İstanbul Bağcılar','İstanbul Kadıköy','İstanbul Pendik','Ankara Çankaya','Ankara Etimesgut','İzmir Bornova','İzmir Karşıyaka','Bursa Nilüfer','Antalya Kepez','Konya Selçuklu'];
   const OWNERS=['Elif Kaya','Mert Aydın','Selin Demir','Burak Şahin','Genel Merkez CRM'];
   const marketingFilters={q:'',source:'',branch:'',status:'',owner:'',score:''};
   function money(v){return typeof fmtTL==='function'?fmtTL(v):new Intl.NumberFormat('tr-TR').format(v)+' TL'}
@@ -9285,31 +9321,32 @@
   function mScore(l){let s=0;if(l.phone)s+=20;if(l.branch)s+=15;if(l.package)s+=15;if(l.source==='Google Search')s+=15;if(l.source==='WhatsApp')s+=10;if(String(l.package).includes('Premium'))s+=10;if(l.sameDay||/bugün|ayni gün|aynı gün/i.test(l.note||''))s+=15;return Math.max(0,Math.min(100,s))}
   function mTemp(score){return score>=80?'Sıcak':score>=50?'Orta':'Soğuk'}
   function scoreClass(score){return score>=80?'hot':score>=50?'mid':'cold'}
+  function packagePrice(name){return String(name).includes('Premium')?12500:String(name).includes('Full')?15000:String(name).includes('Kurumsal')?13500:String(name).includes('EV')?14500:7500}
   function opt(values,value=''){return values.map(v=>`<option value="${v}" ${v===value?'selected':''}>${v}</option>`).join('')}
   function saveMarketing(m){localStorage.setItem(KEY,JSON.stringify(m))}
   function seedMarketing(){
     const leads=[
-      ['MKT-1001','Ahmet Yılmaz','0532 118 24 16','Bursa Nilüfer','BMW 320i','Premium Ekspertiz','Google Search','Bursa premium search','Randevu','Elif Kaya','Arandı','Randevu hatırlatma','2026-05-01',true,true],
-      ['MKT-1002','Zeynep Arslan','0541 322 18 44','İstanbul Ataşehir','Mercedes C200','Full Ekspertiz','WhatsApp','WhatsApp hızlı randevu','WhatsApp','Mert Aydın','Paket anlatıldı','Saat teyidi','2026-05-01',true,false],
+      ['MKT-1001','Ahmet Yılmaz','0532 118 24 16','İstanbul Kadıköy','BMW 320i','Premium Ekspertiz','Google Search','Kadıköy premium search','Randevu','Elif Kaya','Arandı','Randevu hatırlatma','2026-05-04',true,true],
+      ['MKT-1002','Zeynep Arslan','0541 322 18 44','İstanbul Bağcılar','Mercedes C200','Full Ekspertiz','WhatsApp','WhatsApp hızlı randevu','WhatsApp','Mert Aydın','Paket anlatıldı','Saat teyidi','2026-05-04',true,false],
       ['MKT-1003','Mehmet Kaya','0533 700 12 90','Ankara Çankaya','Volkswagen Passat','Standart Ekspertiz','Google Maps','Harita yakın şube','Geldi','Selin Demir','Şubeye geldi','Satış kapatma','2026-05-01',true,true],
       ['MKT-1004','Derya Koç','0554 660 88 12','İzmir Bornova','Toyota Corolla','Full Ekspertiz','Meta Ads','Mayıs fiyat kampanyası','Nitelikli','Burak Şahin','Form doğrulandı','İlk arama','2026-04-30',true,false],
-      ['MKT-1005','Hasan Aydın','0538 112 45 66','Bursa Osmangazi','Audi A4','Premium Ekspertiz','Instagram','Reels premium paket','Arandı','Elif Kaya','Fiyat iletildi','WhatsApp takip','2026-04-30',true,false],
+      ['MKT-1005','Hasan Aydın','0538 112 45 66','İzmir Karşıyaka','Audi A4','Premium Ekspertiz','Instagram','Reels premium paket','Arandı','Elif Kaya','Fiyat iletildi','WhatsApp takip','2026-05-03',true,false],
       ['MKT-1006','Ayşe Karaca','0542 901 35 77','Bursa Nilüfer','Renault Megane','Standart Ekspertiz','SEO','oto ekspertiz fiyat','Satış','Genel Merkez CRM','Satış tamamlandı','Yorum iste','2026-04-29',true,false],
-      ['MKT-1007','Serkan Yıldız','0555 901 77 22','İstanbul Ataşehir','Tesla Model Y','EV/Hibrit Kontrol','Google Search','EV ekspertiz search','Randevu','Mert Aydın','Randevu alındı','Konum paylaş','2026-05-01',true,true],
+      ['MKT-1007','Serkan Yıldız','0555 901 77 22','İstanbul Pendik','Tesla Model Y','EV/Hibrit Kontrol','Google Search','EV ekspertiz search','Randevu','Mert Aydın','Randevu alındı','Konum paylaş','2026-05-04',true,true],
       ['MKT-1008','Ece Kaplan','0531 408 91 20','Ankara Çankaya','Hyundai Tucson','Full Ekspertiz','Referans','Referans müşteri','Yorum İstendi','Selin Demir','İşlem bitti','Google yorum','2026-04-28',true,false],
       ['MKT-1009','Mert Otomotiv','0543 781 11 30','İzmir Bornova','Ford Transit','Kurumsal/Filo Kontrolü','Galeri/Bayi','Galeri anlaşması','Nitelikli','Burak Şahin','Filo teklifi hazırlandı','Teklif ara','2026-04-30',true,false],
       ['MKT-1010','Sena Acar','','Bursa Nilüfer','Fiat Egea','Standart Ekspertiz','Walk-in','Şube içi kayıt','Yeni','Elif Kaya','Kayıt açıldı','Telefon tamamla','2026-05-01',false,false],
-      ['MKT-1011','Cem Tunalı','0530 214 66 10','Bursa Osmangazi','Peugeot 3008','Premium Ekspertiz','Meta Ads','Premium remarketing','Kaybedildi','Genel Merkez CRM','Fiyat yüksek bulundu','Fiyat itirazı','2026-04-27',true,false],
-      ['MKT-1012','Duru Lojistik','0549 332 10 18','İstanbul Ataşehir','Ford Courier','Kurumsal/Filo Kontrolü','SEO','filo ekspertiz','Geldi','Mert Aydın','Araç kabulde','Satış kapatma','2026-05-01',true,true]
-    ].map(x=>{const l={id:x[0],name:x[1],phone:x[2],branch:x[3],vehicle:x[4],package:x[5],source:x[6],campaign:x[7],status:x[8],owner:x[9],lastAction:x[10],nextAction:x[11],date:x[12],kvkk:x[13],sameDay:x[14],note:x[14]?'Aynı gün randevu istiyor.':'',price:x[5].includes('Premium')?4950:x[5].includes('Full')?3750:x[5].includes('Kurumsal')?6200:x[5].includes('EV')?5400:3250};l.score=mScore(l);l.temp=mTemp(l.score);return l});
+      ['MKT-1011','Cem Tunalı','0530 214 66 10','Antalya Kepez','Peugeot 3008','Premium Ekspertiz','Meta Ads','Premium remarketing','Kaybedildi','Genel Merkez CRM','Fiyat yüksek bulundu','Fiyat itirazı','2026-05-02',true,false],
+      ['MKT-1012','Duru Lojistik','0549 332 10 18','İstanbul Bağcılar','Ford Courier','Kurumsal/Filo Kontrolü','SEO','filo ekspertiz','Geldi','Mert Aydın','Araç kabulde','Satış kapatma','2026-05-04',true,true]
+    ].map(x=>{const l={id:x[0],name:x[1],phone:x[2],branch:x[3],vehicle:x[4],package:x[5],source:x[6],campaign:x[7],status:x[8],owner:x[9],lastAction:x[10],nextAction:x[11],date:x[12],kvkk:x[13],sameDay:x[14],note:x[14]?'Aynı gün randevu istiyor.':'',price:packagePrice(x[5])};l.score=mScore(l);l.temp=mTemp(l.score);return l});
     return {
-      funnel:[['Trafik',8400],['Lead',248],['Nitelikli',176],['Arandı',152],['Randevu',112],['Geldi',84],['Satış',61],['Yorum',39]],
+      funnel:[['Trafik',9520],['Lead',307],['Nitelikli',218],['Arandı',184],['Randevu',141],['Geldi',104],['Satış',82],['Yorum',51]],
       leads,
       channels:[['Google Ads',42500,3420,148,72,38,'6.1x','Bursa Nilüfer bütçesi artırılabilir.'],['Meta Ads',28000,4860,96,40,19,'4.2x','Lead kalite filtresi ve kreatif ayrımı yapılmalı.'],['Google Maps',12000,1880,94,51,29,'6.6x','Yorum isteme otomasyonu güçlendirilmeli.'],['SEO',8500,1240,72,33,18,'5.4x','Nilüfer ve fiyat sayfaları derinleştirilmeli.']],
       trackingEvents:[['page_view','Aktif'],['lead_submit','Aktif'],['whatsapp_click','Aktif'],['phone_click','Test Edilmeli'],['appointment_created','Aktif'],['sale_completed','Eksik'],['review_requested','Test Edilmeli']],
       seoKeywords:[['bursa oto ekspertiz','Bursa','2','Satın alma','Yüksek','Nilüfer landing sayfası güçlendir'],['nilüfer oto ekspertiz','Bursa Nilüfer','1','Yakın şube','Yüksek','Google Maps yorumlarını artır'],['oto ekspertiz fiyat','Türkiye','5','Fiyat araştırma','Orta','Paket karşılaştırma içeriği yaz'],['araç ekspertiz','Genel','7','Bilgi','Orta','Blog + fiyat CTA ekle'],['en yakın oto ekspertiz','Yerel','3','Harita','Yüksek','Şube sayfalarına UTM bağla'],['güvenilir oto ekspertiz','Genel','4','Güven','Yüksek','Müşteri yorumu blokları ekle']],
-      campaigns:[['Hafta İçi Randevu Kampanyası','Boş slot doldurma','Bursa Nilüfer','Google Search',18500,74,61,'Aktif'],['Maaş Günü Araç Alım Kampanyası','Satış dönemi talebi','Tüm Şubeler','Meta Ads',22000,90,66,'Planlandı'],['Bayram Öncesi Ekspertiz Kampanyası','Sezonsal yoğunluk','Bursa Osmangazi','Instagram',16000,58,41,'Test'],['Yeni Şube Lansman Kampanyası','Yerel bilinirlik','İzmir Bornova','Google Maps',24000,82,55,'Aktif'],['Google Yorum Teşvik Kampanyası','Maps otoritesi','Tüm Şubeler','WhatsApp',8000,40,31,'Aktif'],['Tavsiye Eden Kazanır','Referans lead','İstanbul Ataşehir','Referans',12000,46,29,'Durduruldu']],
-      branches:[['Bursa Nilüfer',86,43,28,33,3250,'4.9','4 dk',182,'6.4x','Bütçe +%20 artır'],['Bursa Osmangazi',51,25,14,27,3120,'4.7','7 dk',211,'4.8x','WhatsApp takip hızlandır'],['İstanbul Ataşehir',62,31,19,31,3480,'4.8','5 dk',198,'5.6x','Premium script eğitimi'],['Ankara Çankaya',39,18,9,23,3050,'4.6','9 dk',236,'3.9x','No-show teyit aç'],['İzmir Bornova',48,22,12,25,3180,'4.7','6 dk',205,'4.4x','SEO yerel sayfa']],
+      campaigns:[['Hafta İçi Randevu Kampanyası','Boş slot doldurma','İstanbul Kadıköy','Google Search',28500,96,72,'Aktif'],['Maaş Günü Araç Alım Kampanyası','Satış dönemi talebi','Tüm Şubeler','Meta Ads',32000,118,82,'Planlandı'],['EV/Hibrit Güven Kampanyası','Yüksek değerli araç talebi','İstanbul Pendik','Instagram',22000,64,39,'Test'],['Yeni Şube Lansman Kampanyası','Yerel bilinirlik','İzmir Bornova','Google Maps',24000,82,55,'Aktif'],['Google Yorum Teşvik Kampanyası','Maps otoritesi','Tüm Şubeler','WhatsApp',12000,54,38,'Aktif'],['Tavsiye Eden Kazanır','Referans lead','Bursa Nilüfer','Referans',15000,52,31,'Durduruldu']],
+      branches:[['İstanbul Kadıköy',94,58,42,45,9900,'4.8','4 dk',198,'6.2x','Premium script standardı'],['İstanbul Bağcılar',78,42,27,34,9050,'4.5','7 dk',226,'4.9x','Randevu teyidi güçlendir'],['Ankara Çankaya',81,39,24,31,9600,'4.7','6 dk',214,'5.3x','Kurumsal lead takip'],['İzmir Karşıyaka',88,44,31,38,9850,'4.7','5 dk',205,'5.8x','Bütçe +%15 artır'],['Antalya Kepez',54,28,13,21,8750,'4.1','12 dk',286,'3.1x','Şikayet sonrası güven kampanyası']],
       contentCalendar:[['Pazartesi','Güven postu','Instagram + Maps','Güven algısı','Planlandı'],['Salı','Ekspertiz reels','Instagram','Erişim','Aktif'],['Çarşamba','Müşteri yorumu','Google Maps','Yorum artışı','Aktif'],['Perşembe','Fiyat/paket','Meta Ads','Paket anlatımı','Planlandı'],['Cuma','Kampanya','Google Search','Randevu','Test'],['Cumartesi','Araç alım ipucu','SEO + Instagram','Organik trafik','Planlandı'],['Pazar','Haftalık özet','WhatsApp + Sosyal','Sadakat','Taslak']],
       whatsappTemplates:[
         ['İlk Karşılama','Merhaba {name}, OTOTR’ye hoş geldiniz. Aracınız için en uygun ekspertiz paketini ve en yakın randevu saatini hemen paylaşabilirim.'],
@@ -9332,8 +9369,8 @@
   function seedMarketingTeam(){
     const users=[
       ['U-001','Deniz Aksoy','Bölge Satış Yöneticisi','Marmara','Tüm Şubeler',88,9,1],['U-002','Ceren Yıldız','Bölge Satış Yöneticisi','Ege','İzmir Bornova',84,6,1],['U-003','Murat Can','Bölge Satış Yöneticisi','İç Anadolu','Ankara Çankaya',79,7,2],
-      ['U-101','Kadir Başaran','Şube Müdürü','Marmara','Bursa Nilüfer',91,8,0],['U-102','Elif Kaya','Şube Müdürü','Marmara','Bursa Osmangazi',82,7,1],['U-103','Selin Aras','Şube Müdürü','Marmara','İstanbul Ataşehir',86,7,1],['U-104','Emre Sarı','Şube Müdürü','İç Anadolu','Ankara Çankaya',76,6,2],['U-105','Derya Koç','Şube Müdürü','Ege','İzmir Bornova',81,6,1],
-      ['U-201','Melis Tuna','Satış Sekreteryası','Marmara','Bursa Nilüfer',87,10,0],['U-202','Mehmet Kaya','Satış Danışmanı','Marmara','Bursa Nilüfer',83,12,1],['U-203','Can Baran','Formen / Teknik Sorumlu','Marmara','Bursa Nilüfer',78,5,1],['U-204','Ayşe Yılmaz','Müşteri Temsilcisi','Marmara','Bursa Osmangazi',74,9,2],['U-205','Zeynep Aksoy','Satış Danışmanı','Marmara','İstanbul Ataşehir',80,10,1],['U-206','Ali Türkmen','Formen / Teknik Sorumlu','Marmara','İstanbul Ataşehir',77,4,1],['U-207','Hakan Güneş','Satış Sekreteryası','İç Anadolu','Ankara Çankaya',72,8,2],['U-208','Efe Yalın','Satış Danışmanı','İç Anadolu','Ankara Çankaya',69,8,3],['U-209','Buse Ergin','Satış Sekreteryası','Ege','İzmir Bornova',82,9,1],['U-210','Okan Derin','Formen / Teknik Sorumlu','Ege','İzmir Bornova',75,5,1]
+      ['U-101','Kadir Başaran','Şube Müdürü','Marmara','Bursa Nilüfer',91,8,0],['U-102','Elif Kaya','Şube Müdürü','Marmara','İstanbul Kadıköy',88,7,1],['U-103','Selin Aras','Şube Müdürü','Marmara','İstanbul Bağcılar',84,7,1],['U-104','Emre Sarı','Şube Müdürü','İç Anadolu','Ankara Çankaya',76,6,2],['U-105','Derya Koç','Şube Müdürü','Ege','İzmir Bornova',81,6,1],
+      ['U-201','Melis Tuna','Satış Sekreteryası','Marmara','Bursa Nilüfer',87,10,0],['U-202','Mehmet Kaya','Satış Danışmanı','Marmara','İstanbul Kadıköy',84,12,1],['U-203','Can Baran','Formen / Teknik Sorumlu','Marmara','Bursa Nilüfer',78,5,1],['U-204','Ayşe Yılmaz','Müşteri Temsilcisi','Marmara','İstanbul Bağcılar',76,9,2],['U-205','Zeynep Aksoy','Satış Danışmanı','Marmara','İstanbul Pendik',80,10,1],['U-206','Ali Türkmen','Formen / Teknik Sorumlu','Marmara','İstanbul Pendik',77,4,1],['U-207','Hakan Güneş','Satış Sekreteryası','İç Anadolu','Ankara Çankaya',72,8,2],['U-208','Efe Yalın','Satış Danışmanı','İç Anadolu','Ankara Çankaya',69,8,3],['U-209','Buse Ergin','Satış Sekreteryası','Ege','İzmir Bornova',82,9,1],['U-210','Okan Derin','Formen / Teknik Sorumlu','Ege','İzmir Bornova',75,5,1]
     ].map(x=>({id:x[0],name:x[1],role:x[2],region:x[3],branch:x[4],score:x[5],activeTasks:x[6],lateTasks:x[7]}));
     const types=['Lead ara','WhatsApp gönder','Randevu teyidi yap','No-show müşteriyi çağır','Fiyat itirazını takip et','Google yorum iste','Premium paket anlat','Satış script eğitimi ata','Şube müdürü aksiyonu','Bölge müdürü aksiyonu','Formen teknik destek görüşmesi','Günlük satış raporu gönder'];
     const statuses=['Yeni','Kabul Edildi','Devam Ediyor','Beklemede','Tamamlandı','Gecikti','Eskale Edildi','İptal'];
@@ -9342,12 +9379,12 @@
   }
   function ensureMarketing(){let saved=null;try{saved=JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){}const base=saved||seedMarketing();const fresh=seedMarketing();['channels','trackingEvents','seoKeywords','campaigns','branches','contentCalendar','whatsappTemplates','funnel'].forEach(k=>{if(!base[k])base[k]=fresh[k]});if(!base.team)base.team=fresh.team;if(!base.activeTab)base.activeTab='overview';base.leads=(base.leads&&base.leads.length?base.leads:fresh.leads).map(l=>{l.score=mScore(l);l.temp=mTemp(l.score);return l});saveMarketing(base);if(DB)DB.marketingMachine=base;return base}
   function filteredMarketingLeads(){const m=ensureMarketing();return m.leads.filter(l=>{const hay=[l.name,l.phone,l.vehicle,l.campaign,l.branch,l.source,l.owner].join(' ').toLocaleLowerCase('tr-TR');return(!marketingFilters.q||hay.includes(marketingFilters.q.toLocaleLowerCase('tr-TR')))&&(!marketingFilters.source||l.source===marketingFilters.source)&&(!marketingFilters.branch||l.branch===marketingFilters.branch)&&(!marketingFilters.status||l.status===marketingFilters.status)&&(!marketingFilters.owner||l.owner===marketingFilters.owner)&&(!marketingFilters.score||(marketingFilters.score==='Sıcak'?l.score>=80:marketingFilters.score==='Orta'?l.score>=50&&l.score<80:l.score<50))})}
-  function kpiCards(){const m=ensureMarketing(), f=Object.fromEntries(m.funnel), conv=pct(f['Satış'],f['Lead']);const cards=[['Toplam Lead',f['Lead'],'Çapraz kanal','info','users'],['Nitelikli Lead',f['Nitelikli'],'Skor + ihtiyaç','good','user-check'],['Randevu',f['Randevu'],'Takvim bağlı','blue','calendar-check'],['Şubeye Gelen',f['Geldi'],'No-show sonrası','amber','map-pin'],['Satış',f['Satış'],'Tamamlanan','good','badge-check'],['Lead → Satış Dönüşümü','%'+conv,'Otomatik hesap','green','trending-up'],['Araç Başı Ciro','3.250₺','Ortalama sepet','info','wallet-cards'],['ROAS','5.8x','Kanal karması','good','line-chart']];return `<div class="marketing-kpis">${cards.map(c=>`<div class="card stat marketing-kpi ${c[3]}"><div class="label">${c[0]}</div><div class="value">${c[1]}</div><div class="trend">${c[2]}</div></div>`).join('')}</div>`}
-  function marketingFunnel(){const f=ensureMarketing().funnel, colors=['#2563eb','#06b6d4','#22c55e','#84cc16','#f59e0b','#f97316','#ef476f','#8b5cf6'];return `<div class="card marketing-chart-card"><div class="card-head"><div><div class="card-title">Satış Funnel’ı</div><div class="card-sub">Trafikten yoruma kadar aşama dönüşümü ve zayıf halka analizi</div></div><div class="compact-meta"><span>Lead → Satış %${pct((Object.fromEntries(f))['Satış'],(Object.fromEntries(f))['Lead'])}</span><span>8400 trafik</span></div></div><div class="marketing-funnel-pro"><div class="marketing-funnel-head">${f.map(x=>`<div><b>${x[0]}</b><strong>${fmt(x[1])}</strong></div>`).join('')}</div><div class="marketing-funnel-bars">${f.map((x,i)=>`<div class="marketing-funnel-segment" style="background:linear-gradient(135deg,${colors[i]},${colors[Math.min(i+1,colors.length-1)]});transform:scaleY(${Math.max(.46,x[1]/f[0][1])})">${i?('%'+pct(x[1],f[i-1][1])):'%100'}</div>`).join('')}</div><div class="marketing-funnel-metrics">${f.map((x,i)=>{const prev=i?f[i-1][1]:x[1], cr=i?pct(x[1],prev):100, loss=i?100-cr:0;return `<div><span>%${cr} dönüşüm</span><b>%${loss} kayıp</b></div>`}).join('')}</div></div><div class="marketing-pro-note">${icon('triangle-alert')}<div><b>Zayıf halka:</b> Randevu → Geldi aşamasında kayıp yüksek. Otomatik WhatsApp hatırlatma ve 2 saat önce teyit önerilir.</div></div></div>`}
+  function kpiCards(){const m=ensureMarketing(), f=Object.fromEntries(m.funnel), conv=pct(f['Satış'],f['Lead']);const cards=[['Toplam Lead',f['Lead'],'Çapraz kanal','info','users'],['Nitelikli Lead',f['Nitelikli'],'Skor + ihtiyaç','good','user-check'],['Randevu',f['Randevu'],'Takvim bağlı','blue','calendar-check'],['Şubeye Gelen',f['Geldi'],'No-show sonrası','amber','map-pin'],['Satış',f['Satış'],'Tamamlanan','good','badge-check'],['Lead → Satış Dönüşümü','%'+conv,'Otomatik hesap','green','trending-up'],['Araç Başı Ciro','9.620₺','Paket ortalaması','info','wallet-cards'],['ROAS','5.8x','Kanal karması','good','line-chart']];return `<div class="marketing-kpis">${cards.map(c=>`<div class="card stat marketing-kpi ${c[3]}"><div class="label">${c[0]}</div><div class="value">${c[1]}</div><div class="trend">${c[2]}</div></div>`).join('')}</div>`}
+  function marketingFunnel(){const f=ensureMarketing().funnel, traffic=f[0]?.[1]||0, colors=['#2563eb','#06b6d4','#22c55e','#84cc16','#f59e0b','#f97316','#ef476f','#8b5cf6'];return `<div class="card marketing-chart-card"><div class="card-head"><div><div class="card-title">Satış Funnel’ı</div><div class="card-sub">Trafikten yoruma kadar aşama dönüşümü ve zayıf halka analizi</div></div><div class="compact-meta"><span>Lead → Satış %${pct((Object.fromEntries(f))['Satış'],(Object.fromEntries(f))['Lead'])}</span><span>${fmt(traffic)} trafik</span></div></div><div class="marketing-funnel-pro"><div class="marketing-funnel-head">${f.map(x=>`<div><b>${x[0]}</b><strong>${fmt(x[1])}</strong></div>`).join('')}</div><div class="marketing-funnel-bars">${f.map((x,i)=>`<div class="marketing-funnel-segment" style="background:linear-gradient(135deg,${colors[i]},${colors[Math.min(i+1,colors.length-1)]});transform:scaleY(${Math.max(.46,x[1]/f[0][1])})">${i?('%'+pct(x[1],f[i-1][1])):'%100'}</div>`).join('')}</div><div class="marketing-funnel-metrics">${f.map((x,i)=>{const prev=i?f[i-1][1]:x[1], cr=i?pct(x[1],prev):100, loss=i?100-cr:0;return `<div><span>%${cr} dönüşüm</span><b>%${loss} kayıp</b></div>`}).join('')}</div></div><div class="marketing-pro-note">${icon('triangle-alert')}<div><b>Zayıf halka:</b> Randevu → Geldi aşamasında kayıp yüksek. Otomatik WhatsApp hatırlatma ve 2 saat önce teyit önerilir.</div></div></div>`}
   function marketingToolbar(){const m=ensureMarketing();return `<div class="filter-bar"><input id="marketingSearch" placeholder="Müşteri, telefon, araç veya kampanya ara" value="${marketingFilters.q}"><select id="marketingSourceFilter"><option value="">Kaynak</option>${opt(SOURCES,marketingFilters.source)}</select><select id="marketingBranchFilter"><option value="">Şube</option>${opt(BRANCHES,marketingFilters.branch)}</select><select id="marketingStatusFilter"><option value="">Durum</option>${opt(STATUSES,marketingFilters.status)}</select><select id="marketingOwnerFilter"><option value="">Sorumlu</option>${opt(OWNERS,marketingFilters.owner)}</select><select id="marketingScoreFilter"><option value="">Skor</option>${opt(['Sıcak','Orta','Soğuk'],marketingFilters.score)}</select><span class="filter-live">${filteredMarketingLeads().length} kayıt</span></div>`}
   function marketingLeadTable(){const rows=filteredMarketingLeads();return `<div id="marketingLeadTable" class="marketing-table-wrap"><table class="marketing-table"><thead><tr><th>ID</th><th>Müşteri</th><th>Telefon</th><th>Şube</th><th>Araç</th><th>Paket</th><th>Kaynak</th><th>Kampanya</th><th>Durum</th><th>Skor</th><th>Sorumlu</th><th>Son Aksiyon</th><th>Sonraki Aksiyon</th><th>Tarih</th><th>İşlem</th></tr></thead><tbody>${rows.map(l=>`<tr><td><b>${l.id}</b></td><td>${l.name}</td><td class="mono">${l.phone||'Eksik'}</td><td>${l.branch}</td><td>${l.vehicle}</td><td>${l.package}</td><td>${l.source}</td><td>${l.campaign}</td><td>${badge(l.status)}</td><td><span class="marketing-score ${scoreClass(l.score)}">${l.score}</span><br>${badge(l.temp)}</td><td>${l.owner}</td><td>${l.lastAction}</td><td>${l.nextAction}</td><td>${l.date}</td><td><div class="quick-actions"><button class="micro-btn" data-mkt-action="Arandı" data-mkt-id="${l.id}">Ara</button><button class="micro-btn" data-mkt-wa-lead="${l.id}">WhatsApp</button><button class="micro-btn" data-mkt-appointment="${l.id}">Randevu</button><button class="micro-btn" data-mkt-action="Satış" data-mkt-id="${l.id}">Satış</button><button class="micro-btn" data-mkt-action="Kaybedildi" data-mkt-id="${l.id}">Kaybet</button><button class="micro-btn" data-mkt-review="${l.id}">Yorum İste</button></div></td></tr>`).join('')}</tbody></table></div>`}
   function whatsappPanel(){const m=ensureMarketing(), l=m.leads[0], template=m.whatsappTemplates[0];return `<div class="card marketing-wa"><div class="card-head"><div><div class="card-title">WhatsApp Satış Paneli</div><div class="card-sub">Değişkenler: {name}, {branch}, {package}, {date}, {time}, {price}, {advisor}</div></div></div><div class="marketing-form-grid"><div class="field"><label>Lead seçimi</label><select id="mktWaLead">${m.leads.map(x=>`<option value="${x.id}">${x.name} · ${x.phone||'telefon yok'}</option>`).join('')}</select></div><div class="field"><label>Mesaj tipi</label><select id="mktWaTemplate">${m.whatsappTemplates.map(x=>`<option>${x[0]}</option>`).join('')}</select></div></div><textarea id="mktWaMessage">${fillTemplate(template[1],l)}</textarea><div class="quick-actions" style="margin-top:10px"><button class="btn" data-mkt-copy-wa>${icon('copy')}Kopyala</button><a class="btn primary" id="mktWaSend" href="${waLink(l,fillTemplate(template[1],l))}" target="_blank" rel="noopener" data-mkt-wa-send>${icon('send')}WhatsApp’a Gönder</a></div></div>`}
-  function fillTemplate(t,l){return t.replaceAll('{name}',l?.name||'Müşteri').replaceAll('{branch}',l?.branch||'OTOTR').replaceAll('{package}',l?.package||'Ekspertiz').replaceAll('{date}',l?.date||'Bugün').replaceAll('{time}',l?.time||'14:30').replaceAll('{price}',money(l?.price||3250)).replaceAll('{advisor}',l?.owner||'OTOTR danışmanı')}
+  function fillTemplate(t,l){return t.replaceAll('{name}',l?.name||'Müşteri').replaceAll('{branch}',l?.branch||'OTOTR').replaceAll('{package}',l?.package||'Ekspertiz').replaceAll('{date}',l?.date||'Bugün').replaceAll('{time}',l?.time||'14:30').replaceAll('{price}',money(l?.price||7500)).replaceAll('{advisor}',l?.owner||'OTOTR danışmanı')}
   function waLink(l,msg){return l?.phone?`https://wa.me/${safePhone(l.phone)}?text=${encodeURIComponent(msg||'')}`:'#'}
   function adPerformance(){const rows=ensureMarketing().channels, primary=rows.filter(r=>['Google Ads','Meta Ads'].includes(r[0]));return `<div class="card ad-performance-card"><div class="card-head"><div><div class="card-title">Reklam Performansı</div><div class="card-sub">Harcama, lead, randevu, satış ve ROAS yönetimi</div></div><div class="compact-meta"><span>Toplam ${money(rows.reduce((s,r)=>s+r[1],0))}</span><span>Satış ${rows.reduce((s,r)=>s+r[5],0)}</span></div></div><div class="ad-channel-grid">${primary.map(r=>`<div class="ad-channel-card"><div class="ad-channel-head"><div class="ad-channel-mark ${r[0].includes('Google')?'google':'meta'}">${r[0].includes('Google')?'G':'∞'}</div><div><b>${r[0]}</b><div class="card-sub">${r[7]}</div></div></div>${[['Harcama',money(r[1])],['Tıklama',fmt(r[2])],['Lead',r[3]],['Randevu',r[4]],['Satış',r[5]]].map(x=>`<div class="ad-metric-row"><span>${x[0]}</span><b>${x[1]}</b></div>`).join('')}<div class="ad-channel-foot"><div><span>CPL</span><b>${money(Math.round(r[1]/r[3]))}</b></div><div><span>ROAS</span><b>${r[6]}</b></div></div></div>`).join('')}</div><div class="marketing-table-wrap ad-efficiency-table"><table><thead><tr><th>Kanal</th><th>Harcama</th><th>Tıklama</th><th>Lead</th><th>Randevu</th><th>Satış</th><th>CPL</th><th>CPA</th><th>ROAS</th><th>Öneri</th></tr></thead><tbody>${rows.map(r=>`<tr><td><b>${r[0]}</b></td><td>${money(r[1])}</td><td>${fmt(r[2])}</td><td>${r[3]}</td><td>${r[4]}</td><td>${r[5]}</td><td>${money(Math.round(r[1]/r[3]))}</td><td>${money(Math.round(r[1]/r[5]))}</td><td><b>${r[6]}</b></td><td>${r[7]}</td></tr>`).join('')}</tbody></table></div></div>`}
   function trackingPanel(){const m=ensureMarketing(), u=m.utm||{};const link=utmLink(u);return `<div class="card marketing-utm"><div class="card-head"><div><div class="card-title">Takip Altyapısı / UTM</div><div class="card-sub">Event kontrolü ve kampanya link üretimi</div></div></div><div class="marketing-mini-grid">${m.trackingEvents.map(e=>`<div class="summary-tile"><span>${e[0]}</span><b>${e[1]}</b></div>`).join('')}</div><div class="marketing-form-grid" style="margin-top:12px"><div class="field"><label>Source</label><input id="utmSource" value="${u.source}"></div><div class="field"><label>Medium</label><input id="utmMedium" value="${u.medium}"></div><div class="field"><label>Campaign</label><input id="utmCampaign" value="${u.campaign}"></div><div class="field"><label>Content</label><input id="utmContent" value="${u.content}"></div><div class="field"><label>Term</label><input id="utmTerm" value="${u.term}"></div><div class="field"><label>Base URL</label><input id="utmBase" value="https://ototr.com/randevu"></div></div><div class="marketing-copy-line" style="margin-top:10px"><input id="utmOutput" readonly value="${link}"><button class="btn" data-mkt-copy-utm>${icon('copy')}Kopyala</button></div></div>`}
@@ -9380,8 +9417,8 @@
   function bindMarketingFilters(){[['marketingSearch','q','input'],['marketingSourceFilter','source','change'],['marketingBranchFilter','branch','change'],['marketingStatusFilter','status','change'],['marketingOwnerFilter','owner','change'],['marketingScoreFilter','score','change']].forEach(x=>{const el=document.getElementById(x[0]);if(!el||el.dataset.mktBound)return;el.dataset.mktBound='1';el.addEventListener(x[2],()=>{marketingFilters[x[1]]=el.value;const wrap=document.getElementById('marketingLeadTable');if(wrap)wrap.outerHTML=marketingLeadTable();const live=document.querySelector('#page-marketing .filter-live');if(live)live.textContent=filteredMarketingLeads().length+' kayıt';})})}
   function updateWa(){const m=ensureMarketing(), id=document.getElementById('mktWaLead')?.value, type=document.getElementById('mktWaTemplate')?.value, l=m.leads.find(x=>x.id===id)||m.leads[0], tpl=m.whatsappTemplates.find(x=>x[0]===type)||m.whatsappTemplates[0], msg=fillTemplate(tpl[1],l);const area=document.getElementById('mktWaMessage'), send=document.getElementById('mktWaSend');if(area)area.value=msg;if(send)send.href=waLink(l,msg)}
   function copyText(text,msg){const fallback=()=>{const t=document.createElement('textarea');t.value=text;document.body.appendChild(t);t.select();document.execCommand('copy');t.remove();toast(msg)};if(navigator.clipboard?.writeText)navigator.clipboard.writeText(text).then(()=>toast(msg)).catch(fallback);else fallback()}
-  function saveLead(){const f=document.getElementById('marketingLeadForm');if(!f||!f.reportValidity())return;const data=Object.fromEntries(new FormData(f).entries());if(!data.kvkk){toast('Lead kaydı için KVKK / iletişim izni onayı gereklidir.');return}const m=ensureMarketing(), lead={id:'MKT-'+String(1000+m.leads.length+1),name:data.name,phone:data.phone,branch:data.branch,vehicle:data.vehicle,package:data.package,source:data.source,campaign:data.campaign,status:'Yeni',owner:'Genel Merkez CRM',lastAction:'Yeni lead eklendi',nextAction:'İlk arama',date:new Date().toISOString().slice(0,10),kvkk:true,sameDay:/bugün|ayni gün|aynı gün/i.test(data.note||''),note:data.note||'',price:data.package.includes('Premium')?4950:data.package.includes('Full')?3750:data.package.includes('Kurumsal')?6200:data.package.includes('EV')?5400:3250};lead.score=mScore(lead);lead.temp=mTemp(lead.score);m.leads.unshift(lead);const leadStep=m.funnel.find(x=>x[0]==='Lead');if(leadStep)leadStep[1]++;if(lead.score>=50){const q=m.funnel.find(x=>x[0]==='Nitelikli');if(q)q[1]++}saveMarketing(m);document.getElementById('marketingLeadModal')?.classList.remove('open');f.reset();toast('Yeni lead eklendi.');refreshMarketing()}
-  function saveInlineLead(){const f=document.getElementById('marketingInlineLeadForm');if(!f||!f.reportValidity())return;const data=Object.fromEntries(new FormData(f).entries());if(!data.kvkk){toast('Lead kaydı için KVKK / iletişim izni onayı gereklidir.');return}const m=ensureMarketing(), lead={id:'MKT-'+String(1000+m.leads.length+1),name:data.name,phone:data.phone,branch:data.branch,vehicle:data.vehicle,package:data.package,source:data.source,campaign:data.campaign,status:'Yeni',owner:'Genel Merkez CRM',lastAction:'Yeni lead eklendi',nextAction:'İlk arama',date:new Date().toISOString().slice(0,10),kvkk:true,sameDay:/bugün|ayni gün|aynı gün/i.test(data.note||''),note:data.note||'',price:data.package.includes('Premium')?4950:data.package.includes('Full')?3750:data.package.includes('Kurumsal')?6200:data.package.includes('EV')?5400:3250};lead.score=mScore(lead);lead.temp=mTemp(lead.score);m.leads.unshift(lead);const leadStep=m.funnel.find(x=>x[0]==='Lead');if(leadStep)leadStep[1]++;if(lead.score>=50){const q=m.funnel.find(x=>x[0]==='Nitelikli');if(q)q[1]++}saveMarketing(m);f.reset();f.elements.kvkk.checked=true;toast('Yeni lead eklendi.');refreshMarketing()}
+  function saveLead(){const f=document.getElementById('marketingLeadForm');if(!f||!f.reportValidity())return;const data=Object.fromEntries(new FormData(f).entries());if(!data.kvkk){toast('Lead kaydı için KVKK / iletişim izni onayı gereklidir.');return}const m=ensureMarketing(), lead={id:'MKT-'+String(1000+m.leads.length+1),name:data.name,phone:data.phone,branch:data.branch,vehicle:data.vehicle,package:data.package,source:data.source,campaign:data.campaign,status:'Yeni',owner:'Genel Merkez CRM',lastAction:'Yeni lead eklendi',nextAction:'İlk arama',date:new Date().toISOString().slice(0,10),kvkk:true,sameDay:/bugün|ayni gün|aynı gün/i.test(data.note||''),note:data.note||'',price:packagePrice(data.package)};lead.score=mScore(lead);lead.temp=mTemp(lead.score);m.leads.unshift(lead);const leadStep=m.funnel.find(x=>x[0]==='Lead');if(leadStep)leadStep[1]++;if(lead.score>=50){const q=m.funnel.find(x=>x[0]==='Nitelikli');if(q)q[1]++}saveMarketing(m);document.getElementById('marketingLeadModal')?.classList.remove('open');f.reset();toast('Yeni lead eklendi.');refreshMarketing()}
+  function saveInlineLead(){const f=document.getElementById('marketingInlineLeadForm');if(!f||!f.reportValidity())return;const data=Object.fromEntries(new FormData(f).entries());if(!data.kvkk){toast('Lead kaydı için KVKK / iletişim izni onayı gereklidir.');return}const m=ensureMarketing(), lead={id:'MKT-'+String(1000+m.leads.length+1),name:data.name,phone:data.phone,branch:data.branch,vehicle:data.vehicle,package:data.package,source:data.source,campaign:data.campaign,status:'Yeni',owner:'Genel Merkez CRM',lastAction:'Yeni lead eklendi',nextAction:'İlk arama',date:new Date().toISOString().slice(0,10),kvkk:true,sameDay:/bugün|ayni gün|aynı gün/i.test(data.note||''),note:data.note||'',price:packagePrice(data.package)};lead.score=mScore(lead);lead.temp=mTemp(lead.score);m.leads.unshift(lead);const leadStep=m.funnel.find(x=>x[0]==='Lead');if(leadStep)leadStep[1]++;if(lead.score>=50){const q=m.funnel.find(x=>x[0]==='Nitelikli');if(q)q[1]++}saveMarketing(m);f.reset();f.elements.kvkk.checked=true;toast('Yeni lead eklendi.');refreshMarketing()}
   function openAppointment(id){const m=ensureMarketing(), l=m.leads.find(x=>x.id===id);if(!l)return;const f=document.getElementById('marketingAppointmentForm');if(!f)return;f.leadId.value=l.id;f.name.value=l.name;f.phone.value=l.phone;f.branch.value=l.branch;f.package.value=l.package;f.owner.value=l.owner;document.getElementById('marketingAppointmentInfo').textContent=`${l.id} · ${l.name} · ${l.phone||'telefon eksik'}`;document.getElementById('marketingAppointmentModal')?.classList.add('open')}
   function createAppointment(){const f=document.getElementById('marketingAppointmentForm');if(!f||!f.reportValidity())return;const data=Object.fromEntries(new FormData(f).entries()), m=ensureMarketing(), l=m.leads.find(x=>x.id===data.leadId);if(!l)return;const was=l.status;l.status='Randevu';l.nextAction='Randevu hatırlatma';l.lastAction='Randevu oluşturuldu';l.branch=data.branch;l.package=data.package;l.owner=data.owner;l.date=data.date;l.time=data.time;l.note=data.note||l.note;const r=m.funnel.find(x=>x[0]==='Randevu');if(r&&was!=='Randevu')r[1]++;saveMarketing(m);document.getElementById('marketingAppointmentModal')?.classList.remove('open');toast('Randevu oluşturuldu.');refreshMarketing()}
   function setLeadStatus(id,status){const m=ensureMarketing(), l=m.leads.find(x=>x.id===id);if(!l)return;l.status=status;l.lastAction=status+' aksiyonu işlendi';l.nextAction=status==='Satış'?'Yorum iste':status==='Kaybedildi'?'Geri kazanım ara':'Takip et';if(status==='Satış'){const s=m.funnel.find(x=>x[0]==='Satış');if(s)s[1]++}saveMarketing(m);toast(l.name+' durumu güncellendi: '+status);refreshMarketing()}

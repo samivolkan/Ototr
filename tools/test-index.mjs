@@ -273,7 +273,7 @@ await page.waitForSelector("#page-settings.active");
 await page.locator("#resetDemo").click();
 await page.waitForFunction(
   () => {
-    const value = localStorage.getItem("ototr-demo-db-v3-consistent-live");
+    const value = localStorage.getItem("ototr-demo-db-v4-realistic-live");
     return value && !value.includes("Test Franchise Adayi");
   }
 );
