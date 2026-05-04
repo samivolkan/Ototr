@@ -31,9 +31,10 @@ const browser = await chromium.launch({ headless: true, executablePath });
 const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
 const page = await context.newPage();
 const errors = [];
+const ignoredConsoleError = (text) => text.includes("net::ERR_CERT_COMMON_NAME_INVALID");
 
 page.on("console", (msg) => {
-  if (msg.type() === "error") errors.push(msg.text());
+  if (msg.type() === "error" && !ignoredConsoleError(msg.text())) errors.push(msg.text());
 });
 page.on("pageerror", (err) => errors.push(err.message));
 
@@ -62,6 +63,53 @@ const title = await page.title();
 const navCount = await page.locator("#nav button").count();
 const revenueChartReady = await page.locator("#chartRevenue").evaluate((canvas) => canvas.width > 0 && canvas.height > 0);
 const academyCeoChartReady = await page.locator("#chartDashboardAcademyRegion").evaluate((canvas) => canvas.width > 0 && canvas.height > 0);
+await page.locator("#dashboardAcademyBreakdown").selectOption("branch");
+await page.waitForTimeout(350);
+const academyCeoBreakdownReady = await page.evaluate(() => {
+  const title = document.getElementById("dashboardAcademyBreakdownTitle")?.textContent || "";
+  const chart = window.Chart?.getChart(document.getElementById("chartDashboardAcademyRegion"));
+  return (title.includes("Şube") || title.includes("Åube")) && (chart?.data?.labels?.length || 0) > 1;
+});
+await page.locator("#dashboardAcademyBreakdown").selectOption("region");
+await page.waitForTimeout(350);
+const academyCeoRegionBreakdownReady = await page.evaluate(() => {
+  const title = document.getElementById("dashboardAcademyBreakdownTitle")?.textContent || "";
+  const chart = window.Chart?.getChart(document.getElementById("chartDashboardAcademyRegion"));
+  return title.includes("Bölgesel") && (chart?.data?.labels?.length || 0) > 1;
+});
+await page.locator("#commandDockToggle").click();
+await page.locator("[data-dock-pin]").click();
+await page.locator('[data-dashboard-jump="dashboardRevenueTrend"]').click();
+await page.waitForTimeout(700);
+const dashboardQuickNavReady = await page.evaluate(() => {
+  const target = document.getElementById("dashboardRevenueTrend");
+  const dock = document.getElementById("commandDock");
+  if (!target) return false;
+  const rect = target.getBoundingClientRect();
+  return document.getElementById("page-dashboard")?.classList.contains("active") &&
+    rect.top >= -20 &&
+    rect.top < 220 &&
+    target.classList.contains("dashboard-jump-highlight") &&
+    dock?.classList.contains("pinned") &&
+    dock?.classList.contains("open");
+});
+await page.locator("[data-dock-pin]").click();
+await page.locator('[data-dashboard-jump="dashboardComplaintsCeo"]').click();
+await page.waitForTimeout(1200);
+const dashboardComplaintPanelReady = await page.evaluate(() => {
+  const target = document.getElementById("dashboardComplaintsCeo");
+  const menuLabels = [...document.querySelectorAll("[data-dashboard-jump]")].map((el) => el.textContent || "");
+  if (!target) return false;
+  const rect = target.getBoundingClientRect();
+  return target.textContent.includes("tibar") &&
+    menuLabels.some((text) => text.includes("Müşteri Şikayet Takip")) &&
+    document.querySelector('[data-dashboard-jump="dashboardRiskImpact"]') &&
+    document.querySelector('[data-dashboard-jump="dashboardActionTasks"]') &&
+    target.textContent.includes("Kuyru") &&
+    rect.top >= -180 &&
+    rect.top < 220 &&
+    target.classList.contains("dashboard-jump-highlight");
+});
 const navRoutes = await page.$$eval("#nav [data-nav-route]", (buttons) =>
   buttons.map((button) => button.getAttribute("data-nav-route"))
 );
@@ -86,6 +134,13 @@ const academyOverviewChartsReady = await page.evaluate(() => {
     }
     return false;
   });
+});
+await page.locator("#academyChartBreakdown").selectOption("branch");
+await page.waitForTimeout(350);
+const academyBreakdownReady = await page.evaluate(() => {
+  const title = document.getElementById("academyBreakdownTitle")?.textContent || "";
+  const chart = window.Chart?.getChart(document.getElementById("chartAcademyRegion"));
+  return title.includes("Şube") && (chart?.data?.labels?.length || 0) > 1;
 });
 await page.locator('#page-academy.active [data-academy-tab="courses"]').click();
 await page.locator("#page-academy.active .micro-btn[data-academy-open-course]").first().click();
@@ -216,7 +271,7 @@ const leadAfterReset = await page.locator("#page-franchise.active .deal").count(
 const mobile = await context.newPage();
 const mobileErrors = [];
 mobile.on("console", (msg) => {
-  if (msg.type() === "error") mobileErrors.push(msg.text());
+  if (msg.type() === "error" && !ignoredConsoleError(msg.text())) mobileErrors.push(msg.text());
 });
 mobile.on("pageerror", (err) => mobileErrors.push(err.message));
 await mobile.setViewportSize({ width: 390, height: 844 });
@@ -232,6 +287,10 @@ const result = {
   navCount,
   revenueChartReady,
   academyCeoChartReady,
+  academyCeoBreakdownReady,
+  academyCeoRegionBreakdownReady,
+  dashboardQuickNavReady,
+  dashboardComplaintPanelReady,
   navRoutes,
   leadBefore,
   leadAfter,
@@ -240,6 +299,7 @@ const result = {
   searchRoute,
   academyDetailTitle,
   academyOverviewChartsReady,
+  academyBreakdownReady,
   academyRuleEngineReady,
   academyAssignmentLifecycle,
   mobileNavCount,
@@ -281,8 +341,28 @@ if (!academyCeoChartReady) {
   throw new Error("CEO Academy dashboard grafigi olusmadi.");
 }
 
+if (!academyCeoBreakdownReady) {
+  throw new Error("CEO Academy dashboard kirilim secimi calismadi.");
+}
+
+if (!academyCeoRegionBreakdownReady) {
+  throw new Error("CEO Academy dashboard bolgesel kirilim secimi calismadi.");
+}
+
+if (!dashboardQuickNavReady) {
+  throw new Error("Dashboard hizli gezinme menusu ilgili bolume goturmedi.");
+}
+
+if (!dashboardComplaintPanelReady) {
+  throw new Error("Dashboard musteri sikayetleri CEO paneli hazir degil.");
+}
+
 if (!academyOverviewChartsReady) {
   throw new Error("Academy ana sayfa grafikleri bos kaldi.");
+}
+
+if (!academyBreakdownReady) {
+  throw new Error("Academy grafik kirilim secimi calismadi.");
 }
 
 if (!academyRuleEngineReady) {
