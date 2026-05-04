@@ -212,6 +212,19 @@ await page.locator('#page-academy.active [data-academy-tab="certs"]').click();
 await page.locator("#page-academy.active .card-title").filter({ hasText: "Sertifika Yenileme" }).first().waitFor();
 await page.locator('#page-academy.active [data-academy-tab="assignments"]').click();
 await page.locator("#page-academy.active .card-title").filter({ hasText: "Kalite /" }).first().waitFor();
+await page.locator('#nav [data-nav-route="academy/canliya-hazirlik"]').click();
+await page.waitForSelector("#page-academy.active");
+await page.locator("#page-academy.active .card-title").filter({ hasText: "Academy Canlıya Geçiş Kural Motoru" }).first().waitFor();
+const academyGoLiveReady = await page.evaluate(() => {
+  const readiness = window.academyGoLiveReadiness?.();
+  return Boolean(
+    readiness?.ready &&
+    readiness?.groups?.examBank?.ready &&
+    readiness?.groups?.certificateRenewal?.ready &&
+    readiness?.groups?.retrainingTriggers?.ready &&
+    readiness?.groups?.mandatoryLocks?.ready
+  );
+});
 
 await page.locator('#nav [data-nav-route="franchise"]').click();
 await page.waitForSelector("#page-franchise.active");
@@ -301,6 +314,7 @@ const result = {
   academyOverviewChartsReady,
   academyBreakdownReady,
   academyRuleEngineReady,
+  academyGoLiveReady,
   academyAssignmentLifecycle,
   mobileNavCount,
   errors,
@@ -367,4 +381,8 @@ if (!academyBreakdownReady) {
 
 if (!academyRuleEngineReady) {
   throw new Error("Academy sinav/sertifika veya yeniden egitim kural motoru hazir degil.");
+}
+
+if (!academyGoLiveReady) {
+  throw new Error("Academy canliya gecis kural motoru hazir degil.");
 }
