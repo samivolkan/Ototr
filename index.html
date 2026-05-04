@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="ototr-version" content="SVK v1.0.65-report-scroll" />
+  <meta name="ototr-version" content="SVK v1.0.66-online-count" />
   <title>OTOTR Genel Merkez ERP + CRM</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -60,6 +60,11 @@
     .theme-toggle{border:1px solid rgba(255,255,255,.16);border-radius:999px;background:rgba(255,255,255,.08);color:#fff;padding:7px 8px;display:inline-flex;align-items:center;justify-content:center;gap:0;font-size:0;font-weight:950;min-width:32px;height:32px;flex:0 0 auto}
     .theme-toggle i{width:15px;height:15px}.theme-toggle:hover{transform:translateY(-1px)}
     body.dark-mode .theme-toggle{background:rgba(255,255,255,.14);color:#f1f5f9;border-color:rgba(255,255,255,.24)}
+    .brand-actions{display:grid;justify-items:end;gap:7px;flex:0 0 auto}
+    .online-pill{display:inline-flex;align-items:center;gap:7px;height:24px;padding:4px 8px;border:1px solid rgba(255,255,255,.14);border-radius:999px;background:rgba(255,255,255,.07);color:#fff;font-size:10px;font-weight:850;line-height:1;white-space:nowrap}
+    .online-pill b{font-size:12px;font-weight:950}.online-pill small{color:#aeb6c4;font-size:9px;font-weight:850;text-transform:uppercase}
+    .online-dot{width:7px;height:7px;border-radius:50%;background:var(--red);box-shadow:0 0 0 4px rgba(215,25,32,.16);flex:0 0 auto}
+    body.dark-mode .online-pill{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.22)}
     button,input,select,textarea{font:inherit}
     button{cursor:pointer}
     .app{display:grid;grid-template-columns:var(--side-w) minmax(0,1fr);min-height:100vh;width:100%;max-width:100vw;overflow-x:hidden}
@@ -413,7 +418,7 @@
 <body>
   <div class="app">
     <aside class="side">
-      <div class="brand-row"><a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.65</small></div></a><button class="theme-toggle" type="button" data-theme-toggle title="Koyu temaya geç" aria-label="Tema değiştir"><i data-lucide="sun-moon"></i><span id="themeToggleText">Açık</span></button></div>
+      <div class="brand-row"><a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.66</small></div></a><div class="brand-actions"><button class="theme-toggle" type="button" data-theme-toggle title="Koyu temaya geç" aria-label="Tema değiştir"><i data-lucide="sun-moon"></i><span id="themeToggleText">Açık</span></button><div class="online-pill" title="Online kullanıcı sayısı"><span class="online-dot"></span><b data-online-count>42</b><small>kişi</small></div></div></div>
       <div class="nav" id="nav"></div>
     </aside>
 
@@ -587,7 +592,7 @@
         {year:2026,month:'Aralık',revenue:19240000,royalty:royaltyAmount(19240000),ad:384800,ebitda:7180000,status:'forecast'}
       ],
       ceoDashboard:{
-        network:{branchCount:162,activeBranches:148,offlineBranches:3,todayCars:3864,todayRevenue:14820000,avgTicket:3835,avgSatisfaction:4.62,openComplaints:87,todayLeads:326,monthlyRoyalty:18640000,trustScore:86},
+        network:{branchCount:162,activeBranches:148,offlineBranches:3,onlineUsers:42,todayCars:3864,todayRevenue:14820000,avgTicket:3835,avgSatisfaction:4.62,openComplaints:87,todayLeads:326,monthlyRoyalty:18640000,trustScore:86},
         kpis:[
           {label:'Bugünkü Ekspertiz',value:'3.864',change:'+%8.4',direction:'up',icon:'car-front',tone:'good',hint:'düne göre'},
           {label:'Bugünkü Ciro',value:'₺14,82M',change:'+%11.2',direction:'up',icon:'banknote',tone:'good',hint:'düne göre'},
@@ -2590,7 +2595,7 @@
         status:b.risk==='Yüksek'?'İnceleme':b.risk==='Orta'?'Takip':'Stabil'
       }));
       out.demoDataHealth={
-        version:'SVK v1.0.65',
+        version:'SVK v1.0.66',
         branchUniverse:'10 şube / 4 aktif bölge',
         packagePriceBand:'5.000 TL - 15.000 TL',
         avgTicketBand:'8.350 TL - 9.900 TL',
@@ -8094,7 +8099,11 @@
       const values=(data.datasets?.[0]?.data||[]).map(Number), max=Math.max(...values,1), step=w/(values.length||1);
       values.forEach((v,i)=>{ const bh=(h-46)*(v/max); ctx.fillStyle=i%2?'#111318':'#d71920'; ctx.fillRect(i*step+18,h-bh-24,Math.max(12,step-36),bh); ctx.fillStyle='#69707d'; ctx.font='22px Inter, Arial'; ctx.fillText(data.labels?.[i]||'',i*step+18,h-6); });
     }
-    function renderAll(){ renderHero(); renderNav(); renderPages(); }
+    function syncOnlineIndicator(){
+      const count=DB?.ceoDashboard?.network?.onlineUsers ?? 42;
+      document.querySelectorAll('[data-online-count]').forEach(el=>el.textContent=fmt(count));
+    }
+    function renderAll(){ renderHero(); renderNav(); renderPages(); syncOnlineIndicator(); }
     (async function init(){
       const apiStatus=document.getElementById('apiStatus');
       if(apiStatus) apiStatus.textContent='Mock API bağlanıyor';
