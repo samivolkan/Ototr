@@ -162,6 +162,27 @@ OTOTR bu alanlarin uzerine su ek alanlari koymalidir:
 - Musteri dili: teknik bulgunun raporda nasil sade anlatilacagi.
 - Modul etkisi: CRM, bayi paneli, finans, hukuk, kalite, Academy ve garanti akisina hangi sinyalin gidecegi.
 
+Saha veri giris tasarimi zayif kalmamasi icin ilk urun surumunde su ekranlar ayri ayri tasarlanmalidir:
+
+1. Is emri acilisi: randevu, bayi, sube, is emri no, rapor no, paket, tutar, odeme ve rapor nushasi.
+2. Taraf ve yetki: alici, satici, ruhsat sahibi, vekil, kullanan kisi, imza ve rapor erisim yetkisi.
+3. Arac kabul: plaka, sasi, motor no, km, yakit, ruhsat, yedek anahtar, arac sahibi beyani, kabul fotograflari.
+4. Riza ve kapsam: KVKK, yol testi, dyno, cihaz, airbag, kriminal kapsam disi, garanti ve pazarlama izinleri.
+5. Dis sorgular: recall, SBM/Tramer, hasar QR, HGS/PTT km, muayene km, ceza/kayit ve sorgu yapilamadi nedeni.
+6. Kaporta 0-58: nokta no, parca, kod, mikron, fotograf, usta kanaati, musteri dili, onem seviyesi.
+7. Test cihazlari: fren, suspansiyon, yanal kayma, dyno, OBD, aku, lastik, cihaz seri no ve kalibrasyon.
+8. Yayin ve teslim: kalite skoru, eksik kanit, riskli ifade, garanti kapsami, rapor linki, teslim kanali, revizyon hash.
+
+Bu ekranlar icin yayini bloklayacak minimum kurallar:
+
+- Sasi, plaka, motor no ve is emri birbirini tutmuyorsa rapor yayinlanmaz.
+- Islemli kaporta noktasi fotograf ve kanit olmadan kapanmaz.
+- B, D, EM, KCBD, agir islem ve airbag kanaati ikinci kontrol kuralina girebilir.
+- Riza/kapsam metinleri imzalanmadan rapor musteriye gonderilmez.
+- Giris/cikis km veya dis sorgu km verisi celisirse sube muduru onayi gerekir.
+- Usta ham notu musteri raporuna dogrudan dusmez; rapor motoru musteri diline cevirir.
+- Yayin sonrasi her degisiklik yeni `report_revision` olusturur.
+
 ### 2.6 RS tipi rapor
 
 Gozlenen yapi:
