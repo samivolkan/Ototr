@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="ototr-version" content="SVK v1.0.88-report-wide-menu-restore" />
+  <meta name="ototr-version" content="SVK v1.0.89-report-menu-center" />
   <title>OTOTR Genel Merkez ERP + CRM</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -474,7 +474,7 @@
     .signature-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.signature-card{border:1px solid #dbe3ee;border-radius:10px;background:#fff;padding:9px;min-height:34mm;display:grid;align-content:space-between}.signature-line{height:1px;background:#cbd5e1;margin-top:13mm}.approval-footer{margin-top:10px;background:linear-gradient(135deg,#061b31,#07182d);border-radius:12px;color:#fff;padding:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px}.approval-footer span{display:block;color:#b9cadf;font-size:8px;text-transform:uppercase;font-weight:900}.approval-footer b{display:block;font-size:11px;margin-top:3px;color:#fff}
     .hide-technical .technical-detail{display:none!important}.mobile-preview .report-page{max-width:430px;margin-inline:auto}.mobile-preview .report-grid-2,.mobile-preview .report-grid-3,.mobile-preview .report-grid-4,.mobile-preview .report-grid-5,.mobile-preview .vehicle-map,.mobile-preview .evidence-timeline,.mobile-preview .report-cover-layout{grid-template-columns:1fr}
     body:has(#page-report-design.active) .wrap{padding:18px 6px 42px}body:has(#page-report-design.active) .ototr-report{margin:0}body:has(#page-report-design.active) .ototr-report-preview{justify-items:center}
-    @media(min-width:1181px){.ototr-report-toolbar{padding-right:170px}.ototr-report-nav{position:fixed;right:14px;top:var(--report-nav-top,18px);width:154px;max-height:calc(100dvh - var(--report-nav-top,18px) - 22px)}.ototr-report-nav-title{position:sticky;top:-10px;z-index:1;background:#fff}.ototr-report-preview{grid-column:1}.report-page{scroll-margin-top:24px}body:has(#page-report-design.active) .ototr-report-shell{grid-template-columns:minmax(0,1fr)}body:has(#page-report-design.active) .ototr-report-preview{padding-right:164px;justify-items:start}body:has(#page-report-design.active) .report-page{max-width:min(1180px,calc(100vw - var(--side-w) - 176px));margin-inline:0}}
+    @media(min-width:1181px){.ototr-report-toolbar{padding-right:204px}.ototr-report-nav{position:fixed;right:28px;top:var(--report-nav-top,18px);width:190px;max-height:calc(100dvh - var(--report-nav-top,18px) - 22px)}.ototr-report-nav-title{position:sticky;top:-10px;z-index:1;background:#fff}.ototr-report-preview{grid-column:1}.report-page{scroll-margin-top:24px}body:has(#page-report-design.active) .ototr-report-shell{grid-template-columns:minmax(0,1fr)}body:has(#page-report-design.active) .ototr-report-preview{padding-right:218px;justify-items:center}body:has(#page-report-design.active) .report-page{max-width:min(1180px,calc(100vw - var(--side-w) - 222px));margin-inline:auto}}
     @media(max-width:1180px){.ototr-report-shell{grid-template-columns:1fr}.ototr-report-nav{grid-column:1;grid-row:auto;position:sticky;top:10px;max-height:min(48dvh,420px);grid-template-columns:repeat(2,minmax(0,1fr))}.ototr-report-nav-title{grid-column:1/-1}.ototr-report-preview{grid-column:1}.report-page{width:100%;max-width:none;min-height:auto}.report-grid-4,.report-grid-5{grid-template-columns:repeat(2,minmax(0,1fr))}.vehicle-map,.report-cover-layout{grid-template-columns:1fr}.report-cover-side{padding:18px}.report-cover-main{padding:18px}.report-fast-strip{grid-template-columns:repeat(2,minmax(0,1fr))}}
     @media(max-width:720px){.ototr-report-toolbar{grid-template-columns:1fr}.ototr-report-actions{justify-content:flex-start}.ototr-report-actions .btn{width:100%;justify-content:center}.ototr-report-nav{grid-template-columns:1fr;max-height:45dvh}.report-page{padding:16px;border-radius:12px;gap:14px}.report-page-header,.report-page-footer,.report-page-title{grid-template-columns:1fr;display:grid}.report-meta{justify-content:flex-start}.report-grid-2,.report-grid-3,.report-grid-4,.report-grid-5,.vehicle-views,.evidence-timeline,.signature-grid,.approval-footer,.feature-grid,.report-device-grid,.report-measure-grid,.obd-visual-grid,.airbag-visual-grid,.airbag-method-grid{grid-template-columns:1fr}.report-table-wrap{overflow:auto}.report-table{min-width:760px}.evidence-card{grid-template-columns:1fr}.evidence-thumb{min-height:62px}}
     @media print{.ototr-report-toolbar,.ototr-report-nav,.report-brand-frame{display:none!important}.ototr-report-shell{display:block!important}.ototr-report-preview{display:block!important}.report-page{width:210mm!important;max-width:none!important;min-height:297mm!important;height:297mm!important;margin:0!important;border:0!important;border-radius:0!important;box-shadow:none!important;page-break-after:always;break-after:page;overflow:hidden}.report-page:last-child{page-break-after:auto;break-after:auto}.report-cover-layout{grid-template-columns:78mm minmax(0,1fr)!important}.report-cover-side{padding:15mm 8mm 9mm!important}.report-cover-main{padding:13mm 7mm 7mm!important}.report-fast-strip{grid-template-columns:repeat(5,minmax(0,1fr))!important}}
@@ -483,7 +483,7 @@
 <body>
   <div class="app">
     <aside class="side">
-      <div class="brand-row"><a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.88</small></div></a><div class="brand-actions"><button class="theme-toggle" type="button" data-theme-toggle title="Koyu temaya geç" aria-label="Tema değiştir"><i data-lucide="sun-moon"></i><span id="themeToggleText">Açık</span></button><div class="online-pill" title="Online kullanıcı sayısı"><span class="online-dot"></span><b data-online-count>42</b><small>kişi</small></div></div></div>
+      <div class="brand-row"><a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.89</small></div></a><div class="brand-actions"><button class="theme-toggle" type="button" data-theme-toggle title="Koyu temaya geç" aria-label="Tema değiştir"><i data-lucide="sun-moon"></i><span id="themeToggleText">Açık</span></button><div class="online-pill" title="Online kullanıcı sayısı"><span class="online-dot"></span><b data-online-count>42</b><small>kişi</small></div></div></div>
       <div class="nav" id="nav"></div>
     </aside>
 
@@ -2693,7 +2693,7 @@
         status:b.risk==='Yüksek'?'İnceleme':b.risk==='Orta'?'Takip':'Stabil'
       }));
       out.demoDataHealth={
-      version:'SVK v1.0.88',
+      version:'SVK v1.0.89',
         branchUniverse:'10 aktif şube / 4 bölge',
         packagePriceBand:'5.000 TL - 15.000 TL',
         avgTicketBand:'8.350 TL - 9.900 TL',
