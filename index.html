@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="ototr-version" content="SVK v1.0.143-large-corner-radius" />
+  <meta name="ototr-version" content="SVK v1.0.144-cover-notch-restore" />
   <title>OTOTR Genel Merkez ERP + CRM</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -513,7 +513,7 @@
     .report-cover .frame-left{border-top-right-radius:0;box-shadow:inset -1px 0 0 rgba(255,255,255,.12),7px 0 18px rgba(6,31,61,.08)}
     .report-cover .report-cover-side{position:relative;overflow:hidden;border-top-right-radius:0;box-shadow:10px 0 24px rgba(6,31,61,.08)}
     .report-cover .report-cover-side:before{display:none}
-    .report-cover .report-cover-side:after{content:"";position:absolute;right:-.15mm;top:0;width:21mm;height:21mm;border-bottom-left-radius:21mm;background-color:#fff;background-image:var(--security-paper);background-size:12px 64px;background-position:10.5mm 4mm;box-shadow:inset .55mm -.55mm 0 rgba(6,31,61,.035);pointer-events:none;z-index:2}
+    .report-cover .report-cover-side:after{content:"";position:absolute;right:-.15mm;top:0;width:13mm;height:13mm;border-bottom-left-radius:13mm;background-color:#fff;background-image:var(--security-paper);background-size:12px 64px;background-position:10.5mm 4mm;box-shadow:inset .45mm -.45mm 0 rgba(6,31,61,.035);pointer-events:none;z-index:2}
     .report-cover .report-cover-side>*{position:relative;z-index:3}
     .report-brand-frame .frame-left:after{content:"";display:block!important;position:absolute;right:-21mm;top:7.6mm;width:21mm;height:21mm;border-top-left-radius:21mm;background-color:#fff;background-image:var(--security-paper);background-size:12px 64px;background-position:10.5mm 4mm;box-shadow:inset .55mm .55mm 0 rgba(6,31,61,.035);pointer-events:none;z-index:1}
     .report-brand-frame .frame-left span,.report-brand-frame .frame-chevrons{position:absolute;z-index:2}
@@ -539,7 +539,7 @@
 <body>
   <div class="app">
     <aside class="side">
-      <div class="brand-row"><a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.143</small></div></a><div class="brand-actions"><button class="theme-toggle" type="button" data-theme-toggle title="Koyu temaya geç" aria-label="Tema değiştir"><i data-lucide="sun-moon"></i><span id="themeToggleText">Açık</span></button><div class="online-pill" title="Online kullanıcı sayısı"><span class="online-dot"></span><b data-online-count>42</b><small>kişi</small></div></div></div>
+      <div class="brand-row"><a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.144</small></div></a><div class="brand-actions"><button class="theme-toggle" type="button" data-theme-toggle title="Koyu temaya geç" aria-label="Tema değiştir"><i data-lucide="sun-moon"></i><span id="themeToggleText">Açık</span></button><div class="online-pill" title="Online kullanıcı sayısı"><span class="online-dot"></span><b data-online-count>42</b><small>kişi</small></div></div></div>
       <div class="nav" id="nav"></div>
     </aside>
 
@@ -2749,7 +2749,7 @@
         status:b.risk==='Yüksek'?'İnceleme':b.risk==='Orta'?'Takip':'Stabil'
       }));
       out.demoDataHealth={
-      version:'SVK v1.0.143',
+      version:'SVK v1.0.144',
         branchUniverse:'10 aktif şube / 4 bölge',
         packagePriceBand:'5.000 TL - 15.000 TL',
         avgTicketBand:'8.350 TL - 9.900 TL',
