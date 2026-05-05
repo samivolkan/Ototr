@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="ototr-version" content="SVK v1.0.134-cover-soft-corners" />
+  <meta name="ototr-version" content="SVK v1.0.135-rail-top-soft-join" />
   <title>OTOTR Genel Merkez ERP + CRM</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -480,8 +480,9 @@
     .report-brand-frame:before{content:"";position:absolute;left:0;right:0;top:0;height:4mm;background:linear-gradient(90deg,#061f3d 0%,#0b3b70 18%,#9bb8d3 43%,#f3e4bf 56%,#ff8a1d 70%,#e30613 88%,#b80000 100%);z-index:3}
     .report-brand-frame:after{display:none}
     .frame-brand-lockup,.frame-bottom,.frame-print-meta,.frame-print-barcode{display:none!important}
-    .frame-left{position:absolute;left:0;top:0;bottom:0;width:10.5mm;height:auto;background:linear-gradient(180deg,#061f3d 0%,#082b52 58%,#061f3d 100%);display:block!important;border-radius:0;transform:none;z-index:4;box-shadow:inset -1px 0 0 rgba(255,255,255,.1)}
+    .frame-left{position:absolute;left:0;top:0;bottom:0;width:10.5mm;height:auto;background:linear-gradient(180deg,#061f3d 0%,#082b52 58%,#061f3d 100%);display:block!important;border-radius:0 5mm 0 0;transform:none;z-index:4;box-shadow:inset -1px 0 0 rgba(255,255,255,.1),6px 0 16px rgba(6,31,61,.06)}
     .frame-left:before{display:none!important}
+    .frame-left:after{content:"";position:absolute;right:-8.2mm;top:0;width:13mm;height:8.5mm;border-radius:0 0 8.5mm 0;background:linear-gradient(100deg,#061f3d 0%,#082b52 62%,rgba(11,59,112,0) 100%);pointer-events:none}
     .frame-left span{position:absolute;left:50%;top:47%;transform:translate(-50%,-50%) rotate(180deg);transform-origin:center;writing-mode:vertical-rl;text-orientation:mixed;white-space:nowrap;color:#fff;font-size:13px;line-height:1;font-weight:850;letter-spacing:.045em;text-transform:uppercase;font-family:Inter,Arial,sans-serif;text-shadow:0 1px 2px rgba(0,0,0,.22)}
     .frame-chevrons{position:absolute;left:1.35mm;bottom:94mm;width:7.8mm;height:32mm;overflow:visible}
     .frame-chevrons polygon{filter:drop-shadow(0 1px 0 rgba(0,0,0,.2))}
@@ -532,7 +533,7 @@
 <body>
   <div class="app">
     <aside class="side">
-      <div class="brand-row"><a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.134</small></div></a><div class="brand-actions"><button class="theme-toggle" type="button" data-theme-toggle title="Koyu temaya geç" aria-label="Tema değiştir"><i data-lucide="sun-moon"></i><span id="themeToggleText">Açık</span></button><div class="online-pill" title="Online kullanıcı sayısı"><span class="online-dot"></span><b data-online-count>42</b><small>kişi</small></div></div></div>
+      <div class="brand-row"><a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.135</small></div></a><div class="brand-actions"><button class="theme-toggle" type="button" data-theme-toggle title="Koyu temaya geç" aria-label="Tema değiştir"><i data-lucide="sun-moon"></i><span id="themeToggleText">Açık</span></button><div class="online-pill" title="Online kullanıcı sayısı"><span class="online-dot"></span><b data-online-count>42</b><small>kişi</small></div></div></div>
       <div class="nav" id="nav"></div>
     </aside>
 
@@ -2742,7 +2743,7 @@
         status:b.risk==='Yüksek'?'İnceleme':b.risk==='Orta'?'Takip':'Stabil'
       }));
       out.demoDataHealth={
-      version:'SVK v1.0.134',
+      version:'SVK v1.0.135',
         branchUniverse:'10 aktif şube / 4 bölge',
         packagePriceBand:'5.000 TL - 15.000 TL',
         avgTicketBand:'8.350 TL - 9.900 TL',
