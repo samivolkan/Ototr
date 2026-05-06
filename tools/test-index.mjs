@@ -120,6 +120,17 @@ for (const route of navRoutes) {
   await page.waitForSelector(`#page-${pageRoute}.active`);
 }
 
+await page.locator('#nav [data-nav-route="report-design"]').click();
+await page.waitForSelector("#page-report-design.active");
+await page.locator("#page-report-design.active .report-page-title").filter({ hasText: "Dijital Araç Karnesi" }).first().waitFor();
+const vehiclePassportReady = await page.evaluate(() => {
+  const pageText = document.querySelector("#page-report-design.active")?.textContent || "";
+  return pageText.includes("OTR-CARD-34OTR360") &&
+    pageText.includes("OTOTR Sistem Karşılaştırma Yorumu") &&
+    pageText.includes("Sağ Ön Kapı") &&
+    pageText.includes("P0171");
+});
+
 await page.locator('#nav [data-nav-route="academy"]').click();
 await page.waitForSelector("#page-academy.active");
 await page.waitForTimeout(800);
@@ -291,7 +302,11 @@ await mobile.setViewportSize({ width: 390, height: 844 });
 await mobile.addInitScript(() => localStorage.clear());
 await mobile.goto(url, { waitUntil: "load" });
 await mobile.waitForSelector("#page-dashboard.active");
-const mobileNavCount = await mobile.locator("#nav [data-nav-route]").count();
+const mobileNavRoutes = await mobile.$$eval("#nav [data-nav-route]", (buttons) =>
+  buttons.map((button) => button.getAttribute("data-nav-route"))
+);
+const mobileNavCount = mobileNavRoutes.length;
+const missingMobileRoutes = navRoutes.filter((route) => !mobileNavRoutes.includes(route));
 
 await browser.close();
 
@@ -304,6 +319,7 @@ const result = {
   academyCeoRegionBreakdownReady,
   dashboardQuickNavReady,
   dashboardComplaintPanelReady,
+  vehiclePassportReady,
   navRoutes,
   leadBefore,
   leadAfter,
@@ -317,6 +333,7 @@ const result = {
   academyGoLiveReady,
   academyAssignmentLifecycle,
   mobileNavCount,
+  missingMobileRoutes,
   errors,
   mobileErrors,
 };
@@ -343,7 +360,7 @@ if (!searchRoute.startsWith("Franchise")) {
   throw new Error("Global arama ilgili franchise ekranina gecmedi.");
 }
 
-if (mobileNavCount !== navCount) {
+if (missingMobileRoutes.length > 0) {
   throw new Error("Mobil gorunumde nav elemanlari eksik.");
 }
 
@@ -369,6 +386,10 @@ if (!dashboardQuickNavReady) {
 
 if (!dashboardComplaintPanelReady) {
   throw new Error("Dashboard musteri sikayetleri CEO paneli hazir degil.");
+}
+
+if (!vehiclePassportReady) {
+  throw new Error("Dijital arac karnesi rapor tasarimina eklenmedi.");
 }
 
 if (!academyOverviewChartsReady) {
