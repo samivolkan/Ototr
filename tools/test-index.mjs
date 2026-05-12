@@ -240,6 +240,17 @@ const academyGoLiveReady = await page.evaluate(() => {
 await page.locator('#nav [data-nav-route="franchise"]').click();
 await page.waitForSelector("#page-franchise.active");
 const leadBefore = await page.locator("#page-franchise.active .deal").count();
+const franchiseReadiness = await page.evaluate(() => {
+  const root = document.querySelector("#page-franchise.active");
+  return {
+    kpis: Boolean(root?.textContent?.includes("Toplam franchise başvurusu")),
+    openingTab: Boolean(root?.querySelector('[data-fr-tab="openingCenter"]')),
+    openingCenter: Boolean(root?.textContent?.includes("Başvuru & Açılış Merkezi"))
+  };
+});
+await page.locator('#page-franchise.active [data-fr-tab="openingCenter"]').click();
+await page.waitForSelector("#fr-tab-openingCenter.active");
+const openingCenterReady = await page.locator("#fr-tab-openingCenter.active").getByText("Bayi Açılış Merkezi").count();
 
 await page.locator("#openLead2").click();
 await page.waitForSelector("#leadModal.open");
@@ -251,6 +262,22 @@ await page.locator('#leadModal button[form="leadForm"]').click();
 await page.waitForSelector("#leadModal.open", { state: "hidden", timeout: 5000 });
 
 const leadAfter = await page.locator("#page-franchise.active .deal").count();
+await page.locator('#page-franchise.active .deal').first().click();
+await page.waitForSelector("#drawer.open");
+const franchiseDetailReady = await page.evaluate(() => {
+  const text = document.querySelector("#drawerContent")?.textContent || "";
+  return {
+    score: text.includes("Skor & Ön Değerlendirme"),
+    gates: text.includes("Onay Kapıları"),
+    docs: text.includes("Evrak & Sözleşme"),
+    project: text.includes("Bayi Açılış Projesi"),
+    physical: text.includes("Fiziki Kurulum"),
+    people: text.includes("Personel & Eğitim"),
+    firstCar: text.includes("İlk Araç Kabul")
+  };
+});
+await page.locator("#drawer").click({ position: { x: 12, y: 12 } });
+await page.waitForFunction(() => !document.getElementById("drawer").classList.contains("open"));
 
 await page.locator('#nav [data-nav-route="branches"]').click();
 await page.waitForSelector("#page-branches.active");
@@ -332,6 +359,9 @@ const result = {
   academyRuleEngineReady,
   academyGoLiveReady,
   academyAssignmentLifecycle,
+  franchiseReadiness,
+  openingCenterReady,
+  franchiseDetailReady,
   mobileNavCount,
   missingMobileRoutes,
   errors,
@@ -350,6 +380,14 @@ if (mobileErrors.length > 0) {
 
 if (leadAfter !== leadBefore + 1) {
   throw new Error("Yeni lead ekleme testi basarisiz.");
+}
+
+if (!franchiseReadiness.kpis || !franchiseReadiness.openingTab || !franchiseReadiness.openingCenter || !openingCenterReady) {
+  throw new Error("Franchise KPI veya acilis merkezi gorunmuyor.");
+}
+
+if (!Object.values(franchiseDetailReady).every(Boolean)) {
+  throw new Error("Franchise aday detay panelinde kurumsal sekmeler eksik.");
 }
 
 if (leadAfterReset !== leadBefore) {
