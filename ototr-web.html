@@ -667,84 +667,6 @@
       line-height: 1.45;
     }
 
-    .download-panel {
-      border: 1px solid var(--red-line);
-      border-radius: 28px;
-      background:
-        linear-gradient(120deg, rgba(255,255,255,.98), rgba(255,241,242,.88)),
-        #fff;
-      box-shadow: var(--soft-shadow);
-      display: grid;
-      grid-template-columns: minmax(0, 1.35fr) minmax(280px, .65fr);
-      gap: 22px;
-      align-items: center;
-      padding: 30px;
-    }
-
-    .download-copy h2 {
-      margin: 12px 0;
-    }
-
-    .download-meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 18px;
-    }
-
-    .download-meta span {
-      border: 1px solid rgba(215,25,32,.15);
-      border-radius: 999px;
-      background: rgba(255,255,255,.82);
-      color: #344054;
-      padding: 8px 11px;
-      font-size: 12px;
-      font-weight: 850;
-    }
-
-    .download-action {
-      border: 1px solid var(--line-light);
-      border-radius: 22px;
-      background: #fff;
-      padding: 20px;
-      box-shadow: 0 14px 32px rgba(17,24,39,.08);
-      display: grid;
-      gap: 14px;
-    }
-
-    .download-file {
-      display: grid;
-      grid-template-columns: 48px 1fr;
-      gap: 12px;
-      align-items: center;
-    }
-
-    .download-file strong {
-      width: 48px;
-      height: 48px;
-      border-radius: 16px;
-      display: grid;
-      place-items: center;
-      background: var(--red-soft);
-      color: var(--red);
-      border: 1px solid var(--red-line);
-      font-size: 14px;
-    }
-
-    .download-file b {
-      display: block;
-      color: var(--ink);
-      font-size: 15px;
-      margin-bottom: 4px;
-      word-break: break-word;
-    }
-
-    .download-file span {
-      color: var(--muted-dark);
-      font-size: 12px;
-      line-height: 1.4;
-    }
-
     .grid {
       display: grid;
       grid-template-columns: repeat(3, minmax(0,1fr));
@@ -1546,7 +1468,6 @@
       .branch-panel,
       .expertise-layout,
       .online-panel,
-      .download-panel,
       .ai-showcase,
       .assurance-grid { grid-template-columns: 1fr; }
       .package-layout,
@@ -1594,8 +1515,6 @@
       .expertise-card { grid-template-columns: 1fr; }
       .side-note { position: static; }
       .final-cta { display: block; padding: 24px; }
-      .download-panel { padding: 22px; border-radius: 22px; }
-      .download-action { border-radius: 18px; }
       .final-cta .hero-actions { margin-top: 16px; }
       .sticky-conversion { display: grid; }
       .whatsapp-float { right: 14px; bottom: 118px; }
@@ -1665,7 +1584,6 @@
         <span><b>OTOTR</b><span>Tarafsız ekspertiz standardı</span></span>
       </a>
       <div class="nav-links" id="navLinks">
-        <a href="#indir"><span>Dosya</span><b>İndir</b></a>
         <a href="#online-islemler"><span>Hızlı erişim</span><b>Online İşlemler</b></a>
         <a href="#hizmetler"><span>Çözümler</span><b>Hizmetler</b></a>
         <a href="#neden"><span>Güven</span><b>Neden OTOTR?</b></a>
@@ -1697,7 +1615,6 @@
             <button class="btn primary" data-open-appointment type="button">Randevu Al</button>
             <a class="btn light" href="#paketler">Paketleri İncele</a>
             <a class="btn" href="#dijital-rapor">Rapor Sorgula</a>
-            <a class="btn" href="#indir">İndir</a>
           </div>
           <div class="hero-stats" aria-label="OTOTR öne çıkan göstergeler">
             <div class="hero-stat"><b>200+</b><span>Detaylı kontrolde takip edilen teknik başlık</span></div>
@@ -2146,33 +2063,6 @@
           <details><summary>Şikayet veya rapor itirazı nasıl yönetilir?</summary><p>İtiraz kaydı rapor no, şube, müşteri açıklaması ve delil arşiviyle birlikte kalite kuyruğuna düşer. Gerekirse hukuk, operasyon ve Academy yeniden eğitim aksiyonu açılır.</p></details>
           <details><summary>Randevu talebi oluşturunca ne olur?</summary><p>İl, ilçe, paket ve iletişim bilgisi CRM randevu kuyruğuna düşer. Canlı sistemde şube kapasitesi, uygun saat ve müşteri kabul ekranı üzerinden talep netleştirilir.</p></details>
           <details><summary>Hangi paketi seçmem gerektiğini bilmiyorsam ne yapmalıyım?</summary><p>Yapay Zeka Öneri alanı araç yaşı, kilometre, satın alma amacı ve risk şüphesine göre uygun paket yönlendirmesi yapar. Son karar şubedeki müşteri kabul ve teknik ekip değerlendirmesiyle netleşir.</p></details>
-        </div>
-      </div>
-    </section>
-
-    <section class="section" id="indir">
-      <div class="inner">
-        <div class="download-panel">
-          <div class="download-copy">
-            <span class="eyebrow">İndir</span>
-            <h2>Special dosyasını tek tıkla indirin.</h2>
-            <p class="lead">Dosya GitHub üzerinde tutulur ve indir butonu resmi OTOTR deposundaki güncel arşive yönlendirir.</p>
-            <div class="download-meta" aria-label="İndirilecek dosya bilgileri">
-              <span>Special.rar</span>
-              <span>RAR arşivi</span>
-              <span>GitHub üzerinden indirme</span>
-            </div>
-          </div>
-          <div class="download-action">
-            <div class="download-file">
-              <strong>RAR</strong>
-              <div>
-                <b>Special.rar</b>
-                <span>Butona tıklayınca GitHub'daki dosya indirme bağlantısı açılır.</span>
-              </div>
-            </div>
-            <a class="btn primary" href="https://raw.githubusercontent.com/samivolkan/Ototr/main/downloads/Special.rar" download>Dosyayı İndir</a>
-          </div>
         </div>
       </div>
     </section>
