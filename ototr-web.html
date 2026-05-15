@@ -745,6 +745,13 @@
       line-height: 1.4;
     }
 
+    .download-status {
+      min-height: 18px;
+      color: var(--muted-dark);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
     .grid {
       display: grid;
       grid-template-columns: repeat(3, minmax(0,1fr));
@@ -2172,7 +2179,8 @@
                 <span>Butona tıklayınca GitHub'daki dosya indirme bağlantısı açılır.</span>
               </div>
             </div>
-            <a class="btn primary" href="https://raw.githubusercontent.com/samivolkan/Ototr/main/downloads/Special.rar" download>Dosyayı İndir</a>
+            <button class="btn primary" type="button" data-download-file data-download-url="https://raw.githubusercontent.com/samivolkan/Ototr/main/downloads/Special.rar" data-download-name="Special.rar">Dosyayı İndir</button>
+            <span class="download-status" id="downloadStatus" aria-live="polite"></span>
           </div>
         </div>
       </div>
@@ -2423,6 +2431,38 @@
 
     menuBtn.addEventListener('click', () => navLinks.classList.toggle('open'));
     navLinks.querySelectorAll('a').forEach((link) => link.addEventListener('click', closeMobileMenu));
+
+    document.querySelectorAll('[data-download-file]').forEach((button) => {
+      button.addEventListener('click', async () => {
+        const status = document.getElementById('downloadStatus');
+        const url = button.dataset.downloadUrl;
+        const filename = button.dataset.downloadName || 'Special.rar';
+        const originalText = button.textContent;
+        button.disabled = true;
+        button.textContent = 'Hazırlanıyor...';
+        if (status) status.textContent = 'Dosya hazırlanıyor, indirme birazdan başlayacak.';
+        try {
+          const response = await fetch(url, { mode: 'cors' });
+          if (!response.ok) throw new Error(`Download failed: ${response.status}`);
+          const blob = await response.blob();
+          const objectUrl = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = objectUrl;
+          link.download = filename;
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+          window.setTimeout(() => URL.revokeObjectURL(objectUrl), 30000);
+          if (status) status.textContent = 'İndirme başladı. Tarayıcınızın indirilenler bölümünü kontrol edin.';
+        } catch (error) {
+          if (status) status.textContent = 'Otomatik indirme başlatılamadı; dosya bağlantısı yeni sekmede açılıyor.';
+          window.open(url, '_blank', 'noopener,noreferrer');
+        } finally {
+          button.disabled = false;
+          button.textContent = originalText;
+        }
+      });
+    });
 
     document.querySelectorAll('[data-open-appointment]').forEach((button) => {
       button.addEventListener('click', (event) => {
