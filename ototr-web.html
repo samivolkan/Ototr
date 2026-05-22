@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>OTOTR | Yeni Nesil Tarafsız Araç Ekspertizi</title>
   <meta name="description" content="OTOTR; karekod doğrulamalı dijital rapor, merkezi kalite denetimi, TSE/HYB uyumlu operasyon ve sigortalı ekspertiz yaklaşımıyla yeni nesil oto ekspertiz markasıdır.">
-  <meta name="ototr-web-version" content="SVK WEB v1.3.1-feature-refine">
+  <meta name="ototr-web-version" content="SVK WEB v1.3.2-location-disabled">
   <style>
     :root {
       --bg: #ffffff;
@@ -928,6 +928,17 @@
       margin-bottom: 8px;
     }
 
+    .vehicle-count-card b .vehicle-counter {
+      font: inherit;
+      color: inherit;
+    }
+
+    .vehicle-count-card b .vehicle-counter-suffix {
+      color: inherit;
+      font-size: .82em;
+      margin-left: 1px;
+    }
+
     .vehicle-count-card span {
       display: block;
       color: var(--ink);
@@ -1286,16 +1297,39 @@
       align-content: space-between;
     }
 
+    .qr-link {
+      width: max-content;
+      display: grid;
+      gap: 8px;
+      text-decoration: none;
+      color: var(--muted-dark);
+      font-size: 11px;
+      font-weight: 800;
+    }
+
     .qr-box {
-      width: 120px;
-      height: 120px;
+      width: 132px;
+      height: 132px;
       border-radius: 20px;
-      border: 8px solid #fff;
-      background:
-        linear-gradient(90deg, #fff 12px, transparent 12px) 0 0/24px 24px,
-        linear-gradient(#fff 12px, transparent 12px) 0 0/24px 24px,
-        var(--red);
-      box-shadow: 0 18px 40px rgba(215,25,32,.18);
+      border: 10px solid #fff;
+      background: #fff;
+      padding: 8px;
+      box-shadow: 0 18px 40px rgba(215,25,32,.18), inset 0 0 0 1px rgba(7,24,45,.08);
+    }
+
+    .qr-box path {
+      fill: #111827;
+      shape-rendering: crispEdges;
+    }
+
+    .qr-link span {
+      display: inline-flex;
+      width: max-content;
+      max-width: 170px;
+      border: 1px solid var(--line-light);
+      border-radius: 999px;
+      background: rgba(255,255,255,.92);
+      padding: 6px 10px;
     }
 
     .report-card {
@@ -2216,22 +2250,22 @@
           </div>
           <div class="vehicle-count-grid" aria-label="Araç ekspertiz adetleri">
             <article class="vehicle-count-card">
-              <b>12.480+</b>
+              <b><span class="vehicle-counter" data-target="12480">0</span><span class="vehicle-counter-suffix">+</span></b>
               <span>Toplam ekspertiz kaydı</span>
               <small>Randevu, rapor ve araç karnesi akışına bağlanan örnek toplam.</small>
             </article>
             <article class="vehicle-count-card">
-              <b>3.240+</b>
+              <b><span class="vehicle-counter" data-target="3240">0</span><span class="vehicle-counter-suffix">+</span></b>
               <span>Kaporta boya kontrolü</span>
               <small>Mikron ölçümü, değişen/boyalı/lokal ayrımı ve foto delil takibi.</small>
             </article>
             <article class="vehicle-count-card">
-              <b>1.860+</b>
+              <b><span class="vehicle-counter" data-target="1860">0</span><span class="vehicle-counter-suffix">+</span></b>
               <span>Motor ve mekanik kontrol</span>
               <small>Motor genel durum, fren, süspansiyon ve yürüyen aksam başlıkları.</small>
             </article>
             <article class="vehicle-count-card">
-              <b>980+</b>
+              <b><span class="vehicle-counter" data-target="980">0</span><span class="vehicle-counter-suffix">+</span></b>
               <span>QR doğrulamalı rapor</span>
               <small>Rapor numarası veya karekod ile doğrulanabilir demo kayıt yapısı.</small>
             </article>
@@ -2464,7 +2498,10 @@
               <h2>Raporun doğruluğunu saniyeler içinde kontrol edin.</h2>
               <p class="lead">Karekod veya rapor numarasıyla raporun şube, tarih, paket ve temel bulgu doğrulaması yapılır.</p>
             </div>
-            <div class="qr-box" aria-label="QR kod mockup"></div>
+            <a class="qr-link" href="https://www.ototr.com.tr" target="_blank" rel="noopener" aria-label="https://www.ototr.com.tr karekod">
+              <svg class="qr-box" viewBox="0 0 29 29" role="img" aria-label="https://www.ototr.com.tr karekod"><title>https://www.ototr.com.tr</title><rect width="29" height="29" fill="#fff"/><path d="M2 2h1v1h-1zM3 2h1v1h-1zM4 2h1v1h-1zM5 2h1v1h-1zM6 2h1v1h-1zM7 2h1v1h-1zM8 2h1v1h-1zM10 2h1v1h-1zM12 2h1v1h-1zM15 2h1v1h-1zM16 2h1v1h-1zM17 2h1v1h-1zM18 2h1v1h-1zM20 2h1v1h-1zM21 2h1v1h-1zM22 2h1v1h-1zM23 2h1v1h-1zM24 2h1v1h-1zM25 2h1v1h-1zM26 2h1v1h-1zM2 3h1v1h-1zM8 3h1v1h-1zM10 3h1v1h-1zM11 3h1v1h-1zM16 3h1v1h-1zM17 3h1v1h-1zM20 3h1v1h-1zM26 3h1v1h-1zM2 4h1v1h-1zM4 4h1v1h-1zM5 4h1v1h-1zM6 4h1v1h-1zM8 4h1v1h-1zM10 4h1v1h-1zM13 4h1v1h-1zM16 4h1v1h-1zM17 4h1v1h-1zM18 4h1v1h-1zM20 4h1v1h-1zM22 4h1v1h-1zM23 4h1v1h-1zM24 4h1v1h-1zM26 4h1v1h-1zM2 5h1v1h-1zM4 5h1v1h-1zM5 5h1v1h-1zM6 5h1v1h-1zM8 5h1v1h-1zM11 5h1v1h-1zM14 5h1v1h-1zM16 5h1v1h-1zM17 5h1v1h-1zM18 5h1v1h-1zM20 5h1v1h-1zM22 5h1v1h-1zM23 5h1v1h-1zM24 5h1v1h-1zM26 5h1v1h-1zM2 6h1v1h-1zM4 6h1v1h-1zM5 6h1v1h-1zM6 6h1v1h-1zM8 6h1v1h-1zM10 6h1v1h-1zM11 6h1v1h-1zM14 6h1v1h-1zM16 6h1v1h-1zM17 6h1v1h-1zM20 6h1v1h-1zM22 6h1v1h-1zM23 6h1v1h-1zM24 6h1v1h-1zM26 6h1v1h-1zM2 7h1v1h-1zM8 7h1v1h-1zM10 7h1v1h-1zM12 7h1v1h-1zM13 7h1v1h-1zM14 7h1v1h-1zM17 7h1v1h-1zM20 7h1v1h-1zM26 7h1v1h-1zM2 8h1v1h-1zM3 8h1v1h-1zM4 8h1v1h-1zM5 8h1v1h-1zM6 8h1v1h-1zM7 8h1v1h-1zM8 8h1v1h-1zM10 8h1v1h-1zM12 8h1v1h-1zM14 8h1v1h-1zM16 8h1v1h-1zM18 8h1v1h-1zM20 8h1v1h-1zM21 8h1v1h-1zM22 8h1v1h-1zM23 8h1v1h-1zM24 8h1v1h-1zM25 8h1v1h-1zM26 8h1v1h-1zM10 9h1v1h-1zM13 9h1v1h-1zM15 9h1v1h-1zM16 9h1v1h-1zM17 9h1v1h-1zM18 9h1v1h-1zM4 10h1v1h-1zM8 10h1v1h-1zM9 10h1v1h-1zM10 10h1v1h-1zM14 10h1v1h-1zM15 10h1v1h-1zM20 10h1v1h-1zM21 10h1v1h-1zM22 10h1v1h-1zM24 10h1v1h-1zM25 10h1v1h-1zM26 10h1v1h-1zM5 11h1v1h-1zM6 11h1v1h-1zM9 11h1v1h-1zM10 11h1v1h-1zM11 11h1v1h-1zM13 11h1v1h-1zM14 11h1v1h-1zM18 11h1v1h-1zM20 11h1v1h-1zM26 11h1v1h-1zM2 12h1v1h-1zM3 12h1v1h-1zM4 12h1v1h-1zM5 12h1v1h-1zM8 12h1v1h-1zM10 12h1v1h-1zM12 12h1v1h-1zM13 12h1v1h-1zM14 12h1v1h-1zM15 12h1v1h-1zM19 12h1v1h-1zM20 12h1v1h-1zM21 12h1v1h-1zM24 12h1v1h-1zM25 12h1v1h-1zM26 12h1v1h-1zM2 13h1v1h-1zM3 13h1v1h-1zM9 13h1v1h-1zM11 13h1v1h-1zM12 13h1v1h-1zM14 13h1v1h-1zM15 13h1v1h-1zM16 13h1v1h-1zM18 13h1v1h-1zM20 13h1v1h-1zM25 13h1v1h-1zM7 14h1v1h-1zM8 14h1v1h-1zM9 14h1v1h-1zM12 14h1v1h-1zM13 14h1v1h-1zM15 14h1v1h-1zM17 14h1v1h-1zM18 14h1v1h-1zM19 14h1v1h-1zM20 14h1v1h-1zM21 14h1v1h-1zM23 14h1v1h-1zM25 14h1v1h-1zM26 14h1v1h-1zM3 15h1v1h-1zM7 15h1v1h-1zM11 15h1v1h-1zM12 15h1v1h-1zM13 15h1v1h-1zM18 15h1v1h-1zM20 15h1v1h-1zM23 15h1v1h-1zM26 15h1v1h-1zM2 16h1v1h-1zM5 16h1v1h-1zM7 16h1v1h-1zM8 16h1v1h-1zM10 16h1v1h-1zM12 16h1v1h-1zM18 16h1v1h-1zM19 16h1v1h-1zM20 16h1v1h-1zM21 16h1v1h-1zM24 16h1v1h-1zM25 16h1v1h-1zM26 16h1v1h-1zM3 17h1v1h-1zM4 17h1v1h-1zM5 17h1v1h-1zM9 17h1v1h-1zM10 17h1v1h-1zM11 17h1v1h-1zM13 17h1v1h-1zM15 17h1v1h-1zM16 17h1v1h-1zM17 17h1v1h-1zM18 17h1v1h-1zM20 17h1v1h-1zM22 17h1v1h-1zM25 17h1v1h-1zM2 18h1v1h-1zM4 18h1v1h-1zM8 18h1v1h-1zM12 18h1v1h-1zM14 18h1v1h-1zM15 18h1v1h-1zM16 18h1v1h-1zM18 18h1v1h-1zM19 18h1v1h-1zM20 18h1v1h-1zM21 18h1v1h-1zM22 18h1v1h-1zM23 18h1v1h-1zM10 19h1v1h-1zM13 19h1v1h-1zM14 19h1v1h-1zM18 19h1v1h-1zM22 19h1v1h-1zM23 19h1v1h-1zM25 19h1v1h-1zM26 19h1v1h-1zM2 20h1v1h-1zM3 20h1v1h-1zM4 20h1v1h-1zM5 20h1v1h-1zM6 20h1v1h-1zM7 20h1v1h-1zM8 20h1v1h-1zM10 20h1v1h-1zM13 20h1v1h-1zM14 20h1v1h-1zM15 20h1v1h-1zM17 20h1v1h-1zM18 20h1v1h-1zM20 20h1v1h-1zM22 20h1v1h-1zM23 20h1v1h-1zM25 20h1v1h-1zM26 20h1v1h-1zM2 21h1v1h-1zM8 21h1v1h-1zM12 21h1v1h-1zM14 21h1v1h-1zM15 21h1v1h-1zM18 21h1v1h-1zM22 21h1v1h-1zM23 21h1v1h-1zM25 21h1v1h-1zM2 22h1v1h-1zM4 22h1v1h-1zM5 22h1v1h-1zM6 22h1v1h-1zM8 22h1v1h-1zM13 22h1v1h-1zM14 22h1v1h-1zM15 22h1v1h-1zM18 22h1v1h-1zM19 22h1v1h-1zM20 22h1v1h-1zM21 22h1v1h-1zM22 22h1v1h-1zM23 22h1v1h-1zM2 23h1v1h-1zM4 23h1v1h-1zM5 23h1v1h-1zM6 23h1v1h-1zM8 23h1v1h-1zM11 23h1v1h-1zM13 23h1v1h-1zM15 23h1v1h-1zM16 23h1v1h-1zM18 23h1v1h-1zM19 23h1v1h-1zM21 23h1v1h-1zM22 23h1v1h-1zM23 23h1v1h-1zM24 23h1v1h-1zM2 24h1v1h-1zM4 24h1v1h-1zM5 24h1v1h-1zM6 24h1v1h-1zM8 24h1v1h-1zM10 24h1v1h-1zM11 24h1v1h-1zM14 24h1v1h-1zM17 24h1v1h-1zM22 24h1v1h-1zM26 24h1v1h-1zM2 25h1v1h-1zM8 25h1v1h-1zM15 25h1v1h-1zM17 25h1v1h-1zM18 25h1v1h-1zM20 25h1v1h-1zM22 25h1v1h-1zM23 25h1v1h-1zM25 25h1v1h-1zM2 26h1v1h-1zM3 26h1v1h-1zM4 26h1v1h-1zM5 26h1v1h-1zM6 26h1v1h-1zM7 26h1v1h-1zM8 26h1v1h-1zM12 26h1v1h-1zM15 26h1v1h-1zM17 26h1v1h-1zM18 26h1v1h-1zM21 26h1v1h-1zM25 26h1v1h-1zM26 26h1v1h-1z"/></svg>
+              <span>www.ototr.com.tr</span>
+            </a>
             <div class="report-sample" aria-label="Örnek dijital rapor özeti">
               <div class="report-sample-top">
                 <div>
@@ -2635,7 +2672,7 @@
           <div>
             <span class="eyebrow">Franchise başvurusu</span>
             <h2>Yatırım bölgenizi seçin, il ve ilçe alanları otomatik hazırlansın.</h2>
-            <p class="lead">Bölge seçimine göre il listesi yenilenir. Konum izni verilirse cep telefonu veya PC konumuna en yakın bölge, il ve ilçe formda seçili gelir.</p>
+            <p class="lead">Bölge seçimine göre il listesi yenilenir. Konum izni istemeden bölge, il ve ilçe seçimini manuel olarak hazırlayabilirsiniz.</p>
           </div>
         </div>
         <div class="assurance-grid">
@@ -2662,7 +2699,7 @@
             <h3>Bölge Seçim Mantığı</h3>
             <div class="assurance-list">
               <div class="assurance-item"><strong>01</strong><div><b>Tüm bölgeler desteklenir</b><span>Marmara, İç Anadolu, Ege, Akdeniz, Karadeniz, Doğu Anadolu ve Güneydoğu Anadolu seçiminde il listesi otomatik yenilenir.</span></div></div>
-              <div class="assurance-item"><strong>02</strong><div><b>Konum önerisi</b><span>Tarayıcı konum izni verirse form en yakın demo şube konumuna göre bölge, il ve ilçe seçimini hazırlar.</span></div></div>
+              <div class="assurance-item"><strong>02</strong><div><b>Manuel bölge seçimi</b><span>Şimdilik tarayıcı konum izni istenmez; yatırımcı bölge, il ve ilçe seçimini kendisi yapar.</span></div></div>
               <div class="assurance-item"><strong>03</strong><div><b>ERP kuyruğu</b><span>Gönderilen kayıtlar demo ortamda Public Web yönetim alanı ve Franchise açılış merkezinde okunabilir.</span></div></div>
             </div>
           </article>
@@ -2974,15 +3011,8 @@
     }
 
     function requestLocationSuggestion() {
-      if (!navigator.geolocation) {
-        applyStoredLocationSuggestion();
-        return;
-      }
-      navigator.geolocation.getCurrentPosition(
-        (position) => applyDetectedLocation(nearestBranchLocation(position.coords)),
-        () => applyStoredLocationSuggestion(),
-        { enableHighAccuracy: false, timeout: 6500, maximumAge: 1000 * 60 * 30 }
-      );
+      applyStoredLocationSuggestion();
+      return;
     }
 
     function saveRecord(key, prefix, data) {
@@ -3006,6 +3036,63 @@
 
     menuBtn.addEventListener('click', () => navLinks.classList.toggle('open'));
     navLinks.querySelectorAll('a').forEach((link) => link.addEventListener('click', closeMobileMenu));
+
+    function formatCounterValue(value) {
+      return Math.round(value).toLocaleString('tr-TR');
+    }
+
+    function animateVehicleCounter(element) {
+      if (element.dataset.counted === 'true') return;
+      element.dataset.counted = 'true';
+      const target = Number(element.dataset.target || 0);
+      const duration = 1400;
+      const start = Date.now();
+      const timer = setInterval(() => {
+        const progress = Math.min((Date.now() - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        element.textContent = formatCounterValue(target * eased);
+        if (progress >= 1) {
+          element.textContent = formatCounterValue(target);
+          clearInterval(timer);
+        }
+      }, 22);
+    }
+
+    function initVehicleCounters() {
+      const counters = document.querySelectorAll('.vehicle-counter[data-target]');
+      if (!counters.length) return;
+
+      const animateVisibleCounters = () => {
+        counters.forEach((counter) => {
+          if (counter.dataset.counted === 'true') return;
+          const rect = counter.getBoundingClientRect();
+          const nearViewport = rect.top < window.innerHeight * 0.92 && rect.bottom > 0;
+          if (nearViewport || window.location.hash === '#arac-adetleri') {
+            animateVehicleCounter(counter);
+          }
+        });
+      };
+
+      if (!('IntersectionObserver' in window)) {
+        counters.forEach(animateVehicleCounter);
+        return;
+      }
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          animateVehicleCounter(entry.target);
+          observer.unobserve(entry.target);
+        });
+      }, { threshold: 0.45 });
+
+      counters.forEach((counter) => observer.observe(counter));
+      window.addEventListener('scroll', animateVisibleCounters, { passive: true });
+      window.addEventListener('hashchange', animateVisibleCounters);
+      setTimeout(animateVisibleCounters, 250);
+    }
+
+    initVehicleCounters();
 
     document.querySelectorAll('[data-download-file]').forEach((button) => {
       button.addEventListener('click', async () => {
