@@ -65,7 +65,7 @@ await page.waitForSelector("#page-dealer.active");
 await page.locator('#page-dealer.active [data-dealer-tab="is-emirleri"]').first().click();
 await page.waitForSelector("#page-dealer.active #dealerWorkOrderForm.dealer-wo-form");
 assert.equal(await page.locator("#page-dealer.active .dealer-top-branch").locator("text=Aktif iş emri").count(), 0, "Ust bantta aktif is emri bilgisi yer kaplamamali");
-await page.locator("#page-dealer.active .dealer-erp-branch", { hasText: "Aktif Şube" }).waitFor();
+await page.locator("#page-dealer.active .dealer-erp-brand-text", { hasText: "Aktif Şube" }).waitFor();
 await page.locator("#page-dealer.active .dealer-top-branch [data-dealer-gate-nav]").waitFor();
 await page.locator("#page-dealer.active .dealer-top-branch", { hasText: "3 Günlük Takvim" }).waitFor();
 await page.locator("#page-dealer.active .dealer-top-branch", { hasText: "Basım Kuyruğu" }).waitFor();
