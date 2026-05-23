@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OTOTR Android MVP Önizleme</title>
+  <style>
+    :root {
+      --navy: #071a2f;
+      --navy-soft: #102a46;
+      --red: #e1262f;
+      --gray: #f4f6f8;
+      --line: #dfe6ee;
+      --text: #172033;
+      --muted: #64748b;
+      --green: #178a55;
+      --yellow: #f59e0b;
+      --white: #fff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--gray);
+      color: var(--text);
+    }
+    .shell {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 300px 1fr 360px;
+    }
+    .sidebar {
+      background: var(--navy);
+      color: var(--white);
+      padding: 24px;
+      overflow: auto;
+      max-height: 100vh;
+    }
+    .brand {
+      font-size: 34px;
+      font-weight: 900;
+      letter-spacing: 0;
+      margin-bottom: 4px;
+    }
+    .tagline { color: #cbd5e1; margin-bottom: 24px; }
+    .nav-title {
+      color: #94a3b8;
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      margin: 22px 0 10px;
+    }
+    .nav-button {
+      width: 100%;
+      border: 1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.06);
+      color: var(--white);
+      text-align: left;
+      padding: 12px 14px;
+      border-radius: 12px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+    .nav-button.active {
+      background: var(--red);
+      border-color: var(--red);
+    }
+    .stage {
+      padding: 28px;
+      display: grid;
+      place-items: start center;
+      overflow: auto;
+      max-height: 100vh;
+    }
+    .phone {
+      width: 390px;
+      min-height: 780px;
+      background: var(--gray);
+      border: 12px solid #111827;
+      border-radius: 38px;
+      box-shadow: 0 24px 80px rgba(7, 26, 47, .25);
+      overflow: hidden;
+    }
+    .phone-top {
+      background: var(--navy);
+      color: var(--white);
+      padding: 22px 18px 18px;
+    }
+    .phone-top strong { display: block; font-size: 20px; }
+    .phone-top span { color: #cbd5e1; font-size: 12px; }
+    .screen {
+      padding: 16px;
+    }
+    .card {
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+    .card h3, .card h4 { margin: 0 0 8px; }
+    .muted { color: var(--muted); font-size: 13px; line-height: 1.45; }
+    .metric-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .metric strong { font-size: 22px; display: block; }
+    .badge {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #eef2f7;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      margin: 3px 3px 3px 0;
+    }
+    .badge.red { background: #ffecee; color: var(--red); }
+    .badge.green { background: #eaf7f0; color: var(--green); }
+    .badge.yellow { background: #fff7e6; color: var(--yellow); }
+    .field {
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px;
+      margin-bottom: 10px;
+    }
+    .field small { color: var(--muted); display: block; margin-bottom: 4px; }
+    .button {
+      width: 100%;
+      border: 0;
+      border-radius: 16px;
+      padding: 14px 16px;
+      background: var(--red);
+      color: var(--white);
+      font-weight: 900;
+      margin-top: 8px;
+    }
+    .button.secondary {
+      background: var(--white);
+      color: var(--navy);
+      border: 1px solid var(--line);
+    }
+    .panel {
+      padding: 24px;
+      background: var(--white);
+      border-left: 1px solid var(--line);
+      overflow: auto;
+      max-height: 100vh;
+    }
+    .panel h2 { margin-top: 0; }
+    .flow {
+      display: grid;
+      gap: 10px;
+    }
+    .flow div {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px;
+      background: #fbfdff;
+      font-weight: 700;
+    }
+    .status-line {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      border-bottom: 1px solid var(--line);
+      padding: 9px 0;
+      font-size: 14px;
+    }
+    @media (max-width: 980px) {
+      .shell { grid-template-columns: 1fr; }
+      .sidebar, .panel { max-height: none; }
+      .phone { width: 100%; max-width: 390px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <aside class="sidebar">
+      <div class="brand">OTOTR</div>
+      <div class="tagline">Tarafsız Araç Ekspertizi</div>
+      <div class="nav-title">Operasyon Akışı</div>
+      <div id="nav"></div>
+      <div class="nav-title">Not</div>
+      <p class="muted">Bu alan Flutter Android uygulamasının planlama önizlemesidir. Gerçek müşteri verisi yoktur; Firebase bağlı değildir.</p>
+    </aside>
+
+    <section class="stage">
+      <div class="phone">
+        <div class="phone-top">
+          <strong id="screen-title">Şube Paneli</strong>
+          <span>OTOTR | Tarafsız Araç Ekspertizi</span>
+        </div>
+        <div class="screen" id="screen"></div>
+      </div>
+    </section>
+
+    <aside class="panel">
+      <h2>Planlama Alanı</h2>
+      <p class="muted">Buradan ekran akışını web gibi görüp hangi ekranın önce geliştirileceğini seçebiliriz.</p>
+      <div class="flow">
+        <div>1. Demo giriş</div>
+        <div>2. Araç ve müşteri kabul</div>
+        <div>3. Paket seçimi ve fiyat alanları</div>
+        <div>4. Ekspertiz modülleri ve checklist</div>
+        <div>5. Fotoğraf kanıtları</div>
+        <div>6. Rapor önizleme ve teslim</div>
+      </div>
+      <h3>Sonraki kararlar</h3>
+      <div class="status-line"><span>Öncelik</span><strong>Android MVP</strong></div>
+      <div class="status-line"><span>Veri</span><strong>Demo/Test</strong></div>
+      <div class="status-line"><span>Bulut</span><strong>Henüz yok</strong></div>
+      <div class="status-line"><span>Push</span><strong>Yapıldı</strong></div>
+    </aside>
+  </main>
+
+  <script>
+    const screens = [
+      {
+        title: 'Şube Paneli',
+        html: `
+          <div class="card"><h3>OTOTR Bursa Nilüfer</h3><p class="muted">Ahmet Demir - Şube Müdürü<br>Senkronizasyon bekliyor</p></div>
+          <div class="metric-row">
+            <div class="card metric"><strong>12</strong><span>Bugünkü iş</span></div>
+            <div class="card metric"><strong>7</strong><span>Teslim</span></div>
+          </div>
+          <div class="card"><span class="badge red">Kritik uyarı</span><p>OTO-2026-0001 için zorunlu fotoğraf kanıtları eksik.</p></div>
+          <button class="button">Yeni İş Emri</button>
+          <button class="button secondary">İş Emirleri</button>
+        `
+      },
+      {
+        title: 'Araç Kabul',
+        html: `
+          <div class="field"><small>Plaka</small><strong>16 ABC 123</strong></div>
+          <div class="field"><small>Şasi / VIN</small>WVWZZZ3CZLE000001</div>
+          <div class="field"><small>Araç</small>2020 Volkswagen Passat 1.5 TSI</div>
+          <div class="field"><small>Kilometre</small>84.500 km</div>
+          <div class="field"><small>Satıcı Tipi</small>Bireysel</div>
+          <button class="button secondary">Taslak Kaydet</button>
+          <button class="button">Müşteri Bilgilerine Geç</button>
+        `
+      },
+      {
+        title: 'Müşteri Kabul',
+        html: `
+          <div class="field"><small>Ad Soyad</small>Mehmet Yılmaz</div>
+          <div class="field"><small>Telefon</small>0532 000 16 16</div>
+          <div class="field"><small>Rol</small>Alıcı</div>
+          <div class="card"><span class="badge green">KVKK alındı</span><span class="badge green">Hizmet onayı alındı</span></div>
+          <button class="button">Paket Seçimine Geç</button>
+        `
+      },
+      {
+        title: 'Paket Seçimi',
+        html: `
+          <div class="card"><h3>Premium Güven Paketi</h3><span class="badge red">Önerilen</span><p>Liste fiyatı: 7.900 TL<br>Bayi iskonto alanı: %5<br>Net tahsilat: 7.505 TL</p><span class="badge">Kaporta</span><span class="badge">Motor</span><span class="badge">OBD</span><span class="badge">Airbag</span></div>
+          <div class="card"><h3>Full Ekspertiz</h3><p>Liste fiyatı: 5.900 TL<br>Süre: 75 dk</p></div>
+          <button class="button">İş Emri Özetine Geç</button>
+        `
+      },
+      {
+        title: 'Ekspertiz Modülleri',
+        html: `
+          <div class="card"><h4>Kaporta & Boya</h4><span class="badge red">Kritik Bulgu</span><p class="muted">Checklist 9/9 | Kritik 0 | Kanıt var</p></div>
+          <div class="card"><h4>Motor</h4><span class="badge green">Tamamlandı</span><p class="muted">Checklist 7/7 | Kanıt var</p></div>
+          <div class="card"><h4>Mekanik</h4><span class="badge yellow">Devam Ediyor</span><p class="muted">Checklist 6/7 | Kanıt eksik</p></div>
+          <button class="button">Modül Detayına Gir</button>
+        `
+      },
+      {
+        title: 'Checklist Detayı',
+        html: `
+          <div class="card"><h4>Sağ ön çamurluk</h4><span class="badge yellow">Dikkat</span><p>Lokal boya şüphesi. Fotoğraf zorunlu.</p></div>
+          <div class="card"><h4>Boya mikron değeri</h4><span class="badge green">Normal</span><p>92-118 mikron aralığı.</p></div>
+          <div class="card"><h4>Test sürüşü notu</h4><span class="badge">Kontrol Edilemedi</span><p>Test sürüşü bekliyor.</p></div>
+          <button class="button">Modülü Tamamlandı İşaretle</button>
+        `
+      },
+      {
+        title: 'Fotoğraf Kanıtları',
+        html: `
+          <div class="card"><span class="badge red">3 zorunlu fotoğraf eksik</span><p>Sol yan, kilometre göstergesi ve VIN etiketi tamamlanmalı.</p></div>
+          <div class="card"><h4>Ön görünüm</h4><span class="badge green">Yüklendi</span></div>
+          <div class="card"><h4>Sol yan</h4><span class="badge yellow">Eksik</span><p class="muted">Fotoğraf yükleme kuyruğu</p></div>
+          <div class="card"><h4>Şasi/VIN etiketi</h4><span class="badge yellow">Senkronizasyon bekliyor</span></div>
+        `
+      },
+      {
+        title: 'Rapor Önizleme',
+        html: `
+          <div class="card"><h3>OTOTR</h3><p>Tarafsız Araç Ekspertizi<br>OTO-2026-0001<br>16 ABC 123 - 2020 Volkswagen Passat</p></div>
+          <div class="card"><h4>Risk Özeti</h4><p>Orta risk: kaporta lokal boya şüphesi ve süspansiyon takip önerisi.</p></div>
+          <div class="card"><h4>Onay</h4><p>Şube onayı: Bekliyor<br>QR doğrulama placeholder<br>Revizyon geçmişi placeholder</p></div>
+          <button class="button">PDF Dışa Aktar Placeholder</button>
+        `
+      }
+    ];
+
+    const nav = document.getElementById('nav');
+    const title = document.getElementById('screen-title');
+    const screen = document.getElementById('screen');
+
+    function render(index) {
+      title.textContent = screens[index].title;
+      screen.innerHTML = screens[index].html;
+      document.querySelectorAll('.nav-button').forEach((button, buttonIndex) => {
+        button.classList.toggle('active', buttonIndex === index);
+      });
+    }
+
+    screens.forEach((item, index) => {
+      const button = document.createElement('button');
+      button.className = 'nav-button';
+      button.textContent = `${index + 1}. ${item.title}`;
+      button.addEventListener('click', () => render(index));
+      nav.appendChild(button);
+    });
+
+    render(0);
+  </script>
+</body>
+</html>
