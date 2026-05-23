@@ -89,3 +89,43 @@ Rapor basıma hazır sayılması için:
 - Push notification.
 - Müdür iade akışı.
 - Usta performans ve Academy yetki kilidi.
+
+## 11. Paket -> Görev -> Usta Matrisi
+
+| Paket | Açılacak teknik görevler | Sorumlu rol | Not |
+| --- | --- | --- | --- |
+| Mini Ekspertiz | Araç başlangıç kanıtı, motor/mekanik temel, fren/süspansiyon temel | Kaporta Ustası, Mekanik Usta, Test Operatörü | Hızlı kontrol. Kanıt eşiği temel bulgu ve cihaz çıktısıyla sınırlı. |
+| Esnaf Ekspertiz | Araç başlangıç kanıtı, kaporta hızlı tarama, motor/mekanik temel, OBD kısa tarama | Kaporta Ustası, Mekanik Usta, OBD Ustası | Galeri/esnaf al-sat hızına uygun. Riskli bulgu varsa fotoğraf zorunlu. |
+| Standart Ekspertiz | Kaporta/boya 0-58, motor/mekanik, fren/süspansiyon | Kaporta Ustası, Mekanik Usta, Test Operatörü | Raporun ana teknik omurgası. |
+| Full Ekspertiz | Kaporta/boya 0-58, motor/mekanik, OBD/elektronik, fren/dyno/yol testi | Kaporta Ustası, Mekanik Usta, OBD Ustası, Test Operatörü | İlk canlı MVP için ana paket. |
+| OTOTR Premium 360 | Full kapsam + kalite ikinci kontrol | İlgili ustalar + Formen | Riskli bulgular formen tarafından ikinci kez kontrol edilir. |
+
+## 12. Rapor Alan Eşleşmesi
+
+| Usta görevi | Rapor hedefi | Veri tipi |
+| --- | --- | --- |
+| Kaporta / Boya 0-58 | Rapor sayfa 4-6; kaporta harita, parça tablosu, mikron, kod ve fotoğraf no | Parça bazlı yapılandırılmış veri |
+| Motor / Mekanik | Rapor sayfa 7; motor, şanzıman, yürüyen, sıvı/kaçak, risk seviyesi ve usta notu | Checklist + müşteri dili |
+| OBD / Elektronik | Rapor sayfa 8; modül listesi, aktif/geçmiş hata, Airbag/SRS yöntemi | Cihaz sonucu + hata kodu |
+| Fren / Dyno / Yol Testi | Rapor sayfa 9; fren, süspansiyon, dyno, yol testi ölçümleri | Ölçüm değeri + cihaz çıktısı |
+| Tramer / KM | Rapor hasar/KM bölümü; kaynak, sorgu zamanı, sonuç ve kapsam uyarısı | Portal entegrasyon verisi |
+
+## 13. Fotoğraf / Kanıt Zorunluluk Matrisi
+
+| Durum | Zorunlu kanıt | Kural |
+| --- | --- | --- |
+| Her iş emri başlangıcı | Şasi etiketi, plaka fotoğrafı, KM ekranı | Teknik modüller bu kapı tamamlanmadan açılmaz. |
+| Kaporta işlemli parça | Parça yakın plan, genel açı, mikron/cihaz ekranı | Boyalı/değişen/işlem şüphesinde fotoğrafsız kapanmaz. |
+| Mekanik risk | Bulgu noktası fotoğrafı veya kısa video | Yağ kaçağı, ses, alt takım, servis önerisi varsa zorunlu. |
+| OBD hata | OBD ekranı, hata kodu ekranı, Airbag/SRS ekranı | Aktif/geçmiş hata müşteri rapor diline bağlanır. |
+| Fren/dyno/süspansiyon | Cihaz çıktısı veya yapılamadı nedeni | Cihaz sonucu yoksa neden ve müdür onayı gerekir. |
+| Yapılamayan test | Yapılamadı nedeni, sorumlu onayı | Boş bırakma yok; gerekçe rapor kapsam uyarısına düşer. |
+
+## 14. Canlı Sisteme Bağlanırken Kabul Kriterleri
+
+- Paket seçimi backend'de görev setine dönüşmeli; Android sadece kendisine gelen görevleri göstermeli.
+- Her mobil alanın `report_field_key` karşılığı olmalı.
+- Her kanıt dosyası `work_order_id`, `task_id`, `field_key`, `evidence_type`, `uploaded_by`, `captured_at` ile saklanmalı.
+- Riskli bulgu fotoğrafsız gönderilememeli.
+- Müdür iadesinde eski kayıt silinmeden revizyon açılmalı.
+- Tramer/KM portal verisi rapora otomatik işlenmeli; ulaşılamazsa rapor kapısı açıkça blokaj üretmeli.

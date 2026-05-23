@@ -38,6 +38,14 @@ await page.locator('[data-screen="intake"]').first().click();
 await page.locator("#screen-title", { hasText: "Usta İşe Başlama" }).waitFor();
 assert.equal(await page.locator("text=İş Emrini Aç").count(), 0, "Usta ekraninda is emrini ac ifadesi olmamali");
 
+await page.locator('[data-screen="matrix"]').first().click();
+await page.locator("#screen-title", { hasText: "Kapsam Matrisi" }).waitFor();
+await page.locator("text=Paket → Görev → Usta").waitFor();
+await page.locator("text=Rapor Alan Eşleşmesi").waitFor();
+await page.locator("text=Fotoğraf / Kanıt Kuralları").waitFor();
+
+await page.locator('[data-screen="intake"]').first().click();
+await page.locator("#screen-title", { hasText: "Usta İşe Başlama" }).waitFor();
 await page.locator('[data-intake-photo="chassisPhoto"]').click();
 await page.locator('[data-intake-photo="platePhoto"]').click();
 await page.locator("[data-intake-km]").fill("128000abc");
@@ -45,7 +53,7 @@ assert.equal(await page.locator("[data-intake-km]").inputValue(), "128000", "KM 
 await page.locator('[data-intake-photo="kmPhoto"]').click();
 await page.locator("[data-open-technical]").click();
 await page.locator("#screen-title", { hasText: "Görevlerim" }).waitFor();
-await page.locator("text=Kaporta / Boya 0-58").waitFor();
+await page.locator(".task-card", { hasText: "Kaporta / Boya 0-58" }).first().waitFor();
 
 await page.locator('[data-task-open="kaporta"]').click();
 await page.locator("#screen-title", { hasText: "Kontrol Formu" }).waitFor();

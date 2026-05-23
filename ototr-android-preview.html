@@ -691,10 +691,58 @@
       ]
     };
 
+    const packageTaskMatrix = {
+      "Mini Ekspertiz": [
+        ["Araç başlangıç kanıtı", "Kaporta Ustası", "Şasi/plaka/KM doğrulama"],
+        ["Motor / Mekanik temel", "Mekanik Usta", "Motor sesi, sıvı, alt takım hızlı kontrol"],
+        ["Fren / Süspansiyon temel", "Test Operatörü", "Cihaz çıktısı veya yapılamadı nedeni"]
+      ],
+      "Esnaf Ekspertiz": [
+        ["Araç başlangıç kanıtı", "Kaporta Ustası", "Al-sat hızlı kimlik ve fotoğraf kanıtı"],
+        ["Kaporta hızlı tarama", "Kaporta Ustası", "İşlemli parça ve boya şüphesi"],
+        ["Motor / Mekanik temel", "Mekanik Usta", "Motor, kaçak, alt takım"],
+        ["OBD kısa tarama", "OBD Ustası", "Aktif hata ve airbag/SRS ekranı"]
+      ],
+      "Standart Ekspertiz": [
+        ["Kaporta / Boya 0-58", "Kaporta Ustası", "Parça, mikron, kod ve yakın plan"],
+        ["Motor / Mekanik", "Mekanik Usta", "Motor, şanzıman, yürüyen, sıvı/kaçak"],
+        ["Fren / Süspansiyon", "Test Operatörü", "Fren ve süspansiyon cihaz çıktısı"]
+      ],
+      "Full Ekspertiz": [
+        ["Kaporta / Boya 0-58", "Kaporta Ustası", "Parça, mikron, kod ve yakın plan"],
+        ["Motor / Mekanik", "Mekanik Usta", "Motor, şanzıman, yürüyen, sıvı/kaçak"],
+        ["OBD / Elektronik", "OBD Ustası", "Aktif/geçmiş hata, airbag/SRS"],
+        ["Fren / Dyno / Yol Testi", "Test Operatörü", "Cihaz çıktıları ve yol testi notu"]
+      ],
+      "OTOTR Premium 360": [
+        ["Kaporta / Boya 0-58", "Kaporta Ustası", "Tam gövde, şasi/podye, detay fotoğraf"],
+        ["Motor / Mekanik", "Mekanik Usta", "Detaylı motor, şanzıman, alt takım"],
+        ["OBD / Elektronik", "OBD Ustası", "Tüm modül tarama, airbag/SRS, donanım"],
+        ["Fren / Dyno / Yol Testi", "Test Operatörü", "Fren, dyno, süspansiyon, yol testi"],
+        ["Kalite ikinci kontrol", "Formen", "Riskli bulgu ve kanıt tutarlılığı"]
+      ]
+    };
+
+    const reportFieldMap = {
+      kaporta: ["Rapor sayfa 4-6", "Kaporta harita, parça tablosu, mikron, kod, fotoğraf no"],
+      mekanik: ["Rapor sayfa 7", "Motor-mekanik kontrol satırları, risk seviyesi, usta notu"],
+      obd: ["Rapor sayfa 8", "OBD modül listesi, aktif/geçmiş hata, airbag yöntemi"],
+      test: ["Rapor sayfa 9", "Fren, süspansiyon, dyno ve yol testi ölçümleri"]
+    };
+
+    const evidenceRuleMatrix = [
+      ["Araç başlangıcı", "Her işte", "Şasi etiketi, plaka fotoğrafı, KM ekranı"],
+      ["Kaporta işlemli parça", "Boya/değişen/işlem şüphesi", "Parça yakın plan + mikron ekranı"],
+      ["Mekanik risk", "Kaçak, ses, alt takım veya servis önerisi", "Bulgu noktası fotoğrafı veya video"],
+      ["OBD hata", "Aktif/geçmiş hata veya airbag uyarısı", "OBD ekranı + hata kodu ekranı"],
+      ["Cihaz testi", "Fren/dyno/süspansiyon/yol testi", "Cihaz çıktısı veya yapılamadı nedeni"]
+    ];
+
     const screens = [
       { key: "dashboard", title: "Usta İşleri", subtitle: "Atanan iş emirleri ve saha kapıları" },
       { key: "intake", title: "Usta İşe Başlama", subtitle: "Şasi, plaka ve KM kanıtları" },
       { key: "tasks", title: "Görevlerim", subtitle: "Ustaya atanmış rapor başlıkları" },
+      { key: "matrix", title: "Kapsam Matrisi", subtitle: "Paket, rapor ve kanıt kuralları" },
       { key: "form", title: "Kontrol Formu", subtitle: "Checklist, bulgu ve rapor dili" },
       { key: "evidence", title: "Kanıt Fotoğrafları", subtitle: "Zorunlu görsel ve cihaz çıktıları" },
       { key: "queries", title: "Tramer / KM", subtitle: "Dış sorgu verileri rapora işlenir" },
@@ -788,6 +836,12 @@
         waiting: "Bekliyor"
       }[status] || status;
     }
+    function taskMeta(id){
+      return reportFieldMap[id] || ["Rapor teknik ek", "Rapor alanı paket netleşince bağlanacak"];
+    }
+    function packageRows(item = order()){
+      return packageTaskMatrix[item.packageName] || packageTaskMatrix["Full Ekspertiz"];
+    }
     function renderDashboard(){
       const current = order();
       const myTasks = allowedTasks();
@@ -863,12 +917,16 @@
           <div class="card-head"><div><h2>Benim Başlıklarım</h2><p class="sub">${esc(state.user.name)} · ${esc(state.user.role)}</p></div>${badge(mine.length + " başlık")}</div>
           <div class="progress"><div class="bar green" style="--value:${completion(current)}%"></div></div>
         </div>
+        <div class="card">
+          <div class="card-head"><div><h3>Paket → Görev → Usta</h3><p class="sub">${esc(current.packageName)} paketinden açılan teknik başlıklar.</p></div><button class="micro-btn" data-screen="matrix">Matrisi Aç</button></div>
+          <div class="list">${packageRows(current).map(row => `<div class="work-card"><div class="row"><h3>${esc(row[0])}</h3>${badge(row[1], row[1] === state.user.role ? "green" : "")}</div><p class="sub">${esc(row[2])}</p></div>`).join("")}</div>
+        </div>
         <div class="list">
           ${current.tasks.map(item => `
             <article class="task-card ${item.status}">
               <div class="mini">
                 <span class="symbol ${statusTone(item.status)}">${item.station.slice(0,1)}</span>
-                <div><h3>${esc(item.title)}</h3><p class="sub">${esc(item.ownerRole)} · ${item.fields.length} alan · ${item.requiredEvidence.length} kanıt</p></div>
+                <div><h3>${esc(item.title)}</h3><p class="sub">${esc(item.ownerRole)} · ${item.fields.length} alan · ${item.requiredEvidence.length} kanıt · ${esc(taskMeta(item.id)[0])}</p></div>
                 ${badge(statusText(item.status), statusTone(item.status))}
               </div>
               <div class="row wrap">
@@ -885,13 +943,42 @@
         ${bottomBar()}
       `;
     }
+    function renderMatrix(){
+      const current = order();
+      return `
+        <div class="card">
+          <div class="card-head"><div><h2>Kapsam Matrisi</h2><p class="sub">Canlı sistemde paket seçilince Android'e düşecek görevleri, rapor hedefini ve kanıt zorunluluğunu belirleyen sözleşme.</p></div>${badge(current.packageName, "blue")}</div>
+        </div>
+        <div class="card">
+          <h3>Paket → Görev → Usta</h3>
+          <div class="list" style="margin-top:8px">
+            ${Object.entries(packageTaskMatrix).map(([pkg, rows]) => `<article class="work-card ${pkg === current.packageName ? "active" : ""}"><div class="row"><h3>${esc(pkg)}</h3>${badge(rows.length + " görev", pkg === current.packageName ? "green" : "")}</div>${rows.map(row => `<p class="sub"><b>${esc(row[0])}</b> · ${esc(row[1])} · ${esc(row[2])}</p>`).join("")}</article>`).join("")}
+          </div>
+        </div>
+        <div class="card">
+          <h3>Rapor Alan Eşleşmesi</h3>
+          <div class="list" style="margin-top:8px">
+            ${Object.entries(reportFieldMap).map(([id, map]) => `<div class="work-card"><div class="row"><h3>${esc((order().tasks.find(t => t.id === id) || {}).title || id)}</h3>${badge(map[0], "blue")}</div><p class="sub">${esc(map[1])}</p></div>`).join("")}
+          </div>
+        </div>
+        <div class="card">
+          <h3>Fotoğraf / Kanıt Kuralları</h3>
+          <div class="list" style="margin-top:8px">
+            ${evidenceRuleMatrix.map(row => `<div class="work-card"><div class="row"><h3>${esc(row[0])}</h3>${badge(row[1], "amber")}</div><p class="sub">${esc(row[2])}</p></div>`).join("")}
+          </div>
+        </div>
+        ${bottomBar()}
+      `;
+    }
     function renderForm(){
       const currentTask = task();
       if(!currentTask) return `<div class="card"><h2>Görev yok</h2><p class="sub">Bu iş emrinde henüz teknik görev oluşturulmadı.</p></div>${bottomBar()}`;
+      const meta = taskMeta(currentTask.id);
       return `
         <div class="card">
           <div class="card-head"><div><h2>${esc(currentTask.title)}</h2><p class="sub">${esc(currentTask.ownerRole)} · ${esc(order().plate)}</p></div>${badge(statusText(currentTask.status), statusTone(currentTask.status))}</div>
-          <div class="row wrap">${badge("Rapor başlığı")} ${badge(currentTask.fields.filter(f => f.risky).length + " riskli sinyal", currentTask.fields.some(f => f.risky) ? "amber" : "green")}</div>
+          <div class="row wrap">${badge(meta[0], "blue")} ${badge("Rapor başlığı")} ${badge(currentTask.fields.filter(f => f.risky).length + " riskli sinyal", currentTask.fields.some(f => f.risky) ? "amber" : "green")}</div>
+          <p class="sub">${esc(meta[1])}</p>
         </div>
         <div class="list">
           ${currentTask.fields.map((field, index) => `
@@ -925,6 +1012,7 @@
           ${current.tasks.map(t => `
             <article class="evidence-card ${t.requiredEvidence.every(req => t.evidence.includes(req)) ? "done" : "missing"}">
               <div class="row"><h3>${esc(t.title)}</h3>${badge(t.evidence.length + "/" + t.requiredEvidence.length, t.evidence.length >= t.requiredEvidence.length ? "green" : "amber")}</div>
+              <p class="sub">${esc(taskMeta(t.id)[1])}</p>
               <div class="grid-2">
                 ${t.requiredEvidence.map(req => `<button class="photo-slot ${t.evidence.includes(req) ? "done" : ""}" data-evidence="${t.id}|${esc(req)}">${esc(req)}<br>${t.evidence.includes(req) ? "Yüklendi" : "Ekle"}</button>`).join("")}
               </div>
@@ -1015,7 +1103,7 @@
         ${bottomBar()}
       `;
     }
-    const renderers = { dashboard: renderDashboard, intake: renderIntake, tasks: renderTasks, form: renderForm, evidence: renderEvidence, queries: renderQueries, gate: renderGate, offline: renderOffline };
+    const renderers = { dashboard: renderDashboard, intake: renderIntake, tasks: renderTasks, matrix: renderMatrix, form: renderForm, evidence: renderEvidence, queries: renderQueries, gate: renderGate, offline: renderOffline };
 
     function render(){
       const currentScreen = screens.find(item => item.key === state.currentScreen) || screens[0];
