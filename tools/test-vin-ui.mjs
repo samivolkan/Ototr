@@ -64,6 +64,7 @@ await page.goto(url, { waitUntil: "load" });
 await page.waitForSelector("#page-dealer.active");
 await page.locator('#page-dealer.active [data-dealer-tab="is-emirleri"]').first().click();
 await page.waitForSelector("#page-dealer.active #dealerWorkOrderForm.dealer-wo-form");
+await page.locator("#page-dealer.active #dealerWorkOrderForm.dealer-wo-fast-open").waitFor();
 assert.equal(await page.locator("#page-dealer.active .dealer-top-branch").locator("text=Aktif iş emri").count(), 0, "Ust bantta aktif is emri bilgisi yer kaplamamali");
 await page.locator("#page-dealer.active .dealer-erp-brand-text", { hasText: "Aktif Şube" }).waitFor();
 await page.locator("#page-dealer.active .dealer-top-branch [data-dealer-gate-nav]").waitFor();
@@ -99,6 +100,7 @@ assert.ok(mismatchText.includes("uyuşmuyor"), "VIN-secilen arac uyusmazligi UI 
 await form.locator('[name="plate"]').fill("34 VIN 123");
 await form.locator('[name="engineNo"]').fill("M264920123456");
 await form.locator('[name="mileage"]').fill("128000");
+await form.locator('[data-dealer-package-choice="Full Ekspertiz"]').click();
 await page.evaluate(() => window.dealerCreateWorkOrder({ skipNativeValidity: true }));
 await page.waitForFunction(() => {
   const raw = localStorage.getItem("ototr-dealer-live-workorders-v1");
