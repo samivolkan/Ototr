@@ -327,6 +327,30 @@ void main() {
         task.auditLog.map((item) => item.action), contains('manager_released'));
   });
 
+  test('mudur teknik veri duzenleyememeli veya submit edememeli', () {
+    _completeStartEvidence(repository);
+    repository.claimTask('wo-2026-0001', 'body-paint');
+    repository.switchCurrentUserForTest(_managerUser);
+
+    final task = repository
+        .getById('wo-2026-0001')
+        .tasks
+        .firstWhere((item) => item.taskId == 'body-paint');
+
+    expect(task.canEditBy(_managerUser), isFalse);
+    expect(
+      () => repository.updateTask(
+        'wo-2026-0001',
+        task.copyWith(customerFriendlyNote: 'Mudur teknik not giremez.'),
+      ),
+      throwsStateError,
+    );
+    expect(
+      () => repository.submitTask('wo-2026-0001', 'body-paint'),
+      throwsStateError,
+    );
+  });
+
   test('usta baska ustaya dogrudan atama yapamamali', () {
     expect(
       () => repository.managerAssignTask(

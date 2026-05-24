@@ -403,12 +403,7 @@ class TechnicianTask {
 
   bool isOwnedBy(String userId) => isOwned && ownerUserId == userId;
 
-  bool canEditBy(UserProfile user) {
-    if (user.role == UserRole.branchManager) {
-      return true;
-    }
-    return isOwnedBy(user.id);
-  }
+  bool canEditBy(UserProfile user) => isOwnedBy(user.id);
 
   bool canReleaseBy(UserProfile user) => isOwnedBy(user.id);
 
@@ -479,6 +474,9 @@ class TechnicianTask {
   }
 
   TechnicianTask claimBy(UserProfile user, DateTime claimedAt) {
+    if (user.role != UserRole.inspectionTechnician) {
+      throw StateError('Sadece usta basligi sahiplenebilir.');
+    }
     if (isOwned && ownerUserId != user.id) {
       throw StateError('Bu baslik baska bir usta tarafindan sahiplenilmis.');
     }
