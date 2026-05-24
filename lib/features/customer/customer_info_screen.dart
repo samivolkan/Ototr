@@ -23,7 +23,7 @@ class _CustomerInfoScreenState extends State<CustomerInfoScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final customer = DummyData.customer;
+    const customer = DummyData.customer;
     return Scaffold(
       appBar: const OtotrAppBar(title: 'Müşteri Kabul'),
       body: Form(
@@ -31,13 +31,26 @@ class _CustomerInfoScreenState extends State<CustomerInfoScreen> {
         child: ListView(
           padding: const EdgeInsets.all(AppSizes.lg),
           children: [
-            OtotrTextField(label: 'Ad Soyad / Ünvan', initialValue: customer.fullName, validator: (v) => Validators.requiredField(v, fieldName: 'Ad Soyad')),
+            OtotrTextField(
+                label: 'Ad Soyad / Ünvan',
+                initialValue: customer.fullName,
+                validator: (v) =>
+                    Validators.requiredField(v, fieldName: 'Ad Soyad')),
             const SizedBox(height: AppSizes.md),
-            OtotrTextField(label: 'Telefon', initialValue: customer.phone, keyboardType: TextInputType.phone, validator: Validators.phone),
+            OtotrTextField(
+                label: 'Telefon',
+                initialValue: customer.phone,
+                keyboardType: TextInputType.phone,
+                validator: Validators.phone),
             const SizedBox(height: AppSizes.md),
-            OtotrTextField(label: 'TCKN / VKN (opsiyonel)', initialValue: customer.identityNumber),
+            OtotrTextField(
+                label: 'TCKN / VKN (opsiyonel)',
+                initialValue: customer.identityNumber),
             const SizedBox(height: AppSizes.md),
-            OtotrTextField(label: 'E-posta (opsiyonel)', initialValue: customer.email, keyboardType: TextInputType.emailAddress),
+            OtotrTextField(
+                label: 'E-posta (opsiyonel)',
+                initialValue: customer.email,
+                keyboardType: TextInputType.emailAddress),
             const SizedBox(height: AppSizes.md),
             OtotrTextField(label: 'Müşteri Rolü', initialValue: customer.role),
             CheckboxListTile(
@@ -53,9 +66,16 @@ class _CustomerInfoScreenState extends State<CustomerInfoScreen> {
             const SizedBox(height: AppSizes.lg),
             Row(
               children: [
-                Expanded(child: OtotrSecondaryButton(label: 'Geri', onPressed: () => Navigator.pop(context))),
+                Expanded(
+                    child: OtotrSecondaryButton(
+                        label: 'Geri',
+                        onPressed: () => Navigator.pop(context))),
                 const SizedBox(width: AppSizes.sm),
-                Expanded(child: OtotrSecondaryButton(label: 'Taslak Kaydet', icon: Icons.save_outlined, onPressed: () {})),
+                Expanded(
+                    child: OtotrSecondaryButton(
+                        label: 'Taslak Kaydet',
+                        icon: Icons.save_outlined,
+                        onPressed: () {})),
               ],
             ),
             const SizedBox(height: AppSizes.sm),

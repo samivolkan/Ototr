@@ -5,3 +5,11 @@ docs/ALL.docx
 .DS_Store
 Thumbs.db
 .vscode/
+
+# Flutter local tooling
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+build/
+.idea/
+*.iml

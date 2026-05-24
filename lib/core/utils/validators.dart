@@ -34,8 +34,11 @@ class Validators {
 
   static String? vinWarning(String? value) {
     final vin = value?.trim() ?? '';
+    if (vin.isNotEmpty && vin.length > 17) {
+      return 'Şasi/VIN 17 karakterden uzun olamaz';
+    }
     if (vin.isNotEmpty && vin.length != 17) {
-      return 'Şasi/VIN 17 karakter olmalıdır; kontrol önerilir';
+      return 'Şasi/VIN 17 karakter olmalıdır';
     }
     return null;
   }

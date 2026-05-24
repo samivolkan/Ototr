@@ -13,7 +13,7 @@ class BranchSettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final branch = DummyData.branch;
+    const branch = DummyData.branch;
     return Scaffold(
       appBar: const OtotrAppBar(title: 'Şube Ayarları'),
       body: ListView(
@@ -41,7 +41,8 @@ class BranchSettingsScreen extends StatelessWidget {
           OtotrPrimaryButton(
             label: 'Çıkış Yap',
             icon: Icons.logout,
-            onPressed: () => Navigator.pushNamedAndRemoveUntil(context, AppRoutes.login, (_) => false),
+            onPressed: () => Navigator.pushNamedAndRemoveUntil(
+                context, AppRoutes.login, (_) => false),
           ),
         ],
       ),

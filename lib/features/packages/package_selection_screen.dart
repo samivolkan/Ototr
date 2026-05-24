@@ -28,7 +28,8 @@ class _PackageSelectionScreenState extends State<PackageSelectionScreen> {
         children: [
           const OtotrSectionTitle(
             title: 'Ekspertiz Paketi',
-            subtitle: 'Fiyat alanları şimdilik placeholder; canlı fiyatlama merkez onayıyla bağlanacak.',
+            subtitle:
+                'Fiyat alanları şimdilik placeholder; canlı fiyatlama merkez onayıyla bağlanacak.',
           ),
           ...DummyData.packages.map(
             (plan) => OtotrCard(
@@ -38,8 +39,13 @@ class _PackageSelectionScreenState extends State<PackageSelectionScreen> {
                 children: [
                   Row(
                     children: [
-                      Expanded(child: Text(plan.name, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 18))),
-                      if (plan.isRecommended) const OtotrStatusBadge(label: 'Önerilen', tone: OtotrBadgeTone.danger),
+                      Expanded(
+                          child: Text(plan.name,
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.w900, fontSize: 18))),
+                      if (plan.isRecommended)
+                        const OtotrStatusBadge(
+                            label: 'Önerilen', tone: OtotrBadgeTone.danger),
                     ],
                   ),
                   const SizedBox(height: AppSizes.sm),
@@ -54,15 +60,29 @@ class _PackageSelectionScreenState extends State<PackageSelectionScreen> {
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
-                    children: plan.includedModules.map((module) => OtotrStatusBadge(label: module)).toList(),
+                    children: plan.includedModules
+                        .map((module) => OtotrStatusBadge(label: module))
+                        .toList(),
                   ),
                   const SizedBox(height: AppSizes.md),
-                  RadioListTile<String>(
-                    value: plan.id,
-                    groupValue: selectedId,
-                    onChanged: (value) => setState(() => selectedId = value ?? selectedId),
-                    title: const Text('Bu paketi seç'),
-                    contentPadding: EdgeInsets.zero,
+                  InkWell(
+                    borderRadius: BorderRadius.circular(AppSizes.radius),
+                    onTap: () => setState(() => selectedId = plan.id),
+                    child: Padding(
+                      padding:
+                          const EdgeInsets.symmetric(vertical: AppSizes.sm),
+                      child: Row(
+                        children: [
+                          Icon(
+                            selectedId == plan.id
+                                ? Icons.radio_button_checked
+                                : Icons.radio_button_unchecked,
+                          ),
+                          const SizedBox(width: AppSizes.sm),
+                          const Text('Bu paketi seç'),
+                        ],
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -71,7 +91,8 @@ class _PackageSelectionScreenState extends State<PackageSelectionScreen> {
           OtotrPrimaryButton(
             label: 'İş Emri Özetine Geç',
             icon: Icons.assignment_turned_in_outlined,
-            onPressed: () => Navigator.pushNamed(context, AppRoutes.workOrderSummary),
+            onPressed: () =>
+                Navigator.pushNamed(context, AppRoutes.workOrderSummary),
           ),
         ],
       ),

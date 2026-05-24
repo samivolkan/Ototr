@@ -12,6 +12,27 @@ abstract class WorkOrderRepository {
 
   TechnicianWorkOrder claim(String workOrderId);
 
+  TechnicianWorkOrder claimTask(String workOrderId, String taskId);
+
+  TechnicianWorkOrder releaseTask(
+    String workOrderId,
+    String taskId,
+    String releaseReason,
+  );
+
+  TechnicianWorkOrder managerAssignTask(
+    String workOrderId,
+    String taskId,
+    String ownerUserId,
+    String managerAssignReason,
+  );
+
+  TechnicianWorkOrder managerClearTaskOwner(
+    String workOrderId,
+    String taskId,
+    String releaseReason,
+  );
+
   TechnicianWorkOrder saveStartEvidence(
     String workOrderId,
     StartEvidence startEvidence,

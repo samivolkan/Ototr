@@ -17,18 +17,23 @@ class BranchDashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final branch = DummyData.branch;
-    final user = DummyData.user;
+    const branch = DummyData.branch;
+    const user = DummyData.user;
     final quickActions = [
-      ('Yeni İş Emri', Icons.add_circle_outline, AppRoutes.newWorkOrder),
-      ('İş Emirleri', Icons.assignment_outlined, AppRoutes.workOrders),
+      ('Yeni Is Emri', Icons.add_circle_outline, AppRoutes.newWorkOrder),
+      ('Is Emirleri', Icons.assignment_outlined, AppRoutes.workOrders),
       ('Raporlar', Icons.description_outlined, AppRoutes.reportPreview),
-      ('Şube Performansı', Icons.insights_outlined, AppRoutes.branchKpi),
-      ('Şube Ayarları', Icons.settings_outlined, AppRoutes.branchSettings),
+      (
+        'Baslik Sahipligi',
+        Icons.manage_accounts,
+        AppRoutes.managerTaskOwnership
+      ),
+      ('Sube Performansi', Icons.insights_outlined, AppRoutes.branchKpi),
+      ('Sube Ayarlari', Icons.settings_outlined, AppRoutes.branchSettings),
     ];
 
     return Scaffold(
-      appBar: const OtotrAppBar(title: 'Şube Paneli'),
+      appBar: const OtotrAppBar(title: 'Sube Paneli'),
       body: ListView(
         padding: const EdgeInsets.all(AppSizes.lg),
         children: [
@@ -36,34 +41,65 @@ class BranchDashboardScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(branch.name, style: Theme.of(context).textTheme.titleLarge),
+                Text(branch.name,
+                    style: Theme.of(context).textTheme.titleLarge),
                 const SizedBox(height: AppSizes.xs),
                 Text('${user.fullName} - ${user.role.label}'),
                 const SizedBox(height: AppSizes.xs),
-                const Text('${AppConstants.syncPending} | ${AppConstants.firebaseLater}'),
+                const Text(
+                  '${AppConstants.syncPending} | ${AppConstants.firebaseLater}',
+                ),
               ],
             ),
           ),
-          const OtotrSectionTitle(title: 'Bugünkü Operasyon'),
+          const OtotrSectionTitle(title: 'Bugunku Operasyon'),
           const Row(
             children: [
-              Expanded(child: OtotrMetricCard(label: 'Toplam İş', value: '12', icon: Icons.directions_car)),
+              Expanded(
+                child: OtotrMetricCard(
+                  label: 'Toplam Is',
+                  value: '12',
+                  icon: Icons.directions_car,
+                ),
+              ),
               SizedBox(width: AppSizes.md),
-              Expanded(child: OtotrMetricCard(label: 'Teslim', value: '7', icon: Icons.verified_outlined, tone: AppColors.success)),
+              Expanded(
+                child: OtotrMetricCard(
+                  label: 'Teslim',
+                  value: '7',
+                  icon: Icons.verified_outlined,
+                  tone: AppColors.success,
+                ),
+              ),
             ],
           ),
           const Row(
             children: [
-              Expanded(child: OtotrMetricCard(label: 'Eksik Foto', value: '3', icon: Icons.photo_camera_outlined, tone: AppColors.warning)),
+              Expanded(
+                child: OtotrMetricCard(
+                  label: 'Eksik Foto',
+                  value: '3',
+                  icon: Icons.photo_camera_outlined,
+                  tone: AppColors.warning,
+                ),
+              ),
               SizedBox(width: AppSizes.md),
-              Expanded(child: OtotrMetricCard(label: 'Kritik', value: '2', icon: Icons.report_outlined, tone: AppColors.red)),
+              Expanded(
+                child: OtotrMetricCard(
+                  label: 'Kritik',
+                  value: '2',
+                  icon: Icons.report_outlined,
+                  tone: AppColors.red,
+                ),
+              ),
             ],
           ),
           const OtotrAlertCard(
-            title: 'Kritik operasyon uyarısı',
-            message: 'OTO-2026-0001 için zorunlu fotoğraf kanıtları eksik. Rapor onayına geçmeden tamamlanmalı.',
+            title: 'Kritik operasyon uyarisi',
+            message:
+                'OTO-2026-0001 icin zorunlu fotograf kanitlari eksik. Rapor onayina gecmeden tamamlanmali.',
           ),
-          const OtotrSectionTitle(title: 'Hızlı Aksiyonlar'),
+          const OtotrSectionTitle(title: 'Hizli Aksiyonlar'),
           ...quickActions.map(
             (action) => OtotrCard(
               onTap: () => Navigator.pushNamed(context, action.$3),
@@ -71,7 +107,12 @@ class BranchDashboardScreen extends StatelessWidget {
                 children: [
                   Icon(action.$2, color: AppColors.red),
                   const SizedBox(width: AppSizes.md),
-                  Expanded(child: Text(action.$1, style: const TextStyle(fontWeight: FontWeight.w800))),
+                  Expanded(
+                    child: Text(
+                      action.$1,
+                      style: const TextStyle(fontWeight: FontWeight.w800),
+                    ),
+                  ),
                   const Icon(Icons.chevron_right),
                 ],
               ),

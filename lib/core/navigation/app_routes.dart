@@ -27,4 +27,5 @@ class AppRoutes {
   static const String technicianQueries = '/technician/queries';
   static const String technicianReportGate = '/technician/report-gate';
   static const String technicianSync = '/technician/sync';
+  static const String managerTaskOwnership = '/manager/task-ownership';
 }

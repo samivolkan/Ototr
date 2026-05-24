@@ -18,17 +18,18 @@ class RolePermissionService {
 
   bool canEditTask(UserProfile user, TechnicianTask task) {
     final role = technicianRoleFor(user);
-    if (role == TechnicianRole.branchManager || role == TechnicianRole.foreman) {
+    if (role == TechnicianRole.branchManager ||
+        role == TechnicianRole.foreman) {
       return false;
     }
-    return task.assignedRole == role;
+    return task.canEditBy(user);
   }
 
   bool canMonitorTask(UserProfile user, TechnicianTask task) {
     final role = technicianRoleFor(user);
     return role == TechnicianRole.branchManager ||
         role == TechnicianRole.foreman ||
-        task.assignedRole == role;
+        user.role == UserRole.inspectionTechnician;
   }
 
   bool canOpenTechnicalEntry(TechnicianWorkOrder workOrder) {

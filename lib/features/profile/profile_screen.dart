@@ -13,7 +13,7 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final user = DummyData.user;
+    const user = DummyData.user;
     return Scaffold(
       appBar: const OtotrAppBar(title: 'Profil', showProfile: false),
       body: ListView(
@@ -31,7 +31,8 @@ class ProfileScreen extends StatelessWidget {
           OtotrPrimaryButton(
             label: 'Çıkış Yap',
             icon: Icons.logout,
-            onPressed: () => Navigator.pushNamedAndRemoveUntil(context, AppRoutes.login, (_) => false),
+            onPressed: () => Navigator.pushNamedAndRemoveUntil(
+                context, AppRoutes.login, (_) => false),
           ),
         ],
       ),

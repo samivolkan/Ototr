@@ -53,25 +53,37 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Usta Operasyon Girişi', style: AppTextStyles.title),
+                    const Text('Usta Operasyon Girişi',
+                        style: AppTextStyles.title),
                     const SizedBox(height: AppSizes.md),
-                    const OtotrTextField(label: 'E-posta / Telefon', initialValue: 'ahmet.demir@ototr.test'),
+                    const OtotrTextField(
+                        label: 'E-posta / Telefon',
+                        initialValue: 'ahmet.demir@ototr.test'),
                     const SizedBox(height: AppSizes.md),
-                    const OtotrTextField(label: 'Şifre', initialValue: 'demo123', obscureText: true),
+                    const OtotrTextField(
+                        label: 'Şifre',
+                        initialValue: 'demo123',
+                        obscureText: true),
                     const SizedBox(height: AppSizes.md),
-                    const OtotrTextField(label: 'Şube Kodu', initialValue: AppConstants.demoBranchCode),
+                    const OtotrTextField(
+                        label: 'Şube Kodu',
+                        initialValue: AppConstants.demoBranchCode),
                     const SizedBox(height: AppSizes.lg),
                     OtotrPrimaryButton(
                       label: AppStrings.demoLogin,
                       icon: Icons.login,
-                      onPressed: () => Navigator.pushReplacementNamed(context, AppRoutes.dashboard),
+                      onPressed: () => Navigator.pushReplacementNamed(
+                          context, AppRoutes.dashboard),
                     ),
                     const SizedBox(height: AppSizes.sm),
                     OtotrSecondaryButton(
                       label: 'Şifremi Unuttum',
                       icon: Icons.lock_reset,
-                      onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Şifre sıfırlama Firebase Auth ile eklenecek.')),
+                      onPressed: () =>
+                          ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                            content: Text(
+                                'Şifre sıfırlama Firebase Auth ile eklenecek.')),
                       ),
                     ),
                   ],

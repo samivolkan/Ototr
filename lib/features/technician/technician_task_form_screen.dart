@@ -8,6 +8,7 @@ import '../../core/widgets/ototr_card.dart';
 import '../../core/widgets/ototr_primary_button.dart';
 import '../../core/widgets/ototr_secondary_button.dart';
 import '../../data/models/technician_operation_model.dart';
+import '../../data/repositories/app_repositories.dart';
 import '../../data/repositories/dummy_work_order_repository.dart';
 
 class TechnicianTaskFormScreen extends StatefulWidget {
@@ -21,22 +22,32 @@ class TechnicianTaskFormScreen extends StatefulWidget {
   final String taskId;
 
   @override
-  State<TechnicianTaskFormScreen> createState() => _TechnicianTaskFormScreenState();
+  State<TechnicianTaskFormScreen> createState() =>
+      _TechnicianTaskFormScreenState();
 }
 
 class _TechnicianTaskFormScreenState extends State<TechnicianTaskFormScreen> {
   final _repository = DummyWorkOrderRepository.instance;
-  late TechnicianTask _task;
+  TechnicianTask? _task;
+  Future<TechnicianTask>? _remoteTaskFuture;
   final _noteController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _task = _repository
-        .getById(widget.workOrderId)
-        .tasks
-        .firstWhere((task) => task.taskId == widget.taskId);
-    _noteController.text = _task.customerFriendlyNote;
+    final remoteRepository = AppRepositories.instance.remoteWorkOrders;
+    if (remoteRepository != null) {
+      _remoteTaskFuture = remoteRepository.getById(widget.workOrderId).then(
+            (order) =>
+                order.tasks.firstWhere((task) => task.taskId == widget.taskId),
+          );
+      return;
+    }
+
+    _task = _repository.getById(widget.workOrderId).tasks.firstWhere(
+          (task) => task.taskId == widget.taskId,
+        );
+    _noteController.text = _task!.customerFriendlyNote;
   }
 
   @override
@@ -47,7 +58,52 @@ class _TechnicianTaskFormScreenState extends State<TechnicianTaskFormScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final missing = _task.missingReasons();
+    final remoteRepository = AppRepositories.instance.remoteWorkOrders;
+    if (remoteRepository != null && _task == null) {
+      return FutureBuilder<TechnicianTask>(
+        future: _remoteTaskFuture,
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return Scaffold(
+              appBar: const OtotrAppBar(title: 'Kontrol Formu'),
+              backgroundColor: AppColors.grayBg,
+              body: Padding(
+                padding: const EdgeInsets.all(AppSizes.lg),
+                child: OtotrCard(
+                  child: Text(
+                    'Supabase kontrol formu alınamadı: ${snapshot.error}',
+                    style: const TextStyle(color: AppColors.red),
+                  ),
+                ),
+              ),
+            );
+          }
+
+          if (!snapshot.hasData) {
+            return const Scaffold(
+              appBar: OtotrAppBar(title: 'Kontrol Formu'),
+              backgroundColor: AppColors.grayBg,
+              body: Center(child: CircularProgressIndicator()),
+            );
+          }
+
+          _task = snapshot.data;
+          _noteController.text = _task!.customerFriendlyNote;
+          return _buildForm();
+        },
+      );
+    }
+
+    return _buildForm();
+  }
+
+  Widget _buildForm() {
+    final task = _task!;
+    final currentUser =
+        AppRepositories.instance.remoteWorkOrders?.currentUser ??
+            _repository.currentUser;
+    final isReadOnly = !task.canEditBy(currentUser);
+    final missing = task.missingReasons();
 
     return Scaffold(
       appBar: const OtotrAppBar(title: 'Kontrol Formu'),
@@ -65,7 +121,7 @@ class _TechnicianTaskFormScreenState extends State<TechnicianTaskFormScreen> {
             child: Column(
               children: [
                 Text(
-                  _task.title,
+                  task.title,
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: AppColors.white,
@@ -74,9 +130,12 @@ class _TechnicianTaskFormScreenState extends State<TechnicianTaskFormScreen> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  'Test noktalarını doldurup rapora gönderin.',
-                  style: TextStyle(color: AppColors.white),
+                Text(
+                  isReadOnly
+                      ? 'Bu başlık başka bir usta tarafından sahiplenildi. Read-only izlenebilir.'
+                      : 'Test noktalarını doldurup rapora gönderin.',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: AppColors.white),
                 ),
                 const SizedBox(height: 16),
                 FilledButton(
@@ -85,7 +144,7 @@ class _TechnicianTaskFormScreenState extends State<TechnicianTaskFormScreen> {
                     foregroundColor: AppColors.navy,
                   ),
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('Testi Bırak'),
+                  child: const Text('Geri Dön'),
                 ),
               ],
             ),
@@ -94,9 +153,10 @@ class _TechnicianTaskFormScreenState extends State<TechnicianTaskFormScreen> {
             padding: const EdgeInsets.all(AppSizes.lg),
             child: Column(
               children: [
-                for (final item in _task.checklistItems)
+                for (final item in task.checklistItems)
                   _ChecklistRow(
                     item: item,
+                    enabled: !isReadOnly,
                     onChanged: _replaceItem,
                     onAddEvidence: () => _addEvidence(item),
                   ),
@@ -104,12 +164,16 @@ class _TechnicianTaskFormScreenState extends State<TechnicianTaskFormScreen> {
                   child: TextField(
                     controller: _noteController,
                     maxLines: 3,
+                    readOnly: isReadOnly,
                     decoration: const InputDecoration(
                       labelText: 'Müşteri dili teknik notu',
-                      hintText: 'Rapor diline uygun, tarafsız ve ölçülebilir not',
+                      hintText:
+                          'Rapor diline uygun, tarafsız ve ölçülebilir not',
                     ),
                     onChanged: (value) {
-                      _task = _task.copyWith(customerFriendlyNote: value);
+                      setState(() {
+                        _task = _task!.copyWith(customerFriendlyNote: value);
+                      });
                     },
                   ),
                 ),
@@ -129,7 +193,7 @@ class _TechnicianTaskFormScreenState extends State<TechnicianTaskFormScreen> {
                         for (final item in missing)
                           Padding(
                             padding: const EdgeInsets.only(bottom: 6),
-                            child: Text('• $item'),
+                            child: Text('- $item'),
                           ),
                       ],
                     ),
@@ -137,32 +201,19 @@ class _TechnicianTaskFormScreenState extends State<TechnicianTaskFormScreen> {
                 OtotrPrimaryButton(
                   label: 'Başlığı Gönder',
                   icon: Icons.send,
-                  onPressed: () {
-                    _repository.updateTask(widget.workOrderId, _task);
-                    final next = _repository.submitTask(widget.workOrderId, _task.taskId);
-                    final savedTask = next.tasks.firstWhere(
-                      (item) => item.taskId == _task.taskId,
-                    );
-                    if (savedTask.status == TaskStatus.evidenceMissing) {
-                      setState(() => _task = savedTask);
-                      return;
-                    }
-                    Navigator.pushReplacementNamed(
-                      context,
-                      AppRoutes.technicianReportGate,
-                      arguments: widget.workOrderId,
-                    );
-                  },
+                  onPressed: isReadOnly ? null : _submitTask,
                 ),
                 const SizedBox(height: 8),
                 OtotrSecondaryButton(
                   label: 'Kanıt Fotoğraflarına Git',
                   icon: Icons.photo_camera,
-                  onPressed: () => Navigator.pushNamed(
-                    context,
-                    AppRoutes.technicianEvidence,
-                    arguments: widget.workOrderId,
-                  ),
+                  onPressed: isReadOnly
+                      ? null
+                      : () => Navigator.pushNamed(
+                            context,
+                            AppRoutes.technicianEvidence,
+                            arguments: widget.workOrderId,
+                          ),
                 ),
               ],
             ),
@@ -173,10 +224,11 @@ class _TechnicianTaskFormScreenState extends State<TechnicianTaskFormScreen> {
   }
 
   void _replaceItem(TechnicianChecklistItem item) {
+    final task = _task!;
     setState(() {
-      _task = _task.copyWith(
+      _task = task.copyWith(
         checklistItems: [
-          for (final current in _task.checklistItems)
+          for (final current in task.checklistItems)
             if (current.id == item.id) item else current,
         ],
       );
@@ -184,14 +236,15 @@ class _TechnicianTaskFormScreenState extends State<TechnicianTaskFormScreen> {
   }
 
   void _addEvidence(TechnicianChecklistItem item) {
+    final task = _task!;
     final asset = EvidenceAsset(
       id: 'ev-${DateTime.now().millisecondsSinceEpoch}',
       workOrderId: widget.workOrderId,
-      taskId: _task.taskId,
+      taskId: task.taskId,
       fieldKey: '${item.id}_risk_photo',
       reportFieldKey: '${item.reportFieldKey}.photo',
       evidenceType: 'image',
-      title: '${item.title} risk fotoğrafı',
+      title: '${item.title} risk fotografi',
       localPath: 'local/${item.id}.jpg',
       remoteUrl: '',
       hash: 'demo-hash-${item.id}',
@@ -207,16 +260,64 @@ class _TechnicianTaskFormScreenState extends State<TechnicianTaskFormScreen> {
       item.copyWith(evidenceAssets: [...item.evidenceAssets, asset]),
     );
   }
+
+  Future<void> _submitTask() async {
+    final task = _task!;
+    final remoteRepository = AppRepositories.instance.remoteWorkOrders;
+    if (remoteRepository != null) {
+      final updated =
+          await remoteRepository.updateTask(widget.workOrderId, task);
+      final submitted = await remoteRepository.submitTask(
+        widget.workOrderId,
+        task.taskId,
+      );
+      final savedTask = submitted.tasks.firstWhere(
+        (item) => item.taskId == task.taskId,
+        orElse: () =>
+            updated.tasks.firstWhere((item) => item.taskId == task.taskId),
+      );
+      if (!mounted) {
+        return;
+      }
+      if (savedTask.status == TaskStatus.evidenceMissing) {
+        setState(() => _task = savedTask);
+        return;
+      }
+      Navigator.pushReplacementNamed(
+        context,
+        AppRoutes.technicianReportGate,
+        arguments: widget.workOrderId,
+      );
+      return;
+    }
+
+    _repository.updateTask(widget.workOrderId, task);
+    final next = _repository.submitTask(widget.workOrderId, task.taskId);
+    final savedTask = next.tasks.firstWhere(
+      (item) => item.taskId == task.taskId,
+    );
+    if (savedTask.status == TaskStatus.evidenceMissing) {
+      setState(() => _task = savedTask);
+      return;
+    }
+    Navigator.pushReplacementNamed(
+      context,
+      AppRoutes.technicianReportGate,
+      arguments: widget.workOrderId,
+    );
+  }
 }
 
 class _ChecklistRow extends StatefulWidget {
   const _ChecklistRow({
     required this.item,
+    required this.enabled,
     required this.onChanged,
     required this.onAddEvidence,
   });
 
   final TechnicianChecklistItem item;
+  final bool enabled;
   final ValueChanged<TechnicianChecklistItem> onChanged;
   final VoidCallback onAddEvidence;
 
@@ -281,23 +382,29 @@ class _ChecklistRowState extends State<_ChecklistRow> {
               ),
             ],
             selected: {item.result},
-            onSelectionChanged: (values) {
-              widget.onChanged(item.copyWith(result: values.first));
-            },
+            onSelectionChanged: widget.enabled
+                ? (values) {
+                    widget.onChanged(item.copyWith(result: values.first));
+                  }
+                : null,
           ),
           if (item.result == TechnicianFindingResult.risky) ...[
             const SizedBox(height: 12),
             TextField(
               controller: _noteController,
+              readOnly: !widget.enabled,
               decoration: const InputDecoration(labelText: 'Risk açıklaması'),
-              onChanged: (value) => widget.onChanged(item.copyWith(note: value)),
+              onChanged: (value) =>
+                  widget.onChanged(item.copyWith(note: value)),
             ),
             const SizedBox(height: 8),
             OutlinedButton.icon(
-              onPressed: widget.onAddEvidence,
+              onPressed: widget.enabled ? widget.onAddEvidence : null,
               icon: const Icon(Icons.camera_alt),
               label: Text(
-                item.hasEvidence ? 'Kanıt eklendi' : 'Fotoğraf / Cihaz Çıktısı Ekle',
+                item.hasEvidence
+                    ? 'Kanıt eklendi'
+                    : 'Fotoğraf / Cihaz Çıktısı Ekle',
               ),
             ),
           ],
@@ -305,6 +412,7 @@ class _ChecklistRowState extends State<_ChecklistRow> {
             const SizedBox(height: 12),
             TextField(
               controller: _reasonController,
+              readOnly: !widget.enabled,
               decoration: const InputDecoration(labelText: 'Yapılamadı nedeni'),
               onChanged: (value) => widget.onChanged(
                 item.copyWith(notDoneReason: value),

@@ -1,4 +1,5 @@
 import '../models/technician_operation_model.dart';
+import 'report_consistency_validator.dart';
 
 class ReportGateCalculator {
   const ReportGateCalculator();
@@ -7,73 +8,23 @@ class ReportGateCalculator {
     required TechnicianWorkOrder workOrder,
     required List<OfflineSyncQueue> syncQueue,
   }) {
-    final blockingReasons = <String>[];
-    final missingEvidence = <String>[];
-    final missingExternalQueries = <String>[];
-
-    if (!workOrder.isStartEvidenceComplete) {
-      blockingReasons.add('Başlangıç kanıtı tamamlanmadı.');
-      missingEvidence.addAll(
-        workOrder.startEvidence?.missingReasons() ??
-            [
-              'Şasi/VIN, plaka fotoğrafı, KM değeri ve KM ekran fotoğrafı eksik.',
-            ],
-      );
-    }
-
-    for (final task in workOrder.tasks) {
-      if (task.status != TaskStatus.completed) {
-        blockingReasons.add('${task.title} başlığı tamamlanmadı.');
-      }
-      final taskMissing = task.missingReasons();
-      if (taskMissing.isNotEmpty) {
-        missingEvidence.addAll(taskMissing);
-      }
-      if (task.status == TaskStatus.managerReturned) {
-        blockingReasons.add('${task.title} müdür tarafından iade edildi.');
-      }
-    }
-
-    for (final query in workOrder.externalQueries) {
-      if (query.isBlocking) {
-        final reason = query.blockingReason.isNotEmpty
-            ? query.blockingReason
-            : '${query.type} dış sorgusu bekliyor.';
-        missingExternalQueries.add(reason);
-        blockingReasons.add(reason);
-      }
-    }
-
-    if (workOrder.externalQueries.isEmpty) {
-      const reason = 'Dış sorgu bekliyor: Tramer/SBM ve KM verisi yok.';
-      missingExternalQueries.add(reason);
-      blockingReasons.add(reason);
-    }
-
-    if (!workOrder.secretaryGateReady) {
-      blockingReasons.add('Sekreterya araç/müşteri girişleri tamamlanmadı.');
-    }
-    if (!workOrder.kvkkGateReady) {
-      blockingReasons.add('KVKK ve hizmet onayı blokajı var.');
-    }
-    if (!workOrder.paymentGateReady) {
-      blockingReasons.add('Ödeme/tahsilat blokajı var. Usta düzenleyemez.');
-    }
-    if (!workOrder.managerApproved) {
-      blockingReasons.add('Müdür kalite onayı bekleniyor.');
-    }
-
+    final issues = const ReportConsistencyValidator().validate(
+      workOrder: workOrder,
+      syncQueue: syncQueue,
+    );
+    final blockingReasons = _uniqueMessages(issues);
+    final missingEvidence = _uniqueMessages(
+      issues.where((issue) => issue.evidenceRelated),
+    );
+    final missingExternalQueries = _uniqueMessages(
+      issues.where((issue) => issue.externalQueryRelated),
+    );
     final pendingSyncItems = syncQueue
         .where((item) => item.status != SyncQueueStatus.synced)
         .toList();
-    if (pendingSyncItems.isNotEmpty) {
-      blockingReasons.add(
-        '${pendingSyncItems.length} kritik kayıt senkron bekliyor.',
-      );
-    }
 
     final status = _statusFor(
-      blockingReasons: blockingReasons,
+      issues: issues,
       missingExternalQueries: missingExternalQueries,
       pendingSyncItems: pendingSyncItems,
       managerApproved: workOrder.managerApproved,
@@ -82,6 +33,7 @@ class ReportGateCalculator {
     return ReportGateResult(
       isReady: blockingReasons.isEmpty,
       status: status,
+      issues: issues,
       blockingReasons: blockingReasons,
       missingEvidence: missingEvidence,
       missingExternalQueries: missingExternalQueries,
@@ -92,12 +44,12 @@ class ReportGateCalculator {
   }
 
   ReportGateStatus _statusFor({
-    required List<String> blockingReasons,
+    required List<ReportGateIssue> issues,
     required List<String> missingExternalQueries,
     required List<OfflineSyncQueue> pendingSyncItems,
     required bool managerApproved,
   }) {
-    if (blockingReasons.isEmpty) {
+    if (issues.isEmpty) {
       return ReportGateStatus.ready;
     }
     if (pendingSyncItems.isNotEmpty) {
@@ -110,5 +62,9 @@ class ReportGateCalculator {
       return ReportGateStatus.managerApprovalRequired;
     }
     return ReportGateStatus.blocked;
+  }
+
+  List<String> _uniqueMessages(Iterable<ReportGateIssue> issues) {
+    return {for (final issue in issues) issue.message}.toList(growable: false);
   }
 }

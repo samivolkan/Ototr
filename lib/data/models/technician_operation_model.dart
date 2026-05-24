@@ -30,6 +30,7 @@ extension TechnicianRoleLabel on TechnicianRole {
 }
 
 enum TaskStatus {
+  available,
   assigned,
   locked,
   open,
@@ -37,6 +38,29 @@ enum TaskStatus {
   evidenceMissing,
   managerReturned,
   conflictDetected,
+}
+
+extension TaskStatusLabel on TaskStatus {
+  String get label {
+    switch (this) {
+      case TaskStatus.available:
+        return 'Sahiplenilebilir';
+      case TaskStatus.assigned:
+        return 'Atandı';
+      case TaskStatus.locked:
+        return 'Kilitli';
+      case TaskStatus.open:
+        return 'Düzenlemeye açık';
+      case TaskStatus.completed:
+        return 'Gönderildi';
+      case TaskStatus.evidenceMissing:
+        return 'Kanıt eksik';
+      case TaskStatus.managerReturned:
+        return 'Müdür iadesi';
+      case TaskStatus.conflictDetected:
+        return 'Çakışma var';
+    }
+  }
 }
 
 enum EvidenceStatus { missing, localOnly, queued, uploaded, rejected }
@@ -49,11 +73,40 @@ enum ReportGateStatus {
   managerApprovalRequired,
 }
 
+enum ReportGateIssueCode {
+  startEvidenceMissing,
+  taskIncomplete,
+  taskMissingEvidence,
+  taskReturnedByManager,
+  riskyFindingNeedsNote,
+  riskyFindingNeedsEvidence,
+  notDoneNeedsReason,
+  customerFriendlyNoteMissing,
+  finalSummaryConflict,
+  externalQueryPending,
+  secretaryGateMissing,
+  kvkkGateMissing,
+  paymentGateMissing,
+  managerApprovalPending,
+  syncPending,
+}
+
 enum TechnicianFindingResult { normal, risky, notDone }
 
 enum ExternalQueryStatus { ready, pending, failed }
 
 enum SyncQueueStatus { pending, synced, failed, conflictDetected }
+
+enum TaskOwnershipEventType {
+  claimed,
+  released,
+  managerReleased,
+  managerReassigned,
+  managerReturned,
+  submitted,
+}
+
+const _unset = Object();
 
 class StartEvidence {
   const StartEvidence({
@@ -81,7 +134,7 @@ class StartEvidence {
   final String gpsApprox;
 
   bool get isComplete =>
-      vin.trim().length >= 8 &&
+      vin.trim().length == 17 &&
       vinPhoto.isNotEmpty &&
       platePhoto.isNotEmpty &&
       odometerKm != null &&
@@ -90,8 +143,11 @@ class StartEvidence {
 
   List<String> missingReasons() {
     final reasons = <String>[];
-    if (vin.trim().length < 8) {
-      reasons.add('Şasi/VIN bilgisi eksik veya çok kısa.');
+    final normalizedVin = vin.trim();
+    if (normalizedVin.isEmpty) {
+      reasons.add('Şasi/VIN bilgisi eksik.');
+    } else if (normalizedVin.length != 17) {
+      reasons.add('Şasi/VIN 17 karakter olmalıdır.');
     }
     if (vinPhoto.isEmpty) {
       reasons.add('Şasi etiketi fotoğrafı eksik.');
@@ -174,7 +230,9 @@ class EvidenceAsset {
   final String rejectionReason;
 
   bool get isAvailable =>
-      localPath.isNotEmpty || remoteUrl.isNotEmpty || syncStatus == EvidenceStatus.uploaded;
+      localPath.isNotEmpty ||
+      remoteUrl.isNotEmpty ||
+      syncStatus == EvidenceStatus.uploaded;
 
   EvidenceAsset copyWith({
     String? localPath,
@@ -283,6 +341,15 @@ class TechnicianTask {
     required this.managerReturnReason,
     required this.revisionNo,
     required this.estimatedMinutes,
+    this.ownerUserId,
+    this.claimedAt,
+    this.releaseReason = '',
+    this.releasedByUserId,
+    this.releasedAt,
+    this.assignedByManagerId,
+    this.managerAssignReason = '',
+    this.ownershipHistory = const [],
+    this.auditLog = const [],
   });
 
   final String taskId;
@@ -300,20 +367,52 @@ class TechnicianTask {
   final String managerReturnReason;
   final int revisionNo;
   final int estimatedMinutes;
+  final String? ownerUserId;
+  final DateTime? claimedAt;
+  final String releaseReason;
+  final String? releasedByUserId;
+  final DateTime? releasedAt;
+  final String? assignedByManagerId;
+  final String managerAssignReason;
+  final List<TaskOwnershipHistoryEntry> ownershipHistory;
+  final List<TaskAuditLogEntry> auditLog;
 
   int get completedCount => checklistItems
-      .where((item) => item.result != TechnicianFindingResult.normal || item.note.isNotEmpty)
+      .where(
+        (item) =>
+            item.result != TechnicianFindingResult.normal ||
+            item.note.isNotEmpty,
+      )
       .length;
 
   List<String> missingReasons() {
     return [
       for (final item in checklistItems) ...item.missingReasons(),
+      if (requiredFields.contains('customerFriendlyNote') &&
+          customerFriendlyNote.trim().isEmpty)
+        '$title için müşteri dili teknik notu girilmeli.',
       for (final asset in evidenceAssets)
-        if (asset.isRequired && !asset.isAvailable) '${asset.title} kanıtı eksik.',
+        if (asset.isRequired && !asset.isAvailable)
+          '${asset.title} kanıtı eksik.',
     ];
   }
 
   bool get canSubmit => missingReasons().isEmpty;
+
+  bool get isOwned => ownerUserId != null && ownerUserId!.isNotEmpty;
+
+  bool isOwnedBy(String userId) => isOwned && ownerUserId == userId;
+
+  bool canEditBy(UserProfile user) {
+    if (user.role == UserRole.branchManager) {
+      return true;
+    }
+    return isOwnedBy(user.id);
+  }
+
+  bool canReleaseBy(UserProfile user) => isOwnedBy(user.id);
+
+  bool get isAvailableForClaim => !isOwned && status == TaskStatus.available;
 
   TechnicianTask copyWith({
     TaskStatus? status,
@@ -323,6 +422,15 @@ class TechnicianTask {
     List<EvidenceAsset>? evidenceAssets,
     String? managerReturnReason,
     int? revisionNo,
+    Object? ownerUserId = _unset,
+    Object? claimedAt = _unset,
+    String? releaseReason,
+    Object? releasedByUserId = _unset,
+    Object? releasedAt = _unset,
+    Object? assignedByManagerId = _unset,
+    String? managerAssignReason,
+    List<TaskOwnershipHistoryEntry>? ownershipHistory,
+    List<TaskAuditLogEntry>? auditLog,
   }) {
     return TechnicianTask(
       taskId: taskId,
@@ -340,6 +448,25 @@ class TechnicianTask {
       managerReturnReason: managerReturnReason ?? this.managerReturnReason,
       revisionNo: revisionNo ?? this.revisionNo,
       estimatedMinutes: estimatedMinutes,
+      ownerUserId: identical(ownerUserId, _unset)
+          ? this.ownerUserId
+          : ownerUserId as String?,
+      claimedAt: identical(claimedAt, _unset)
+          ? this.claimedAt
+          : claimedAt as DateTime?,
+      releaseReason: releaseReason ?? this.releaseReason,
+      releasedByUserId: identical(releasedByUserId, _unset)
+          ? this.releasedByUserId
+          : releasedByUserId as String?,
+      releasedAt: identical(releasedAt, _unset)
+          ? this.releasedAt
+          : releasedAt as DateTime?,
+      assignedByManagerId: identical(assignedByManagerId, _unset)
+          ? this.assignedByManagerId
+          : assignedByManagerId as String?,
+      managerAssignReason: managerAssignReason ?? this.managerAssignReason,
+      ownershipHistory: ownershipHistory ?? this.ownershipHistory,
+      auditLog: auditLog ?? this.auditLog,
     );
   }
 
@@ -350,6 +477,187 @@ class TechnicianTask {
       revisionNo: revisionNo + 1,
     );
   }
+
+  TechnicianTask claimBy(UserProfile user, DateTime claimedAt) {
+    if (isOwned && ownerUserId != user.id) {
+      throw StateError('Bu baslik baska bir usta tarafindan sahiplenilmis.');
+    }
+
+    return copyWith(
+      ownerUserId: user.id,
+      claimedAt: claimedAt,
+      status: TaskStatus.open,
+      releaseReason: '',
+      releasedByUserId: null,
+      releasedAt: null,
+      ownershipHistory: [
+        ...ownershipHistory,
+        TaskOwnershipHistoryEntry(
+          eventType: TaskOwnershipEventType.claimed,
+          actorUserId: user.id,
+          ownerUserId: user.id,
+          previousOwnerUserId: ownerUserId,
+          reason: '',
+          createdAt: claimedAt,
+        ),
+      ],
+      auditLog: [
+        ...auditLog,
+        TaskAuditLogEntry(
+          action: 'claim',
+          actorUserId: user.id,
+          createdAt: claimedAt,
+          note: '',
+        ),
+      ],
+    );
+  }
+
+  TechnicianTask releaseBy(
+      UserProfile user, String reason, DateTime releasedAt) {
+    if (!canReleaseBy(user)) {
+      throw StateError('Sadece gorevin sahibi bu basligi birakabilir.');
+    }
+    if (reason.trim().isEmpty) {
+      throw ArgumentError('releaseReason zorunludur.');
+    }
+
+    return copyWith(
+      ownerUserId: null,
+      claimedAt: null,
+      status: TaskStatus.available,
+      releaseReason: reason.trim(),
+      releasedByUserId: user.id,
+      releasedAt: releasedAt,
+      ownershipHistory: [
+        ...ownershipHistory,
+        TaskOwnershipHistoryEntry(
+          eventType: TaskOwnershipEventType.released,
+          actorUserId: user.id,
+          ownerUserId: null,
+          previousOwnerUserId: ownerUserId,
+          reason: reason.trim(),
+          createdAt: releasedAt,
+        ),
+      ],
+      auditLog: [
+        ...auditLog,
+        TaskAuditLogEntry(
+          action: 'release',
+          actorUserId: user.id,
+          createdAt: releasedAt,
+          note: reason.trim(),
+        ),
+      ],
+    );
+  }
+
+  TechnicianTask managerAssignTo({
+    required UserProfile manager,
+    required String nextOwnerUserId,
+    required String reason,
+    required DateTime assignedAt,
+  }) {
+    if (manager.role != UserRole.branchManager) {
+      throw StateError('Dogrudan usta atamasi sadece mudur yetkisindedir.');
+    }
+    if (nextOwnerUserId.trim().isEmpty) {
+      throw ArgumentError('Yeni usta zorunludur.');
+    }
+    if (reason.trim().isEmpty) {
+      throw ArgumentError('managerAssignReason zorunludur.');
+    }
+
+    return copyWith(
+      ownerUserId: nextOwnerUserId,
+      claimedAt: assignedAt,
+      status: TaskStatus.open,
+      assignedByManagerId: manager.id,
+      managerAssignReason: reason.trim(),
+      ownershipHistory: [
+        ...ownershipHistory,
+        TaskOwnershipHistoryEntry(
+          eventType: TaskOwnershipEventType.managerReassigned,
+          actorUserId: manager.id,
+          ownerUserId: nextOwnerUserId,
+          previousOwnerUserId: ownerUserId,
+          reason: reason.trim(),
+          createdAt: assignedAt,
+        ),
+      ],
+      auditLog: [
+        ...auditLog,
+        TaskAuditLogEntry(
+          action: 'manager_reassigned',
+          actorUserId: manager.id,
+          createdAt: assignedAt,
+          note: reason.trim(),
+        ),
+      ],
+    );
+  }
+
+  TechnicianTask submittedBy(UserProfile user, DateTime submittedAt) {
+    if (!canEditBy(user)) {
+      throw StateError('Sadece görev sahibi başlığı gönderebilir.');
+    }
+
+    return copyWith(
+      status: canSubmit ? TaskStatus.completed : TaskStatus.evidenceMissing,
+      auditLog: [
+        ...auditLog,
+        TaskAuditLogEntry(
+          action: 'submit',
+          actorUserId: user.id,
+          createdAt: submittedAt,
+          note: canSubmit ? 'completed' : 'evidence_missing',
+        ),
+      ],
+      ownershipHistory: [
+        ...ownershipHistory,
+        TaskOwnershipHistoryEntry(
+          eventType: TaskOwnershipEventType.submitted,
+          actorUserId: user.id,
+          ownerUserId: ownerUserId,
+          previousOwnerUserId: ownerUserId,
+          reason: canSubmit ? 'completed' : 'evidence_missing',
+          createdAt: submittedAt,
+        ),
+      ],
+    );
+  }
+}
+
+class TaskOwnershipHistoryEntry {
+  const TaskOwnershipHistoryEntry({
+    required this.eventType,
+    required this.actorUserId,
+    required this.ownerUserId,
+    required this.previousOwnerUserId,
+    required this.reason,
+    required this.createdAt,
+  });
+
+  final TaskOwnershipEventType eventType;
+  final String actorUserId;
+  final String? ownerUserId;
+  final String? previousOwnerUserId;
+  final String reason;
+  final DateTime createdAt;
+}
+
+class TaskAuditLogEntry {
+  const TaskAuditLogEntry({
+    required this.action,
+    required this.actorUserId,
+    required this.createdAt,
+    required this.note,
+  });
+
+  final String action;
+  final String actorUserId;
+  final DateTime createdAt;
+  final String note;
 }
 
 class ExternalQuery {
@@ -468,7 +776,7 @@ class TechnicianWorkOrder {
         user.role == UserRole.headquartersAuditor) {
       return true;
     }
-    return ownerUserId == user.id || assignedRoles.contains(role);
+    return user.role == UserRole.inspectionTechnician;
   }
 
   bool get isClaimed => ownerUserId.isNotEmpty;
@@ -476,7 +784,7 @@ class TechnicianWorkOrder {
   bool get isStartEvidenceComplete => startEvidence?.isComplete ?? false;
 
   List<TechnicianTask> tasksFor(TechnicianRole role) {
-    return tasks.where((task) => task.assignedRole == role).toList();
+    return tasks;
   }
 
   TechnicianWorkOrder claim(String userId) {
@@ -518,6 +826,7 @@ class ReportGateResult {
   const ReportGateResult({
     required this.isReady,
     required this.status,
+    this.issues = const [],
     required this.blockingReasons,
     required this.missingEvidence,
     required this.missingExternalQueries,
@@ -528,10 +837,29 @@ class ReportGateResult {
 
   final bool isReady;
   final ReportGateStatus status;
+  final List<ReportGateIssue> issues;
   final List<String> blockingReasons;
   final List<String> missingEvidence;
   final List<String> missingExternalQueries;
   final bool managerApprovalRequired;
   final List<OfflineSyncQueue> pendingSyncItems;
   final DateTime lastCalculatedAt;
+}
+
+class ReportGateIssue {
+  const ReportGateIssue({
+    required this.code,
+    required this.message,
+    this.taskId,
+    this.fieldKey,
+    this.evidenceRelated = false,
+    this.externalQueryRelated = false,
+  });
+
+  final ReportGateIssueCode code;
+  final String message;
+  final String? taskId;
+  final String? fieldKey;
+  final bool evidenceRelated;
+  final bool externalQueryRelated;
 }

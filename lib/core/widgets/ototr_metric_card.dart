@@ -28,7 +28,7 @@ class OtotrMetricCard extends StatelessWidget {
             width: 46,
             height: 46,
             decoration: BoxDecoration(
-              color: tone.withOpacity(0.1),
+              color: tone.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(14),
             ),
             child: Icon(icon, color: tone),

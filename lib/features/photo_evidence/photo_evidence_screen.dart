@@ -15,9 +15,10 @@ class PhotoEvidenceScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final photos = DummyData.photos;
+    const photos = DummyData.photos;
     final completed = Validators.requiredPhotosCompleted(photos);
-    final missingCount = photos.where((photo) => photo.isRequired && !photo.isUploaded).length;
+    final missingCount =
+        photos.where((photo) => photo.isRequired && !photo.isUploaded).length;
 
     return Scaffold(
       appBar: const OtotrAppBar(title: 'Fotoğraf Kanıtları'),
@@ -27,7 +28,8 @@ class PhotoEvidenceScreen extends StatelessWidget {
           if (!completed)
             OtotrAlertCard(
               title: 'Zorunlu fotoğraf eksik',
-              message: '$missingCount zorunlu fotoğraf tamamlanmalı. İnternet yoksa yükleme kuyruğunda bekletilecek.',
+              message:
+                  '$missingCount zorunlu fotoğraf tamamlanmalı. İnternet yoksa yükleme kuyruğunda bekletilecek.',
             )
           else
             const OtotrAlertCard(
@@ -44,17 +46,27 @@ class PhotoEvidenceScreen extends StatelessWidget {
                     width: 54,
                     height: 54,
                     decoration: BoxDecoration(
-                      color: photo.isUploaded ? const Color(0xFFEAF7F0) : AppColors.grayBg,
+                      color: photo.isUploaded
+                          ? const Color(0xFFEAF7F0)
+                          : AppColors.grayBg,
                       borderRadius: BorderRadius.circular(14),
                     ),
-                    child: Icon(photo.isUploaded ? Icons.image : Icons.add_a_photo_outlined, color: photo.isUploaded ? AppColors.success : AppColors.grayText),
+                    child: Icon(
+                        photo.isUploaded
+                            ? Icons.image
+                            : Icons.add_a_photo_outlined,
+                        color: photo.isUploaded
+                            ? AppColors.success
+                            : AppColors.grayText),
                   ),
                   const SizedBox(width: AppSizes.md),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(photo.title, style: const TextStyle(fontWeight: FontWeight.w900)),
+                        Text(photo.title,
+                            style:
+                                const TextStyle(fontWeight: FontWeight.w900)),
                         Text(photo.isRequired ? 'Zorunlu' : 'Opsiyonel'),
                         Text(photo.uploadQueueLabel),
                       ],
@@ -62,7 +74,9 @@ class PhotoEvidenceScreen extends StatelessWidget {
                   ),
                   OtotrStatusBadge(
                     label: photo.isUploaded ? 'Yüklendi' : 'Eksik',
-                    tone: photo.isUploaded ? OtotrBadgeTone.success : OtotrBadgeTone.warning,
+                    tone: photo.isUploaded
+                        ? OtotrBadgeTone.success
+                        : OtotrBadgeTone.warning,
                   ),
                 ],
               ),

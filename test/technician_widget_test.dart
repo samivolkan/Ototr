@@ -23,15 +23,24 @@ void main() {
     expect(find.textContaining('tahsilat'), findsNothing);
   });
 
-  testWidgets('İşe Başlama Kanıtı ekranı eksik alanları gösterir', (tester) async {
-    await tester.pumpWidget(_app(const StartEvidenceScreen(workOrderId: 'wo-2026-0001')));
+  testWidgets('İşe Başlama Kanıtı ekranı eksik alanları gösterir',
+      (tester) async {
+    await tester.pumpWidget(
+        _app(const StartEvidenceScreen(workOrderId: 'wo-2026-0001')));
+
+    await tester.scrollUntilVisible(
+      find.text('Eksik Kanıtlar'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
 
     expect(find.text('Eksik Kanıtlar'), findsOneWidget);
     expect(find.textContaining('Şasi etiketi fotoğrafı eksik'), findsOneWidget);
     expect(find.textContaining('Kilometre değeri girilmedi'), findsOneWidget);
   });
 
-  testWidgets('Kontrol Formu riskli bulguda fotoğraf uyarısı verir', (tester) async {
+  testWidgets('Kontrol Formu riskli bulguda fotoğraf uyarısı verir',
+      (tester) async {
     await tester.pumpWidget(
       _app(
         const TechnicianTaskFormScreen(
@@ -48,16 +57,19 @@ void main() {
     expect(find.textContaining('fotoğraf'), findsWidgets);
   });
 
-  testWidgets('Rapor Kapısı blockingReasons listesini gösterir', (tester) async {
+  testWidgets('Rapor Kapısı blockingReasons listesini gösterir',
+      (tester) async {
     await tester.pumpWidget(
       _app(const TechnicianReportGateScreen(workOrderId: 'wo-2026-0001')),
     );
 
     expect(find.text('Blokaj Nedenleri'), findsOneWidget);
-    expect(find.textContaining('Başlangıç kanıtı tamamlanmadı'), findsOneWidget);
+    expect(
+        find.textContaining('Başlangıç kanıtı tamamlanmadı'), findsOneWidget);
   });
 
-  testWidgets('Offline bar senkron bekleyen kayıt sayısını gösterir', (tester) async {
+  testWidgets('Offline bar senkron bekleyen kayıt sayısını gösterir',
+      (tester) async {
     final repository = DummyWorkOrderRepository.instance;
     repository.queueDemoOperation();
 
@@ -78,7 +90,8 @@ Widget _app(Widget home) {
           ),
         );
       }
-      return MaterialPageRoute<void>(builder: (_) => const TechnicianJobsScreen());
+      return MaterialPageRoute<void>(
+          builder: (_) => const TechnicianJobsScreen());
     },
   );
 }

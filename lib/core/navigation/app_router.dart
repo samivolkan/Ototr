@@ -8,6 +8,7 @@ import '../../features/dashboard/branch_dashboard_screen.dart';
 import '../../features/inspection/inspection_module_detail_screen.dart';
 import '../../features/inspection/inspection_modules_screen.dart';
 import '../../features/inspection/inspection_progress_screen.dart';
+import '../../features/manager/manager_task_ownership_screen.dart';
 import '../../features/packages/package_selection_screen.dart';
 import '../../features/photo_evidence/photo_evidence_screen.dart';
 import '../../features/profile/profile_screen.dart';
@@ -26,6 +27,7 @@ import '../../features/work_orders/new_work_order_screen.dart';
 import '../../features/work_orders/work_order_detail_screen.dart';
 import '../../features/work_orders/work_order_summary_screen.dart';
 import '../../features/work_orders/work_orders_list_screen.dart';
+import '../../data/repositories/app_repositories.dart';
 import '../../data/repositories/dummy_work_order_repository.dart';
 import '../../data/services/role_permission_service.dart';
 import 'app_routes.dart';
@@ -56,22 +58,23 @@ class AppRouter {
       AppRoutes.profile => const ProfileScreen(),
       AppRoutes.technicianJobs => const TechnicianJobsScreen(),
       AppRoutes.technicianStartEvidence => StartEvidenceScreen(
-        workOrderId: settings.arguments as String,
-      ),
+          workOrderId: settings.arguments as String,
+        ),
       AppRoutes.technicianTasks => TechnicianTasksScreen(
-        workOrderId: settings.arguments as String,
-      ),
+          workOrderId: settings.arguments as String,
+        ),
       AppRoutes.technicianTaskForm => _guardedTaskForm(settings),
       AppRoutes.technicianEvidence => TechnicianEvidenceScreen(
-        workOrderId: settings.arguments as String,
-      ),
+          workOrderId: settings.arguments as String,
+        ),
       AppRoutes.technicianQueries => TechnicianQueriesScreen(
-        workOrderId: settings.arguments as String,
-      ),
+          workOrderId: settings.arguments as String,
+        ),
       AppRoutes.technicianReportGate => TechnicianReportGateScreen(
-        workOrderId: settings.arguments as String,
-      ),
+          workOrderId: settings.arguments as String,
+        ),
       AppRoutes.technicianSync => const TechnicianSyncScreen(),
+      AppRoutes.managerTaskOwnership => const ManagerTaskOwnershipScreen(),
       _ => const BranchDashboardScreen(),
     };
 
@@ -85,13 +88,24 @@ class AppRouter {
     final args = settings.arguments as Map<String, String>;
     final workOrderId = args['workOrderId']!;
     final taskId = args['taskId']!;
+    if (AppRepositories.instance.hasRemoteWorkOrders) {
+      return TechnicianTaskFormScreen(workOrderId: workOrderId, taskId: taskId);
+    }
+
     final repository = DummyWorkOrderRepository.instance;
     final order = repository.getById(workOrderId);
     final task = order.tasks.firstWhere((item) => item.taskId == taskId);
     const permissionService = RolePermissionService();
 
+    final canEdit = permissionService.canEditTask(
+      repository.currentUser,
+      task,
+    );
+    final canViewReadOnly = task.isOwned &&
+        permissionService.canMonitorTask(repository.currentUser, task);
+
     if (!permissionService.canOpenTechnicalEntry(order) ||
-        !permissionService.canEditTask(repository.currentUser, task)) {
+        (!canEdit && !canViewReadOnly)) {
       return TechnicianTasksScreen(workOrderId: workOrderId);
     }
 

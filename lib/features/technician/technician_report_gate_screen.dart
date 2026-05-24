@@ -6,8 +6,10 @@ import '../../core/widgets/ototr_app_bar.dart';
 import '../../core/widgets/ototr_card.dart';
 import '../../core/widgets/ototr_status_badge.dart';
 import '../../data/models/technician_operation_model.dart';
+import '../../data/repositories/app_repositories.dart';
 import '../../data/repositories/dummy_work_order_repository.dart';
 import '../../data/services/report_gate_calculator.dart';
+import 'widgets/technician_vehicle_header.dart';
 
 class TechnicianReportGateScreen extends StatelessWidget {
   const TechnicianReportGateScreen({super.key, required this.workOrderId});
@@ -16,6 +18,44 @@ class TechnicianReportGateScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final remoteRepository = AppRepositories.instance.remoteWorkOrders;
+    if (remoteRepository != null) {
+      return FutureBuilder<TechnicianWorkOrder>(
+        future: remoteRepository.getById(workOrderId),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return Scaffold(
+              appBar: const OtotrAppBar(title: 'Rapor Kapısı'),
+              backgroundColor: AppColors.grayBg,
+              body: Padding(
+                padding: const EdgeInsets.all(AppSizes.lg),
+                child: OtotrCard(
+                  child: Text(
+                    'Supabase rapor kapısı alınamadı: ${snapshot.error}',
+                    style: const TextStyle(color: AppColors.red),
+                  ),
+                ),
+              ),
+            );
+          }
+
+          if (!snapshot.hasData) {
+            return const Scaffold(
+              appBar: OtotrAppBar(title: 'Rapor Kapısı'),
+              backgroundColor: AppColors.grayBg,
+              body: Center(child: CircularProgressIndicator()),
+            );
+          }
+
+          final result = const ReportGateCalculator().calculate(
+            workOrder: snapshot.data!,
+            syncQueue: const [],
+          );
+          return _ReportGateView(order: snapshot.data!, result: result);
+        },
+      );
+    }
+
     final repository = DummyWorkOrderRepository.instance;
     final order = repository.getById(workOrderId);
     final result = const ReportGateCalculator().calculate(
@@ -23,40 +63,39 @@ class TechnicianReportGateScreen extends StatelessWidget {
       syncQueue: repository.syncQueue(),
     );
 
+    return _ReportGateView(order: order, result: result);
+  }
+}
+
+class _ReportGateView extends StatelessWidget {
+  const _ReportGateView({
+    required this.order,
+    required this.result,
+  });
+
+  final TechnicianWorkOrder order;
+  final ReportGateResult result;
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: const OtotrAppBar(title: 'Rapor Kapısı'),
       backgroundColor: AppColors.grayBg,
       body: ListView(
         padding: const EdgeInsets.all(AppSizes.lg),
         children: [
-          OtotrCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          TechnicianVehicleHeader(
+            order: order,
+            status: Row(
               children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        order.plate,
-                        style: const TextStyle(
-                          color: AppColors.red,
-                          fontSize: 26,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                    ),
-                    OtotrStatusBadge(
-                      label: result.isReady ? 'Basıma Hazır' : 'Blokaj Var',
-                      tone: result.isReady
-                          ? OtotrBadgeTone.success
-                          : OtotrBadgeTone.danger,
-                    ),
-                  ],
+                OtotrStatusBadge(
+                  label: result.isReady ? 'Basıma Hazır' : 'Blokaj Var',
+                  tone: result.isReady
+                      ? OtotrBadgeTone.success
+                      : OtotrBadgeTone.danger,
                 ),
-                const SizedBox(height: 8),
-                Text(order.vehicleSummary),
-                const SizedBox(height: 8),
-                Text('Durum: ${_statusLabel(result.status)}'),
+                const SizedBox(width: 8),
+                Expanded(child: Text('Durum: ${_statusLabel(result.status)}')),
               ],
             ),
           ),
@@ -82,7 +121,8 @@ class TechnicianReportGateScreen extends StatelessWidget {
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Icon(Icons.block, color: AppColors.red, size: 18),
+                          const Icon(Icons.block,
+                              color: AppColors.red, size: 18),
                           const SizedBox(width: 8),
                           Expanded(child: Text(reason)),
                         ],

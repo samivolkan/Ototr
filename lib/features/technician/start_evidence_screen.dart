@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../core/constants/app_sizes.dart';
 import '../../core/navigation/app_routes.dart';
@@ -8,7 +9,9 @@ import '../../core/widgets/ototr_card.dart';
 import '../../core/widgets/ototr_primary_button.dart';
 import '../../core/widgets/ototr_secondary_button.dart';
 import '../../data/models/technician_operation_model.dart';
+import '../../data/repositories/app_repositories.dart';
 import '../../data/repositories/dummy_work_order_repository.dart';
+import 'widgets/technician_vehicle_header.dart';
 
 class StartEvidenceScreen extends StatefulWidget {
   const StartEvidenceScreen({super.key, required this.workOrderId});
@@ -27,11 +30,18 @@ class _StartEvidenceScreenState extends State<StartEvidenceScreen> {
   String _platePhoto = '';
   String _odometerPhoto = '';
   String _transmission = '';
+  Future<TechnicianWorkOrder>? _remoteOrderFuture;
 
   @override
   void initState() {
     super.initState();
-    final evidence = _repository.getById(widget.workOrderId).startEvidence;
+    final remoteRepository = AppRepositories.instance.remoteWorkOrders;
+    if (remoteRepository != null) {
+      _remoteOrderFuture = remoteRepository.getById(widget.workOrderId);
+    }
+    final evidence = remoteRepository == null
+        ? _repository.getById(widget.workOrderId).startEvidence
+        : null;
     _vinController = TextEditingController(text: evidence?.vin ?? '');
     _kmController = TextEditingController(
       text: evidence?.odometerKm?.toString() ?? '',
@@ -50,7 +60,54 @@ class _StartEvidenceScreenState extends State<StartEvidenceScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final remoteRepository = AppRepositories.instance.remoteWorkOrders;
+    if (remoteRepository != null) {
+      return FutureBuilder<TechnicianWorkOrder>(
+        future: _remoteOrderFuture,
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return Scaffold(
+              appBar: const OtotrAppBar(title: 'İşe Başlama Kanıtı'),
+              backgroundColor: AppColors.grayBg,
+              body: Padding(
+                padding: const EdgeInsets.all(AppSizes.lg),
+                child: OtotrCard(
+                  child: Text(
+                    'Supabase iş emri alınamadı: ${snapshot.error}',
+                    style: const TextStyle(color: AppColors.red),
+                  ),
+                ),
+              ),
+            );
+          }
+
+          if (!snapshot.hasData) {
+            return const Scaffold(
+              appBar: OtotrAppBar(title: 'İşe Başlama Kanıtı'),
+              backgroundColor: AppColors.grayBg,
+              body: Center(child: CircularProgressIndicator()),
+            );
+          }
+
+          final order = snapshot.data!;
+          final evidence = order.startEvidence;
+          if (_vinController.text.isEmpty && evidence != null) {
+            _vinController.text = evidence.vin;
+            _kmController.text = evidence.odometerKm?.toString() ?? '';
+            _vinPhoto = evidence.vinPhoto;
+            _platePhoto = evidence.platePhoto;
+            _odometerPhoto = evidence.odometerPhoto;
+          }
+          return _buildForm(order);
+        },
+      );
+    }
+
     final order = _repository.getById(widget.workOrderId);
+    return _buildForm(order);
+  }
+
+  Widget _buildForm(TechnicianWorkOrder order) {
     final previewEvidence = _buildEvidence();
     final missing = previewEvidence.missingReasons();
 
@@ -60,26 +117,9 @@ class _StartEvidenceScreenState extends State<StartEvidenceScreen> {
       body: ListView(
         padding: const EdgeInsets.all(AppSizes.lg),
         children: [
-          OtotrCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  order.plate,
-                  style: const TextStyle(
-                    color: AppColors.red,
-                    fontSize: 26,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-                Text(order.vehicleSummary),
-                const SizedBox(height: 8),
-                const Text(
-                  'Bu kapı tamamlanmadan teknik kontrol formu açılmaz.',
-                  style: TextStyle(color: AppColors.grayText),
-                ),
-              ],
-            ),
+          TechnicianVehicleHeader(
+            order: order,
+            message: 'Bu kapı tamamlanmadan teknik kontrol formu açılmaz.',
           ),
           _PhotoGateCard(
             title: 'Şasi Etiketi Fotoğrafı',
@@ -102,7 +142,16 @@ class _StartEvidenceScreenState extends State<StartEvidenceScreen> {
                 TextField(
                   controller: _vinController,
                   textCapitalization: TextCapitalization.characters,
-                  decoration: const InputDecoration(labelText: 'Şasi / VIN'),
+                  maxLength: 17,
+                  inputFormatters: [
+                    LengthLimitingTextInputFormatter(17),
+                    FilteringTextInputFormatter.allow(RegExp('[a-zA-Z0-9]')),
+                  ],
+                  decoration: const InputDecoration(
+                    labelText: 'Şasi / VIN',
+                    helperText: '17 karakterden fazla girilemez.',
+                  ),
+                  onChanged: (_) => setState(() {}),
                 ),
                 const SizedBox(height: AppSizes.md),
                 TextField(
@@ -112,13 +161,15 @@ class _StartEvidenceScreenState extends State<StartEvidenceScreen> {
                 ),
                 const SizedBox(height: AppSizes.md),
                 DropdownButtonFormField<String>(
-                  value: _transmission.isEmpty ? null : _transmission,
+                  initialValue: _transmission.isEmpty ? null : _transmission,
                   decoration: const InputDecoration(labelText: 'Vites Tipi'),
                   items: const [
-                    DropdownMenuItem(value: 'otomatik', child: Text('Otomatik')),
+                    DropdownMenuItem(
+                        value: 'otomatik', child: Text('Otomatik')),
                     DropdownMenuItem(value: 'manuel', child: Text('Manuel')),
                   ],
-                  onChanged: (value) => setState(() => _transmission = value ?? ''),
+                  onChanged: (value) =>
+                      setState(() => _transmission = value ?? ''),
                 ),
               ],
             ),
@@ -145,19 +196,7 @@ class _StartEvidenceScreenState extends State<StartEvidenceScreen> {
             label: 'Kanıtları Kaydet',
             icon: Icons.save,
             onPressed: () {
-              final saved = _repository.saveStartEvidence(
-                widget.workOrderId,
-                previewEvidence,
-              );
-              if (!saved.isStartEvidenceComplete) {
-                setState(() {});
-                return;
-              }
-              Navigator.pushReplacementNamed(
-                context,
-                AppRoutes.technicianTasks,
-                arguments: widget.workOrderId,
-              );
+              _saveEvidence(previewEvidence);
             },
           ),
           const SizedBox(height: 8),
@@ -168,6 +207,45 @@ class _StartEvidenceScreenState extends State<StartEvidenceScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Future<void> _saveEvidence(StartEvidence previewEvidence) async {
+    final remoteRepository = AppRepositories.instance.remoteWorkOrders;
+    if (remoteRepository != null) {
+      final saved = await remoteRepository.saveStartEvidence(
+        widget.workOrderId,
+        previewEvidence,
+      );
+      if (!mounted) {
+        return;
+      }
+      if (!saved.isStartEvidenceComplete) {
+        setState(() {
+          _remoteOrderFuture = remoteRepository.getById(widget.workOrderId);
+        });
+        return;
+      }
+      Navigator.pushReplacementNamed(
+        context,
+        AppRoutes.technicianTasks,
+        arguments: widget.workOrderId,
+      );
+      return;
+    }
+
+    final saved = _repository.saveStartEvidence(
+      widget.workOrderId,
+      previewEvidence,
+    );
+    if (!saved.isStartEvidenceComplete) {
+      setState(() {});
+      return;
+    }
+    Navigator.pushReplacementNamed(
+      context,
+      AppRoutes.technicianTasks,
+      arguments: widget.workOrderId,
     );
   }
 

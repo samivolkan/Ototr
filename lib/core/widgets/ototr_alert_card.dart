@@ -24,7 +24,7 @@ class OtotrAlertCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.redSoft,
         borderRadius: BorderRadius.circular(AppSizes.radius),
-        border: Border.all(color: AppColors.red.withOpacity(0.25)),
+        border: Border.all(color: AppColors.red.withValues(alpha: 0.25)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -35,7 +35,9 @@ class OtotrAlertCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w800)),
+                Text(title,
+                    style: AppTextStyles.body
+                        .copyWith(fontWeight: FontWeight.w800)),
                 const SizedBox(height: AppSizes.xs),
                 Text(message, style: AppTextStyles.muted),
               ],

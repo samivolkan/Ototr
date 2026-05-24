@@ -7,6 +7,7 @@ import '../../core/widgets/ototr_card.dart';
 import '../../core/widgets/ototr_status_badge.dart';
 import '../../data/models/technician_operation_model.dart';
 import '../../data/repositories/dummy_work_order_repository.dart';
+import 'widgets/technician_vehicle_header.dart';
 
 class TechnicianEvidenceScreen extends StatefulWidget {
   const TechnicianEvidenceScreen({super.key, required this.workOrderId});
@@ -14,7 +15,8 @@ class TechnicianEvidenceScreen extends StatefulWidget {
   final String workOrderId;
 
   @override
-  State<TechnicianEvidenceScreen> createState() => _TechnicianEvidenceScreenState();
+  State<TechnicianEvidenceScreen> createState() =>
+      _TechnicianEvidenceScreenState();
 }
 
 class _TechnicianEvidenceScreenState extends State<TechnicianEvidenceScreen> {
@@ -23,9 +25,9 @@ class _TechnicianEvidenceScreenState extends State<TechnicianEvidenceScreen> {
   @override
   Widget build(BuildContext context) {
     final order = _repository.getById(widget.workOrderId);
+    final tasks = order.tasksFor(_repository.currentTechnicianRole);
     final assets = [
-      for (final task in order.tasksFor(_repository.currentTechnicianRole))
-        ...task.evidenceAssets,
+      for (final task in tasks) ...task.evidenceAssets,
     ];
 
     return Scaffold(
@@ -34,30 +36,20 @@ class _TechnicianEvidenceScreenState extends State<TechnicianEvidenceScreen> {
       body: ListView(
         padding: const EdgeInsets.all(AppSizes.lg),
         children: [
-          OtotrCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  order.plate,
-                  style: const TextStyle(
-                    color: AppColors.red,
-                    fontSize: 26,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-                const Text(
-                  'Fotoğraflar ilk fazda yerel kuyruk olarak işaretlenir. Firebase upload sonraki fazda bağlanacak.',
-                  style: TextStyle(color: AppColors.grayText),
-                ),
-              ],
-            ),
+          TechnicianVehicleHeader(
+            order: order,
+            role: _repository.currentTechnicianRole,
+            message:
+                'Fotoğraflar ilk fazda yerel kuyruk olarak işaretlenir. Firebase upload sonraki fazda bağlanacak.',
           ),
           if (assets.isEmpty)
             const OtotrCard(child: Text('Bu role ait zorunlu ek kanıt yok.')),
           for (final asset in assets)
             _EvidenceCard(
               asset: asset,
+              canCapture: tasks
+                  .firstWhere((task) => task.taskId == asset.taskId)
+                  .canEditBy(_repository.currentUser),
               onCapture: () => _captureAsset(order, asset),
             ),
         ],
@@ -101,16 +93,18 @@ class _TechnicianEvidenceScreenState extends State<TechnicianEvidenceScreen> {
 class _EvidenceCard extends StatelessWidget {
   const _EvidenceCard({
     required this.asset,
+    required this.canCapture,
     required this.onCapture,
   });
 
   final EvidenceAsset asset;
+  final bool canCapture;
   final VoidCallback onCapture;
 
   @override
   Widget build(BuildContext context) {
     return OtotrCard(
-      onTap: onCapture,
+      onTap: canCapture ? onCapture : null,
       child: Row(
         children: [
           Icon(
@@ -130,14 +124,23 @@ class _EvidenceCard extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   asset.reportFieldKey,
-                  style: const TextStyle(color: AppColors.grayText, fontSize: 12),
+                  style:
+                      const TextStyle(color: AppColors.grayText, fontSize: 12),
                 ),
               ],
             ),
           ),
           OtotrStatusBadge(
-            label: asset.isAvailable ? 'Kuyrukta' : 'Eksik',
-            tone: asset.isAvailable ? OtotrBadgeTone.warning : OtotrBadgeTone.danger,
+            label: !canCapture
+                ? 'Read-only'
+                : asset.isAvailable
+                    ? 'Kuyrukta'
+                    : 'Eksik',
+            tone: !canCapture
+                ? OtotrBadgeTone.neutral
+                : asset.isAvailable
+                    ? OtotrBadgeTone.warning
+                    : OtotrBadgeTone.danger,
           ),
         ],
       ),

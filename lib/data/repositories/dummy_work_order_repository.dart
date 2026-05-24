@@ -10,20 +10,14 @@ class DummyWorkOrderRepository implements WorkOrderRepository {
 
   static final DummyWorkOrderRepository instance = DummyWorkOrderRepository._();
 
-  final RolePermissionService _permissionService = const RolePermissionService();
+  final RolePermissionService _permissionService =
+      const RolePermissionService();
   final SyncService _syncService = SyncService();
   late List<TechnicianWorkOrder> _workOrders = _seedWorkOrders();
+  UserProfile _currentUser = _ahmetUser;
 
   @override
-  UserProfile get currentUser => const UserProfile(
-        id: 'tech-ahmet',
-        fullName: 'Ahmet Usta',
-        email: 'ahmet.usta@ototr.test',
-        phone: '0555 000 16 16',
-        role: UserRole.inspectionTechnician,
-        branchId: 'bursa-nilufer',
-        isActive: true,
-      );
+  UserProfile get currentUser => _currentUser;
 
   @override
   TechnicianRole get currentTechnicianRole => TechnicianRole.bodyPaint;
@@ -31,7 +25,8 @@ class DummyWorkOrderRepository implements WorkOrderRepository {
   @override
   List<TechnicianWorkOrder> visibleWorkOrders() {
     return _workOrders
-        .where((order) => _permissionService.canSeeWorkOrder(currentUser, order))
+        .where(
+            (order) => _permissionService.canSeeWorkOrder(currentUser, order))
         .toList();
   }
 
@@ -42,7 +37,100 @@ class DummyWorkOrderRepository implements WorkOrderRepository {
 
   @override
   TechnicianWorkOrder claim(String workOrderId) {
-    return _replace(getById(workOrderId).claim(currentUser.id));
+    final order = getById(workOrderId).claim(currentUser.id);
+    return _replace(order);
+  }
+
+  @override
+  TechnicianWorkOrder claimTask(String workOrderId, String taskId) {
+    final now = DateTime.now();
+    final order = getById(workOrderId);
+    if (!order.isStartEvidenceComplete) {
+      throw StateError('Başlangıç kanıtı tamamlanmadan başlık sahiplenilemez.');
+    }
+    final task = order.tasks.firstWhere((item) => item.taskId == taskId);
+    return _replaceTask(order, task.claimBy(currentUser, now));
+  }
+
+  @override
+  TechnicianWorkOrder releaseTask(
+    String workOrderId,
+    String taskId,
+    String releaseReason,
+  ) {
+    final now = DateTime.now();
+    final order = getById(workOrderId);
+    final task = order.tasks.firstWhere((item) => item.taskId == taskId);
+    return _replaceTask(order, task.releaseBy(currentUser, releaseReason, now));
+  }
+
+  @override
+  TechnicianWorkOrder managerAssignTask(
+    String workOrderId,
+    String taskId,
+    String ownerUserId,
+    String managerAssignReason,
+  ) {
+    final now = DateTime.now();
+    final order = getById(workOrderId);
+    final task = order.tasks.firstWhere((item) => item.taskId == taskId);
+    return _replaceTask(
+      order,
+      task.managerAssignTo(
+        manager: currentUser,
+        nextOwnerUserId: ownerUserId,
+        reason: managerAssignReason,
+        assignedAt: now,
+      ),
+    );
+  }
+
+  @override
+  TechnicianWorkOrder managerClearTaskOwner(
+    String workOrderId,
+    String taskId,
+    String releaseReason,
+  ) {
+    if (currentUser.role != UserRole.branchManager) {
+      throw StateError('Sahipliği kaldırma sadece müdür yetkisindedir.');
+    }
+    if (releaseReason.trim().isEmpty) {
+      throw ArgumentError('Gerekçe zorunludur.');
+    }
+
+    final now = DateTime.now();
+    final order = getById(workOrderId);
+    final task = order.tasks.firstWhere((item) => item.taskId == taskId);
+    final nextTask = task.copyWith(
+      ownerUserId: null,
+      claimedAt: null,
+      status: TaskStatus.available,
+      releaseReason: releaseReason.trim(),
+      releasedByUserId: currentUser.id,
+      releasedAt: now,
+      ownershipHistory: [
+        ...task.ownershipHistory,
+        TaskOwnershipHistoryEntry(
+          eventType: TaskOwnershipEventType.managerReleased,
+          actorUserId: currentUser.id,
+          ownerUserId: null,
+          previousOwnerUserId: task.ownerUserId,
+          reason: releaseReason.trim(),
+          createdAt: now,
+        ),
+      ],
+      auditLog: [
+        ...task.auditLog,
+        TaskAuditLogEntry(
+          action: 'manager_released',
+          actorUserId: currentUser.id,
+          createdAt: now,
+          note: releaseReason.trim(),
+        ),
+      ],
+    );
+
+    return _replaceTask(order, nextTask);
   }
 
   @override
@@ -53,10 +141,27 @@ class DummyWorkOrderRepository implements WorkOrderRepository {
     final status = startEvidence.isComplete
         ? WorkOrderStatus.technicalEntryOpen
         : WorkOrderStatus.startEvidenceRequired;
+    final order = getById(workOrderId);
+    final tasks = startEvidence.isComplete
+        ? [
+            for (final task in order.tasks)
+              if (!task.isOwned &&
+                  (task.status == TaskStatus.locked ||
+                      task.status == TaskStatus.assigned))
+                task.copyWith(
+                  status: TaskStatus.available,
+                  ownerUserId: null,
+                  claimedAt: null,
+                )
+              else
+                task,
+          ]
+        : order.tasks;
     return _replace(
-      getById(workOrderId).copyWith(
+      order.copyWith(
         startEvidence: startEvidence,
         status: status,
+        tasks: tasks,
       ),
     );
   }
@@ -64,14 +169,24 @@ class DummyWorkOrderRepository implements WorkOrderRepository {
   @override
   TechnicianWorkOrder updateTask(String workOrderId, TechnicianTask task) {
     final order = getById(workOrderId);
-    return _replace(
-      order.copyWith(
-        tasks: [
-          for (final current in order.tasks)
-            if (current.taskId == task.taskId) task else current,
-        ],
-      ),
-    );
+    final current =
+        order.tasks.firstWhere((item) => item.taskId == task.taskId);
+    if (!current.canEditBy(currentUser)) {
+      throw StateError('Sadece görev sahibi bu başlığı düzenleyebilir.');
+    }
+    return _replaceTask(
+        order,
+        task.copyWith(
+          ownerUserId: current.ownerUserId,
+          claimedAt: current.claimedAt,
+          releaseReason: current.releaseReason,
+          releasedByUserId: current.releasedByUserId,
+          releasedAt: current.releasedAt,
+          assignedByManagerId: current.assignedByManagerId,
+          managerAssignReason: current.managerAssignReason,
+          ownershipHistory: current.ownershipHistory,
+          auditLog: current.auditLog,
+        ));
   }
 
   @override
@@ -79,8 +194,7 @@ class DummyWorkOrderRepository implements WorkOrderRepository {
     final order = getById(workOrderId);
     final task = order.tasks.firstWhere((item) => item.taskId == taskId);
     final idempotencyKey = '$workOrderId-$taskId-r${task.revisionNo}';
-    final nextStatus = task.canSubmit ? TaskStatus.completed : TaskStatus.evidenceMissing;
-    final nextTask = task.copyWith(status: nextStatus);
+    final nextTask = task.submittedBy(currentUser, DateTime.now());
 
     if (task.canSubmit) {
       _syncService.queueOperation(
@@ -90,13 +204,13 @@ class DummyWorkOrderRepository implements WorkOrderRepository {
         payload: {
           'reportFieldKey': task.reportFieldKey,
           'revisionNo': task.revisionNo,
-          'status': nextStatus.name,
+          'status': nextTask.status.name,
         },
         idempotencyKey: idempotencyKey,
       );
     }
 
-    return updateTask(workOrderId, nextTask);
+    return _replaceTask(order, nextTask);
   }
 
   @override
@@ -121,7 +235,26 @@ class DummyWorkOrderRepository implements WorkOrderRepository {
   @override
   void reset() {
     _syncService.reset();
+    _currentUser = _ahmetUser;
     _workOrders = _seedWorkOrders();
+  }
+
+  void switchCurrentUserForTest(UserProfile user) {
+    _currentUser = user;
+  }
+
+  TechnicianWorkOrder _replaceTask(
+    TechnicianWorkOrder order,
+    TechnicianTask nextTask,
+  ) {
+    return _replace(
+      order.copyWith(
+        tasks: [
+          for (final current in order.tasks)
+            if (current.taskId == nextTask.taskId) nextTask else current,
+        ],
+      ),
+    );
   }
 
   TechnicianWorkOrder _replace(TechnicianWorkOrder next) {
@@ -132,6 +265,16 @@ class DummyWorkOrderRepository implements WorkOrderRepository {
     return next;
   }
 }
+
+const _ahmetUser = UserProfile(
+  id: 'tech-ahmet',
+  fullName: 'Ahmet Usta',
+  email: 'ahmet.usta@ototr.test',
+  phone: '0555 000 16 16',
+  role: UserRole.inspectionTechnician,
+  branchId: 'bursa-nilufer',
+  isActive: true,
+);
 
 List<TechnicianWorkOrder> _seedWorkOrders() {
   final now = DateTime(2026, 5, 24, 10, 30);
@@ -164,7 +307,7 @@ List<TechnicianWorkOrder> _seedWorkOrders() {
       ),
       tasks: _seedTasks('wo-2026-0001', now),
       externalQueries: [
-        ExternalQuery(
+        const ExternalQuery(
           id: 'tramer-1',
           workOrderId: 'wo-2026-0001',
           type: 'Tramer/SBM',
@@ -207,8 +350,10 @@ List<TechnicianTask> _seedTasks(String workOrderId, DateTime now) {
       checklistItems: [
         _item('front-hood', 'Ön Kaput', 'report.body_paint.front_hood'),
         _item('roof', 'Tavan', 'report.body_paint.roof'),
-        _item('right-front-door', 'Sağ Ön Kapı', 'report.body_paint.right_front_door'),
-        _item('left-front-door', 'Sol Ön Kapı', 'report.body_paint.left_front_door'),
+        _item('right-front-door', 'Sağ Ön Kapı',
+            'report.body_paint.right_front_door'),
+        _item('left-front-door', 'Sol Ön Kapı',
+            'report.body_paint.left_front_door'),
         _item('micron', 'Boya mikron değeri', 'report.body_paint.micron'),
       ],
       requiredFields: const ['customerFriendlyNote'],

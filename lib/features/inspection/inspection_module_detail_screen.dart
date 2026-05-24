@@ -30,7 +30,8 @@ class InspectionModuleDetailScreen extends StatelessWidget {
         children: [
           OtotrSectionTitle(
             title: 'Kontrol Listesi',
-            subtitle: '${module.technician} tarafından yürütülüyor. Fotoğraf zorunluluğu ve şiddet göstergesi rapora taşınacak.',
+            subtitle:
+                '${module.technician} tarafından yürütülüyor. Fotoğraf zorunluluğu ve şiddet göstergesi rapora taşınacak.',
           ),
           ...module.checklistItems.map(
             (item) => OtotrCard(
@@ -39,16 +40,21 @@ class InspectionModuleDetailScreen extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      Expanded(child: Text(item.title, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16))),
-                      OtotrStatusBadge(label: item.result.label, tone: _tone(item.result)),
+                      Expanded(
+                          child: Text(item.title,
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.w900, fontSize: 16))),
+                      OtotrStatusBadge(
+                          label: item.result.label, tone: _tone(item.result)),
                     ],
                   ),
                   const SizedBox(height: AppSizes.sm),
                   DropdownButtonFormField<ChecklistResultStatus>(
-                    value: item.result,
+                    initialValue: item.result,
                     decoration: const InputDecoration(labelText: 'Sonuç'),
                     items: ChecklistResultStatus.values
-                        .map((result) => DropdownMenuItem(value: result, child: Text(result.label)))
+                        .map((result) => DropdownMenuItem(
+                            value: result, child: Text(result.label)))
                         .toList(),
                     onChanged: (_) {},
                   ),
@@ -56,7 +62,8 @@ class InspectionModuleDetailScreen extends StatelessWidget {
                   TextFormField(
                     initialValue: item.note,
                     maxLines: 2,
-                    decoration: const InputDecoration(labelText: 'Teknisyen Notu'),
+                    decoration:
+                        const InputDecoration(labelText: 'Teknisyen Notu'),
                   ),
                   SwitchListTile(
                     contentPadding: EdgeInsets.zero,
@@ -64,7 +71,11 @@ class InspectionModuleDetailScreen extends StatelessWidget {
                     onChanged: (_) {},
                     title: const Text('Fotoğraf zorunlu placeholder'),
                   ),
-                  Text('Şiddet göstergesi: ${item.severity}/3', style: TextStyle(color: item.severity > 0 ? AppColors.red : AppColors.success)),
+                  Text('Şiddet göstergesi: ${item.severity}/3',
+                      style: TextStyle(
+                          color: item.severity > 0
+                              ? AppColors.red
+                              : AppColors.success)),
                 ],
               ),
             ),
@@ -72,7 +83,8 @@ class InspectionModuleDetailScreen extends StatelessWidget {
           OtotrPrimaryButton(
             label: 'Modül İlerlemesine Dön',
             icon: Icons.timeline,
-            onPressed: () => Navigator.pushNamed(context, AppRoutes.inspectionProgress),
+            onPressed: () =>
+                Navigator.pushNamed(context, AppRoutes.inspectionProgress),
           ),
         ],
       ),
