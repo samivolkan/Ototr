@@ -24,20 +24,21 @@ class ManagerTaskOwnershipScreen extends StatefulWidget {
 class _ManagerTaskOwnershipScreenState
     extends State<ManagerTaskOwnershipScreen> {
   final _localRepository = DummyWorkOrderRepository.instance;
-  Future<List<TechnicianWorkOrder>>? _remoteFuture;
+  Future<_ManagerOwnershipData>? _remoteFuture;
 
   @override
   Widget build(BuildContext context) {
     final remoteRepository = AppRepositories.instance.remoteWorkOrders;
     if (remoteRepository != null) {
-      _remoteFuture ??= remoteRepository.visibleWorkOrders();
-      return FutureBuilder<List<TechnicianWorkOrder>>(
+      _remoteFuture ??= _loadRemoteData(remoteRepository);
+      return FutureBuilder<_ManagerOwnershipData>(
         future: _remoteFuture,
         builder: (context, snapshot) {
-          final orders = snapshot.data ?? const <TechnicianWorkOrder>[];
+          final data = snapshot.data;
           return _buildScaffold(
             currentUser: remoteRepository.currentUser,
-            orders: orders,
+            orders: data?.orders ?? const <TechnicianWorkOrder>[],
+            technicians: data?.technicians ?? const <UserProfile>[],
             isLoading: snapshot.connectionState != ConnectionState.done,
             error: snapshot.error,
             onAssign: (orderId, taskId, ownerUserId, reason) async {
@@ -65,9 +66,14 @@ class _ManagerTaskOwnershipScreenState
     return _buildScaffold(
       currentUser: _localRepository.currentUser,
       orders: _localRepository.visibleWorkOrders(),
+      technicians: _localRepository.activeTechnicians(),
       onAssign: (orderId, taskId, ownerUserId, reason) async {
         _localRepository.managerAssignTask(
-            orderId, taskId, ownerUserId, reason);
+          orderId,
+          taskId,
+          ownerUserId,
+          reason,
+        );
         setState(() {});
       },
       onClear: (orderId, taskId, reason) async {
@@ -80,6 +86,7 @@ class _ManagerTaskOwnershipScreenState
   Widget _buildScaffold({
     required UserProfile currentUser,
     required List<TechnicianWorkOrder> orders,
+    required List<UserProfile> technicians,
     required Future<void> Function(
       String orderId,
       String taskId,
@@ -96,7 +103,7 @@ class _ManagerTaskOwnershipScreenState
   }) {
     final canManage = currentUser.role == UserRole.branchManager;
     return Scaffold(
-      appBar: const OtotrAppBar(title: 'Başlık Sahipliği'),
+      appBar: const OtotrAppBar(title: 'Baslik Sahipligi'),
       backgroundColor: AppColors.grayBg,
       body: ListView(
         padding: const EdgeInsets.all(AppSizes.lg),
@@ -114,7 +121,7 @@ class _ManagerTaskOwnershipScreenState
                 ),
                 const SizedBox(height: 8),
                 OtotrStatusBadge(
-                  label: canManage ? 'Müdür yetkisi aktif' : 'Read-only',
+                  label: canManage ? 'Mudur yetkisi aktif' : 'Read-only',
                   tone: canManage
                       ? OtotrBadgeTone.success
                       : OtotrBadgeTone.warning,
@@ -123,19 +130,24 @@ class _ManagerTaskOwnershipScreenState
             ),
           ),
           if (isLoading)
-            const OtotrCard(child: Text('Başlıklar yükleniyor...')),
+            const OtotrCard(child: Text('Basliklar yukleniyor...')),
           if (error != null)
             OtotrCard(
               child: Text(
-                'Başlık sahipliği alınamadı: $error',
+                'Baslik sahipligi alinamadi: $error',
                 style: const TextStyle(color: AppColors.red),
               ),
+            ),
+          if (!isLoading && canManage && technicians.isEmpty)
+            const OtotrCard(
+              child: Text('Aktif usta listesi alinamadi. Atama kapali.'),
             ),
           for (final order in orders)
             for (final task in order.tasks)
               _OwnershipCard(
                 order: order,
                 task: task,
+                technicians: technicians,
                 canManage: canManage,
                 onAssign: (ownerUserId, reason) => onAssign(
                   order.id,
@@ -152,17 +164,39 @@ class _ManagerTaskOwnershipScreenState
     );
   }
 
+  Future<_ManagerOwnershipData> _loadRemoteData(
+    RemoteWorkOrderRepository repository,
+  ) async {
+    final ordersFuture = repository.visibleWorkOrders();
+    final techniciansFuture = repository.activeTechnicians();
+    return _ManagerOwnershipData(
+      orders: await ordersFuture,
+      technicians: await techniciansFuture,
+    );
+  }
+
   void _refreshRemote(RemoteWorkOrderRepository repository) {
     setState(() {
-      _remoteFuture = repository.visibleWorkOrders();
+      _remoteFuture = _loadRemoteData(repository);
     });
   }
+}
+
+class _ManagerOwnershipData {
+  const _ManagerOwnershipData({
+    required this.orders,
+    required this.technicians,
+  });
+
+  final List<TechnicianWorkOrder> orders;
+  final List<UserProfile> technicians;
 }
 
 class _OwnershipCard extends StatelessWidget {
   const _OwnershipCard({
     required this.order,
     required this.task,
+    required this.technicians,
     required this.canManage,
     required this.onAssign,
     required this.onClear,
@@ -170,6 +204,7 @@ class _OwnershipCard extends StatelessWidget {
 
   final TechnicianWorkOrder order;
   final TechnicianTask task;
+  final List<UserProfile> technicians;
   final bool canManage;
   final Future<void> Function(String ownerUserId, String reason) onAssign;
   final Future<void> Function(String reason) onClear;
@@ -191,7 +226,7 @@ class _OwnershipCard extends StatelessWidget {
             children: [
               OtotrStatusBadge(label: task.status.label, tone: _tone(task)),
               OtotrStatusBadge(
-                label: task.isOwned ? 'Owner: ${task.ownerUserId}' : 'Havuzda',
+                label: task.isOwned ? 'Owner: ${_ownerLabel()}' : 'Havuzda',
                 tone:
                     task.isOwned ? OtotrBadgeTone.warning : OtotrBadgeTone.info,
               ),
@@ -212,7 +247,9 @@ class _OwnershipCard extends StatelessWidget {
           OtotrPrimaryButton(
             label: 'Baska Ustaya Ata',
             icon: Icons.manage_accounts,
-            onPressed: canManage ? () => _showAssignDialog(context) : null,
+            onPressed: canManage && technicians.isNotEmpty
+                ? () => _showAssignDialog(context)
+                : null,
           ),
           const SizedBox(height: 8),
           OtotrSecondaryButton(
@@ -238,50 +275,80 @@ class _OwnershipCard extends StatelessWidget {
     };
   }
 
+  String _ownerLabel() {
+    final ownerUserId = task.ownerUserId;
+    if (ownerUserId == null || ownerUserId.isEmpty) {
+      return '';
+    }
+    for (final technician in technicians) {
+      if (technician.id == ownerUserId) {
+        return technician.fullName;
+      }
+    }
+    return ownerUserId;
+  }
+
   Future<void> _showAssignDialog(BuildContext context) async {
-    final ownerController = TextEditingController();
     final reasonController = TextEditingController();
+    String? selectedOwnerUserId =
+        technicians.isEmpty ? null : technicians.first.id;
     final result = await showDialog<({String ownerUserId, String reason})>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Baska Ustaya Ata'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: ownerController,
-              decoration: const InputDecoration(labelText: 'Yeni ownerUserId'),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('Baska Ustaya Ata'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              DropdownButtonFormField<String>(
+                initialValue: selectedOwnerUserId,
+                decoration: const InputDecoration(labelText: 'Aktif usta'),
+                items: [
+                  for (final technician in technicians)
+                    DropdownMenuItem(
+                      value: technician.id,
+                      child: Text(
+                        '${technician.fullName} - ${technician.email}',
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                ],
+                onChanged: (value) {
+                  setDialogState(() {
+                    selectedOwnerUserId = value;
+                  });
+                },
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: reasonController,
+                minLines: 2,
+                maxLines: 4,
+                decoration: const InputDecoration(labelText: 'Atama gerekcesi'),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Vazgec'),
             ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: reasonController,
-              minLines: 2,
-              maxLines: 4,
-              decoration: const InputDecoration(labelText: 'Atama gerekcesi'),
+            FilledButton(
+              onPressed: () {
+                Navigator.pop(
+                  context,
+                  (
+                    ownerUserId: selectedOwnerUserId ?? '',
+                    reason: reasonController.text.trim(),
+                  ),
+                );
+              },
+              child: const Text('Ata'),
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Vazgec'),
-          ),
-          FilledButton(
-            onPressed: () {
-              Navigator.pop(
-                context,
-                (
-                  ownerUserId: ownerController.text.trim(),
-                  reason: reasonController.text.trim(),
-                ),
-              );
-            },
-            child: const Text('Ata'),
-          ),
-        ],
       ),
     );
-    ownerController.dispose();
     reasonController.dispose();
     if (result == null || result.ownerUserId.isEmpty || result.reason.isEmpty) {
       return;

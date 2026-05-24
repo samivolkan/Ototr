@@ -1,7 +1,10 @@
 import '../models/technician_operation_model.dart';
+import '../models/user_profile_model.dart';
 import 'work_order_remote_dto.dart';
 
 abstract class WorkOrderRemoteDataSource {
+  Future<List<UserProfile>> fetchActiveTechnicians();
+
   Future<List<WorkOrderRemoteBundle>> fetchVisibleWorkOrders();
 
   Future<WorkOrderRemoteBundle> fetchWorkOrderById(String workOrderId);

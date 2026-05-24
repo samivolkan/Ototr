@@ -6,6 +6,8 @@ abstract class RemoteWorkOrderRepository {
 
   TechnicianRole get currentTechnicianRole;
 
+  Future<List<UserProfile>> activeTechnicians();
+
   Future<List<TechnicianWorkOrder>> visibleWorkOrders();
 
   Future<TechnicianWorkOrder> getById(String workOrderId);

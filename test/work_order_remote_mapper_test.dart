@@ -33,6 +33,7 @@ void main() {
     );
 
     final orders = await repository.visibleWorkOrders();
+    final technicians = await repository.activeTechnicians();
     final saved = await repository.saveStartEvidence(
       'case-1',
       StartEvidence(
@@ -50,6 +51,7 @@ void main() {
     );
 
     expect(orders.single.id, 'case-1');
+    expect(technicians.single.fullName, 'Ahmet Usta');
     expect(saved.startEvidence?.vin, 'WVWZZZ3CZLE000001');
     expect(dataSource.lastStartEvidencePayload?['vin_photo_url'],
         'remote/vin.jpg');
@@ -254,6 +256,11 @@ class _FakeWorkOrderRemoteDataSource implements WorkOrderRemoteDataSource {
     String releaseReason,
   ) async {
     return bundle;
+  }
+
+  @override
+  Future<List<UserProfile>> fetchActiveTechnicians() async {
+    return const [_user];
   }
 
   @override

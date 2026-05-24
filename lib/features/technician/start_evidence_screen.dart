@@ -250,6 +250,10 @@ class _StartEvidenceScreenState extends State<StartEvidenceScreen> {
   }
 
   StartEvidence _buildEvidence() {
+    final currentUser =
+        AppRepositories.instance.remoteWorkOrders?.currentUser ??
+            _repository.currentUser;
+
     return StartEvidence(
       workOrderId: widget.workOrderId,
       vin: _vinController.text.trim().toUpperCase(),
@@ -258,7 +262,7 @@ class _StartEvidenceScreenState extends State<StartEvidenceScreen> {
       odometerKm: int.tryParse(_kmController.text.trim()),
       odometerPhoto: _odometerPhoto,
       capturedAt: DateTime.now(),
-      capturedBy: _repository.currentUser.id,
+      capturedBy: currentUser.id,
       deviceId: 'android-demo-device',
       gpsApprox: 'Bursa Nilüfer',
     );

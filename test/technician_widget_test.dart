@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ototr_branch_app/core/navigation/app_routes.dart';
+import 'package:ototr_branch_app/data/models/user_profile_model.dart';
 import 'package:ototr_branch_app/data/repositories/dummy_work_order_repository.dart';
+import 'package:ototr_branch_app/features/manager/manager_task_ownership_screen.dart';
 import 'package:ototr_branch_app/features/technician/start_evidence_screen.dart';
 import 'package:ototr_branch_app/features/technician/technician_jobs_screen.dart';
 import 'package:ototr_branch_app/features/technician/technician_report_gate_screen.dart';
@@ -77,6 +79,18 @@ void main() {
 
     expect(find.textContaining('1 kayıt senkron bekliyor'), findsOneWidget);
   });
+  testWidgets('Mudur baslik atamasinda aktif usta secilir', (tester) async {
+    DummyWorkOrderRepository.instance.switchCurrentUserForTest(_managerUser);
+
+    await tester.pumpWidget(_app(const ManagerTaskOwnershipScreen()));
+
+    await tester.tap(find.text('Baska Ustaya Ata').first);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Aktif usta'), findsOneWidget);
+    expect(find.textContaining('Ahmet Usta'), findsWidgets);
+    expect(find.text('Yeni ownerUserId'), findsNothing);
+  });
 }
 
 Widget _app(Widget home) {
@@ -95,3 +109,13 @@ Widget _app(Widget home) {
     },
   );
 }
+
+const _managerUser = UserProfile(
+  id: 'manager-ayse',
+  fullName: 'Ayse Mudur',
+  email: 'ayse.mudur@ototr.test',
+  phone: '0555 000 16 18',
+  role: UserRole.branchManager,
+  branchId: 'bursa-nilufer',
+  isActive: true,
+);

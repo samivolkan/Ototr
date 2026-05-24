@@ -1,6 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../models/technician_operation_model.dart';
+import '../models/user_profile_model.dart';
 import 'work_order_remote_data_source.dart';
 import 'work_order_remote_dto.dart';
 
@@ -8,6 +9,14 @@ class SupabaseWorkOrderDataSource implements WorkOrderRemoteDataSource {
   const SupabaseWorkOrderDataSource(this._client);
 
   final SupabaseClient _client;
+
+  @override
+  Future<List<UserProfile>> fetchActiveTechnicians() async {
+    final rows = await _client.rpc('list_branch_technicians');
+    return [
+      for (final row in _asRowList(rows)) _userProfileFromRow(row),
+    ];
+  }
 
   @override
   Future<List<WorkOrderRemoteBundle>> fetchVisibleWorkOrders() async {
@@ -282,6 +291,35 @@ class SupabaseWorkOrderDataSource implements WorkOrderRemoteDataSource {
           (customer['kvkk_consent'] == true &&
               customer['service_consent'] == true),
     };
+  }
+
+  UserProfile _userProfileFromRow(Map<String, Object?> row) {
+    return UserProfile(
+      id: row['id']?.toString() ?? '',
+      fullName: row['full_name']?.toString() ?? '',
+      email: row['email']?.toString() ?? '',
+      phone: row['phone']?.toString() ?? '',
+      role: _userRoleFromRemote(row['role']?.toString() ?? ''),
+      branchId: row['branch_id']?.toString() ?? '',
+      isActive: row['is_active'] == true,
+    );
+  }
+
+  UserRole _userRoleFromRemote(String value) {
+    switch (value.toUpperCase()) {
+      case 'BRANCH_MANAGER':
+        return UserRole.branchManager;
+      case 'QUALITY_AUDITOR':
+      case 'CEO':
+      case 'GENERAL_MANAGER':
+      case 'REGIONAL_MANAGER':
+        return UserRole.headquartersAuditor;
+      case 'RECEPTION_STAFF':
+        return UserRole.receptionStaff;
+      case 'INSPECTION_TECHNICIAN':
+      default:
+        return UserRole.inspectionTechnician;
+    }
   }
 
   Map<String, Object?> _nestedRow(Object? value) {

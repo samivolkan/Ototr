@@ -9,6 +9,7 @@ import '../../core/widgets/ototr_primary_button.dart';
 import '../../core/widgets/ototr_secondary_button.dart';
 import '../../core/widgets/ototr_status_badge.dart';
 import '../../data/models/technician_operation_model.dart';
+import '../../data/models/user_profile_model.dart';
 import '../../data/models/work_order_model.dart';
 import '../../data/repositories/app_repositories.dart';
 import '../../data/repositories/dummy_work_order_repository.dart';
@@ -48,7 +49,7 @@ class _TechnicianJobsScreenState extends State<TechnicianJobsScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '${user.fullName} - Usta operasyonu',
+                  '${user.fullName} - ${user.role.label}',
                   style: const TextStyle(
                     fontWeight: FontWeight.w900,
                     fontSize: 18,
@@ -119,7 +120,7 @@ class _TechnicianJobsScreenState extends State<TechnicianJobsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '${repository.currentUser.fullName} - Usta operasyonu',
+                      '${repository.currentUser.fullName} - ${repository.currentUser.role.label}',
                       style: const TextStyle(
                         fontWeight: FontWeight.w900,
                         fontSize: 18,

@@ -6,6 +6,8 @@ abstract class WorkOrderRepository {
 
   TechnicianRole get currentTechnicianRole;
 
+  List<UserProfile> activeTechnicians();
+
   List<TechnicianWorkOrder> visibleWorkOrders();
 
   TechnicianWorkOrder getById(String workOrderId);

@@ -23,6 +23,9 @@ class DummyWorkOrderRepository implements WorkOrderRepository {
   TechnicianRole get currentTechnicianRole => TechnicianRole.bodyPaint;
 
   @override
+  List<UserProfile> activeTechnicians() => const [_ahmetUser, _mehmetUser];
+
+  @override
   List<TechnicianWorkOrder> visibleWorkOrders() {
     return _workOrders
         .where(
@@ -271,6 +274,16 @@ const _ahmetUser = UserProfile(
   fullName: 'Ahmet Usta',
   email: 'ahmet.usta@ototr.test',
   phone: '0555 000 16 16',
+  role: UserRole.inspectionTechnician,
+  branchId: 'bursa-nilufer',
+  isActive: true,
+);
+
+const _mehmetUser = UserProfile(
+  id: 'tech-mehmet',
+  fullName: 'Mehmet Usta',
+  email: 'mehmet.usta@ototr.test',
+  phone: '0555 000 16 17',
   role: UserRole.inspectionTechnician,
   branchId: 'bursa-nilufer',
   isActive: true,

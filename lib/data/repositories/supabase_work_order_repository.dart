@@ -27,6 +27,11 @@ class SupabaseWorkOrderRepository implements RemoteWorkOrderRepository {
   TechnicianRole get currentTechnicianRole => _currentTechnicianRole;
 
   @override
+  Future<List<UserProfile>> activeTechnicians() {
+    return _dataSource.fetchActiveTechnicians();
+  }
+
+  @override
   Future<List<TechnicianWorkOrder>> visibleWorkOrders() async {
     final bundles = await _dataSource.fetchVisibleWorkOrders();
     return [

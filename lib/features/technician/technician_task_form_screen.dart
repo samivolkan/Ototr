@@ -237,6 +237,9 @@ class _TechnicianTaskFormScreenState extends State<TechnicianTaskFormScreen> {
 
   void _addEvidence(TechnicianChecklistItem item) {
     final task = _task!;
+    final currentUser =
+        AppRepositories.instance.remoteWorkOrders?.currentUser ??
+            _repository.currentUser;
     final asset = EvidenceAsset(
       id: 'ev-${DateTime.now().millisecondsSinceEpoch}',
       workOrderId: widget.workOrderId,
@@ -250,7 +253,7 @@ class _TechnicianTaskFormScreenState extends State<TechnicianTaskFormScreen> {
       hash: 'demo-hash-${item.id}',
       capturedAt: DateTime.now(),
       uploadedAt: null,
-      uploadedBy: _repository.currentUser.id,
+      uploadedBy: currentUser.id,
       syncStatus: EvidenceStatus.queued,
       isRequired: true,
       qualityStatus: 'placeholder-ok',
