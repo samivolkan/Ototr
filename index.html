@@ -1151,6 +1151,7 @@
     .dealer-wo-fast-open .dealer-wo-package-card{order:3!important}.dealer-wo-fast-open .dealer-wo-tech-preview-card{order:99!important;display:grid!important}
     @media(max-width:1280px){.dealer-wo-reception-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}.dealer-technical-preview,.dealer-model-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
     @media(max-width:760px){.dealer-wo-reception-grid,.dealer-technical-preview,.dealer-model-grid{grid-template-columns:1fr!important}.dealer-wo-reception-grid .dealer-wo-field.wide{grid-column:auto!important}}
+    .dealer-dashboard-wo-row{cursor:pointer}.dealer-dashboard-wo-row:hover td{background:#f8fbff!important}.dealer-dashboard-wo-row.dealer-dashboard-selected td{background:#f0fdf4!important;border-top:1px solid #bbf7d0;border-bottom:1px solid #bbf7d0}.dealer-dashboard-wo-row.dealer-dashboard-selected td:first-child{box-shadow:inset 4px 0 0 #16a34a}.dealer-wo-field{position:relative}
   </style>
 </head>
 <body>
@@ -7710,9 +7711,11 @@
       if(fieldName==='all'||fieldName==='taxNo') set('taxNo',c.taxNo);
       if(fieldName==='all'||fieldName==='customerType') set('customerType',c.customerType||'Bireysel');
       dealerRenderCustomerSuggestions(form);
+      dealerSetChoiceStates(form);
       dealerPaintTaxNoField(form);
       dealerUpdateWorkOrderPricingSummary(form);
       dealerValidateSmartWorkOrderForm(form);
+      dealerScheduleWorkOrderGateSync(form);
       toast('Müşteri verisi forma alındı.');
     }
     function dealerSetAutoValue(form,name,value,force=false){
@@ -8701,6 +8704,18 @@
       }
     }
     function dealerSelectWorkOrder(id){const store=ensureDealerLiveData(DB.branches.find(b=>b.id===selectedBranchId)||DB.branches[0],DB.appointments); if(store.workOrders.some(w=>w.id===id)){dealerClearStoredWorkOrderDraft();store.activeId=id;saveDealerLiveData(store);syncDealerReportData(dealerActiveWorkOrder(store));saveDealerPortalState({tab:'is-emirleri',editingWorkOrderId:'',viewingWorkOrderId:id,workOrderMode:'full'});renderAll();route('dealer');toast(id+' kilitli görüntüleme modunda açıldı.');}}
+    function dealerSelectDashboardPipelineWorkOrder(id){
+      const store=ensureDealerLiveData(DB.branches.find(b=>b.id===selectedBranchId)||DB.branches[0],DB.appointments);
+      const wo=store.workOrders.find(w=>w.id===id);
+      if(!wo) return;
+      store.activeId=id;
+      saveDealerLiveData(store);
+      syncDealerReportData(wo);
+      saveDealerPortalState({tab:'kokpit',editingWorkOrderId:'',viewingWorkOrderId:''});
+      renderAll();
+      route('dealer');
+      toast(id+' kokpit pipeline görünümüne alındı.');
+    }
     function dealerApproveActive(){
       const store=ensureDealerLiveData(DB.branches.find(b=>b.id===selectedBranchId)||DB.branches[0],DB.appointments), wo=dealerActiveWorkOrder(store), c=dealerCompletion(wo);
       if(!wo) return;
@@ -9347,7 +9362,7 @@
         if(ui.role==='Muhasebe / Kasa') return [['Günlük kasa','POS, nakit, havale ve kasa farkı','Kapanış'],['Ödeme blokajı','Tahsil edildi/teslim edilmedi uyarısı','Kontrol'],['Royalty itiraz','Belge, gerekçe ve merkez inceleme akışı','Finans']];
         return [['Şube performansı','Kasa, kalite, operasyon ve personel sinyalleri','Yönetim'],['Onay bekleyenler','Rapor, eğitim, cihaz ve merkez talepleri','Karar'],['Risk panosu','Şikayet, kalibrasyon ve eksik kanıt alarmı','Takip']];
       };
-      const dashboardPipelineRows=dealerOps.workOrders.slice(0,3).map(w=>[`<b>${w.id}</b><br><span class="card-sub">${w.reportNo}</span>`,rpEsc(w.plate),rpEsc(w.customer),rpEsc(w.packageName),badge(w.status),dealerWorkOrderTimeCell(w),badge(dealerCompletion(w).pct+'%'),dealerWorkOrderActionCell(w)]);
+      const dashboardPipelineRows=dealerOps.workOrders.slice(0,3).map(w=>({attrs:`data-dealer-dashboard-wo="${rpEsc(w.id)}" class="dealer-dashboard-wo-row ${w.id===workOrder?.id?'dealer-dashboard-selected':''}" role="button" tabindex="0" title="Bu iş emrinin pipeline durumunu göster"`,cells:[`<b>${w.id}</b><br><span class="card-sub">${w.reportNo}</span>`,rpEsc(w.plate),rpEsc(w.customer),rpEsc(w.packageName),badge(w.status),dealerWorkOrderTimeCell(w),badge(dealerCompletion(w).pct+'%'),dealerWorkOrderActionCell(w)]}));
       const dealerPipelineDashboard=()=>`<section class="dealer-form-section dealer-dashboard-pipeline"><div class="dealer-section-head"><div><h3>İş Emri Pipeline</h3><p>Şube anasayfası iş emri akışıyla başlar; randevu, kabul, usta girişi, müdür onayı, basım ve teslim aynı sırada izlenir.</p></div><div class="quick-actions">${badge(workOrder?.id||'Aktif iş emri yok')}<button class="micro-btn" data-dealer-tab="is-emirleri">İş emri sayfası</button></div></div><div class="dealer-pipeline">${pipeline.map((p,i)=>`<div class="dealer-pipeline-step ${i<currentStep?'done':i===currentStep?'current':i===5&&completion.done<completion.total?'blocked':''}"><b>${i+1}. ${p}</b><span>${i===currentStep?'Aktif durum':'Süreç kapısı'}</span></div>`).join('')}</div>${dealerPortalTable(['İş emri','Plaka','Müşteri','Paket','Durum','Giriş Saati','%','Aksiyon'],dashboardPipelineRows)}</section>`;
       const roleHead=(title,desc,actions='')=>`<section class="dealer-role-head"><div><h2>${title}</h2><p>${desc}</p></div>${actions?`<div class="dealer-role-actions">${actions}</div>`:''}</section>`;
       const focusCards=items=>`<div class="dealer-focus-grid">${items.map(x=>`<div class="dealer-focus-card ${x[3]||''}"><span>${x[0]}</span><b>${x[1]}</b><small>${x[2]}</small></div>`).join('')}</div>`;
@@ -13052,6 +13067,13 @@
         e.preventDefault();
         e.stopPropagation();
         dealerSelectWorkOrder(dealerSelectEl.dataset.dealerSelectWo);
+        return;
+      }
+      const dealerDashboardWoEl=e.target.closest('[data-dealer-dashboard-wo]');
+      if(dealerDashboardWoEl&&!e.target.closest('button,a,[data-dealer-select-wo],[data-dealer-update-wo]')){
+        e.preventDefault();
+        e.stopPropagation();
+        dealerSelectDashboardPipelineWorkOrder(dealerDashboardWoEl.dataset.dealerDashboardWo);
         return;
       }
       const dealerUpdateWoEl=e.target.closest('[data-dealer-update-wo]');
