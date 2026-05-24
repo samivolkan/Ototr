@@ -140,6 +140,18 @@ extension TaskTypeInfo on TaskType {
 
 TaskType taskTypeFromCode(String code) {
   final normalized = code.trim().toUpperCase();
+  switch (normalized) {
+    case 'BODY-PAINT':
+    case 'BODY_PAINT':
+      return TaskType.kaportaKontrol;
+    case 'MECHANIC':
+      return TaskType.mekanikKontrol;
+    case 'OBD':
+      return TaskType.elektrikKontrol;
+    case 'TEST':
+    case 'ROAD_TEST':
+      return TaskType.frenKontrol;
+  }
   return TaskType.values.firstWhere(
     (type) => type.code == normalized,
     orElse: () => TaskType.genelFoto,

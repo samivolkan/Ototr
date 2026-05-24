@@ -3,9 +3,12 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/config/supabase_config.dart';
 import '../models/user_profile_model.dart';
 import '../remote/supabase_work_order_data_source.dart';
+import 'branch_work_order_repository.dart';
 import 'dummy_work_order_repository.dart';
 import 'remote_work_order_repository.dart';
+import 'supabase_branch_work_order_repository.dart';
 import 'supabase_work_order_repository.dart';
+import 'work_order_local_repository.dart';
 import 'work_order_repository.dart';
 
 class AppRepositories {
@@ -15,6 +18,8 @@ class AppRepositories {
 
   WorkOrderRepository localWorkOrders = DummyWorkOrderRepository.instance;
   RemoteWorkOrderRepository? remoteWorkOrders;
+  BranchWorkOrderRepository branchWorkOrders =
+      LocalBranchWorkOrderRepository(WorkOrderLocalRepository.instance);
 
   bool get hasRemoteWorkOrders => remoteWorkOrders != null;
 
@@ -23,6 +28,8 @@ class AppRepositories {
   }) async {
     if (!config.isConfigured) {
       remoteWorkOrders = null;
+      branchWorkOrders =
+          LocalBranchWorkOrderRepository(WorkOrderLocalRepository.instance);
       return;
     }
 
@@ -47,10 +54,14 @@ class AppRepositories {
         currentUser: currentUser,
         currentTechnicianRole: local.currentTechnicianRole,
       );
+      branchWorkOrders =
+          SupabaseBranchWorkOrderRepository(Supabase.instance.client);
     } catch (_) {
       // Supabase RLS veya bağlantı hatası mobil uygulamanın açılışını
       // engellememeli. Canlı bağlantı düzelene kadar demo veriyle devam edilir.
       remoteWorkOrders = null;
+      branchWorkOrders =
+          LocalBranchWorkOrderRepository(WorkOrderLocalRepository.instance);
     }
   }
 

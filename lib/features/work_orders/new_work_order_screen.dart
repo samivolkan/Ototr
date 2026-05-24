@@ -12,7 +12,7 @@ import '../../data/models/customer_model.dart';
 import '../../data/models/package_plan_model.dart';
 import '../../data/models/vehicle_model.dart';
 import '../../data/models/work_order_model.dart';
-import '../../data/repositories/work_order_local_repository.dart';
+import '../../data/repositories/app_repositories.dart';
 import '../../data/services/work_order_task_factory.dart';
 
 class NewWorkOrderScreen extends StatefulWidget {
@@ -34,6 +34,7 @@ class _NewWorkOrderScreenState extends State<NewWorkOrderScreen> {
   final _kilometersController = TextEditingController();
   final _notesController = TextEditingController();
   PackageType _packageType = PackageType.standard;
+  bool _isSaving = false;
 
   @override
   void dispose() {
@@ -167,9 +168,9 @@ class _NewWorkOrderScreenState extends State<NewWorkOrderScreen> {
               ),
             ),
             OtotrPrimaryButton(
-              label: 'Is Emri Olustur',
+              label: _isSaving ? 'Kaydediliyor' : 'Is Emri Olustur',
               icon: Icons.add_circle_outline,
-              onPressed: _createWorkOrder,
+              onPressed: _isSaving ? null : _createWorkOrder,
             ),
           ],
         ),
@@ -194,41 +195,51 @@ class _NewWorkOrderScreenState extends State<NewWorkOrderScreen> {
     return null;
   }
 
-  void _createWorkOrder() {
+  Future<void> _createWorkOrder() async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
+    setState(() => _isSaving = true);
     final year = int.parse(_yearController.text.trim());
     final kilometers = int.tryParse(_kilometersController.text.trim()) ?? 0;
-    final order = WorkOrderLocalRepository.instance.create(
-      customer: Customer(
-        fullName: _customerNameController.text.trim(),
-        phone: _customerPhoneController.text.trim(),
-        identityNumber: '',
-        email: '',
-        role: 'Musteri',
-        kvkkConsent: true,
-        serviceConsent: true,
-      ),
-      vehicle: Vehicle(
-        plate: _plateController.text.trim().toUpperCase(),
-        vin: _vinController.text.trim().toUpperCase(),
-        brand: _brandController.text.trim(),
-        model: _modelController.text.trim(),
-        year: year,
-        fuelType: '',
-        transmission: '',
-        kilometers: kilometers,
-        sellerType: '',
-        arrivalNote: '',
-      ),
-      packageType: _packageType,
-      notes: _notesController.text,
-    );
-    Navigator.pushReplacementNamed(
-      context,
-      AppRoutes.workOrderDetail,
-      arguments: order.id,
-    );
+    try {
+      final order = await AppRepositories.instance.branchWorkOrders.create(
+        customer: Customer(
+          fullName: _customerNameController.text.trim(),
+          phone: _customerPhoneController.text.trim(),
+          identityNumber: '',
+          email: '',
+          role: 'Musteri',
+          kvkkConsent: true,
+          serviceConsent: true,
+        ),
+        vehicle: Vehicle(
+          plate: _plateController.text.trim().toUpperCase(),
+          vin: _vinController.text.trim().toUpperCase(),
+          brand: _brandController.text.trim(),
+          model: _modelController.text.trim(),
+          year: year,
+          fuelType: '',
+          transmission: '',
+          kilometers: kilometers,
+          sellerType: '',
+          arrivalNote: '',
+        ),
+        packageType: _packageType,
+        notes: _notesController.text,
+      );
+      if (!mounted) return;
+      Navigator.pushReplacementNamed(
+        context,
+        AppRoutes.workOrderDetail,
+        arguments: order.id,
+      );
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Is emri olusturulamadi: $error')),
+      );
+      setState(() => _isSaving = false);
+    }
   }
 }

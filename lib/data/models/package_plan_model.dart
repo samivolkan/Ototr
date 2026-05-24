@@ -70,6 +70,15 @@ extension PackageTypeInfo on PackageType {
 
 PackageType packageTypeFromCode(String code) {
   final normalized = code.trim().toUpperCase();
+  if (normalized == 'PREMIUM_360') {
+    return PackageType.premium;
+  }
+  if (normalized == 'KAPORTA-BOYA') {
+    return PackageType.kaportaBoya;
+  }
+  if (normalized == 'HIZLI-KONTROL') {
+    return PackageType.hizliKontrol;
+  }
   return PackageType.values.firstWhere(
     (type) => type.code == normalized,
     orElse: () => PackageType.standard,

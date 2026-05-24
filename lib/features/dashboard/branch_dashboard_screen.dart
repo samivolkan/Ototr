@@ -11,6 +11,7 @@ import '../../core/widgets/ototr_metric_card.dart';
 import '../../core/widgets/ototr_section_title.dart';
 import '../../data/dummy/dummy_data.dart';
 import '../../data/models/user_profile_model.dart';
+import '../../data/repositories/app_repositories.dart';
 import '../../data/repositories/work_order_local_repository.dart';
 
 class BranchDashboardScreen extends StatelessWidget {
@@ -20,7 +21,7 @@ class BranchDashboardScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     const branch = DummyData.branch;
     const user = DummyData.user;
-    final workOrderSummary = WorkOrderLocalRepository.instance.summary();
+    final workOrderRepository = AppRepositories.instance.branchWorkOrders;
     final quickActions = [
       ('Yeni Is Emri', Icons.add_circle_outline, AppRoutes.newWorkOrder),
       ('Is Emirleri', Icons.assignment_outlined, AppRoutes.workOrders),
@@ -54,47 +55,65 @@ class BranchDashboardScreen extends StatelessWidget {
               ],
             ),
           ),
-          const OtotrSectionTitle(title: 'Bugunku Operasyon'),
-          Row(
-            children: [
-              Expanded(
-                child: OtotrMetricCard(
-                  label: 'Toplam Is',
-                  value: workOrderSummary.total.toString(),
-                  icon: Icons.directions_car,
-                ),
-              ),
-              const SizedBox(width: AppSizes.md),
-              Expanded(
-                child: OtotrMetricCard(
-                  label: 'Aktif',
-                  value: workOrderSummary.active.toString(),
-                  icon: Icons.pending_actions_outlined,
-                  tone: AppColors.info,
-                ),
-              ),
-            ],
+          OtotrSectionTitle(
+            title: 'Bugunku Operasyon (${workOrderRepository.sourceLabel})',
           ),
-          Row(
-            children: [
-              Expanded(
-                child: OtotrMetricCard(
-                  label: 'Eksik Veri',
-                  value: workOrderSummary.missingData.toString(),
-                  icon: Icons.warning_amber_outlined,
-                  tone: AppColors.warning,
-                ),
-              ),
-              const SizedBox(width: AppSizes.md),
-              Expanded(
-                child: OtotrMetricCard(
-                  label: 'Tamam Gorev',
-                  value: workOrderSummary.completedTasks.toString(),
-                  icon: Icons.task_alt,
-                  tone: AppColors.success,
-                ),
-              ),
-            ],
+          FutureBuilder<WorkOrderSummary>(
+            future: workOrderRepository.summary(),
+            builder: (context, snapshot) {
+              final workOrderSummary = snapshot.data ??
+                  const WorkOrderSummary(
+                    total: 0,
+                    active: 0,
+                    missingData: 0,
+                    completedTasks: 0,
+                  );
+              return Column(
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OtotrMetricCard(
+                          label: 'Toplam Is',
+                          value: workOrderSummary.total.toString(),
+                          icon: Icons.directions_car,
+                        ),
+                      ),
+                      const SizedBox(width: AppSizes.md),
+                      Expanded(
+                        child: OtotrMetricCard(
+                          label: 'Aktif',
+                          value: workOrderSummary.active.toString(),
+                          icon: Icons.pending_actions_outlined,
+                          tone: AppColors.info,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OtotrMetricCard(
+                          label: 'Eksik Veri',
+                          value: workOrderSummary.missingData.toString(),
+                          icon: Icons.warning_amber_outlined,
+                          tone: AppColors.warning,
+                        ),
+                      ),
+                      const SizedBox(width: AppSizes.md),
+                      Expanded(
+                        child: OtotrMetricCard(
+                          label: 'Tamam Gorev',
+                          value: workOrderSummary.completedTasks.toString(),
+                          icon: Icons.task_alt,
+                          tone: AppColors.success,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              );
+            },
           ),
           const OtotrAlertCard(
             title: 'Kritik operasyon uyarisi',
