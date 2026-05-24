@@ -78,6 +78,8 @@ await page.locator("#page-dealer.active #dealerWorkOrderForm.dealer-wo-fast-open
 await page.locator('#page-dealer.active .dealer-top-mode-switch [data-dealer-wo-mode="full"]').click();
 await page.locator("#page-dealer.active #dealerWorkOrderForm.dealer-wo-full-open").waitFor();
 assert.equal(await page.locator('#page-dealer.active #dealerWorkOrderForm [name="customer"]').inputValue(), "ELIF YAMAN", "Tam/Hizli mod gecisinde girilen bilgiler korunmali");
+await page.locator('#page-dealer.active .dealer-top-mode-switch [data-dealer-wo-mode="fast"]').click();
+await page.locator("#page-dealer.active #dealerWorkOrderForm.dealer-wo-fast-open").waitFor();
 await page.locator("#page-dealer.active .dealer-top-branch", { hasText: "3 Günlük Takvim" }).waitFor();
 await page.locator("#page-dealer.active .dealer-top-branch", { hasText: "Basım Kuyruğu" }).waitFor();
 
@@ -95,7 +97,6 @@ await form.locator('[name="vehicleModel"]').fill("Corolla");
 await form.locator('[name="year"]').fill("2021");
 
 await form.locator('[name="plate"]').fill("34 VIN 123");
-await form.locator('[name="engineNo"]').fill("M264920123456");
 await form.locator('[name="mileage"]').fill("128000");
 await form.locator('[data-dealer-package-choice="Full Ekspertiz"]').click();
 await page.evaluate(() => window.dealerCreateWorkOrder({ skipNativeValidity: true }));
@@ -122,6 +123,27 @@ assert.equal(created.vinNormalized, "JTDB4MEE30J123456", "Kayitta normalize VIN 
 assert.equal(created.vinDecodeStatus, "DISABLED", "Sasi decoder kayit akisinda devre disi olmali");
 assert.equal(created.vinManualReviewRequired, false, "Sasi kontrolu manuel inceleme uretmemeli");
 assert.equal(created.tab, "aktif-is-emirleri", "Is emri olusunca aktif is emirleri sekmesine gecmeli");
+await page.evaluate(id => {
+  const data = JSON.parse(localStorage.getItem("ototr-dealer-live-workorders-v1"));
+  const wo = data.workOrders.find(row => row.id === id);
+  Object.assign(wo, {
+    customer: "Alıcı bilgisi bekliyor",
+    phone: "",
+    taxNo: "",
+    seller: "Satıcı bilgisi bekliyor",
+    sellerPhone: "",
+    sellerTaxNo: "",
+    engineNo: "",
+    vehicleVariant: "",
+    fuel: "",
+    transmission: "",
+    payment: "Bekliyor",
+    paymentMethod: "",
+    consent: "Bekliyor",
+    paidAmount: ""
+  });
+  localStorage.setItem("ototr-dealer-live-workorders-v1", JSON.stringify(data));
+}, created.id);
 const activeWorkOrdersSection = page.locator('#page-dealer.active section.dealer-form-section', { hasText: "Aktif İş Emirleri" }).first();
 assert.equal(await activeWorkOrdersSection.locator('[data-dealer-tab="is-emirleri"]').count(), 0, "Aktif is emirleri kartinda ikinci yeni is emri butonu olmamali");
 await page.waitForSelector(`#page-dealer.active [data-dealer-update-wo="${created.id}"]`);
@@ -143,10 +165,44 @@ await page.evaluate(() => {
 await page.waitForSelector(`#page-dealer.active [data-dealer-update-wo="${created.id}"]`);
 await page.locator(`#page-dealer.active [data-dealer-update-wo="${created.id}"]`).first().click();
 await page.waitForFunction(() => document.querySelector("#dealerWorkOrderForm fieldset")?.disabled === false);
-await page.locator('#page-dealer.active [data-dealer-gate-nav]', { hasText: "Kaydet" }).waitFor();
-await page.locator('#page-dealer.active [data-dealer-gate-nav]', { hasText: "Kaydet" }).click();
-await page.locator('[data-dealer-save-notice]', { hasText: "Kaydedildi" }).waitFor();
-await page.locator('#page-dealer.active [data-dealer-gate-nav].saved', { hasText: "Kaydedildi" }).waitFor();
+await page.waitForFunction(() => document.querySelector('#dealerWorkOrderForm [name="engineNo"]')?.closest('.dealer-wo-field')?.classList.contains('is-invalid'));
+assert.equal(await page.locator('#page-dealer.active [data-dealer-gate-nav]').evaluate(btn => btn.disabled && btn.textContent.includes("Eksikler")), true, "Tam is emrinde eksik alanlar tamamlanmadan kaydet pasif olmali");
+await page.locator('#page-dealer.active #dealerWorkOrderForm [name="customer"]').fill("ELIF YAMAN");
+await page.locator('#page-dealer.active #dealerWorkOrderForm [name="phone"]').fill("05332104724");
+await page.locator('#page-dealer.active #dealerWorkOrderForm [name="taxNo"]').fill("12345678901");
+await page.locator('#page-dealer.active #dealerWorkOrderForm [name="seller"]').fill("DENIZ YILMAZ");
+await page.locator('#page-dealer.active #dealerWorkOrderForm [name="sellerPhone"]').fill("05332104725");
+await page.locator('#page-dealer.active #dealerWorkOrderForm [name="sellerTaxNo"]').fill("10987654321");
+await page.locator('#page-dealer.active #dealerWorkOrderForm [name="engineNo"]').fill("M264920123456");
+await page.evaluate(() => {
+  const form = document.getElementById("dealerWorkOrderForm");
+  const variant = dealerVehicleVariantsFor(form.elements.vehicleMake.value, form.elements.vehicleModel.value)[0] || "Baz Paket";
+  Object.entries({
+    vehicleVariant: variant,
+    fuel: "Benzin",
+    transmission: "Otomatik",
+    payment: "Tahsil edildi",
+    paymentMethod: "POS / Kredi Kartı",
+    consent: "İmzalandı"
+  }).forEach(([name, value]) => {
+    if(form.elements[name]) form.elements[name].value = value;
+  });
+  if(form.elements.paidAmount){
+    form.elements.paidAmount.value = "₺7.500";
+    form.elements.paidAmount.dataset.autoPaid = "0";
+  }
+  form.querySelectorAll("[data-dealer-choice-group]").forEach(group => {
+    const input = group.querySelector("input[type='hidden']");
+    if(!input) return;
+    group.querySelectorAll("[data-dealer-choice]").forEach(btn => btn.classList.toggle("active", btn.dataset.choiceValue === input.value));
+  });
+  dealerValidateSmartWorkOrderForm(form);
+  dealerScheduleWorkOrderGateSync(form);
+});
+await page.locator('#page-dealer.active [data-dealer-gate-nav]', { hasText: "Değişiklikleri Kaydet" }).waitFor();
+await page.locator('#page-dealer.active [data-dealer-gate-nav]', { hasText: "Değişiklikleri Kaydet" }).dispatchEvent("click");
+await page.locator('[data-dealer-save-notice]', { hasText: "Güncellendi" }).waitFor();
+await page.locator('#page-dealer.active [data-dealer-gate-nav].saved', { hasText: "Güncellendi" }).waitFor();
 assert.equal(await page.locator('#page-dealer.active #dealerWorkOrderForm fieldset').evaluate(el => el.disabled), true, "Kaydet sonrasi form kilitli goruntulemeye donmeli");
 
 await browser.close();
