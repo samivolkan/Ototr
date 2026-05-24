@@ -13,6 +13,19 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script>
+    (function(){
+      try{
+        var params = new URLSearchParams(window.location.search);
+        var hashRoute = (window.location.hash || '').replace(/^#\/?/, '').split('/')[0];
+        window.__OTOTR_DEALER_STANDALONE__ = params.get('portal') === 'dealer' || hashRoute === 'dealer';
+        if(window.__OTOTR_DEALER_STANDALONE__){
+          document.documentElement.classList.add('dealer-standalone-root');
+          document.title = 'OTOTR Bayi Portalı';
+        }
+      }catch(err){}
+    })();
+  </script>
   <style>
     :root{
       --ink:#111318;--muted:#69707d;--soft:#f6f7f9;--line:#e4e7ec;--panel:#fff;
@@ -885,13 +898,13 @@
     .dealer-top-actions .dealer-gate-nav.editing.ready{background:#eef2ff!important;color:#3730a3!important;border-color:#c7d2fe!important;box-shadow:0 10px 22px rgba(79,70,229,.14)!important}.dealer-top-actions .dealer-gate-nav.editing.ready i{color:#4f46e5!important}.dealer-top-actions .dealer-gate-nav.editing:not(.ready){background:#fff1f2!important;color:#b91c1c!important;border-color:#fecdd3!important;opacity:.88!important}.dealer-top-actions .dealer-gate-nav.editing:not(.ready) i{color:#dc2626!important}
     @media(max-width:900px){.dealer-erp-shell,.dealer-portal-layout,.dealer-kpi-grid,.dealer-ops-grid,.dealer-dashboard-grid,.dealer-focus-grid,.dealer-work-lane,.dealer-role-head,.dealer-block-rules,.dealer-mobile-actions,.dealer-detail-grid,.dealer-revision-strip,.dealer-station-grid,.dealer-station-kpis,.dealer-erp-module-strip,.dealer-search-head,.dealer-search-result,.dealer-calendar-head,.dealer-calendar-days,.dealer-calendar-wide,.dealer-calendar-slot{grid-template-columns:1fr!important}.dealer-calendar-board-head,.dealer-calendar-hour{grid-template-columns:52px minmax(0,1fr)}.dealer-calendar-event{grid-template-columns:minmax(0,1fr);align-items:start}.dealer-calendar-event .badge,.dealer-calendar-event .micro-btn{justify-self:start}.dealer-erp-sidebar,.dealer-rail{position:static;max-height:none}.dealer-role-switcher button,.dealer-portal-tabs button{flex:1 1 150px;justify-content:center}.dealer-row,.dealer-detail-head,.dealer-audit-item,.dealer-station-head{grid-template-columns:1fr}.dealer-detail-actions,.dealer-role-actions{justify-content:flex-start}.dealer-table-wrap table{min-width:720px}.dealer-search-result .quick-actions{justify-content:flex-start;flex-wrap:wrap}}
     .dealer-wo-form .dealer-wo-field{transition:background-color .18s ease,border-color .18s ease,box-shadow .18s ease}
-    .dealer-wo-form .dealer-wo-field.is-required.is-invalid{margin:-7px;padding:7px;border:1px solid #fecdd3!important;border-radius:10px;background:#fff1f2!important;box-shadow:0 8px 18px rgba(215,25,32,.06)}
-    .dealer-wo-form .dealer-wo-field.is-required.is-invalid>span{color:#b91c1c}
-    .dealer-wo-form .dealer-wo-field.is-required.is-invalid input,.dealer-wo-form .dealer-wo-field.is-required.is-invalid select{border-color:#fca5a5!important;background:#fffafa!important}
-    .dealer-wo-form .dealer-wo-field.is-required.is-invalid input:focus,.dealer-wo-form .dealer-wo-field.is-required.is-invalid select:focus{border-color:#d71920;box-shadow:0 0 0 3px rgba(215,25,32,.12)}
-    .dealer-wo-form .dealer-wo-field.is-required.is-valid{margin:-7px;padding:7px;border:1px solid #bbf7d0;border-radius:10px;background:#f0fdf4}
-    .dealer-wo-form .dealer-wo-field.is-required.is-valid>span{color:#166534}
-    .dealer-wo-form .dealer-wo-field.is-required.is-valid input,.dealer-wo-form .dealer-wo-field.is-required.is-valid select{border-color:#86efac;background:#ffffff}
+    .dealer-wo-form .dealer-wo-field.is-required.is-invalid,.dealer-wo-form .dealer-wo-field:has(input[required]:invalid),.dealer-wo-form .dealer-wo-field:has(select[required]:invalid),.dealer-wo-form .dealer-wo-field:has(textarea[required]:invalid){margin:-7px;padding:7px;border:1px solid #fecdd3!important;border-radius:10px;background:#fff1f2!important;box-shadow:0 8px 18px rgba(215,25,32,.06)}
+    .dealer-wo-form .dealer-wo-field.is-required.is-invalid>span,.dealer-wo-form .dealer-wo-field:has(input[required]:invalid)>span,.dealer-wo-form .dealer-wo-field:has(select[required]:invalid)>span,.dealer-wo-form .dealer-wo-field:has(textarea[required]:invalid)>span{color:#b91c1c}
+    .dealer-wo-form .dealer-wo-field.is-required.is-invalid input,.dealer-wo-form .dealer-wo-field.is-required.is-invalid select,.dealer-wo-form .dealer-wo-field:has(input[required]:invalid) input,.dealer-wo-form .dealer-wo-field:has(select[required]:invalid) select,.dealer-wo-form .dealer-wo-field:has(textarea[required]:invalid) textarea{border-color:#fca5a5!important;background:#fffafa!important}
+    .dealer-wo-form .dealer-wo-field.is-required.is-invalid input:focus,.dealer-wo-form .dealer-wo-field.is-required.is-invalid select:focus,.dealer-wo-form .dealer-wo-field:has(input[required]:invalid) input:focus,.dealer-wo-form .dealer-wo-field:has(select[required]:invalid) select:focus,.dealer-wo-form .dealer-wo-field:has(textarea[required]:invalid) textarea:focus{border-color:#d71920;box-shadow:0 0 0 3px rgba(215,25,32,.12)}
+    .dealer-wo-form .dealer-wo-field.is-required.is-valid,.dealer-wo-form .dealer-wo-field:has(input[required]:valid),.dealer-wo-form .dealer-wo-field:has(select[required]:valid),.dealer-wo-form .dealer-wo-field:has(textarea[required]:valid){margin:-7px;padding:7px;border:1px solid #bbf7d0;border-radius:10px;background:#f0fdf4}
+    .dealer-wo-form .dealer-wo-field.is-required.is-valid>span,.dealer-wo-form .dealer-wo-field:has(input[required]:valid)>span,.dealer-wo-form .dealer-wo-field:has(select[required]:valid)>span,.dealer-wo-form .dealer-wo-field:has(textarea[required]:valid)>span{color:#166534}
+    .dealer-wo-form .dealer-wo-field.is-required.is-valid input,.dealer-wo-form .dealer-wo-field.is-required.is-valid select,.dealer-wo-form .dealer-wo-field:has(input[required]:valid) input,.dealer-wo-form .dealer-wo-field:has(select[required]:valid) select,.dealer-wo-form .dealer-wo-field:has(textarea[required]:valid) textarea{border-color:#86efac;background:#ffffff}
     .dealer-wo-form .dealer-wo-field{position:relative}
     .dealer-wo-field-suggest{position:absolute;right:4px;top:-3px;max-width:56%;height:22px;border:1px solid #c7d2fe;border-radius:999px;background:#eef2ff;color:#3730a3;padding:0 7px;font-size:9px;font-weight:950;line-height:20px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;box-shadow:0 6px 14px rgba(79,70,229,.12);z-index:2}
     .dealer-wo-field-suggest.all{background:#f5f3ff;border-color:#ddd6fe;color:#6d28d9}
@@ -1101,9 +1114,49 @@
     .dealer-wo-screen .dealer-wo-table{display:none!important}
     @media(max-width:900px){.dealer-wo-vehicle-history{grid-column:1/-1;grid-row:auto}}
     @media(max-width:900px){.dealer-wo-grid>.dealer-wo-card:nth-of-type(1) .dealer-wo-form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.dealer-wo-grid>.dealer-wo-card:nth-of-type(1) .dealer-wo-field:has([name="taxNo"]){grid-column:auto}.dealer-wo-grid>.dealer-wo-card:nth-of-type(1) .dealer-wo-field[data-dealer-campaign-field]{grid-column:auto}}
+    .dealer-wo-reception-card{grid-column:1/-1;padding:11px 13px!important;gap:9px!important}
+    .dealer-wo-reception-grid{grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:9px 10px!important}
+    .dealer-wo-reception-grid .dealer-wo-field.full,.dealer-wo-reception-grid .dealer-wo-multi-choice-field.full{grid-column:1/-1!important}
+    .dealer-wo-reception-grid .dealer-wo-field.wide{grid-column:span 2!important}
+    .dealer-wo-reception-card .dealer-wo-choice-grid{gap:5px}
+    .dealer-wo-reception-card .dealer-wo-choice{min-height:27px;padding:5px 8px;font-size:9.8px}
+    .dealer-wo-multi-choice-field .dealer-wo-choice.active{background:#eff6ff!important;border-color:#93c5fd!important;color:#1d4ed8!important;box-shadow:0 7px 16px rgba(37,99,235,.09)!important}
+    .dealer-readonly-pill{margin-left:auto;border:1px solid #dbe3ee;border-radius:999px;background:#f8fafc;color:#475569;padding:4px 8px;font-size:9px;font-weight:950}
+    .dealer-technical-preview{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+    .dealer-technical-job{border:1px solid #dbe3ee;border-radius:10px;background:linear-gradient(135deg,#f8fafc,#fff);padding:9px;display:grid;gap:5px;min-height:74px}
+    .dealer-technical-job b{font-size:11px}.dealer-technical-job span{font-size:10.5px;color:#475569;line-height:1.35}.dealer-technical-job small{color:#166534;font-size:9.5px;font-weight:950}
+    .dealer-model-preview{display:grid;gap:8px}
+    .dealer-model-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+    .dealer-model-grid div{border:1px solid #e5e7eb;border-radius:9px;background:#f8fafc;padding:8px;min-width:0}
+    .dealer-model-grid span{display:block;color:#64748b;font-size:9px;font-weight:950;text-transform:uppercase}
+    .dealer-model-grid b{display:block;margin-top:3px;font-size:10.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .dealer-model-preview details{border:1px solid #e5e7eb;border-radius:10px;background:#fff;padding:8px}
+    .dealer-model-preview summary{cursor:pointer;font-size:11px;font-weight:950;color:#334155}
+    .dealer-model-preview pre{max-height:220px;overflow:auto;margin:8px 0 0;font-size:10px;line-height:1.35;background:#0f172a;color:#e5e7eb;border-radius:8px;padding:10px}
+    .dealer-wo-warning-panel{border:1px solid #dbe3ee;border-radius:12px;background:#fff;padding:12px;display:grid;gap:8px}
+    .dealer-wo-warning-panel h4{margin:0;display:flex;align-items:center;gap:8px;font-size:12.5px}
+    .dealer-wo-warning-panel h4 i{width:18px;height:18px}
+    .dealer-wo-warning-panel ul{margin:0;padding-left:17px;display:grid;gap:5px}
+    .dealer-wo-warning-panel li{font-size:11px;line-height:1.35;color:#334155}
+    .dealer-wo-warning-panel.block{background:#fff1f2;border-color:#fecdd3}.dealer-wo-warning-panel.block h4{color:#b91c1c}
+    .dealer-wo-warning-panel.report{background:#fff7ed;border-color:#fed7aa}.dealer-wo-warning-panel.report h4{color:#9a3412}
+    .dealer-wo-warning-panel.history{background:#eff6ff;border-color:#bfdbfe}.dealer-wo-warning-panel.history h4{color:#1d4ed8}
+    .dealer-discount-authority{border:1px solid #dbe3ee;border-radius:9px;background:#f8fafc;color:#475569;padding:7px 8px;font-size:10px;font-weight:900;line-height:1.35}
+    .dealer-discount-authority.warn{border-color:#fed7aa;background:#fff7ed;color:#9a3412}
+    .dealer-vin-assist{grid-column:1/-1;border:1px solid #dbe3ee;border-radius:10px;background:#f8fafc;padding:8px 10px;display:none;gap:4px}
+    .dealer-vin-assist.open{display:grid}.dealer-vin-assist.good{border-color:#bbf7d0;background:#f0fdf4}.dealer-vin-assist.warn,.dealer-vin-assist.manual{border-color:#fed7aa;background:#fff7ed}.dealer-vin-assist.bad{border-color:#fecdd3;background:#fff1f2}
+    .dealer-vin-assist b{font-size:11px}.dealer-vin-assist p{margin:0;color:#475569;font-size:10.5px}.dealer-vin-assist .mini-row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+    .dealer-wo-history-card{order:4}.dealer-wo-package-card{order:5}.dealer-wo-addon-card{order:6}.dealer-wo-parties-card{order:7}.dealer-wo-source-card{order:8}.dealer-wo-evidence-card{order:9}.dealer-wo-payment-card{order:10}.dealer-wo-pipeline-card{order:11}.dealer-wo-data-model-card{order:12}.dealer-wo-tech-preview-card{order:13}
+    .dealer-wo-form.dealer-wo-fast-open .dealer-wo-parties-card,.dealer-wo-form.dealer-wo-fast-open .dealer-wo-source-card,.dealer-wo-form.dealer-wo-fast-open .dealer-wo-evidence-card,.dealer-wo-form.dealer-wo-fast-open .dealer-wo-data-model-card{display:none!important}
+    .dealer-wo-fast-open .dealer-wo-package-card{order:3!important}.dealer-wo-fast-open .dealer-wo-tech-preview-card{order:99!important;display:grid!important}
+    @media(max-width:1280px){.dealer-wo-reception-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}.dealer-technical-preview,.dealer-model-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:760px){.dealer-wo-reception-grid,.dealer-technical-preview,.dealer-model-grid{grid-template-columns:1fr!important}.dealer-wo-reception-grid .dealer-wo-field.wide{grid-column:auto!important}}
   </style>
 </head>
 <body>
+  <script>
+    if(window.__OTOTR_DEALER_STANDALONE__) document.body.classList.add('dealer-standalone');
+  </script>
   <div class="app">
     <aside class="side">
       <div class="brand-row"><a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.218</small></div></a><div class="brand-actions"><button class="theme-toggle" type="button" data-theme-toggle title="Koyu temaya geç" aria-label="Tema değiştir"><i data-lucide="sun-moon"></i><span id="themeToggleText">Açık</span></button><div class="online-pill" title="Online kullanıcı sayısı"><span class="online-dot"></span><b data-online-count>42</b><small>kişi</small></div></div></div>
@@ -2674,7 +2727,10 @@
     function dealerPortalUrl(){ return 'bayi-portal/index.html'; }
     function openDealerPortalWindow(){ window.open(dealerPortalUrl(),'_blank','noopener,noreferrer'); }
     function syncDealerStandaloneMode(resolved){
-      const on = resolved==='dealer';
+      const forced = new URLSearchParams(location.search).get('portal')==='dealer';
+      const on = resolved==='dealer' || forced;
+      window.__OTOTR_DEALER_STANDALONE__ = on;
+      document.documentElement.classList.toggle('dealer-standalone-root',on);
       document.body.classList.toggle('dealer-standalone',on);
       document.title = on ? 'OTOTR Bayi Portalı' : 'OTOTR Genel Merkez ERP + CRM';
     }
@@ -6290,7 +6346,7 @@
     function ComplianceApprovals(page,total){const d=reportData;return ReportPage(page,total,'Dijital Doğrulama / Yasal Kapsam / Onaylar','Rapor güvenliği, hukuki kapsam ve dijital onay zinciri final sayfasında birleştirildi.',`<div class="digital-warning">${icon('triangle-alert')}<div><b>Dikkat! Raporlar dijital olarak üretilmektedir.</b><span>Hiçbir raporumuzda el yazısı kullanılmamaktadır. El yazısı ile eklenti yapılan raporlar geçersizdir.</span></div></div><div class="compliance-grid"><section class="verify-panel"><div class="verify-panel-title"><b>01</b>Dijital doğrulama</div><div class="verify-security" style="margin-top:8px"><div>${ReportQrCard()}<b style="display:block;margin-top:6px;font-size:8px">A7B9-2Y1C-3D6E</b></div><div class="verify-cards">${[['Oluşturulma',d.reportDate],['Son görüntüleme','24.05.2026 - 15:22'],['Veri bütünlüğü','Doğrulandı'],['Zaman damgası','24.05.2026 / 14:35:22']].map(x=>`<div class="verify-mini"><span>${rpEsc(x[0])}</span><b>${rpEsc(x[1])}</b></div>`).join('')}</div></div></section><section class="verify-panel"><div class="verify-panel-title"><b>02</b>Yasal kapsam</div><div class="legal-mini-grid compact-legal-grid" style="margin-top:8px">${[['Rapor kapsamı',d.legal[0]],['Adli inceleme değildir',d.legal[1]],['Paket kapsamı dışı',d.legal[3]],['Kişisel veri gizliliği',d.legal[5]]].map(x=>`<div class="legal-mini"><b>${rpEsc(x[0])}</b><span>${rpEsc(x[1])}</span></div>`).join('')}</div></section></div><section class="verify-panel"><div class="verify-panel-title"><b>03</b>Onaylar ve dijital kayıt</div><div class="approval-cards" style="margin-top:8px">${[['Ekspertiz uzmanı',d.technician],['Kalite kontrol',d.qualityController],['Şube sorumlusu',d.approver],['Müşteri onayı',d.buyer],['Satıcı onayı',d.seller],['Sistem onayı','OTOTR Sistem']].map(x=>`<div class="approval-card"><b>${rpEsc(x[0])}</b><span>${rpEsc(x[1])}</span><div class="mini-sign">Dijital onay</div></div>`).join('')}</div></section><div class="report-grid-4">${ReportPanel('Şube',d.branch,d.branchPhone,'blue')}${ReportPanel('Paket',d.packageName,d.selectedExpertiseAmount,'orange')}${ReportPanel('Rapor no',d.reportNo,d.reportDate,'blue')}${ReportPanel('HYB / Kalite',d.tseHybNo,'Dijital onay zinciri','green')}</div><div class="report-note">Bu rapor OTOTR sisteminde rapor numarası, plaka, şasi, zaman damgası ve dijital onay zinciriyle eşleştirilerek saklanır. Baskı kopyası dijital doğrulama ile birlikte geçerlidir.</div>`,'optimized-combined-page final-compliance-page');}
     function ExpertiseReportDesignPage(){
       syncDealerReportData();
-      const pages=[['Kapak','Araç güven paneli',ReportCover],['Yönetici Özeti','Karar destek paneli',ExecutiveSummary],['Hasar / KM / Kayıt','Sorgu sınırları',DamageMileageRecords],['Araç ve Trafik Bilgileri','Kimlik ve iş emri',VehicleIdentity],['Kaporta-Boya Analizi','Harita ve mikron',BodyPaintAnalysis],['Teknik Durum Dashboard','Skor kartları',TechnicalDashboard],['Motor-Mekanik Üst','Motor check-up',MechanicalInspection],['Alt / Ön Mekanik','Lift altı kontrol',MechanicalUnderbodyInspection],['Elektronik / OBD','Modül tarama',ObdSection],['Airbag / SRS','Kontrol yöntemi',AirbagSection],['Fren / Süspansiyon / Lastik','Ölçüm değerleri',BrakeSuspensionTyreSection],['Dijital Araç Karnesi','Plaka/şasi geçmiş kartı',VehiclePassportSection],['Fotoğraf Kanıt Arşivi','Zaman çizelgesi',EvidenceTimeline],['Kondisyon / Donanım','Trim ve özellikler',VehicleConditionEquipment],['Pazar / Masraf / Bakım','Karar ve servis planı',MarketServicePlan],['Usta Kanaati / AI','Satın alma dili',PurchaseAiRecommendation],['Doğrulama / Onaylar','Yasal ve dijital kayıt',ComplianceApprovals]];
+      const pages=[['Kapak','Araç güven paneli',ReportCover],['Yönetici Özeti','Karar destek paneli',ExecutiveSummary],['Hasar / KM / Kayıt','Dosya ekspertiz sorguları',DamageMileageRecords],['Araç Kabul / İş Emri','Araç ve taraf kimliği',VehicleIdentity],['Kaporta - Boya','59 nokta ve mikron',BodyPaintAnalysis],['Motor Üst Mekanik','37 nokta check-up',MechanicalInspection],['Alt / Ön Mekanik','40 nokta lift kontrolü',MechanicalUnderbodyInspection],['OBD / Beyin Test','10 nokta modül tarama',ObdSection],['Airbag / SRS','9 nokta kontrol yöntemi',AirbagSection],['Fren / Süspansiyon','Cihaz ölçümü',BrakeSuspensionTyreSection],['Dyno / Yol / Lastik','Test ve skor çıktıları',TechnicalDashboard],['Dijital Araç Karnesi','Plaka/şasi geçmiş kartı',VehiclePassportSection],['Fotoğraf Kanıt Arşivi','Zaman çizelgesi',EvidenceTimeline],['İç / Dış Kondisyon','Trim ve donanım',VehicleConditionEquipment],['Pazar / Masraf / Bakım','Karar ve servis planı',MarketServicePlan],['Doğrulama / Onaylar','Yasal ve dijital kayıt',ComplianceApprovals]];
       const purchaseAiPageIndex=pages.findIndex(p=>p[2]===PurchaseAiRecommendation);
       if(purchaseAiPageIndex>-1) pages.splice(purchaseAiPageIndex,1);
       const total=pages.length;
@@ -6339,25 +6395,31 @@
         ['OBD / elektronik','Mekanik + OBD Ustası','Temel OBD tarama, aktif arıza ve akü/şarj kontrolü'],
         ['Fren / süspansiyon','Test Operatörü','Fren, süspansiyon, lastik ve yanal kayma ölçümü']
       ]},
-      'Full Ekspertiz':{price:'7.500 TL',scope:['Araç kabul','Kaporta / boya','Şasi / direk','Motor / mekanik','Alt takım','OBD / elektronik','Fren / süspansiyon'],tasks:[
+      'Full Ekspertiz':{price:'7.500 TL',scope:['Araç kabul','Kaporta / boya','Şasi / direk','Motor üst mekanik','Alt / ön mekanik','OBD / beyin test','Airbag / SRS','Fren / süspansiyon','Dyno / yol testi'],tasks:[
         ['Kabul','Müşteri Kabul','Kimlik, ruhsat, KM, paket, KVKK ve ödeme kontrolü'],
-        ['Kaporta / boya','Kaporta Ustası','58 nokta kaporta, boya, değişen, lokal boya ve mikron kontrolü'],
+        ['Kaporta / boya','Kaporta Ustası','Otorapor kaynak sözlüğüne göre 59 nokta kaporta, boya, değişen, lokal boya ve mikron kontrolü'],
         ['Şasi / direk','Kıdemli Usta','Şasi ucu, podye, direk, panel ve ağır işlem şüphesi kontrolü'],
-        ['Motor / mekanik','Mekanik + OBD Ustası','Motor, şanzıman, aktarma, kaçak ve üst bölge kontrolü'],
-        ['Alt takım','Mekanik + OBD Ustası','Lift altı, aks, rot, amortisör, egzoz, takoz ve aktarma kontrolü'],
-        ['OBD / elektronik','Mekanik + OBD Ustası','OBD modül tarama, akü, airbag/SRS ve geçmiş hata kontrolü'],
-        ['Fren / süspansiyon','Test Operatörü','Fren, süspansiyon, lastik, dyno ve yol testi ölçümü']
+        ['Motor üst mekanik','Mekanik + OBD Ustası','37 nokta motor check-up, sıvı, kaçak, akü, triger, yakıt ve soğutma kontrolü'],
+        ['Alt / ön mekanik','Mekanik + OBD Ustası','40 nokta lift altı, aks, rot, salıncak, takoz, şanzıman ve diferansiyel kontrolü'],
+        ['OBD / beyin test','Mekanik + OBD Ustası','10 nokta modül taraması, aktif/geçmiş hata ve cihaz ekran kanıtı'],
+        ['Airbag / SRS','Mekanik + OBD Ustası','9 nokta airbag ışığı, SRS tarama, söküm yöntemi ve emniyet kemeri kontrolü'],
+        ['Fren / süspansiyon','Test Operatörü','Fren, süspansiyon, yanal kayma ve lastik ölçümleri'],
+        ['Dyno / yol testi','Test Operatörü','Güç, tork, ivmelenme, vites geçişi ve test çıktısı']
       ]},
-      'OTOTR Premium 360':{price:'10.000 TL',scope:['Araç kabul','Kaporta / boya','Şasi / direk','Motor / mekanik','Alt takım','OBD / elektronik','Fren / süspansiyon','Donanım / kondisyon','Kayıt sorguları'],tasks:[
+      'OTOTR Premium 360':{price:'10.000 TL',scope:['Araç kabul','Kayıt sorguları','Kaporta / boya','Şasi / direk','Motor üst mekanik','Alt / ön mekanik','OBD / beyin test','Airbag / SRS','Fren / süspansiyon','Dyno / yol testi','Dış kondisyon','İç ekspertiz / donanım','Conta kaçak testi'],tasks:[
         ['Kabul','Müşteri Kabul','Kimlik, ruhsat, KM, paket, KVKK, yol testi rızası ve ödeme kontrolü'],
-        ['Kaporta / boya','Kaporta Ustası','58 nokta kaporta, mikron, lokal boya, değişen ve kanıt fotoğrafı'],
+        ['Kayıt sorguları','Sekreterya','SBM/Tramer, KM, vergi, muayene, egzoz emisyon ve rapor erişim kontrolü'],
+        ['Kaporta / boya','Kaporta Ustası','59 nokta kaporta, mikron, lokal boya, değişen ve kanıt fotoğrafı'],
         ['Şasi / direk','Kıdemli Usta','Şasi, podye, direk, ön/arka panel ve ikinci usta kontrol gereği'],
-        ['Motor / mekanik','Mekanik + OBD Ustası','Motor üst bölge, şanzıman, turbo, sıvı, kaçak ve ses kontrolü'],
-        ['Alt takım','Mekanik + OBD Ustası','Lift altı, aks, rot, amortisör, egzoz, takoz ve aktarma kontrolü'],
-        ['OBD / elektronik','Mekanik + OBD Ustası','OBD modül tarama, airbag/SRS yöntemi, akü ve cihaz ekran kanıtı'],
-        ['Fren / süspansiyon','Test Operatörü','Fren, süspansiyon, yanal kayma, lastik, dyno ve yol testi'],
-        ['Donanım / kondisyon','Müşteri Kabul','İç/dış kondisyon, donanım teyidi, ruhsat ve fotoğraf albümü'],
-        ['Kayıt sorguları','Sekreterya','Tramer, KM, muayene, hasar ve rapor erişim kontrolü']
+        ['Motor üst mekanik','Mekanik + OBD Ustası','37 nokta motor check-up, sıvı, kaçak, akü, triger, yakıt ve soğutma kontrolü'],
+        ['Alt / ön mekanik','Mekanik + OBD Ustası','40 nokta lift altı, aks, rot, salıncak, takoz, şanzıman ve diferansiyel kontrolü'],
+        ['OBD / beyin test','Mekanik + OBD Ustası','10 nokta modül taraması, aktif/geçmiş hata ve cihaz ekran kanıtı'],
+        ['Airbag / SRS','Mekanik + OBD Ustası','9 nokta airbag ışığı, SRS tarama, söküm yöntemi ve emniyet kemeri kontrolü'],
+        ['Fren / süspansiyon','Test Operatörü','Fren, süspansiyon, yanal kayma ve lastik ölçümleri'],
+        ['Dyno / yol testi','Test Operatörü','Güç, tork, ivmelenme, vites geçişi ve test çıktısı'],
+        ['Dış kondisyon','Müşteri Kabul','Dış gövde kondisyonu, lastik, far, stop, ayna, cam ve jant kontrolü'],
+        ['İç ekspertiz / donanım','Müşteri Kabul','İç trim, torpido, klima, multimedya, düğmeler, tavan döşemesi ve donanım teyidi'],
+        ['Conta kaçak testi','Mekanik + OBD Ustası','Conta kaçak testi sonucu, cihaz kanıtı ve teknisyen notu']
       ]}
     };
     function dealerPackageName(name){
@@ -6471,7 +6533,16 @@
         'Donanım / kondisyon':{customerText:'İç ve dış kondisyon yaşına göre iyi seviyede. Ön tamponda kozmetik sürtme izi var.',rawNote:'Ön tampon çizik, jantlarda hafif kozmetik iz.',severity:'Bilgi',evidence:['F-050']},
         'Kayıt sorguları':{customerText:'Tramerde 1 adet düşük tutarlı hasar kaydı görüldü; kilometre geçmişi tutarlı.',rawNote:'SBM 12.450 TL çarpma kaydı. KM kaynakları tutarlı.',severity:'Orta',evidence:['SBM-001']}
       };
-      return samples[station]||{customerText:station+' kontrolü tamamlandı.',rawNote:station+' için usta girişi kaydedildi.',severity:'Bilgi',evidence:['KANIT']};
+      const alias=station.includes('Kaporta')?'Kaporta / boya'
+        :station.includes('Şasi')||station.includes('direk')?'Şasi / direk'
+        :station.includes('Motor')?'Motor / mekanik'
+        :station.includes('Alt')||station.includes('ön mekanik')?'Alt takım'
+        :station.includes('OBD')||station.includes('beyin')||station.includes('Airbag')||station.includes('SRS')?'OBD / elektronik'
+        :station.includes('Fren')||station.includes('süspansiyon')||station.includes('Dyno')||station.includes('yol testi')?'Fren / süspansiyon'
+        :station.includes('Donanım')||station.includes('kondisyon')||station.includes('İç')||station.includes('Dış')?'Donanım / kondisyon'
+        :station.includes('Kayıt')||station.includes('sorgu')?'Kayıt sorguları'
+        :station.includes('Conta')?'Motor / mekanik':'';
+      return samples[station]||samples[alias]||{customerText:station+' kontrolü tamamlandı.',rawNote:station+' için usta girişi kaydedildi.',severity:'Bilgi',evidence:['KANIT']};
     }
     function dealerStationFormFields(task){
       const station=task?.station||'Teknik kontrol';
@@ -6491,7 +6562,15 @@
         {name:'serviceAdvice',label:'Servis önerisi',type:'textarea',value:station.includes('Alt takım')?'Rot başı ve ön takım yakın servis bakımında kontrol edilmeli.':'Periyodik bakım geçmişi teyit edilmelidir.',required:true,help:'Rapor önerilerine eklenir.'},
         {name:'customerText',label:'Rapora düşecek müşteri dili',type:'textarea',value:station.includes('Alt takım')?'Lift altı kontrolde sağ rot başı takip gerektiren seviyededir; servis kontrolü önerilir.':'Motor çalışma sesi normaldir. Yağ/su kaçağı görülmedi; periyodik bakım takibi önerilir.',required:true,help:'Müşteri rapor metni.'}
       ];
-      if(station.includes('OBD')) return [
+      if(station.includes('Airbag')||station.includes('SRS')) return [
+        {name:'controlMethod',label:'Kontrol yöntemi',type:'select',options:['OBD + görsel kontrol','OBD + fiziki söküm','Sadece OBD','Paket kapsamında değil','Kontrol edilemedi'],value:'OBD + görsel kontrol',required:true,help:'Raporda kontrol yöntemi açık gösterilir.'},
+        {name:'airbagLight',label:'Airbag ışığı',type:'select',options:['Yanmıyor','Yanıyor, arıza mevcut','Kontak sonrası sönüyor','Kontrol edilemedi'],value:'Kontak sonrası sönüyor',required:true,help:'Gösterge paneli kontrolü.'},
+        {name:'srsScan',label:'SRS / Airbag OBD taraması',type:'select',options:['Aktif hata yok','Geçmiş hata var','Aktif hata var','Tarama yapılamadı'],value:'Aktif hata yok',required:true,help:'OBD modül sonucuna bağlanır.'},
+        {name:'physicalCheck',label:'Fiziki söküm durumu',type:'select',options:['Yapılmadı','Yapıldı','Müşteri/satıcı izin vermedi','Paket kapsamı dışında'],value:'Yapılmadı',required:true,help:'Hukuki kapsam için zorunlu alan.'},
+        {name:'rawNote',label:'Usta teknik notu',type:'textarea',value:'Airbag ışığı kontak sonrası söndü. OBD taramasında aktif SRS hatası görülmedi. Fiziki söküm yapılmadı.',required:true,help:'İç teknik not olarak saklanır.'},
+        {name:'customerText',label:'Rapora düşecek müşteri dili',type:'textarea',value:'Airbag/SRS kontrolünde aktif hata görülmedi. Fiziki söküm yapılmadığı raporda kapsam yöntemi olarak belirtilmiştir.',required:true,help:'Müşteri rapor metni.'}
+      ];
+      if(station.includes('OBD')||station.includes('beyin')) return [
         {name:'module',label:'Taranan modül',type:'select',options:['Motor ECU','ABS','Airbag / SRS','BCM','Şanzıman','Tüm modüller'],value:'Motor ECU',required:true,help:'OBD tablo modülü.'},
         {name:'faultStatus',label:'Hata durumu',type:'select',options:['Aktif hata yok','Geçmiş hata','Aktif hata','İletişim hatası','Tarama yapılamadı'],value:'Geçmiş hata',required:true,help:'Aktif/geçmiş ayrımı.'},
         {name:'faultCode',label:'Hata kodu',value:'P0562',required:true,help:'Kod yoksa - yazılır.'},
@@ -6499,7 +6578,7 @@
         {name:'rawNote',label:'Cihaz / usta notu',type:'textarea',value:'Geçmiş düşük voltaj kaydı görüldü. Silme sonrası tekrar etmedi.',required:true,help:'Cihaz çıktısı ile eşleşir.'},
         {name:'customerText',label:'Rapora düşecek müşteri dili',type:'textarea',value:'OBD taramasında aktif kritik hata görülmedi. Geçmiş düşük voltaj kaydı için akü sağlık kontrolü önerilir.',required:true,help:'Müşteri rapor metni.'}
       ];
-      if(station.includes('Fren')||station.includes('süspansiyon')) return [
+      if(station.includes('Fren')||station.includes('süspansiyon')||station.includes('Dyno')||station.includes('yol testi')||station.includes('Lastik')) return [
         {name:'testType',label:'Test türü',type:'select',options:['Fren testi','Süspansiyon testi','Dyno','Yanal kayma','Yol testi','Lastik / DOT'],value:'Fren testi',required:true,help:'Test rapor satırı.'},
         {name:'measurement',label:'Ölçüm değeri',value:'Ön 2.85 kN / Arka 2.10 kN',required:true,help:'Cihazdan gelen değer.'},
         {name:'deviation',label:'Sapma / limit',value:'%6 / limit içi',required:true,help:'Limit dışıysa blokaj üretir.'},
@@ -6671,6 +6750,27 @@
     const DEALER_DEFAULT_VARIANTS=['Baz Paket','Comfort','Business','Style','Sport','Premium','AMG Line','M Sport'];
     const DEALER_FUEL_TYPES=['Benzin','Dizel','Hibrit','Elektrik','LPG'];
     const DEALER_TRANSMISSION_TYPES=['Otomatik','Manuel','Yarı Otomatik'];
+    const DEALER_REPORT_CHANNELS=['WhatsApp','SMS','E-posta','Basılı teslim','QR link'];
+    const DEALER_VEHICLE_SOURCE_TYPES=['Bireysel','Galeri','Yetkili Bayi','Filo','İhale','Takas','Referans'];
+    const DEALER_ARRIVAL_CHANNELS=['Walk-in','Randevu','WhatsApp','Telefon','Web','Referans','Galeri'];
+    const DEALER_ARRIVAL_STATUSES=['Çalışır','Çekiciyle geldi','Yürür değil','Akü bitik','Kaza sonrası','Motor arızalı'];
+    const DEALER_ACCEPTANCE_EVIDENCE_ITEMS=[
+      {key:'frontPhoto',label:'Ön fotoğraf'},
+      {key:'rearPhoto',label:'Arka fotoğraf'},
+      {key:'rightSidePhoto',label:'Sağ yan'},
+      {key:'leftSidePhoto',label:'Sol yan'},
+      {key:'platePhoto',label:'Plaka'},
+      {key:'registrationPhoto',label:'Ruhsat'},
+      {key:'mileagePhoto',label:'KM ekranı'},
+      {key:'vinLabelPhoto',label:'Şasi etiketi'},
+      {key:'damagePhoto',label:'Mevcut hasar'}
+    ];
+    const DEALER_WMI_MAKE_PREFIXES={
+      WBA:'BMW',WBS:'BMW',WBY:'BMW',WDD:'Mercedes-Benz',WDB:'Mercedes-Benz',WDC:'Mercedes-Benz',W1K:'Mercedes-Benz',W1N:'Mercedes-Benz',
+      WAU:'Audi',TRU:'Audi',WVW:'Volkswagen',WV1:'Volkswagen',WV2:'Volkswagen',VF1:'Renault',VF3:'Peugeot',VR3:'Peugeot',VF7:'Citroën',
+      NM0:'Ford',WF0:'Ford',ZFA:'Fiat',TMA:'Hyundai',KMH:'Hyundai',KNA:'Kia',KNE:'Kia',JT2:'Toyota',JTD:'Toyota',NMT:'Toyota',
+      JHM:'Honda',SHH:'Honda',JN1:'Nissan',SJN:'Nissan',JMZ:'Mazda',TMB:'Skoda',VSS:'Seat',ZAR:'Alfa Romeo',SAL:'Land Rover'
+    };
     function dealerSmartDigits(value){return String(value||'').replace(/\D/g,'');}
     function dealerFormatPhoneInput(value){
       let digits=dealerSmartDigits(value);
@@ -6701,14 +6801,14 @@
       if(typeof api.validateVin==='function') return api.validateVin(value);
       const vin=dealerNormalizeVinInput(value), errors=[];
       if(vin.length!==17) errors.push({code:'VIN_INVALID_LENGTH',message:'Şasi numarası 17 karakter olmalıdır.'});
-      if(/[IOQ]/.test(vin)) errors.push({code:'VIN_FORBIDDEN_CHARACTER',message:'Şasi numarası I, O veya Q harflerini içeremez.'});
       if(/[^A-Z0-9]/.test(vin)) errors.push({code:'VIN_INVALID_CHARACTER',message:'Şasi numarası sadece büyük harf ve rakam içermelidir.'});
-      return {isValid:errors.length===0&&/^[A-HJ-NPR-Z0-9]{17}$/.test(vin),errors};
+      return {isValid:errors.length===0&&/^[A-Z0-9]{17}$/.test(vin),errors};
     }
     function dealerValidateChassisInput(value){
       const vin=dealerVinDisplayInput(value), errors=[];
       if(vin.length!==17) errors.push({code:'CHASSIS_INVALID_LENGTH',message:'Şasi numarası 17 karakter olmalıdır.'});
-      return {isValid:errors.length===0,errors};
+      if(vin&&/[^A-Z0-9]/.test(vin)) errors.push({code:'CHASSIS_INVALID_CHARACTER',message:'Şasi numarası sadece büyük harf ve rakam içermelidir.'});
+      return {isValid:errors.length===0&&/^[A-Z0-9]{17}$/.test(vin),errors};
     }
     function dealerFormatEngineNoInput(value){return String(value||'').toLocaleUpperCase('tr-TR').replace(/[^0-9A-Z]/g,'').slice(0,17);}
     function dealerUpperTextInput(value){return String(value||'').toLocaleUpperCase('tr-TR');}
@@ -6721,6 +6821,25 @@
       const base=Number(total)||0, paidAmount=Number(paid)||0;
       if(base<=0||paidAmount<=0||paidAmount>=base) return 0;
       return ((base-paidAmount)/base)*100;
+    }
+    function dealerSimpleTextKey(value){
+      return String(value||'').toLocaleUpperCase('tr-TR').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[İI]/g,'I').replace(/Ğ/g,'G').replace(/Ü/g,'U').replace(/Ş/g,'S').replace(/Ö/g,'O').replace(/Ç/g,'C').replace(/[^A-Z0-9]/g,'').trim();
+    }
+    function dealerGuessMakeFromWmi(vin){
+      const key=dealerVinDisplayInput(vin).slice(0,3);
+      return DEALER_WMI_MAKE_PREFIXES[key]||'';
+    }
+    function dealerVinLocalControlState(form){
+      const vin=dealerVinDisplayInput(form?.elements?.vin?.value);
+      const validation=dealerValidateChassisInput(vin);
+      return {
+        vin,
+        validation,
+        wmiMake:'',
+        status:validation.isValid?'CAPTURED':'INCOMPLETE',
+        confidence:0,
+        messages:validation.isValid?[]:['Şasi numarası 17 karakter ve harf/rakam olmalıdır.']
+      };
     }
     function dealerPaidAmountSuggestions(amount){
       const base=Number(amount)||0;
@@ -6851,12 +6970,13 @@
       dealerEnsurePaymentAmountFields(form,pricing);
       dealerUpdateLoyaltyCard(form,pricing);
       dealerUpdateSellerLoyaltyCard(form);
+      if(form.querySelector('[data-dealer-technical-preview],[data-dealer-model-preview]')) dealerRefreshReceptionEnhancementPanels(form);
       return pricing;
     }
     function dealerEnsurePaymentAmountFields(form,pricing=null){
       const panel=form?.querySelector?.('.dealer-wo-payment-controls .dealer-wo-control-panel');
       if(!panel) return;
-      if(!panel.querySelector('[data-dealer-paid-fields]')) panel.insertAdjacentHTML('beforeend',`<div class="dealer-wo-paid-fields" data-dealer-paid-fields><div class="dealer-wo-paid-row"><label class="dealer-wo-field"><span>Alınan Tutar</span><input name="paidAmount" inputmode="numeric" autocomplete="off" placeholder="₺0"></label><div class="dealer-wo-paid-suggestions" data-dealer-paid-suggestions></div></div><label class="dealer-wo-field"><span>İndirim Oranı</span><input name="manualDiscountRate" inputmode="numeric" autocomplete="off" readonly></label></div>`);
+      if(!panel.querySelector('[data-dealer-paid-fields]')) panel.insertAdjacentHTML('beforeend',`<div class="dealer-wo-paid-fields" data-dealer-paid-fields><div class="dealer-wo-paid-row"><label class="dealer-wo-field"><span>Alınan Tutar</span><input name="paidAmount" inputmode="numeric" autocomplete="off" placeholder="₺0"></label><div class="dealer-wo-paid-suggestions" data-dealer-paid-suggestions></div></div><label class="dealer-wo-field"><span>İndirim Oranı</span><input name="manualDiscountRate" inputmode="numeric" autocomplete="off" readonly></label><label class="dealer-wo-field"><span>İndirim Nedeni</span><input name="discountReason" autocomplete="off" placeholder="Örn. Müdür onayı / sadakat"></label><div class="dealer-discount-authority" data-dealer-discount-authority>Yetki sınırı: Sekreterya %5 · Müdür %10+</div></div>`);
       const paid=form.elements.paidAmount, rate=form.elements.manualDiscountRate;
       if(paid&&(!paid.value||paid.dataset.autoPaid==='1')){paid.value=fmtTL(pricing?.net||0);paid.dataset.autoPaid='1';}
       const suggestions=panel.querySelector('[data-dealer-paid-suggestions]');
@@ -6869,7 +6989,13 @@
         const base=Number(pricing?.net)||summaryTotal||Number(pricing?.gross)||0;
         const paidRaw=String(paid?.value||'').trim();
         const paidAmount=dealerMoneyAmount(paidRaw);
-        rate.value=dealerFormatPercent(paidRaw?dealerPaymentDiscountRate(base,paidAmount):0);
+        const discountRate=paidRaw?dealerPaymentDiscountRate(base,paidAmount):0;
+        rate.value=dealerFormatPercent(discountRate);
+        const authority=panel.querySelector('[data-dealer-discount-authority]');
+        if(authority){
+          authority.textContent=discountRate>10?'Yetki sınırı aşıldı: Müdür/operasyon onayı gerekir.':discountRate>5?'Yetki sınırı: Müdür onayı gerekir.':'Yetki sınırı: Sekreterya %5 · Müdür %10+';
+          authority.classList.toggle('warn',discountRate>5);
+        }
       }
     }
     function dealerSyncWorkOrderSelectionPricing(form){
@@ -6882,6 +7008,237 @@
       if(form.elements.addons) form.elements.addons.value=addonNames.join('|');
       if(form.elements.addonGifts) form.elements.addonGifts.value=giftNames.join('|');
       return dealerUpdateWorkOrderPricingSummary(form);
+    }
+    function dealerWoTextFieldMarkup(label,name,value='',attrs='',cls=''){
+      return `<label class="dealer-wo-field ${cls}"><span>${rpEsc(label)}</span><input name="${rpEsc(name)}" value="${rpEsc(value||'')}" ${attrs}></label>`;
+    }
+    function dealerWoTextareaMarkup(label,name,value='',cls=''){
+      return `<label class="dealer-wo-field ${cls}"><span>${rpEsc(label)}</span><textarea name="${rpEsc(name)}">${rpEsc(value||'')}</textarea></label>`;
+    }
+    function dealerWoChoiceMarkup(label,name,value='',opts=[],cls=''){
+      const defaults={
+        vehicleSource:'Bireysel',arrivalChannel:'Walk-in',testDrivePermission:'Evet',arrivalStatus:'Çalışır',
+        keyDelivery:'Var',registrationDelivery:'Var',belongingsStatus:'Yok',customerWaiting:'Evet',vehicleDropped:'Hayır',
+        consentKvkk:'İmzalandı',serviceTermsConsent:'İmzalandı',mediaConsent:'İmzalandı',digitalReportConsent:'İmzalandı',thirdPartyShareConsent:'Bekliyor'
+      };
+      const selected=value||defaults[name]||'';
+      return `<div class="dealer-wo-field dealer-wo-choice-field ${cls}" data-dealer-choice-group="${rpEsc(name)}"><span>${rpEsc(label)}</span><input type="hidden" name="${rpEsc(name)}" value="${rpEsc(selected)}"><div class="dealer-wo-choice-grid">${opts.map((o,i)=>`<button type="button" class="dealer-wo-choice ${o===selected?'active':''}" data-dealer-choice="${rpEsc(name)}" data-choice-value="${rpEsc(o)}" data-tone="${['green','blue','amber','slate'][i%4]}">${rpEsc(o)}</button>`).join('')}</div></div>`;
+    }
+    function dealerWoMultiChoiceMarkup(label,name,value='',opts=[],cls=''){
+      const selected=dealerAddonNamesFromValue(value||'');
+      return `<div class="dealer-wo-field dealer-wo-choice-field dealer-wo-multi-choice-field ${cls}" data-dealer-multi-choice-group="${rpEsc(name)}"><span>${rpEsc(label)}</span><input type="hidden" name="${rpEsc(name)}" value="${rpEsc(selected.join('|'))}"><div class="dealer-wo-choice-grid">${opts.map((o,i)=>{
+        const val=typeof o==='string'?o:o.key, text=typeof o==='string'?o:o.label, active=selected.includes(val)||selected.includes(text);
+        return `<button type="button" class="dealer-wo-choice ${active?'active':''}" data-dealer-multi-choice="${rpEsc(name)}" data-choice-value="${rpEsc(val)}" data-tone="${['green','blue','amber','slate'][i%4]}">${rpEsc(text)}</button>`;
+      }).join('')}</div></div>`;
+    }
+    function dealerRefreshMultiChoiceGroup(group){
+      const input=group?.querySelector?.('input[type="hidden"]');
+      if(!input) return;
+      const values=Array.from(group.querySelectorAll('[data-dealer-multi-choice].active')).map(btn=>btn.dataset.choiceValue).filter(Boolean);
+      input.value=values.join('|');
+    }
+    function dealerSetChoiceStates(form){
+      form?.querySelectorAll?.('[data-dealer-choice-group]').forEach(group=>{
+        const input=group.querySelector('input[type="hidden"]');
+        if(!input) return;
+        group.querySelectorAll('[data-dealer-choice]').forEach(btn=>btn.classList.toggle('active',btn.dataset.choiceValue===input.value));
+      });
+      form?.querySelectorAll?.('[data-dealer-multi-choice-group]').forEach(group=>{
+        const input=group.querySelector('input[type="hidden"]');
+        const values=dealerAddonNamesFromValue(input?.value||'');
+        group.querySelectorAll('[data-dealer-multi-choice]').forEach(btn=>btn.classList.toggle('active',values.includes(btn.dataset.choiceValue)));
+      });
+    }
+    function dealerTechnicalJobPreview(packageName){
+      const pkg=dealerPackageName(packageName);
+      return dealerPackage(pkg).tasks.map((t,i)=>({order:i+1,station:t[0],owner:t[1],scope:t[2],source:'Package:'+pkg,status:'Android havuzuna açılacak'}));
+    }
+    function dealerPaymentBaseAmount(form){
+      const summaryTotal=dealerMoneyAmount(form?.closest?.('.dealer-wo-main')?.querySelector?.('[data-summary="total"]')?.textContent||'');
+      if(summaryTotal) return summaryTotal;
+      return dealerPricing(form?.elements?.packageName?.value,form?.elements?.addons?.value,{name:form?.elements?.customer?.value,phone:form?.elements?.phone?.value,taxNo:form?.elements?.taxNo?.value,type:form?.elements?.customerType?.value},form?.elements?.addonGifts?.value).net;
+    }
+    function dealerCurrentPaymentDiscountRate(form){
+      const paidRaw=String(form?.elements?.paidAmount?.value||'').trim();
+      if(!paidRaw) return 0;
+      return dealerPaymentDiscountRate(dealerPaymentBaseAmount(form),dealerMoneyAmount(paidRaw));
+    }
+    function dealerReportChannels(form){
+      return dealerAddonNamesFromValue(form?.elements?.reportChannels?.value||'');
+    }
+    function dealerReportRecipientIsThirdParty(form){
+      const buyer=dealerSimpleTextKey(form?.elements?.customer?.value);
+      const buyerPhone=dealerSmartDigits(form?.elements?.phone?.value).slice(-10);
+      const recipient=dealerSimpleTextKey(form?.elements?.reportRecipientName?.value);
+      const recipientPhone=dealerSmartDigits(form?.elements?.reportRecipientPhone?.value).slice(-10);
+      if(!recipient&&!recipientPhone) return false;
+      return (!!buyer&&recipient&&buyer!==recipient)||(!!buyerPhone&&recipientPhone&&buyerPhone!==recipientPhone)||(!buyer&&!buyerPhone&&(!!recipient||!!recipientPhone));
+    }
+    function dealerReportGateWarnings(form){
+      if(!form) return [];
+      const warnings=[];
+      const payment=dealerWorkOrderMeaningfulValue('payment',form.elements?.payment?.value||'');
+      const paymentMethod=dealerWorkOrderMeaningfulValue('paymentMethod',form.elements?.paymentMethod?.value||'');
+      const paidAmount=dealerMoneyAmount(form.elements?.paidAmount?.value);
+      const base=dealerPaymentBaseAmount(form);
+      const discountRate=dealerCurrentPaymentDiscountRate(form);
+      if(!payment||payment==='Bekliyor') warnings.push('Ödeme bekliyor; iş emri açılır ancak rapor teslimi kasa kontrolünde blokajlıdır.');
+      if(payment&&/Kısmi|Kapora/i.test(payment)) warnings.push('Kısmi ödeme var; kalan tutar kapanmadan rapor teslimi blokajlıdır.');
+      if(!paymentMethod) warnings.push('Ödeme yöntemi seçilmedi; teslim öncesi kasa kontrolü gerekir.');
+      if(base&&paidAmount&&paidAmount<base) warnings.push('Alınan tutar toplamdan düşük; indirim/kısmi ödeme nedeni kontrol edilmeli.');
+      if(discountRate>0&&!dealerWorkOrderMeaningfulValue('discountReason',form.elements?.discountReason?.value||'')) warnings.push('İndirim var; indirim nedeni girilmeden rapor kapısı kapalı kalır.');
+      if(discountRate>5) warnings.push(discountRate>10?'İndirim oranı %10 üzeri; operasyon/müdür onayı gerekir.':'İndirim oranı sekreterya sınırını aşıyor; müdür onayı gerekir.');
+      if(!dealerWorkOrderConsentSigned(form.elements?.consent?.value||'')) warnings.push('Genel KVKK/Rıza bekliyor; dijital veya basılı rapor teslimi yapılamaz.');
+      [['consentKvkk','KVKK'],['serviceTermsConsent','Hizmet şartları'],['mediaConsent','Fotoğraf/video çekim onayı'],['digitalReportConsent','Dijital rapor gönderim onayı']].forEach(([name,label])=>{
+        if(!dealerWorkOrderConsentSigned(form.elements?.[name]?.value||'')) warnings.push(label+' eksik; rapor teslim kapısında blokaj olur.');
+      });
+      if(!dealerReportChannels(form).length) warnings.push('Rapor gönderim kanalı seçilmedi.');
+      if(dealerReportRecipientIsThirdParty(form)&&!dealerWorkOrderConsentSigned(form.elements?.thirdPartyShareConsent?.value||'')) warnings.push('Rapor başka kişiye gönderilecek; üçüncü kişiye paylaşım onayı zorunlu.');
+      const evidence=dealerAddonNamesFromValue(form.elements?.acceptanceEvidence?.value||'');
+      const missingEvidence=DEALER_ACCEPTANCE_EVIDENCE_ITEMS.filter(i=>!evidence.includes(i.key)).map(i=>i.label);
+      if(missingEvidence.length) warnings.push('Araç kabul belgesi/fotoğrafı eksik: '+missingEvidence.slice(0,4).join(', ')+(missingEvidence.length>4?'...':''));
+      const histories=dealerFindVehicleHistories(form);
+      if(histories.length){
+        const alarms=histories.map(h=>dealerVehicleHistoryAlarm(dealerVehicleHistoryInsights(form,h)));
+        if(alarms.some(a=>a.level==='critical')) warnings.push('Önceki raporda kritik araç geçmişi alarmı var.');
+        else if(alarms.some(a=>a.level==='warn')) warnings.push('Önceki raporla uyumsuzluk uyarısı var.');
+      }
+      return [...new Set(warnings)];
+    }
+    function dealerReceptionOpenBlockers(form){
+      const status=dealerWorkOrderGateStatus(form,true);
+      const blockers=status.missing.map(m=>'Eksik zorunlu alan: '+m);
+      if(dealerIsFullWorkOrderMode(form)&&form?.elements?.testDrivePermission?.value==='Hayır'&&!dealerWorkOrderMeaningfulValue('testDriveRejectionReason',form.elements?.testDriveRejectionReason?.value||'')) blockers.push('Test sürüşü izni Hayır ise nedeni zorunlu.');
+      if(dealerIsFullWorkOrderMode(form)&&dealerReportRecipientIsThirdParty(form)&&!dealerWorkOrderConsentSigned(form.elements?.thirdPartyShareConsent?.value||'')) blockers.push('Üçüncü kişiye rapor paylaşım onayı alınmalı.');
+      if(dealerIsFullWorkOrderMode(form)&&dealerCurrentPaymentDiscountRate(form)>0&&!dealerWorkOrderMeaningfulValue('discountReason',form.elements?.discountReason?.value||'')) blockers.push('İndirim nedeni zorunlu.');
+      const source=form?.elements?.vehicleSource?.value||'';
+      if(dealerIsFullWorkOrderMode(form)&&source==='Galeri'&&!dealerWorkOrderMeaningfulValue('galleryName',form.elements?.galleryName?.value||'')) blockers.push('Galeri kaynaklı araçta galeri adı zorunlu.');
+      if(dealerIsFullWorkOrderMode(form)&&source==='Referans'&&!dealerWorkOrderMeaningfulValue('referrerName',form.elements?.referrerName?.value||'')) blockers.push('Referans kaynaklı araçta yönlendiren kişi/firma zorunlu.');
+      return [...new Set(blockers)];
+    }
+    function dealerBuildReceptionWorkOrderModel(form){
+      const data=Object.fromEntries(new FormData(form||document.createElement('form')).entries());
+      const packageName=dealerPackageName(data.packageName);
+      const base=dealerPaymentBaseAmount(form);
+      const paid=dealerMoneyAmount(data.paidAmount)||0;
+      return {
+        WorkOrder:{mode:dealerIsFullWorkOrderMode(form)?'FULL':'FAST',branchName:data.branchName||'',entryAt:data.entryAt||'',status:'Sekreterya kabulde',manualReviewRequired:false},
+        Parties:{
+          buyer:{name:data.customer||'',phone:data.phone||'',taxNo:data.taxNo||'',type:data.customerType||'',contactPermission:data.contactPermission||''},
+          seller:{name:data.seller||'',phone:data.sellerPhone||'',taxNo:data.sellerTaxNo||'',type:data.sellerType||'',contactPermission:data.sellerContactPermission||''},
+          vehicleOwner:{name:data.vehicleOwnerName||'',phone:data.vehicleOwnerPhone||''},
+          broughtBy:{name:data.bringerName||'',phone:data.bringerPhone||''},
+          payer:{name:data.payerName||'',phone:data.payerPhone||''},
+          reportRecipient:{name:data.reportRecipientName||'',phone:data.reportRecipientPhone||'',email:data.reportRecipientEmail||'',channels:dealerAddonNamesFromValue(data.reportChannels)}
+        },
+        Vehicle:{plate:data.plate||'',vin:data.vin||'',wmiMake:'',vinStatus:dealerValidateChassisInput(data.vin||'').isValid?'CAPTURED':'INCOMPLETE',engineNo:data.engineNo||'',make:data.vehicleMake||'',model:data.vehicleModel||'',variant:data.vehicleVariant||'',year:data.year||'',mileage:data.mileage||'',fuel:data.fuel||'',transmission:data.transmission||'',source:data.vehicleSource||'',galleryName:data.galleryName||'',referrerName:data.referrerName||'',arrivalChannel:data.arrivalChannel||'',arrivalStatus:data.arrivalStatus||'',testDrivePermission:data.testDrivePermission||'',testDriveRejectionReason:data.testDriveRejectionReason||'',keyDelivery:data.keyDelivery||'',registrationDelivery:data.registrationDelivery||'',belongingsStatus:data.belongingsStatus||'',belongingsNote:data.belongingsNote||'',customerWaiting:data.customerWaiting||'',vehicleDropped:data.vehicleDropped||'',estimatedDeliveryTime:data.estimatedDeliveryTime||'',acceptanceEvidence:dealerAddonNamesFromValue(data.acceptanceEvidence)},
+        Package:{name:packageName,additionalServices:dealerAddonNamesFromValue(data.addons),giftedAdditionalServices:dealerAddonNamesFromValue(data.addonGifts),technicalJobCount:dealerTechnicalJobPreview(packageName).length},
+        PaymentStatus:{status:data.payment||'',method:data.paymentMethod||'',baseAmount:base,paidAmount:paid,openAmount:Math.max(0,base-paid),discountRate:dealerCurrentPaymentDiscountRate(form),discountReason:data.discountReason||'',authorityLimit:'Sekreterya %5 · Müdür %10+'},
+        ConsentStatus:{kvkk:data.consentKvkk||data.consent||'',serviceTerms:data.serviceTermsConsent||'',media:data.mediaConsent||'',digitalReport:data.digitalReportConsent||'',thirdPartyShare:data.thirdPartyShareConsent||''},
+        TechnicalJobPreview:dealerTechnicalJobPreview(packageName),
+        ReportGateWarnings:dealerReportGateWarnings(form)
+      };
+    }
+    function dealerReceptionPersistenceFromForm(form,model=dealerBuildReceptionWorkOrderModel(form)){
+      const data=Object.fromEntries(new FormData(form||document.createElement('form')).entries());
+      return {
+        vehicleOwnerName:data.vehicleOwnerName||'',vehicleOwnerPhone:data.vehicleOwnerPhone||'',bringerName:data.bringerName||'',bringerPhone:data.bringerPhone||'',payerName:data.payerName||'',payerPhone:data.payerPhone||'',
+        reportRecipientName:data.reportRecipientName||'',reportRecipientPhone:data.reportRecipientPhone||'',reportRecipientEmail:data.reportRecipientEmail||'',reportChannels:dealerAddonNamesFromValue(data.reportChannels),
+        vehicleSource:data.vehicleSource||'',galleryName:data.galleryName||'',referrerName:data.referrerName||'',arrivalChannel:data.arrivalChannel||'',arrivalStatus:data.arrivalStatus||'',
+        testDrivePermission:data.testDrivePermission||'',testDriveRejectionReason:data.testDriveRejectionReason||'',keyDelivery:data.keyDelivery||'',registrationDelivery:data.registrationDelivery||'',belongingsStatus:data.belongingsStatus||'',belongingsNote:data.belongingsNote||'',
+        customerWaiting:data.customerWaiting||'',vehicleDropped:data.vehicleDropped||'',estimatedDeliveryTime:data.estimatedDeliveryTime||'',acceptanceEvidence:dealerAddonNamesFromValue(data.acceptanceEvidence),
+        discountReason:data.discountReason||'',consentKvkk:data.consentKvkk||'',serviceTermsConsent:data.serviceTermsConsent||'',mediaConsent:data.mediaConsent||'',digitalReportConsent:data.digitalReportConsent||'',thirdPartyShareConsent:data.thirdPartyShareConsent||'',
+        workOrderModel:model,dataModel:model,parties:model.Parties,vehicleIntake:model.Vehicle,paymentStatus:model.PaymentStatus,consentStatus:model.ConsentStatus,technicalJobPreview:model.TechnicalJobPreview,reportGateWarnings:model.ReportGateWarnings
+      };
+    }
+    function dealerEnsureAdvancedReceptionSections(form){
+      if(!form?.classList?.contains('dealer-wo-form')) return;
+      const grid=form.querySelector('.dealer-wo-grid');
+      if(!grid) return;
+      const packageCard=grid.querySelector('.dealer-wo-package-card')||grid.querySelector('[data-dealer-package-choice]')?.closest('.dealer-wo-card');
+      const addonCard=grid.querySelector('.dealer-wo-addon-card')||grid.querySelector('[data-dealer-addon-choice]')?.closest('.dealer-wo-card');
+      const paymentCard=grid.querySelector('.dealer-wo-payment-card')||grid.querySelector('.dealer-wo-payment')?.closest('.dealer-wo-card');
+      const makeCard=(cls,html,before=packageCard)=>{
+        let card=grid.querySelector('.'+cls);
+        if(!card){
+          card=document.createElement('section');
+          card.className='dealer-wo-card dealer-wo-reception-card '+cls;
+          card.innerHTML=html;
+          grid.insertBefore(card,before||null);
+        }
+        return card;
+      };
+      makeCard('dealer-wo-parties-card',`<div class="dealer-wo-card-head"><div class="dealer-wo-step">6</div><h3>Taraflar ve Rapor Teslimi</h3></div><div class="dealer-wo-form-grid dealer-wo-reception-grid">${dealerWoTextFieldMarkup('Araç Sahibi','vehicleOwnerName')}${dealerWoTextFieldMarkup('Araç Sahibi Telefon','vehicleOwnerPhone','','inputmode="numeric" autocomplete="tel" data-dealer-phone-input maxlength="14" placeholder="0533 210 47 24"')}${dealerWoTextFieldMarkup('Aracı Getiren','bringerName')}${dealerWoTextFieldMarkup('Getiren Telefon','bringerPhone','','inputmode="numeric" autocomplete="tel" data-dealer-phone-input maxlength="14" placeholder="0533 210 47 24"')}${dealerWoTextFieldMarkup('Ödemeyi Yapan','payerName')}${dealerWoTextFieldMarkup('Ödeme Telefon','payerPhone','','inputmode="numeric" autocomplete="tel" data-dealer-phone-input maxlength="14" placeholder="0533 210 47 24"')}${dealerWoTextFieldMarkup('Raporu Alacak Kişi','reportRecipientName')}${dealerWoTextFieldMarkup('Rapor Telefon','reportRecipientPhone','','inputmode="numeric" autocomplete="tel" data-dealer-phone-input maxlength="14" placeholder="0533 210 47 24"')}${dealerWoTextFieldMarkup('Rapor E-posta','reportRecipientEmail','','type="email" autocomplete="email"')}${dealerWoMultiChoiceMarkup('Rapor Gönderim Kanalı','reportChannels','WhatsApp|QR link',DEALER_REPORT_CHANNELS,'full')}</div>`);
+      makeCard('dealer-wo-source-card',`<div class="dealer-wo-card-head"><div class="dealer-wo-step">7</div><h3>Araç Kaynağı ve Kabul Durumu</h3></div><div class="dealer-wo-form-grid dealer-wo-reception-grid">${dealerWoChoiceMarkup('Araç Kaynağı','vehicleSource','Bireysel',DEALER_VEHICLE_SOURCE_TYPES)}${dealerWoTextFieldMarkup('Galeri Adı','galleryName')}${dealerWoTextFieldMarkup('Yönlendiren Kişi/Firma','referrerName')}${dealerWoChoiceMarkup('Geliş Kanalı','arrivalChannel','Walk-in',DEALER_ARRIVAL_CHANNELS)}${dealerWoChoiceMarkup('Test Sürüşü İzni','testDrivePermission','Evet',['Evet','Hayır'])}${dealerWoTextFieldMarkup('Hayır Nedeni','testDriveRejectionReason','','placeholder="Test sürüşü yapılmayacaksa nedeni"')}${dealerWoChoiceMarkup('Araç Geliş Durumu','arrivalStatus','Çalışır',DEALER_ARRIVAL_STATUSES,'wide')}${dealerWoChoiceMarkup('Müşteri Bekliyor mu','customerWaiting','Evet',['Evet','Hayır'])}${dealerWoChoiceMarkup('Araç Bırakıldı mı','vehicleDropped','Hayır',['Evet','Hayır'])}${dealerWoTextFieldMarkup('Tahmini Teslim Saati','estimatedDeliveryTime','','type="time"')}</div>`);
+      makeCard('dealer-wo-evidence-card',`<div class="dealer-wo-card-head"><div class="dealer-wo-step">8</div><h3>Kabul Belgeleri ve Onaylar</h3></div><div class="dealer-wo-form-grid dealer-wo-reception-grid">${dealerWoChoiceMarkup('Anahtar Teslim','keyDelivery','Var',['Var','Yok'])}${dealerWoChoiceMarkup('Ruhsat Teslim','registrationDelivery','Var',['Var','Yok'])}${dealerWoChoiceMarkup('Özel Eşya','belongingsStatus','Yok',['Yok','Var'])}${dealerWoTextFieldMarkup('Özel Eşya Notu','belongingsNote','','placeholder="Örn. bebek koltuğu, şarj kablosu"')}${dealerWoMultiChoiceMarkup('Araç Kabul Fotoğraf/Belge','acceptanceEvidence','',DEALER_ACCEPTANCE_EVIDENCE_ITEMS,'full')}${dealerWoChoiceMarkup('KVKK','consentKvkk','İmzalandı',['İmzalandı','Bekliyor'])}${dealerWoChoiceMarkup('Hizmet Şartları','serviceTermsConsent','İmzalandı',['İmzalandı','Bekliyor'])}${dealerWoChoiceMarkup('Foto/Video Onayı','mediaConsent','İmzalandı',['İmzalandı','Bekliyor'])}${dealerWoChoiceMarkup('Dijital Rapor Onayı','digitalReportConsent','İmzalandı',['İmzalandı','Bekliyor'])}${dealerWoChoiceMarkup('3. Kişiye Paylaşım','thirdPartyShareConsent','Bekliyor',['İmzalandı','Bekliyor'])}</div>`);
+      makeCard('dealer-wo-tech-preview-card',`<div class="dealer-wo-card-head"><div class="dealer-wo-step">12</div><h3>Android Teknik Havuz Önizlemesi</h3><span class="dealer-readonly-pill">Sekreterya sadece izler</span></div><div class="dealer-technical-preview" data-dealer-technical-preview></div>`,null);
+      makeCard('dealer-wo-data-model-card',`<div class="dealer-wo-card-head"><div class="dealer-wo-step">8</div><h3>Canlı Sisteme Gidecek Veri Modeli</h3></div><div class="dealer-model-preview" data-dealer-model-preview></div>`,null);
+      const setStep=(selector,no)=>{const step=form.querySelector(selector+' .dealer-wo-step')||grid.querySelector(selector+' .dealer-wo-step'); if(step) step.textContent=String(no);};
+      setStep('.dealer-wo-package-card',4);
+      setStep('.dealer-wo-addon-card',5);
+      setStep('.dealer-wo-parties-card',6);
+      setStep('.dealer-wo-source-card',7);
+      setStep('.dealer-wo-evidence-card',8);
+      setStep('.dealer-wo-payment-card',9);
+      setStep('.dealer-wo-pipeline-card',10);
+      setStep('.dealer-wo-data-model-card',11);
+      setStep('.dealer-wo-tech-preview-card',12);
+      dealerRefreshReceptionEnhancementPanels(form);
+    }
+    function dealerRefreshLocalVinPanel(form){
+      form?.querySelector?.('[data-dealer-vin-assist]')?.remove();
+      document.querySelector('[data-dealer-vin-popup]')?.remove();
+    }
+    function dealerRefreshTechnicalPreview(form){
+      const panel=form?.querySelector?.('[data-dealer-technical-preview]');
+      if(!panel) return;
+      const jobs=dealerTechnicalJobPreview(form.elements?.packageName?.value||'');
+      panel.innerHTML=jobs.map(job=>`<div class="dealer-technical-job"><b>${job.order}. ${rpEsc(job.station)}</b><span>${rpEsc(job.owner)} · ${rpEsc(job.scope)}</span><small>${rpEsc(job.status)}</small></div>`).join('')||'<p>Paket seçilince Android teknik havuza düşecek başlıklar burada görünür.</p>';
+    }
+    function dealerRefreshReceptionWarnings(form){
+      const side=form?.closest?.('.dealer-wo-screen')?.querySelector?.('.dealer-wo-side');
+      if(!side) return;
+      side.querySelectorAll('[data-dealer-dynamic-warning-panel]').forEach(x=>x.remove());
+      const title=side.querySelector('.dealer-wo-side-title');
+      const blockers=dealerReceptionOpenBlockers(form);
+      const reportWarnings=dealerReportGateWarnings(form);
+      const historySignals=[];
+      const customer=dealerFindCustomerHistory(form);
+      if(customer) historySignals.push('Önceki müşteri: '+(customer.customer||customer.name||'kayıt bulundu'));
+      const histories=dealerFindVehicleHistories(form);
+      if(histories[0]) historySignals.push('Önceki araç/rapor: '+(histories[0].reportNo||histories[0].id||'rapor')+' · son KM '+(dealerFormatMileageInput(histories[0].mileage)||'-'));
+      if(histories.some(h=>/şikayet|itiraz|kritik/i.test(String(h.criticalFinding||h.recommendation||'')))) historySignals.push('Önceki şikayet/itiraz/kritik bulgu uyarısı var.');
+      const card=(kind,heading,items,empty)=>`<div class="dealer-wo-warning-panel ${kind}" data-dealer-dynamic-warning-panel><h4>${icon(kind==='block'?'lock-keyhole':'shield-alert')}${rpEsc(heading)}</h4><ul>${(items.length?items:[empty]).slice(0,7).map(item=>`<li>${rpEsc(item)}</li>`).join('')}</ul></div>`;
+      title?.insertAdjacentHTML('afterend',card('history','Geçmiş Kayıt Sinyalleri',historySignals,'Plaka, telefon veya şasi girilince geçmiş kayıt sinyalleri görünür.'));
+      title?.insertAdjacentHTML('afterend',card('report','Rapor Kapısında Blokaj Olacak Uyarılar',reportWarnings,'Rapor kapısı için kritik uyarı görünmüyor.'));
+      title?.insertAdjacentHTML('afterend',card('block','İş Emri Açılamaz Blokajları',blockers,'Araç ve paket zorunlu alanları tamam.'));
+      if(window.lucide) lucide.createIcons();
+    }
+    function dealerRefreshModelPreview(form){
+      const panel=form?.querySelector?.('[data-dealer-model-preview]');
+      if(!panel) return;
+      const model=dealerBuildReceptionWorkOrderModel(form);
+      const rows=[
+        ['WorkOrder',model.WorkOrder.mode+' · '+model.WorkOrder.status],
+        ['Parties',Object.keys(model.Parties).length+' taraf'],
+        ['Vehicle',[model.Vehicle.plate,model.Vehicle.make,model.Vehicle.model].filter(Boolean).join(' ')||'Araç bilgisi bekleniyor'],
+        ['Package',model.Package.name+' · '+model.Package.technicalJobCount+' teknik başlık'],
+        ['PaymentStatus',model.PaymentStatus.status||'Ödeme bekliyor'],
+        ['ConsentStatus',model.ConsentStatus.kvkk||'KVKK bekliyor'],
+        ['TechnicalJobPreview',model.TechnicalJobPreview.length+' görev'],
+        ['ReportGateWarnings',model.ReportGateWarnings.length+' uyarı']
+      ];
+      panel.innerHTML=`<div class="dealer-model-grid">${rows.map(r=>`<div><span>${rpEsc(r[0])}</span><b>${rpEsc(r[1])}</b></div>`).join('')}</div><details><summary>JSON önizleme</summary><pre>${rpEsc(JSON.stringify(model,null,2))}</pre></details>`;
+    }
+    function dealerRefreshReceptionEnhancementPanels(form){
+      if(!form?.classList?.contains('dealer-wo-form')) return;
+      dealerSetChoiceStates(form);
+      dealerRefreshLocalVinPanel(form);
+      dealerRefreshTechnicalPreview(form);
+      dealerRefreshReceptionWarnings(form);
+      dealerRefreshModelPreview(form);
+      const reason=form.elements?.testDriveRejectionReason?.closest?.('.dealer-wo-field');
+      if(reason) reason.classList.toggle('is-required',form.elements?.testDrivePermission?.value==='Hayır');
     }
     function dealerFormatPlateInput(value){
       const raw=String(value||'').toLocaleUpperCase('tr-TR').replace(/[^0-9A-Z]/g,'').slice(0,9);
@@ -7165,57 +7522,20 @@
     }
     function dealerVinFieldMessage(validation){
       if(validation?.isValid) return '';
-      return 'Şasi numarası 17 karakter olmalıdır.';
+      return 'Şasi numarası 17 karakter olmalı ve sadece büyük harf/rakam içermelidir.';
     }
     function dealerVinDisplayInput(value){
       return String(value||'').toLocaleUpperCase('tr-TR').replace(/[\s-]+/g,'').replace(/[^A-Z0-9]/g,'').slice(0,17);
     }
     function dealerShowVinDecoderPopup(state){
-      const decoded=state?.decoded||{};
-      if(decoded.status!=='VIN_FORMAT_VALID_DECODER_UNAVAILABLE') return;
-      const vin=state?.vinNormalized||decoded.vin||'';
-      const key=vin+'|'+decoded.status;
-      if(!vin||document.body.dataset.dealerVinPopupKey===key) return;
-      document.body.dataset.dealerVinPopupKey=key;
       document.querySelector('[data-dealer-vin-popup]')?.remove();
-      const popup=document.createElement('div');
-      popup.className='dealer-vin-popup-backdrop';
-      popup.dataset.dealerVinPopup='1';
-      popup.innerHTML=`<div class="dealer-vin-popup" role="dialog" aria-modal="true" aria-label="VIN decoder uyarısı"><div class="dealer-vin-popup-head">${icon('info')}<div><h3>VIN decoder ulaşılamıyor</h3><p>VIN formatı geçerli; decoder şu an ulaşılamıyor. Araç kaydı engellenmez, ancak marka/model/yıl bilgisi manuel kontrolle ilerlemelidir.</p><p><b>Şasi:</b> ${rpEsc(vin)}</p></div></div><div class="dealer-vin-popup-actions"><button type="button" class="btn primary" data-dealer-vin-popup-close>Devam Et</button></div></div>`;
-      document.body.appendChild(popup);
-      if(window.lucide) lucide.createIcons();
     }
     function dealerEnsureVinAssist(form){
-      const vinField=form?.elements?.vin?.closest?.('.dealer-wo-field');
-      const grid=vinField?.parentElement;
-      if(!vinField||!grid) return null;
-      let panel=grid.querySelector('[data-dealer-vin-assist]');
-      if(!panel){
-        panel=document.createElement('div');
-        panel.className='dealer-vin-assist';
-        panel.dataset.dealerVinAssist='1';
-        vinField.insertAdjacentElement('afterend',panel);
-      }
-      return panel;
+      form?.querySelector?.('[data-dealer-vin-assist]')?.remove();
+      return null;
     }
     function dealerRenderVinAssist(form,state){
-      const panel=dealerEnsureVinAssist(form);
-      if(!panel) return;
-      const validation=state?.validation||dealerValidateVinInput(form?.elements?.vin?.value);
-      const vin=state?.vinNormalized||dealerNormalizeVinInput(form?.elements?.vin?.value);
-      if(!vin){panel.className='dealer-vin-assist';panel.innerHTML='';return;}
-      const decoded=state?.decoded||{}, compare=state?.comparison||{}, duplicate=state?.duplicate||null;
-      const found=[decoded.make,decoded.model,decoded.modelYear].filter(Boolean).join(' ');
-      const tone=duplicate?'bad':!validation.isValid?'bad':compare.status==='MATCH'?'good':compare.status==='MISMATCH'?'bad':compare.status==='WARNING'?'warn':'manual';
-      const title=duplicate?'Bu şasi numarası sistemde zaten kayıtlı.':!validation.isValid?dealerVinFieldMessage(validation):found?'Bulunan araç: '+found:(decoded.status==='VIN_FORMAT_VALID_DECODER_UNAVAILABLE'?'VIN formatı geçerli; decoder şu an ulaşılamıyor.':'VIN formatı geçerli.');
-      const selected=[form?.elements?.vehicleMake?.value,form?.elements?.vehicleModel?.value,dealerSmartDigits(form?.elements?.year?.value)].filter(Boolean).join(' ');
-      const mismatch=validation.isValid&&found&&compare.status!=='MATCH'&&selected?`Girilen şasi numarası seçilen araçla uyuşmuyor. Seçilen: ${selected}. Bulunan: ${found}.`:'';
-      const messages=[mismatch,...(compare.messages||[])].filter(Boolean).slice(0,3);
-      const role=dealerPortalState?.().role||'';
-      const canApprove=/Müdür|Sahibi|Operasyon|Sekreterya/i.test(role);
-      panel.className='dealer-vin-assist open '+tone;
-      panel.innerHTML=`<b>${rpEsc(title)}</b>${messages.map(m=>`<p>${rpEsc(m)}</p>`).join('')}<div class="mini-row">${state?.loading?badge('Decoder sorgulanıyor'):badge(compare.status||decoded.status||'VIN kontrol')}${badge('Skor '+(compare.confidence||0))}${duplicate?`<button type="button" class="micro-btn" data-dealer-select-wo="${rpEsc(duplicate.id)}">Mevcut kaydı aç</button>`:''}${canApprove&&dealerVinComparisonNeedsReview(compare,decoded.status)?`<button type="button" class="micro-btn" data-dealer-vin-manual-approve>Manuel onayla</button>`:''}</div>`;
-      if(window.lucide) lucide.createIcons();
+      form?.querySelector?.('[data-dealer-vin-assist]')?.remove();
     }
     function dealerApplyDecodedVinToForm(form,decoded,force=false){
       if(!form||!decoded||decoded.status!=='VIN_DECODED') return false;
@@ -7232,45 +7552,15 @@
     async function dealerResolveVinStateForForm(form,options={}){
       const vinEl=form?.elements?.vin;
       if(!vinEl) return null;
-      const vinNormalized=dealerNormalizeVinInput(vinEl.value), validation=dealerValidateVinInput(vinNormalized), selected=dealerVinSelectedVehicle(form);
-      if(!vinNormalized){
-        const state={vinNormalized:'',validation:{isValid:true,errors:[]},decoded:{vin:'',status:'VIN_NOT_PROVIDED',errors:[]},comparison:{status:'MANUAL_REVIEW',confidence:0,messages:[]},duplicate:null,manualReviewRequired:false,manualApproved:false};
-        form.dataset.vinStateKey='';
-        form.dataset.vinDecodedJson=JSON.stringify(state.decoded);
-        form.dataset.vinComparisonJson=JSON.stringify(state.comparison);
-        form.dataset.vinManualReviewRequired='0';
-        form.dataset.vinDuplicateId='';
-        dealerRenderVinAssist(form,state);
-        dealerPaintSmartWorkOrderFields(form);
-        dealerFastWorkOrderGateSync(form);
-        return state;
-      }
-      const excludeId=form?.dataset?.editWorkorderId||dealerPortalState().editingWorkOrderId||'';
-      const duplicate=dealerDuplicateVinRecord(vinNormalized,excludeId);
-      let decoded=null;
-      try{decoded=form.dataset.vinStateKey===vinNormalized&&form.dataset.vinDecodedJson?JSON.parse(form.dataset.vinDecodedJson):null;}catch(err){decoded=null;}
-      if(options.decode&&validation.isValid&&!decoded){
-        const decoder=dealerVinDecoder();
-        if(decoder){
-          dealerRenderVinAssist(form,{vinNormalized,validation,decoded:{status:'VIN_PENDING'},comparison:{status:'MANUAL_REVIEW',confidence:30,messages:['VIN decoder sorgulanıyor.']},duplicate,loading:true});
-          decoded=await decoder.decode(vinNormalized,Number(dealerSmartDigits(form.elements.year?.value))||undefined);
-        }
-      }
-      if(!decoded) decoded=validation.isValid?{vin:vinNormalized,status:'VIN_FORMAT_VALID_DECODER_UNAVAILABLE',errors:[]}:{vin:vinNormalized,status:'VIN_FORMAT_INVALID',errors:validation.errors};
-      let comparison=dealerCompareVinVehicle(selected,decoded,validation);
-      const approved=form.dataset.vinManualApproved==='1'&&form.dataset.vinManualApprovedFor===vinNormalized;
-      if(options.autoFill&&validation.isValid&&decoded.status==='VIN_DECODED'&&!duplicate&&comparison.status!=='MISMATCH'){
-        const changed=dealerApplyDecodedVinToForm(form,decoded,false);
-        if(changed) comparison=dealerCompareVinVehicle(dealerVinSelectedVehicle(form),decoded,validation);
-      }
-      const state={vinNormalized,validation,decoded,comparison,duplicate,manualReviewRequired:!approved&&dealerVinComparisonNeedsReview(comparison,decoded.status),manualApproved:approved};
+      const vinNormalized=dealerVinDisplayInput(vinEl.value), validation=dealerValidateChassisInput(vinNormalized);
+      const state={vinNormalized,validation,decoded:{vin:vinNormalized,status:'DISABLED',errors:[]},comparison:{status:validation.isValid?'CAPTURED':'INCOMPLETE',confidence:0,messages:[]},duplicate:null,manualReviewRequired:false,manualApproved:false};
       form.dataset.vinStateKey=vinNormalized;
-      form.dataset.vinDecodedJson=JSON.stringify(decoded||{});
-      form.dataset.vinComparisonJson=JSON.stringify(comparison||{});
-      form.dataset.vinManualReviewRequired=state.manualReviewRequired?'1':'0';
-      form.dataset.vinDuplicateId=duplicate?.id||'';
+      form.dataset.vinDecodedJson=JSON.stringify(state.decoded);
+      form.dataset.vinComparisonJson=JSON.stringify(state.comparison);
+      form.dataset.vinManualReviewRequired='0';
+      form.dataset.vinDuplicateId='';
       dealerRenderVinAssist(form,state);
-      if(options.decode) dealerShowVinDecoderPopup(state);
+      dealerShowVinDecoderPopup(state);
       dealerPaintSmartWorkOrderFields(form);
       dealerFastWorkOrderGateSync(form);
       return state;
@@ -7283,7 +7573,8 @@
     }
     function dealerChassisPersistenceFromForm(form){
       const vin=dealerVinDisplayInput(form?.elements?.vin?.value);
-      return {vin,vinNormalized:vin,vinValidationStatus:vin.length===17?'CAPTURED':'INCOMPLETE',vinDecodeStatus:'DISABLED',vinDecodedMake:'',vinDecodedModel:'',vinDecodedYear:null,vinDecodedBodyClass:'',vinDecodedManufacturer:'',vinDecodedSource:'',vinConfidenceScore:0,vinManualReviewRequired:false,vinManualReviewApproved:false,vinManualReviewApprovedBy:'',vinDecodedAt:''};
+      const validation=dealerValidateChassisInput(vin);
+      return {vin,vinNormalized:vin,vinValidationStatus:vin?(validation.isValid?'VALID':'INCOMPLETE'):'NOT_PROVIDED',vinDecodeStatus:'DISABLED',vinDecodedMake:'',vinDecodedModel:'',vinDecodedYear:null,vinDecodedBodyClass:'',vinDecodedManufacturer:'',vinDecodedSource:'',vinConfidenceScore:0,vinManualReviewRequired:false,vinManualReviewApproved:false,vinManualReviewApprovedBy:'',vinDecodedAt:vin?new Date().toISOString():''};
     }
     function dealerVinPersistenceFromState(state,approvedBy=''){
       const decoded=state?.decoded||{}, comparison=state?.comparison||{};
@@ -7693,58 +7984,119 @@
       'customer','phone','taxNo','customerType','contactPermission','spareKey',
       'seller','sellerPhone','sellerTaxNo','sellerType','sellerContactPermission',
       'engineNo','vehicleVariant','fuel','transmission',
-      'payment','paymentMethod','consent','paidAmount'
+      'reportChannels',
+      'vehicleSource','arrivalChannel','testDrivePermission','arrivalStatus','keyDelivery','registrationDelivery','belongingsStatus','customerWaiting','vehicleDropped',
+      'consentKvkk','serviceTermsConsent','mediaConsent','digitalReportConsent'
     ];
     const DEALER_WORKORDER_REQUIRED_LABELS={
       plate:'Plaka',vin:'Şasi no',vehicleMake:'Marka',vehicleModel:'Model',year:'Model yılı',mileage:'Giriş KM',packageName:'Paket',
       customer:'Alıcı ad soyad',phone:'Alıcı telefon',taxNo:'Alıcı T.C./Vergi No',customerType:'Alıcı tipi',contactPermission:'Alıcı iletişim izni',spareKey:'Yedek anahtar',
       seller:'Satıcı ad soyad',sellerPhone:'Satıcı telefon',sellerTaxNo:'Satıcı T.C./Vergi No',sellerType:'Satıcı tipi',sellerContactPermission:'Satıcı iletişim izni',
       engineNo:'Motor no',vehicleVariant:'Alt paket',fuel:'Yakıt tipi',transmission:'Vites tipi',
-      payment:'Ödeme durumu',paymentMethod:'Ödeme yöntemi',consent:'KVKK / Rıza',paidAmount:'Alınan tutar'
+      vehicleOwnerName:'Araç sahibi',bringerName:'Aracı getiren kişi',payerName:'Ödemeyi yapan kişi',reportRecipientName:'Raporu alacak kişi',reportChannels:'Rapor gönderim kanalı',
+      vehicleSource:'Araç kaynağı',arrivalChannel:'Geliş kanalı',testDrivePermission:'Test sürüşü izni',testDriveRejectionReason:'Test sürüşü hayır nedeni',arrivalStatus:'Araç geliş durumu',
+      keyDelivery:'Anahtar teslim',registrationDelivery:'Ruhsat teslim',belongingsStatus:'Araç içi özel eşya',customerWaiting:'Müşteri bekliyor mu',vehicleDropped:'Araç bırakıldı mı',estimatedDeliveryTime:'Tahmini teslim saati',
+      consentKvkk:'KVKK',serviceTermsConsent:'Hizmet şartları',mediaConsent:'Fotoğraf/video onayı',digitalReportConsent:'Dijital rapor onayı',thirdPartyShareConsent:'Üçüncü kişiye paylaşım onayı',
+      vehicleOwnerPhone:'Araç sahibi telefon',bringerPhone:'Getiren telefon',payerPhone:'Ödeyen telefon',reportRecipientPhone:'Rapor alıcı telefon',reportRecipientEmail:'Rapor e-posta',
+      galleryName:'Galeri adı',referrerName:'Yönlendiren kişi/firma',acceptanceEvidence:'Araç kabul fotoğraf/belge',discountReason:'İndirim nedeni'
     };
+    const DEALER_WORKORDER_SOFT_VALIDATE_NAMES=[
+      'customer','phone','taxNo','customerType','contactPermission','spareKey',
+      'seller','sellerPhone','sellerTaxNo','sellerType','sellerContactPermission',
+      'engineNo','vehicleVariant','fuel','transmission',
+      'vehicleOwnerName','vehicleOwnerPhone','bringerName','bringerPhone','payerName','payerPhone','reportRecipientName','reportRecipientPhone','reportRecipientEmail','reportChannels',
+      'vehicleSource','galleryName','referrerName','arrivalChannel','testDrivePermission','testDriveRejectionReason','arrivalStatus','keyDelivery','registrationDelivery','belongingsStatus','customerWaiting','vehicleDropped','estimatedDeliveryTime',
+      'consentKvkk','serviceTermsConsent','mediaConsent','digitalReportConsent','thirdPartyShareConsent','discountReason'
+    ];
+    function dealerWorkOrderRequiredNames(form){
+      const names=[...DEALER_FAST_WORKORDER_REQUIRED_NAMES];
+      if(dealerIsFullWorkOrderMode(form)){
+        names.push(...DEALER_FULL_WORKORDER_EXTRA_REQUIRED_NAMES);
+        if(form?.elements?.testDrivePermission?.value==='Hayır') names.push('testDriveRejectionReason');
+        if(form?.elements?.vehicleSource?.value==='Galeri') names.push('galleryName');
+        if(form?.elements?.vehicleSource?.value==='Referans') names.push('referrerName');
+        if(dealerReportRecipientIsThirdParty(form)) names.push('thirdPartyShareConsent');
+        if(dealerCurrentPaymentDiscountRate(form)>0) names.push('discountReason');
+      }
+      return [...new Set(names.filter(Boolean))];
+    }
+    function dealerWorkOrderFieldValidation(form,name){
+      const required=dealerWorkOrderRequiredNames(form).includes(name);
+      const raw=dealerFormControl(form,name)?.value||'';
+      const value=dealerWorkOrderMeaningfulValue(name,raw);
+      const label=DEALER_WORKORDER_REQUIRED_LABELS[name]||name;
+      const result={name,label,required,filled:!!value,valid:true,message:''};
+      const fail=message=>{result.valid=false;result.message=message;return result;};
+      if(required&&!value) return fail(label+' zorunlu.');
+      if(!required&&!value) return result;
+      if(['customer','seller','vehicleOwnerName','bringerName','payerName','reportRecipientName','customerType','contactPermission','spareKey','sellerType','sellerContactPermission','vehicleSource','arrivalChannel','testDrivePermission','arrivalStatus','keyDelivery','registrationDelivery','belongingsStatus','customerWaiting','vehicleDropped','estimatedDeliveryTime','reportChannels','fuel','transmission'].includes(name)) return value?result:fail(label+' zorunlu.');
+      if(['phone','sellerPhone','vehicleOwnerPhone','bringerPhone','payerPhone','reportRecipientPhone'].includes(name)) return dealerPhoneBodyLength(value)===10?result:fail(label+' 10 haneli GSM numarası olmalı.');
+      if(name==='taxNo'||name==='sellerTaxNo'){
+        const digits=dealerSmartDigits(value);
+        if(required) return dealerTaxNoValid(digits)?result:fail(label+' 11 hane olmalı.');
+        return (!digits||digits.length<11||dealerTaxNoValid(digits))?result:fail(label+' 11 hane olmalı.');
+      }
+      if(name==='plate') return /^\d{2}\s?[A-Z]{1,3}\s?\d{2,4}$/i.test(value)?result:fail('Plaka formatı 34 ABC 123 şeklinde olmalı.');
+      if(name==='vin'){
+        const validation=dealerValidateChassisInput(value);
+        return validation.isValid?result:fail(dealerVinFieldMessage(validation));
+      }
+      if(name==='engineNo'){
+        const engineNo=dealerFormatEngineNoInput(value);
+        return (engineNo.length>=6&&engineNo.length<=17)?result:fail('Motor no 6-17 harf/rakam olmalı.');
+      }
+      if(name==='vehicleMake') return dealerFindVehicleMake(value,false)?result:fail('Araç markası listeden seçilmeli.');
+      if(name==='vehicleModel'){
+        const make=dealerFindVehicleMake(dealerFormControl(form,'vehicleMake')?.value,false);
+        return dealerFindVehicleModel(make,value,false)?result:fail('Araç modeli seçilmeli.');
+      }
+      if(name==='vehicleVariant'){
+        const make=dealerFindVehicleMake(dealerFormControl(form,'vehicleMake')?.value,false);
+        return dealerFindVehicleVariant(make,dealerFormControl(form,'vehicleModel')?.value,value,false)?result:fail('Alt paket seçilmeli.');
+      }
+      if(name==='packageName') return dealerPackageName(value)!=='Paket Bekliyor'?result:fail('Paket seçimi zorunlu.');
+      if(name==='year') return dealerSmartDigits(value).length===4?result:fail('Model yılı 4 haneli olmalı.');
+      if(name==='mileage'){
+        const digits=dealerMileageDigits(value), currentKm=dealerMileageNumber(value), previousKm=dealerMileageNumber(dealerFindVehicleHistory(form)?.mileage);
+        if(!digits||currentKm>DEALER_MAX_MILEAGE) return fail('Giriş KM en fazla 1.000.000 olmalı.');
+        if(currentKm&&previousKm&&currentKm<previousKm) return fail('Önceki KM '+dealerFormatMileageInput(previousKm)+'; giriş KM daha düşük olamaz.');
+        return result;
+      }
+      if(['consentKvkk','serviceTermsConsent','mediaConsent','digitalReportConsent','thirdPartyShareConsent'].includes(name)) return !required||dealerWorkOrderConsentSigned(value)?result:fail(label+' imzalanmalı.');
+      if(name==='testDriveRejectionReason') return !required||form.elements?.testDrivePermission?.value!=='Hayır'||!!value?result:fail('Test sürüşü izni Hayır ise nedeni zorunlu.');
+      if(name==='galleryName') return !required||form.elements?.vehicleSource?.value!=='Galeri'||!!value?result:fail('Galeri kaynaklı araçta galeri adı zorunlu.');
+      if(name==='referrerName') return !required||form.elements?.vehicleSource?.value!=='Referans'||!!value?result:fail('Referans kaynaklı araçta yönlendiren kişi/firma zorunlu.');
+      if(name==='discountReason') return !required||dealerCurrentPaymentDiscountRate(form)<=0||!!value?result:fail('İndirim varsa indirim nedeni zorunlu.');
+      if(name==='reportRecipientEmail') return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)?result:fail('Geçerli e-posta adresi girilmeli.');
+      return result;
+    }
+    function dealerWorkOrderValidationResult(form){
+      if(!form) return {valid:false,invalid:[{name:'form',label:'Form',message:'Form bulunamadı'}],missing:['Form bulunamadı']};
+      const names=[...new Set([...dealerWorkOrderRequiredNames(form),...DEALER_WORKORDER_SOFT_VALIDATE_NAMES])];
+      const invalid=names.map(name=>dealerWorkOrderFieldValidation(form,name)).filter(item=>!item.valid);
+      return {valid:invalid.length===0,invalid,missing:[...new Set(invalid.map(item=>item.label))]};
+    }
     function dealerFullWorkOrderRequiredNames(form){
       return dealerIsFullWorkOrderMode(form)?DEALER_FULL_WORKORDER_EXTRA_REQUIRED_NAMES:[];
     }
     function dealerPaintSmartWorkOrderFields(form){
       if(!form?.classList?.contains('dealer-wo-form')) return;
-      const fullRequired=dealerFullWorkOrderRequiredNames(form);
-      const isRequiredName=name=>DEALER_FAST_WORKORDER_REQUIRED_NAMES.includes(name)||fullRequired.includes(name);
-      const isSoftName=name=>[
-        'customer','phone','taxNo','customerType','contactPermission','spareKey','engineNo','vehicleVariant','fuel','transmission',
-        'seller','sellerPhone','sellerTaxNo','sellerType','sellerContactPermission',
-        'payment','paymentMethod','consent','paidAmount'
-      ].includes(name);
-      const isValidRequired=(name,value)=>{
-        const v=dealerWorkOrderMeaningfulValue(name,value);
-        if(!isRequiredName(name)&&!isSoftName(name)) return true;
-        if(isSoftName(name)&&!v) return true;
-        if(['customer','customerType','contactPermission','spareKey','seller','sellerType','sellerContactPermission','vehicleVariant','fuel','transmission','paymentMethod','paidAmount'].includes(name)) return !!v;
-        if(name==='phone'||name==='sellerPhone') return dealerPhoneBodyLength(v)===10;
-        if(name==='taxNo'||name==='sellerTaxNo') return !dealerSmartDigits(v)||dealerTaxNoValid(v);
-        if(name==='plate') return /^\d{2}\s?[A-Z]{1,3}\s?\d{2,4}$/i.test(v);
-        if(name==='vin') return dealerValidateChassisInput(v).isValid;
-        if(name==='engineNo'){const e=dealerFormatEngineNoInput(v);return e.length>=6&&e.length<=17;}
-        if(name==='vehicleMake') return !!dealerFindVehicleMake(v,false);
-        if(name==='vehicleModel'){const make=dealerFindVehicleMake(dealerFormControl(form,'vehicleMake')?.value,false);return !!dealerFindVehicleModel(make,v,false);}
-        if(name==='packageName') return dealerPackageName(v)!=='Paket Bekliyor';
-        if(name==='year') return dealerSmartDigits(v).length===4;
-        if(name==='mileage') return !!dealerMileageDigits(v)&&dealerMileageNumber(v)<=DEALER_MAX_MILEAGE;
-        if(name==='payment') return v&&v!=='Bekliyor';
-        if(name==='consent') return dealerWorkOrderConsentSigned(v);
-        return !!v;
-      };
+      const requiredNames=dealerWorkOrderRequiredNames(form);
+      const isRequiredName=name=>requiredNames.includes(name);
+      const isSoftName=name=>DEALER_WORKORDER_SOFT_VALIDATE_NAMES.includes(name);
       form.querySelectorAll('.dealer-wo-field').forEach(field=>{
         const control=field.querySelector('input:not([type="hidden"]),select,textarea')||field.querySelector('input[type="hidden"]');
         if(!control) return;
         const required=control.hasAttribute('required')||isRequiredName(control.name);
         const soft=isSoftName(control.name);
         const vehicleVisual=!!field.closest('.dealer-wo-vehicle-card')&&!!control.name;
-        const filled=dealerWorkOrderMeaningfulValue(control.name,control.value).length>0;
-        const valid=isValidRequired(control.name,control.value)&&control.checkValidity();
+        const state=dealerWorkOrderFieldValidation(form,control.name);
+        const filled=state.filled;
+        const valid=state.valid;
         const neutralOptionalTax=(control.name==='taxNo'||control.name==='sellerTaxNo')&&filled&&!dealerTaxNoValid(control.value);
-        const invalid=required?(!filled||!valid):((soft&&filled&&!valid&&!neutralOptionalTax)||(vehicleVisual&&!filled));
+        const invalid=required?(!filled||!valid):(soft&&filled&&!valid&&!neutralOptionalTax);
         const validState=(required&&filled&&valid)||(soft&&filled&&valid)||(vehicleVisual&&filled&&valid);
-        field.classList.toggle('is-required',required||invalid||validState||vehicleVisual);
+        field.classList.toggle('is-required',required||invalid||validState);
         field.classList.toggle('is-invalid',invalid);
         field.classList.toggle('is-valid',validState);
       });
@@ -7752,68 +8104,24 @@
     function dealerValidateSmartWorkOrderForm(form){
       if(!form) return true;
       dealerRefreshVehicleModelOptions(form);
-      const fullMode=dealerIsFullWorkOrderMode(form);
-      let ok=true;
-      const setValidity=(name,valid,message)=>{
+      const result=dealerWorkOrderValidationResult(form);
+      const validationMap=new Map(result.invalid.map(item=>[item.name,item]));
+      [...new Set([...dealerWorkOrderRequiredNames(form),...DEALER_WORKORDER_SOFT_VALIDATE_NAMES])].forEach(name=>{
         const el=dealerFormControl(form,name);
         if(!el) return;
-        el.setCustomValidity(valid?'':message);
-        if(!valid) ok=false;
-      };
-      const value=name=>dealerWorkOrderMeaningfulValue(name,dealerFormControl(form,name)?.value||'');
-      const phoneLen=dealerPhoneBodyLength(value('phone'));
-      setValidity('customer',!fullMode||!!value('customer'),'Alıcı ad soyad zorunlu.');
-      setValidity('phone',fullMode?phoneLen===10:(!value('phone')||phoneLen===10),'Telefon 10 haneli GSM numarası olmalı. Örn: 0533 210 47 24');
-      const tax=dealerSmartDigits(value('taxNo'));
-      setValidity('taxNo',fullMode?dealerTaxNoValid(tax):(!tax||tax.length<11||dealerTaxNoValid(tax)),'T.C. kimlik no 11 hane olmalı.');
-      setValidity('customerType',!fullMode||!!value('customerType'),'Alıcı tipi seçilmeli.');
-      setValidity('contactPermission',!fullMode||!!value('contactPermission'),'Alıcı iletişim izni seçilmeli.');
-      setValidity('spareKey',!fullMode||!!value('spareKey'),'Yedek anahtar bilgisi seçilmeli.');
-      setValidity('seller',!fullMode||!!value('seller'),'Satıcı ad soyad zorunlu.');
-      const sellerPhoneLen=dealerPhoneBodyLength(value('sellerPhone'));
-      setValidity('sellerPhone',fullMode?sellerPhoneLen===10:(!value('sellerPhone')||sellerPhoneLen===10),'Satıcı telefonu 10 haneli GSM numarası olmalı.');
-      const sellerTax=dealerSmartDigits(value('sellerTaxNo'));
-      setValidity('sellerTaxNo',fullMode?dealerTaxNoValid(sellerTax):(!sellerTax||sellerTax.length<11||dealerTaxNoValid(sellerTax)),'Satıcı T.C. kimlik no 11 hane olmalı.');
-      setValidity('sellerType',!fullMode||!!value('sellerType'),'Satıcı tipi seçilmeli.');
-      setValidity('sellerContactPermission',!fullMode||!!value('sellerContactPermission'),'Satıcı iletişim izni seçilmeli.');
-      const year=dealerSmartDigits(value('year'));
-      setValidity('year',year.length===4,'Model yılı 4 haneli olmalı.');
-      const mileageDigits=dealerMileageDigits(value('mileage'));
-      setValidity('mileage',!!mileageDigits&&dealerMileageNumber(value('mileage'))<=DEALER_MAX_MILEAGE,'Giriş KM en fazla 1.000.000 olmalı.');
-      const history=dealerFindVehicleHistory(form);
-      const previousKm=dealerMileageNumber(history?.mileage);
-      const currentKm=dealerMileageNumber(value('mileage'));
-      if(currentKm&&previousKm&&currentKm<previousKm) setValidity('mileage',false,'Önceki KM '+dealerFormatMileageInput(previousKm)+'; giriş KM daha düşük olamaz.');
-      const plate=String(value('plate')||'').trim();
-      setValidity('plate',/^\d{2}\s?[A-Z]{1,3}\s?\d{2,4}$/i.test(plate),'Plaka formatı 34 ABC 123 şeklinde olmalı.');
-      const vin=dealerVinDisplayInput(value('vin'));
-      const vinValidation=dealerValidateChassisInput(vin);
-      setValidity('vin',vinValidation.isValid,dealerVinFieldMessage(vinValidation));
-      const engineNo=dealerFormatEngineNoInput(value('engineNo'));
-      setValidity('engineNo',fullMode?(engineNo.length>=6&&engineNo.length<=17):(!engineNo||(engineNo.length>=6&&engineNo.length<=17)),'Motor no 6-17 harf/rakam olmalı.');
-      const make=dealerFindVehicleMake(value('vehicleMake'),false);
-      const models=DEALER_VEHICLE_CATALOG[make]||[];
-      setValidity('vehicleMake',!!make,'Araç markası listeden seçilmeli.');
-      setValidity('vehicleModel',!!dealerFindVehicleModel(make,value('vehicleModel'),false),'Araç modeli seçilmeli.');
-      setValidity('vehicleVariant',!fullMode||!!dealerFindVehicleVariant(make,value('vehicleModel'),value('vehicleVariant'),false),'Alt paket seçilmeli.');
-      setValidity('fuel',!fullMode||!!value('fuel'),'Yakıt tipi seçilmeli.');
-      setValidity('transmission',!fullMode||!!value('transmission'),'Vites tipi seçilmeli.');
-      const packageName=dealerPackageName(value('packageName'));
-      setValidity('packageName',packageName!=='Paket Bekliyor','Paket seçimi zorunlu.');
-      setValidity('payment',!fullMode||(!!value('payment')&&value('payment')!=='Bekliyor'),'Ödeme durumu tamamlanmalı.');
-      setValidity('paymentMethod',!fullMode||!!value('paymentMethod'),'Ödeme yöntemi seçilmeli.');
-      setValidity('consent',!fullMode||dealerWorkOrderConsentSigned(value('consent')),'KVKK / rıza imzalanmalı.');
-      setValidity('paidAmount',!fullMode||dealerMoneyAmount(value('paidAmount'))>0,'Alınan tutar girilmeli.');
+        el.setCustomValidity(validationMap.get(name)?.message||'');
+      });
       dealerPaintSmartWorkOrderFields(form);
       dealerPaintTaxNoField(form);
-      dealerUpdateWorkOrderGate(form,ok);
-      return ok;
+      dealerRefreshReceptionEnhancementPanels(form);
+      dealerUpdateWorkOrderGate(form,result.valid);
+      return result.valid;
     }
     function dealerPaintTaxNoField(form){
       ['taxNo','sellerTaxNo'].forEach(name=>{
         const el=form?.elements?.[name], field=el?.closest?.('.dealer-wo-field');
         if(!el||!field) return;
-        const required=dealerFullWorkOrderRequiredNames(form).includes(name);
+        const required=dealerWorkOrderRequiredNames(form).includes(name);
         const digits=dealerSmartDigits(el.value);
         const filled=digits.length>0;
         const valid=digits.length===11&&dealerTaxNoValid(el.value);
@@ -7829,48 +8137,8 @@
       });
     }
     function dealerWorkOrderGateStatus(form,fieldOk=true){
-      if(!form) return {ready:false,missing:['Form bulunamadı']};
-      const missing=[];
-      const value=name=>dealerWorkOrderMeaningfulValue(name,dealerFormControl(form,name)?.value||'');
-      const requireFull=dealerIsFullWorkOrderMode(form);
-      const markMissing=name=>missing.push(DEALER_WORKORDER_REQUIRED_LABELS[name]||name);
-      const plate=value('plate');
-      if(!/^\d{2}\s?[A-Z]{1,3}\s?\d{2,4}$/i.test(plate)) markMissing('plate');
-      const vinValidation=dealerValidateChassisInput(value('vin'));
-      if(!vinValidation.isValid) markMissing('vin');
-      const engineNo=dealerFormatEngineNoInput(value('engineNo'));
-      const make=dealerFindVehicleMake(value('vehicleMake'),false);
-      if(!make) markMissing('vehicleMake');
-      if(!dealerFindVehicleModel(make,value('vehicleModel'),false)) markMissing('vehicleModel');
-      const packageName=dealerPackageName(value('packageName'));
-      if(!value('packageName')||packageName==='Paket Bekliyor') markMissing('packageName');
-      const year=dealerSmartDigits(value('year'));
-      if(year.length!==4) markMissing('year');
-      const mileageDigits=dealerMileageDigits(value('mileage'));
-      if(!mileageDigits) markMissing('mileage');
-      else if(dealerMileageNumber(value('mileage'))>DEALER_MAX_MILEAGE) markMissing('mileage');
-      if(requireFull){
-        if(!value('customer')) markMissing('customer');
-        if(dealerPhoneBodyLength(value('phone'))!==10) markMissing('phone');
-        if(!dealerTaxNoValid(value('taxNo'))) markMissing('taxNo');
-        if(!value('customerType')) markMissing('customerType');
-        if(!value('contactPermission')) markMissing('contactPermission');
-        if(!value('spareKey')) markMissing('spareKey');
-        if(!value('seller')) markMissing('seller');
-        if(dealerPhoneBodyLength(value('sellerPhone'))!==10) markMissing('sellerPhone');
-        if(!dealerTaxNoValid(value('sellerTaxNo'))) markMissing('sellerTaxNo');
-        if(!value('sellerType')) markMissing('sellerType');
-        if(!value('sellerContactPermission')) markMissing('sellerContactPermission');
-        if(!(engineNo.length>=6&&engineNo.length<=17)) markMissing('engineNo');
-        if(!dealerFindVehicleVariant(make,value('vehicleModel'),value('vehicleVariant'),false)) markMissing('vehicleVariant');
-        if(!value('fuel')) markMissing('fuel');
-        if(!value('transmission')) markMissing('transmission');
-        if(!value('payment')||value('payment')==='Bekliyor') markMissing('payment');
-        if(!value('paymentMethod')) markMissing('paymentMethod');
-        if(!dealerWorkOrderConsentSigned(value('consent'))) markMissing('consent');
-        if(dealerMoneyAmount(value('paidAmount'))<=0) markMissing('paidAmount');
-      }
-      return {ready:missing.length===0,missing:[...new Set(missing)]};
+      const result=dealerWorkOrderValidationResult(form);
+      return {ready:result.valid,missing:result.missing,invalid:result.invalid};
     }
     function dealerEnsureWorkOrderGate(form){
       form?.closest?.('.dealer-wo-main')?.querySelectorAll?.('.dealer-wo-alert')?.forEach(x=>x.remove());
@@ -8033,6 +8301,7 @@
         if(!input) return;
         group.querySelectorAll('[data-dealer-choice]').forEach(btn=>btn.classList.toggle('active',btn.dataset.choiceValue===input.value));
       });
+      dealerSetChoiceStates(form);
       const packageName=dealerPackageName(form.elements.packageName?.value||'');
       form.querySelectorAll('[data-dealer-package-choice]').forEach(card=>card.classList.toggle('selected',card.dataset.dealerPackageChoice===packageName));
       const addonNames=dealerAddonNamesFromValue(form.elements.addons?.value||'');
@@ -8058,10 +8327,11 @@
     function dealerNormalizeSmartWorkOrderForm(form){
       if(!form) return;
       form.querySelectorAll('input:not([type="hidden"]):not([type="checkbox"]),textarea').forEach(el=>{
-        if(!el.matches('[data-dealer-phone-input],[data-dealer-tax-input],[data-dealer-year-input],[data-dealer-mileage-input],[data-dealer-vin-input],[data-dealer-vehicle-make],[data-dealer-vehicle-model]')) el.value=dealerUpperTextInput(el.value);
+        if(!el.matches('[data-dealer-phone-input],[data-dealer-tax-input],[data-dealer-year-input],[data-dealer-mileage-input],[data-dealer-vin-input],[data-dealer-vehicle-make],[data-dealer-vehicle-model],[data-dealer-vehicle-variant],input[type="email"],input[type="time"]')) el.value=dealerUpperTextInput(el.value);
       });
       if(form.elements.phone) form.elements.phone.value=dealerFormatPhoneInput(form.elements.phone.value);
       if(form.elements.sellerPhone) form.elements.sellerPhone.value=dealerFormatPhoneInput(form.elements.sellerPhone.value);
+      ['vehicleOwnerPhone','bringerPhone','payerPhone','reportRecipientPhone'].forEach(name=>{if(form.elements[name]) form.elements[name].value=dealerFormatPhoneInput(form.elements[name].value);});
       if(form.elements.taxNo) form.elements.taxNo.value=dealerFormatTaxInput(form.elements.taxNo.value);
       if(form.elements.sellerTaxNo) form.elements.sellerTaxNo.value=dealerFormatTaxInput(form.elements.sellerTaxNo.value);
       if(form.elements.year) form.elements.year.value=dealerFormatYearInput(form.elements.year.value);
@@ -8119,6 +8389,7 @@
       }
       const pipelineStep=form.querySelector('.dealer-wo-pipeline-card .dealer-wo-step');
       if(pipelineStep) pipelineStep.textContent='8';
+      if(typeof dealerEnsureAdvancedReceptionSections==='function') dealerEnsureAdvancedReceptionSections(form);
     }
     function dealerPopulateWorkOrderEditForm(form){
       if(!form?.classList?.contains('dealer-wo-form')) return;
@@ -8133,16 +8404,34 @@
       const set=(name,value)=>{
         const el=form.elements?.[name];
         if(!el||value==null) return;
-        el.value=name==='phone'||name==='sellerPhone'?dealerFormatPhoneInput(value):name==='taxNo'||name==='sellerTaxNo'?dealerFormatTaxInput(value):name==='mileage'?dealerFormatMileageInput(value):String(value);
+        el.value=['phone','sellerPhone','vehicleOwnerPhone','bringerPhone','payerPhone','reportRecipientPhone'].includes(name)?dealerFormatPhoneInput(value):name==='taxNo'||name==='sellerTaxNo'?dealerFormatTaxInput(value):name==='mileage'?dealerFormatMileageInput(value):String(value);
       };
+      const model=wo.workOrderModel||wo.dataModel||{};
+      const parties=wo.parties||model.Parties||{};
+      const intake=wo.vehicleIntake||model.Vehicle||{};
+      const paymentStatus=wo.paymentStatus||model.PaymentStatus||{};
+      const consentStatus=wo.consentStatus||model.ConsentStatus||{};
       Object.entries({
         customer:wo.customer==='Alıcı bilgisi bekliyor'?'':wo.customer, phone:wo.phone, taxNo:wo.taxNo,
         customerType:wo.customerType||'Bireysel', contactPermission:wo.contactPermission||'Evet', spareKey:wo.spareKey||'Var',
         seller:wo.seller==='Satıcı bilgisi bekliyor'?'':wo.seller, sellerPhone:wo.sellerPhone, sellerTaxNo:wo.sellerTaxNo,
         sellerType:wo.sellerType||'Bireysel', sellerContactPermission:wo.sellerContactPermission||'Evet',
+        vehicleOwnerName:wo.vehicleOwnerName||parties.vehicleOwner?.name, vehicleOwnerPhone:wo.vehicleOwnerPhone||parties.vehicleOwner?.phone,
+        bringerName:wo.bringerName||parties.broughtBy?.name, bringerPhone:wo.bringerPhone||parties.broughtBy?.phone,
+        payerName:wo.payerName||parties.payer?.name, payerPhone:wo.payerPhone||parties.payer?.phone,
+        reportRecipientName:wo.reportRecipientName||parties.reportRecipient?.name, reportRecipientPhone:wo.reportRecipientPhone||parties.reportRecipient?.phone, reportRecipientEmail:wo.reportRecipientEmail||parties.reportRecipient?.email,
+        reportChannels:dealerAddonNamesFromValue(wo.reportChannels||parties.reportRecipient?.channels).join('|'),
         plate:wo.plate, vin:wo.vin, engineNo:dealerWorkOrderMeaningfulValue('engineNo',wo.engineNo), vehicleMake:wo.vehicleMake, vehicleModel:wo.vehicleModel, vehicleVariant:wo.vehicleVariant,
         vehicle:wo.vehicle, year:wo.year, mileage:wo.mileage, fuel:wo.fuel, transmission:wo.transmission, packageName:wo.packageName,
-        branchName:wo.branchName, source:wo.source, deliveryAt:wo.deliveryAt, payment:wo.payment, paymentMethod:wo.paymentMethod, consent:wo.consent, campaignCode:wo.campaignCode
+        vehicleSource:wo.vehicleSource||intake.source, galleryName:wo.galleryName||intake.galleryName, referrerName:wo.referrerName||intake.referrerName, arrivalChannel:wo.arrivalChannel||intake.arrivalChannel,
+        testDrivePermission:wo.testDrivePermission||intake.testDrivePermission, testDriveRejectionReason:wo.testDriveRejectionReason||intake.testDriveRejectionReason, arrivalStatus:wo.arrivalStatus||intake.arrivalStatus,
+        keyDelivery:wo.keyDelivery||intake.keyDelivery, registrationDelivery:wo.registrationDelivery||intake.registrationDelivery, belongingsStatus:wo.belongingsStatus||intake.belongingsStatus, belongingsNote:wo.belongingsNote||intake.belongingsNote,
+        customerWaiting:wo.customerWaiting||intake.customerWaiting, vehicleDropped:wo.vehicleDropped||intake.vehicleDropped, estimatedDeliveryTime:wo.estimatedDeliveryTime||intake.estimatedDeliveryTime,
+        acceptanceEvidence:dealerAddonNamesFromValue(wo.acceptanceEvidence||intake.acceptanceEvidence).join('|'),
+        branchName:wo.branchName, source:wo.source, deliveryAt:wo.deliveryAt, payment:wo.payment||paymentStatus.status, paymentMethod:wo.paymentMethod||paymentStatus.method, consent:wo.consent, paidAmount:wo.paidAmount||paymentStatus.paidAmount,
+        discountReason:wo.discountReason||paymentStatus.discountReason,
+        consentKvkk:wo.consentKvkk||consentStatus.kvkk, serviceTermsConsent:wo.serviceTermsConsent||consentStatus.serviceTerms, mediaConsent:wo.mediaConsent||consentStatus.media, digitalReportConsent:wo.digitalReportConsent||consentStatus.digitalReport, thirdPartyShareConsent:wo.thirdPartyShareConsent||consentStatus.thirdPartyShare,
+        campaignCode:wo.campaignCode
       }).forEach(([name,value])=>set(name,value));
       if(form.elements.addons) form.elements.addons.value=dealerAddonNamesFromValue(wo.additionalServices).join('|');
       if(form.elements.addonGifts) form.elements.addonGifts.value=dealerAddonNamesFromValue(wo.giftedAdditionalServices).join('|');
@@ -8151,6 +8440,7 @@
         if(!input) return;
         group.querySelectorAll('[data-dealer-choice]').forEach(btn=>btn.classList.toggle('active',btn.dataset.choiceValue===input.value));
       });
+      dealerSetChoiceStates(form);
       form.querySelectorAll('[data-dealer-package-choice]').forEach(card=>card.classList.toggle('selected',card.dataset.dealerPackageChoice===dealerPackageName(wo.packageName)));
       form.querySelectorAll('[data-dealer-addon-choice]').forEach(card=>card.classList.toggle('selected',dealerAddonNamesFromValue(wo.additionalServices).includes(card.dataset.dealerAddonChoice)));
       const fieldset=form.querySelector('fieldset');
@@ -8223,7 +8513,7 @@
     }
     function dealerRefreshSmartWorkOrderFormState(){
       const form=document.getElementById('dealerWorkOrderForm');
-      if(form){dealerClearNewWorkOrderVehicleSeed(form);dealerEnsureBuyerSellerVehicleLayout(form);dealerRelocateSpareKeyField(form);dealerEnsureCampaignField(form);dealerEnsureWorkOrderTableAction(form);dealerEnsureVehicleHistoryPanel(form);dealerEnsureBuyerSellerVehicleLayout(form);dealerEnsureAddonGiftControls(form);dealerPopulateWorkOrderEditForm(form);dealerProactiveFillFromForm(form,'refresh');dealerUpdateWorkOrderPricingSummary(form);dealerValidateSmartWorkOrderForm(form);dealerStartWorkOrderGateWatcher();dealerScheduleWorkOrderGateSync(form);}
+      if(form){dealerClearNewWorkOrderVehicleSeed(form);dealerEnsureBuyerSellerVehicleLayout(form);dealerRelocateSpareKeyField(form);dealerEnsureCampaignField(form);dealerEnsureWorkOrderTableAction(form);dealerEnsureVehicleHistoryPanel(form);dealerEnsureBuyerSellerVehicleLayout(form);dealerEnsureAdvancedReceptionSections(form);dealerEnsureAddonGiftControls(form);dealerPopulateWorkOrderEditForm(form);dealerProactiveFillFromForm(form,'refresh');dealerUpdateWorkOrderPricingSummary(form);dealerValidateSmartWorkOrderForm(form);dealerRefreshReceptionEnhancementPanels(form);dealerStartWorkOrderGateWatcher();dealerScheduleWorkOrderGateSync(form);}
     }
     async function dealerCreateWorkOrder(options={}){
       const f=document.getElementById('dealerWorkOrderForm'); if(!f) return;
@@ -8240,7 +8530,9 @@
       const entryAt=new Date().toLocaleString('tr-TR',{dateStyle:'short',timeStyle:'short'});
       const loyaltyCalc=dealerPricing(packageName,addonNames,{name:data.customer,phone:data.phone,taxNo:data.taxNo,type:data.customerType||'Bireysel'},giftedAddonNames);
       const sellerLoyalty=dealerSellerLoyaltyProfile(data);
+      const receptionModel=dealerBuildReceptionWorkOrderModel(f);
       const wo={id:'IE-2026-'+String(no).padStart(6,'0'),reportNo:'OTR-2026-'+String(no+300).padStart(6,'0'),branchId:selectedBranchId,branchName:data.branchName||'OTOTR Bursa Nilüfer',status:'İş emri açıldı',customer:data.customer||'Alıcı bilgisi bekliyor',phone:data.phone||'',taxNo:data.taxNo||'',customerType:data.customerType||'Bireysel',contactPermission:data.contactPermission||'Evet',buyer:data.buyer||data.customer||'Alıcı bilgisi bekliyor',seller:data.seller||'Satıcı bilgisi bekliyor',sellerPhone:data.sellerPhone||'',sellerTaxNo:data.sellerTaxNo||'',sellerType:data.sellerType||'Bireysel',sellerContactPermission:data.sellerContactPermission||'Evet',vehicle:data.vehicle||dealerVehicleFromParts(data.vehicleMake,data.vehicleModel,data.vehicleVariant),vehicleMake:data.vehicleMake||'',vehicleModel:data.vehicleModel||'',vehicleVariant:data.vehicleVariant||'',fuel:data.fuel||'',transmission:data.transmission||'',year:data.year||'2023',plate:data.plate,vin:data.vin||'VIN bekliyor',engineNo:data.engineNo||'',mileage:dealerStoredMileage(data.mileage)||'KM bekliyor',packageName,additionalServices:addonNames,giftedAdditionalServices:giftedAddonNames,spareKey:data.spareKey||'Var',price:loyaltyCalc.net,paidAmount:dealerMoneyAmount(data.paidAmount)||loyaltyCalc.net,grossPrice:loyaltyCalc.gross,packageGrossPrice:loyaltyCalc.packageGross,addonTotal:loyaltyCalc.addonTotal,loyalty:loyaltyCalc.loyalty,loyaltyDiscountRate:loyaltyCalc.loyalty.discount,loyaltyDiscountAmount:loyaltyCalc.discountAmount,source:data.source||'Bayi ekranı',createdAt:entryAt,entryAt,deliveryAt:data.deliveryAt||'Bugün 14:30',payment:data.payment||'Tahsil edildi',paymentMethod:data.paymentMethod||'POS / Kredi Kartı',consent:data.consent||'İmzalandı',managerApproved:false,secretaryPrinted:false,revisionNo:1,reprintCount:0,tasks:dealerTaskSeed(packageName)};
+      Object.assign(wo,dealerReceptionPersistenceFromForm(f,receptionModel));
       wo.sellerLoyalty=sellerLoyalty;
       wo.sellerLoyaltyPoints=sellerLoyalty.points;
       wo.sellerLoyaltyTier=sellerLoyalty.tier;
@@ -8264,7 +8556,9 @@
       const packageName=dealerPackageName(data.packageName||wo.packageName), addonNames=dealerAddonNamesFromValue(data.addons||wo.additionalServices), giftedAddonNames=dealerAddonNamesFromValue(data.addonGifts||wo.giftedAdditionalServices);
       const loyaltyCalc=dealerPricing(packageName,addonNames,{name:data.customer||wo.customer,phone:data.phone||wo.phone,taxNo:data.taxNo||wo.taxNo,type:data.customerType||wo.customerType||'Bireysel'},giftedAddonNames);
       const sellerLoyalty=dealerSellerLoyaltyProfile(data);
+      const receptionModel=dealerBuildReceptionWorkOrderModel(f);
       Object.assign(wo,{customer:data.customer||wo.customer,phone:data.phone||wo.phone,taxNo:data.taxNo||wo.taxNo||'',customerType:data.customerType||wo.customerType||'Bireysel',contactPermission:data.contactPermission||wo.contactPermission||'Evet',buyer:data.buyer||data.customer||wo.buyer,seller:data.seller||wo.seller,sellerPhone:data.sellerPhone||wo.sellerPhone||'',sellerTaxNo:data.sellerTaxNo||wo.sellerTaxNo||'',sellerType:data.sellerType||wo.sellerType||'',sellerContactPermission:data.sellerContactPermission||wo.sellerContactPermission||'',vehicle:data.vehicle||dealerVehicleFromParts(data.vehicleMake,data.vehicleModel,data.vehicleVariant)||wo.vehicle,vehicleMake:data.vehicleMake||wo.vehicleMake||'',vehicleModel:data.vehicleModel||wo.vehicleModel||'',vehicleVariant:data.vehicleVariant||wo.vehicleVariant||'',fuel:data.fuel||wo.fuel||'',transmission:data.transmission||wo.transmission||'',year:data.year||wo.year,plate:data.plate||wo.plate,vin:data.vin||wo.vin,engineNo:data.engineNo||wo.engineNo,mileage:dealerStoredMileage(data.mileage)||wo.mileage,packageName,additionalServices:addonNames,giftedAdditionalServices:giftedAddonNames,spareKey:data.spareKey||wo.spareKey||'Var',price:loyaltyCalc.net,paidAmount:dealerMoneyAmount(data.paidAmount)||wo.paidAmount||loyaltyCalc.net,grossPrice:loyaltyCalc.gross,packageGrossPrice:loyaltyCalc.packageGross,addonTotal:loyaltyCalc.addonTotal,loyalty:loyaltyCalc.loyalty,loyaltyDiscountRate:loyaltyCalc.loyalty.discount,loyaltyDiscountAmount:loyaltyCalc.discountAmount,source:data.source||wo.source,branchName:data.branchName||wo.branchName,deliveryAt:data.deliveryAt||wo.deliveryAt,payment:data.payment||wo.payment,paymentMethod:data.paymentMethod||wo.paymentMethod||'POS / Kredi Kartı',consent:data.consent||wo.consent,managerApproved:false,secretaryPrinted:false});
+      Object.assign(wo,dealerReceptionPersistenceFromForm(f,receptionModel));
       Object.assign(wo,dealerChassisPersistenceFromForm(f));
       Object.assign(wo,{sellerLoyalty,sellerLoyaltyPoints:sellerLoyalty.points,sellerLoyaltyTier:sellerLoyalty.tier});
       wo.campaignCode=data.campaignCode||wo.campaignCode||'';
@@ -8776,9 +9070,20 @@
       const m=dealerApiModel();
       return `<section class="dealer-form-section"><div class="dealer-section-head"><div><h3>Canlı API Veri Modeli</h3><p>Demo localStorage akışı canlı sisteme geçerken bayi, şube, personel, iş emri, görev, rapor, cihaz, kasa ve dosya arşivi tablolarına ayrılacak.</p></div>${badge(m.version||'api-v1')}</div>${dealerPortalTable(['Tablo','Kapsam','Anahtar','Amaç'],m.entities.map(e=>[e.table,e.label,e.key,e.purpose]))}<div class="dealer-ops-grid" style="margin-top:12px"><div class="dealer-panel"><h3>Öncelikli Endpointler</h3>${dealerMiniRows(m.endpoints.slice(0,6).map(x=>[x[0]+' '+x[1],x[2],'API']))}</div><div class="dealer-panel"><h3>Dosya Arşiv Politikası</h3>${dealerMiniRows(m.archivePolicy.map((x,i)=>['Kural '+(i+1),x,'Arşiv']))}</div></div></section>`;
     }
+    function dealerInspectionCatalogPanel(mode='full'){
+      const catalog=dealerApiModel().inspectionCatalog||[];
+      const total=catalog.reduce((sum,x)=>sum+(Number(x.itemCount)||0),0);
+      const rows=catalog.map((x,i)=>[
+        `<b>${String(i+1).padStart(2,'0')} · ${rpEsc(x.ototr)}</b><br><span class="card-sub">${rpEsc(x.source)}</span>`,
+        `<b>${Number(x.itemCount)||0} madde</b><br><span class="card-sub">${rpEsc(x.mobileTitle)}</span>`,
+        `${rpEsc(x.owner)}<br><span class="card-sub">${rpEsc(x.inputPattern)}</span>`,
+        `${rpEsc(x.reportSection)}<br><span class="card-sub">${rpEsc(x.evidence)}</span>`
+      ]);
+      return `<section class="dealer-form-section"><div class="dealer-section-head"><div><h3>Otorapor Kaynaklı OTOTR Kontrol Sözlüğü</h3><p>Yüklenen JSON dosyası 12 ana grup ve ${total} kontrol maddesi içeriyor. Bu tablo mobil usta ekranındaki görev başlıklarını, rapor bölümünü ve zorunlu kanıt standardını normalize eder.</p></div>${badge(catalog.length+' grup')}${badge(total+' madde')}</div>${dealerPortalTable(['OTOTR başlığı / kaynak grup','Mobil görev','Sorumlu / giriş tipi','Rapor bölümü / kanıt'],mode==='compact'?rows.slice(0,8):rows)}${mode==='compact'?`<div class="live-sync-note">Tam 12 grup rapor merkezindeki PDF veri haritasında görünür. Paket kapsamına göre görevler iş emrine otomatik atanır.</div>`:''}</section>`;
+    }
     function dealerReportMappingPanel(){
       const m=dealerApiModel();
-      return `<section class="dealer-form-section"><div class="dealer-section-head"><div><h3>Rapor PDF Bölüm Eşlemesi</h3><p>Usta ve sekreterya girişlerinin PDF rapor tasarımındaki hangi bölümü beslediği canlı veri alanı olarak tanımlandı.</p></div>${badge('PDF veri haritası')}</div>${dealerPortalTable(['Rapor bölümü','Canlı veri alanı','Bayi / usta girişi'],m.reportMapping)}</section>`;
+      return `<section class="dealer-form-section"><div class="dealer-section-head"><div><h3>Rapor PDF Bölüm Eşlemesi</h3><p>Usta ve sekreterya girişlerinin PDF rapor tasarımındaki hangi bölümü beslediği canlı veri alanı olarak tanımlandı.</p></div>${badge('PDF veri haritası')}</div>${dealerPortalTable(['Rapor bölümü','Canlı veri alanı','Bayi / usta girişi'],m.reportMapping)}</section>${dealerInspectionCatalogPanel('full')}`;
     }
     function dealerAuthMatrixPanel(){
       const m=dealerApiModel();
@@ -9017,11 +9322,14 @@
           return `<label class="dealer-wo-field ${cls}"><span>${label}</span>${type==='select'?`<select name="${name}" ${attrs} ${required}>${dealerVehicleOptions(opts,value||opts[0])}</select>`:type==='textarea'?`<textarea name="${name}">${rpEsc(value)}</textarea>`:`<input name="${name}" value="${rpEsc(value)}" ${required} ${attrs}>`}</label>`;
         };
         const choiceField=(label,name,value='',opts=[],cls='')=>{const defaults={customerType:'Bireysel',sellerType:'Bireysel',contactPermission:'Evet',sellerContactPermission:'Evet',spareKey:'Var'}, selected=value||defaults[name]||'';return `<div class="dealer-wo-field dealer-wo-choice-field ${cls}" data-dealer-choice-group="${name}"><span>${label}</span><input type="hidden" name="${name}" value="${rpEsc(selected)}"><div class="dealer-wo-choice-grid">${opts.map((o,i)=>`<button type="button" class="dealer-wo-choice ${o===selected?'active':''}" data-dealer-choice="${name}" data-choice-value="${rpEsc(o)}" data-tone="${['green','blue','amber','slate'][i%4]}">${rpEsc(o)}</button>`).join('')}</div></div>`};
+        const receptionSections=`<section class="dealer-wo-card dealer-wo-reception-card dealer-wo-parties-card"><div class="dealer-wo-card-head"><div class="dealer-wo-step">6</div><h3>Taraflar ve Rapor Teslimi</h3></div><div class="dealer-wo-form-grid dealer-wo-reception-grid">${dealerWoTextFieldMarkup('Araç Sahibi','vehicleOwnerName')}${dealerWoTextFieldMarkup('Araç Sahibi Telefon','vehicleOwnerPhone','','inputmode="numeric" autocomplete="tel" data-dealer-phone-input maxlength="14" placeholder="0533 210 47 24"')}${dealerWoTextFieldMarkup('Aracı Getiren','bringerName')}${dealerWoTextFieldMarkup('Getiren Telefon','bringerPhone','','inputmode="numeric" autocomplete="tel" data-dealer-phone-input maxlength="14" placeholder="0533 210 47 24"')}${dealerWoTextFieldMarkup('Ödemeyi Yapan','payerName')}${dealerWoTextFieldMarkup('Ödeme Telefon','payerPhone','','inputmode="numeric" autocomplete="tel" data-dealer-phone-input maxlength="14" placeholder="0533 210 47 24"')}${dealerWoTextFieldMarkup('Raporu Alacak Kişi','reportRecipientName')}${dealerWoTextFieldMarkup('Rapor Telefon','reportRecipientPhone','','inputmode="numeric" autocomplete="tel" data-dealer-phone-input maxlength="14" placeholder="0533 210 47 24"')}${dealerWoTextFieldMarkup('Rapor E-posta','reportRecipientEmail','','type="email" autocomplete="email"')}${dealerWoMultiChoiceMarkup('Rapor Gönderim Kanalı','reportChannels','WhatsApp|QR link',DEALER_REPORT_CHANNELS,'full')}</div></section><section class="dealer-wo-card dealer-wo-reception-card dealer-wo-source-card"><div class="dealer-wo-card-head"><div class="dealer-wo-step">7</div><h3>Araç Kaynağı ve Kabul Durumu</h3></div><div class="dealer-wo-form-grid dealer-wo-reception-grid">${dealerWoChoiceMarkup('Araç Kaynağı','vehicleSource','Bireysel',DEALER_VEHICLE_SOURCE_TYPES)}${dealerWoTextFieldMarkup('Galeri Adı','galleryName')}${dealerWoTextFieldMarkup('Yönlendiren Kişi/Firma','referrerName')}${dealerWoChoiceMarkup('Geliş Kanalı','arrivalChannel','Walk-in',DEALER_ARRIVAL_CHANNELS)}${dealerWoChoiceMarkup('Test Sürüşü İzni','testDrivePermission','Evet',['Evet','Hayır'])}${dealerWoTextFieldMarkup('Hayır Nedeni','testDriveRejectionReason','','placeholder="Test sürüşü yapılmayacaksa nedeni"')}${dealerWoChoiceMarkup('Araç Geliş Durumu','arrivalStatus','Çalışır',DEALER_ARRIVAL_STATUSES,'wide')}${dealerWoChoiceMarkup('Müşteri Bekliyor mu','customerWaiting','Evet',['Evet','Hayır'])}${dealerWoChoiceMarkup('Araç Bırakıldı mı','vehicleDropped','Hayır',['Evet','Hayır'])}${dealerWoTextFieldMarkup('Tahmini Teslim Saati','estimatedDeliveryTime','','type="time"')}</div></section><section class="dealer-wo-card dealer-wo-reception-card dealer-wo-evidence-card"><div class="dealer-wo-card-head"><div class="dealer-wo-step">8</div><h3>Kabul Belgeleri ve Onaylar</h3></div><div class="dealer-wo-form-grid dealer-wo-reception-grid">${dealerWoChoiceMarkup('Anahtar Teslim','keyDelivery','Var',['Var','Yok'])}${dealerWoChoiceMarkup('Ruhsat Teslim','registrationDelivery','Var',['Var','Yok'])}${dealerWoChoiceMarkup('Özel Eşya','belongingsStatus','Yok',['Yok','Var'])}${dealerWoTextFieldMarkup('Özel Eşya Notu','belongingsNote','','placeholder="Örn. bebek koltuğu, şarj kablosu"')}${dealerWoMultiChoiceMarkup('Araç Kabul Fotoğraf/Belge','acceptanceEvidence','',DEALER_ACCEPTANCE_EVIDENCE_ITEMS,'full')}${dealerWoChoiceMarkup('KVKK','consentKvkk','İmzalandı',['İmzalandı','Bekliyor'])}${dealerWoChoiceMarkup('Hizmet Şartları','serviceTermsConsent','İmzalandı',['İmzalandı','Bekliyor'])}${dealerWoChoiceMarkup('Foto/Video Onayı','mediaConsent','İmzalandı',['İmzalandı','Bekliyor'])}${dealerWoChoiceMarkup('Dijital Rapor Onayı','digitalReportConsent','İmzalandı',['İmzalandı','Bekliyor'])}${dealerWoChoiceMarkup('3. Kişiye Paylaşım','thirdPartyShareConsent','Bekliyor',['İmzalandı','Bekliyor'])}</div></section>`;
+        const technicalPreviewSection=`<section class="dealer-wo-card dealer-wo-reception-card dealer-wo-tech-preview-card"><div class="dealer-wo-card-head"><div class="dealer-wo-step">12</div><h3>Android Teknik Havuz Önizlemesi</h3><span class="dealer-readonly-pill">Sekreterya sadece izler</span></div><div class="dealer-technical-preview" data-dealer-technical-preview></div></section>`;
+        const modelPreviewSection=`<section class="dealer-wo-card dealer-wo-reception-card dealer-wo-data-model-card"><div class="dealer-wo-card-head"><div class="dealer-wo-step">11</div><h3>Canlı Sisteme Gidecek Veri Modeli</h3></div><div class="dealer-model-preview" data-dealer-model-preview></div></section>`;
         const missing=[['Müşteri Ad Soyad',!!workOrder?.customer],['Telefon',!!workOrder?.phone],['Araç Model',!!(workOrder?.vehicle||selectedModel)],['KVKK Onayı',workOrder?.consent==='İmzalandı']];
         const packageScope='';
         return `<section class="dealer-wo-screen"><div class="dealer-wo-main"><div class="dealer-wo-kpis">${[['calendar-plus','Bugünkü Randevu',String(appointments.length||18),'Randevu ve sıra akışı',''],['users-round','Bekleyen Müşteri','4','Şu an şubede','amber'],['clock-3','Ort. Bekleme','12 dk','Hedef altında','blue'],['shield-check','SLA Durumu','%96','Hedef: %95','green']].map(k=>`<div class="dealer-wo-kpi ${k[4]}"><div class="dealer-wo-kpi-icon">${icon(k[0])}</div><div><span>${k[1]}</span><b>${k[2]}</b><small>${k[3]}</small></div></div>`).join('')}</div><form id="dealerWorkOrderForm" class="dealer-workorder-form dealer-wo-form ${formModeClass}" data-workorder-locked="0"><fieldset class="dealer-workorder-fieldset dealer-wo-fieldset"><div class="dealer-wo-grid"><section class="dealer-wo-card"><div class="dealer-wo-card-head"><div class="dealer-wo-step">1</div><h3>Müşteri Bilgileri</h3></div><div class="dealer-wo-form-grid">${field('Ad Soyad','customer','')}${field('Telefon','phone','')}${field('T.C. / Vergi No','taxNo','')}${field('Müşteri Tipi','customerType','','select',['Bireysel','Kurumsal','Galeri'])}${field('İletişim İzni','contactPermission','','select',['Evet','Hayır'])}${dealerLoyaltyStripMarkup(initialPricing.loyalty)}</div></section><section class="dealer-wo-card"><div class="dealer-wo-card-head"><div class="dealer-wo-step">2</div><h3>Araç Bilgileri</h3></div><div class="dealer-wo-form-grid">${field('Plaka *','plate',workOrder?.plate||'34 SLA 018')}${field('Şasi No *','vin',workOrder?.vin||'')}${field('Motor No','engineNo',workOrder?.engineNo||'')}${field('Marka *','vehicleMake',selectedMake,'select',Object.keys(DEALER_VEHICLE_CATALOG))}${field('Model *','vehicleModel',selectedModel,'select',DEALER_VEHICLE_CATALOG[selectedMake]||[])}${field('Alt Paket','vehicleVariant',selectedVariant,'select',dealerVehicleVariantsFor(selectedMake,selectedModel))}${field('Model Yılı *','year',workOrder?.year||'2022')}${field('Giriş KM *','mileage',dealerFormatMileageInput(workOrder?.mileage||'76400'))}${field('Yakıt Tipi','fuel',editWo?.fuel||'','select',DEALER_FUEL_TYPES)}${field('Vites Tipi','transmission',editWo?.transmission||'','select',DEALER_TRANSMISSION_TYPES)}<input type="hidden" name="vehicle" value="${rpEsc(dealerVehicleFromParts(selectedMake,selectedModel,selectedVariant))}">${field('Yedek Anahtar','spareKey','','select',['Var','Yok'])}</div></section><section class="dealer-wo-card"><div class="dealer-wo-card-head"><div class="dealer-wo-step">3</div><h3>Hizmet / Paket Seçimi</h3></div><div class="dealer-wo-packages">${pkgCard('Mini Ekspertiz','car','Motor, fren ve süspansiyon kontrolü')}${pkgCard('Esnaf Ekspertiz','briefcase-business','Esnaf/galeri hızlı al-sat kontrolü')}${pkgCard('Standart Ekspertiz','star','Mini + detaylı mekanik kontrol')}${pkgCard('Full Ekspertiz','shield-check','Standart + elektronik kontrol')}${pkgCard('OTOTR Premium 360','gem','Full + kaporta/boya ve 360 kapsam')}</div><input type="hidden" name="packageName" value="${rpEsc(selectedPkg)}"></section><input type="hidden" name="branchName" value="${rpEsc(workOrder?.branchName||branch.name)}"><input type="hidden" name="source" value="${rpEsc(workOrder?.source||'Bayi ekranı')}"><input type="hidden" name="deliveryAt" value="${rpEsc(workOrder?.deliveryAt||'Bugün 14:30')}"><input type="hidden" name="density" value="Orta"><section class="dealer-wo-card"><div class="dealer-wo-card-head"><div class="dealer-wo-step">4</div><h3>Ek Hizmetler</h3></div><div class="dealer-wo-addons">${DEALER_ADDON_OPTIONS.map(a=>`<div class="dealer-wo-addon ${selectedAddonNames.includes(a.name)?'selected':''}" role="button" tabindex="0" data-dealer-addon-choice="${rpEsc(a.name)}" data-addon-price="${a.price}">${icon(a.icon)}<b>${rpEsc(a.name)}</b><span>${fmtTL(a.price)}</span></div>`).join('')}</div><input type="hidden" name="addons" value="${rpEsc(selectedAddonValue)}"></section><section class="dealer-wo-card"><div class="dealer-wo-card-head"><div class="dealer-wo-step">5</div><h3>Ödeme ve Onay</h3></div><div class="dealer-wo-payment"><div class="dealer-wo-summary"><h4>Ücret Özeti</h4><div><span>Seçilen Paket</span><b data-summary="package">${fmtTL(initialPricing.packageGross)}</b></div><div><span>Ek Hizmetler</span><b data-summary="addons">${initialPricing.addonTotal?fmtTL(initialPricing.addonTotal):'₺0'}</b></div><div><span>Sadakat indirimi</span><b data-summary="discount">${initialPricing.discountAmount?'-'+fmtTL(initialPricing.discountAmount):'₺0'}</b></div><div class="total"><span>Toplam</span><b data-summary="total">${fmtTL(initialPricing.net)}</b></div></div><div class="dealer-wo-payment-controls"><div class="dealer-wo-control-panel">${field('Ödeme','payment','Tahsil edildi','select',['Tahsil edildi','Bekliyor','Kısmi ödeme'])}</div><div class="dealer-wo-control-panel">${field('Ödeme Yöntemi','paymentMethod','POS / Kredi Kartı','select',['POS / Kredi Kartı','Nakit','Havale'])}</div><div class="dealer-wo-control-panel">${field('KVKK / Rıza','consent','İmzalandı','select',['İmzalandı','Bekliyor'])}</div></div></div></section></div><div class="dealer-wo-alert">${icon('triangle-alert')}Zorunlu alanlar ve rıza/ödeme kontrolleri tamamlanmadan rapor teslim kapısı açılmaz.</div><section class="dealer-wo-card dealer-wo-pipeline-card"><div class="dealer-wo-card-head"><div class="dealer-wo-step">6</div><h3>İş Emri Pipeline</h3></div><div class="dealer-pipeline">${pipeline.map((p,i)=>`<div class="dealer-pipeline-step ${i<currentStep?'done':i===currentStep?'current':i===5&&completion.done<completion.total?'blocked':''}"><b>${i+1}. ${p}</b><span>${i===currentStep?'Aktif durum':'Süreç kapısı'}</span></div>`).join('')}</div></section><section class="dealer-wo-card dealer-wo-table"><div class="dealer-wo-card-head"><div class="dealer-wo-step">7</div><h3>Aktif İş Emirleri</h3></div>${dealerPortalTable(['İş emri','Plaka','Müşteri','Paket','Durum','Giriş Saati','Tamamlanma','Aksiyon'],workOrderRows)}</section></fieldset></form><div class="dealer-wo-bottom"><button class="btn" data-dealer-create-work-order>${icon('save')}Taslak Kaydet</button><button class="btn" data-dealer-calendar-modal-open>${icon('calendar-plus')}Randevu Oluştur</button><button class="btn primary" data-dealer-create-work-order>${icon('clipboard-plus')}İş Emrini Aç</button><button class="btn" data-dealer-tab="rapor">${icon('file-search')}PDF Önizleme</button></div>${dealerWorkOrderDetail(workOrder,ui.role,completion,evidenceCount,blockRules)}</div><aside class="dealer-wo-side"><div class="dealer-wo-side-title"><span>${icon('lightbulb')} Hızlı Öneriler</span>${badge(workOrder?.id||'Yeni')}</div><div class="dealer-wo-advice green"><h4>${icon('shield-check')}Uygun Paket Önerisi</h4><p>${activeLoyalty.name} için ${activeLoyalty.tier} sadakat seviyesi var. Önerilen net fiyat: ${fmtTL(activeDiscount?.net||pkgPrice(selectedPkg))}.</p><a href="#" data-dealer-tab="crm">Müşteri geçmişini gör</a></div><div class="dealer-wo-advice amber"><h4>${icon('users-round')}Yoğunluk Uyarısı</h4><p>10:00 - 12:00 arası yoğun. Randevu yoğunluğu orta seviyede; teslim hedefini 14:30 sonrası tutmak güvenli.</p><a href="#" data-dealer-calendar-modal-open>Randevu takvimini aç</a></div><div class="dealer-wo-advice yellow"><h4>${icon('triangle-alert')}Eksik Bilgiler</h4><ul>${missing.map(m=>`<li>${rpEsc(m[0])}: ${m[1]?'Tamam':'Eksik'}</li>`).join('')}</ul></div><div class="dealer-wo-advice blue"><h4>${icon('route')}Müşteri Yolculuğu</h4><div class="dealer-wo-journey"><div class="active">${icon('user-round')}<span>Karşılama</span></div><div>${icon('list')}<span>Bilgi</span></div><div>${icon('calendar-days')}<span>Randevu</span></div><div>${icon('file-text')}<span>İş Emri</span></div></div></div>${packageScope}</aside></section>`;
       };
-      const renderUsta=()=>`<section class="dealer-command"><div class="grid"><div class="dealer-form-section"><div class="dealer-section-head"><div><h3>Usta Görevleri</h3><p>Usta sadece kendine atanmış teknik alanı düzenler; finans ve ödeme bilgisi görmez.</p></div>${badge(`${completion.done}/${completion.total} tamam`)}</div>${dealerPortalTable(['Görev','Usta / rol','Kapsam','Durum','Rapora düşen müşteri dili','Kanıt','Aksiyon'],taskRows)}</div><div class="dealer-form-section"><div class="dealer-section-head"><div><h3>Teknik Giriş Formları</h3><p>Kaporta, mekanik, OBD ve test girişleri aynı kanıt standardına bağlanır.</p></div>${badge('Tablet uyumlu')}</div><div class="station-grid">${activeTasks.map(t=>`<article class="station-card ${dealerTaskStatusClass(t.status)} ${t.id===selectedTask?.id?'active-task':''}"><div class="station-meta"><span>${rpEsc(t.owner)}</span><span>${rpEsc(t.status)}</span></div><b>${rpEsc(t.station)}</b><div class="station-checks">${[t.scope,'Fotoğraf / cihaz kanıtı zorunlu',t.result?.customerText||t.returnNote||'Usta girişi bekleniyor'].map(c=>`<div class="station-check">${icon('check-circle-2')}<span>${rpEsc(c)}</span></div>`).join('')}</div><button class="micro-btn" data-dealer-open-task="${t.id}">${t.id===selectedTask?.id?'Form Açık':'Formu Aç'}</button></article>`).join('')}</div></div>${dealerTabletStationForm(selectedTask,ui.role)}</div><div class="tablet-frame"><div class="tablet-screen"><div class="tablet-top"><div><b>Tablet Modu</b><div class="card-sub">${workOrder?.plate} · ${workOrder?.vehicle}</div></div>${badge(selectedTask?.station||'Araç başı')}</div><div class="dealer-mobile-actions"><button class="btn primary" data-dealer-complete-task="${selectedTask?.id||activeTasks[0]?.id}">${icon('check')}Tamamla</button><button class="btn" data-dealer-missing-task="${selectedTask?.id||activeTasks[0]?.id}">${icon('circle-alert')}Eksik Bildir</button><button class="btn" data-dealer-add-evidence="${selectedTask?.id||activeTasks[0]?.id}">${icon('image-plus')}Kanıt Ekle</button></div><div class="tablet-steps">${activeTasks.map((t,i)=>`<div class="tablet-step ${dealerTaskStatusClass(t.status)}"><div class="step-num">${i+1}</div><div><b>${rpEsc(t.station)}</b><span class="card-sub">${rpEsc(t.scope)}</span></div>${badge(t.id===selectedTask?.id?'Açık':dealerTaskBadge(t.status))}</div>`).join('')}</div></div></div></section>`;
+      const renderUsta=()=>`${dealerInspectionCatalogPanel('compact')}<section class="dealer-command"><div class="grid"><div class="dealer-form-section"><div class="dealer-section-head"><div><h3>Usta Görevleri</h3><p>Usta sadece kendine atanmış teknik alanı düzenler; finans ve ödeme bilgisi görmez.</p></div>${badge(`${completion.done}/${completion.total} tamam`)}</div>${dealerPortalTable(['Görev','Usta / rol','Kapsam','Durum','Rapora düşen müşteri dili','Kanıt','Aksiyon'],taskRows)}</div><div class="dealer-form-section"><div class="dealer-section-head"><div><h3>Teknik Giriş Formları</h3><p>Kaporta, mekanik, OBD ve test girişleri aynı kanıt standardına bağlanır.</p></div>${badge('Tablet uyumlu')}</div><div class="station-grid">${activeTasks.map(t=>`<article class="station-card ${dealerTaskStatusClass(t.status)} ${t.id===selectedTask?.id?'active-task':''}"><div class="station-meta"><span>${rpEsc(t.owner)}</span><span>${rpEsc(t.status)}</span></div><b>${rpEsc(t.station)}</b><div class="station-checks">${[t.scope,'Fotoğraf / cihaz kanıtı zorunlu',t.result?.customerText||t.returnNote||'Usta girişi bekleniyor'].map(c=>`<div class="station-check">${icon('check-circle-2')}<span>${rpEsc(c)}</span></div>`).join('')}</div><button class="micro-btn" data-dealer-open-task="${t.id}">${t.id===selectedTask?.id?'Form Açık':'Formu Aç'}</button></article>`).join('')}</div></div>${dealerTabletStationForm(selectedTask,ui.role)}</div><div class="tablet-frame"><div class="tablet-screen"><div class="tablet-top"><div><b>Tablet Modu</b><div class="card-sub">${workOrder?.plate} · ${workOrder?.vehicle}</div></div>${badge(selectedTask?.station||'Araç başı')}</div><div class="dealer-mobile-actions"><button class="btn primary" data-dealer-complete-task="${selectedTask?.id||activeTasks[0]?.id}">${icon('check')}Tamamla</button><button class="btn" data-dealer-missing-task="${selectedTask?.id||activeTasks[0]?.id}">${icon('circle-alert')}Eksik Bildir</button><button class="btn" data-dealer-add-evidence="${selectedTask?.id||activeTasks[0]?.id}">${icon('image-plus')}Kanıt Ekle</button></div><div class="tablet-steps">${activeTasks.map((t,i)=>`<div class="tablet-step ${dealerTaskStatusClass(t.status)}"><div class="step-num">${i+1}</div><div><b>${rpEsc(t.station)}</b><span class="card-sub">${rpEsc(t.scope)}</span></div>${badge(t.id===selectedTask?.id?'Açık':dealerTaskBadge(t.status))}</div>`).join('')}</div></div></div></section>`;
       const renderRapor=()=>`<section class="dealer-form-section"><div class="dealer-section-head"><div><h3>Rapor Merkezi ve Sekreterya Teslimi</h3><p>Müdür onayından sonra teknik alanlar kilitlenir; sekreterya PDF basım, QR gönderim, bayi/müşteri nüshası ve teslim kanıtını kapatır.</p></div><div class="quick-actions"><button class="btn primary" data-dealer-approve>${icon('shield-check')}Müdür Onayı</button><button class="btn" data-dealer-print>${icon('printer')}PDF Bas / QR Teslim</button><button class="btn" data-dealer-return>${icon('undo-2')}Ustaya Geri Gönder</button></div></div>${dealerPortalTable(['Rapor no','Plaka','Müşteri','Paket','Durum','Revizyon','QR / Teslim','Aksiyon'],dealerOps.workOrders.map(w=>({attrs:'data-route="report-design" class="dealer-click-row" role="button" tabindex="0"',cells:[w.reportNo,w.plate,w.customer,w.packageName,badge(w.status),w.managerApproved?'Teknik kilitli · v'+(w.revisionNo||1):'Taslak · v'+(w.revisionNo||1),w.qrSent?'QR gönderildi':'Gönderim bekliyor',`<button class="micro-btn" data-route="report-design">Raporu Aç</button>`]})))}<div class="dealer-ops-grid" style="margin-top:12px"><div class="dealer-panel"><h3>Müdür Onay Blokajları</h3>${dealerMiniRows((approvalBlockers.length?approvalBlockers:['Onay için blokaj görünmüyor.']).slice(0,6).map((x,i)=>[i?'Kural':'Durum',x,approvalBlockers.length?'Blokaj':'Uygun']))}</div><div class="dealer-panel"><h3>Sekreterya Basım Kuyruğu</h3>${dealerMiniRows([['Müşteri nüshası',workOrder?.managerApproved?'PDF basıma hazır':'Müdür onayı bekliyor',workOrder?.managerApproved?'Hazır':'Bekliyor'],['Bayi nüshası','İmza, kabul ve arşiv kopyası','Hazır'],['QR link',workOrder?.qrSent?'Gönderildi':'Gönderim bekliyor',workOrder?.qrSent?'Tamam':'Bekliyor'],['Teslim kanıtı',workOrder?.deliveryProof||'Teslim imzası / dijital kayıt bekliyor',workOrder?.secretaryPrinted?'Kapalı':'Açık']])}</div></div><div class="dealer-block-rules" style="margin-top:12px">${blockRules.map(r=>`<div class="dealer-block-rule ${r[1]?'block':''}"><b>${r[1]?'Blokaj':'Kural'}</b><span>${r[0]}</span>${badge(r[1]?'Engel':'Uygun')}</div>`).join('')}</div></section>`;
       const renderModulePage=(title,desc,kpis,groups,flow=[])=>`<section class="dealer-form-section"><div class="dealer-section-head"><div><h3>${title}</h3><p>${desc}</p></div>${badge(ui.role)}</div><div class="dealer-kpi-grid">${kpis.map(k=>`<div class="dealer-kpi-card ${k[3]||'normal'}"><span>${k[0]}</span><b>${k[1]}</b><small>${k[2]}</small></div>`).join('')}</div>${flow.length?`<div class="dealer-pipeline">${flow.map((f,i)=>`<div class="dealer-pipeline-step ${f[2]||''}"><b>${i+1}. ${f[0]}</b><span>${f[1]}</span></div>`).join('')}</div>`:''}<div class="dealer-ops-grid">${groups.map(group=>`<div class="dealer-panel"><h3>${group[0]}</h3>${dealerMiniRows(group[1])}</div>`).join('')}</div></section>`;
       const renderKurulum=()=>renderModulePage('Yeni Bayi Kurulumu / Go-Live','Yeni bayi onaylandığında şube açılışı, personel, eğitim, cihaz, finans ve ilk iş emri canlıya geçiş listesi buradan yönetilir.',
@@ -9107,7 +9415,7 @@
         merkez:renderMerkez
       };
       const dealerTopPrimaryAction=ui.tab==='is-emirleri'
-        ? `<button class="btn primary dealer-gate-nav" data-dealer-gate-nav disabled>${icon('lock-keyhole')}<span>Eksikler Var</span></button>`
+        ? `<button class="btn primary dealer-gate-nav" data-dealer-gate-nav disabled title="Eksik: Plaka, Şasi no, Marka, Model, Model yılı, Giriş KM, Paket">${icon('lock-keyhole')}<span>Eksikler Var</span></button>`
         : `<button class="btn primary" data-dealer-tab="is-emirleri">${icon('clipboard-plus')}İş Emri Aç</button>`;
       const topWorkOrderMode=(ui.editingWorkOrderId||ui.viewingWorkOrderId)?'full':(ui.workOrderMode==='full'?'full':'fast');
       const topModeLocked=!!(ui.editingWorkOrderId||ui.viewingWorkOrderId);
@@ -9169,7 +9477,7 @@
       if(form) dealerScheduleWorkOrderGateSync(form);
     });
     document.addEventListener('click',e=>{
-      if(e.target.closest?.('[data-dealer-package-choice],[data-dealer-addon-choice],[data-dealer-addon-gift],[data-dealer-choice],[data-dealer-use-customer-field],[data-dealer-paid-suggestion]')){
+      if(e.target.closest?.('[data-dealer-package-choice],[data-dealer-addon-choice],[data-dealer-addon-gift],[data-dealer-choice],[data-dealer-multi-choice],[data-dealer-use-customer-field],[data-dealer-paid-suggestion]')){
         setTimeout(()=>dealerScheduleWorkOrderGateSync(document.getElementById('dealerWorkOrderForm')),0);
       }
     });
@@ -9251,6 +9559,10 @@
           dealerApplyWorkOrderDraft(document.getElementById('dealerWorkOrderForm'),dealerWorkOrderModeDraft);
           dealerWorkOrderModeDraft=null;
         }
+        setTimeout(()=>{
+          const form=document.getElementById('dealerWorkOrderForm');
+          if(form){dealerValidateSmartWorkOrderForm(form);dealerScheduleWorkOrderGateSync(form);}
+        },120);
         return;
       }
       const makeOption=e.target.closest?.('[data-dealer-make-option]');
@@ -9398,6 +9710,17 @@
           if(['customerType','payment','paymentMethod','consent'].includes(input.name)) dealerUpdateWorkOrderPricingSummary(input.form);
           dealerValidateSmartWorkOrderForm(input.form);
         }
+        return;
+      }
+      const multiChoice=e.target.closest?.('[data-dealer-multi-choice]');
+      if(multiChoice){
+        e.preventDefault();e.stopPropagation();
+        const group=multiChoice.closest('[data-dealer-multi-choice-group]');
+        const input=group?.querySelector(`input[name="${multiChoice.dataset.dealerMultiChoice}"]`);
+        if(dealerWorkOrderFormLocked(input?.form)) return;
+        multiChoice.classList.toggle('active');
+        dealerRefreshMultiChoiceGroup(group);
+        dealerValidateSmartWorkOrderForm(input?.form);
         return;
       }
       const editWorkOrder=e.target.closest('[data-dealer-edit-workorder]');
@@ -12549,6 +12872,9 @@
       window.scrollTo({top:0,behavior:'smooth'});
       setTimeout(()=>{renderCharts();initBranchMap();},40);
       if(resolved==='report-design') setTimeout(()=>{ syncExpertiseReportQuickMenu(); updateExpertiseReportNavActive(); },80);
+      if(resolved==='dealer') setTimeout(()=>{
+        document.querySelector('#dealerWorkOrderForm [name="vin"],#dealerWorkOrderForm [name="plate"],#dealerWorkOrderForm [name="vehicleMake"]')?.dispatchEvent(new Event('input',{bubbles:true}));
+      },180);
       if(window.lucide) lucide.createIcons();
     }
     function openBranchProfile(id){ selectedBranchId=id; closeDrawer(); current='branchProfile'; renderPages(); route('branchProfile'); }
@@ -12936,6 +13262,11 @@
         page.innerHTML=pageHeader('dealer')+DealerTabletReportPage();
         if(typeof dealerInitVehicleSelects==='function') dealerInitVehicleSelects(page);
         if(typeof dealerRefreshSmartWorkOrderFormState==='function') dealerRefreshSmartWorkOrderFormState();
+        setTimeout(()=>{
+          const form=document.getElementById('dealerWorkOrderForm');
+          if(form&&typeof dealerValidateSmartWorkOrderForm==='function') dealerValidateSmartWorkOrderForm(form);
+          form?.querySelector?.('[name="vin"],[name="plate"],[name="vehicleMake"]')?.dispatchEvent(new Event('input',{bubbles:true}));
+        },180);
       }
     }
     function renderAll(){ renderHero(); renderNav(); renderPages(); syncOnlineIndicator(); if(typeof dealerInitVehicleSelects==='function') dealerInitVehicleSelects(document); if(typeof dealerRefreshSmartWorkOrderFormState==='function') dealerRefreshSmartWorkOrderFormState(); }
