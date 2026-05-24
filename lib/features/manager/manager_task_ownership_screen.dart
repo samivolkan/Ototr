@@ -302,6 +302,7 @@ class _OwnershipCard extends StatelessWidget {
             children: [
               DropdownButtonFormField<String>(
                 initialValue: selectedOwnerUserId,
+                isExpanded: true,
                 decoration: const InputDecoration(labelText: 'Aktif usta'),
                 items: [
                   for (final technician in technicians)

@@ -393,6 +393,7 @@ class _TaskCard extends StatelessWidget {
         ],
       ),
     );
+    await Future<void>.delayed(const Duration(milliseconds: 250));
     controller.dispose();
     if (reason == null || reason.trim().isEmpty || onRelease == null) {
       return;

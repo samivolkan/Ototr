@@ -11,6 +11,7 @@ import '../../core/widgets/ototr_metric_card.dart';
 import '../../core/widgets/ototr_section_title.dart';
 import '../../data/dummy/dummy_data.dart';
 import '../../data/models/user_profile_model.dart';
+import '../../data/repositories/work_order_local_repository.dart';
 
 class BranchDashboardScreen extends StatelessWidget {
   const BranchDashboardScreen({super.key});
@@ -19,6 +20,7 @@ class BranchDashboardScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     const branch = DummyData.branch;
     const user = DummyData.user;
+    final workOrderSummary = WorkOrderLocalRepository.instance.summary();
     final quickActions = [
       ('Yeni Is Emri', Icons.add_circle_outline, AppRoutes.newWorkOrder),
       ('Is Emirleri', Icons.assignment_outlined, AppRoutes.workOrders),
@@ -53,43 +55,43 @@ class BranchDashboardScreen extends StatelessWidget {
             ),
           ),
           const OtotrSectionTitle(title: 'Bugunku Operasyon'),
-          const Row(
+          Row(
             children: [
               Expanded(
                 child: OtotrMetricCard(
                   label: 'Toplam Is',
-                  value: '12',
+                  value: workOrderSummary.total.toString(),
                   icon: Icons.directions_car,
                 ),
               ),
-              SizedBox(width: AppSizes.md),
+              const SizedBox(width: AppSizes.md),
               Expanded(
                 child: OtotrMetricCard(
-                  label: 'Teslim',
-                  value: '7',
-                  icon: Icons.verified_outlined,
-                  tone: AppColors.success,
+                  label: 'Aktif',
+                  value: workOrderSummary.active.toString(),
+                  icon: Icons.pending_actions_outlined,
+                  tone: AppColors.info,
                 ),
               ),
             ],
           ),
-          const Row(
+          Row(
             children: [
               Expanded(
                 child: OtotrMetricCard(
-                  label: 'Eksik Foto',
-                  value: '3',
-                  icon: Icons.photo_camera_outlined,
+                  label: 'Eksik Veri',
+                  value: workOrderSummary.missingData.toString(),
+                  icon: Icons.warning_amber_outlined,
                   tone: AppColors.warning,
                 ),
               ),
-              SizedBox(width: AppSizes.md),
+              const SizedBox(width: AppSizes.md),
               Expanded(
                 child: OtotrMetricCard(
-                  label: 'Kritik',
-                  value: '2',
-                  icon: Icons.report_outlined,
-                  tone: AppColors.red,
+                  label: 'Tamam Gorev',
+                  value: workOrderSummary.completedTasks.toString(),
+                  icon: Icons.task_alt,
+                  tone: AppColors.success,
                 ),
               ),
             ],
