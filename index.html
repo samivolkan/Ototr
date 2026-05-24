@@ -7878,6 +7878,9 @@
       dealerScheduleWorkOrderGateSync(form);
       if(window.lucide) lucide.createIcons();
     }
+    function dealerWorkOrderFormLocked(form=document.getElementById('dealerWorkOrderForm')){
+      return !!form&&(form.dataset.workorderLocked==='1'||form.querySelector('fieldset')?.disabled===true);
+    }
     function dealerStartWorkOrderGateWatcher(){
       if(dealerGateWatchTimer) return;
       dealerGateWatchTimer=1;
@@ -9046,7 +9049,11 @@
         }
       }
       const selectable=e.target.closest?.('[data-dealer-package-choice],[data-dealer-addon-choice]');
-      if(selectable&&(e.key==='Enter'||e.key===' ')){e.preventDefault();selectable.click();}
+      if(selectable&&(e.key==='Enter'||e.key===' ')){
+        e.preventDefault();
+        if(dealerWorkOrderFormLocked(selectable.closest('form'))) return;
+        selectable.click();
+      }
     });
     document.addEventListener('DOMContentLoaded',()=>dealerInitVehicleSelects(document));
     document.addEventListener('click',e=>{
@@ -9071,6 +9078,7 @@
         const field=makeOption.closest('.dealer-wo-field,.field');
         const input=field?.querySelector('input[data-dealer-vehicle-make]');
         const form=input?.form;
+        if(dealerWorkOrderFormLocked(form)) return;
         if(input&&form){
           input.value=makeOption.dataset.dealerMakeOption||'';
           dealerRefreshVehicleModelOptions(form,true);
@@ -9086,6 +9094,7 @@
         const field=modelOption.closest('.dealer-wo-field,.field');
         const input=field?.querySelector('input[data-dealer-vehicle-model]');
         const form=input?.form;
+        if(dealerWorkOrderFormLocked(form)) return;
         if(input&&form){
           input.value=modelOption.dataset.dealerModelOption||'';
           dealerRefreshVehicleModelOptions(form,false);
@@ -9101,6 +9110,7 @@
         const field=variantOption.closest('.dealer-wo-field,.field');
         const input=field?.querySelector('input[data-dealer-vehicle-variant]');
         const form=input?.form;
+        if(dealerWorkOrderFormLocked(form)) return;
         if(input&&form){
           input.value=variantOption.dataset.dealerVariantOption||'';
           dealerRefreshVehicleModelOptions(form,false);
@@ -9117,6 +9127,7 @@
       if(packageChoice){
         e.preventDefault();e.stopPropagation();
         const form=packageChoice.closest('form');
+        if(dealerWorkOrderFormLocked(form)){toast('Kilitli görüntüleme modunda paket değiştirilemez. Düzenle ile açın.');return;}
         if(form) form.dataset.packageTouched='1';
         const packageName=packageChoice.dataset.dealerPackageChoice||'';
         const input=form?.elements?.packageName;
@@ -9144,6 +9155,7 @@
       if(paidSuggestion){
         e.preventDefault();e.stopPropagation();
         const form=paidSuggestion.closest('form')||document.getElementById('dealerWorkOrderForm');
+        if(dealerWorkOrderFormLocked(form)) return;
         const paid=form?.elements?.paidAmount;
         if(paid){
           paid.dataset.autoPaid='0';
@@ -9157,6 +9169,7 @@
       if(customerUse){
         e.preventDefault();e.stopPropagation();
         const form=customerUse.closest('form')||document.getElementById('dealerWorkOrderForm');
+        if(dealerWorkOrderFormLocked(form)) return;
         dealerApplyCustomerSuggestion(form,customerUse.dataset.dealerUseCustomerField||'all');
         return;
       }
@@ -9165,6 +9178,7 @@
         e.preventDefault();e.stopPropagation();
         const card=addonGift.closest('[data-dealer-addon-choice]');
         const form=card?.closest('form');
+        if(dealerWorkOrderFormLocked(form)) return;
         if(card&&form){
           card.classList.add('selected');
           card.classList.toggle('gifted');
@@ -9186,6 +9200,7 @@
       if(addonChoice){
         e.preventDefault();e.stopPropagation();
         const form=addonChoice.closest('form');
+        if(dealerWorkOrderFormLocked(form)){toast('Kilitli görüntüleme modunda ek hizmet değiştirilemez. Düzenle ile açın.');return;}
         addonChoice.classList.toggle('selected');
         if(!addonChoice.classList.contains('selected')) addonChoice.classList.remove('gifted');
         const names=Array.from(addonChoice.closest('.dealer-wo-addons')?.querySelectorAll('[data-dealer-addon-choice].selected')||[]).map(card=>card.dataset.dealerAddonChoice).filter(Boolean);
@@ -9202,6 +9217,7 @@
         e.preventDefault();e.stopPropagation();
         const group=quickChoice.closest('[data-dealer-choice-group]');
         const input=group?.querySelector(`input[name="${quickChoice.dataset.dealerChoice}"]`);
+        if(dealerWorkOrderFormLocked(input?.form)) return;
         if(input){
           input.value=quickChoice.dataset.choiceValue||'';
           group.querySelectorAll('[data-dealer-choice]').forEach(btn=>btn.classList.toggle('active',btn===quickChoice));

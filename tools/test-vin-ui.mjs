@@ -128,6 +128,10 @@ await page.locator(`#page-dealer.active [data-dealer-select-wo="${created.id}"]`
 await page.waitForFunction(() => document.querySelector("#dealerWorkOrderForm fieldset")?.disabled === true);
 assert.equal(await page.locator('#page-dealer.active #dealerWorkOrderForm [name="plate"]').inputValue(), "34 VIN 123", "Ac aksiyonu is emri ekranina gitmeli");
 assert.equal(await page.locator('#page-dealer.active #dealerWorkOrderForm fieldset').evaluate(el => el.disabled), true, "Ac aksiyonu formu kilitli getirmeli");
+assert.equal(await page.locator('#page-dealer.active #dealerWorkOrderForm [name="packageName"]').inputValue(), "Full Ekspertiz", "Kilitli acilista paket korunmali");
+await page.locator('#page-dealer.active [data-dealer-package-choice="Mini Ekspertiz"]').click();
+assert.equal(await page.locator('#page-dealer.active #dealerWorkOrderForm [name="packageName"]').inputValue(), "Full Ekspertiz", "Kilitli goruntulemede paket karti degismemeli");
+assert.equal(await page.locator('#page-dealer.active [data-dealer-package-choice="Full Ekspertiz"].selected').count(), 1, "Kilitli goruntulemede secili paket ayni kalmali");
 await page.locator('#page-dealer.active .dealer-top-branch [data-dealer-gate-nav]').waitFor();
 
 await page.evaluate(() => {
