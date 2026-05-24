@@ -31,7 +31,6 @@ const errors = [];
 page.on("pageerror", err => errors.push(err.message));
 
 await page.addInitScript(() => {
-  localStorage.clear();
   const originalFetch = window.fetch ? window.fetch.bind(window) : null;
   window.fetch = async (url, options) => {
     if(String(url).includes("vpic.nhtsa.dot.gov")){
@@ -61,6 +60,8 @@ await page.addInitScript(() => {
 
 const url = "file:///" + htmlPath.replace(/\\/g, "/") + "?portal=dealer#dealer";
 await page.goto(url, { waitUntil: "load" });
+await page.evaluate(() => localStorage.clear());
+await page.reload({ waitUntil: "load" });
 await page.waitForSelector("#page-dealer.active");
 await page.locator('#page-dealer.active [data-dealer-tab="is-emirleri"]').first().click();
 await page.waitForSelector("#page-dealer.active #dealerWorkOrderForm.dealer-wo-form");
@@ -68,34 +69,30 @@ await page.locator("#page-dealer.active #dealerWorkOrderForm.dealer-wo-fast-open
 assert.equal(await page.locator("#page-dealer.active .dealer-top-branch").locator("text=Aktif iş emri").count(), 0, "Ust bantta aktif is emri bilgisi yer kaplamamali");
 await page.locator("#page-dealer.active .dealer-erp-brand-text", { hasText: "Aktif Şube" }).waitFor();
 await page.locator("#page-dealer.active .dealer-top-branch [data-dealer-gate-nav]").waitFor();
+await page.locator('#page-dealer.active .dealer-top-mode-switch [data-dealer-wo-mode="fast"].active').waitFor();
+await page.locator('#page-dealer.active .dealer-top-mode-switch [data-dealer-wo-mode="full"]').click();
+await page.locator("#page-dealer.active #dealerWorkOrderForm.dealer-wo-full-open").waitFor();
+await page.locator('#page-dealer.active #dealerWorkOrderForm [name="customer"]').fill("ELIF YAMAN");
+await page.locator('#page-dealer.active .dealer-top-mode-switch [data-dealer-wo-mode="fast"]').click();
+await page.locator("#page-dealer.active #dealerWorkOrderForm.dealer-wo-fast-open").waitFor();
+await page.locator('#page-dealer.active .dealer-top-mode-switch [data-dealer-wo-mode="full"]').click();
+await page.locator("#page-dealer.active #dealerWorkOrderForm.dealer-wo-full-open").waitFor();
+assert.equal(await page.locator('#page-dealer.active #dealerWorkOrderForm [name="customer"]').inputValue(), "ELIF YAMAN", "Tam/Hizli mod gecisinde girilen bilgiler korunmali");
 await page.locator("#page-dealer.active .dealer-top-branch", { hasText: "3 Günlük Takvim" }).waitFor();
 await page.locator("#page-dealer.active .dealer-top-branch", { hasText: "Basım Kuyruğu" }).waitFor();
 
 const form = page.locator("#page-dealer.active #dealerWorkOrderForm.dealer-wo-form");
-await page.evaluate(() => { window.__VIN_DECODER_DOWN = true; });
 await form.locator('[name="vin"]').fill(" wau-zzz8k-9aa123456 ");
 assert.equal(await form.locator('[name="vin"]').inputValue(), "WAUZZZ8K9AA123456", "VIN alani buyuk harf, temiz ve 17 karakter ile sinirli olmali");
-await page.waitForFunction(() => (document.querySelector("[data-dealer-vin-popup]")?.textContent || "").includes("VIN decoder"));
-await page.locator("[data-dealer-vin-popup-close]").click();
-await page.evaluate(() => { window.__VIN_DECODER_DOWN = false; });
+assert.equal(await page.locator("[data-dealer-vin-popup]").count(), 0, "Sasi decoder popup'i gosterilmemeli");
+assert.equal(await page.locator("[data-dealer-vin-assist]").count(), 0, "Sasi kontrol karti gosterilmemeli");
 
 await form.locator('[name="vin"]').fill(" jt-db4m-ee-30j123456 ");
 const vinBeforeSubmit = await form.locator('[name="vin"]').inputValue();
 assert.equal(vinBeforeSubmit, "JTDB4MEE30J123456", "VIN yazarken input 17 haneli normalize formatta kalmali");
-await page.waitForFunction(() => (document.querySelector("[data-dealer-vin-assist]")?.textContent || "").includes("Bulunan"));
-assert.equal(await form.locator('[name="vehicleMake"]').inputValue(), "Toyota", "VIN decode make alanini doldurmali");
-assert.equal(await form.locator('[name="vehicleModel"]').inputValue(), "Corolla", "VIN decode model alanini doldurmali");
-assert.equal(await form.locator('[name="year"]').inputValue(), "2021", "VIN decode yil alanini doldurmali");
-
-await form.locator('[name="vehicleMake"]').fill("Renault");
-await form.locator('[name="vehicleModel"]').fill("Clio");
-await form.locator('[name="year"]').fill("2020");
-await page.evaluate(async () => {
-  const formEl = document.getElementById("dealerWorkOrderForm");
-  await window.dealerResolveVinStateForForm(formEl, { decode: false, autoFill: false });
-});
-const mismatchText = await page.locator("[data-dealer-vin-assist]").textContent();
-assert.ok(mismatchText.includes("uyuşmuyor"), "VIN-secilen arac uyusmazligi UI uyarisi gostermeli");
+await form.locator('[name="vehicleMake"]').fill("Toyota");
+await form.locator('[name="vehicleModel"]').fill("Corolla");
+await form.locator('[name="year"]').fill("2021");
 
 await form.locator('[name="plate"]').fill("34 VIN 123");
 await form.locator('[name="engineNo"]').fill("M264920123456");
@@ -112,6 +109,7 @@ const created = await page.evaluate(() => {
   const data = JSON.parse(localStorage.getItem("ototr-dealer-live-workorders-v1"));
   const wo = data.workOrders[0];
   return {
+    id: wo.id,
     vin: wo.vin,
     vinNormalized: wo.vinNormalized,
     vinDecodeStatus: wo.vinDecodeStatus,
@@ -121,9 +119,25 @@ const created = await page.evaluate(() => {
   };
 });
 assert.equal(created.vinNormalized, "JTDB4MEE30J123456", "Kayitta normalize VIN saklanmali");
-assert.equal(created.vinDecodeStatus, "VIN_DECODED", "Kayitta decode status saklanmali");
-assert.equal(created.vinManualReviewRequired, true, "Uyusmazlikta manualReviewRequired true olmali");
+assert.equal(created.vinDecodeStatus, "DISABLED", "Sasi decoder kayit akisinda devre disi olmali");
+assert.equal(created.vinManualReviewRequired, false, "Sasi kontrolu manuel inceleme uretmemeli");
 assert.equal(created.tab, "aktif-is-emirleri", "Is emri olusunca aktif is emirleri sekmesine gecmeli");
+await page.waitForSelector(`#page-dealer.active [data-dealer-update-wo="${created.id}"]`);
+
+await page.locator(`#page-dealer.active [data-dealer-select-wo="${created.id}"]`).first().click();
+await page.waitForFunction(() => document.querySelector("#dealerWorkOrderForm fieldset")?.disabled === true);
+assert.equal(await page.locator('#page-dealer.active #dealerWorkOrderForm [name="plate"]').inputValue(), "34 VIN 123", "Ac aksiyonu is emri ekranina gitmeli");
+assert.equal(await page.locator('#page-dealer.active #dealerWorkOrderForm fieldset').evaluate(el => el.disabled), true, "Ac aksiyonu formu kilitli getirmeli");
+await page.locator('#page-dealer.active .dealer-top-branch [data-dealer-gate-nav]').waitFor();
+
+await page.evaluate(() => {
+  saveDealerPortalState({ tab: "aktif-is-emirleri", editingWorkOrderId: "", viewingWorkOrderId: "" });
+  renderDealerPageOnly();
+});
+await page.waitForSelector(`#page-dealer.active [data-dealer-update-wo="${created.id}"]`);
+await page.locator(`#page-dealer.active [data-dealer-update-wo="${created.id}"]`).first().click();
+await page.waitForFunction(() => document.querySelector("#dealerWorkOrderForm fieldset")?.disabled === false);
+await page.locator('#page-dealer.active [data-dealer-gate-nav]', { hasText: "Kaydet" }).waitFor();
 
 await browser.close();
 assert.deepEqual(errors, [], "Sayfa runtime hatasi uretmemeli");
