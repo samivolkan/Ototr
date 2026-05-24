@@ -53,7 +53,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Şube Operasyon Girişi', style: AppTextStyles.title),
+                    Text('Usta Operasyon Girişi', style: AppTextStyles.title),
                     const SizedBox(height: AppSizes.md),
                     const OtotrTextField(label: 'E-posta / Telefon', initialValue: 'ahmet.demir@ototr.test'),
                     const SizedBox(height: AppSizes.md),

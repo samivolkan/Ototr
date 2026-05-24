@@ -19,4 +19,12 @@ class AppRoutes {
   static const String branchSettings = '/branch-settings';
   static const String branchKpi = '/branch-kpi';
   static const String profile = '/profile';
+  static const String technicianJobs = '/technician/jobs';
+  static const String technicianStartEvidence = '/technician/start-evidence';
+  static const String technicianTasks = '/technician/tasks';
+  static const String technicianTaskForm = '/technician/task-form';
+  static const String technicianEvidence = '/technician/evidence';
+  static const String technicianQueries = '/technician/queries';
+  static const String technicianReportGate = '/technician/report-gate';
+  static const String technicianSync = '/technician/sync';
 }

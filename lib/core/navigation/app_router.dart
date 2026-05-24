@@ -13,11 +13,21 @@ import '../../features/photo_evidence/photo_evidence_screen.dart';
 import '../../features/profile/profile_screen.dart';
 import '../../features/reports/report_preview_screen.dart';
 import '../../features/splash/splash_screen.dart';
+import '../../features/technician/start_evidence_screen.dart';
+import '../../features/technician/technician_evidence_screen.dart';
+import '../../features/technician/technician_jobs_screen.dart';
+import '../../features/technician/technician_queries_screen.dart';
+import '../../features/technician/technician_report_gate_screen.dart';
+import '../../features/technician/technician_sync_screen.dart';
+import '../../features/technician/technician_task_form_screen.dart';
+import '../../features/technician/technician_tasks_screen.dart';
 import '../../features/vehicle_intake/vehicle_intake_screen.dart';
 import '../../features/work_orders/new_work_order_screen.dart';
 import '../../features/work_orders/work_order_detail_screen.dart';
 import '../../features/work_orders/work_order_summary_screen.dart';
 import '../../features/work_orders/work_orders_list_screen.dart';
+import '../../data/repositories/dummy_work_order_repository.dart';
+import '../../data/services/role_permission_service.dart';
 import 'app_routes.dart';
 
 class AppRouter {
@@ -27,7 +37,7 @@ class AppRouter {
     final Widget screen = switch (settings.name) {
       AppRoutes.splash => const SplashScreen(),
       AppRoutes.login => const LoginScreen(),
-      AppRoutes.dashboard => const BranchDashboardScreen(),
+      AppRoutes.dashboard => const TechnicianJobsScreen(),
       AppRoutes.workOrders => const WorkOrdersListScreen(),
       AppRoutes.newWorkOrder => const NewWorkOrderScreen(),
       AppRoutes.vehicleIntake => const VehicleIntakeScreen(),
@@ -44,6 +54,24 @@ class AppRouter {
       AppRoutes.branchSettings => const BranchSettingsScreen(),
       AppRoutes.branchKpi => const BranchKpiScreen(),
       AppRoutes.profile => const ProfileScreen(),
+      AppRoutes.technicianJobs => const TechnicianJobsScreen(),
+      AppRoutes.technicianStartEvidence => StartEvidenceScreen(
+        workOrderId: settings.arguments as String,
+      ),
+      AppRoutes.technicianTasks => TechnicianTasksScreen(
+        workOrderId: settings.arguments as String,
+      ),
+      AppRoutes.technicianTaskForm => _guardedTaskForm(settings),
+      AppRoutes.technicianEvidence => TechnicianEvidenceScreen(
+        workOrderId: settings.arguments as String,
+      ),
+      AppRoutes.technicianQueries => TechnicianQueriesScreen(
+        workOrderId: settings.arguments as String,
+      ),
+      AppRoutes.technicianReportGate => TechnicianReportGateScreen(
+        workOrderId: settings.arguments as String,
+      ),
+      AppRoutes.technicianSync => const TechnicianSyncScreen(),
       _ => const BranchDashboardScreen(),
     };
 
@@ -51,5 +79,22 @@ class AppRouter {
       builder: (_) => screen,
       settings: settings,
     );
+  }
+
+  static Widget _guardedTaskForm(RouteSettings settings) {
+    final args = settings.arguments as Map<String, String>;
+    final workOrderId = args['workOrderId']!;
+    final taskId = args['taskId']!;
+    final repository = DummyWorkOrderRepository.instance;
+    final order = repository.getById(workOrderId);
+    final task = order.tasks.firstWhere((item) => item.taskId == taskId);
+    const permissionService = RolePermissionService();
+
+    if (!permissionService.canOpenTechnicalEntry(order) ||
+        !permissionService.canEditTask(repository.currentUser, task)) {
+      return TechnicianTasksScreen(workOrderId: workOrderId);
+    }
+
+    return TechnicianTaskFormScreen(workOrderId: workOrderId, taskId: taskId);
   }
 }

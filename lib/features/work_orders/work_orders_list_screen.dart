@@ -26,7 +26,6 @@ class WorkOrdersListScreen extends StatelessWidget {
             OtotrSectionTitle(title: status.label),
             ...DummyData.workOrders.where((order) => order.status == status).map(
                   (order) => OtotrCard(
-                    onTap: () => Navigator.pushNamed(context, AppRoutes.workOrderDetail),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -40,6 +39,25 @@ class WorkOrdersListScreen extends StatelessWidget {
                         Text('${order.vehicle.plate} - ${order.vehicle.displayName}'),
                         Text('${order.customer.fullName} | Teknisyen: ${order.assignedTechnician}'),
                         Text('Saat: ${Formatters.time(order.createdAt)} | ${order.packagePlan.name}'),
+                        const SizedBox(height: AppSizes.sm),
+                        Wrap(
+                          spacing: 6,
+                          runSpacing: 6,
+                          children: [
+                            OtotrStatusBadge(
+                              label: order.reportPrintGateReady ? 'Basım açık' : 'Basım kapalı',
+                              tone: order.reportPrintGateReady ? OtotrBadgeTone.success : OtotrBadgeTone.warning,
+                            ),
+                            OtotrStatusBadge(
+                              label: order.paymentCompleted ? 'Ödeme tamam' : 'Ödeme bekliyor',
+                              tone: order.paymentCompleted ? OtotrBadgeTone.success : OtotrBadgeTone.neutral,
+                            ),
+                            OtotrStatusBadge(
+                              label: order.deliveryGateReady ? 'Teslim tamam' : 'Teslim bekliyor',
+                              tone: order.deliveryGateReady ? OtotrBadgeTone.success : OtotrBadgeTone.neutral,
+                            ),
+                          ],
+                        ),
                         if (order.criticalFindingCount > 0 || order.missingRequiredPhotoCount > 0) ...[
                           const SizedBox(height: AppSizes.sm),
                           Text(
@@ -47,6 +65,32 @@ class WorkOrdersListScreen extends StatelessWidget {
                             style: const TextStyle(color: AppColors.red, fontWeight: FontWeight.w800),
                           ),
                         ],
+                        const SizedBox(height: AppSizes.md),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: () => Navigator.pushNamed(
+                                  context,
+                                  AppRoutes.workOrderDetail,
+                                  arguments: {'mode': 'view'},
+                                ),
+                                child: const Text('Aç'),
+                              ),
+                            ),
+                            const SizedBox(width: AppSizes.sm),
+                            Expanded(
+                              child: FilledButton(
+                                onPressed: () => Navigator.pushNamed(
+                                  context,
+                                  AppRoutes.workOrderDetail,
+                                  arguments: {'mode': order.isReportPrinted ? 'requestEdit' : 'edit'},
+                                ),
+                                child: Text(order.isReportPrinted ? 'Talep Aç' : 'Düzenle'),
+                              ),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
                   ),
