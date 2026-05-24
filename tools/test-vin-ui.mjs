@@ -122,6 +122,8 @@ assert.equal(created.vinNormalized, "JTDB4MEE30J123456", "Kayitta normalize VIN 
 assert.equal(created.vinDecodeStatus, "DISABLED", "Sasi decoder kayit akisinda devre disi olmali");
 assert.equal(created.vinManualReviewRequired, false, "Sasi kontrolu manuel inceleme uretmemeli");
 assert.equal(created.tab, "aktif-is-emirleri", "Is emri olusunca aktif is emirleri sekmesine gecmeli");
+const activeWorkOrdersSection = page.locator('#page-dealer.active section.dealer-form-section', { hasText: "Aktif İş Emirleri" }).first();
+assert.equal(await activeWorkOrdersSection.locator('[data-dealer-tab="is-emirleri"]').count(), 0, "Aktif is emirleri kartinda ikinci yeni is emri butonu olmamali");
 await page.waitForSelector(`#page-dealer.active [data-dealer-update-wo="${created.id}"]`);
 
 await page.locator(`#page-dealer.active [data-dealer-select-wo="${created.id}"]`).first().click();
@@ -142,6 +144,10 @@ await page.waitForSelector(`#page-dealer.active [data-dealer-update-wo="${create
 await page.locator(`#page-dealer.active [data-dealer-update-wo="${created.id}"]`).first().click();
 await page.waitForFunction(() => document.querySelector("#dealerWorkOrderForm fieldset")?.disabled === false);
 await page.locator('#page-dealer.active [data-dealer-gate-nav]', { hasText: "Kaydet" }).waitFor();
+await page.locator('#page-dealer.active [data-dealer-gate-nav]', { hasText: "Kaydet" }).click();
+await page.locator('[data-dealer-save-notice]', { hasText: "Kaydedildi" }).waitFor();
+await page.locator('#page-dealer.active [data-dealer-gate-nav].saved', { hasText: "Kaydedildi" }).waitFor();
+assert.equal(await page.locator('#page-dealer.active #dealerWorkOrderForm fieldset').evaluate(el => el.disabled), true, "Kaydet sonrasi form kilitli goruntulemeye donmeli");
 
 await browser.close();
 assert.deepEqual(errors, [], "Sayfa runtime hatasi uretmemeli");
