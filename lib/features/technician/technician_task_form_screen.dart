@@ -153,6 +153,39 @@ class _TechnicianTaskFormScreenState extends State<TechnicianTaskFormScreen> {
             padding: const EdgeInsets.all(AppSizes.lg),
             child: Column(
               children: [
+                OtotrCard(
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.checklist_rtl,
+                        color: AppColors.red,
+                        size: 32,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Katalog alt başlıkları',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w900,
+                                color: AppColors.navy,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              '${task.checklistItems.length} JSON maddesi usta girişine yüklendi.',
+                              style: const TextStyle(
+                                color: AppColors.grayText,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
                 for (final item in task.checklistItems)
                   _ChecklistRow(
                     item: item,

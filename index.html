@@ -6575,7 +6575,7 @@
       if(workOrder.secretaryPrinted||/teslim|kapat/.test(status)) return 11;
       if(/basım|basim|qr|sekreterya/.test(status)&&workOrder.managerApproved) return 10;
       if(workOrder.managerApproved||/rapor onay/.test(status)) return 9;
-      if(completion?.done===completion?.total&&completion?.total) return 7;
+      if(completion?.technicalDone===completion?.technicalTotal&&completion?.technicalTotal) return 7;
       if(/usta|teknik|görev/.test(status)&&!status.includes('iş emri açıldı')) return 5;
       if(/iş emri açıldı|araç kabul|kabul edildi/.test(status)) return 4;
       if(workOrder.payment&&workOrder.payment!=='Bekliyor') return 3;
@@ -6587,13 +6587,58 @@
       const icons=['clipboard-check','paintbrush','scan-line','wrench','cpu','gauge','camera','search-check'];
       return `<div class="package-scope-item ${cls}"><div class="package-scope-icon">${icon(icons[index%icons.length])}</div><div class="package-scope-copy"><b>${rpEsc(label)}</b><span>${rpEsc(packageDef.tasks[index]?.[2]||'Paket kapsam maddesi')}</span><div class="package-task-status">${badge(task?.status||'Görev')}<span>${evidence?evidence+' kanıt':'kanıt bekliyor'}</span></div></div><div class="package-task-meter"><strong>%${pct}</strong><div class="package-task-track"><div class="package-task-fill ${cls}" style="width:${pct}%"></div></div></div></div>`;
     }
-    function dealerCompletion(wo){const done=(wo?.tasks||[]).filter(t=>t.status==='Tamamlandı').length,total=(wo?.tasks||[]).length;return {done,total,pct:Math.round(done/Math.max(1,total)*100)};}
+    function dealerTechnicalCompletion(wo){
+      const tasks=wo?.tasks||[];
+      const done=tasks.filter(t=>t.status==='Tamamlandı').length,total=tasks.length;
+      return {done,total,pct:Math.round(done/Math.max(1,total)*100)};
+    }
+    function dealerStoredWorkOrderValue(wo,name){
+      if(!wo) return '';
+      const aliases={consentKvkk:wo.consentKvkk||wo.consent,reportChannels:Array.isArray(wo.reportChannels)?wo.reportChannels.join('|'):wo.reportChannels};
+      const value=Object.prototype.hasOwnProperty.call(aliases,name)?aliases[name]:wo[name];
+      if(Array.isArray(value)) return value.join('|');
+      return dealerWorkOrderMeaningfulValue(name,value);
+    }
+    function dealerStoredWorkOrderRequiredNames(wo){
+      if(!wo) return [];
+      const names=[...DEALER_FAST_WORKORDER_REQUIRED_NAMES,...DEALER_FULL_WORKORDER_EXTRA_REQUIRED_NAMES];
+      if(wo.testDrivePermission==='Hayır') names.push('testDriveRejectionReason');
+      if(wo.vehicleSource==='Galeri') names.push('galleryName');
+      if(wo.vehicleSource==='Referans') names.push('referrerName');
+      const recipient=dealerSimpleTextKey(wo.reportRecipientName), recipientPhone=dealerSmartDigits(wo.reportRecipientPhone).slice(-10);
+      const buyer=dealerSimpleTextKey(wo.customer), buyerPhone=dealerSmartDigits(wo.phone).slice(-10);
+      if((recipient&&buyer&&recipient!==buyer)||(recipientPhone&&buyerPhone&&recipientPhone!==buyerPhone)) names.push('thirdPartyShareConsent');
+      return [...new Set(names.filter(Boolean))];
+    }
+    function dealerStoredWorkOrderFieldComplete(wo,name){
+      const value=dealerStoredWorkOrderValue(wo,name);
+      if(!value) return false;
+      if(['phone','sellerPhone','vehicleOwnerPhone','bringerPhone','payerPhone','reportRecipientPhone'].includes(name)) return dealerPhoneBodyLength(value)===10;
+      if(name==='taxNo'||name==='sellerTaxNo') return dealerTaxNoValid(value);
+      if(name==='vin') return dealerValidateChassisInput(value).isValid;
+      if(name==='engineNo'){const engineNo=dealerFormatEngineNoInput(value);return engineNo.length>=6&&engineNo.length<=17;}
+      if(name==='mileage'){const digits=dealerMileageDigits(value), km=dealerMileageNumber(value);return !!digits&&km<=DEALER_MAX_MILEAGE;}
+      if(name==='packageName') return dealerPackageName(value)!=='Paket Bekliyor';
+      if(['consentKvkk','serviceTermsConsent','mediaConsent','digitalReportConsent','thirdPartyShareConsent'].includes(name)) return dealerWorkOrderConsentSigned(value);
+      if(name==='reportChannels') return dealerAddonNamesFromValue(value).length>0;
+      return true;
+    }
+    function dealerStoredWorkOrderMissingInfo(wo){
+      return dealerStoredWorkOrderRequiredNames(wo).filter(name=>!dealerStoredWorkOrderFieldComplete(wo,name)).map(name=>DEALER_WORKORDER_REQUIRED_LABELS[name]||name);
+    }
+    function dealerCompletion(wo){
+      const technical=dealerTechnicalCompletion(wo), required=dealerStoredWorkOrderRequiredNames(wo);
+      const infoDone=required.filter(name=>dealerStoredWorkOrderFieldComplete(wo,name)).length, infoTotal=required.length;
+      const total=technical.total+infoTotal, done=technical.done+infoDone;
+      return {done,total,pct:Math.round(done/Math.max(1,total)*100),technicalDone:technical.done,technicalTotal:technical.total,technicalPct:technical.pct,infoDone,infoTotal,missingInfo:dealerStoredWorkOrderMissingInfo(wo)};
+    }
     function dealerReportPrintGate(wo,completion=dealerCompletion(wo)){
       const reasons=[];
       if(!wo) reasons.push('Aktif iş emri yok.');
       else{
         if(wo.secretaryPrinted) reasons.push('Rapor zaten teslim kapatılmış.');
-        if(!completion.total||completion.done<completion.total) reasons.push('Usta girişleri %100 tamamlanmalı.');
+        if(!completion.technicalTotal||completion.technicalDone<completion.technicalTotal) reasons.push('Usta girişleri %100 tamamlanmalı.');
+        if(completion.missingInfo?.length) reasons.push('Tam iş emri bilgileri eksik: '+completion.missingInfo.slice(0,4).join(', '));
         if(!wo.managerApproved) reasons.push('Müdür onayı bekleniyor.');
       }
       return {ready:reasons.length===0,reasons};
@@ -6759,7 +6804,8 @@
       const tasks=wo?.tasks||[], c=dealerCompletion(wo), blockers=[];
       if(!wo) return ['Aktif iş emri bulunamadı.'];
       if(wo.consent!=='İmzalandı') blockers.push('KVKK / yol testi / rapor paylaşım rızası tamamlanmalı.');
-      if(c.done<c.total) blockers.push('Paket kapsamındaki tüm görevler tamamlanmalı. Eksik görev: '+(c.total-c.done));
+      if(c.technicalDone<c.technicalTotal) blockers.push('Paket kapsamındaki tüm görevler tamamlanmalı. Eksik görev: '+(c.technicalTotal-c.technicalDone));
+      if(c.missingInfo?.length) blockers.push('Tam iş emri bilgileri eksik: '+c.missingInfo.slice(0,6).join(', '));
       tasks.forEach(t=>{
         const missing=t.validation?.missing||[];
         if(t.status!=='Tamamlandı') blockers.push(t.station+' istasyonu tamamlanmadı.');
@@ -6780,7 +6826,7 @@
       const next=(wo.tasks||[]).find(t=>t.status!=='Tamamlandı');
       if(next) next.status='Devam Ediyor';
       const c=dealerCompletion(wo);
-      wo.status=c.done===c.total?'Müdür onayı bekliyor':'Usta girişinde';
+      wo.status=c.technicalDone===c.technicalTotal?'Müdür onayı bekliyor':'Usta girişinde';
     }
     const DEALER_VEHICLE_CATALOG={
       'Audi':['A3','A4','A5','A6','Q2','Q3','Q5','Q7'],
@@ -8228,7 +8274,7 @@
     const DEALER_WORKORDER_SAVE_FEEDBACK_KEY='ototr-dealer-workorder-save-feedback-v1';
     let dealerWorkOrderSavedFeedback={id:'',until:0,message:''};
     function dealerMarkWorkOrderSaved(id,message){
-      dealerWorkOrderSavedFeedback={id,until:Date.now()+3600,message};
+      dealerWorkOrderSavedFeedback={id,until:Date.now()+6500,message};
       try{sessionStorage.setItem(DEALER_WORKORDER_SAVE_FEEDBACK_KEY,JSON.stringify(dealerWorkOrderSavedFeedback));}catch(e){}
       setTimeout(()=>{
         if(Date.now()>=dealerWorkOrderSavedFeedback.until){
@@ -8236,7 +8282,7 @@
           try{sessionStorage.removeItem(DEALER_WORKORDER_SAVE_FEEDBACK_KEY);}catch(e){}
           dealerFastWorkOrderGateSync(document.getElementById('dealerWorkOrderForm'));
         }
-      },3700);
+      },6700);
     }
     function dealerWorkOrderSavedFeedbackState(){
       let state=dealerWorkOrderSavedFeedback||{id:'',until:0,message:''};
@@ -8255,7 +8301,7 @@
       notice.innerHTML=`${icon('circle-check')}<div><b>Kaydedildi</b><span>${rpEsc(message)}</span></div>`;
       document.body.appendChild(notice);
       requestAnimationFrame(()=>notice.classList.add('show'));
-      setTimeout(()=>{notice.classList.remove('show');setTimeout(()=>notice.remove(),220);},3200);
+      setTimeout(()=>{notice.classList.remove('show');setTimeout(()=>notice.remove(),220);},5200);
       if(window.lucide) lucide.createIcons();
     }
     function dealerRunWorkOrderGateAction(gateSubmit){
@@ -8587,17 +8633,17 @@
       const fieldset=form.querySelector('fieldset');
       form.dataset.workorderLocked=readonly?'1':'0';
       if(fieldset) fieldset.disabled=readonly;
-      document.querySelectorAll('.dealer-wo-bottom [data-dealer-create-work-order],.dealer-wo-bottom [data-dealer-save-workorder]').forEach(btn=>{
-        if(!btn.classList.contains('primary')) return;
+      document.querySelectorAll('.dealer-wo-bottom [data-dealer-create-work-order],.dealer-wo-bottom [data-dealer-save-workorder],.dealer-wo-bottom [data-dealer-update-wo]').forEach(btn=>{
+        const primary=btn.classList.contains('primary');
         btn.removeAttribute('data-dealer-create-work-order');
         btn.removeAttribute('data-dealer-save-workorder');
+        btn.removeAttribute('data-dealer-update-wo');
         if(readonly){
           btn.setAttribute('data-dealer-update-wo',id);
-          btn.innerHTML=icon('file-pen-line')+(dealerWorkOrderNeedsFullCompletion(wo)?'Tam İş Emri Aç':'Düzenle');
+          btn.innerHTML=icon('file-pen-line')+(primary&&dealerWorkOrderNeedsFullCompletion(wo)?'Tam İş Emri Aç':'Düzenle');
         }else{
-          btn.removeAttribute('data-dealer-update-wo');
           btn.setAttribute('data-dealer-save-workorder','');
-          btn.innerHTML=icon('save')+'Değişiklikleri Kaydet';
+          btn.innerHTML=icon('save')+(primary?'Değişiklikleri Kaydet':'Taslak Kaydet');
         }
       });
       form.dataset.editLoaded=loadKey;
@@ -8720,9 +8766,9 @@
       saveDealerPortalState({tab:'is-emirleri',editingWorkOrderId:'',viewingWorkOrderId:wo.id,workOrderMode:'full'});
       renderDealerPageOnly();
       route('dealer');
-      dealerShowWorkOrderSavedNotice(savedMessage+' Form tekrar kilitli görüntüleme moduna alındı.');
+      requestAnimationFrame(()=>dealerShowWorkOrderSavedNotice(savedMessage+' Form tekrar kilitli görüntüleme moduna alındı.'));
       dealerFastWorkOrderGateSync(document.getElementById('dealerWorkOrderForm'));
-      toast(savedMessage);
+      toast('Kaydedildi: '+savedMessage);
     }
     function dealerCompleteTask(id){
       const store=ensureDealerLiveData(DB.branches.find(b=>b.id===selectedBranchId)||DB.branches[0],DB.appointments), wo=dealerActiveWorkOrder(store), task=wo?.tasks?.find(t=>t.id===id);
@@ -8762,6 +8808,7 @@
     }
     function dealerWorkOrderNeedsFullCompletion(w){
       if(!dealerWorkOrderStillOpen(w)) return false;
+      if(dealerCompletion(w).missingInfo?.length) return true;
       if(w?.quickWorkOrder===true||w?.entryMode==='fast'||w?.workOrderMode==='fast') return true;
       if(w?.fullWorkOrderCompletedAt||w?.quickWorkOrder===false||w?.entryMode==='full'||w?.workOrderMode==='full') return false;
       return ['customer','phone','taxNo','seller','sellerPhone','sellerTaxNo','engineNo','fuel','transmission'].some(name=>!dealerWorkOrderMeaningfulValue(name,w?.[name]));
@@ -8803,7 +8850,18 @@
       if(blockers.length){wo.status='Müdür onayı blokajda'; dealerAuditWorkOrder(wo,'Müdür onayı blokaja düştü',dealerPortalState().role,blockers.slice(0,3).join(' | ')); saveDealerLiveData(store); renderAll(); route('dealer'); toast('Müdür onayı verilemedi: '+blockers[0]);return;}
       wo.managerApproved=true; wo.status='Sekreterya basımında'; wo.managerApprovedAt=new Date().toLocaleString('tr-TR',{dateStyle:'short',timeStyle:'short'}); dealerAuditWorkOrder(wo,'Müdür onayı verildi',dealerPortalState().role,'Teknik alanlar kilitlendi; sekreterya basım kuyruğu açıldı.'); saveDealerLiveData(store); syncDealerReportData(wo); renderAll(); route('dealer'); toast(wo.reportNo+' müdür onayından geçti; sekreterya basım kuyruğuna düştü.');
     }
-    function dealerPrintActive(){const store=ensureDealerLiveData(DB.branches.find(b=>b.id===selectedBranchId)||DB.branches[0],DB.appointments), wo=dealerActiveWorkOrder(store); if(!wo) return; const gate=dealerReportPrintGate(wo,dealerCompletion(wo)); if(!gate.ready){toast('Rapor basılamaz: '+gate.reasons[0]);return;} const exitAt=new Date().toLocaleString('tr-TR',{dateStyle:'short',timeStyle:'short'}); wo.secretaryPrinted=true; wo.qrSent=true; wo.exitAt=exitAt; wo.deliveredAt=exitAt; wo.reportDurationMinutes=dealerWorkOrderDurationMinutes(wo); wo.deliveryProof='PDF basıldı, QR link gönderildi, müşteri teslim kaydı alındı.'; wo.status='Teslim edildi'; wo.reprintCount=(wo.reprintCount||0)+1; dealerAuditWorkOrder(wo,'Rapor basıldı / QR teslim edildi',dealerPortalState().role,wo.deliveryProof+(wo.reportDurationMinutes?' Rapor süresi: '+dealerWorkOrderDurationLabel(wo.reportDurationMinutes)+'.':'')); saveDealerLiveData(store); syncDealerReportData(wo); renderAll(); route('dealer'); toast(wo.reportNo+' basıldı; çıkış zamanı ve rapor süresi kaydedildi.');}
+    function dealerPrintActive(){
+      const store=ensureDealerLiveData(DB.branches.find(b=>b.id===selectedBranchId)||DB.branches[0],DB.appointments), wo=dealerActiveWorkOrder(store);
+      if(!wo) return;
+      const gate=dealerReportPrintGate(wo,dealerCompletion(wo));
+      if(!gate.ready){toast('Rapor basılamaz: '+gate.reasons[0]);return;}
+      const exitAt=new Date().toLocaleString('tr-TR',{dateStyle:'short',timeStyle:'short'});
+      wo.secretaryPrinted=true; wo.qrSent=true; wo.exitAt=exitAt; wo.deliveredAt=exitAt; wo.reportDurationMinutes=dealerWorkOrderDurationMinutes(wo); wo.deliveryProof='PDF basıldı, QR link gönderildi, müşteri teslim kaydı alındı.'; wo.status='Teslim edildi'; wo.reprintCount=(wo.reprintCount||0)+1;
+      dealerAuditWorkOrder(wo,'Rapor basıldı / QR teslim edildi',dealerPortalState().role,wo.deliveryProof+(wo.reportDurationMinutes?' Rapor süresi: '+dealerWorkOrderDurationLabel(wo.reportDurationMinutes)+'.':''));
+      saveDealerLiveData(store); syncDealerReportData(wo); renderAll(); route('report-design');
+      toast(wo.reportNo+' basım ekranı açıldı; çıkış zamanı ve rapor süresi kaydedildi.');
+      setTimeout(()=>{try{window.print();}catch(e){}},350);
+    }
     function syncDealerReportData(wo=dealerActiveWorkOrder(ensureDealerLiveData(DB.branches.find(b=>b.id===selectedBranchId)||DB.branches[0],DB.appointments))){
       if(!wo||typeof reportData==='undefined') return;
       const parts=String(wo.vehicle||'BMW 320i M Sport').split(' '), brand=parts.shift()||'BMW', model=parts.join(' ')||'320i M Sport';
@@ -8881,9 +8939,9 @@
       ];
       const gates=[
         ['Plaka / şasi / motor no','Eşleşme tamam','Rapor kimliği kilitlenebilir','ok'],
-        ['Paket görevleri',`${completion.done}/${completion.total} tamam`,`Seçilen ${workOrder?.packageName||'paket'} paketinin tüm usta istasyonları tamamlanmalı`,completion.done===completion.total?'ok':'block'],
+        ['Paket görevleri',`${completion.technicalDone}/${completion.technicalTotal} tamam`,`Seçilen ${workOrder?.packageName||'paket'} paketinin tüm usta istasyonları tamamlanmalı`,completion.technicalDone===completion.technicalTotal?'ok':'block'],
         ['Rıza ve kapsam','Tamam','KVKK, yol testi ve paket kapsamı imzalı','ok'],
-        ['Kanıt dosyası',`${evidenceCount} kanıt`,`Fotoğraf, ölçüm ve cihaz ekranları iş emrine bağlı saklanır`,evidenceCount>=completion.total?'ok':'block'],
+        ['Kanıt dosyası',`${evidenceCount} kanıt`,`Fotoğraf, ölçüm ve cihaz ekranları iş emrine bağlı saklanır`,evidenceCount>=completion.technicalTotal?'ok':'block'],
         ['Usta notu dili','Riskli kelime yok','Ham not müşteri diline çevrilmiş','ok'],
         ['Şube müdürü onayı',workOrder?.managerApproved?'Tamam':'Bekliyor','Onay sonrası sekreterya basım kuyruğuna düşer',workOrder?.managerApproved?'ok':'block']
       ];
@@ -9098,7 +9156,7 @@
         ['Bugünkü randevu sayısı',DB.appointments.length,'3 araç kabul aşamasında','normal','randevular'],
         ['Açık iş emri',ensureDealerLiveData(branch,DB.appointments).workOrders.length,'Aktif şube kuyruğu','normal','is-emirleri'],
         ['Usta görev kuyruğu',(workOrder?.tasks||[]).filter(t=>t.status!=='Tamamlandı').length,'Pakete göre atanmış işler','dikkat','usta'],
-        ['Müdür onayı bekleyen rapor',completion.done===completion.total&&!workOrder?.managerApproved?1:0,'Yayın kilidi kontrolü','dikkat','rapor'],
+        ['Müdür onayı bekleyen rapor',completion.technicalDone===completion.technicalTotal&&!completion.missingInfo?.length&&!workOrder?.managerApproved?1:0,'Yayın kilidi kontrolü','dikkat','rapor'],
         ['Basım bekleyen rapor',workOrder?.managerApproved&&!workOrder?.secretaryPrinted?1:2,'Sekreterya aksiyonu','dikkat','rapor'],
         ['Günlük tahsilat',fmtTL(Math.round((branch.revenue||0)/24)),'POS + nakit + havale','normal','finans'],
         ['Geciken teslim',2,'Hedef saati aşan araç','kritik','is-emirleri'],
@@ -9427,9 +9485,9 @@
       const dealerAppointmentDock=()=>`<div class="dealer-calendar-modal" data-dealer-calendar-modal><div class="dealer-calendar-modal-card"><button class="dock-close dealer-calendar-floating-close" data-dealer-calendar-modal-close title="Kapat">${icon('x')}</button>${dealerAppointmentCalendar(true)}</div></div>`;
       const workOrderRows=dealerOps.workOrders.map(w=>[`<b>${w.id}</b><br><span class="card-sub">${w.reportNo}</span>`,rpEsc(w.plate),rpEsc(w.customer),rpEsc(w.packageName),badge(w.status),dealerWorkOrderTimeCell(w),badge(dealerCompletion(w).pct+'%'),dealerWorkOrderActionCell(w)]);
       const taskRows=activeTasks.map(t=>[rpEsc(t.station),rpEsc(t.owner),rpEsc(t.scope),badge(t.status),rpEsc(t.result?.customerText||'Giriş bekliyor'),(t.evidence||[]).join(', ')||'-',`<button class="micro-btn" data-dealer-open-task="${t.id}">${t.id===selectedTask?.id?'Açık':'Formu Aç'}</button>`]);
-      const blockRules=[['Zorunlu fotoğraf eksikse rapor basılamaz.',evidenceCount<activeTasks.length],['Kalibrasyonu geçmiş cihazla rapor oluşturulamaz.',false],['Müdür onayı olmadan rapor basılamaz.',!workOrder?.managerApproved],['Paket kapsamındaki teknik alanlar boşsa onaya gidemez.',completion.done<completion.total],['Eksik KVKK / yol testi onayı varsa teslim tamamlanamaz.',workOrder?.consent!=='İmzalandı'],['Eksik cihaz çıktısı varsa rapor blokaja düşer.',activeTasks.some(t=>t.station.includes('OBD')&&!t.evidence?.length)]];
+      const blockRules=[['Zorunlu fotoğraf eksikse rapor basılamaz.',evidenceCount<activeTasks.length],['Kalibrasyonu geçmiş cihazla rapor oluşturulamaz.',false],['Müdür onayı olmadan rapor basılamaz.',!workOrder?.managerApproved],['Paket kapsamındaki teknik alanlar boşsa onaya gidemez.',completion.technicalDone<completion.technicalTotal],['Tam iş emri bilgileri eksikse rapor basılamaz.',!!completion.missingInfo?.length],['Eksik KVKK / yol testi onayı varsa teslim tamamlanamaz.',workOrder?.consent!=='İmzalandı'],['Eksik cihaz çıktısı varsa rapor blokaja düşer.',activeTasks.some(t=>t.station.includes('OBD')&&!t.evidence?.length)]];
       const approvalBlockers=dealerApprovalBlockers(workOrder);
-      const acceptanceChecks=[['Aynı plaka geçmişi','1 önceki rapor bulundu','Kontrol'],['Aynı şasi geçmişi','Şasi kaydı eşleşti','Kontrol'],['Şikayet riski','Açık şikayet yok','Uygun'],['Ödeme','Tahsilat/kasa kontrolü gerekli','Kasa'],['KVKK / yol testi',workOrder?.consent==='İmzalandı'?'Tamam':'Eksik','Blokaj'],['Paket görevleri',completion.done+'/'+completion.total,'Operasyon']];
+      const acceptanceChecks=[['Aynı plaka geçmişi','1 önceki rapor bulundu','Kontrol'],['Aynı şasi geçmişi','Şasi kaydı eşleşti','Kontrol'],['Şikayet riski','Açık şikayet yok','Uygun'],['Ödeme','Tahsilat/kasa kontrolü gerekli','Kasa'],['KVKK / yol testi',workOrder?.consent==='İmzalandı'?'Tamam':'Eksik','Blokaj'],['Paket görevleri',completion.technicalDone+'/'+completion.technicalTotal,'Operasyon']];
       const dealerStatusTone=s=>/teslim|basım|onaylandı|tamam/i.test(s||'')?'ready':/eksik|gecik|itiraz|blokaj/i.test(s||'')?'blocked':/usta|bekliyor|kabul/i.test(s||'')?'pending':'progress';
       const homeSearchRows=dealerOps.workOrders.concat((DB.reports||[]).slice(0,5).map(r=>({id:r.id||r.reportNo||'PR-9001',reportNo:r.reportNo||r.id||'Arşiv',plate:r.plate||'Plaka bekliyor',customer:r.customer||r.name||'Müşteri bekliyor',vehicle:r.vehicle||r.branch||'Geçmiş rapor',packageName:r.package||r.packageName||'Arşiv',status:r.status||'Arşiv'}))).slice(0,10);
       const dealerCrmCustomers=crmData().customers.slice(0,8);

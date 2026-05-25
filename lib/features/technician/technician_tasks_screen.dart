@@ -309,6 +309,29 @@ class _TaskCard extends StatelessWidget {
                 ),
             ],
           ),
+          if (task.checklistItems.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            const Text(
+              'JSON alt başlıkları',
+              style: TextStyle(
+                fontWeight: FontWeight.w900,
+                color: AppColors.navy,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: [
+                for (final item in task.checklistItems.take(5))
+                  _ChecklistPreviewChip(label: item.title),
+                if (task.checklistItems.length > 5)
+                  _ChecklistPreviewChip(
+                    label: '+${task.checklistItems.length - 5} başlık',
+                  ),
+              ],
+            ),
+          ],
           if (task.managerReturnReason.isNotEmpty) ...[
             const SizedBox(height: 10),
             Text(
@@ -399,5 +422,33 @@ class _TaskCard extends StatelessWidget {
       return;
     }
     await onRelease!(reason);
+  }
+}
+
+class _ChecklistPreviewChip extends StatelessWidget {
+  const _ChecklistPreviewChip({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      decoration: BoxDecoration(
+        color: AppColors.grayBg,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: AppColors.grayBorder),
+      ),
+      child: Text(
+        label,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: const TextStyle(
+          color: AppColors.grayText,
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
   }
 }

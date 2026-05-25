@@ -1,9 +1,15 @@
 import '../models/technician_operation_model.dart';
 import '../models/work_order_model.dart';
 import '../remote/work_order_remote_dto.dart';
+import 'inspection_catalog_lookup_service.dart';
 
 class WorkOrderRemoteMapper {
-  const WorkOrderRemoteMapper();
+  const WorkOrderRemoteMapper({
+    InspectionCatalogLookupService catalogLookup =
+        const InspectionCatalogLookupService(),
+  }) : _catalogLookup = catalogLookup;
+
+  final InspectionCatalogLookupService _catalogLookup;
 
   TechnicianWorkOrder toDomain(WorkOrderRemoteBundle bundle) {
     final itemsByTaskId = _groupBy(
@@ -36,9 +42,10 @@ class WorkOrderRemoteMapper {
         for (final task in bundle.tasks)
           _taskFromRemote(
             task,
-            itemsByTaskId[task.id] ?? const [],
-            evidenceByTaskId[task.id] ?? const [],
-            evidenceByItemId,
+            packageName: bundle.caseRow.packageName,
+            itemRows: itemsByTaskId[task.id] ?? const [],
+            taskEvidenceRows: evidenceByTaskId[task.id] ?? const [],
+            evidenceByItemId: evidenceByItemId,
           ),
       ],
       externalQueries: [
@@ -96,6 +103,21 @@ class WorkOrderRemoteMapper {
       'audit_log': [
         for (final item in task.auditLog) _auditLogToRemote(item),
       ],
+      '__item_values': [
+        for (final item in task.checklistItems)
+          {
+            'expertise_case_id': task.workOrderId,
+            'task_id': task.taskId,
+            'item_key': item.id,
+            'title': item.title,
+            'result': _findingResultToRemote(item.result),
+            'note': item.note,
+            'not_done_reason': item.notDoneReason,
+            'report_field_key': item.reportFieldKey,
+            'requires_evidence_on_risk': item.requiresEvidenceOnRisk,
+            'severity': _severityFor(item.result),
+          },
+      ],
     };
   }
 
@@ -131,11 +153,19 @@ class WorkOrderRemoteMapper {
   }
 
   TechnicianTask _taskFromRemote(
-    InspectionTaskRow row,
-    List<InspectionItemValueRow> itemRows,
-    List<EvidenceAssetRow> taskEvidenceRows,
-    Map<String, List<EvidenceAssetRow>> evidenceByItemId,
-  ) {
+    InspectionTaskRow row, {
+    required String packageName,
+    required List<InspectionItemValueRow> itemRows,
+    required List<EvidenceAssetRow> taskEvidenceRows,
+    required Map<String, List<EvidenceAssetRow>> evidenceByItemId,
+  }) {
+    final checklistItems = _checklistItemsFromRemote(
+      row: row,
+      packageName: packageName,
+      itemRows: itemRows,
+      evidenceByItemId: evidenceByItemId,
+    );
+
     return TechnicianTask(
       taskId: row.id,
       workOrderId: row.expertiseCaseId,
@@ -143,10 +173,7 @@ class WorkOrderRemoteMapper {
       assignedUserId: row.assignedUserId,
       title: row.title,
       status: _taskStatusFromRemote(row.status),
-      checklistItems: [
-        for (final item in itemRows)
-          _itemFromRemote(item, evidenceByItemId[item.id] ?? const []),
-      ],
+      checklistItems: checklistItems,
       requiredFields: row.requiredFields,
       riskyFindings: row.riskyFindings,
       customerFriendlyNote: row.customerFriendlyNote,
@@ -172,6 +199,56 @@ class WorkOrderRemoteMapper {
         for (final item in row.auditLog) _auditLogFromRemote(item),
       ],
     );
+  }
+
+  List<TechnicianChecklistItem> _checklistItemsFromRemote({
+    required InspectionTaskRow row,
+    required String packageName,
+    required List<InspectionItemValueRow> itemRows,
+    required Map<String, List<EvidenceAssetRow>> evidenceByItemId,
+  }) {
+    final remoteByItemKey = {
+      for (final item in itemRows) item.itemKey: item,
+    };
+    final usedRemoteKeys = <String>{};
+    final catalogTask = _catalogLookup.findTask(
+      packageName: packageName,
+      taskKey: row.taskKey,
+      title: row.title,
+      reportFieldKey: row.reportFieldKey,
+    );
+
+    final checklistItems = <TechnicianChecklistItem>[];
+    if (catalogTask != null) {
+      for (final catalogItem in catalogTask.checklistItems) {
+        final remoteItem = remoteByItemKey[catalogItem.itemId];
+        if (remoteItem == null) {
+          checklistItems.add(_catalogLookup.checklistItemFromCatalog(
+            catalogItem,
+          ));
+          continue;
+        }
+
+        usedRemoteKeys.add(remoteItem.itemKey);
+        checklistItems.add(
+          _itemFromRemote(
+            remoteItem,
+            evidenceByItemId[remoteItem.id] ?? const [],
+          ),
+        );
+      }
+    }
+
+    for (final item in itemRows) {
+      if (usedRemoteKeys.contains(item.itemKey)) {
+        continue;
+      }
+      checklistItems.add(
+        _itemFromRemote(item, evidenceByItemId[item.id] ?? const []),
+      );
+    }
+
+    return checklistItems;
   }
 
   TaskOwnershipHistoryEntry _ownershipHistoryFromRemote(
@@ -391,6 +468,28 @@ class WorkOrderRemoteMapper {
       case 'NORMAL':
       default:
         return TechnicianFindingResult.normal;
+    }
+  }
+
+  String _findingResultToRemote(TechnicianFindingResult value) {
+    switch (value) {
+      case TechnicianFindingResult.risky:
+        return 'RISKY';
+      case TechnicianFindingResult.notDone:
+        return 'NOT_DONE';
+      case TechnicianFindingResult.normal:
+        return 'NORMAL';
+    }
+  }
+
+  int _severityFor(TechnicianFindingResult value) {
+    switch (value) {
+      case TechnicianFindingResult.risky:
+        return 2;
+      case TechnicianFindingResult.notDone:
+        return 1;
+      case TechnicianFindingResult.normal:
+        return 0;
     }
   }
 

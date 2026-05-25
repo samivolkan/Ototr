@@ -15,12 +15,42 @@ void main() {
     expect(order.status.name, 'technicalEntryOpen');
     expect(order.startEvidence?.isComplete, isTrue);
     expect(order.tasks.single.assignedRole, TechnicianRole.bodyPaint);
-    expect(order.tasks.single.checklistItems.single.result,
-        TechnicianFindingResult.risky);
-    expect(order.tasks.single.checklistItems.single.hasEvidence, isTrue);
+    expect(order.tasks.single.checklistItems.length, greaterThan(1));
+    final riskyItem = order.tasks.single.checklistItems.firstWhere(
+      (item) => item.id == 'left-front-door',
+    );
+    expect(riskyItem.result, TechnicianFindingResult.risky);
+    expect(riskyItem.hasEvidence, isTrue);
     expect(order.tasks.single.evidenceAssets.single.fieldKey,
         'body_general_photo');
     expect(order.externalQueries.single.status, ExternalQueryStatus.ready);
+  });
+
+  test('remote item value bosken JSON katalog alt basliklari yuklenir', () {
+    final order = const WorkOrderRemoteMapper().toDomain(
+      _bundle(itemValues: const [], evidenceAssets: const []),
+    );
+
+    expect(order.tasks.single.checklistItems.length, greaterThan(20));
+    expect(
+      order.tasks.single.checklistItems
+          .every((item) => item.reportFieldKey.isNotEmpty),
+      isTrue,
+    );
+  });
+
+  test('task remote payload alt baslik cevaplarini ayri tasir', () {
+    final order = const WorkOrderRemoteMapper().toDomain(_bundle());
+    final payload = const WorkOrderRemoteMapper().taskToRemote(
+      order.tasks.single,
+    );
+
+    final itemValues = payload['__item_values'] as List<Object?>;
+
+    expect(itemValues.length, order.tasks.single.checklistItems.length);
+    expect((itemValues.last as Map)['item_key'], 'left-front-door');
+    expect((itemValues.last as Map)['result'], 'RISKY');
+    expect((itemValues.last as Map)['task_id'], 'task-body');
   });
 
   test('SupabaseWorkOrderRepository data source sonucunu domain modele cevirir',
@@ -91,7 +121,10 @@ const _user = UserProfile(
   isActive: true,
 );
 
-WorkOrderRemoteBundle _bundle() {
+WorkOrderRemoteBundle _bundle({
+  List<InspectionItemValueRow>? itemValues,
+  List<EvidenceAssetRow>? evidenceAssets,
+}) {
   return WorkOrderRemoteBundle(
     caseRow: ExpertiseCaseRow.fromJson(const {
       'id': 'case-1',
@@ -139,63 +172,65 @@ WorkOrderRemoteBundle _bundle() {
         'estimated_minutes': 15,
       }),
     ],
-    itemValues: [
-      InspectionItemValueRow.fromJson(const {
-        'id': 'item-left-front-door',
-        'expertise_case_id': 'case-1',
-        'task_id': 'task-body',
-        'item_key': 'left-front-door',
-        'title': 'Sol Ön Kapı',
-        'result': 'RISKY',
-        'note': 'Boya tespit edildi.',
-        'not_done_reason': '',
-        'report_field_key': 'report.body_paint.left_front_door',
-        'requires_evidence_on_risk': true,
-        'severity': 1,
-      }),
-    ],
-    evidenceAssets: [
-      EvidenceAssetRow.fromJson(const {
-        'id': 'evidence-item',
-        'expertise_case_id': 'case-1',
-        'task_id': 'task-body',
-        'item_value_id': 'item-left-front-door',
-        'field_key': 'left_front_door_photo',
-        'report_field_key': 'report.photos.left_front_door',
-        'evidence_type': 'IMAGE',
-        'title': 'Sol ön kapı fotoğrafı',
-        'local_path': '',
-        'remote_url': 'https://storage.test/left-front-door.jpg',
-        'file_hash': 'hash-1',
-        'sync_status': 'UPLOADED',
-        'is_required': true,
-        'quality_status': 'ACCEPTED',
-        'rejection_reason': '',
-        'captured_at': '2026-05-24T10:35:00.000',
-        'uploaded_at': '2026-05-24T10:36:00.000',
-        'captured_by': 'tech-1',
-      }),
-      EvidenceAssetRow.fromJson(const {
-        'id': 'evidence-task',
-        'expertise_case_id': 'case-1',
-        'task_id': 'task-body',
-        'item_value_id': '',
-        'field_key': 'body_general_photo',
-        'report_field_key': 'report.photos.body_general',
-        'evidence_type': 'IMAGE',
-        'title': 'Kaporta genel açı fotoğrafı',
-        'local_path': '',
-        'remote_url': 'https://storage.test/body-general.jpg',
-        'file_hash': 'hash-2',
-        'sync_status': 'UPLOADED',
-        'is_required': true,
-        'quality_status': 'ACCEPTED',
-        'rejection_reason': '',
-        'captured_at': '2026-05-24T10:34:00.000',
-        'uploaded_at': '2026-05-24T10:36:00.000',
-        'captured_by': 'tech-1',
-      }),
-    ],
+    itemValues: itemValues ??
+        [
+          InspectionItemValueRow.fromJson(const {
+            'id': 'item-left-front-door',
+            'expertise_case_id': 'case-1',
+            'task_id': 'task-body',
+            'item_key': 'left-front-door',
+            'title': 'Sol Ön Kapı',
+            'result': 'RISKY',
+            'note': 'Boya tespit edildi.',
+            'not_done_reason': '',
+            'report_field_key': 'report.body_paint.left_front_door',
+            'requires_evidence_on_risk': true,
+            'severity': 1,
+          }),
+        ],
+    evidenceAssets: evidenceAssets ??
+        [
+          EvidenceAssetRow.fromJson(const {
+            'id': 'evidence-item',
+            'expertise_case_id': 'case-1',
+            'task_id': 'task-body',
+            'item_value_id': 'item-left-front-door',
+            'field_key': 'left_front_door_photo',
+            'report_field_key': 'report.photos.left_front_door',
+            'evidence_type': 'IMAGE',
+            'title': 'Sol ön kapı fotoğrafı',
+            'local_path': '',
+            'remote_url': 'https://storage.test/left-front-door.jpg',
+            'file_hash': 'hash-1',
+            'sync_status': 'UPLOADED',
+            'is_required': true,
+            'quality_status': 'ACCEPTED',
+            'rejection_reason': '',
+            'captured_at': '2026-05-24T10:35:00.000',
+            'uploaded_at': '2026-05-24T10:36:00.000',
+            'captured_by': 'tech-1',
+          }),
+          EvidenceAssetRow.fromJson(const {
+            'id': 'evidence-task',
+            'expertise_case_id': 'case-1',
+            'task_id': 'task-body',
+            'item_value_id': '',
+            'field_key': 'body_general_photo',
+            'report_field_key': 'report.photos.body_general',
+            'evidence_type': 'IMAGE',
+            'title': 'Kaporta genel açı fotoğrafı',
+            'local_path': '',
+            'remote_url': 'https://storage.test/body-general.jpg',
+            'file_hash': 'hash-2',
+            'sync_status': 'UPLOADED',
+            'is_required': true,
+            'quality_status': 'ACCEPTED',
+            'rejection_reason': '',
+            'captured_at': '2026-05-24T10:34:00.000',
+            'uploaded_at': '2026-05-24T10:36:00.000',
+            'captured_by': 'tech-1',
+          }),
+        ],
     externalQueries: [
       ExternalQueryRow.fromJson(const {
         'id': 'query-km',

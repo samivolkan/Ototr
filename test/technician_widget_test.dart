@@ -10,6 +10,7 @@ import 'package:ototr_branch_app/features/technician/technician_jobs_screen.dart
 import 'package:ototr_branch_app/features/technician/technician_report_gate_screen.dart';
 import 'package:ototr_branch_app/features/technician/technician_sync_screen.dart';
 import 'package:ototr_branch_app/features/technician/technician_task_form_screen.dart';
+import 'package:ototr_branch_app/features/technician/technician_tasks_screen.dart';
 
 void main() {
   setUp(() {
@@ -82,6 +83,42 @@ void main() {
 
     expect(find.textContaining('1 kayıt senkron bekliyor'), findsOneWidget);
   });
+
+  testWidgets('Usta gorev karti JSON alt basliklarini gosterir',
+      (tester) async {
+    _completeStartEvidenceAndClaimBodyPaint();
+
+    await tester.pumpWidget(
+      _app(const TechnicianTasksScreen(workOrderId: 'wo-2026-0001')),
+    );
+
+    await tester.scrollUntilVisible(
+      find.textContaining('Panjur'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+
+    expect(find.textContaining('JSON'), findsWidgets);
+    expect(find.textContaining('Panjur'), findsWidgets);
+  });
+
+  testWidgets('Kontrol Formu JSON katalog maddelerini usta girisine yukler',
+      (tester) async {
+    _completeStartEvidenceAndClaimBodyPaint();
+
+    await tester.pumpWidget(
+      _app(
+        const TechnicianTaskFormScreen(
+          workOrderId: 'wo-2026-0001',
+          taskId: 'body-paint',
+        ),
+      ),
+    );
+
+    expect(find.textContaining('JSON'), findsOneWidget);
+    expect(find.textContaining('Panjur'), findsWidgets);
+  });
+
   testWidgets('Mudur baslik atamasinda aktif usta secilir', (tester) async {
     DummyWorkOrderRepository.instance.switchCurrentUserForTest(_managerUser);
 

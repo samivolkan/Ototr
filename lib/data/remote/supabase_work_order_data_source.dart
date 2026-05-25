@@ -147,7 +147,34 @@ class SupabaseWorkOrderDataSource implements WorkOrderRemoteDataSource {
     String taskId,
     Map<String, Object?> payload,
   ) async {
-    await _client.from('inspection_tasks').update(payload).eq('id', taskId);
+    final taskPayload = Map<String, Object?>.from(payload)
+      ..remove('__item_values')
+      ..remove('id')
+      ..remove('expertise_case_id')
+      ..remove('task_key');
+    final itemValuePayloads = _asPayloadList(payload['__item_values']);
+
+    if (taskPayload.isNotEmpty) {
+      await _client.from('inspection_tasks').update(taskPayload).eq(
+            'id',
+            taskId,
+          );
+    }
+
+    if (itemValuePayloads.isNotEmpty) {
+      await _client.from('inspection_item_values').upsert(
+        [
+          for (final item in itemValuePayloads)
+            {
+              ...item,
+              'expertise_case_id': workOrderId,
+              'task_id': taskId,
+            },
+        ],
+        onConflict: 'expertise_case_id,task_id,item_key',
+      );
+    }
+
     return fetchWorkOrderById(workOrderId);
   }
 
@@ -354,6 +381,16 @@ class SupabaseWorkOrderDataSource implements WorkOrderRemoteDataSource {
   }
 
   List<Map<String, Object?>> _asRowList(Object? value) {
+    if (value is List) {
+      return [
+        for (final item in value)
+          if (item is Map) item.cast<String, Object?>(),
+      ];
+    }
+    return const [];
+  }
+
+  List<Map<String, Object?>> _asPayloadList(Object? value) {
     if (value is List) {
       return [
         for (final item in value)
