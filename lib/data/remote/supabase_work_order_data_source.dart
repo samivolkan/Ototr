@@ -360,8 +360,14 @@ class SupabaseWorkOrderDataSource implements WorkOrderRemoteDataSource {
     final vin = payload['vin']?.toString().trim() ?? '';
     final vinPhoto = payload['vin_photo_url']?.toString() ?? '';
     final platePhoto = payload['plate_photo_url']?.toString() ?? '';
+    final odometerKm = payload['odometer_km'];
+    final odometerPhoto = payload['odometer_photo_url']?.toString() ?? '';
 
-    return vin.length == 17 && vinPhoto.isNotEmpty && platePhoto.isNotEmpty;
+    return vin.length == 17 &&
+        vinPhoto.isNotEmpty &&
+        platePhoto.isNotEmpty &&
+        odometerKm != null &&
+        odometerPhoto.isNotEmpty;
   }
 
   Map<String, Object?> _asRow(Object? value) {

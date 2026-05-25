@@ -620,17 +620,35 @@ class _TechnicianTaskFormScreenState extends State<TechnicianTaskFormScreen> {
       return null;
     }
     final checklistIds = task.checklistItems.map((item) => item.id).toSet();
+    final checklistTitles = {
+      for (final item in task.checklistItems) _normalize(item.title),
+    };
     for (final group in template.groups) {
-      if (group.items.any((item) => checklistIds.contains(item.id))) {
+      if (group.items.any(
+        (item) =>
+            checklistIds.contains(item.id) ||
+            checklistTitles.contains(_normalize(item.title)),
+      )) {
         return group;
       }
     }
     for (final group in template.groups) {
-      if (_normalize(group.title) == _normalize(task.title)) {
+      if (_normalize(group.title) == _normalize(task.title) ||
+          _taskGroupCodeMatches(group.code, task.reportFieldKey)) {
         return group;
       }
     }
     return null;
+  }
+
+  bool _taskGroupCodeMatches(String groupCode, String reportFieldKey) {
+    final normalizedGroup = _normalize(groupCode);
+    final normalizedReportKey = _normalize(reportFieldKey);
+    if (normalizedGroup.isEmpty || normalizedReportKey.isEmpty) {
+      return false;
+    }
+    return normalizedReportKey.endsWith(normalizedGroup) ||
+        normalizedReportKey.contains(normalizedGroup);
   }
 
   TechnicianChecklistItem _checklistItemFromAnswer(

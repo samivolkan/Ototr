@@ -143,14 +143,38 @@ TaskType taskTypeFromCode(String code) {
   switch (normalized) {
     case 'BODY-PAINT':
     case 'BODY_PAINT':
+    case 'BODY_PAINT_CHECKUP':
       return TaskType.kaportaKontrol;
     case 'MECHANIC':
+    case 'MECHANICAL':
+    case 'MECHANICAL_CHECKUP':
       return TaskType.mekanikKontrol;
+    case 'MOTOR':
+    case 'MOTOR_CHECKUP':
+    case 'HEAD_GASKET':
+    case 'HEAD_GASKET_LEAK_TEST':
+      return TaskType.motorKontrol;
     case 'OBD':
+    case 'OBD_ECU':
+    case 'OBD_ECU_TEST':
+    case 'AIRBAG':
+    case 'AIRBAG_CHECK':
       return TaskType.elektrikKontrol;
     case 'TEST':
     case 'ROAD_TEST':
+    case 'BRAKE':
+    case 'BRAKE_SUSPENSION':
+    case 'BRAKE_SUSPENSION_TEST':
       return TaskType.frenKontrol;
+    case 'DYNO':
+    case 'DYNO_ROAD_TEST':
+      return TaskType.dynoTest;
+    case 'EXTERIOR':
+    case 'EXTERIOR_CONDITION':
+      return TaskType.genelFoto;
+    case 'INTERIOR':
+    case 'INTERIOR_CHECKUP':
+      return TaskType.icKondisyon;
   }
   return TaskType.values.firstWhere(
     (type) => type.code == normalized,
