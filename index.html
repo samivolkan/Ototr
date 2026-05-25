@@ -7984,7 +7984,7 @@
     const DEALER_FULL_WORKORDER_EXTRA_REQUIRED_NAMES=[
       'customer','phone','taxNo','customerType','contactPermission','spareKey',
       'seller','sellerPhone','sellerTaxNo','sellerType','sellerContactPermission',
-      'engineNo','vehicleVariant','fuel','transmission',
+      'engineNo','fuel','transmission',
       'reportChannels',
       'vehicleSource','arrivalChannel','testDrivePermission','arrivalStatus','keyDelivery','registrationDelivery','belongingsStatus','customerWaiting','vehicleDropped',
       'consentKvkk','serviceTermsConsent','mediaConsent','digitalReportConsent'
@@ -8684,7 +8684,7 @@
       if(!dealerWorkOrderStillOpen(w)) return false;
       if(w?.quickWorkOrder===true||w?.entryMode==='fast'||w?.workOrderMode==='fast') return true;
       if(w?.fullWorkOrderCompletedAt||w?.quickWorkOrder===false||w?.entryMode==='full'||w?.workOrderMode==='full') return false;
-      return ['customer','phone','taxNo','seller','sellerPhone','sellerTaxNo','engineNo','vehicleVariant','fuel','transmission'].some(name=>!dealerWorkOrderMeaningfulValue(name,w?.[name]));
+      return ['customer','phone','taxNo','seller','sellerPhone','sellerTaxNo','engineNo','fuel','transmission'].some(name=>!dealerWorkOrderMeaningfulValue(name,w?.[name]));
     }
     function dealerWorkOrderActionCell(w){
       const open=dealerWorkOrderStillOpen(w), needsFull=dealerWorkOrderNeedsFullCompletion(w);
