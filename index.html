@@ -7004,13 +7004,16 @@
     function dealerOpenReportDetail(id){
       const store=ensureDealerLiveData(DB.branches.find(b=>b.id===selectedBranchId)||DB.branches[0],DB.appointments);
       if(store.workOrders.some(w=>w.id===id)){
+        const previousScrollY=window.scrollY||document.documentElement.scrollTop||0;
         dealerClearStoredWorkOrderDraft();
         store.activeId=id;
         saveDealerLiveData(store);
         syncDealerReportData(dealerActiveWorkOrder(store));
         saveDealerPortalState({tab:'rapor-detay',editingWorkOrderId:'',viewingWorkOrderId:id,workOrderMode:'full'});
         renderAll();
-        route('dealer');
+        route('dealer',{preserveScroll:true});
+        window.scrollTo({top:previousScrollY,behavior:'auto'});
+        requestAnimationFrame(()=>window.scrollTo({top:previousScrollY,behavior:'auto'}));
         toast(id+' rapor detayı açıldı.');
       }
     }
