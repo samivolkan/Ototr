@@ -8332,7 +8332,7 @@
       if(name==='vin'&&/^vin bekliyor$/i.test(v)) return '';
       if(name==='customer'&&/^alıcı bilgisi bekliyor$/i.test(v)) return '';
       if(name==='seller'&&/^satıcı bilgisi bekliyor$/i.test(v)) return '';
-      if(name==='engineNo'&&/^motor no bekliyor$/i.test(v)) return '';
+      if(name==='engineNo'&&/^(motor no bekliyor|motor no bekleniyor|kabulde girilecek)$/i.test(v)) return '';
       if(name==='mileage'&&/^km bekliyor$/i.test(v)) return '';
       return v;
     }
