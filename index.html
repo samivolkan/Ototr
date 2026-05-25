@@ -1257,7 +1257,24 @@
   <script src="src/data/demo/demoData.js"></script>
   <script src="src/dealer-portal-api-model.js"></script>
   <script>
-    const fmtTL = n => new Intl.NumberFormat('tr-TR',{style:'currency',currency:'TRY',maximumFractionDigits:0}).format(n);
+    const moneyValue = value => {
+      if(typeof value==='number') return Number.isFinite(value) ? value : 0;
+      const raw = String(value ?? '').trim();
+      if(!raw) return 0;
+      const cleaned = raw.replace(/[^\d,.-]/g,'');
+      if(!/\d/.test(cleaned)) return 0;
+      const sign = cleaned.trim().startsWith('-') ? -1 : 1;
+      let normalized = cleaned.replace(/-/g,'');
+      if(normalized.includes(',')){
+        normalized = normalized.replace(/\./g,'').replace(',','.');
+      }else{
+        const dotCount = (normalized.match(/\./g)||[]).length;
+        if(dotCount>1 || /\.\d{3}$/.test(normalized)) normalized = normalized.replace(/\./g,'');
+      }
+      const number = Number(normalized);
+      return Number.isFinite(number) ? sign * number : 0;
+    };
+    const fmtTL = n => new Intl.NumberFormat('tr-TR',{style:'currency',currency:'TRY',maximumFractionDigits:0}).format(moneyValue(n));
     const fmt = n => new Intl.NumberFormat('tr-TR').format(n);
     const today = '4 Mayıs 2026';
     const ROYALTY_RATE = .10;
@@ -2747,6 +2764,32 @@
       document.body.classList.toggle('dealer-standalone',on);
       document.title = on ? 'OTOTR Bayi Portalı' : 'OTOTR Genel Merkez ERP + CRM';
     }
+    function isDealerStandaloneRoute(){
+      return new URLSearchParams(location.search).get('portal')==='dealer' || !!window.__OTOTR_DEALER_STANDALONE__ || document.body?.classList.contains('dealer-standalone');
+    }
+    function dealerStandaloneRouteTab(id){
+      return {
+        operations:'kokpit',
+        branches:'merkez',
+        branchProfile:'merkez',
+        franchise:'merkez',
+        growth:'merkez',
+        settings:'kurulum',
+        architecture:'kurulum',
+        crm:'crm',
+        marketing:'kampanyalar',
+        actions:'gorevler',
+        academy:'academy',
+        hr:'personel',
+        finance:'finans',
+        quality:'kalite',
+        complaints:'kalite',
+        'google-reviews':'kalite',
+        reputation:'kalite',
+        'report-design':'rapor',
+        'vehicle-passport':'rapor'
+      }[id] || '';
+    }
     const rooms = [
       {id:'room-main',title:'Ana Merkez Room',route:'dashboard',owner:'CEO',mission:'Marka vizyonu, büyük yatırımlar, yeni şehir kararları, yıllık plan ve kriz kararları burada yönetilir.',first:'OTOTR ana merkez sohbetidir. Tüm büyük kararları burada yöneteceğiz.',kpis:['Karar kapanış süresi','Yıllık plan gerçekleşme','Kritik alarm çözümü']},
       {id:'room-crm',title:'CRM Room',route:'crm',owner:'Müşteri Deneyimi',mission:'Müşteri, bayi, operasyon, finans ve pazarlama CRM akışlarını tek müşteri hafızasına bağlar.',first:'OTOTR CRM odası. Müşteri, bayi ve operasyon verisini tek sistemde yöneteceğiz.',kpis:['Randevu oranı','WhatsApp SLA','Tekrar müşteri']},
@@ -3874,7 +3917,7 @@
       if(id==='report-design') return `<button class="btn primary" onclick="window.print()">${icon('printer')}Yazdır</button><button class="btn" data-report-scroll="report-page-1">${icon('file-text')}PDF Önizleme</button><button class="btn" data-report-scroll="report-page-12">${icon('badge-check')}Araç Karnesi</button><button class="btn" data-report-scroll="report-page-13">${icon('image')}Kanıt Arşivi</button>`;
       if(id==='vehicle-passport') return `<button class="btn primary" onclick="window.print()">${icon('printer')}Yazdır</button><button class="btn" data-route="report-design">${icon('file-check-2')}Tam Rapor</button><button class="btn" data-route="dealer">${icon('tablet-smartphone')}Bayi Portalı</button>`;
       if(id==='operations') return `<button class="btn primary" data-operation-action="SLA-001:delayed-report">${icon('clipboard-plus')}Geciken Rapor Aksiyonu</button><button class="btn" data-operation-action="CAP-001:capacity-warning">${icon('alert-triangle')}Kapasite Uyarısı</button><button class="btn" data-operation-scroll>${icon('list-checks')}Gün Sonu Özeti</button>`;
-      if(id==='dealer') return `<button class="btn dealer-theme-switch" type="button" data-theme-toggle title="Açık / koyu geçiş">${icon('sun-moon')}<span>Tema</span></button><button class="btn primary" data-action="Tablet ekspertiz oturumu başlatıldı.">${icon('tablet-smartphone')}Tablet Başlat</button><button class="btn" data-action="Rapor taslağı şube müdürü onayına gönderildi.">${icon('file-pen-line')}Raporu Onaya Gönder</button><button class="btn" data-route="branches">${icon('building-2')}Şube 360</button>`;
+      if(id==='dealer') return `<button class="btn dealer-theme-switch" type="button" data-theme-toggle title="Açık / koyu geçiş">${icon('sun-moon')}<span>Tema</span></button><button class="btn primary" data-dealer-tab="is-emirleri">${icon('clipboard-plus')}İş Emri Aç</button><button class="btn" data-dealer-tab="aktif-is-emirleri">${icon('list-checks')}Aktif İş Emirleri</button><button class="btn" data-dealer-tab="rapor-detay">${icon('file-search')}Rapor Detay</button>`;
       if(id==='finance') return `<button class="btn primary" data-royalty-action="RF-002:royalty-decision">${icon('shield-check')}Royalty Kararı Oluştur</button><button class="btn" data-royalty-action="RF-005:support-plan">${icon('hand-heart')}Bayi Destek Planı Aç</button><button class="btn" data-royalty-action="OBJ-001:royalty-objection">${icon('file-question')}Royalty İtirazı Değerlendir</button>`;
       if(id==='ototr-web') return `<button class="btn primary" onclick="window.open('ototr-web.html','_blank')">${icon('external-link')}Web Sayfasını Aç</button><button class="btn" data-route="franchise">${icon('handshake')}Franchise Kuyruğu</button><button class="btn" data-route="crm">${icon('calendar-plus')}Randevu Kuyruğu</button>`;
       if(id==='franchise') return `<button class="btn primary" id="openLead2">${icon('plus')}Yeni Lead</button><button class="btn" data-open-action-modal="Büyüme planı aksiyonu">${icon('map')}Büyüme Planı</button><button class="btn" data-open-action-modal="Franchise görev ataması">${icon('clipboard-plus')}Görev Ata</button><button class="btn" data-open-action-modal="Franchise geciken süreç aksiyonu">${icon('check-square')}Aksiyon Aç</button>`;
@@ -6992,7 +7035,7 @@
       return `<div class="dealer-report-dossier-table">${rows.map(([label,value])=>`<div><b>${rpEsc(label)}</b><span>${value||''}</span></div>`).join('')}</div>`;
     }
     function dealerReportDossier(wo,groups,stats){
-      const totalAmount=Number(wo?.grossPrice||wo?.price||0), paidAmount=Number(wo?.paidAmount||(/Tahsil/i.test(wo?.payment||'')?wo?.price:0)||0), discount=Math.max(0,Number(wo?.grossPrice||0)-Number(wo?.price||0));
+      const totalAmount=dealerWorkOrderGrossAmount(wo), netAmount=dealerWorkOrderNetAmount(wo), paidAmount=dealerWorkOrderPaidAmount(wo), discount=Math.max(0,totalAmount-netAmount);
       const packageTests=groups.map(g=>g.title).slice(0,5).join(', ')||'Paket kontrol maddeleri';
       const riskyGroups=groups.map(g=>({group:g,progress:dealerReportGroupProgress(wo,g)})).filter(x=>x.progress.risk||x.progress.pct<100).slice(0,5);
       const photoCards=[
@@ -7475,7 +7518,23 @@
     }
     function dealerFormatEngineNoInput(value){return String(value||'').toLocaleUpperCase('tr-TR').replace(/[^0-9A-Z]/g,'').slice(0,17);}
     function dealerUpperTextInput(value){return String(value||'').toLocaleUpperCase('tr-TR');}
-    function dealerMoneyAmount(value){return Number(String(value||0).replace(/\D/g,''))||0;}
+    function dealerMoneyAmount(value){return moneyValue(value);}
+    function dealerWorkOrderPackageAmount(wo){return dealerMoneyAmount(dealerPackage(wo?.packageName).price);}
+    function dealerNormalizeWorkOrderAmount(amount,wo){
+      const packageAmount=dealerWorkOrderPackageAmount(wo);
+      return amount && !(amount<100 && packageAmount>=1000) ? amount : packageAmount || amount || 0;
+    }
+    function dealerWorkOrderNetAmount(wo){
+      return dealerNormalizeWorkOrderAmount(dealerMoneyAmount(wo?.price)||dealerMoneyAmount(wo?.grossPrice)||dealerMoneyAmount(wo?.packageGrossPrice),wo);
+    }
+    function dealerWorkOrderGrossAmount(wo){
+      return dealerNormalizeWorkOrderAmount(dealerMoneyAmount(wo?.grossPrice)||dealerMoneyAmount(wo?.packageGrossPrice)||dealerMoneyAmount(wo?.price),wo);
+    }
+    function dealerWorkOrderPaidAmount(wo){
+      const paid=dealerMoneyAmount(wo?.paidAmount);
+      if(paid && !(paid<100 && dealerWorkOrderNetAmount(wo)>=1000)) return paid;
+      return /Tahsil|Kapora alındı/i.test(wo?.payment||'') ? dealerWorkOrderNetAmount(wo) : 0;
+    }
     function dealerFormatPercent(value){
       const n=Math.max(0,Math.min(100,Number(value)||0));
       return '%'+(Number.isInteger(n)?String(n):String(Math.round(n*10)/10).replace('.',','));
@@ -10153,7 +10212,7 @@
       const dealerArchiveDate=(offset=0)=>{const d=new Date(today);d.setDate(today.getDate()+offset);return d.toLocaleDateString('tr-TR',{day:'2-digit',month:'2-digit',year:'numeric'});};
       const dealerArchiveRows=()=>{
         const demoReports=(DB.reports||[]).filter(r=>!archivedLiveReportKeys.has(dealerArchiveReportKey(r))).map((r,i)=>({reportNo:r.id||`RP-${9021+i}`,workOrder:dealerArchiveWorkOrderId(r),archiveReportId:dealerArchiveReportKey(r),branch:`OTORAPOR ${String(r.branch||branch.name).toLocaleUpperCase('tr-TR')} OTO EKSPERTİZ`,customer:r.customer||['Hasan Kaya','Duru Lojistik','Elif Yaman','Mert Otomotiv'][i%4],plate:r.plate,vin:['VF17RBF0A60232157','MR0BB3CD505801014','SHSRE58709U002644','WBA8A310X0A123694'][i%4],engineNo:['K9KE628R297423','2GDD183162','R20A23002587','B48B20A123456'][i%4],vehicle:r.model,packageName:r.packageName||'AIRBAG (HAVA YASTIĞI) KONTROL PAKETİ, SILVER PLUS PAKET',total:r.price||15700,paid:r.price||15700,payment:'Nakit',status:'Rapor_Kapandı',start:`25.05.26 ${['13:34','12:20','11:19','10:42'][i%4]}`,finish:`25.05.26 ${['14:11','12:42','12:14','11:25'][i%4]}`,duration:['36 dakika','21 dakika','54 dakika','43 dakika'][i%4],source:'archive'}));
-        const liveReports=dealerOps.workOrders.map((w,i)=>({reportNo:w.reportNo,workOrder:w.id,workOrderId:w.id,branch:w.branchName||branch.name,customer:w.customer,plate:w.plate,vin:w.vin||'Şase bekliyor',engineNo:w.engineNo||'Motor bekliyor',vehicle:[w.vehicle,w.year].filter(Boolean).join(' / '),packageName:w.packageName,total:w.grossPrice||w.price||0,paid:w.paidAmount||w.price||0,payment:w.paymentMethod||w.payment||'Bekliyor',status:w.secretaryPrinted?'Rapor_Kapandı':w.status||'Açık',start:w.createdAt||w.entryAt||`25.05.26 ${String(10+i).padStart(2,'0')}:00`,finish:w.secretaryPrintedAt||w.deliveryAt||'Devam ediyor',duration:w.secretaryPrinted?'Kapandı':'Açık',source:'live'}));
+        const liveReports=dealerOps.workOrders.map((w,i)=>({reportNo:w.reportNo,workOrder:w.id,workOrderId:w.id,branch:w.branchName||branch.name,customer:w.customer,plate:w.plate,vin:w.vin||'Şase bekliyor',engineNo:w.engineNo||'Motor bekliyor',vehicle:[w.vehicle,w.year].filter(Boolean).join(' / '),packageName:w.packageName,total:dealerWorkOrderGrossAmount(w),paid:dealerWorkOrderPaidAmount(w),payment:w.paymentMethod||w.payment||'Bekliyor',status:w.secretaryPrinted?'Rapor_Kapandı':w.status||'Açık',start:w.createdAt||w.entryAt||`25.05.26 ${String(10+i).padStart(2,'0')}:00`,finish:w.secretaryPrintedAt||w.deliveryAt||'Devam ediyor',duration:w.secretaryPrinted?'Kapandı':'Açık',source:'live'}));
         return [...liveReports,...demoReports];
       };
       const dealerReportArchivePanel=()=>{
@@ -10189,7 +10248,7 @@
          ['Operasyon Kilitleri',[['Eğitimi olmayan usta','İlgili teknik göreve atanamaz','Blokaj'],['Sertifikası süresi dolan personel','Rapora veri yazamaz','Blokaj'],['Yeni başlayan','Gözetimli görev alır','Kural']]],
          ['Zorunlu Eğitimler',[['Rapor dili','Müşteri rapor metni standardı','Zorunlu'],['Cihaz kullanımı','OBD, mikron, fren/dyno çıktısı','Zorunlu'],['KVKK iletişim','Kabul ve teslim personeli için','Zorunlu']]],
          ['Müdür Riski',[['Eksik eğitim','Kalite skorunu düşürür','Dikkat'],['Sertifika yenileme','6 gün içinde tamamlanmalı','Dikkat']]]]);
-      const dailyPayments=dealerOps.workOrders.map((w,i)=>({method:w.paymentMethod||(/bekliyor/i.test(w.payment||'')?'Bekliyor':i%3===0?'Nakit':i%3===1?'Havale / EFT':'POS / Kredi Kartı'),status:w.payment||'Tahsil edildi',amount:Number(w.price)||dealerPackage(w.packageName).price||0}));
+      const dailyPayments=dealerOps.workOrders.map((w,i)=>({method:w.paymentMethod||(/bekliyor/i.test(w.payment||'')?'Bekliyor':i%3===0?'Nakit':i%3===1?'Havale / EFT':'POS / Kredi Kartı'),status:w.payment||'Tahsil edildi',amount:dealerWorkOrderPaidAmount(w)||dealerWorkOrderNetAmount(w)}));
       const paymentTotal=method=>dailyPayments.filter(x=>x.method===method&&!/bekliyor|açık hesap/i.test(x.status+' '+x.method)).reduce((s,x)=>s+x.amount,0);
       const paymentCount=method=>dailyPayments.filter(x=>x.method===method).length;
       const dailyCollected=dailyPayments.filter(x=>!/bekliyor|açık hesap/i.test(x.status+' '+x.method)).reduce((s,x)=>s+x.amount,0);
@@ -10251,7 +10310,7 @@
       const topWorkOrderMode=(ui.editingWorkOrderId||ui.viewingWorkOrderId)?'full':(ui.workOrderMode==='full'?'full':'fast');
       const topModeLocked=!!(ui.editingWorkOrderId||ui.viewingWorkOrderId);
       const dealerTopModeSwitch=ui.tab==='is-emirleri'?`<div class="dealer-top-mode-switch" aria-label="İş emri modu"><span>İş emri modu</span><div class="dealer-top-mode-actions"><button type="button" class="${topWorkOrderMode==='fast'?'active':''}" data-dealer-wo-mode="fast" ${topModeLocked?'disabled title="Açık iş emrinde mod değiştirilemez."':''}>Hızlı İş Emri</button><button type="button" class="${topWorkOrderMode==='full'?'active':''}" data-dealer-wo-mode="full" ${topModeLocked?'disabled title="Açık iş emrinde mod değiştirilemez."':''}>Tam İş Emri</button></div></div>`:'';
-      return `<div class="dealer-portal dealer-erp-shell"><aside class="dealer-erp-sidebar"><div class="dealer-erp-brand"><div class="dealer-erp-logo">OT</div><div class="dealer-erp-brand-text"><b>OTOTR</b><span>Bayi Portalı · Aktif Şube: ${rpEsc(branch.name)}</span><small class="dealer-version-tag">SVK v1.0.225</small><small class="dealer-update-tag" title="Son güncelleme: Rapor arama sonuçları rapor detay sayfasına bağlandı. Commit: 5f6fbc3">26.05 · Rapor arama &gt; detay</small></div></div><div class="dealer-erp-section-title">Şube Menüsü</div><nav class="dealer-erp-nav">${tabs.map(t=>`<button class="${t[0]===ui.tab?'active':''}" data-dealer-tab="${t[0]}">${icon(t[2])}<span>${ui.role==='M\u00fc\u015fteri Kabul / Sekreterya'&&t[0]==='finans'?'Günlük Finans':t[1]}</span></button>`).join('')}</nav><div class="dealer-erp-role-box"><span>Rol görünümü</span><div class="dealer-role-switcher">${Object.entries(DEALER_PORTAL_ROLES).map(([name,cfg])=>`<button class="${name===ui.role?'active':''}" data-dealer-role="${name}">${icon(cfg.icon)}${name}</button>`).join('')}</div></div></aside><main class="dealer-erp-workspace"><section class="dealer-top-branch dealer-action-bar"><label class="dealer-top-role-select"><span>Rol görünümü</span><select data-dealer-role-select>${Object.keys(DEALER_PORTAL_ROLES).map(name=>`<option value="${rpEsc(name)}" ${name===ui.role?'selected':''}>${rpEsc(name)}</option>`).join('')}</select></label>${dealerTopModeSwitch}<div class="dealer-top-actions">${dealerTopPrimaryAction}<button class="btn" data-dealer-calendar-modal-open>${icon('calendar-clock')}3 Günlük Takvim</button><button class="btn" data-dealer-tab="rapor-detay">${icon('file-search')}Rapor Detay</button><button class="btn" data-dealer-tab="rapor">${icon('printer')}Basım Kuyruğu</button></div></section><div class="dealer-portal-layout"><main class="dealer-shell">${(panes[ui.tab]||panes.kokpit)()}${ui.tab==='kurulum'?dealerApiModelPanel():ui.tab==='rapor'?dealerReportMappingPanel():ui.tab==='personel'?dealerAuthMatrixPanel():''}</main><aside class="dealer-rail"><div class="card"><div class="card-head"><div><div class="card-title">Rol Yetkileri</div><div class="card-sub">${roleCfg.desc}</div></div>${badge(ui.role)}</div><div class="dealer-permission-list">${roleCfg.actions.map(a=>`<div><b>${ui.role}</b><span>${a}</span></div>`).join('')}</div></div><div class="card"><div class="card-head"><div><div class="card-title">Canlı Sistem Kilitleri</div><div class="card-sub">Rapor yayın ve teslim kapıları</div></div></div>${dealerMiniRows([['Teknik alan kilidi','Müdür onayından sonra değişiklik revizyon açar','Kural'],['KVKK / yol testi','Eksikse teslim tamamlanamaz','Blokaj'],['Cihaz kalibrasyonu','Geçmiş cihaz rapor üretimini engeller','Blokaj']])}</div></aside></div></main>${dealerAppointmentDock()}</div>`;
+      return `<div class="dealer-portal dealer-erp-shell"><aside class="dealer-erp-sidebar"><div class="dealer-erp-brand"><div class="dealer-erp-logo">OT</div><div class="dealer-erp-brand-text"><b>OTOTR</b><span>Bayi Portalı · Aktif Şube: ${rpEsc(branch.name)}</span><small class="dealer-version-tag">SVK v1.0.226</small><small class="dealer-update-tag" title="Son güncelleme: Bayi portalı QA akışı, iç rota koruması ve rapor/finans tutar düzeltmeleri.">26.05 · Portal QA &amp; tutarlar</small></div></div><div class="dealer-erp-section-title">Şube Menüsü</div><nav class="dealer-erp-nav">${tabs.map(t=>`<button class="${t[0]===ui.tab?'active':''}" data-dealer-tab="${t[0]}">${icon(t[2])}<span>${ui.role==='M\u00fc\u015fteri Kabul / Sekreterya'&&t[0]==='finans'?'Günlük Finans':t[1]}</span></button>`).join('')}</nav><div class="dealer-erp-role-box"><span>Rol görünümü</span><div class="dealer-role-switcher">${Object.entries(DEALER_PORTAL_ROLES).map(([name,cfg])=>`<button class="${name===ui.role?'active':''}" data-dealer-role="${name}">${icon(cfg.icon)}${name}</button>`).join('')}</div></div></aside><main class="dealer-erp-workspace"><section class="dealer-top-branch dealer-action-bar"><label class="dealer-top-role-select"><span>Rol görünümü</span><select data-dealer-role-select>${Object.keys(DEALER_PORTAL_ROLES).map(name=>`<option value="${rpEsc(name)}" ${name===ui.role?'selected':''}>${rpEsc(name)}</option>`).join('')}</select></label>${dealerTopModeSwitch}<div class="dealer-top-actions">${dealerTopPrimaryAction}<button class="btn" data-dealer-calendar-modal-open>${icon('calendar-clock')}3 Günlük Takvim</button><button class="btn" data-dealer-tab="rapor-detay">${icon('file-search')}Rapor Detay</button><button class="btn" data-dealer-tab="rapor">${icon('printer')}Basım Kuyruğu</button></div></section><div class="dealer-portal-layout"><main class="dealer-shell">${(panes[ui.tab]||panes.kokpit)()}${ui.tab==='kurulum'?dealerApiModelPanel():ui.tab==='rapor'?dealerReportMappingPanel():ui.tab==='personel'?dealerAuthMatrixPanel():''}</main><aside class="dealer-rail"><div class="card"><div class="card-head"><div><div class="card-title">Rol Yetkileri</div><div class="card-sub">${roleCfg.desc}</div></div>${badge(ui.role)}</div><div class="dealer-permission-list">${roleCfg.actions.map(a=>`<div><b>${ui.role}</b><span>${a}</span></div>`).join('')}</div></div><div class="card"><div class="card-head"><div><div class="card-title">Canlı Sistem Kilitleri</div><div class="card-sub">Rapor yayın ve teslim kapıları</div></div></div>${dealerMiniRows([['Teknik alan kilidi','Müdür onayından sonra değişiklik revizyon açar','Kural'],['KVKK / yol testi','Eksikse teslim tamamlanamaz','Blokaj'],['Cihaz kalibrasyonu','Geçmiş cihaz rapor üretimini engeller','Blokaj']])}</div></aside></div></main>${dealerAppointmentDock()}</div>`;
     }
     document.addEventListener('input',e=>{
       const phoneInput=e.target.closest?.('[data-dealer-phone-input],input[name="phone"],input[name="sellerPhone"]');
@@ -13682,6 +13741,11 @@
     }
     function route(id,options={}){
       id = id==='expertise-report' ? 'report-design' : id;
+      if(id!=='dealer' && isDealerStandaloneRoute()){
+        const dealerTab = dealerStandaloneRouteTab(id);
+        if(dealerTab) saveDealerPortalState({tab:dealerTab});
+        id = 'dealer';
+      }
       const hrRoute = parseHRRoute(id);
       const academyRoute = hrRoute ? null : parseAcademyRoute(id);
       let resolved = hrRoute ? 'hr' : academyRoute ? 'academy' : id;
