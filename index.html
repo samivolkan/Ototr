@@ -6468,6 +6468,31 @@
       dealerApplySampleResults(wo,true);
       return wo;
     }
+    function dealerPreparePrintReadyWorkOrder845(data){
+      const wo=(data?.workOrders||[]).find(w=>w.id==='IE-2026-000845');
+      if(!wo||wo.demoPrintReadyPreparedAt) return false;
+      const preparedAt=new Date().toLocaleString('tr-TR',{dateStyle:'short',timeStyle:'short'});
+      dealerSyncPackageTasks(wo);
+      dealerApplySampleResults(wo,false);
+      wo.payment=wo.payment&&wo.payment!=='Bekliyor'?wo.payment:'Tahsil edildi';
+      wo.paymentMethod=wo.paymentMethod||'POS / Kredi Kartı';
+      wo.consent='İmzalandı';
+      wo.managerApproved=true;
+      wo.managerApprovedAt=wo.managerApprovedAt||preparedAt;
+      wo.secretaryPrinted=false;
+      wo.qrSent=false;
+      wo.status='Sekreterya basımında';
+      wo.reportGateStatus='PRINT_READY';
+      wo.deliveryProof='';
+      wo.demoPrintReadyPreparedAt=preparedAt;
+      dealerAuditWorkOrder(wo,'Demo basıma hazır konuma alındı','Sistem','Pipeline kontrolü için müdür onaylı, sekreterya basım kuyruğunda bekleyen duruma getirildi.');
+      data.activeId=wo.id;
+      try{
+        const ui=JSON.parse(localStorage.getItem('ototr-dealer-portal-ui-v1')||'{}')||{};
+        localStorage.setItem('ototr-dealer-portal-ui-v1',JSON.stringify({...ui,tab:'kokpit',editingWorkOrderId:'',viewingWorkOrderId:''}));
+      }catch(err){}
+      return true;
+    }
     function ensureDealerLiveData(branch,appointments){
       let data=null;
       try{data=JSON.parse(localStorage.getItem(DEALER_LIVE_KEY)||'null')}catch(err){}
@@ -6484,6 +6509,7 @@
         if(dealerApplyVinMigrationToWorkOrder(wo)) normalized=true;
         if(before!==JSON.stringify((wo.tasks||[]).map(t=>t.owner))) normalized=true;
       });
+      if(dealerPreparePrintReadyWorkOrder845(data)) normalized=true;
       if(!Array.isArray(data.migrations)) data.migrations=[];
       if(!data.migrations.includes(DEALER_VIN_MIGRATION)){data.migrations.push(DEALER_VIN_MIGRATION);normalized=true;}
       if(normalized) saveDealerLiveData(data);
@@ -6508,8 +6534,9 @@
     function dealerPipelineCurrentStep(workOrder,completion){
       if(!workOrder) return 0;
       const status=String(workOrder.status||'').toLocaleLowerCase('tr-TR');
-      if(workOrder.secretaryPrinted||/teslim|kapat/.test(status)) return 10;
-      if(workOrder.managerApproved||/rapor onay/.test(status)) return 8;
+      if(workOrder.secretaryPrinted||/teslim|kapat/.test(status)) return 11;
+      if(/basım|basim|qr|sekreterya/.test(status)&&workOrder.managerApproved) return 10;
+      if(workOrder.managerApproved||/rapor onay/.test(status)) return 9;
       if(completion?.done===completion?.total&&completion?.total) return 7;
       if(/usta|teknik|görev/.test(status)&&!status.includes('iş emri açıldı')) return 5;
       if(/iş emri açıldı|araç kabul|kabul edildi/.test(status)) return 4;
