@@ -1097,10 +1097,10 @@ window.OTOTR_INSPECTION_SCHEMA = {
         2039
       ],
       "suggestedOptions": [
-        "?yi",
-        "K?t?",
-        "Sesli ?al??ma Mevcut",
-        "Km ve Ya? Sebebiyle Servis M?dahalesi Gerekli"
+        "İyi",
+        "Kötü",
+        "Sesli Çalışma Mevcut",
+        "Km ve Yaş Sebebiyle Servis Müdahalesi Gerekli"
       ]
     },
     {
@@ -14418,8 +14418,8 @@ window.OTOTR_INSPECTION_SCHEMA = {
       "legacyOptionId": 1133,
       "legacyNoktaId": 244,
       "itemId": "motor_checkup_triger_kayisi_zinciri_ses_durumu_244",
-      "label": "?yi",
-      "legacyLabel": "?yi",
+      "label": "İyi",
+      "legacyLabel": "İyi",
       "sortOrder": 1,
       "severity": "good",
       "color": "green",
@@ -14434,8 +14434,8 @@ window.OTOTR_INSPECTION_SCHEMA = {
       "legacyOptionId": 1134,
       "legacyNoktaId": 244,
       "itemId": "motor_checkup_triger_kayisi_zinciri_ses_durumu_244",
-      "label": "K?t?",
-      "legacyLabel": "K?t?",
+      "label": "Kötü",
+      "legacyLabel": "Kötü",
       "sortOrder": 2,
       "severity": "critical",
       "color": "red",
@@ -14450,8 +14450,8 @@ window.OTOTR_INSPECTION_SCHEMA = {
       "legacyOptionId": 1135,
       "legacyNoktaId": 244,
       "itemId": "motor_checkup_triger_kayisi_zinciri_ses_durumu_244",
-      "label": "Sesli ?al??ma Mevcut",
-      "legacyLabel": "Sesli ?al??ma Mevcut",
+      "label": "Sesli Çalışma Mevcut",
+      "legacyLabel": "Sesli Çalışma Mevcut",
       "sortOrder": 3,
       "severity": "critical",
       "color": "red",
@@ -14466,8 +14466,8 @@ window.OTOTR_INSPECTION_SCHEMA = {
       "legacyOptionId": 2039,
       "legacyNoktaId": 244,
       "itemId": "motor_checkup_triger_kayisi_zinciri_ses_durumu_244",
-      "label": "Km ve Ya? Sebebiyle Servis M?dahalesi Gerekli",
-      "legacyLabel": "Km ve Ya? Sebebiyle Servis M?dahalesi Gerekli",
+      "label": "Km ve Yaş Sebebiyle Servis Müdahalesi Gerekli",
+      "legacyLabel": "Km ve Yaş Sebebiyle Servis Müdahalesi Gerekli",
       "sortOrder": 4,
       "severity": "critical",
       "color": "red",
