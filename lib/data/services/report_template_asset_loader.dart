@@ -189,6 +189,9 @@ class ReportTemplateAssetLoader {
       case 'orange':
       case 'renk-turuncu':
         return ReportOptionColorType.orange;
+      case 'blue':
+      case 'renk-mavi':
+        return ReportOptionColorType.blue;
       case 'gray':
       case 'renk-gri':
         return ReportOptionColorType.gray;
@@ -204,6 +207,7 @@ class ReportTemplateAssetLoader {
       case ReportOptionColorType.red:
         return ReportOptionScoreType.negative;
       case ReportOptionColorType.orange:
+      case ReportOptionColorType.blue:
         return ReportOptionScoreType.warning;
       case ReportOptionColorType.gray:
       case ReportOptionColorType.neutral:

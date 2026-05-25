@@ -1113,6 +1113,8 @@ class _OptionChip extends StatelessWidget {
         return const Color(0xFFFFECEC);
       case ReportOptionColorType.orange:
         return const Color(0xFFFFF7D6);
+      case ReportOptionColorType.blue:
+        return const Color(0xFFEAF1FF);
       case ReportOptionColorType.gray:
       case ReportOptionColorType.neutral:
         return AppColors.white;
@@ -1127,6 +1129,8 @@ class _OptionChip extends StatelessWidget {
         return AppColors.red;
       case ReportOptionColorType.orange:
         return AppColors.warning;
+      case ReportOptionColorType.blue:
+        return AppColors.info;
       case ReportOptionColorType.gray:
       case ReportOptionColorType.neutral:
         return AppColors.grayText;

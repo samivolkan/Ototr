@@ -154,6 +154,8 @@ class SupabaseReportTemplateDataSource {
         return ReportOptionColorType.red;
       case 'orange':
         return ReportOptionColorType.orange;
+      case 'blue':
+        return ReportOptionColorType.blue;
       case 'gray':
         return ReportOptionColorType.gray;
       default:
@@ -181,6 +183,7 @@ class SupabaseReportTemplateDataSource {
           case ReportOptionColorType.red:
             return ReportOptionScoreType.negative;
           case ReportOptionColorType.orange:
+          case ReportOptionColorType.blue:
             return ReportOptionScoreType.warning;
           case ReportOptionColorType.gray:
           case ReportOptionColorType.neutral:

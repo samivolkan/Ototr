@@ -358,6 +358,8 @@ class _OptionChip extends StatelessWidget {
         return AppColors.red;
       case ReportOptionColorType.orange:
         return AppColors.warning;
+      case ReportOptionColorType.blue:
+        return AppColors.info;
       case ReportOptionColorType.gray:
       case ReportOptionColorType.neutral:
         return AppColors.grayText;

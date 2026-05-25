@@ -1,4 +1,4 @@
-enum ReportOptionColorType { green, red, orange, gray, neutral }
+enum ReportOptionColorType { green, red, orange, blue, gray, neutral }
 
 enum ReportOptionScoreType { positive, negative, warning, neutral }
 
