@@ -97,7 +97,6 @@ await form.locator('[name="vehicleModel"]').fill("Corolla");
 await form.locator('[name="year"]').fill("2021");
 
 await form.locator('[name="plate"]').fill("34 VIN 123");
-await form.locator('[name="mileage"]').fill("128000");
 await form.locator('[data-dealer-package-choice="Full Ekspertiz"]').click();
 await page.evaluate(() => window.dealerCreateWorkOrder({ skipNativeValidity: true }));
 await page.waitForFunction(() => {
@@ -157,6 +156,7 @@ await page.locator('#page-dealer.active [data-dealer-package-choice="Mini Eksper
 assert.equal(await page.locator('#page-dealer.active #dealerWorkOrderForm [name="packageName"]').inputValue(), "Full Ekspertiz", "Kilitli goruntulemede paket karti degismemeli");
 assert.equal(await page.locator('#page-dealer.active [data-dealer-package-choice="Full Ekspertiz"].selected').count(), 1, "Kilitli goruntulemede secili paket ayni kalmali");
 await page.locator('#page-dealer.active .dealer-top-branch [data-dealer-gate-nav]').waitFor();
+assert.equal(await page.locator('#page-dealer.active .dealer-top-branch [data-dealer-gate-nav]').evaluate(btn => !btn.disabled && btn.textContent.includes("Düzenle")), true, "Ac aksiyonu kilitli goruntulemede eksik uyarisi gostermemeli");
 
 await page.evaluate(() => {
   saveDealerPortalState({ tab: "aktif-is-emirleri", editingWorkOrderId: "", viewingWorkOrderId: "" });

@@ -67,7 +67,7 @@ class _StartEvidenceScreenState extends State<StartEvidenceScreen> {
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return Scaffold(
-              appBar: const OtotrAppBar(title: 'İşe Başlama Kanıtı'),
+              appBar: const OtotrAppBar(title: 'Araç Başlama İş Emri'),
               backgroundColor: AppColors.grayBg,
               body: Padding(
                 padding: const EdgeInsets.all(AppSizes.lg),
@@ -83,7 +83,7 @@ class _StartEvidenceScreenState extends State<StartEvidenceScreen> {
 
           if (!snapshot.hasData) {
             return const Scaffold(
-              appBar: OtotrAppBar(title: 'İşe Başlama Kanıtı'),
+              appBar: OtotrAppBar(title: 'Araç Başlama İş Emri'),
               backgroundColor: AppColors.grayBg,
               body: Center(child: CircularProgressIndicator()),
             );
@@ -112,7 +112,7 @@ class _StartEvidenceScreenState extends State<StartEvidenceScreen> {
     final missing = previewEvidence.missingReasons();
 
     return Scaffold(
-      appBar: const OtotrAppBar(title: 'İşe Başlama Kanıtı'),
+      appBar: const OtotrAppBar(title: 'Araç Başlama İş Emri'),
       backgroundColor: AppColors.grayBg,
       body: ListView(
         padding: const EdgeInsets.all(AppSizes.lg),
@@ -160,16 +160,24 @@ class _StartEvidenceScreenState extends State<StartEvidenceScreen> {
                   decoration: const InputDecoration(labelText: 'Giriş KM'),
                 ),
                 const SizedBox(height: AppSizes.md),
-                DropdownButtonFormField<String>(
-                  initialValue: _transmission.isEmpty ? null : _transmission,
-                  decoration: const InputDecoration(labelText: 'Vites Tipi'),
-                  items: const [
-                    DropdownMenuItem(
-                        value: 'otomatik', child: Text('Otomatik')),
-                    DropdownMenuItem(value: 'manuel', child: Text('Manuel')),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _TransmissionChoice(
+                        label: 'Otomatik',
+                        isSelected: _transmission == 'otomatik',
+                        onTap: () => setState(() => _transmission = 'otomatik'),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _TransmissionChoice(
+                        label: 'Manuel',
+                        isSelected: _transmission == 'manuel',
+                        onTap: () => setState(() => _transmission = 'manuel'),
+                      ),
+                    ),
                   ],
-                  onChanged: (value) =>
-                      setState(() => _transmission = value ?? ''),
                 ),
               ],
             ),
@@ -193,7 +201,7 @@ class _StartEvidenceScreenState extends State<StartEvidenceScreen> {
               ),
             ),
           OtotrPrimaryButton(
-            label: 'Kanıtları Kaydet',
+            label: 'Araç İş Emri Açılış Başlat',
             icon: Icons.save,
             onPressed: () {
               _saveEvidence(previewEvidence);
@@ -300,6 +308,45 @@ class _PhotoGateCard extends StatelessWidget {
           ),
           Text(isDone ? 'Alındı' : 'Çek'),
         ],
+      ),
+    );
+  }
+}
+
+class _TransmissionChoice extends StatelessWidget {
+  const _TransmissionChoice({
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        height: 52,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFFEAF7F0) : const Color(0xFFFFF1F2),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? AppColors.success : const Color(0xFFF9C7CD),
+            width: isSelected ? 2 : 1,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? AppColors.success : AppColors.red,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
       ),
     );
   }

@@ -26,11 +26,6 @@ class BranchDashboardScreen extends StatelessWidget {
       ('Yeni Is Emri', Icons.add_circle_outline, AppRoutes.newWorkOrder),
       ('Is Emirleri', Icons.assignment_outlined, AppRoutes.workOrders),
       ('Raporlar', Icons.description_outlined, AppRoutes.reportPreview),
-      (
-        'Baslik Sahipligi',
-        Icons.manage_accounts,
-        AppRoutes.managerTaskOwnership
-      ),
       ('Sube Performansi', Icons.insights_outlined, AppRoutes.branchKpi),
       ('Sube Ayarlari', Icons.settings_outlined, AppRoutes.branchSettings),
     ];

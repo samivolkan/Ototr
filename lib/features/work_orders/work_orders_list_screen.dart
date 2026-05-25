@@ -15,6 +15,7 @@ import '../../data/models/work_order_model.dart';
 import '../../data/repositories/app_repositories.dart';
 import '../../data/repositories/branch_work_order_repository.dart';
 import '../../data/repositories/work_order_local_repository.dart';
+import '../../data/services/work_order_progress_calculator.dart';
 
 class WorkOrdersListScreen extends StatefulWidget {
   const WorkOrdersListScreen({super.key});
@@ -197,6 +198,7 @@ class _WorkOrderCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final missingCount = repository.missingDataCount(order);
     final packageType = order.packageType ?? PackageType.standard;
+    final progress = const WorkOrderProgressCalculator().calculate(order);
     return OtotrCard(
       onTap: () => Navigator.pushNamed(
         context,
@@ -247,7 +249,28 @@ class _WorkOrderCard extends StatelessWidget {
                     '${order.tasks.where((task) => task.status == WorkOrderTaskStatus.completed).length} tamam',
                 tone: OtotrBadgeTone.neutral,
               ),
+              OtotrStatusBadge(
+                label: '%${progress.totalPercent} tamam',
+                tone: progress.totalPercent == 100
+                    ? OtotrBadgeTone.success
+                    : OtotrBadgeTone.info,
+              ),
+              OtotrStatusBadge(
+                label: 'Bekleyen: ${progress.waitingOwnerLabel}',
+                tone: progress.waitingOwnerLabel == 'Tamamlandi'
+                    ? OtotrBadgeTone.success
+                    : OtotrBadgeTone.warning,
+              ),
             ],
+          ),
+          const SizedBox(height: AppSizes.sm),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(999),
+            child: LinearProgressIndicator(
+              value: progress.totalPercent / 100,
+              minHeight: 8,
+              backgroundColor: const Color(0xFFE8EDF3),
+            ),
           ),
           const SizedBox(height: AppSizes.md),
           Row(

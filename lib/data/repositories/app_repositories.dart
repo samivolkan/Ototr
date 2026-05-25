@@ -2,13 +2,22 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/config/supabase_config.dart';
 import '../models/user_profile_model.dart';
+import '../remote/supabase_final_report_data_source.dart';
+import '../remote/supabase_report_template_data_source.dart';
 import '../remote/supabase_work_order_data_source.dart';
+import '../remote/supabase_work_order_report_data_source.dart';
 import 'branch_work_order_repository.dart';
 import 'dummy_work_order_repository.dart';
+import 'final_report_repository.dart';
+import 'report_template_repository.dart';
 import 'remote_work_order_repository.dart';
 import 'supabase_branch_work_order_repository.dart';
+import 'supabase_final_report_repository.dart';
+import 'supabase_report_template_repository.dart';
 import 'supabase_work_order_repository.dart';
+import 'supabase_work_order_report_repository.dart';
 import 'work_order_local_repository.dart';
+import 'work_order_report_repository.dart';
 import 'work_order_repository.dart';
 
 class AppRepositories {
@@ -18,6 +27,10 @@ class AppRepositories {
 
   WorkOrderRepository localWorkOrders = DummyWorkOrderRepository.instance;
   RemoteWorkOrderRepository? remoteWorkOrders;
+  ReportTemplateRepository reportTemplates = AssetReportTemplateRepository();
+  WorkOrderReportRepository workOrderReports =
+      LocalWorkOrderReportRepository.instance;
+  FinalReportRepository finalReports = LocalFinalReportRepository.instance;
   BranchWorkOrderRepository branchWorkOrders =
       LocalBranchWorkOrderRepository(WorkOrderLocalRepository.instance);
 
@@ -28,6 +41,9 @@ class AppRepositories {
   }) async {
     if (!config.isConfigured) {
       remoteWorkOrders = null;
+      reportTemplates = AssetReportTemplateRepository();
+      workOrderReports = LocalWorkOrderReportRepository.instance;
+      finalReports = LocalFinalReportRepository.instance;
       branchWorkOrders =
           LocalBranchWorkOrderRepository(WorkOrderLocalRepository.instance);
       return;
@@ -54,12 +70,33 @@ class AppRepositories {
         currentUser: currentUser,
         currentTechnicianRole: local.currentTechnicianRole,
       );
+      reportTemplates = FallbackReportTemplateRepository(
+        primary: SupabaseReportTemplateRepository(
+          SupabaseReportTemplateDataSource(Supabase.instance.client),
+        ),
+        fallback: AssetReportTemplateRepository(),
+      );
+      workOrderReports = FallbackWorkOrderReportRepository(
+        primary: SupabaseWorkOrderReportRepository(
+          SupabaseWorkOrderReportDataSource(Supabase.instance.client),
+        ),
+        fallback: LocalWorkOrderReportRepository.instance,
+      );
+      finalReports = FallbackFinalReportRepository(
+        primary: SupabaseFinalReportRepository(
+          SupabaseFinalReportDataSource(Supabase.instance.client),
+        ),
+        fallback: LocalFinalReportRepository.instance,
+      );
       branchWorkOrders =
           SupabaseBranchWorkOrderRepository(Supabase.instance.client);
     } catch (_) {
       // Supabase RLS veya bağlantı hatası mobil uygulamanın açılışını
       // engellememeli. Canlı bağlantı düzelene kadar demo veriyle devam edilir.
       remoteWorkOrders = null;
+      reportTemplates = AssetReportTemplateRepository();
+      workOrderReports = LocalWorkOrderReportRepository.instance;
+      finalReports = LocalFinalReportRepository.instance;
       branchWorkOrders =
           LocalBranchWorkOrderRepository(WorkOrderLocalRepository.instance);
     }

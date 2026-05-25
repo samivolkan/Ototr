@@ -8,18 +8,18 @@ import '../../features/dashboard/branch_dashboard_screen.dart';
 import '../../features/inspection/inspection_module_detail_screen.dart';
 import '../../features/inspection/inspection_modules_screen.dart';
 import '../../features/inspection/inspection_progress_screen.dart';
-import '../../features/manager/manager_task_ownership_screen.dart';
 import '../../features/packages/package_selection_screen.dart';
 import '../../features/photo_evidence/photo_evidence_screen.dart';
 import '../../features/profile/profile_screen.dart';
+import '../../features/reports/final_report_preview_screen.dart';
 import '../../features/reports/report_preview_screen.dart';
+import '../../features/technician/report_entry/report_entry_screen.dart';
 import '../../features/splash/splash_screen.dart';
 import '../../features/technician/start_evidence_screen.dart';
 import '../../features/technician/technician_evidence_screen.dart';
 import '../../features/technician/technician_jobs_screen.dart';
 import '../../features/technician/technician_queries_screen.dart';
 import '../../features/technician/technician_report_gate_screen.dart';
-import '../../features/technician/technician_sync_screen.dart';
 import '../../features/technician/technician_task_form_screen.dart';
 import '../../features/technician/technician_tasks_screen.dart';
 import '../../features/vehicle_intake/vehicle_intake_screen.dart';
@@ -53,6 +53,9 @@ class AppRouter {
         InspectionModuleDetailScreen(moduleId: settings.arguments as String?),
       AppRoutes.photoEvidence => const PhotoEvidenceScreen(),
       AppRoutes.reportPreview => const ReportPreviewScreen(),
+      AppRoutes.finalReportPreview => FinalReportPreviewScreen(
+          workOrderId: settings.arguments as String,
+        ),
       AppRoutes.branchSettings => const BranchSettingsScreen(),
       AppRoutes.branchKpi => const BranchKpiScreen(),
       AppRoutes.profile => const ProfileScreen(),
@@ -61,6 +64,9 @@ class AppRouter {
           workOrderId: settings.arguments as String,
         ),
       AppRoutes.technicianTasks => TechnicianTasksScreen(
+          workOrderId: settings.arguments as String,
+        ),
+      AppRoutes.technicianReportEntry => ReportEntryScreen(
           workOrderId: settings.arguments as String,
         ),
       AppRoutes.technicianTaskForm => _guardedTaskForm(settings),
@@ -73,8 +79,6 @@ class AppRouter {
       AppRoutes.technicianReportGate => TechnicianReportGateScreen(
           workOrderId: settings.arguments as String,
         ),
-      AppRoutes.technicianSync => const TechnicianSyncScreen(),
-      AppRoutes.managerTaskOwnership => const ManagerTaskOwnershipScreen(),
       _ => const BranchDashboardScreen(),
     };
 

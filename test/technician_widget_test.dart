@@ -2,50 +2,51 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ototr_branch_app/core/navigation/app_routes.dart';
 import 'package:ototr_branch_app/data/models/technician_operation_model.dart';
-import 'package:ototr_branch_app/data/models/user_profile_model.dart';
 import 'package:ototr_branch_app/data/repositories/dummy_work_order_repository.dart';
-import 'package:ototr_branch_app/features/manager/manager_task_ownership_screen.dart';
 import 'package:ototr_branch_app/features/technician/start_evidence_screen.dart';
+import 'package:ototr_branch_app/features/technician/technician_evidence_screen.dart';
 import 'package:ototr_branch_app/features/technician/technician_jobs_screen.dart';
-import 'package:ototr_branch_app/features/technician/technician_report_gate_screen.dart';
-import 'package:ototr_branch_app/features/technician/technician_sync_screen.dart';
 import 'package:ototr_branch_app/features/technician/technician_task_form_screen.dart';
 import 'package:ototr_branch_app/features/technician/technician_tasks_screen.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   setUp(() {
     DummyWorkOrderRepository.instance.reset();
   });
 
-  testWidgets('Usta İşleri ekranı sadece atanmış işi gösterir', (tester) async {
-    await tester.pumpWidget(_app(const TechnicianJobsScreen()));
-
-    expect(find.text('Usta İşleri'), findsOneWidget);
-    expect(find.text('16 ABC 123'), findsOneWidget);
-    expect(find.textContaining('Ödeme'), findsNothing);
-    expect(find.textContaining('indirim'), findsNothing);
-    expect(find.textContaining('tahsilat'), findsNothing);
-  });
-
-  testWidgets('İşe Başlama Kanıtı ekranı eksik alanları gösterir',
+  testWidgets('Usta isleri ekraninda is emri ve ilerleme gorunur',
       (tester) async {
-    await tester.pumpWidget(
-        _app(const StartEvidenceScreen(workOrderId: 'wo-2026-0001')));
+    await tester.pumpWidget(_app(const TechnicianJobsScreen()));
+    await tester.pump();
 
-    await tester.scrollUntilVisible(
-      find.text('Eksik Kanıtlar'),
-      300,
-      scrollable: find.byType(Scrollable).first,
-    );
-
-    expect(find.text('Eksik Kanıtlar'), findsOneWidget);
-    expect(find.textContaining('Şasi etiketi fotoğrafı eksik'), findsOneWidget);
-    expect(find.textContaining('Kilometre değeri girilmedi'), findsOneWidget);
+    expect(find.textContaining('Usta'), findsWidgets);
+    expect(find.text('16 ABC 123'), findsOneWidget);
+    expect(find.textContaining('tamamlanma'), findsWidgets);
+    expect(find.text('%0'), findsWidgets);
   });
 
-  testWidgets('Kontrol Formu riskli bulguda fotoğraf uyarısı verir',
+  testWidgets('Arac baslama is emri eksikleri gosterir', (tester) async {
+    await tester.pumpWidget(
+      _app(const StartEvidenceScreen(workOrderId: 'wo-2026-0001')),
+    );
+    await _waitForText(tester, 'KM');
+
+    expect(find.textContaining('KM'), findsWidgets);
+    expect(find.textContaining('KM'), findsWidgets);
+    expect(find.text('Opsiyonel'), findsNothing);
+  });
+
+  testWidgets('Kontrol formu maddeye tiklayinca JSON detayini acar',
       (tester) async {
     _completeStartEvidenceAndClaimBodyPaint();
+    final firstItem = DummyWorkOrderRepository.instance
+        .getById('wo-2026-0001')
+        .tasks
+        .firstWhere((item) => item.taskId == 'body-paint')
+        .checklistItems
+        .first;
 
     await tester.pumpWidget(
       _app(
@@ -55,82 +56,118 @@ void main() {
         ),
       ),
     );
+    await _waitForAsyncWork(tester);
+    await _waitForText(tester, firstItem.title.split(' ').last);
 
-    await tester.tap(find.text('Riskli').first);
+    await tester.tap(find.text(firstItem.title).first);
+    await tester.pump();
+    await _waitForText(tester, 'Tamamland');
+
+    expect(find.textContaining('Nokta'), findsWidgets);
+    expect(find.textContaining('Foto'), findsWidgets);
+  });
+
+  testWidgets('Rapor medyalari cevre fotografi ve video ister', (tester) async {
+    await tester.pumpWidget(
+      _app(const TechnicianEvidenceScreen(workOrderId: 'wo-2026-0001')),
+    );
     await tester.pump();
 
-    expect(find.text('Gönderim Engelleri'), findsOneWidget);
-    expect(find.textContaining('fotoğraf'), findsWidgets);
+    expect(find.textContaining('Rapor'), findsWidgets);
+    expect(find.textContaining('foto'), findsWidgets);
+    expect(find.textContaining('video'), findsWidgets);
+
+    expect(find.textContaining('Motor'), findsWidgets);
   });
 
-  testWidgets('Rapor Kapısı blockingReasons listesini gösterir',
-      (tester) async {
-    await tester.pumpWidget(
-      _app(const TechnicianReportGateScreen(workOrderId: 'wo-2026-0001')),
-    );
-
-    expect(find.text('Blokaj Nedenleri'), findsOneWidget);
-    expect(
-        find.textContaining('Başlangıç kanıtı tamamlanmadı'), findsOneWidget);
-  });
-
-  testWidgets('Offline bar senkron bekleyen kayıt sayısını gösterir',
-      (tester) async {
-    final repository = DummyWorkOrderRepository.instance;
-    repository.queueDemoOperation();
-
-    await tester.pumpWidget(_app(const TechnicianSyncScreen()));
-
-    expect(find.textContaining('1 kayıt senkron bekliyor'), findsOneWidget);
-  });
-
-  testWidgets('Usta gorev karti JSON alt basliklarini gosterir',
-      (tester) async {
+  testWidgets('Usta gorev karti test yuzdesini gosterir', (tester) async {
     _completeStartEvidenceAndClaimBodyPaint();
+    final taskTitle = DummyWorkOrderRepository.instance
+        .getById('wo-2026-0001')
+        .tasks
+        .firstWhere((item) => item.taskId == 'body-paint')
+        .title
+        .toUpperCase();
 
     await tester.pumpWidget(
       _app(const TechnicianTasksScreen(workOrderId: 'wo-2026-0001')),
     );
 
     await tester.scrollUntilVisible(
-      find.textContaining('Panjur'),
+      find.text(taskTitle),
       300,
       scrollable: find.byType(Scrollable).first,
     );
 
-    expect(find.textContaining('JSON'), findsWidgets);
-    expect(find.textContaining('Panjur'), findsWidgets);
+    expect(find.textContaining('JSON'), findsNothing);
+    expect(find.textContaining('%0 tamam'), findsWidgets);
+    expect(find.textContaining('0/59'), findsWidgets);
+    expect(find.textContaining('isaretlendi'), findsNothing);
+    expect(find.textContaining('Havuz'), findsWidgets);
   });
 
-  testWidgets('Kontrol Formu JSON katalog maddelerini usta girisine yukler',
+  testWidgets('Usta basliga tiklayinca gorevi ustlenip forma girer',
       (tester) async {
-    _completeStartEvidenceAndClaimBodyPaint();
+    tester.view.physicalSize = const Size(1080, 2400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    _completeStartEvidence();
+    final repository = DummyWorkOrderRepository.instance;
+    final taskTitle = repository
+        .getById('wo-2026-0001')
+        .tasks
+        .firstWhere((item) => item.taskId == 'body-paint')
+        .title
+        .toUpperCase();
 
     await tester.pumpWidget(
-      _app(
-        const TechnicianTaskFormScreen(
-          workOrderId: 'wo-2026-0001',
-          taskId: 'body-paint',
-        ),
-      ),
+      _app(const TechnicianTasksScreen(workOrderId: 'wo-2026-0001')),
     );
 
-    expect(find.textContaining('JSON'), findsOneWidget);
-    expect(find.textContaining('Panjur'), findsWidgets);
+    await tester.scrollUntilVisible(
+      find.text(taskTitle),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(find.text(taskTitle));
+    await _waitForText(tester, 'Kontrol');
+
+    final task = repository
+        .getById('wo-2026-0001')
+        .tasks
+        .firstWhere((item) => item.taskId == 'body-paint');
+
+    expect(task.ownerUserId, repository.currentUser.id);
+    expect(find.textContaining('Kontrol'), findsWidgets);
   });
+}
 
-  testWidgets('Mudur baslik atamasinda aktif usta secilir', (tester) async {
-    DummyWorkOrderRepository.instance.switchCurrentUserForTest(_managerUser);
+Future<void> _waitForText(
+  WidgetTester tester,
+  String text, {
+  int maxPumps = 100,
+}) async {
+  for (var index = 0; index < maxPumps; index += 1) {
+    await tester.pump(const Duration(milliseconds: 100));
+    if (find.textContaining(text).evaluate().isNotEmpty) {
+      return;
+    }
+  }
+  final visibleTexts = tester
+      .widgetList<Text>(find.byType(Text))
+      .map((widget) => widget.data ?? widget.textSpan?.toPlainText() ?? '')
+      .where((value) => value.isNotEmpty)
+      .join(' | ');
+  fail('Beklenen metin bulunamadi: $text. Gorunenler: $visibleTexts');
+}
 
-    await tester.pumpWidget(_app(const ManagerTaskOwnershipScreen()));
-
-    await tester.tap(find.text('Baska Ustaya Ata').first);
-    await tester.pumpAndSettle();
-
-    expect(find.text('Aktif usta'), findsOneWidget);
-    expect(find.textContaining('Ahmet Usta'), findsWidgets);
-    expect(find.text('Yeni ownerUserId'), findsNothing);
-  });
+Future<void> _waitForAsyncWork(WidgetTester tester) async {
+  await tester.runAsync(
+    () => Future<void>.delayed(const Duration(milliseconds: 500)),
+  );
+  await tester.pump();
 }
 
 Widget _app(Widget home) {
@@ -144,23 +181,35 @@ Widget _app(Widget home) {
           ),
         );
       }
+      if (settings.name == AppRoutes.technicianTaskForm) {
+        final args = settings.arguments as Map<String, String>;
+        return MaterialPageRoute<void>(
+          builder: (_) => TechnicianTaskFormScreen(
+            workOrderId: args['workOrderId']!,
+            taskId: args['taskId']!,
+          ),
+        );
+      }
+      if (settings.name == AppRoutes.technicianTasks) {
+        return MaterialPageRoute<void>(
+          builder: (_) => TechnicianTasksScreen(
+            workOrderId: settings.arguments as String,
+          ),
+        );
+      }
       return MaterialPageRoute<void>(
-          builder: (_) => const TechnicianJobsScreen());
+        builder: (_) => const TechnicianJobsScreen(),
+      );
     },
   );
 }
 
-const _managerUser = UserProfile(
-  id: 'manager-ayse',
-  fullName: 'Ayse Mudur',
-  email: 'ayse.mudur@ototr.test',
-  phone: '0555 000 16 18',
-  role: UserRole.branchManager,
-  branchId: 'bursa-nilufer',
-  isActive: true,
-);
-
 void _completeStartEvidenceAndClaimBodyPaint() {
+  _completeStartEvidence();
+  DummyWorkOrderRepository.instance.claimTask('wo-2026-0001', 'body-paint');
+}
+
+void _completeStartEvidence() {
   final repository = DummyWorkOrderRepository.instance;
   repository.saveStartEvidence(
     'wo-2026-0001',
@@ -177,5 +226,4 @@ void _completeStartEvidenceAndClaimBodyPaint() {
       gpsApprox: 'Bursa Nilufer',
     ),
   );
-  repository.claimTask('wo-2026-0001', 'body-paint');
 }

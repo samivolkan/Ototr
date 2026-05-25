@@ -53,6 +53,32 @@ void main() {
     expect(order.tasks.first.ownerUserId, isNull);
   });
 
+  test('baslangic kaniti KM ekrani olmadan tamamlanmaz', () {
+    repository.claim('wo-2026-0001');
+    final order = repository.saveStartEvidence(
+      'wo-2026-0001',
+      StartEvidence(
+        workOrderId: 'wo-2026-0001',
+        vin: 'WVWZZZ3CZEP005235',
+        vinPhoto: 'local/vin.jpg',
+        platePhoto: 'local/plate.jpg',
+        odometerKm: null,
+        odometerPhoto: '',
+        capturedAt: DateTime(2026, 5, 24),
+        capturedBy: 'tech-ahmet',
+        deviceId: 'demo-device',
+        gpsApprox: 'Bursa Nilufer',
+      ),
+    );
+
+    expect(order.isStartEvidenceComplete, isFalse);
+    expect(
+      order.startEvidence?.missingReasons(),
+      contains('KM ekran fotografi eksik.'),
+    );
+    expect(order.status, WorkOrderStatus.startEvidenceRequired);
+  });
+
   test('müsait usta rol kısıtı olmadan açık başlığı sahiplenebilir', () {
     _completeStartEvidence(repository);
     final claimed = repository.claimTask('wo-2026-0001', 'mechanic');
@@ -148,6 +174,23 @@ void main() {
     expect(
       result.issues.map((issue) => issue.code),
       contains(ReportGateIssueCode.startEvidenceMissing),
+    );
+  });
+
+  test('rapor kapisi final arac medya eksiklerini bloklar', () {
+    final result = const ReportGateCalculator().calculate(
+      workOrder: repository.getById('wo-2026-0001'),
+      syncQueue: const [],
+    );
+
+    expect(result.isReady, isFalse);
+    expect(
+      result.missingEvidence,
+      contains('Araç ön fotoğrafı rapor medyası eksik.'),
+    );
+    expect(
+      result.missingEvidence,
+      contains('Araç çevre video kaydı rapor medyası eksik.'),
     );
   });
 

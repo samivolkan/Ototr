@@ -3,6 +3,7 @@ import 'package:ototr_branch_app/data/models/customer_model.dart';
 import 'package:ototr_branch_app/data/models/package_plan_model.dart';
 import 'package:ototr_branch_app/data/models/vehicle_model.dart';
 import 'package:ototr_branch_app/data/models/work_order_model.dart';
+import 'package:ototr_branch_app/data/services/work_order_progress_calculator.dart';
 import 'package:ototr_branch_app/data/services/work_order_task_factory.dart';
 
 void main() {
@@ -62,6 +63,29 @@ void main() {
     );
 
     expect(calculateMissingDataCount(order), tasks.length + 2);
+  });
+
+  test('is emri ilerlemesi sekreterya ve usta JSON maddelerini hesaplar', () {
+    final tasks = createTasksFromPackage(PackageType.premium);
+    final order = _order(
+      'OTOTR-20260525-0005',
+      tasks: [
+        tasks.first.copyWith(status: WorkOrderTaskStatus.completed),
+        tasks[1].copyWith(status: WorkOrderTaskStatus.inProgress),
+        ...tasks.skip(2),
+      ],
+    );
+
+    final progress = const WorkOrderProgressCalculator().calculate(order);
+    final mechanicGroup = progress.groups.firstWhere(
+      (group) => group.ownerLabel == 'Mekanik Usta',
+    );
+
+    expect(progress.secretaryItems, hasLength(6));
+    expect(
+        progress.technicalItems.any((item) => item.totalUnits == 37), isTrue);
+    expect(mechanicGroup.percent, greaterThan(0));
+    expect(progress.waitingOwnerLabel, isNotEmpty);
   });
 }
 

@@ -270,6 +270,64 @@ Tipler:
 - certificate_status
 - completed_at
 
+## Supabase CRM ve bayi portal omurgasi
+
+Uygulanan migration: `docs/migrations/2026-05-25-crm-dealer-portal-backbone.sql`
+
+Staging migration adi: `crm_dealer_portal_backbone`
+
+Bu katman mevcut `branches`, `app_users`, `customers`, `vehicles`, `appointments` ve `expertise_cases` tablolarini bozmadan genisletir.
+
+### Erisim modeli
+
+- Merkez rolleri: CEO, genel mudur, operasyon, kalite, finans, hukuk, CRM, franchise satis, pazarlama, IK, academy ve destek rolleri kendi alanlarinda tum agi gorebilir.
+- Bayi rolleri: sube muduru, resepsiyon, bayi sahibi ve bayi personeli sadece kendi `branch_id` kapsamindaki kayitlari gorur/isler.
+- Bolge muduru: `user_region_assignments` ile atanmis bolgelerdeki subelere erisir.
+- Public/anon role yeni tablolara acik degildir; public web formlari icin Edge Function veya kontrollu RPC katmani tercih edilmelidir.
+- Yeni public tablolarda RLS aciktir. Dashboard view'lari `security_invoker=true` ile caller RLS kurallarina uyar.
+
+### CRM
+
+- `crm_leads`: servis, franchise, kurumsal, filo, galeri ve sikayet lead havuzu.
+- `crm_opportunities`: teklif, sozlesme ve kazanma/kaybetme surecleri.
+- `crm_activities`: arama, WhatsApp, SMS, e-posta, toplanti, not ve ziyaret gecmisi.
+- `crm_tasks`: lead, musteri, firsat, randevu veya ekspertiz dosyasina bagli takip gorevleri.
+- `customer_consent_events`: KVKK, hizmet, pazarlama, SMS, e-posta ve WhatsApp izin tarihcesi.
+- `web_form_submissions`: web randevu, franchise, iletisim, sikayet ve kurumsal form kuyrugu.
+
+### Franchise ve bayi acilis sureci
+
+- `franchise_applications`: franchise aday dosyasi, lokasyon, finans, operasyon ve marka uyum skorlari.
+- `franchise_application_steps`: finans, lokasyon, hukuk, sozlesme, onboarding ve acilis adimlari.
+- `branch_onboarding_checklists`: sube acilis, denetim, yenileme ve duzeltici aksiyon listeleri.
+- `branch_onboarding_items`: checklist icindeki aksiyon maddeleri ve kanitlari.
+- `dealer_contracts`: franchise, hizmet seviyesi, tedarikci ve ek protokol sozlesmeleri.
+- `branch_documents`: vergi, ticaret sicil, sigorta, KVKK, kalibrasyon ve sozlesme dokumanlari.
+- `branch_equipment_assets`: cihaz, ekipman, seri no, garanti, bakim ve kalibrasyon takipleri.
+
+### Bayi portal operasyonu
+
+- `dealer_announcements`: merkez duyurulari.
+- `dealer_announcement_reads`: bayi kullanicilarinin duyuru okuma kayitlari.
+- `support_tickets`: bayi, musteri, rapor itiraz, teknik, finans, portal, kalite ve hukuk talepleri.
+- `support_ticket_messages`: destek talebi mesaj ve dosya tarihcesi.
+- `dealer_portal_branch_summary`: bayi portal ozet view'i; son 30 gun is adedi, acik ticket, acik kalite denetimi ve acik alacak tutarini verir.
+
+### Finans, kalite ve academy
+
+- `finance_transactions`: hizmet geliri, royalty, reklam fonu, yazilim lisansi, egitim, ekipman, iade ve gider hareketleri.
+- `quality_audits`: rapor inceleme, gizli musteri, kamera, Google yorum, surec ve sikayet denetimleri.
+- `quality_findings`: denetim bulgulari ve duzeltici aksiyonlar.
+- `academy_courses`: egitim katalogu.
+- `academy_enrollments`: personel egitim atamalari, ilerleme ve sinav sonucu.
+- `academy_certificates`: sertifika, sure bitimi ve iptal kayitlari.
+
+### Audit
+
+- `audit_events`: yeni CRM/bayi portal tablolarinda insert/update/delete olaylarini saklar.
+- Eski rapor odakli `report_audit_logs` korunur; ekspertiz raporu ve teknik giris tarihcesi burada kalir.
+- CRM/bayi portal audit kaydi genel operasyon tarihcesi icindir.
+
 ## Iliskiler
 
 - Bir subenin cok kullanicisi, randevusu, raporu, finans kaydi ve kalite denetimi olur.

@@ -26,7 +26,6 @@ class ReportGateCalculator {
     final status = _statusFor(
       issues: issues,
       missingExternalQueries: missingExternalQueries,
-      pendingSyncItems: pendingSyncItems,
       managerApproved: workOrder.managerApproved,
     );
 
@@ -46,14 +45,10 @@ class ReportGateCalculator {
   ReportGateStatus _statusFor({
     required List<ReportGateIssue> issues,
     required List<String> missingExternalQueries,
-    required List<OfflineSyncQueue> pendingSyncItems,
     required bool managerApproved,
   }) {
     if (issues.isEmpty) {
       return ReportGateStatus.ready;
-    }
-    if (pendingSyncItems.isNotEmpty) {
-      return ReportGateStatus.syncPending;
     }
     if (missingExternalQueries.isNotEmpty) {
       return ReportGateStatus.externalQueryPending;

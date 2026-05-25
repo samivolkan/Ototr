@@ -10,9 +10,9 @@ class ReportConsistencyValidator {
     return [
       ..._validateStartEvidence(workOrder),
       ..._validateTasks(workOrder.tasks),
+      ..._validateFinalMedia(workOrder),
       ..._validateExternalQueries(workOrder),
       ..._validateGateFlags(workOrder),
-      ..._validateSyncQueue(syncQueue),
     ];
   }
 
@@ -24,13 +24,13 @@ class ReportConsistencyValidator {
     return [
       const ReportGateIssue(
         code: ReportGateIssueCode.startEvidenceMissing,
-        message: 'Başlangıç kanıtı tamamlanmadı.',
+        message: 'Araç başlama iş emri tamamlanmadı.',
         evidenceRelated: true,
         fieldKey: 'start_evidence',
       ),
       for (final reason in workOrder.startEvidence?.missingReasons() ??
           const [
-            'Şasi/VIN, plaka fotoğrafı, KM değeri ve KM ekran fotoğrafı eksik.',
+            'Şasi/VIN ve plaka fotoğrafı eksik.',
           ])
         ReportGateIssue(
           code: ReportGateIssueCode.startEvidenceMissing,
@@ -38,6 +38,30 @@ class ReportConsistencyValidator {
           evidenceRelated: true,
           fieldKey: 'start_evidence',
         ),
+    ];
+  }
+
+  List<ReportGateIssue> _validateFinalMedia(TechnicianWorkOrder workOrder) {
+    if (workOrder.finalMediaAssets.isEmpty) {
+      return const [
+        ReportGateIssue(
+          code: ReportGateIssueCode.taskMissingEvidence,
+          message: 'Araç çevre fotoğraf ve video alanları hazırlanmadı.',
+          fieldKey: 'final_media',
+          evidenceRelated: true,
+        ),
+      ];
+    }
+
+    return [
+      for (final asset in workOrder.finalMediaAssets)
+        if (asset.isRequired && !asset.isAvailable)
+          ReportGateIssue(
+            code: ReportGateIssueCode.taskMissingEvidence,
+            message: '${asset.title} rapor medyası eksik.',
+            fieldKey: asset.reportFieldKey,
+            evidenceRelated: true,
+          ),
     ];
   }
 
@@ -220,24 +244,6 @@ class ReportConsistencyValidator {
           message: 'Müdür kalite onayı bekleniyor.',
           fieldKey: 'manager_approval',
         ),
-    ];
-  }
-
-  List<ReportGateIssue> _validateSyncQueue(List<OfflineSyncQueue> syncQueue) {
-    final pendingSyncItems = syncQueue
-        .where((item) => item.status != SyncQueueStatus.synced)
-        .toList();
-
-    if (pendingSyncItems.isEmpty) {
-      return const [];
-    }
-
-    return [
-      ReportGateIssue(
-        code: ReportGateIssueCode.syncPending,
-        message: '${pendingSyncItems.length} kritik kayıt senkron bekliyor.',
-        fieldKey: 'sync_queue',
-      ),
     ];
   }
 

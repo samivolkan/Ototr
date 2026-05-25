@@ -40,7 +40,7 @@ extension WorkOrderStatusLabel on WorkOrderStatus {
       case WorkOrderStatus.claimed:
         return 'Usta Sahiplendi';
       case WorkOrderStatus.startEvidenceRequired:
-        return 'Başlangıç Kanıtı Gerekli';
+        return 'Araç Başlama İş Emri Gerekli';
       case WorkOrderStatus.technicalEntryOpen:
         return 'Teknik Giriş Açık';
       case WorkOrderStatus.submitted:
@@ -50,7 +50,7 @@ extension WorkOrderStatusLabel on WorkOrderStatus {
       case WorkOrderStatus.approved:
         return 'Onaylandı';
       case WorkOrderStatus.reportGateReady:
-        return 'Rapor Kapısı Hazır';
+        return 'Rapor Hazır';
       case WorkOrderStatus.evidenceMissing:
         return 'Kanıt Eksik';
       case WorkOrderStatus.managerReturned:
@@ -58,7 +58,7 @@ extension WorkOrderStatusLabel on WorkOrderStatus {
       case WorkOrderStatus.externalQueryPending:
         return 'Dış Sorgu Bekliyor';
       case WorkOrderStatus.reportGateBlocked:
-        return 'Rapor Kapısı Kapalı';
+        return 'Eksik Bildirim Var';
       case WorkOrderStatus.syncPending:
         return 'Senkron Bekliyor';
       case WorkOrderStatus.conflictDetected:
@@ -358,7 +358,7 @@ class WorkOrder {
         OperationGate('Müşteri ve Onaylar', customerConsentReady),
         OperationGate('Paket Seçimi', packageApproved),
         OperationGate('Teknik İş Dağılımı', technicalAssignmentReady),
-        OperationGate('Usta Başlangıç Kanıtı', technicianStartEvidenceReady),
+        OperationGate('Araç Başlama İş Emri', technicianStartEvidenceReady),
         OperationGate('Ekspertiz Modülleri', modulesReady),
         OperationGate('Fotoğraf Kanıtları', requiredPhotosReady),
         OperationGate('Dış Sorgular', externalQueriesReady),

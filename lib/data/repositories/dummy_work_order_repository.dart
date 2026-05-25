@@ -4,6 +4,8 @@ import '../models/user_profile_model.dart';
 import '../models/work_order_model.dart';
 import '../services/role_permission_service.dart';
 import '../services/sync_service.dart';
+import 'final_report_repository.dart';
+import 'work_order_report_repository.dart';
 import 'work_order_repository.dart';
 
 class DummyWorkOrderRepository implements WorkOrderRepository {
@@ -49,7 +51,7 @@ class DummyWorkOrderRepository implements WorkOrderRepository {
     final order = getById(workOrderId);
     if (!order.isStartEvidenceComplete) {
       throw StateError(
-        'Başlangıç kanıtı tamamlanmadan başlık sahiplenilemez.',
+        'Araç başlama iş emri tamamlanmadan başlık sahiplenilemez.',
       );
     }
     final task = order.tasks.firstWhere((item) => item.taskId == taskId);
@@ -223,6 +225,21 @@ class DummyWorkOrderRepository implements WorkOrderRepository {
     return _syncService.wasSubmitted(idempotencyKey);
   }
 
+  TechnicianWorkOrder saveFinalMediaAsset(
+    String workOrderId,
+    EvidenceAsset asset,
+  ) {
+    final order = getById(workOrderId);
+    return _replace(
+      order.copyWith(
+        finalMediaAssets: [
+          for (final current in order.finalMediaAssets)
+            if (current.id == asset.id) asset else current,
+        ],
+      ),
+    );
+  }
+
   void queueDemoOperation() {
     _syncService.queueOperation(
       operationType: 'technical_task_submit',
@@ -236,6 +253,8 @@ class DummyWorkOrderRepository implements WorkOrderRepository {
   @override
   void reset() {
     _syncService.reset();
+    LocalWorkOrderReportRepository.instance.reset();
+    LocalFinalReportRepository.instance.reset();
     _currentUser = _ahmetUser;
     _workOrders = _seedWorkOrders();
   }
@@ -345,7 +364,45 @@ List<TechnicianWorkOrder> _seedWorkOrders() {
       secretaryGateReady: true,
       paymentGateReady: false,
       kvkkGateReady: true,
+      finalMediaAssets: _finalMediaAssets('wo-2026-0001', now),
     ),
+  ];
+}
+
+List<EvidenceAsset> _finalMediaAssets(String workOrderId, DateTime now) {
+  const specs = [
+    ('front', 'Araç ön fotoğrafı', 'image'),
+    ('rear', 'Araç arka fotoğrafı', 'image'),
+    ('right', 'Araç sağ yan fotoğrafı', 'image'),
+    ('left', 'Araç sol yan fotoğrafı', 'image'),
+    ('roof', 'Araç üst / tavan fotoğrafı', 'image'),
+    ('interior', 'Araç iç mekan fotoğrafı', 'image'),
+    ('trunk', 'Bagaj fotoğrafı', 'image'),
+    ('engine-bay', 'Motor bölmesi fotoğrafı', 'image'),
+    ('walkaround-video', 'Araç çevre video kaydı', 'video'),
+  ];
+
+  return [
+    for (final spec in specs)
+      EvidenceAsset(
+        id: 'final-media-${spec.$1}',
+        workOrderId: workOrderId,
+        taskId: 'final-report-media',
+        fieldKey: 'final_media.${spec.$1}',
+        reportFieldKey: 'report.final_media.${spec.$1}',
+        evidenceType: spec.$3,
+        title: spec.$2,
+        localPath: '',
+        remoteUrl: '',
+        hash: '',
+        capturedAt: now,
+        uploadedAt: null,
+        uploadedBy: 'tech-ahmet',
+        syncStatus: EvidenceStatus.missing,
+        isRequired: true,
+        qualityStatus: 'unchecked',
+        rejectionReason: '',
+      ),
   ];
 }
 

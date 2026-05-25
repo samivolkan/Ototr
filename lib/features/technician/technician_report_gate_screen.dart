@@ -9,29 +9,37 @@ import '../../data/models/technician_operation_model.dart';
 import '../../data/repositories/app_repositories.dart';
 import '../../data/repositories/dummy_work_order_repository.dart';
 import '../../data/services/report_gate_calculator.dart';
+import 'widgets/technician_missing_notifications.dart';
 import 'widgets/technician_vehicle_header.dart';
 
-class TechnicianReportGateScreen extends StatelessWidget {
+class TechnicianReportGateScreen extends StatefulWidget {
   const TechnicianReportGateScreen({super.key, required this.workOrderId});
 
   final String workOrderId;
 
   @override
+  State<TechnicianReportGateScreen> createState() =>
+      _TechnicianReportGateScreenState();
+}
+
+class _TechnicianReportGateScreenState
+    extends State<TechnicianReportGateScreen> {
+  @override
   Widget build(BuildContext context) {
     final remoteRepository = AppRepositories.instance.remoteWorkOrders;
     if (remoteRepository != null) {
       return FutureBuilder<TechnicianWorkOrder>(
-        future: remoteRepository.getById(workOrderId),
+        future: remoteRepository.getById(widget.workOrderId),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return Scaffold(
-              appBar: const OtotrAppBar(title: 'Rapor Kapısı'),
+              appBar: const OtotrAppBar(title: 'Eksik Bildirimleri'),
               backgroundColor: AppColors.grayBg,
               body: Padding(
                 padding: const EdgeInsets.all(AppSizes.lg),
                 child: OtotrCard(
                   child: Text(
-                    'Supabase rapor kapısı alınamadı: ${snapshot.error}',
+                    'Eksik bildirimleri alınamadı: ${snapshot.error}',
                     style: const TextStyle(color: AppColors.red),
                   ),
                 ),
@@ -41,7 +49,7 @@ class TechnicianReportGateScreen extends StatelessWidget {
 
           if (!snapshot.hasData) {
             return const Scaffold(
-              appBar: OtotrAppBar(title: 'Rapor Kapısı'),
+              appBar: OtotrAppBar(title: 'Eksik Bildirimleri'),
               backgroundColor: AppColors.grayBg,
               body: Center(child: CircularProgressIndicator()),
             );
@@ -51,19 +59,33 @@ class TechnicianReportGateScreen extends StatelessWidget {
             workOrder: snapshot.data!,
             syncQueue: const [],
           );
-          return _ReportGateView(order: snapshot.data!, result: result);
+          return _ReportGateView(
+            order: snapshot.data!,
+            result: result,
+            onNeedsRefresh: _refresh,
+          );
         },
       );
     }
 
     final repository = DummyWorkOrderRepository.instance;
-    final order = repository.getById(workOrderId);
+    final order = repository.getById(widget.workOrderId);
     final result = const ReportGateCalculator().calculate(
       workOrder: order,
       syncQueue: repository.syncQueue(),
     );
 
-    return _ReportGateView(order: order, result: result);
+    return _ReportGateView(
+      order: order,
+      result: result,
+      onNeedsRefresh: _refresh,
+    );
+  }
+
+  void _refresh() {
+    if (mounted) {
+      setState(() {});
+    }
   }
 }
 
@@ -71,15 +93,17 @@ class _ReportGateView extends StatelessWidget {
   const _ReportGateView({
     required this.order,
     required this.result,
+    required this.onNeedsRefresh,
   });
 
   final TechnicianWorkOrder order;
   final ReportGateResult result;
+  final VoidCallback onNeedsRefresh;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const OtotrAppBar(title: 'Rapor Kapısı'),
+      appBar: const OtotrAppBar(title: 'Eksik Bildirimleri'),
       backgroundColor: AppColors.grayBg,
       body: ListView(
         padding: const EdgeInsets.all(AppSizes.lg),
@@ -89,7 +113,7 @@ class _ReportGateView extends StatelessWidget {
             status: Row(
               children: [
                 OtotrStatusBadge(
-                  label: result.isReady ? 'Basıma Hazır' : 'Blokaj Var',
+                  label: result.isReady ? 'Eksik Yok' : 'Eksik Var',
                   tone: result.isReady
                       ? OtotrBadgeTone.success
                       : OtotrBadgeTone.danger,
@@ -102,44 +126,13 @@ class _ReportGateView extends StatelessWidget {
           if (result.isReady)
             const OtotrCard(
               child: Text(
-                'Rapor basıma hazır. Tüm usta modülleri, kanıtlar, dış sorgular, müdür onayı ve senkron kontrolü tamam.',
+                'Ustanın tamamlayacağı eksik bulunmuyor.',
               ),
             )
           else
-            OtotrCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Blokaj Nedenleri',
-                    style: TextStyle(fontWeight: FontWeight.w900),
-                  ),
-                  const SizedBox(height: 8),
-                  for (final reason in result.blockingReasons)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Icon(Icons.block,
-                              color: AppColors.red, size: 18),
-                          const SizedBox(width: 8),
-                          Expanded(child: Text(reason)),
-                        ],
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          if (result.missingEvidence.isNotEmpty)
-            _DetailListCard(
-              title: 'Ustanın Tamamlayabileceği Eksikler',
-              items: result.missingEvidence,
-            ),
-          if (result.missingExternalQueries.isNotEmpty)
-            _DetailListCard(
-              title: 'Sekreterya / Portal Kaynaklı Eksikler',
-              items: result.missingExternalQueries,
+            TechnicianMissingNotifications(
+              order: order,
+              onChanged: onNeedsRefresh,
             ),
         ],
       ),
@@ -149,43 +142,15 @@ class _ReportGateView extends StatelessWidget {
   String _statusLabel(ReportGateStatus status) {
     switch (status) {
       case ReportGateStatus.ready:
-        return 'Hazır';
+        return 'Tamam';
       case ReportGateStatus.blocked:
-        return 'Kapalı';
+        return 'Eksik var';
       case ReportGateStatus.externalQueryPending:
-        return 'Dış sorgu bekliyor';
+        return 'Sekreterya/portal bekliyor';
       case ReportGateStatus.syncPending:
-        return 'Senkron bekliyor';
+        return 'Tamam';
       case ReportGateStatus.managerApprovalRequired:
         return 'Müdür onayı bekliyor';
     }
-  }
-}
-
-class _DetailListCard extends StatelessWidget {
-  const _DetailListCard({
-    required this.title,
-    required this.items,
-  });
-
-  final String title;
-  final List<String> items;
-
-  @override
-  Widget build(BuildContext context) {
-    return OtotrCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(title, style: const TextStyle(fontWeight: FontWeight.w900)),
-          const SizedBox(height: 8),
-          for (final item in items)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 6),
-              child: Text('• $item'),
-            ),
-        ],
-      ),
-    );
   }
 }

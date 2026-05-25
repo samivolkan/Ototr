@@ -14,6 +14,7 @@ import '../../data/models/work_order_model.dart';
 import '../../data/repositories/app_repositories.dart';
 import '../../data/repositories/dummy_work_order_repository.dart';
 import '../../data/repositories/remote_work_order_repository.dart';
+import 'widgets/technician_missing_notifications.dart';
 
 class TechnicianJobsScreen extends StatefulWidget {
   const TechnicianJobsScreen({super.key});
@@ -41,56 +42,24 @@ class _TechnicianJobsScreenState extends State<TechnicianJobsScreen> {
       appBar: const OtotrAppBar(title: 'Usta İşleri'),
       backgroundColor: AppColors.grayBg,
       body: ListView(
-        padding: const EdgeInsets.all(AppSizes.lg),
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
         children: [
-          _SyncBar(count: _repository.syncQueue().length),
-          OtotrCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '${user.fullName} - ${user.role.label}',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w900,
-                    fontSize: 18,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Müsait usta açık teknik başlıklardan birini üzerine alıp başlayabilir. Sekreterya ve finans alanları usta rolünde kapalıdır.',
-                  style: TextStyle(color: AppColors.grayText),
-                ),
-              ],
-            ),
+          _TechnicianIdentityBar(
+            name: user.fullName,
+            role: user.role.label,
           ),
           for (final job in jobs)
             _JobCard(
               job: job,
               currentRole: role,
+              onNeedsRefresh: _refresh,
               onClaim: () async {
                 _repository.claim(job.id);
                 _refresh();
               },
             ),
           if (jobs.isEmpty)
-            const OtotrCard(
-              child: Text('Şu anda açık teknik iş emri yok.'),
-            ),
-          OtotrSecondaryButton(
-            label: 'Senkron ve Audit',
-            icon: Icons.sync,
-            onPressed: () =>
-                Navigator.pushNamed(context, AppRoutes.technicianSync),
-          ),
-          const SizedBox(height: 8),
-          OtotrSecondaryButton(
-            label: 'Müdür Başlık Sahipliği',
-            icon: Icons.manage_accounts,
-            onPressed: () => Navigator.pushNamed(
-              context,
-              AppRoutes.managerTaskOwnership,
-            ),
-          ),
+            const OtotrCard(child: Text('Şu anda açık teknik iş emri yok.')),
         ],
       ),
     );
@@ -112,27 +81,11 @@ class _TechnicianJobsScreenState extends State<TechnicianJobsScreen> {
           appBar: const OtotrAppBar(title: 'Usta İşleri'),
           backgroundColor: AppColors.grayBg,
           body: ListView(
-            padding: const EdgeInsets.all(AppSizes.lg),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
             children: [
-              const _RemoteSyncBar(),
-              OtotrCard(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '${repository.currentUser.fullName} - ${repository.currentUser.role.label}',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w900,
-                        fontSize: 18,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Supabase bağlantısı aktif. Müsait usta açık teknik başlıkları üzerine alabilir.',
-                      style: TextStyle(color: AppColors.grayText),
-                    ),
-                  ],
-                ),
+              _TechnicianIdentityBar(
+                name: repository.currentUser.fullName,
+                role: repository.currentUser.role.label,
               ),
               if (snapshot.hasError)
                 OtotrCard(
@@ -147,6 +100,7 @@ class _TechnicianJobsScreenState extends State<TechnicianJobsScreen> {
                 _JobCard(
                   job: job,
                   currentRole: repository.currentTechnicianRole,
+                  onNeedsRefresh: _refreshRemote,
                   onClaim: () async {
                     await repository.claim(job.id);
                     _refreshRemote();
@@ -156,14 +110,6 @@ class _TechnicianJobsScreenState extends State<TechnicianJobsScreen> {
                 const OtotrCard(
                   child: Text('Şu anda açık teknik iş emri yok.'),
                 ),
-              OtotrSecondaryButton(
-                label: 'Mudur Baslik Sahipligi',
-                icon: Icons.manage_accounts,
-                onPressed: () => Navigator.pushNamed(
-                  context,
-                  AppRoutes.managerTaskOwnership,
-                ),
-              ),
             ],
           ),
         );
@@ -181,22 +127,71 @@ class _TechnicianJobsScreenState extends State<TechnicianJobsScreen> {
   }
 }
 
+class _TechnicianIdentityBar extends StatelessWidget {
+  const _TechnicianIdentityBar({
+    required this.name,
+    required this.role,
+  });
+
+  final String name;
+  final String role;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.grayBorder),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.engineering_outlined,
+              color: AppColors.red, size: 18),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              '$name - $role',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: AppColors.darkText,
+                fontWeight: FontWeight.w900,
+                fontSize: 13,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _JobCard extends StatelessWidget {
   const _JobCard({
     required this.job,
     required this.currentRole,
     required this.onClaim,
+    this.onNeedsRefresh,
   });
 
   final TechnicianWorkOrder job;
   final TechnicianRole currentRole;
   final Future<void> Function() onClaim;
+  final VoidCallback? onNeedsRefresh;
 
   @override
   Widget build(BuildContext context) {
     final myTasks = job.tasksFor(currentRole);
     final completed =
         myTasks.where((task) => task.status == TaskStatus.completed).length;
+    final totalTasks = job.tasks.length;
+    final totalCompleted =
+        job.tasks.where((task) => task.status == TaskStatus.completed).length;
+    final totalPercent =
+        totalTasks == 0 ? 0 : ((totalCompleted / totalTasks) * 100).round();
 
     return OtotrCard(
       child: Column(
@@ -215,36 +210,54 @@ class _JobCard extends StatelessWidget {
                 ),
               ),
               OtotrStatusBadge(
-                  label: job.status.label, tone: OtotrBadgeTone.info),
+                label: job.status.label,
+                tone: OtotrBadgeTone.info,
+              ),
             ],
           ),
           const SizedBox(height: 10),
           Text(job.vehicleSummary, style: const TextStyle(fontSize: 16)),
-          const SizedBox(height: 4),
-          Text(job.packageName,
-              style: const TextStyle(color: AppColors.grayText)),
-          const Divider(height: 28),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
+          const SizedBox(height: 12),
+          _JobCompletionProgress(
+            completed: totalCompleted,
+            total: totalTasks,
+            percent: totalPercent,
+          ),
+          TechnicianMissingNotifications(
+            order: job,
+            onChanged: onNeedsRefresh,
+          ),
+          const Divider(height: 24),
+          Row(
             children: [
               OtotrStatusBadge(
                 label: '${myTasks.length} görev',
                 tone: OtotrBadgeTone.neutral,
               ),
+              const SizedBox(width: 8),
               OtotrStatusBadge(
-                label: '$completed/${myTasks.length} gönderildi',
+                label: '$completed/${myTasks.length} tamamlandı',
                 tone: completed == myTasks.length
                     ? OtotrBadgeTone.success
                     : OtotrBadgeTone.warning,
               ),
-              OtotrStatusBadge(
-                label: job.isStartEvidenceComplete
-                    ? 'Başlangıç kanıtı tamam'
-                    : 'Başlangıç kanıtı eksik',
-                tone: job.isStartEvidenceComplete
-                    ? OtotrBadgeTone.success
-                    : OtotrBadgeTone.danger,
+              const SizedBox(width: 8),
+              Expanded(
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerRight,
+                    child: OtotrStatusBadge(
+                      label: job.isStartEvidenceComplete
+                          ? 'Açılış tamam'
+                          : 'Açılış eksik',
+                      tone: job.isStartEvidenceComplete
+                          ? OtotrBadgeTone.success
+                          : OtotrBadgeTone.danger,
+                    ),
+                  ),
+                ),
               ),
             ],
           ),
@@ -259,13 +272,13 @@ class _JobCard extends StatelessWidget {
             )
           else
             OtotrSecondaryButton(
-              label: 'İşe Başlama Kanıtı',
+              label: 'Araç Başlama İş Emri',
               icon: Icons.camera_alt,
               onPressed: () => Navigator.pushNamed(
                 context,
                 AppRoutes.technicianStartEvidence,
                 arguments: job.id,
-              ),
+              ).then((_) => onNeedsRefresh?.call()),
             ),
           const SizedBox(height: 8),
           OtotrSecondaryButton(
@@ -275,17 +288,17 @@ class _JobCard extends StatelessWidget {
               context,
               AppRoutes.technicianTasks,
               arguments: job.id,
-            ),
+            ).then((_) => onNeedsRefresh?.call()),
           ),
           const SizedBox(height: 8),
           OtotrSecondaryButton(
-            label: 'Rapor Kapısı',
-            icon: Icons.fact_check,
+            label: 'Rapor Girişi',
+            icon: Icons.assignment,
             onPressed: () => Navigator.pushNamed(
               context,
-              AppRoutes.technicianReportGate,
+              AppRoutes.technicianReportEntry,
               arguments: job.id,
-            ),
+            ).then((_) => onNeedsRefresh?.call()),
           ),
         ],
       ),
@@ -293,58 +306,78 @@ class _JobCard extends StatelessWidget {
   }
 }
 
-class _RemoteSyncBar extends StatelessWidget {
-  const _RemoteSyncBar();
+class _JobCompletionProgress extends StatelessWidget {
+  const _JobCompletionProgress({
+    required this.completed,
+    required this.total,
+    required this.percent,
+  });
+
+  final int completed;
+  final int total;
+  final int percent;
 
   @override
   Widget build(BuildContext context) {
+    final progressColor = percent == 100
+        ? AppColors.success
+        : percent == 0
+            ? AppColors.grayText
+            : AppColors.info;
+
     return Container(
-      margin: const EdgeInsets.only(bottom: AppSizes.md),
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: const Color(0xFFEAF7F0),
-        borderRadius: BorderRadius.circular(AppSizes.radius),
+        color: AppColors.grayBg,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.grayBorder),
       ),
-      child: const Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.cloud_done, size: 18),
-          SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              'Supabase bağlantısı aktif',
-              style: TextStyle(fontWeight: FontWeight.w700),
-            ),
+          Row(
+            children: [
+              Icon(Icons.percent, size: 18, color: progressColor),
+              const SizedBox(width: 8),
+              const Expanded(
+                child: Text(
+                  'İş emri tamamlanma',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: AppColors.darkText,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 13,
+                  ),
+                ),
+              ),
+              Text(
+                '$completed/$total',
+                style: const TextStyle(
+                  color: AppColors.grayText,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 12,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                '%$percent',
+                style: TextStyle(
+                  color: progressColor,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 16,
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
-    );
-  }
-}
-
-class _SyncBar extends StatelessWidget {
-  const _SyncBar({required this.count});
-
-  final int count;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: AppSizes.md),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: count == 0 ? const Color(0xFFEAF7F0) : const Color(0xFFFFF7E6),
-        borderRadius: BorderRadius.circular(AppSizes.radius),
-      ),
-      child: Row(
-        children: [
-          Icon(count == 0 ? Icons.cloud_done : Icons.cloud_upload, size: 18),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              count == 0
-                  ? 'Senkron temiz'
-                  : '$count kayıt senkron bekliyor. İnternet bağlantısı gelince kuyruktan gönderilecek.',
-              style: const TextStyle(fontWeight: FontWeight.w700),
+          const SizedBox(height: 8),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(999),
+            child: LinearProgressIndicator(
+              minHeight: 7,
+              value: percent / 100,
+              color: progressColor,
+              backgroundColor: AppColors.grayBorder,
             ),
           ),
         ],

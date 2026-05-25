@@ -26,12 +26,13 @@ class _TechnicianEvidenceScreenState extends State<TechnicianEvidenceScreen> {
   Widget build(BuildContext context) {
     final order = _repository.getById(widget.workOrderId);
     final tasks = order.tasksFor(_repository.currentTechnicianRole);
-    final assets = [
+    final taskAssets = [
       for (final task in tasks) ...task.evidenceAssets,
     ];
+    final finalMediaAssets = order.finalMediaAssets;
 
     return Scaffold(
-      appBar: const OtotrAppBar(title: 'Kanıt Fotoğrafları'),
+      appBar: const OtotrAppBar(title: 'Rapor Medyaları'),
       backgroundColor: AppColors.grayBg,
       body: ListView(
         padding: const EdgeInsets.all(AppSizes.lg),
@@ -40,24 +41,53 @@ class _TechnicianEvidenceScreenState extends State<TechnicianEvidenceScreen> {
             order: order,
             role: _repository.currentTechnicianRole,
             message:
-                'Fotoğraflar ilk fazda yerel kuyruk olarak işaretlenir. Firebase upload sonraki fazda bağlanacak.',
+                'Rapor kapanmadan önce araç çevre fotoğrafları ve video kaydı tamamlanmalıdır.',
           ),
-          if (assets.isEmpty)
-            const OtotrCard(child: Text('Bu role ait zorunlu ek kanıt yok.')),
-          for (final asset in assets)
-            _EvidenceCard(
-              asset: asset,
-              canCapture: tasks
+          if (finalMediaAssets.isNotEmpty)
+            _EvidenceSection(
+              title: 'Araç çevre fotoğrafları ve video',
+              subtitle:
+                  '${finalMediaAssets.where((asset) => asset.isAvailable).length}/${finalMediaAssets.length} medya tamamlandı',
+              assets: finalMediaAssets,
+              canCapture: true,
+              onCapture: (asset) => _captureFinalMediaAsset(order, asset),
+            ),
+          if (taskAssets.isNotEmpty)
+            _EvidenceSection(
+              title: 'Test sırasında gereken ek kanıtlar',
+              subtitle:
+                  '${taskAssets.where((asset) => asset.isAvailable).length}/${taskAssets.length} kanıt tamamlandı',
+              assets: taskAssets,
+              canCaptureFor: (asset) => tasks
                   .firstWhere((task) => task.taskId == asset.taskId)
                   .canEditBy(_repository.currentUser),
-              onCapture: () => _captureAsset(order, asset),
+              onCapture: (asset) => _captureTaskAsset(order, asset),
             ),
+          if (taskAssets.isEmpty && finalMediaAssets.isEmpty)
+            const OtotrCard(child: Text('Zorunlu rapor medyası yok.')),
         ],
       ),
     );
   }
 
-  void _captureAsset(TechnicianWorkOrder order, EvidenceAsset asset) {
+  void _captureFinalMediaAsset(TechnicianWorkOrder order, EvidenceAsset asset) {
+    final extension = asset.evidenceType == 'video' ? 'mp4' : 'jpg';
+    _repository.saveFinalMediaAsset(
+      order.id,
+      asset.copyWith(
+        localPath: 'local/${asset.fieldKey}.$extension',
+        remoteUrl: 'remote/${asset.fieldKey}.$extension',
+        hash: 'demo-hash-${asset.fieldKey}',
+        uploadedAt: DateTime.now(),
+        syncStatus: EvidenceStatus.uploaded,
+        qualityStatus: 'placeholder-ok',
+      ),
+    );
+    setState(() {});
+  }
+
+  void _captureTaskAsset(TechnicianWorkOrder order, EvidenceAsset asset) {
+    final extension = asset.evidenceType == 'video' ? 'mp4' : 'jpg';
     final tasks = [
       for (final task in order.tasks)
         if (task.taskId == asset.taskId)
@@ -66,9 +96,11 @@ class _TechnicianEvidenceScreenState extends State<TechnicianEvidenceScreen> {
               for (final current in task.evidenceAssets)
                 if (current.id == asset.id)
                   current.copyWith(
-                    localPath: 'local/${asset.fieldKey}.jpg',
+                    localPath: 'local/${asset.fieldKey}.$extension',
+                    remoteUrl: 'remote/${asset.fieldKey}.$extension',
                     hash: 'demo-hash-${asset.fieldKey}',
-                    syncStatus: EvidenceStatus.queued,
+                    uploadedAt: DateTime.now(),
+                    syncStatus: EvidenceStatus.uploaded,
                     qualityStatus: 'placeholder-ok',
                   )
                 else
@@ -90,6 +122,52 @@ class _TechnicianEvidenceScreenState extends State<TechnicianEvidenceScreen> {
   }
 }
 
+class _EvidenceSection extends StatelessWidget {
+  const _EvidenceSection({
+    required this.title,
+    required this.subtitle,
+    required this.assets,
+    required this.onCapture,
+    this.canCapture,
+    this.canCaptureFor,
+  });
+
+  final String title;
+  final String subtitle;
+  final List<EvidenceAsset> assets;
+  final bool? canCapture;
+  final bool Function(EvidenceAsset asset)? canCaptureFor;
+  final ValueChanged<EvidenceAsset> onCapture;
+
+  @override
+  Widget build(BuildContext context) {
+    return OtotrCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              color: AppColors.darkText,
+              fontWeight: FontWeight.w900,
+              fontSize: 17,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(subtitle, style: const TextStyle(color: AppColors.grayText)),
+          const SizedBox(height: 12),
+          for (final asset in assets)
+            _EvidenceCard(
+              asset: asset,
+              canCapture: canCapture ?? canCaptureFor?.call(asset) ?? false,
+              onCapture: () => onCapture(asset),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
 class _EvidenceCard extends StatelessWidget {
   const _EvidenceCard({
     required this.asset,
@@ -103,46 +181,63 @@ class _EvidenceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return OtotrCard(
+    final isVideo = asset.evidenceType == 'video';
+    return InkWell(
       onTap: canCapture ? onCapture : null,
-      child: Row(
-        children: [
-          Icon(
-            asset.isAvailable ? Icons.check_circle : Icons.camera_alt,
-            color: asset.isAvailable ? AppColors.success : AppColors.red,
-            size: 34,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  asset.title,
-                  style: const TextStyle(fontWeight: FontWeight.w900),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  asset.reportFieldKey,
-                  style:
-                      const TextStyle(color: AppColors.grayText, fontSize: 12),
-                ),
-              ],
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: AppColors.grayBg,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: AppColors.grayBorder),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              asset.isAvailable
+                  ? Icons.check_circle
+                  : isVideo
+                      ? Icons.videocam
+                      : Icons.camera_alt,
+              color: asset.isAvailable ? AppColors.success : AppColors.red,
+              size: 34,
             ),
-          ),
-          OtotrStatusBadge(
-            label: !canCapture
-                ? 'Read-only'
-                : asset.isAvailable
-                    ? 'Kuyrukta'
-                    : 'Eksik',
-            tone: !canCapture
-                ? OtotrBadgeTone.neutral
-                : asset.isAvailable
-                    ? OtotrBadgeTone.warning
-                    : OtotrBadgeTone.danger,
-          ),
-        ],
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    asset.title,
+                    style: const TextStyle(fontWeight: FontWeight.w900),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    isVideo ? 'Video kaydı' : 'Fotoğraf',
+                    style: const TextStyle(
+                      color: AppColors.grayText,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            OtotrStatusBadge(
+              label: !canCapture
+                  ? 'Read-only'
+                  : asset.isAvailable
+                      ? 'Yüklendi'
+                      : 'Eksik',
+              tone: !canCapture
+                  ? OtotrBadgeTone.neutral
+                  : asset.isAvailable
+                      ? OtotrBadgeTone.success
+                      : OtotrBadgeTone.danger,
+            ),
+          ],
+        ),
       ),
     );
   }

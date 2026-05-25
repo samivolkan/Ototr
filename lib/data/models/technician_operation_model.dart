@@ -14,17 +14,17 @@ extension TechnicianRoleLabel on TechnicianRole {
   String get label {
     switch (this) {
       case TechnicianRole.bodyPaint:
-        return 'Kaporta Ustası';
+        return 'Kaporta Ustas\u0131';
       case TechnicianRole.mechanic:
         return 'Mekanik Usta';
       case TechnicianRole.obd:
-        return 'OBD Ustası';
+        return 'OBD Ustas\u0131';
       case TechnicianRole.testOperator:
-        return 'Test Operatörü';
+        return 'Test Operat\u00f6r\u00fc';
       case TechnicianRole.foreman:
         return 'Formen';
       case TechnicianRole.branchManager:
-        return 'Şube Müdürü';
+        return '\u015eube M\u00fcd\u00fcr\u00fc';
     }
   }
 }
@@ -46,19 +46,19 @@ extension TaskStatusLabel on TaskStatus {
       case TaskStatus.available:
         return 'Sahiplenilebilir';
       case TaskStatus.assigned:
-        return 'Atandı';
+        return 'Atand\u0131';
       case TaskStatus.locked:
         return 'Kilitli';
       case TaskStatus.open:
-        return 'Düzenlemeye açık';
+        return 'D\u00fczenlemeye a\u00e7\u0131k';
       case TaskStatus.completed:
-        return 'Gönderildi';
+        return 'G\u00f6nderildi';
       case TaskStatus.evidenceMissing:
-        return 'Kanıt eksik';
+        return 'Kan\u0131t eksik';
       case TaskStatus.managerReturned:
-        return 'Müdür iadesi';
+        return 'M\u00fcd\u00fcr iadesi';
       case TaskStatus.conflictDetected:
-        return 'Çakışma var';
+        return '\u00c7ak\u0131\u015fma var';
     }
   }
 }
@@ -138,28 +138,27 @@ class StartEvidence {
       vinPhoto.isNotEmpty &&
       platePhoto.isNotEmpty &&
       odometerKm != null &&
-      odometerKm! > 0 &&
       odometerPhoto.isNotEmpty;
 
   List<String> missingReasons() {
     final reasons = <String>[];
     final normalizedVin = vin.trim();
     if (normalizedVin.isEmpty) {
-      reasons.add('Şasi/VIN bilgisi eksik.');
+      reasons.add('\u015easi/VIN bilgisi eksik.');
     } else if (normalizedVin.length != 17) {
-      reasons.add('Şasi/VIN 17 karakter olmalıdır.');
+      reasons.add('\u015easi/VIN 17 karakter olmal\u0131d\u0131r.');
     }
     if (vinPhoto.isEmpty) {
-      reasons.add('Şasi etiketi fotoğrafı eksik.');
+      reasons.add('\u015easi etiketi foto\u011fraf\u0131 eksik.');
     }
     if (platePhoto.isEmpty) {
-      reasons.add('Plaka fotoğrafı eksik.');
+      reasons.add('Plaka foto\u011fraf\u0131 eksik.');
     }
-    if (odometerKm == null || odometerKm! <= 0) {
-      reasons.add('Kilometre değeri girilmedi.');
+    if (odometerKm == null) {
+      reasons.add('Kilometre degeri girilmedi.');
     }
     if (odometerPhoto.isEmpty) {
-      reasons.add('Kilometre ekran fotoğrafı eksik.');
+      reasons.add('KM ekran fotografi eksik.');
     }
     return reasons;
   }
@@ -275,6 +274,7 @@ class TechnicianChecklistItem {
     required this.reportFieldKey,
     required this.requiresEvidenceOnRisk,
     required this.evidenceAssets,
+    this.isAnswered = false,
   });
 
   final String id;
@@ -285,22 +285,24 @@ class TechnicianChecklistItem {
   final String reportFieldKey;
   final bool requiresEvidenceOnRisk;
   final List<EvidenceAsset> evidenceAssets;
+  final bool isAnswered;
 
   bool get hasEvidence => evidenceAssets.any((asset) => asset.isAvailable);
 
   List<String> missingReasons() {
     final reasons = <String>[];
     if (result == TechnicianFindingResult.risky && note.trim().isEmpty) {
-      reasons.add('$title için risk açıklaması girilmeli.');
+      reasons.add('$title i\u00e7in risk a\u00e7\u0131klamas\u0131 girilmeli.');
     }
     if (result == TechnicianFindingResult.risky &&
         requiresEvidenceOnRisk &&
         !hasEvidence) {
-      reasons.add('$title için fotoğraf veya cihaz çıktısı eklenmeli.');
+      reasons.add(
+          '$title i\u00e7in foto\u011fraf veya cihaz \u00e7\u0131kt\u0131s\u0131 eklenmeli.');
     }
     if (result == TechnicianFindingResult.notDone &&
         notDoneReason.trim().isEmpty) {
-      reasons.add('$title yapılamadıysa nedeni yazılmalı.');
+      reasons.add('$title yap\u0131lamad\u0131ysa nedeni yaz\u0131lmal\u0131.');
     }
     return reasons;
   }
@@ -310,6 +312,7 @@ class TechnicianChecklistItem {
     String? note,
     String? notDoneReason,
     List<EvidenceAsset>? evidenceAssets,
+    bool? isAnswered,
   }) {
     return TechnicianChecklistItem(
       id: id,
@@ -320,6 +323,7 @@ class TechnicianChecklistItem {
       reportFieldKey: reportFieldKey,
       requiresEvidenceOnRisk: requiresEvidenceOnRisk,
       evidenceAssets: evidenceAssets ?? this.evidenceAssets,
+      isAnswered: isAnswered ?? this.isAnswered,
     );
   }
 }
@@ -377,23 +381,32 @@ class TechnicianTask {
   final List<TaskOwnershipHistoryEntry> ownershipHistory;
   final List<TaskAuditLogEntry> auditLog;
 
-  int get completedCount => checklistItems
-      .where(
-        (item) =>
-            item.result != TechnicianFindingResult.normal ||
-            item.note.isNotEmpty,
-      )
-      .length;
+  int get completedCount =>
+      checklistItems.where((item) => item.isAnswered).length;
+
+  int get completionPercent {
+    if (checklistItems.isEmpty) {
+      return status == TaskStatus.completed ? 100 : 0;
+    }
+    if (status == TaskStatus.completed) {
+      return 100;
+    }
+    return ((completedCount / checklistItems.length) * 100).round();
+  }
 
   List<String> missingReasons() {
+    final unansweredCount =
+        checklistItems.where((item) => !item.isAnswered).length;
     return [
+      if (unansweredCount > 0)
+        '$title i\u00e7in $unansweredCount kontrol maddesi i\u015faretlenmeli.',
       for (final item in checklistItems) ...item.missingReasons(),
       if (requiredFields.contains('customerFriendlyNote') &&
           customerFriendlyNote.trim().isEmpty)
-        '$title için müşteri dili teknik notu girilmeli.',
+        '$title i\u00e7in m\u00fc\u015fteri dili teknik notu girilmeli.',
       for (final asset in evidenceAssets)
         if (asset.isRequired && !asset.isAvailable)
-          '${asset.title} fotoğraf/kanıtı eksik.',
+          '${asset.title} foto\u011fraf/kan\u0131t\u0131 eksik.',
     ];
   }
 
@@ -597,7 +610,8 @@ class TechnicianTask {
 
   TechnicianTask submittedBy(UserProfile user, DateTime submittedAt) {
     if (!canEditBy(user)) {
-      throw StateError('Sadece görev sahibi başlığı gönderebilir.');
+      throw StateError(
+          'Sadece g\u00f6rev sahibi ba\u015fl\u0131\u011f\u0131 g\u00f6nderebilir.');
     }
 
     return copyWith(
@@ -751,6 +765,7 @@ class TechnicianWorkOrder {
     required this.secretaryGateReady,
     required this.paymentGateReady,
     required this.kvkkGateReady,
+    this.finalMediaAssets = const [],
   });
 
   final String id;
@@ -768,6 +783,7 @@ class TechnicianWorkOrder {
   final bool secretaryGateReady;
   final bool paymentGateReady;
   final bool kvkkGateReady;
+  final List<EvidenceAsset> finalMediaAssets;
 
   bool visibleFor(UserProfile user, TechnicianRole role) {
     if (user.role == UserRole.branchManager ||
@@ -799,6 +815,7 @@ class TechnicianWorkOrder {
     bool? secretaryGateReady,
     bool? paymentGateReady,
     bool? kvkkGateReady,
+    List<EvidenceAsset>? finalMediaAssets,
   }) {
     return TechnicianWorkOrder(
       id: id,
@@ -816,6 +833,7 @@ class TechnicianWorkOrder {
       secretaryGateReady: secretaryGateReady ?? this.secretaryGateReady,
       paymentGateReady: paymentGateReady ?? this.paymentGateReady,
       kvkkGateReady: kvkkGateReady ?? this.kvkkGateReady,
+      finalMediaAssets: finalMediaAssets ?? this.finalMediaAssets,
     );
   }
 }

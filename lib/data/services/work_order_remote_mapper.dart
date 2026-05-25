@@ -313,6 +313,7 @@ class WorkOrderRemoteMapper {
       evidenceAssets: [
         for (final evidence in evidenceRows) _evidenceFromRemote(evidence),
       ],
+      isAnswered: true,
     );
   }
 

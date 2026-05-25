@@ -13,6 +13,7 @@ import '../../data/models/user_profile_model.dart';
 import '../../data/repositories/app_repositories.dart';
 import '../../data/repositories/dummy_work_order_repository.dart';
 import '../../data/repositories/remote_work_order_repository.dart';
+import 'widgets/technician_missing_notifications.dart';
 import 'widgets/technician_vehicle_header.dart';
 
 class TechnicianTasksScreen extends StatefulWidget {
@@ -54,6 +55,7 @@ class _TechnicianTasksScreenState extends State<TechnicianTasksScreen> {
         repository.releaseTask(widget.workOrderId, taskId, reason);
         setState(() {});
       },
+      onTaskChanged: () => setState(() {}),
     );
   }
 }
@@ -121,7 +123,6 @@ class _RemoteTechnicianTasksScreenState
           tasks: tasks,
           workOrderId: widget.workOrderId,
           currentUser: widget.repository.currentUser,
-          showEvidenceLinks: false,
           onClaim: (taskId) async {
             await widget.repository.claimTask(widget.workOrderId, taskId);
             _refresh();
@@ -134,6 +135,7 @@ class _RemoteTechnicianTasksScreenState
             );
             _refresh();
           },
+          onTaskChanged: _refresh,
         );
       },
     );
@@ -153,9 +155,9 @@ class _TechnicianTasksView extends StatelessWidget {
     required this.tasks,
     required this.workOrderId,
     required this.currentUser,
-    this.showEvidenceLinks = true,
     this.onClaim,
     this.onRelease,
+    this.onTaskChanged,
   });
 
   final TechnicianWorkOrder order;
@@ -163,9 +165,9 @@ class _TechnicianTasksView extends StatelessWidget {
   final List<TechnicianTask> tasks;
   final String workOrderId;
   final UserProfile currentUser;
-  final bool showEvidenceLinks;
   final Future<void> Function(String taskId)? onClaim;
   final Future<void> Function(String taskId, String reason)? onRelease;
+  final VoidCallback? onTaskChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -175,23 +177,25 @@ class _TechnicianTasksView extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(AppSizes.lg),
         children: [
-          TechnicianVehicleHeader(
+          TechnicianVehicleHeader(order: order),
+          TechnicianMissingNotifications(
             order: order,
-            status: order.isStartEvidenceComplete
-                ? const OtotrStatusBadge(
-                    label: 'Teknik giriş açık',
-                    tone: OtotrBadgeTone.success,
-                  )
-                : const OtotrStatusBadge(
-                    label: 'Teknik giriş kilitli: başlangıç kanıtı eksik',
-                    tone: OtotrBadgeTone.danger,
-                  ),
-            message: order.isStartEvidenceComplete
-                ? 'Müsait başlıklardan birini üzerine alıp doldurabilirsiniz.'
-                : 'Önce şasi, plaka ve KM kanıtlarını tamamlayın.',
+            includeTaskAction: false,
+            onChanged: onTaskChanged,
           ),
+          const SizedBox(height: 8),
+          OtotrPrimaryButton(
+            label: 'Rapor Girişi',
+            icon: Icons.assignment,
+            onPressed: () => Navigator.pushNamed(
+              context,
+              AppRoutes.technicianReportEntry,
+              arguments: workOrderId,
+            ).then((_) => onTaskChanged?.call()),
+          ),
+          const SizedBox(height: 8),
           for (final task in tasks)
-            _TaskCard(
+            _TaskProgressCard(
               task: task,
               isUnlocked: order.isStartEvidenceComplete,
               workOrderId: workOrderId,
@@ -200,37 +204,16 @@ class _TechnicianTasksView extends StatelessWidget {
               onRelease: onRelease == null
                   ? null
                   : (reason) => onRelease!(task.taskId, reason),
+              onTaskChanged: onTaskChanged,
             ),
-          if (showEvidenceLinks) ...[
-            OtotrSecondaryButton(
-              label: 'Kanıt Fotoğrafları',
-              icon: Icons.photo_camera,
-              onPressed: () => Navigator.pushNamed(
-                context,
-                AppRoutes.technicianEvidence,
-                arguments: workOrderId,
-              ),
-            ),
-            const SizedBox(height: 8),
-            OtotrSecondaryButton(
-              label: 'Tramer / KM',
-              icon: Icons.manage_search,
-              onPressed: () => Navigator.pushNamed(
-                context,
-                AppRoutes.technicianQueries,
-                arguments: workOrderId,
-              ),
-            ),
-            const SizedBox(height: 8),
-          ],
-          OtotrPrimaryButton(
-            label: 'Rapor Kapısını Kontrol Et',
-            icon: Icons.fact_check,
+          OtotrSecondaryButton(
+            label: 'Rapor Medyalarına Git',
+            icon: Icons.photo_camera,
             onPressed: () => Navigator.pushNamed(
               context,
-              AppRoutes.technicianReportGate,
+              AppRoutes.technicianEvidence,
               arguments: workOrderId,
-            ),
+            ).then((_) => onTaskChanged?.call()),
           ),
         ],
       ),
@@ -238,8 +221,216 @@ class _TechnicianTasksView extends StatelessWidget {
   }
 }
 
-class _TaskCard extends StatelessWidget {
-  const _TaskCard({
+class _TaskProgressCard extends StatelessWidget {
+  const _TaskProgressCard({
+    required this.task,
+    required this.isUnlocked,
+    required this.workOrderId,
+    required this.currentUser,
+    this.onClaim,
+    this.onRelease,
+    this.onTaskChanged,
+  });
+
+  final TechnicianTask task;
+  final bool isUnlocked;
+  final String workOrderId;
+  final UserProfile currentUser;
+  final Future<void> Function()? onClaim;
+  final Future<void> Function(String reason)? onRelease;
+  final VoidCallback? onTaskChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final canEdit = task.canEditBy(currentUser);
+    final isOwnedByCurrentUser = task.isOwnedBy(currentUser.id);
+    final isReadOnly = task.isOwned && !canEdit;
+    final canClaim = isUnlocked && task.isAvailableForClaim && onClaim != null;
+    final canOpenForm = isUnlocked && (canEdit || isReadOnly);
+    final canOpenByTap = canClaim || canOpenForm;
+    final completed = task.completedCount;
+    final total = task.checklistItems.length;
+    final percent = task.completionPercent;
+    final elapsedMinutes = task.claimedAt == null
+        ? 0
+        : DateTime.now().difference(task.claimedAt!).inMinutes.clamp(0, 999);
+    final statusText = task.status == TaskStatus.completed
+        ? 'Test tamamlandi'
+        : completed == 0
+            ? 'Teste henuz baslanmadi'
+            : 'Test devam ediyor';
+    final ownershipLabel = task.isOwned
+        ? isOwnedByCurrentUser
+            ? 'Sorumlu: siz'
+            : 'Sorumlu: ${task.ownerUserId}'
+        : 'Havuzda';
+    final ownershipBackground = task.isOwned
+        ? isOwnedByCurrentUser
+            ? const Color(0xFFEAF7F0)
+            : const Color(0xFFFFF7E6)
+        : const Color(0xFFEFF6FF);
+    final ownershipForeground = task.isOwned
+        ? isOwnedByCurrentUser
+            ? AppColors.success
+            : AppColors.warning
+        : AppColors.info;
+
+    return OtotrCard(
+      onTap: canOpenByTap ? () => _openTask(context) : null,
+      padding: const EdgeInsets.fromLTRB(24, 24, 24, 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            task.title.toUpperCase(),
+            style: const TextStyle(
+              color: AppColors.darkText,
+              fontSize: 20,
+              fontWeight: FontWeight.w900,
+              height: 1.15,
+            ),
+          ),
+          const SizedBox(height: 22),
+          Center(
+            child: Text(
+              statusText,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: AppColors.darkText,
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          const SizedBox(height: 14),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(999),
+            child: LinearProgressIndicator(
+              minHeight: 8,
+              value: total == 0 ? 0 : percent / 100,
+              color: AppColors.success,
+              backgroundColor: AppColors.grayBorder,
+            ),
+          ),
+          const Divider(height: 28, thickness: 1.4, color: AppColors.darkText),
+          Wrap(
+            spacing: 10,
+            runSpacing: 8,
+            children: [
+              _SoftMetricPill(
+                label: '$completed/$total',
+                background: const Color(0xFFE5E7EB),
+                foreground: AppColors.grayText,
+              ),
+              _SoftMetricPill(
+                label: ownershipLabel,
+                background: ownershipBackground,
+                foreground: ownershipForeground,
+              ),
+              _SoftMetricPill(
+                label: '%$percent tamam',
+                background: const Color(0xFFEAF7F0),
+                foreground: AppColors.success,
+              ),
+              _SoftMetricPill(
+                label: '$elapsedMinutes dk. /${task.estimatedMinutes} dk.',
+                background: const Color(0xFFEAF7F0),
+                foreground: AppColors.success,
+              ),
+            ],
+          ),
+          if (task.managerReturnReason.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            Text(
+              'Mudur iadesi: ${task.managerReturnReason}',
+              style: const TextStyle(color: AppColors.red),
+            ),
+          ],
+          if (isReadOnly) ...[
+            const SizedBox(height: 10),
+            const Text(
+              'Bu baslik baska bir usta tarafindan sahiplenildigi icin sadece izlenebilir.',
+              style: TextStyle(color: AppColors.grayText),
+            ),
+          ],
+          if (isOwnedByCurrentUser) ...[
+            const SizedBox(height: AppSizes.md),
+            OtotrSecondaryButton(
+              label: 'Gorevi Birak',
+              icon: Icons.undo,
+              onPressed: onRelease == null ? null : _releaseTask,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Future<void> _openTask(BuildContext context) async {
+    if (task.isAvailableForClaim && onClaim != null) {
+      await onClaim!();
+      if (!context.mounted) {
+        return;
+      }
+    }
+
+    final changed = await Navigator.pushNamed(
+      context,
+      AppRoutes.technicianTaskForm,
+      arguments: {
+        'workOrderId': workOrderId,
+        'taskId': task.taskId,
+      },
+    );
+    if (changed == true) {
+      onTaskChanged?.call();
+    }
+  }
+
+  Future<void> _releaseTask() async {
+    if (onRelease == null) {
+      return;
+    }
+    await onRelease!('Usta gorevi havuza birakti.');
+  }
+}
+
+class _SoftMetricPill extends StatelessWidget {
+  const _SoftMetricPill({
+    required this.label,
+    required this.background,
+    required this.foreground,
+  });
+
+  final String label;
+  final Color background;
+  final Color foreground;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        label,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          color: foreground,
+          fontSize: 12,
+          fontWeight: FontWeight.w900,
+        ),
+      ),
+    );
+  }
+}
+
+class TaskCardLegacy extends StatelessWidget {
+  const TaskCardLegacy({
+    super.key,
     required this.task,
     required this.isUnlocked,
     required this.workOrderId,
@@ -268,10 +459,12 @@ class _TaskCard extends StatelessWidget {
     final canEdit = task.canEditBy(currentUser);
     final isOwnedByCurrentUser = task.isOwnedBy(currentUser.id);
     final isReadOnly = task.isOwned && !canEdit;
-    final canClaim = isUnlocked && !task.isOwned && onClaim != null;
+    final canClaim = isUnlocked && task.isAvailableForClaim && onClaim != null;
     final canOpenForm = isUnlocked && (canEdit || isReadOnly);
+    final canOpenByTap = canClaim || canOpenForm;
 
     return OtotrCard(
+      onTap: canOpenByTap ? () => _openTask(context) : null,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -312,7 +505,7 @@ class _TaskCard extends StatelessWidget {
           if (task.checklistItems.isNotEmpty) ...[
             const SizedBox(height: 12),
             const Text(
-              'JSON alt başlıkları',
+              'Test alanları',
               style: TextStyle(
                 fontWeight: FontWeight.w900,
                 color: AppColors.navy,
@@ -347,81 +540,40 @@ class _TaskCard extends StatelessWidget {
             ),
           ],
           const SizedBox(height: AppSizes.md),
-          if (!task.isOwned)
-            OtotrPrimaryButton(
-              label:
-                  isUnlocked ? 'Başlığı Sahiplen' : 'Başlangıç Kanıtı Gerekli',
-              icon: isUnlocked ? Icons.assignment_ind : Icons.lock,
-              onPressed: canClaim ? onClaim : null,
-            )
-          else if (isOwnedByCurrentUser)
+          if (isOwnedByCurrentUser)
             OtotrSecondaryButton(
-              label: 'Görevi Devret / Görevi Bırak',
+              label: 'Görevi Bırak',
               icon: Icons.undo,
-              onPressed:
-                  onRelease == null ? null : () => _showReleaseDialog(context),
+              onPressed: onRelease == null ? null : _releaseTask,
             ),
-          if (!task.isOwned || isOwnedByCurrentUser) const SizedBox(height: 8),
-          OtotrPrimaryButton(
-            label: isReadOnly
-                ? 'Sadece Görüntüle'
-                : isUnlocked
-                    ? 'Kontrol Formunu Aç'
-                    : 'Başlangıç Kanıtı Gerekli',
-            icon: isReadOnly
-                ? Icons.visibility
-                : isUnlocked
-                    ? Icons.edit_note
-                    : Icons.lock,
-            onPressed: canOpenForm
-                ? () => Navigator.pushNamed(
-                      context,
-                      AppRoutes.technicianTaskForm,
-                      arguments: {
-                        'workOrderId': workOrderId,
-                        'taskId': task.taskId,
-                      },
-                    )
-                : null,
-          ),
         ],
       ),
     );
   }
 
-  Future<void> _showReleaseDialog(BuildContext context) async {
-    final controller = TextEditingController();
-    final reason = await showDialog<String>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Görevi Bırak'),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          minLines: 2,
-          maxLines: 4,
-          decoration: const InputDecoration(
-            labelText: 'Bırakma gerekçesi',
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Vazgeç'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, controller.text),
-            child: const Text('Havuza Bırak'),
-          ),
-        ],
-      ),
+  Future<void> _openTask(BuildContext context) async {
+    if (task.isAvailableForClaim && onClaim != null) {
+      await onClaim!();
+      if (!context.mounted) {
+        return;
+      }
+    }
+
+    await Navigator.pushNamed(
+      context,
+      AppRoutes.technicianTaskForm,
+      arguments: {
+        'workOrderId': workOrderId,
+        'taskId': task.taskId,
+      },
     );
-    await Future<void>.delayed(const Duration(milliseconds: 250));
-    controller.dispose();
-    if (reason == null || reason.trim().isEmpty || onRelease == null) {
+  }
+
+  Future<void> _releaseTask() async {
+    if (onRelease == null) {
       return;
     }
-    await onRelease!(reason);
+    await onRelease!('Usta gorevi havuza birakti.');
   }
 }
 

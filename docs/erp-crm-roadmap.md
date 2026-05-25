@@ -49,6 +49,8 @@ Amac: Genel merkez tarafinda kullanilabilecek ilk pratik sistem.
 - Yonetici, sehir, bolge, durum
 - Ciro, royalty, rapor adedi
 - Kalite, NPS, Google puani
+- Google Isletme Profili sahiplik durumu
+- Google profil linki, Place ID, dogrulama durumu ve yorum riski
 - Risk seviyesi
 - 30 gun duzeltme plani
 
@@ -96,9 +98,20 @@ Onerilen teknik yigin:
 - Odeme altyapisi
 - E-fatura/e-arsiv
 - Google yorum ve Maps performansi
+- Google Isletme Profili merkezi sahiplik ve bayi yetki takibi
 - Dijital rapor linki
 - QR ile rapor dogrulama
 - Mobil uygulama API'si
+
+### Google Maps / Isletme Profili Merkezi Sahiplik
+
+Detayli uygulama plani: [Google Maps / Google Isletme Profili Aksiyon Plani](google-business-profile-aksiyon-plani.md)
+
+- Genel merkez, tum bayi/sube Google Isletme Profillerinde birincil sahip olacak.
+- Bayilere sadece kendi lokasyonlari icin yonetici yetkisi verilecek.
+- Yeni bayi acilis checklist'ine Google profil olusturma, dogrulama ve yetki verme adimlari eklenecek.
+- Sube kartinda Google profil linki, Place ID, sahiplik durumu, dogrulama durumu, puan ve yorum sayisi takip edilecek.
+- Olumsuz yorum, puan dususu, askida profil ve sahiplik riski kalite/kriz moduluyle iliskilendirilecek.
 
 ## Faz 4 - OTOTR Platform
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/constants/app_sizes.dart';
 import '../../core/navigation/app_routes.dart';
+import '../../core/theme/app_colors.dart';
 import '../../core/widgets/ototr_app_bar.dart';
 import '../../core/widgets/ototr_card.dart';
 import '../../core/widgets/ototr_primary_button.dart';
@@ -33,7 +34,7 @@ class _NewWorkOrderScreenState extends State<NewWorkOrderScreen> {
   final _yearController = TextEditingController();
   final _kilometersController = TextEditingController();
   final _notesController = TextEditingController();
-  PackageType _packageType = PackageType.standard;
+  PackageType _packageType = PackageType.hizliKontrol;
   bool _isSaving = false;
 
   @override
@@ -170,6 +171,9 @@ class _NewWorkOrderScreenState extends State<NewWorkOrderScreen> {
             OtotrPrimaryButton(
               label: _isSaving ? 'Kaydediliyor' : 'Is Emri Olustur',
               icon: Icons.add_circle_outline,
+              backgroundColor: _packageType == PackageType.hizliKontrol
+                  ? AppColors.success
+                  : null,
               onPressed: _isSaving ? null : _createWorkOrder,
             ),
           ],
@@ -203,7 +207,7 @@ class _NewWorkOrderScreenState extends State<NewWorkOrderScreen> {
     final year = int.parse(_yearController.text.trim());
     final kilometers = int.tryParse(_kilometersController.text.trim()) ?? 0;
     try {
-      final order = await AppRepositories.instance.branchWorkOrders.create(
+      await AppRepositories.instance.branchWorkOrders.create(
         customer: Customer(
           fullName: _customerNameController.text.trim(),
           phone: _customerPhoneController.text.trim(),
@@ -229,10 +233,15 @@ class _NewWorkOrderScreenState extends State<NewWorkOrderScreen> {
         notes: _notesController.text,
       );
       if (!mounted) return;
-      Navigator.pushReplacementNamed(
+      ScaffoldMessenger.of(context)
+        ..clearSnackBars()
+        ..showSnackBar(
+          const SnackBar(content: Text('İş emri oluşturuldu')),
+        );
+      Navigator.pushNamedAndRemoveUntil(
         context,
-        AppRoutes.workOrderDetail,
-        arguments: order.id,
+        AppRoutes.workOrders,
+        (_) => false,
       );
     } catch (error) {
       if (!mounted) return;
