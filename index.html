@@ -7069,6 +7069,65 @@
         setTimeout(()=>row.classList.remove('dealer-report-point-focus'),1200);
       });
     }
+    function dealerArchiveReportKey(report){return String(report?.id||report?.reportNo||'').trim();}
+    function dealerArchiveReportById(id){
+      const key=String(id||'').trim();
+      return (DB.reports||[]).find(r=>dealerArchiveReportKey(r)===key||String(r.reportNo||'')===key)||null;
+    }
+    function dealerArchiveWorkOrderId(report){
+      const reports=DB.reports||[], key=dealerArchiveReportKey(report), index=reports.findIndex(r=>dealerArchiveReportKey(r)===key);
+      return report?.workOrder||report?.workOrderNo||`NLF202742${String(20+Math.max(0,index)).padStart(2,'0')}`;
+    }
+    function dealerArchivedReportWorkOrder(report,branch){
+      const reports=DB.reports||[], index=Math.max(0,reports.findIndex(r=>dealerArchiveReportKey(r)===dealerArchiveReportKey(report)));
+      const modelText=String(report?.vehicle||report?.model||'Geçmiş rapor').trim(), yearMatch=modelText.match(/\b(19|20)\d{2}\b/);
+      const vehicle=modelText.replace(/\s*\/?\s*\b(19|20)\d{2}\b/g,'').trim()||modelText;
+      const packageName=dealerPackageName(report?.packageName||report?.package||'Full Ekspertiz'), packagePrice=dealerMoneyAmount(dealerPackage(packageName).price)||15700;
+      const createdAt=report?.date||`25.05.2026 ${['13:34','12:20','11:19','10:42'][index%4]}`;
+      const wo={id:dealerArchiveWorkOrderId(report),reportNo:dealerArchiveReportKey(report)||`RP-${9021+index}`,branchId:branch?.id||selectedBranchId,branchName:report?.branch?`OTORAPOR ${report.branch}`:(branch?.name||'OTOTR Bursa Nilüfer'),status:'Rapor_Kapandı',customer:report?.customer||report?.buyer||['Hasan Kaya','Duru Lojistik','Elif Yaman','Mert Otomotiv'][index%4],phone:report?.phone||'',buyer:report?.buyer||report?.customer||'Arşiv alıcı kaydı',seller:report?.seller||'Arşiv satıcı kaydı',vehicle,year:report?.year||yearMatch?.[0]||'2023',plate:report?.plate||'Plaka bekliyor',vin:report?.vin||['VF17RBF0A60232157','MR0BB3CD505801014','SHSRE58709U002644','WBA8A310X0A123694'][index%4],engineNo:report?.engineNo||['K9KE628R297423','2GDD183162','R20A23002587','B48B20A123456'][index%4],mileage:report?.mileage||['84.500 KM','112.400 KM','136.250 KM','62.100 KM'][index%4],fuel:report?.fuel||'Arşiv',transmission:report?.transmission||'Arşiv',packageName,price:packagePrice,grossPrice:packagePrice,paidAmount:packagePrice,payment:'Tahsil edildi',paymentMethod:'Nakit',consent:'İmzalandı',source:'Geçmiş rapor arşivi',createdAt,entryAt:createdAt,deliveryAt:report?.finish||createdAt,managerApproved:true,managerApprovedAt:createdAt,secretaryPrinted:true,secretaryPrintedAt:createdAt,revisionNo:1,reprintCount:0,tasks:dealerTaskSeed(packageName),archiveSourceReportId:dealerArchiveReportKey(report),vehicleMarketPrice:report?.price||0,damageStatus:report?.risk||'Arşiv',damageNote:`Arşiv rapor sonucu: ${report?.result||'Kontrol edildi'}${report?.risk?' · Risk: '+report.risk:''}`,entryMode:'archive',workOrderMode:'full',quickWorkOrder:false};
+      dealerApplySampleResults(wo,false);
+      wo.status='Rapor_Kapandı';
+      dealerAuditWorkOrder(wo,'Geçmiş rapor detaya bağlandı','Sistem','Rapor arama sonucu rapor detay sayfasında açıldı.');
+      return wo;
+    }
+    function dealerSeedArchivedReportPointValues(wo,report){
+      const values=dealerReportPointValues(), riskText=searchText([report?.risk,report?.result].join(' '));
+      let changed=false;
+      dealerReportSchemaGroups(wo).forEach((group,groupIndex)=>{
+        group.items.forEach((item,itemIndex)=>{
+          const key=dealerReportPointKey(wo.id,item.id);
+          if(values[key]) return;
+          const options=item.options||[], risky=(riskText.includes('yuksek')&&groupIndex===0&&itemIndex<2)||(riskText.includes('orta')&&groupIndex===0&&itemIndex===0);
+          const option=(risky?options.find(o=>o.isNegative||/warning|critical/i.test(o.severity||'')):null)||options.find(o=>!o.isNegative&&!/warning|critical/i.test(o.severity||''))||options[0];
+          values[key]={optionId:option?.id||'',note:itemIndex===0?`Arşiv rapor sonucu: ${report?.result||'Kontrol edildi.'}`:'Arşiv raporundan aktarıldı.',photoCount:itemIndex%5===0?1:0,updatedAt:new Date().toISOString()};
+          changed=true;
+        });
+      });
+      if(changed) saveDealerReportPointValues(values);
+    }
+    function dealerEnsureArchivedReportWorkOrder(reportId){
+      const report=dealerArchiveReportById(reportId);
+      if(!report) return '';
+      const branch=DB.branches.find(b=>b.id===selectedBranchId)||DB.branches[0], store=ensureDealerLiveData(branch,DB.appointments), reportKey=dealerArchiveReportKey(report), workOrderId=dealerArchiveWorkOrderId(report);
+      let wo=store.workOrders.find(w=>w.archiveSourceReportId===reportKey||w.id===workOrderId||w.reportNo===reportKey);
+      if(!wo){
+        wo=dealerArchivedReportWorkOrder(report,branch);
+        store.workOrders.push(wo);
+      }else{
+        wo.archiveSourceReportId=wo.archiveSourceReportId||reportKey;
+        wo.status=wo.status||'Rapor_Kapandı';
+      }
+      store.activeId=wo.id;
+      saveDealerLiveData(store);
+      dealerSeedArchivedReportPointValues(wo,report);
+      return wo.id;
+    }
+    function dealerOpenArchivedReportDetail(reportId){
+      const workOrderId=dealerEnsureArchivedReportWorkOrder(reportId);
+      if(!workOrderId){toast('Geçmiş rapor detayı bulunamadı.');return false;}
+      dealerOpenReportDetail(workOrderId);
+      return true;
+    }
     function dealerOpenReportDetail(id){
       const store=ensureDealerLiveData(DB.branches.find(b=>b.id===selectedBranchId)||DB.branches[0],DB.appointments);
       if(store.workOrders.some(w=>w.id===id)){
@@ -10021,11 +10080,13 @@
       const approvalBlockers=dealerApprovalBlockers(workOrder);
       const acceptanceChecks=[['Aynı plaka geçmişi','1 önceki rapor bulundu','Kontrol'],['Aynı şasi geçmişi','Şasi kaydı eşleşti','Kontrol'],['Şikayet riski','Açık şikayet yok','Uygun'],['Ödeme','Tahsilat/kasa kontrolü gerekli','Kasa'],['KVKK / yol testi',workOrder?.consent==='İmzalandı'?'Tamam':'Eksik','Blokaj'],['Paket görevleri',completion.technicalDone+'/'+completion.technicalTotal,'Operasyon']];
       const dealerStatusTone=s=>/teslim|basım|onaylandı|tamam/i.test(s||'')?'ready':/eksik|gecik|itiraz|blokaj/i.test(s||'')?'blocked':/usta|bekliyor|kabul/i.test(s||'')?'pending':'progress';
-      const homeSearchRows=dealerOps.workOrders.concat((DB.reports||[]).slice(0,5).map(r=>({id:r.id||r.reportNo||'PR-9001',reportNo:r.reportNo||r.id||'Arşiv',plate:r.plate||'Plaka bekliyor',customer:r.customer||r.name||'Müşteri bekliyor',vehicle:r.vehicle||r.branch||'Geçmiş rapor',packageName:r.package||r.packageName||'Arşiv',status:r.status||'Arşiv'}))).slice(0,10);
+      const archivedLiveReportKeys=new Set(dealerOps.workOrders.map(w=>w.archiveSourceReportId).filter(Boolean));
+      const homeSearchRows=dealerOps.workOrders.concat((DB.reports||[]).filter(r=>!archivedLiveReportKeys.has(dealerArchiveReportKey(r))).slice(0,5).map(r=>({id:dealerArchiveWorkOrderId(r),archiveReportId:dealerArchiveReportKey(r),reportNo:r.reportNo||r.id||'Arşiv',plate:r.plate||'Plaka bekliyor',customer:r.customer||r.name||'Müşteri bekliyor',vehicle:r.vehicle||r.model||r.branch||'Geçmiş rapor',packageName:r.package||r.packageName||'Arşiv rapor',status:r.status||'Rapor_Kapandı'}))).slice(0,10);
       const dealerCrmCustomers=crmData().customers.slice(0,8);
       const activeLoyalty=ototrLoyaltyProfile(crmData().customers.find(c=>c.name===workOrder?.customer)||{name:workOrder?.customer||'Hasan Kaya',phone:workOrder?.phone,appointments:3,totalRevenue:32000,type:'Bireysel'});
       const activeDiscount=ototrLoyaltyDiscountedPrice(workOrder?.grossPrice||workOrder?.price||dealerPackage(workOrder?.packageName||'Full Ekspertiz').price,activeLoyalty);
-      const dealerHomeSearch=()=>`<section class="dealer-search-desk"><div class="dealer-search-head"><div><div class="dealer-search-kicker">${icon('sparkles')}Şube bankosu</div><h3>Arama sonuçları ve hızlı kayıtlar</h3><p>Üst başlıktaki arama kutusundan plaka, şasi, müşteri, telefon, iş emri veya rapor numarasıyla eski kayda hızlı ulaşılır.</p><div class="dealer-search-chips"><span>Plaka</span><span>Rapor no</span><span>Müşteri</span><span>Şasi</span><span>Telefon</span></div></div><button class="micro-btn" data-action="Canlı arama demo olarak çalışıyor.">Canlı arama</button></div><div class="dealer-search-results" data-dealer-search-results>${homeSearchRows.map(w=>`<article class="dealer-search-result ${dealerStatusTone(w.status)}" data-search="${rpEsc([w.plate,w.customer,w.id,w.reportNo,w.vehicle,w.packageName,w.status].join(' ').toLowerCase())}"><div class="dealer-result-icon">${icon('clipboard-list')}</div><div><b>${rpEsc(w.plate)} · ${rpEsc(w.customer)}</b><span>${rpEsc(w.id)} · ${rpEsc(w.reportNo)} · ${rpEsc(w.vehicle)} · ${rpEsc(w.packageName)}</span></div><div class="quick-actions">${badge(w.status||'Kayıt')}<button class="micro-btn" data-dealer-tab="${w.id&&String(w.id).startsWith('IE-')?'is-emirleri':'rapor'}">Aç</button></div></article>`).join('')}</div></section>`;
+      const dealerHomeSearchButton=w=>w.archiveReportId?`<button class="micro-btn" data-dealer-archive-report-detail="${rpEsc(w.archiveReportId)}">Detay</button>`:`<button class="micro-btn" data-dealer-report-detail="${rpEsc(w.id)}">Detay</button>`;
+      const dealerHomeSearch=()=>`<section class="dealer-search-desk"><div class="dealer-search-head"><div><div class="dealer-search-kicker">${icon('sparkles')}Şube bankosu</div><h3>Arama sonuçları ve hızlı kayıtlar</h3><p>Üst başlıktaki arama kutusundan plaka, şasi, müşteri, telefon, iş emri veya rapor numarasıyla eski kayda hızlı ulaşılır.</p><div class="dealer-search-chips"><span>Plaka</span><span>Rapor no</span><span>Müşteri</span><span>Şasi</span><span>Telefon</span></div></div><button class="micro-btn" data-action="Canlı arama demo olarak çalışıyor.">Canlı arama</button></div><div class="dealer-search-results" data-dealer-search-results>${homeSearchRows.map(w=>`<article class="dealer-search-result ${dealerStatusTone(w.status)}" data-search="${rpEsc([w.plate,w.customer,w.id,w.reportNo,w.vehicle,w.packageName,w.status].join(' ').toLowerCase())}"><div class="dealer-result-icon">${icon('clipboard-list')}</div><div><b>${rpEsc(w.plate)} · ${rpEsc(w.customer)}</b><span>${rpEsc(w.id)} · ${rpEsc(w.reportNo)} · ${rpEsc(w.vehicle)} · ${rpEsc(w.packageName)}</span></div><div class="quick-actions">${badge(w.status||'Kayıt')}${dealerHomeSearchButton(w)}</div></article>`).join('')}</div></section>`;
       const roleNeedRows=()=>{
         if(ui.role==='Müşteri Kabul / Sekreterya') return [['Eski rapor arama','Ana ekrandan plaka, müşteri ve rapor no ile hızlı ulaşım','Hazır'],['Araç kabul','Randevudan iş emri ve KVKK kontrolü','Günlük'],['Basım / QR teslim','Müdür onaylı raporu müşteriye kapatma','Kuyruk']];
         if(ui.role.includes('Usta')||ui.role==='Test Operatörü') return [['Bana atanan işler','Sadece kendi teknik görevlerim ve geri dönen düzeltmeler','Aktif'],['Benim eğitimlerim','Academy sertifikası yoksa görev kilidi görünür','Zorunlu'],['Kanıt ve fotoğraf','Araç başında büyük butonlu tablet akışı','Tablet']];
@@ -10090,13 +10151,13 @@
       const renderRaporDetay=()=>dealerReportDetailPage(dealerOps.workOrders.find(w=>w.id===ui.viewingWorkOrderId)||workOrder,dealerOps.workOrders);
       const dealerArchiveDate=(offset=0)=>{const d=new Date(today);d.setDate(today.getDate()+offset);return d.toLocaleDateString('tr-TR',{day:'2-digit',month:'2-digit',year:'numeric'});};
       const dealerArchiveRows=()=>{
-        const demoReports=(DB.reports||[]).map((r,i)=>({reportNo:r.id||`RP-${9021+i}`,workOrder:`NLF202742${20+i}`,branch:`OTORAPOR ${String(r.branch||branch.name).toLocaleUpperCase('tr-TR')} OTO EKSPERTİZ`,customer:r.customer||['Hasan Kaya','Duru Lojistik','Elif Yaman','Mert Otomotiv'][i%4],plate:r.plate,vin:['VF17RBF0A60232157','MR0BB3CD505801014','SHSRE58709U002644','WBA8A310X0A123694'][i%4],engineNo:['K9KE628R297423','2GDD183162','R20A23002587','B48B20A123456'][i%4],vehicle:r.model,packageName:r.packageName||'AIRBAG (HAVA YASTIĞI) KONTROL PAKETİ, SILVER PLUS PAKET',total:r.price||15700,paid:r.price||15700,payment:'Nakit',status:'Rapor_Kapandı',start:`25.05.26 ${['13:34','12:20','11:19','10:42'][i%4]}`,finish:`25.05.26 ${['14:11','12:42','12:14','11:25'][i%4]}`,duration:['36 dakika','21 dakika','54 dakika','43 dakika'][i%4],source:'archive'}));
+        const demoReports=(DB.reports||[]).filter(r=>!archivedLiveReportKeys.has(dealerArchiveReportKey(r))).map((r,i)=>({reportNo:r.id||`RP-${9021+i}`,workOrder:dealerArchiveWorkOrderId(r),archiveReportId:dealerArchiveReportKey(r),branch:`OTORAPOR ${String(r.branch||branch.name).toLocaleUpperCase('tr-TR')} OTO EKSPERTİZ`,customer:r.customer||['Hasan Kaya','Duru Lojistik','Elif Yaman','Mert Otomotiv'][i%4],plate:r.plate,vin:['VF17RBF0A60232157','MR0BB3CD505801014','SHSRE58709U002644','WBA8A310X0A123694'][i%4],engineNo:['K9KE628R297423','2GDD183162','R20A23002587','B48B20A123456'][i%4],vehicle:r.model,packageName:r.packageName||'AIRBAG (HAVA YASTIĞI) KONTROL PAKETİ, SILVER PLUS PAKET',total:r.price||15700,paid:r.price||15700,payment:'Nakit',status:'Rapor_Kapandı',start:`25.05.26 ${['13:34','12:20','11:19','10:42'][i%4]}`,finish:`25.05.26 ${['14:11','12:42','12:14','11:25'][i%4]}`,duration:['36 dakika','21 dakika','54 dakika','43 dakika'][i%4],source:'archive'}));
         const liveReports=dealerOps.workOrders.map((w,i)=>({reportNo:w.reportNo,workOrder:w.id,workOrderId:w.id,branch:w.branchName||branch.name,customer:w.customer,plate:w.plate,vin:w.vin||'Şase bekliyor',engineNo:w.engineNo||'Motor bekliyor',vehicle:[w.vehicle,w.year].filter(Boolean).join(' / '),packageName:w.packageName,total:w.grossPrice||w.price||0,paid:w.paidAmount||w.price||0,payment:w.paymentMethod||w.payment||'Bekliyor',status:w.secretaryPrinted?'Rapor_Kapandı':w.status||'Açık',start:w.createdAt||w.entryAt||`25.05.26 ${String(10+i).padStart(2,'0')}:00`,finish:w.secretaryPrintedAt||w.deliveryAt||'Devam ediyor',duration:w.secretaryPrinted?'Kapandı':'Açık',source:'live'}));
         return [...liveReports,...demoReports];
       };
       const dealerReportArchivePanel=()=>{
         const rows=dealerArchiveRows();
-        const tableRows=rows.map(r=>({attrs:`data-dealer-history-row data-search="${rpEsc([r.reportNo,r.workOrder,r.branch,r.customer,r.plate,r.vin,r.engineNo,r.vehicle,r.packageName,r.status,r.payment].join(' ').toLocaleLowerCase('tr-TR'))}"`,cells:[rpEsc(r.reportNo),rpEsc(r.workOrder),rpEsc(r.branch),rpEsc(r.customer||'-'),rpEsc(r.plate||'-'),`${rpEsc(r.vin||'-')}<br><span class="card-sub">${rpEsc(r.engineNo||'-')}</span>`,rpEsc(r.vehicle||'-'),rpEsc(r.packageName||'-'),fmtTL(r.total||0),`${fmtTL(r.paid||0)}<br><span class="card-sub">(0,00)</span>`,`<div class="dealer-history-status"><b>${rpEsc(r.status||'Rapor')}</b><small>${rpEsc(r.payment||'Ödeme')}</small></div>`,`<div class="dealer-history-time"><b>${rpEsc(r.start||'-')}</b><b>${rpEsc(r.finish||'-')}</b><span>${rpEsc(r.duration||'')}</span></div>`,r.workOrderId?`<button class="micro-btn" title="Rapor detayını aç" data-dealer-report-detail="${rpEsc(r.workOrderId)}">${icon('eye')}</button>`:`<button class="micro-btn" title="Geçmiş raporu görüntüle" data-action="${rpEsc(r.reportNo)} geçmiş raporu görüntülendi.">${icon('eye')}</button>`]}));
+        const tableRows=rows.map(r=>({attrs:`data-dealer-history-row data-search="${rpEsc([r.reportNo,r.workOrder,r.branch,r.customer,r.plate,r.vin,r.engineNo,r.vehicle,r.packageName,r.status,r.payment].join(' ').toLocaleLowerCase('tr-TR'))}"`,cells:[rpEsc(r.reportNo),rpEsc(r.workOrder),rpEsc(r.branch),rpEsc(r.customer||'-'),rpEsc(r.plate||'-'),`${rpEsc(r.vin||'-')}<br><span class="card-sub">${rpEsc(r.engineNo||'-')}</span>`,rpEsc(r.vehicle||'-'),rpEsc(r.packageName||'-'),fmtTL(r.total||0),`${fmtTL(r.paid||0)}<br><span class="card-sub">(0,00)</span>`,`<div class="dealer-history-status"><b>${rpEsc(r.status||'Rapor')}</b><small>${rpEsc(r.payment||'Ödeme')}</small></div>`,`<div class="dealer-history-time"><b>${rpEsc(r.start||'-')}</b><b>${rpEsc(r.finish||'-')}</b><span>${rpEsc(r.duration||'')}</span></div>`,r.archiveReportId?`<button class="micro-btn" title="Geçmiş rapor detayını aç" data-dealer-archive-report-detail="${rpEsc(r.archiveReportId)}">${icon('eye')}</button>`:r.workOrderId?`<button class="micro-btn" title="Rapor detayını aç" data-dealer-report-detail="${rpEsc(r.workOrderId)}">${icon('eye')}</button>`:`<button class="micro-btn" title="Geçmiş raporu görüntüle" data-action="${rpEsc(r.reportNo)} geçmiş raporu görüntülendi.">${icon('eye')}</button>`]}));
         return `<div class="dealer-report-archive"><section class="dealer-form-section dealer-report-filter-card"><div class="dealer-section-head"><div><h3>Geçmiş Raporlar</h3><p>Önceki raporlar plaka, şase, motor, iş emri, rapor kodu, alıcı veya satıcı bilgisiyle aranır; bayii portalında geçmiş rapor hafızası burada tutulur.</p></div><div class="quick-actions">${badge(rows.length+' rapor')}${badge('Son 2 ay hızlı erişim')}</div></div><div class="dealer-report-filter-grid"><div class="dealer-report-filter-field wide"><span>Gün geçişi</span><div class="dealer-report-day-nav"><button type="button" data-action="Bir önceki gün raporları listelendi.">${icon('chevron-left')}Bir Önceki Gün</button><button type="button" data-action="Bir sonraki gün raporları listelendi.">Bir Sonraki Gün${icon('chevron-right')}</button></div></div><label class="dealer-report-filter-field wide"><span>Arama</span><input data-dealer-report-archive-search placeholder="Plaka/Şase/Motor/İş Emri No/Alıcı/Satıcı"></label><label class="dealer-report-filter-field"><span>Başlangıç</span><input value="${dealerArchiveDate(-1)}" aria-label="Başlangıç tarihi"></label><label class="dealer-report-filter-field"><span>Bitiş</span><input value="${dealerArchiveDate(1)}" aria-label="Bitiş tarihi"></label><label class="dealer-report-filter-field"><span>Tarih Tipi</span><select><option>Rapor Açılış Tarihi</option><option>Rapor Kapanış Tarihi</option><option>İş Emri Tarihi</option></select></label><label class="dealer-report-filter-field"><span>Filo Müşterileri</span><select><option>Tümü</option><option>Filo müşterileri</option><option>Bireysel müşteriler</option></select></label><label class="dealer-report-filter-field wide"><span>Rapor Durumu</span><select><option>Tüm durumlar</option><option>Rapor_Kapandı</option><option>Açık</option><option>İptal</option></select></label><label class="dealer-report-filter-field"><span>Api Firmaları</span><select><option>Tümü</option><option>Sigorta / Tramer</option><option>Filo API</option></select></label><label class="dealer-report-filter-field"><span>Ödeme Tipleri</span><select><option>Tümü</option><option>Nakit</option><option>POS / Kredi Kartı</option><option>Havale / EFT</option></select></label><div class="quick-actions"><button class="btn primary" data-dealer-report-archive-filter>${icon('filter')}Filtrele</button></div></div><p class="dealer-report-filter-note">Bu alandan son 2 ay içindeki raporlara hızlı ulaşılır; canlı entegrasyonda tarih aralığı ve arama backend sorgusuna bağlanır.</p></section><section class="dealer-form-section"><div class="dealer-section-head"><div><h3>Araç Raporları</h3><p>Geçmiş rapor listesi; rapor kodu, iş emri, bayi, müşteri, plaka, şase/motor, paket, ödeme ve kapanış süresiyle izlenir.</p></div><div class="quick-actions">${badge(rows.filter(r=>/kapandı/i.test(r.status)).length+' kapalı')}${badge(rows.filter(r=>!/kapandı/i.test(r.status)).length+' açık')}</div></div>${dealerPortalTable(['R. Kodu','İş Emri','Bayi','Müşteri','Plaka','Şase / Motor','Marka/Model','Paket','Genel T.','Alınan (İsk.)','Durum','Başlama/Bitiş',''],tableRows)}</section></div>`;
       };
       const renderModulePage=(title,desc,kpis,groups,flow=[])=>`<section class="dealer-form-section"><div class="dealer-section-head"><div><h3>${title}</h3><p>${desc}</p></div>${badge(ui.role)}</div><div class="dealer-kpi-grid">${kpis.map(k=>`<div class="dealer-kpi-card ${k[3]||'normal'}"><span>${k[0]}</span><b>${k[1]}</b><small>${k[2]}</small></div>`).join('')}</div>${flow.length?`<div class="dealer-pipeline">${flow.map((f,i)=>`<div class="dealer-pipeline-step ${f[2]||''}"><b>${i+1}. ${f[0]}</b><span>${f[1]}</span></div>`).join('')}</div>`:''}<div class="dealer-ops-grid">${groups.map(group=>`<div class="dealer-panel"><h3>${group[0]}</h3>${dealerMiniRows(group[1])}</div>`).join('')}</div></section>`;
@@ -13824,6 +13885,13 @@
         }
         return;
       }
+      const dealerArchiveReportDetailEl=e.target.closest('[data-dealer-archive-report-detail]');
+      if(dealerArchiveReportDetailEl){
+        e.preventDefault();
+        e.stopPropagation();
+        dealerOpenArchivedReportDetail(dealerArchiveReportDetailEl.dataset.dealerArchiveReportDetail);
+        return;
+      }
       const dealerReportDetailEl=e.target.closest('[data-dealer-report-detail]');
       if(dealerReportDetailEl && !e.target.closest('[data-action]')){
         e.preventDefault();
@@ -14026,6 +14094,7 @@
       if(type==='hrBranch'){ route('ik/subeler'); setTimeout(()=>openBranchHRDetail(id),80); return; }
       if(type==='hrRecruitment'){ route('ik/ise-alim'); setTimeout(()=>openRecruitmentDetail(id),80); return; }
       if(type==='hr'){ route('ik'); setTimeout(()=>openDetail('hr:'+id),80); return; }
+      if(type==='report'){ dealerOpenArchivedReportDetail(id); return; }
       route('crm'); toast('Rapor arama sonucu CRM & Randevu ekranına taşındı.');
     }
     function closeSearchResults(){ const r=document.getElementById('searchResults'); if(r) r.classList.remove('open'); }
