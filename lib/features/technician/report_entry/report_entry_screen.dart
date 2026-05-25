@@ -36,6 +36,8 @@ class _ReportEntryScreenState extends State<ReportEntryScreen> {
       AssetReportTemplateRepository();
   final WorkOrderReportRepository _localReportRepository =
       LocalWorkOrderReportRepository.instance;
+  final TextEditingController _bodyPaintMicronController =
+      TextEditingController();
 
   WorkOrderReportService get _service => WorkOrderReportService(
         templateRepository: _templateRepository,
@@ -56,6 +58,12 @@ class _ReportEntryScreenState extends State<ReportEntryScreen> {
   void initState() {
     super.initState();
     _future = _load();
+  }
+
+  @override
+  void dispose() {
+    _bodyPaintMicronController.dispose();
+    super.dispose();
   }
 
   @override
@@ -173,6 +181,8 @@ class _ReportEntryScreenState extends State<ReportEntryScreen> {
             answer: answersByItem[item.id],
             onTap: () => _openItemForm(data, group, item),
           ),
+        if (isBodyPaintReportGroup(group) && reportGroupHasMicronInputs(group))
+          _MicronQuickInputCard(controller: _bodyPaintMicronController),
         OtotrCard(
           child: SizedBox(
             width: double.infinity,
@@ -296,15 +306,20 @@ class _ReportEntryScreenState extends State<ReportEntryScreen> {
     _ReportEntryData data,
     ReportTemplateGroup group,
   ) async {
+    final quickInputValues = sharedMicronInputValuesForGroup(
+      group,
+      isBodyPaintReportGroup(group) ? _bodyPaintMicronController.text : '',
+    );
     final requiredInputs = await _service.getRequiredInputsForGroupAllGood(
       workOrderId: widget.workOrderId,
       group: group,
+      inputValuesByItem: quickInputValues,
     );
     if (!mounted) {
       return;
     }
 
-    Map<String, Map<String, String>> inputValuesByItem = const {};
+    var inputValuesByItem = quickInputValues;
     if (requiredInputs.isNotEmpty) {
       final values =
           await showModalBottomSheet<Map<String, Map<String, String>>>(
@@ -316,7 +331,10 @@ class _ReportEntryScreenState extends State<ReportEntryScreen> {
       if (values == null) {
         return;
       }
-      inputValuesByItem = values;
+      inputValuesByItem = mergeReportInputValuesByItem(
+        quickInputValues,
+        values,
+      );
     }
 
     try {
@@ -445,6 +463,28 @@ class _SubmitGroupCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _MicronQuickInputCard extends StatelessWidget {
+  const _MicronQuickInputCard({required this.controller});
+
+  final TextEditingController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return OtotrCard(
+      child: TextField(
+        controller: controller,
+        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        textInputAction: TextInputAction.done,
+        decoration: const InputDecoration(
+          labelText: 'Mikron Gir',
+          hintText: 'Örn. 160',
+          prefixIcon: Icon(Icons.speed),
+        ),
       ),
     );
   }

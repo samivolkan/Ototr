@@ -139,7 +139,8 @@ class WorkOrderReportService {
             existingAnswer: existingAnswer,
           ),
       };
-      final missingInputs = _missingAllGoodInputLabels(item, inputValues);
+      final missingInputs =
+          _missingAllGoodInputLabels(group, item, inputValues);
       if (missingInputs.isNotEmpty) {
         throw StateError(
           'Tüm noktaları iyi işaretlemek için önce ölçüm/veri alanlarını '
@@ -164,6 +165,7 @@ class WorkOrderReportService {
   Future<List<ReportAllGoodInputRequest>> getRequiredInputsForGroupAllGood({
     required String workOrderId,
     required ReportTemplateGroup group,
+    Map<String, Map<String, String>> inputValuesByItem = const {},
   }) async {
     final existingAnswers = {
       for (final answer in await reportRepository.getAnswers(workOrderId))
@@ -173,11 +175,12 @@ class WorkOrderReportService {
     return [
       for (final item in group.items)
         for (final input in item.inputFields)
-          if (_allGoodInputValue(
-            input: input,
-            providedInputValues: const {},
-            existingAnswer: existingAnswers[item.id],
-          ).trim().isEmpty)
+          if (_allGoodInputRequiresValue(group, input) &&
+              _allGoodInputValue(
+                input: input,
+                providedInputValues: inputValuesByItem[item.id] ?? const {},
+                existingAnswer: existingAnswers[item.id],
+              ).trim().isEmpty)
             ReportAllGoodInputRequest(item: item, input: input),
     ];
   }
@@ -231,13 +234,25 @@ class WorkOrderReportService {
     return input.value.trim();
   }
 
+  bool _allGoodInputRequiresValue(
+    ReportTemplateGroup group,
+    ReportTemplateInputField input,
+  ) {
+    if (isBodyPaintReportGroup(group)) {
+      return reportInputIsMicron(input);
+    }
+    return true;
+  }
+
   List<String> _missingAllGoodInputLabels(
+    ReportTemplateGroup group,
     ReportTemplateItem item,
     Map<String, String> inputValues,
   ) {
     return [
       for (final input in item.inputFields)
-        if ((inputValues[input.id] ?? '').trim().isEmpty)
+        if (_allGoodInputRequiresValue(group, input) &&
+            (inputValues[input.id] ?? '').trim().isEmpty)
           _inputLabel(item, input),
     ];
   }
@@ -253,6 +268,71 @@ class WorkOrderReportService {
             : item.title;
     return '${item.title} / $label';
   }
+}
+
+bool isBodyPaintReportGroup(ReportTemplateGroup group) {
+  final code = group.code.toUpperCase();
+  final title = _normalizeReportText(group.title);
+  return code == 'BODY_PAINT_CHECKUP' ||
+      title.contains('KAPORTA') && title.contains('BOYA');
+}
+
+bool reportInputIsMicron(ReportTemplateInputField input) {
+  final text = _normalizeReportText(
+    '${input.label} ${input.placeholder} ${input.name}',
+  );
+  return text.contains('MIKRON') || text.contains('MICRON');
+}
+
+bool reportGroupHasMicronInputs(ReportTemplateGroup group) {
+  return group.items.any(
+    (item) => item.inputFields.any(reportInputIsMicron),
+  );
+}
+
+Map<String, Map<String, String>> sharedMicronInputValuesForGroup(
+  ReportTemplateGroup group,
+  String value,
+) {
+  final normalizedValue = value.trim();
+  if (normalizedValue.isEmpty) {
+    return const {};
+  }
+
+  return {
+    for (final item in group.items)
+      if (item.inputFields.any(reportInputIsMicron))
+        item.id: {
+          for (final input in item.inputFields)
+            if (reportInputIsMicron(input)) input.id: normalizedValue,
+        },
+  };
+}
+
+Map<String, Map<String, String>> mergeReportInputValuesByItem(
+  Map<String, Map<String, String>> first,
+  Map<String, Map<String, String>> second,
+) {
+  return {
+    for (final itemId in {...first.keys, ...second.keys})
+      itemId: {
+        ...?first[itemId],
+        ...?second[itemId],
+      },
+  };
+}
+
+String _normalizeReportText(String value) {
+  return value
+      .trim()
+      .toUpperCase()
+      .replaceAll('İ', 'I')
+      .replaceAll('İ', 'I')
+      .replaceAll('Ğ', 'G')
+      .replaceAll('Ü', 'U')
+      .replaceAll('Ş', 'S')
+      .replaceAll('Ö', 'O')
+      .replaceAll('Ç', 'C');
 }
 
 class ReportAllGoodInputRequest {

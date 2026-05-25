@@ -41,6 +41,8 @@ class _TechnicianTaskFormScreenState extends State<TechnicianTaskFormScreen> {
   bool _isSubmitting = false;
   int _submitProgress = 0;
   int _submitTotal = 0;
+  final TextEditingController _bodyPaintMicronController =
+      TextEditingController();
 
   ReportTemplateRepository get _templateRepository =>
       AppRepositories.instance.remoteWorkOrders == null
@@ -79,6 +81,7 @@ class _TechnicianTaskFormScreenState extends State<TechnicianTaskFormScreen> {
   @override
   void dispose() {
     _noteController.dispose();
+    _bodyPaintMicronController.dispose();
     super.dispose();
   }
 
@@ -146,6 +149,7 @@ class _TechnicianTaskFormScreenState extends State<TechnicianTaskFormScreen> {
     final answersByItem = {
       for (final answer in _answers) answer.itemId: answer,
     };
+    final group = _groupForTask(task);
 
     return Scaffold(
       appBar: const OtotrAppBar(title: 'Kontrol Formu'),
@@ -268,6 +272,12 @@ class _TechnicianTaskFormScreenState extends State<TechnicianTaskFormScreen> {
                     answer: answersByItem[item.id],
                     enabled: !isReadOnly,
                     onTap: () => _openReportItem(item),
+                  ),
+                if (group != null &&
+                    isBodyPaintReportGroup(group) &&
+                    reportGroupHasMicronInputs(group))
+                  _TaskMicronQuickInputCard(
+                    controller: _bodyPaintMicronController,
                   ),
                 OtotrCard(
                   child: SizedBox(
@@ -498,15 +508,20 @@ class _TechnicianTaskFormScreenState extends State<TechnicianTaskFormScreen> {
         AppRepositories.instance.remoteWorkOrders?.currentUser ??
             _repository.currentUser;
     if (template != null && group != null) {
+      final quickInputValues = sharedMicronInputValuesForGroup(
+        group,
+        isBodyPaintReportGroup(group) ? _bodyPaintMicronController.text : '',
+      );
       final requiredInputs =
           await _reportService.getRequiredInputsForGroupAllGood(
         workOrderId: widget.workOrderId,
         group: group,
+        inputValuesByItem: quickInputValues,
       );
       if (!mounted) {
         return;
       }
-      Map<String, Map<String, String>> inputValuesByItem = const {};
+      var inputValuesByItem = quickInputValues;
       if (requiredInputs.isNotEmpty) {
         final values =
             await showModalBottomSheet<Map<String, Map<String, String>>>(
@@ -518,7 +533,10 @@ class _TechnicianTaskFormScreenState extends State<TechnicianTaskFormScreen> {
         if (values == null) {
           return;
         }
-        inputValuesByItem = values;
+        inputValuesByItem = mergeReportInputValuesByItem(
+          quickInputValues,
+          values,
+        );
       }
 
       try {
@@ -1076,6 +1094,28 @@ class _TaskAllGoodInputSheetState extends State<_TaskAllGoodInputSheet> {
 
   String _controllerKey(ReportAllGoodInputRequest request) {
     return '${request.item.id}.${request.input.id}';
+  }
+}
+
+class _TaskMicronQuickInputCard extends StatelessWidget {
+  const _TaskMicronQuickInputCard({required this.controller});
+
+  final TextEditingController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return OtotrCard(
+      child: TextField(
+        controller: controller,
+        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        textInputAction: TextInputAction.done,
+        decoration: const InputDecoration(
+          labelText: 'Mikron Gir',
+          hintText: 'Örn. 160',
+          prefixIcon: Icon(Icons.speed),
+        ),
+      ),
+    );
   }
 }
 

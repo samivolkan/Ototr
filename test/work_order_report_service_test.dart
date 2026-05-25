@@ -108,6 +108,56 @@ void main() {
     }
   });
 
+  test('Kaporta toplu iyi mikron alanlarini tek degerle doldurur', () async {
+    final templateRepository = AssetReportTemplateRepository();
+    final reportRepository = LocalWorkOrderReportRepository.instance;
+    final service = WorkOrderReportService(
+      templateRepository: templateRepository,
+      reportRepository: reportRepository,
+    );
+    final template = await templateRepository.getActiveTemplate();
+    final group = template.groups.firstWhere(isBodyPaintReportGroup);
+    final micronValues = sharedMicronInputValuesForGroup(group, '160');
+
+    expect(micronValues, isNotEmpty);
+    final requiredInputs = await service.getRequiredInputsForGroupAllGood(
+      workOrderId: 'wo-2026-0001',
+      group: group,
+      inputValuesByItem: micronValues,
+    );
+    expect(
+      requiredInputs.where((request) => reportInputIsMicron(request.input)),
+      isEmpty,
+    );
+
+    await service.markGroupAllGood(
+      workOrderId: 'wo-2026-0001',
+      template: template,
+      group: group,
+      user: _user,
+      inputValuesByItem: mergeReportInputValuesByItem(
+        micronValues,
+        {
+          for (final request in requiredInputs)
+            request.item.id: {
+              for (final input in request.item.inputFields)
+                if (!reportInputIsMicron(input))
+                  input.id: _sampleInputValue(input.type),
+            },
+        },
+      ),
+    );
+
+    final answers = await reportRepository.getAnswers('wo-2026-0001');
+    for (final item in group.items.where(
+      (item) => item.inputFields.any(reportInputIsMicron),
+    )) {
+      final answer = answers.firstWhere((answer) => answer.itemId == item.id);
+      for (final input in item.inputFields.where(reportInputIsMicron)) {
+        expect(answer.inputValues[input.id], '160');
+      }
+    }
+  });
   test('Seçenekli madde seçim olmadan tamamlanamaz', () async {
     final templateRepository = AssetReportTemplateRepository();
     final service = WorkOrderReportService(
