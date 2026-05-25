@@ -1,3 +1,4 @@
+import '../generated/inspection_schema_catalog.dart';
 import '../models/technician_operation_model.dart';
 import '../models/user_profile_model.dart';
 import '../models/work_order_model.dart';
@@ -40,19 +41,19 @@ class DummyWorkOrderRepository implements WorkOrderRepository {
 
   @override
   TechnicianWorkOrder claim(String workOrderId) {
-    final order = getById(workOrderId).claim(currentUser.id);
-    return _replace(order);
+    return _replace(getById(workOrderId).claim(currentUser.id));
   }
 
   @override
   TechnicianWorkOrder claimTask(String workOrderId, String taskId) {
-    final now = DateTime.now();
     final order = getById(workOrderId);
     if (!order.isStartEvidenceComplete) {
-      throw StateError('Başlangıç kanıtı tamamlanmadan başlık sahiplenilemez.');
+      throw StateError(
+        'Başlangıç kanıtı tamamlanmadan başlık sahiplenilemez.',
+      );
     }
     final task = order.tasks.firstWhere((item) => item.taskId == taskId);
-    return _replaceTask(order, task.claimBy(currentUser, now));
+    return _replaceTask(order, task.claimBy(currentUser, DateTime.now()));
   }
 
   @override
@@ -61,10 +62,12 @@ class DummyWorkOrderRepository implements WorkOrderRepository {
     String taskId,
     String releaseReason,
   ) {
-    final now = DateTime.now();
     final order = getById(workOrderId);
     final task = order.tasks.firstWhere((item) => item.taskId == taskId);
-    return _replaceTask(order, task.releaseBy(currentUser, releaseReason, now));
+    return _replaceTask(
+      order,
+      task.releaseBy(currentUser, releaseReason, DateTime.now()),
+    );
   }
 
   @override
@@ -74,7 +77,6 @@ class DummyWorkOrderRepository implements WorkOrderRepository {
     String ownerUserId,
     String managerAssignReason,
   ) {
-    final now = DateTime.now();
     final order = getById(workOrderId);
     final task = order.tasks.firstWhere((item) => item.taskId == taskId);
     return _replaceTask(
@@ -83,7 +85,7 @@ class DummyWorkOrderRepository implements WorkOrderRepository {
         manager: currentUser,
         nextOwnerUserId: ownerUserId,
         reason: managerAssignReason,
-        assignedAt: now,
+        assignedAt: DateTime.now(),
       ),
     );
   }
@@ -141,9 +143,6 @@ class DummyWorkOrderRepository implements WorkOrderRepository {
     String workOrderId,
     StartEvidence startEvidence,
   ) {
-    final status = startEvidence.isComplete
-        ? WorkOrderStatus.technicalEntryOpen
-        : WorkOrderStatus.startEvidenceRequired;
     final order = getById(workOrderId);
     final tasks = startEvidence.isComplete
         ? [
@@ -151,11 +150,7 @@ class DummyWorkOrderRepository implements WorkOrderRepository {
               if (!task.isOwned &&
                   (task.status == TaskStatus.locked ||
                       task.status == TaskStatus.assigned))
-                task.copyWith(
-                  status: TaskStatus.available,
-                  ownerUserId: null,
-                  claimedAt: null,
-                )
+                task.copyWith(status: TaskStatus.available)
               else
                 task,
           ]
@@ -163,7 +158,9 @@ class DummyWorkOrderRepository implements WorkOrderRepository {
     return _replace(
       order.copyWith(
         startEvidence: startEvidence,
-        status: status,
+        status: startEvidence.isComplete
+            ? WorkOrderStatus.technicalEntryOpen
+            : WorkOrderStatus.startEvidenceRequired,
         tasks: tasks,
       ),
     );
@@ -178,18 +175,19 @@ class DummyWorkOrderRepository implements WorkOrderRepository {
       throw StateError('Sadece görev sahibi bu başlığı düzenleyebilir.');
     }
     return _replaceTask(
-        order,
-        task.copyWith(
-          ownerUserId: current.ownerUserId,
-          claimedAt: current.claimedAt,
-          releaseReason: current.releaseReason,
-          releasedByUserId: current.releasedByUserId,
-          releasedAt: current.releasedAt,
-          assignedByManagerId: current.assignedByManagerId,
-          managerAssignReason: current.managerAssignReason,
-          ownershipHistory: current.ownershipHistory,
-          auditLog: current.auditLog,
-        ));
+      order,
+      task.copyWith(
+        ownerUserId: current.ownerUserId,
+        claimedAt: current.claimedAt,
+        releaseReason: current.releaseReason,
+        releasedByUserId: current.releasedByUserId,
+        releasedAt: current.releasedAt,
+        assignedByManagerId: current.assignedByManagerId,
+        managerAssignReason: current.managerAssignReason,
+        ownershipHistory: current.ownershipHistory,
+        auditLog: current.auditLog,
+      ),
+    );
   }
 
   @override
@@ -353,35 +351,53 @@ List<TechnicianWorkOrder> _seedWorkOrders() {
 
 List<TechnicianTask> _seedTasks(String workOrderId, DateTime now) {
   return [
-    TechnicianTask(
-      taskId: 'body-paint',
-      workOrderId: workOrderId,
-      assignedRole: TechnicianRole.bodyPaint,
-      assignedUserId: '',
-      title: 'Kaporta ve Boya Ekspertizi',
-      status: TaskStatus.locked,
-      checklistItems: [
-        _item('front-hood', 'Ön Kaput', 'report.body_paint.front_hood'),
-        _item('roof', 'Tavan', 'report.body_paint.roof'),
-        _item('right-front-door', 'Sağ Ön Kapı',
-            'report.body_paint.right_front_door'),
-        _item('left-front-door', 'Sol Ön Kapı',
-            'report.body_paint.left_front_door'),
-        _item('micron', 'Boya mikron değeri', 'report.body_paint.micron'),
-      ],
-      requiredFields: const ['customerFriendlyNote'],
-      riskyFindings: const [],
-      customerFriendlyNote: '',
-      reportFieldKey: 'report.section.body_paint',
-      evidenceAssets: [
+    for (final task in inspectionTaskCatalogForPackage('PREMIUM'))
+      _catalogTask(workOrderId, task, now),
+  ];
+}
+
+TechnicianTask _catalogTask(
+  String workOrderId,
+  InspectionTaskCatalog catalogTask,
+  DateTime now,
+) {
+  final requiredEvidenceItems = catalogTask.checklistItems
+      .where((item) => item.requiresMediaAlways)
+      .take(4)
+      .toList(growable: false);
+
+  return TechnicianTask(
+    taskId: _taskIdFromInspectionGroup(catalogTask.taskTypeCode),
+    workOrderId: workOrderId,
+    assignedRole: _roleFromInspectionGroup(catalogTask.taskTypeCode),
+    assignedUserId: '',
+    title: catalogTask.title,
+    status: TaskStatus.locked,
+    checklistItems: [
+      for (final item in catalogTask.checklistItems)
+        _item(
+          item.itemId,
+          item.title,
+          item.reportFieldKey,
+          requiresEvidenceOnRisk: true,
+        ),
+    ],
+    requiredFields: const ['customerFriendlyNote'],
+    riskyFindings: const [],
+    customerFriendlyNote: '',
+    reportFieldKey: catalogTask.reportFieldKey,
+    evidenceAssets: [
+      for (final item in requiredEvidenceItems)
         EvidenceAsset(
-          id: 'body-general-photo',
+          id: '${_taskIdFromInspectionGroup(catalogTask.taskTypeCode)}-${item.itemId}-evidence',
           workOrderId: workOrderId,
-          taskId: 'body-paint',
-          fieldKey: 'body_general_photo',
-          reportFieldKey: 'report.photos.body_general',
-          evidenceType: 'image',
-          title: 'Kaporta genel açı fotoğrafı',
+          taskId: _taskIdFromInspectionGroup(catalogTask.taskTypeCode),
+          fieldKey: item.itemId,
+          reportFieldKey: item.reportFieldKey,
+          evidenceType: item.inputType == 'document_or_image'
+              ? 'document_or_image'
+              : 'image',
+          title: '${item.title} kanıtı',
           localPath: '',
           remoteUrl: '',
           hash: '',
@@ -393,73 +409,51 @@ List<TechnicianTask> _seedTasks(String workOrderId, DateTime now) {
           qualityStatus: 'unchecked',
           rejectionReason: '',
         ),
-      ],
-      managerReturnReason: '',
-      revisionNo: 1,
-      estimatedMinutes: 15,
-    ),
-    _moduleTask(
-      workOrderId,
-      'mechanic',
-      TechnicianRole.mechanic,
-      'Motor / Mekanik',
-      'report.section.engine_mechanic',
-      ['Yağ kaçak kontrolü', 'Şanzıman', 'Debriyaj / kavrama'],
-    ),
-    _moduleTask(
-      workOrderId,
-      'obd',
-      TechnicianRole.obd,
-      'OBD / Elektronik',
-      'report.section.obd',
-      ['Motor beyin arıza kaydı', 'Airbag/SRS ekranı', 'OBD test çıktısı'],
-    ),
-    _moduleTask(
-      workOrderId,
-      'test',
-      TechnicianRole.testOperator,
-      'Fren / Dyno / Yol Testi',
-      'report.section.road_test',
-      ['Servis fren verimliliği', 'Süspansiyon', 'Yol testi notu'],
-    ),
-  ];
-}
-
-TechnicianTask _moduleTask(
-  String workOrderId,
-  String taskId,
-  TechnicianRole role,
-  String title,
-  String reportFieldKey,
-  List<String> items,
-) {
-  return TechnicianTask(
-    taskId: taskId,
-    workOrderId: workOrderId,
-    assignedRole: role,
-    assignedUserId: '',
-    title: title,
-    status: TaskStatus.locked,
-    checklistItems: [
-      for (final item in items)
-        _item(
-          item.toLowerCase().replaceAll(' ', '-').replaceAll('/', '-'),
-          item,
-          '$reportFieldKey.${item.hashCode.abs()}',
-        ),
     ],
-    requiredFields: const ['customerFriendlyNote'],
-    riskyFindings: const [],
-    customerFriendlyNote: '',
-    reportFieldKey: reportFieldKey,
-    evidenceAssets: const [],
     managerReturnReason: '',
     revisionNo: 1,
-    estimatedMinutes: 8,
+    estimatedMinutes: catalogTask.estimatedMinutes,
   );
 }
 
-TechnicianChecklistItem _item(String id, String title, String reportFieldKey) {
+String _taskIdFromInspectionGroup(String groupCode) {
+  return switch (groupCode) {
+    'BODY_PAINT_CHECKUP' => 'body-paint',
+    'MOTOR_CHECKUP' => 'mechanic',
+    'MECHANICAL_CHECKUP' => 'underbody',
+    'OBD_ECU_TEST' => 'obd',
+    'BRAKE_SUSPENSION_TEST' => 'brake',
+    'DYNO_ROAD_TEST' => 'dyno',
+    'EXTERIOR_CONDITION' => 'exterior',
+    'INTERIOR_CHECKUP' => 'interior',
+    'AIRBAG_CHECK' => 'airbag',
+    'HEAD_GASKET_LEAK_TEST' => 'head-gasket',
+    _ => groupCode.toLowerCase().replaceAll('_', '-'),
+  };
+}
+
+TechnicianRole _roleFromInspectionGroup(String groupCode) {
+  return switch (groupCode) {
+    'BODY_PAINT_CHECKUP' ||
+    'EXTERIOR_CONDITION' ||
+    'INTERIOR_CHECKUP' =>
+      TechnicianRole.bodyPaint,
+    'MOTOR_CHECKUP' ||
+    'MECHANICAL_CHECKUP' ||
+    'HEAD_GASKET_LEAK_TEST' =>
+      TechnicianRole.mechanic,
+    'OBD_ECU_TEST' || 'AIRBAG_CHECK' => TechnicianRole.obd,
+    'BRAKE_SUSPENSION_TEST' || 'DYNO_ROAD_TEST' => TechnicianRole.testOperator,
+    _ => TechnicianRole.bodyPaint,
+  };
+}
+
+TechnicianChecklistItem _item(
+  String id,
+  String title,
+  String reportFieldKey, {
+  required bool requiresEvidenceOnRisk,
+}) {
   return TechnicianChecklistItem(
     id: id,
     title: title,
@@ -467,7 +461,7 @@ TechnicianChecklistItem _item(String id, String title, String reportFieldKey) {
     note: '',
     notDoneReason: '',
     reportFieldKey: reportFieldKey,
-    requiresEvidenceOnRisk: true,
+    requiresEvidenceOnRisk: requiresEvidenceOnRisk,
     evidenceAssets: const [],
   );
 }

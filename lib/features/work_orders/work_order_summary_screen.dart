@@ -23,31 +23,42 @@ class WorkOrderSummaryScreen extends StatelessWidget {
         children: [
           const OtotrAlertCard(
             title: 'Eksik alan kontrolü',
-            message: 'Zorunlu fotoğraflar rapor onayı öncesi tamamlanmalı. Demo akışta iş emri oluşturulabilir.',
+            message:
+                'Zorunlu fotoğraflar rapor onayı öncesi tamamlanmalı. Demo akışta iş emri oluşturulabilir.',
           ),
           const OtotrSectionTitle(title: 'Araç'),
-          OtotrCard(child: Text('${order.vehicle.plate}\n${order.vehicle.displayName}\n${order.vehicle.kilometers} km')),
+          OtotrCard(
+              child: Text(
+                  '${order.vehicle.plate}\n${order.vehicle.displayName}\n${order.vehicle.kilometers} km')),
           const OtotrSectionTitle(title: 'Müşteri'),
-          OtotrCard(child: Text('${order.customer.fullName}\n${order.customer.phone}\nRol: ${order.customer.role}')),
+          OtotrCard(
+              child: Text(
+                  '${order.customer.fullName}\n${order.customer.phone}\nRol: ${order.customer.role}')),
           const OtotrSectionTitle(title: 'Paket ve Ücret'),
           OtotrCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(order.packagePlan.name, style: const TextStyle(fontWeight: FontWeight.w900)),
+                Text(order.packagePlan.name,
+                    style: const TextStyle(fontWeight: FontWeight.w900)),
                 Text('Tahmini süre: ${order.estimatedDurationMinutes} dk'),
                 Text(order.packagePlan.listPrice),
                 Text(order.packagePlan.dealerDiscount),
-                Text(order.packagePlan.netCollection, style: const TextStyle(color: AppColors.success, fontWeight: FontWeight.w800)),
+                Text(order.packagePlan.netCollection,
+                    style: const TextStyle(
+                        color: AppColors.success, fontWeight: FontWeight.w800)),
               ],
             ),
           ),
           const OtotrSectionTitle(title: 'Seçili Modüller'),
-          OtotrCard(child: Text(order.modules.map((module) => module.name).join(', '))),
+          OtotrCard(
+              child:
+                  Text(order.modules.map((module) => module.name).join(', '))),
           OtotrPrimaryButton(
             label: 'İş Emri Oluştur',
             icon: Icons.check_circle_outline,
-            onPressed: () => Navigator.pushNamed(context, AppRoutes.workOrderDetail),
+            onPressed: () =>
+                Navigator.pushNamed(context, AppRoutes.workOrderDetail),
           ),
         ],
       ),

@@ -42,8 +42,7 @@ class TechnicianQueriesScreen extends StatelessWidget {
               ],
             ),
           ),
-          for (final query in order.externalQueries)
-            _QueryCard(query: query),
+          for (final query in order.externalQueries) _QueryCard(query: query),
         ],
       ),
     );
@@ -67,7 +66,8 @@ class _QueryCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   query.type,
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
+                  style: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.w900),
                 ),
               ),
               OtotrStatusBadge(

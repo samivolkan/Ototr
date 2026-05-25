@@ -1,74 +1,61 @@
+import '../generated/inspection_schema_catalog.dart';
 import '../models/package_plan_model.dart';
 import '../models/work_order_model.dart';
 
 List<WorkOrderTask> createTasksFromPackage(PackageType packageType) {
-  final taskTypes = switch (packageType) {
-    PackageType.standard => const [
-        TaskType.kaportaKontrol,
-        TaskType.boyaKontrol,
-        TaskType.motorKontrol,
-        TaskType.mekanikKontrol,
-        TaskType.genelFoto,
-        TaskType.raporKontrol,
-      ],
-    PackageType.full => const [
-        TaskType.kaportaKontrol,
-        TaskType.boyaKontrol,
-        TaskType.motorKontrol,
-        TaskType.mekanikKontrol,
-        TaskType.elektrikKontrol,
-        TaskType.altTakimKontrol,
-        TaskType.frenKontrol,
-        TaskType.genelFoto,
-        TaskType.raporKontrol,
-      ],
-    PackageType.premium => const [
-        TaskType.kaportaKontrol,
-        TaskType.boyaKontrol,
-        TaskType.motorKontrol,
-        TaskType.mekanikKontrol,
-        TaskType.elektrikKontrol,
-        TaskType.dynoTest,
-        TaskType.altTakimKontrol,
-        TaskType.frenKontrol,
-        TaskType.icKondisyon,
-        TaskType.genelFoto,
-        TaskType.raporKontrol,
-        TaskType.yoneticiOnay,
-      ],
-    PackageType.kaportaBoya => const [
-        TaskType.kaportaKontrol,
-        TaskType.boyaKontrol,
-        TaskType.genelFoto,
-        TaskType.raporKontrol,
-      ],
-    PackageType.mekanik => const [
-        TaskType.motorKontrol,
-        TaskType.mekanikKontrol,
-        TaskType.altTakimKontrol,
-        TaskType.frenKontrol,
-        TaskType.raporKontrol,
-      ],
-    PackageType.hizliKontrol => const [
-        TaskType.genelFoto,
-        TaskType.motorKontrol,
-        TaskType.frenKontrol,
-        TaskType.raporKontrol,
-      ],
-  };
-
   final createdAt = DateTime.now();
-  return [
-    for (var index = 0; index < taskTypes.length; index++)
+  final catalogTasks = inspectionTaskCatalogForPackage(packageType.code);
+  final tasks = [
+    for (var index = 0; index < catalogTasks.length; index++)
       WorkOrderTask(
-        id: '${packageType.code}-${taskTypes[index].code}-$index',
-        type: taskTypes[index],
-        title: taskTypes[index].label,
+        id: '${packageType.code}-${catalogTasks[index].taskTypeCode}-$index',
+        type: _taskTypeFromInspectionGroup(catalogTasks[index].taskTypeCode),
+        title: catalogTasks[index].title,
         status: WorkOrderTaskStatus.pending,
         isRequired: true,
         createdAt: createdAt,
       ),
   ];
+  if ((packageType == PackageType.premium ||
+          packageType == PackageType.corporate) &&
+      !tasks.any((task) => task.type == TaskType.yoneticiOnay)) {
+    tasks.add(
+      WorkOrderTask(
+        id: '${packageType.code}-${TaskType.yoneticiOnay.code}',
+        type: TaskType.yoneticiOnay,
+        title: 'Kalite ikinci kontrol / yönetici onayı',
+        status: WorkOrderTaskStatus.pending,
+        isRequired: true,
+        createdAt: createdAt,
+      ),
+    );
+  }
+  tasks.add(
+    WorkOrderTask(
+      id: '${packageType.code}-${TaskType.raporKontrol.code}',
+      type: TaskType.raporKontrol,
+      title: 'Rapor kapısı kontrolü',
+      status: WorkOrderTaskStatus.pending,
+      isRequired: true,
+      createdAt: createdAt,
+    ),
+  );
+  return tasks;
+}
+
+TaskType _taskTypeFromInspectionGroup(String groupCode) {
+  return switch (groupCode) {
+    'BODY_PAINT_CHECKUP' => TaskType.kaportaKontrol,
+    'MOTOR_CHECKUP' => TaskType.motorKontrol,
+    'MECHANICAL_CHECKUP' => TaskType.mekanikKontrol,
+    'OBD_ECU_TEST' || 'AIRBAG_CHECK' => TaskType.elektrikKontrol,
+    'BRAKE_SUSPENSION_TEST' => TaskType.frenKontrol,
+    'DYNO_ROAD_TEST' => TaskType.dynoTest,
+    'INTERIOR_CHECKUP' => TaskType.icKondisyon,
+    'EXTERIOR_CONDITION' => TaskType.genelFoto,
+    'HEAD_GASKET_LEAK_TEST' => TaskType.motorKontrol,
+    _ => TaskType.genelFoto,
+  };
 }
 
 WorkOrderStatus calculateWorkOrderStatus(List<WorkOrderTask> tasks) {

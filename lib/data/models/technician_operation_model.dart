@@ -393,7 +393,7 @@ class TechnicianTask {
         '$title için müşteri dili teknik notu girilmeli.',
       for (final asset in evidenceAssets)
         if (asset.isRequired && !asset.isAvailable)
-          '${asset.title} kanıtı eksik.',
+          '${asset.title} fotoğraf/kanıtı eksik.',
     ];
   }
 

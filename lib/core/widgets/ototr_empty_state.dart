@@ -26,7 +26,8 @@ class OtotrEmptyState extends StatelessWidget {
           const SizedBox(height: AppSizes.md),
           Text(title, style: AppTextStyles.section),
           const SizedBox(height: AppSizes.xs),
-          Text(message, style: AppTextStyles.muted, textAlign: TextAlign.center),
+          Text(message,
+              style: AppTextStyles.muted, textAlign: TextAlign.center),
         ],
       ),
     );

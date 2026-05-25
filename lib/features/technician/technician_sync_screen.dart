@@ -35,7 +35,8 @@ class _TechnicianSyncScreenState extends State<TechnicianSyncScreen> {
               children: [
                 Text(
                   '${queue.length} kayıt senkron bekliyor',
-                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
+                  style: const TextStyle(
+                      fontSize: 22, fontWeight: FontWeight.w900),
                 ),
                 const SizedBox(height: 8),
                 const Text(
@@ -84,7 +85,8 @@ class _QueueCard extends StatelessWidget {
               ),
               OtotrStatusBadge(
                 label: isSynced ? 'Senkronlandı' : 'Bekliyor',
-                tone: isSynced ? OtotrBadgeTone.success : OtotrBadgeTone.warning,
+                tone:
+                    isSynced ? OtotrBadgeTone.success : OtotrBadgeTone.warning,
               ),
             ],
           ),

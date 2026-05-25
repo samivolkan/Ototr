@@ -13,6 +13,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="data/inspection_schema_web.js"></script>
   <script>
     (function(){
       try{
@@ -6196,6 +6197,26 @@
         ]
       }
     };
+    const inspectionSchema=window.OTOTR_INSPECTION_SCHEMA||null;
+    function schemaReportRows(key,fallback){const rows=inspectionSchema?.reportRows?.[key];return Array.isArray(rows)&&rows.length?rows:fallback;}
+    function schemaPackageDefinition(name){const packages=inspectionSchema?.packages||[];return packages.find(p=>p.name===name)||packages.find(p=>p.code==='PREMIUM')||null;}
+    function schemaPackagePills(name){const pkg=schemaPackageDefinition(name);const scope=pkg?.scope||[];return `<div class="package-pills">${scope.slice(0,8).map(item=>`<span>${rpEsc(item)}</span>`).join('')}</div>`;}
+    function applyInspectionSchemaToReportData(){
+      if(!inspectionSchema?.reportRows)return;
+      reportData.schemaSource=`JSON ${inspectionSchema.metadata?.raporID||''}`;
+      reportData.bodyPaintRows=schemaReportRows('bodyPaintRows',reportData.bodyPaintRows);
+      reportData.mechanicalRows=schemaReportRows('mechanicalRows',reportData.mechanicalRows);
+      reportData.underbodyRows=schemaReportRows('underbodyRows',reportData.underbodyRows);
+      reportData.obdRows=schemaReportRows('obdRows',reportData.obdRows);
+      reportData.airbagRows=schemaReportRows('airbagRows',reportData.airbagRows);
+      reportData.brakeRows=schemaReportRows('brakeRows',reportData.brakeRows);
+      reportData.dynoRows=schemaReportRows('dynoRows',reportData.dynoRows);
+      reportData.exteriorRows=schemaReportRows('exteriorRows',reportData.exteriorRows);
+      reportData.interiorRows=schemaReportRows('interiorRows',reportData.interiorRows);
+      reportData.records=schemaReportRows('records',reportData.records);
+      reportData.packageScope=schemaPackageDefinition(reportData.packageName)?.scope||[];
+    }
+    applyInspectionSchemaToReportData();
     function rpEsc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
     function reportTone(v){const s=String(v||'').toLocaleLowerCase('tr-TR');return s.includes('kritik')||s.includes('kötü')?'red':s.includes('servis')||s==='var'||s.includes('arıza')?'orange':s.includes('bakım')||s.includes('orta')||s.includes('takip')?'amber':s.includes('sorunsuz')||s.includes('iyi')||s.includes('yok')||s.includes('uygun')||s.includes('yapıldı')||s.includes('hayır')||s.includes('çalışıyor')?'green':s.includes('edilemedi')||s.includes('kapsam')||s.includes('yapılmadı')?'gray':'blue';}
     function reportStatus(v){return `<span class="report-status ${reportTone(v)}">${rpEsc(v)}</span>`;}
@@ -6203,7 +6224,7 @@
     function ReportTable(headers,rows){return `<div class="report-table-wrap technical-detail"><table class="report-table"><thead><tr>${headers.map(h=>`<th>${rpEsc(h)}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map(c=>`<td>${reportCell(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;}
     function ReportScoreCard(label,score,status,note,tone='green'){return `<article class="report-card score-card tone-${tone}"><strong>${rpEsc(label)}</strong><div class="score-ring" style="--score:${Number(score)||0};--ring:var(--tone)"><div>${score}<small>/100</small></div></div>${reportStatus(status)}<p>${rpEsc(note)}</p></article>`;}
     function ReportPanel(label,value,note='',tone='blue'){return `<div class="report-panel tone-${tone}"><span>${rpEsc(label)}</span><b>${rpEsc(value)}</b>${note?`<small class="card-sub">${rpEsc(note)}</small>`:''}</div>`;}
-    function PartyCard(title,ico,rows,extra=''){return `<section class="party-card"><h4><i>${icon(ico)}</i>${rpEsc(title)}</h4><div class="party-list">${rows.map(r=>`<div><span>${rpEsc(r[0])}</span><b>${rpEsc(r[1])}</b></div>`).join('')}</div>${extra}</section>`;}
+    function PartyCard(title,ico,rows,extra=''){const resolvedExtra=title==='Paket ve iş emri'&&inspectionSchema?schemaPackagePills(reportData.packageName):extra;return `<section class="party-card"><h4><i>${icon(ico)}</i>${rpEsc(title)}</h4><div class="party-list">${rows.map(r=>`<div><span>${rpEsc(r[0])}</span><b>${rpEsc(r[1])}</b></div>`).join('')}</div>${resolvedExtra}</section>`;}
     function ReportPriorityStrip(rows){return `<div class="report-priority-strip">${rows.map(r=>`<div class="report-priority tone-${r[3]||'blue'}"><span>${rpEsc(r[0])}</span><b>%${rpEsc(r[1])}</b><i style="--score:${Number(r[1])||0}"></i><small>${rpEsc(r[2])}</small></div>`).join('')}</div>`;}
     function ReportDeviceGrid(){return `<div class="report-device-grid"><div class="report-device"><span>Dyno / yol testi çıktısı</span><div class="device-screen dyno"></div><b>84 / 100 karar desteği</b></div><div class="report-device"><span>OBD tarama ekranı</span><div class="device-screen obd"></div><b>1 geçmiş kayıt, aktif arıza yok</b></div><div class="report-device"><span>Fren test cihazı</span><div class="device-screen brake"></div><b>Sapma limit altında</b></div></div>`;}
     function ReportMeasurementGrid(rows){return `<div class="report-measure-grid">${rows.map(r=>`<div class="report-measure tone-${r[4]||'green'}"><span>${rpEsc(r[0])}</span><b>${rpEsc(r[1])}</b><div class="measure-track"><i style="--value:${Math.max(0,Math.min(100,Number(r[3])||0))}%"></i></div><small>${rpEsc(r[2])}</small></div>`).join('')}</div>`;}
@@ -6423,6 +6444,23 @@
         ['Conta kaçak testi','Mekanik + OBD Ustası','Conta kaçak testi sonucu, cihaz kanıtı ve teknisyen notu']
       ]}
     };
+    function applyInspectionSchemaToDealerPackages(){
+      const packages=window.OTOTR_INSPECTION_SCHEMA?.packages||[];
+      if(!packages.length) return;
+      packages.forEach(pkg=>{
+        const tasks=(pkg.tasks||[]).map(task=>[
+          task.title||task.taskTypeCode||'Kontrol grubu',
+          task.owner||'Usta Havuzu',
+          `${(task.checklistItems||[]).length} JSON kontrol maddesi`
+        ]);
+        DEALER_PACKAGES[pkg.name]={
+          price:pkg.price||'Demo fiyat',
+          scope:pkg.scope||[],
+          tasks
+        };
+      });
+    }
+    applyInspectionSchemaToDealerPackages();
     function dealerPackageName(name){
       const v=String(name||'').trim();
       if(!v) return 'Paket Bekliyor';

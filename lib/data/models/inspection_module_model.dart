@@ -1,6 +1,12 @@
 import 'inspection_checklist_item_model.dart';
 
-enum ModuleStatus { pending, inProgress, completed, criticalFinding, notChecked }
+enum ModuleStatus {
+  pending,
+  inProgress,
+  completed,
+  criticalFinding,
+  notChecked
+}
 
 extension ModuleStatusLabel on ModuleStatus {
   String get label {

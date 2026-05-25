@@ -28,10 +28,15 @@ class ReportPreviewScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(AppConstants.brandName, style: TextStyle(fontSize: 30, fontWeight: FontWeight.w900, color: AppColors.navy)),
+                const Text(AppConstants.brandName,
+                    style: TextStyle(
+                        fontSize: 30,
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.navy)),
                 const Text(AppConstants.brandPositioning),
                 const SizedBox(height: AppSizes.md),
-                Text(order.number, style: Theme.of(context).textTheme.titleLarge),
+                Text(order.number,
+                    style: Theme.of(context).textTheme.titleLarge),
                 Text('${order.vehicle.plate} - ${order.vehicle.displayName}'),
                 Text('${order.customer.fullName} | ${order.packagePlan.name}'),
               ],
@@ -45,7 +50,8 @@ class ReportPreviewScreen extends StatelessWidget {
                     (module) => ListTile(
                       contentPadding: EdgeInsets.zero,
                       title: Text(module.name),
-                      subtitle: Text('Checklist ${module.completedCount}/${module.checklistCount} | Kritik ${module.criticalCount}'),
+                      subtitle: Text(
+                          'Checklist ${module.completedCount}/${module.checklistCount} | Kritik ${module.criticalCount}'),
                       trailing: OtotrStatusBadge(label: module.status.label),
                     ),
                   )
@@ -64,12 +70,15 @@ class ReportPreviewScreen extends StatelessWidget {
           ),
           const OtotrAlertCard(
             title: 'Yasal açıklama',
-            message: 'Bu rapor OTOTR standartlarına göre hazırlanmış ön değerlendirme raporudur.',
+            message:
+                'Bu rapor OTOTR standartlarına göre hazırlanmış ön değerlendirme raporudur.',
           ),
           OtotrPrimaryButton(
             label: 'PDF Dışa Aktar Placeholder',
             icon: Icons.picture_as_pdf_outlined,
-            onPressed: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('PDF export sonradan eklenecek.'))),
+            onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                    content: Text('PDF export sonradan eklenecek.'))),
           ),
         ],
       ),

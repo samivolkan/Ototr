@@ -19,24 +19,38 @@ class InspectionModulesScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(AppSizes.lg),
         children: [
-          const OtotrSectionTitle(title: 'Modül Durumu', subtitle: 'Her modül kanıt, kontrol listesi ve kritik bulgu bilgisiyle takip edilir.'),
+          const OtotrSectionTitle(
+              title: 'Modül Durumu',
+              subtitle:
+                  'Her modül kanıt, kontrol listesi ve kritik bulgu bilgisiyle takip edilir.'),
           ...DummyData.modules.map(
             (module) => OtotrCard(
-              onTap: () => Navigator.pushNamed(context, AppRoutes.inspectionModuleDetail, arguments: module.id),
+              onTap: () => Navigator.pushNamed(
+                  context, AppRoutes.inspectionModuleDetail,
+                  arguments: module.id),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                      Expanded(child: Text(module.name, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 17))),
-                      OtotrStatusBadge(label: module.status.label, tone: _tone(module.status)),
+                      Expanded(
+                          child: Text(module.name,
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.w900, fontSize: 17))),
+                      OtotrStatusBadge(
+                          label: module.status.label,
+                          tone: _tone(module.status)),
                     ],
                   ),
                   const SizedBox(height: AppSizes.sm),
                   Text('Teknisyen: ${module.technician}'),
-                  Text('Kanıt: ${module.hasEvidence ? 'Var' : 'Eksik'} | Checklist: ${module.completedCount}/${module.checklistCount} | Kritik: ${module.criticalCount}'),
+                  Text(
+                      'Kanıt: ${module.hasEvidence ? 'Var' : 'Eksik'} | Checklist: ${module.completedCount}/${module.checklistCount} | Kritik: ${module.criticalCount}'),
                   const SizedBox(height: AppSizes.sm),
-                  const Align(alignment: Alignment.centerRight, child: Text('Detay >', style: TextStyle(fontWeight: FontWeight.w800))),
+                  const Align(
+                      alignment: Alignment.centerRight,
+                      child: Text('Detay >',
+                          style: TextStyle(fontWeight: FontWeight.w800))),
                 ],
               ),
             ),

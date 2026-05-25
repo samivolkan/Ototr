@@ -21,7 +21,8 @@ class SyncService {
     final existing = _queue.where(
       (item) => item.idempotencyKey == idempotencyKey,
     );
-    if (existing.isNotEmpty || _syncedIdempotencyKeys.contains(idempotencyKey)) {
+    if (existing.isNotEmpty ||
+        _syncedIdempotencyKeys.contains(idempotencyKey)) {
       return existing.isNotEmpty
           ? existing.first
           : OfflineSyncQueue(

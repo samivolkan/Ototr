@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ototr_branch_app/core/navigation/app_routes.dart';
+import 'package:ototr_branch_app/data/models/technician_operation_model.dart';
 import 'package:ototr_branch_app/data/models/user_profile_model.dart';
 import 'package:ototr_branch_app/data/repositories/dummy_work_order_repository.dart';
 import 'package:ototr_branch_app/features/manager/manager_task_ownership_screen.dart';
@@ -43,6 +44,8 @@ void main() {
 
   testWidgets('Kontrol Formu riskli bulguda fotoğraf uyarısı verir',
       (tester) async {
+    _completeStartEvidenceAndClaimBodyPaint();
+
     await tester.pumpWidget(
       _app(
         const TechnicianTaskFormScreen(
@@ -119,3 +122,23 @@ const _managerUser = UserProfile(
   branchId: 'bursa-nilufer',
   isActive: true,
 );
+
+void _completeStartEvidenceAndClaimBodyPaint() {
+  final repository = DummyWorkOrderRepository.instance;
+  repository.saveStartEvidence(
+    'wo-2026-0001',
+    StartEvidence(
+      workOrderId: 'wo-2026-0001',
+      vin: 'WVWZZZ3CZEP005235',
+      vinPhoto: 'local/vin.jpg',
+      platePhoto: 'local/plate.jpg',
+      odometerKm: 122450,
+      odometerPhoto: 'local/km.jpg',
+      capturedAt: DateTime(2026, 5, 24),
+      capturedBy: repository.currentUser.id,
+      deviceId: 'demo-device',
+      gpsApprox: 'Bursa Nilufer',
+    ),
+  );
+  repository.claimTask('wo-2026-0001', 'body-paint');
+}
