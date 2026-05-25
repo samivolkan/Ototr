@@ -116,6 +116,25 @@ class _ReportEntryScreenState extends State<ReportEntryScreen> {
             progress: data.progress[group.id],
             onTap: () => setState(() => _selectedGroupId = group.id),
           ),
+        OtotrSecondaryButton(
+          label: 'Rapor Medyalarına Git',
+          icon: Icons.photo_camera,
+          onPressed: () => Navigator.pushNamed(
+            context,
+            AppRoutes.technicianEvidence,
+            arguments: widget.workOrderId,
+          ).then((_) => _refresh()),
+        ),
+        const SizedBox(height: 8),
+        OtotrPrimaryButton(
+          label: 'Final Raporu Hazırla',
+          icon: Icons.article,
+          onPressed: () => Navigator.pushNamed(
+            context,
+            AppRoutes.finalReportPreview,
+            arguments: widget.workOrderId,
+          ).then((_) => _refresh()),
+        ),
       ],
     );
   }
@@ -128,6 +147,12 @@ class _ReportEntryScreenState extends State<ReportEntryScreen> {
       for (final answer in data.answers) answer.itemId: answer,
     };
     final progress = data.progress[group.id];
+    final total = progress?.totalItems ?? group.items.length;
+    final completed = progress?.completedItems ??
+        group.items
+            .where((item) => answersByItem[item.id]?.isCompleted == true)
+            .length;
+    final isGroupComplete = total > 0 && completed >= total;
 
     return ListView(
       padding: const EdgeInsets.all(AppSizes.lg),
@@ -170,24 +195,11 @@ class _ReportEntryScreenState extends State<ReportEntryScreen> {
             ),
           ),
         ),
-        OtotrSecondaryButton(
-          label: 'Rapor Medyalarına Git',
-          icon: Icons.photo_camera,
-          onPressed: () => Navigator.pushNamed(
-            context,
-            AppRoutes.technicianEvidence,
-            arguments: widget.workOrderId,
-          ),
-        ),
-        const SizedBox(height: 8),
-        OtotrPrimaryButton(
-          label: 'Final Rapor Önizleme',
-          icon: Icons.article,
-          onPressed: () => Navigator.pushNamed(
-            context,
-            AppRoutes.finalReportPreview,
-            arguments: widget.workOrderId,
-          ),
+        _SubmitGroupCard(
+          completed: completed,
+          total: total,
+          isComplete: isGroupComplete,
+          onSubmit: () => _submitGroup(group),
         ),
       ],
     );
@@ -333,6 +345,14 @@ class _ReportEntryScreenState extends State<ReportEntryScreen> {
       _future = _load();
     });
   }
+
+  void _submitGroup(ReportTemplateGroup group) {
+    Navigator.pushReplacementNamed(
+      context,
+      AppRoutes.technicianTasks,
+      arguments: widget.workOrderId,
+    );
+  }
 }
 
 bool _isTechnicianVisibleGroup(ReportTemplateGroup group) {
@@ -362,6 +382,72 @@ int _overallPercentForGroups(
       )
       .length;
   return ((completed / totalItems) * 100).round();
+}
+
+class _SubmitGroupCard extends StatelessWidget {
+  const _SubmitGroupCard({
+    required this.completed,
+    required this.total,
+    required this.isComplete,
+    required this.onSubmit,
+  });
+
+  final int completed;
+  final int total;
+  final bool isComplete;
+  final VoidCallback onSubmit;
+
+  @override
+  Widget build(BuildContext context) {
+    final missing = (total - completed).clamp(0, total);
+    return OtotrCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                isComplete ? Icons.check_circle : Icons.pending_actions,
+                color: isComplete ? AppColors.success : AppColors.warning,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  isComplete
+                      ? 'Bu başlık tamamlandı'
+                      : '$completed/$total madde tamamlandı',
+                  style: const TextStyle(
+                    color: AppColors.navy,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            isComplete
+                ? 'Başlığı gönderip testlerin olduğu sayfaya dönebilirsiniz.'
+                : '$missing madde tamamlanmadan başlık gönderilemez.',
+            style: const TextStyle(
+              color: AppColors.grayText,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 14),
+          SizedBox(
+            width: double.infinity,
+            height: AppSizes.buttonHeight,
+            child: FilledButton.icon(
+              onPressed: isComplete ? onSubmit : null,
+              icon: const Icon(Icons.send),
+              label: const Text('Başlığı Gönder'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _ReportEntryData {

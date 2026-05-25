@@ -24,22 +24,22 @@ class SupabaseReportTemplateDataSource {
           .from('report_template_groups')
           .select()
           .eq('template_id', templateId)
-          .order('sort_order'),
+          .order('sort_order', ascending: true),
       _client
           .from('report_template_items')
           .select()
           .eq('template_id', templateId)
-          .order('sort_order'),
+          .order('sort_order', ascending: true),
       _client
           .from('report_template_item_options')
           .select()
           .eq('template_id', templateId)
-          .order('sort_order'),
+          .order('sort_order', ascending: true),
       _client
           .from('report_template_item_inputs')
           .select()
           .eq('template_id', templateId)
-          .order('sort_order'),
+          .order('sort_order', ascending: true),
     ]);
 
     final groups = _asRowList(results[0]);

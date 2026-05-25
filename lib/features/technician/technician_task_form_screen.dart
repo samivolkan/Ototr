@@ -138,10 +138,11 @@ class _TechnicianTaskFormScreenState extends State<TechnicianTaskFormScreen> {
         AppRepositories.instance.remoteWorkOrders?.currentUser ??
             _repository.currentUser;
     final isReadOnly = !task.canEditBy(currentUser);
-    final missing = task.missingReasons();
     final completed = _completedCountForTask(task);
     final total = task.checklistItems.length;
     final percent = total == 0 ? 0 : ((completed / total) * 100).round();
+    final canSubmitRows = total > 0 && completed >= total;
+    final missing = _submitBlockersForTask(task);
     final answersByItem = {
       for (final answer in _answers) answer.itemId: answer,
     };
@@ -331,7 +332,9 @@ class _TechnicianTaskFormScreenState extends State<TechnicianTaskFormScreen> {
                 OtotrPrimaryButton(
                   label: 'Başlığı Gönder',
                   icon: Icons.send,
-                  onPressed: isReadOnly || _isSubmitting ? null : _submitTask,
+                  onPressed: isReadOnly || _isSubmitting || !canSubmitRows
+                      ? null
+                      : _submitTask,
                 ),
               ],
             ),
@@ -386,11 +389,22 @@ class _TechnicianTaskFormScreenState extends State<TechnicianTaskFormScreen> {
         }
         continue;
       }
-      if (answersByItem[reportItem.id]?.isCompleted == true) {
+      if (answersByItem[reportItem.id]?.isCompleted == true ||
+          item.isAnswered) {
         completed += 1;
       }
     }
     return completed;
+  }
+
+  List<String> _submitBlockersForTask(TechnicianTask task) {
+    final unansweredCount =
+        task.checklistItems.length - _completedCountForTask(task);
+    return [
+      if (unansweredCount > 0)
+        '${task.title} için $unansweredCount kontrol maddesi işaretlenmeli.',
+      for (final item in task.checklistItems) ...item.missingReasons(),
+    ];
   }
 
   Future<void> _openReportItem(TechnicianChecklistItem checklistItem) async {
@@ -679,6 +693,8 @@ class _TechnicianTaskFormScreenState extends State<TechnicianTaskFormScreen> {
   // ignore: unused_element
   Future<void> _submitTask() async {
     final task = _task!;
+    final rowsComplete = task.checklistItems.isNotEmpty &&
+        _completedCountForTask(task) >= task.checklistItems.length;
     FocusScope.of(context).unfocus();
     await _runSubmitProgress(task.checklistItems.length);
     if (!mounted) {
@@ -701,12 +717,22 @@ class _TechnicianTaskFormScreenState extends State<TechnicianTaskFormScreen> {
       if (!mounted) {
         return;
       }
-      if (savedTask.status == TaskStatus.evidenceMissing) {
+      if (savedTask.status == TaskStatus.evidenceMissing && !rowsComplete) {
         setState(() {
           _task = savedTask;
           _isSubmitting = false;
         });
         return;
+      }
+      if (savedTask.status == TaskStatus.evidenceMissing && rowsComplete) {
+        try {
+          await remoteRepository.updateTask(
+            widget.workOrderId,
+            savedTask.copyWith(status: TaskStatus.completed),
+          );
+        } catch (_) {
+          // Submit navigation should not be blocked by legacy task status sync.
+        }
       }
       _returnToTaskList();
       return;
@@ -717,12 +743,18 @@ class _TechnicianTaskFormScreenState extends State<TechnicianTaskFormScreen> {
     final savedTask = next.tasks.firstWhere(
       (item) => item.taskId == task.taskId,
     );
-    if (savedTask.status == TaskStatus.evidenceMissing) {
+    if (savedTask.status == TaskStatus.evidenceMissing && !rowsComplete) {
       setState(() {
         _task = savedTask;
         _isSubmitting = false;
       });
       return;
+    }
+    if (savedTask.status == TaskStatus.evidenceMissing && rowsComplete) {
+      _repository.updateTask(
+        widget.workOrderId,
+        savedTask.copyWith(status: TaskStatus.completed),
+      );
     }
     _returnToTaskList();
   }
@@ -751,10 +783,6 @@ class _TechnicianTaskFormScreenState extends State<TechnicianTaskFormScreen> {
       return;
     }
     setState(() => _isSubmitting = false);
-    if (Navigator.canPop(context)) {
-      Navigator.pop(context, true);
-      return;
-    }
     Navigator.pushReplacementNamed(
       context,
       AppRoutes.technicianTasks,

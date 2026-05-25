@@ -251,10 +251,11 @@ class _TaskProgressCard extends StatelessWidget {
     final completed = task.completedCount;
     final total = task.checklistItems.length;
     final percent = task.completionPercent;
+    final rowsComplete = total > 0 && completed >= total;
     final elapsedMinutes = task.claimedAt == null
         ? 0
         : DateTime.now().difference(task.claimedAt!).inMinutes.clamp(0, 999);
-    final statusText = task.status == TaskStatus.completed
+    final statusText = task.status == TaskStatus.completed || rowsComplete
         ? 'Test tamamlandi'
         : completed == 0
             ? 'Teste henuz baslanmadi'

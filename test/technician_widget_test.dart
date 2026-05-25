@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ototr_branch_app/core/navigation/app_routes.dart';
 import 'package:ototr_branch_app/data/models/technician_operation_model.dart';
+import 'package:ototr_branch_app/data/repositories/app_repositories.dart';
 import 'package:ototr_branch_app/data/repositories/dummy_work_order_repository.dart';
+import 'package:ototr_branch_app/data/repositories/final_report_repository.dart';
+import 'package:ototr_branch_app/data/repositories/report_template_repository.dart';
+import 'package:ototr_branch_app/data/repositories/work_order_report_repository.dart';
 import 'package:ototr_branch_app/features/technician/start_evidence_screen.dart';
 import 'package:ototr_branch_app/features/technician/technician_evidence_screen.dart';
 import 'package:ototr_branch_app/features/technician/technician_jobs_screen.dart';
@@ -13,6 +17,11 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   setUp(() {
+    AppRepositories.instance.remoteWorkOrders = null;
+    AppRepositories.instance.reportTemplates = AssetReportTemplateRepository();
+    AppRepositories.instance.workOrderReports =
+        LocalWorkOrderReportRepository.instance;
+    AppRepositories.instance.finalReports = LocalFinalReportRepository.instance;
     DummyWorkOrderRepository.instance.reset();
   });
 

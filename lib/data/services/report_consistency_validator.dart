@@ -125,19 +125,9 @@ class ReportConsistencyValidator {
         issues.addAll(_validateChecklistItem(task, item));
       }
 
-      for (final asset in task.evidenceAssets) {
-        if (asset.isRequired && !asset.isAvailable) {
-          issues.add(
-            ReportGateIssue(
-              code: ReportGateIssueCode.taskMissingEvidence,
-              message: '${asset.title} kanıtı eksik.',
-              taskId: task.taskId,
-              fieldKey: asset.reportFieldKey,
-              evidenceRelated: true,
-            ),
-          );
-        }
-      }
+      // Legacy task-level evidence is no longer a report gate blocker.
+      // Vehicle-wide report media is validated in _validateFinalMedia, while
+      // risky item-specific evidence is still checked per checklist item above.
     }
 
     return issues;

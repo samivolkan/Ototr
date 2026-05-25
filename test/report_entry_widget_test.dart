@@ -54,6 +54,17 @@ void main() {
       'wo-2026-0001',
     );
     expect(answers.where((answer) => answer.isCompleted), hasLength(37));
+
+    await tester.scrollUntilVisible(
+      find.text('Başlığı Gönder'),
+      600,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('Bu başlık tamamlandı'), findsOneWidget);
+    await tester.tap(find.text('Başlığı Gönder'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Görevlerim'), findsOneWidget);
   });
 }
 
@@ -95,6 +106,11 @@ Widget _app() {
           builder: (_) => FinalReportPreviewScreen(
             workOrderId: settings.arguments as String,
           ),
+        );
+      }
+      if (settings.name == AppRoutes.technicianTasks) {
+        return MaterialPageRoute<void>(
+          builder: (_) => const Scaffold(body: Text('Görevlerim')),
         );
       }
       return null;

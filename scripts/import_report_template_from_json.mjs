@@ -6,7 +6,7 @@ const sourcePath = args._[0];
 
 if (!sourcePath) {
   console.error(
-    'Usage: node scripts/import_report_template_from_json.mjs <json-path> [--dry-run] [--apply] [--force] [--sql-out docs/migrations/seed.sql]',
+    'Usage: node scripts/import_report_template_from_json.mjs <json-path> [--dry-run] [--apply] [--rpc-apply] [--force] [--sql-out docs/migrations/seed.sql]',
   );
   process.exit(1);
 }
@@ -27,6 +27,8 @@ if (args['sql-out']) {
 
 if (args.apply) {
   await applyToSupabase(normalized, { force: Boolean(args.force) });
+} else if (args['rpc-apply']) {
+  await applyToSupabaseRpc(normalized, { force: Boolean(args.force) });
 } else if (!args['dry-run']) {
   console.log('Import uygulanmadı. Uygulamak için --apply, sadece kontrol için --dry-run kullanın.');
 }
@@ -199,6 +201,83 @@ async function applyToSupabase(payload, { force }) {
   await upsert(url, key, 'report_template_item_inputs', payload.inputs);
   await upsert(url, key, 'report_template_item_media_fields', payload.mediaFields);
   console.log('Supabase import tamamlandı.');
+}
+
+async function applyToSupabaseRpc(payload, { force }) {
+  const url = process.env.OTOTR_SUPABASE_URL || process.env.SUPABASE_URL;
+  const key = process.env.OTOTR_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
+  const email = process.env.OTOTR_SUPABASE_TEST_EMAIL;
+  const password = process.env.OTOTR_SUPABASE_TEST_PASSWORD;
+  const token = process.env.OTOTR_REPORT_IMPORT_TOKEN;
+  if (!url || !key || !email || !password || !token) {
+    throw new Error(
+      'OTOTR_SUPABASE_URL, OTOTR_SUPABASE_ANON_KEY, OTOTR_SUPABASE_TEST_EMAIL, OTOTR_SUPABASE_TEST_PASSWORD ve OTOTR_REPORT_IMPORT_TOKEN gerekli.',
+    );
+  }
+
+  const session = await signIn(url, key, email, password);
+  const headers = {
+    apikey: key,
+    Authorization: `Bearer ${session.access_token}`,
+    'Content-Type': 'application/json',
+  };
+
+  if (force) {
+    await rpc(url, headers, 'ototr_clear_report_template_seed', {
+      import_token: token,
+      template_id: payload.template.id,
+    });
+  }
+
+  await rpcBatch(url, headers, token, 'report_templates', [payload.template]);
+  await rpcBatch(url, headers, token, 'report_template_groups', payload.groups);
+  await rpcBatch(url, headers, token, 'report_template_items', payload.items);
+  await rpcBatch(url, headers, token, 'report_template_item_options', payload.options);
+  await rpcBatch(url, headers, token, 'report_template_item_inputs', payload.inputs);
+  await rpcBatch(url, headers, token, 'report_template_item_media_fields', payload.mediaFields);
+  console.log('Supabase RPC import tamamlandı.');
+}
+
+async function signIn(url, key, email, password) {
+  const response = await fetch(`${url.replace(/\/$/, '')}/auth/v1/token?grant_type=password`, {
+    method: 'POST',
+    headers: {
+      apikey: key,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ email, password }),
+  });
+  if (!response.ok) {
+    throw new Error(`Auth hata: ${response.status} ${response.statusText}: ${await response.text()}`);
+  }
+  return response.json();
+}
+
+async function rpcBatch(url, headers, token, table, rows) {
+  if (!rows.length) {
+    return;
+  }
+  const chunkSize = 500;
+  for (let index = 0; index < rows.length; index += chunkSize) {
+    await rpc(url, headers, 'ototr_import_report_template_seed_batch', {
+      import_token: token,
+      target_table: table,
+      rows_payload: rows.slice(index, index + chunkSize),
+    });
+  }
+}
+
+async function rpc(url, headers, functionName, body) {
+  const response = await fetch(`${url.replace(/\/$/, '')}/rest/v1/rpc/${functionName}`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(body),
+  });
+  if (!response.ok) {
+    throw new Error(`${functionName}: ${response.status} ${response.statusText}: ${await response.text()}`);
+  }
+  const text = await response.text();
+  return text ? JSON.parse(text) : null;
 }
 
 async function upsert(url, key, table, rows) {
