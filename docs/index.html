@@ -960,7 +960,7 @@
     .dealer-rich-cockpit-shell .dealer-erp-nav button:hover{background:#eef5ff!important;color:var(--ototr-blue-dark)!important}
     .dealer-rich-cockpit-shell .dealer-erp-nav button.active{background:var(--ototr-blue)!important;color:#fff!important;box-shadow:0 10px 22px rgba(23,105,224,.2)!important}
     .dealer-rich-cockpit-shell .dealer-erp-nav button.active i{color:#fff!important}
-    .dealer-rich-cockpit-shell .dealer-sidebar-bottom{margin-top:auto;display:grid;gap:12px}
+    .dealer-rich-cockpit-shell .dealer-sidebar-bottom{display:none!important}
     .dealer-rich-cockpit-shell .dealer-sidebar-account,.dealer-rich-cockpit-shell .dealer-sidebar-field{display:none!important}
     .dealer-rich-cockpit-shell .dealer-sidebar-footer{border:0!important;color:#8994a4!important;font-size:11px!important;padding:0 8px 6px!important}
     .dealer-branch-card{border:1px solid var(--ototr-border);border-radius:10px;background:#f8fbff;padding:10px;display:grid;grid-template-columns:58px minmax(0,1fr);gap:10px;align-items:center}
@@ -982,6 +982,9 @@
     .dealer-cockpit-bell i{width:20px;height:20px}
     .dealer-cockpit-bell span{position:absolute;right:2px;top:0;background:var(--ototr-red);color:#fff;border-radius:999px;min-width:17px;height:17px;display:grid;place-items:center;font-size:10px;font-weight:900}
     .dealer-cockpit-user{background:#eaf3ff;border-color:#d9e9ff;color:var(--ototr-blue-dark);padding-right:10px}
+    .dealer-cockpit-role-select{position:relative;padding-right:34px;cursor:pointer}
+    .dealer-cockpit-role-select select{border:0;outline:0;background:transparent;color:var(--ototr-blue-dark);font:inherit;font-weight:950;appearance:none;min-width:112px;cursor:pointer}
+    .dealer-cockpit-role-select>i{position:absolute;right:10px;pointer-events:none}
     .dealer-cockpit-avatar{width:30px;height:30px;border-radius:50%;background:#0f172a;color:#fff;display:grid;place-items:center;font-size:12px;font-weight:950}
     .dealer-rich-cockpit{padding:20px 22px 22px;display:grid;gap:16px}
     .dealer-rich-title h2{margin:0;font-size:25px;letter-spacing:0}.dealer-rich-title p{margin:6px 0 0;color:var(--ototr-muted);font-size:13px}
@@ -11134,9 +11137,19 @@
         ['merkez','Genel Merkez Talepleri','messages-square']
       ];
       const navItems=isRichCockpit?cockpitNavItems:tabs;
-      const cockpitTopbar=isRichCockpit?`<section class="dealer-cockpit-topbar"><button class="dealer-cockpit-chip" type="button">${icon('building-2')}<span>Bursa Küçük Sanayi Şubesi</span>${icon('chevron-down')}</button><button class="dealer-cockpit-chip" type="button">${icon('calendar-days')}<span>26 Mayıs 2026, Salı</span>${icon('chevron-down')}</button><label class="dealer-cockpit-search">${icon('search')}<input placeholder="Ara (Plaka, Müşteri, İş Emri No...)" aria-label="Bayi portalı arama"><span class="dealer-cockpit-shortcut">⌘ K</span></label><div class="dealer-cockpit-top-actions"><button class="dealer-cockpit-bell" type="button" aria-label="Bildirimler">${icon('bell')}<span>7</span></button><button class="dealer-cockpit-user" type="button"><span class="dealer-cockpit-avatar">SV</span><b>Bayi Sahibi</b>${icon('chevron-down')}</button></div></section>`:'';
-      const cockpitBranchCard=isRichCockpit?`<div class="dealer-branch-card"><div class="dealer-branch-card-art">${icon('building-2')}</div><div><b>Bursa Küçük Sanayi Şubesi</b><span>Küçük Sanayi Sitesi 17. Blok<br>Osmangazi / BURSA</span><small>Şube Durumu: Aktif</small></div></div>`:'';
+      const cockpitTopbar=isRichCockpit?`<section class="dealer-cockpit-topbar"><button class="dealer-cockpit-chip" type="button">${icon('building-2')}<span>Bursa Küçük Sanayi Şubesi</span>${icon('chevron-down')}</button><button class="dealer-cockpit-chip" type="button">${icon('calendar-days')}<span>26 Mayıs 2026, Salı</span>${icon('chevron-down')}</button><label class="dealer-cockpit-search">${icon('search')}<input data-dealer-cockpit-search placeholder="Ara (Plaka, Müşteri, İş Emri No...)" aria-label="Bayi portalı arama"><span class="dealer-cockpit-shortcut">⌘ K</span></label><div class="dealer-cockpit-top-actions"><button class="dealer-cockpit-bell" type="button" aria-label="Bildirimler">${icon('bell')}<span>7</span></button><label class="dealer-cockpit-user dealer-cockpit-role-select"><span class="dealer-cockpit-avatar">SV</span><select data-dealer-role-select aria-label="Rol seçimi">${Object.keys(DEALER_PORTAL_ROLES).map(name=>`<option value="${rpEsc(name)}" ${name===ui.role?'selected':''}>${rpEsc(name)}</option>`).join('')}</select>${icon('chevron-down')}</label></div></section>`:'';
+      const cockpitBranchCard='';
       return `<div class="dealer-portal dealer-erp-shell ${isRichCockpit?'dealer-rich-cockpit-shell':''}"><aside class="dealer-erp-sidebar"><div class="dealer-erp-brand"><div class="dealer-erp-logo">OT</div><div class="dealer-erp-brand-text"><b>OTOTR</b><span>${isRichCockpit?'Tarafsız Araç Ekspertizi':'Bayi Portalı · Aktif Şube: '+rpEsc(branch.name)}</span><small class="dealer-version-tag">SVK v1.0.230</small><small class="dealer-update-tag" title="Son güncelleme: Bayi portalı girişte şifre ister, başarılı canlı oturumu tarayıcıda saklar ve tekrar şifre sormadan yeniler.">26.05 · Kalıcı bayi girişi</small></div></div><div class="dealer-erp-section-title">Şube Menüsü</div><nav class="dealer-erp-nav">${navItems.map(t=>`<button class="${t[0]===ui.tab?'active':''}" data-dealer-tab="${t[0]}">${icon(t[2])}<span>${ui.role==='M\u00fc\u015fteri Kabul / Sekreterya'&&t[0]==='finans'&&!isRichCockpit?'Günlük Finans':t[1]}</span></button>`).join('')}</nav><div class="dealer-sidebar-bottom">${cockpitBranchCard}<div class="dealer-sidebar-account"><div class="dealer-sidebar-avatar" aria-hidden="true"></div><div class="dealer-sidebar-user"><b>Sami Volkan</b><span>${rpEsc(ui.role)}</span></div><i class="dealer-online-dot" title="Çevrimiçi"></i></div><label class="dealer-sidebar-field"><span>Rol görünümü</span><select data-dealer-role-select>${Object.keys(DEALER_PORTAL_ROLES).map(name=>`<option value="${rpEsc(name)}" ${name===ui.role?'selected':''}>${rpEsc(name)}</option>`).join('')}</select></label><label class="dealer-sidebar-field"><span>Şube Seçimi</span><select data-dealer-branch-select>${DB.branches.map(b=>`<option value="${rpEsc(b.id)}" ${b.id===selectedBranchId?'selected':''}>${rpEsc(b.name)}</option>`).join('')}</select></label><div class="dealer-sidebar-footer"><b>OTOTR Bayi Portalı</b><span>© 2026 OTOTR. Tüm hakları saklıdır.<br>v2.6.1</span></div></div></aside><main class="dealer-erp-workspace">${cockpitTopbar}${dealerActionBar}<div class="dealer-portal-layout"><main class="dealer-shell">${(panes[ui.tab]||panes.kokpit)()}${ui.tab==='kurulum'?dealerApiModelPanel():ui.tab==='rapor'?dealerReportMappingPanel():ui.tab==='personel'?dealerAuthMatrixPanel():''}</main><aside class="dealer-rail"><div class="card"><div class="card-head"><div><div class="card-title">Rol Yetkileri</div><div class="card-sub">${roleCfg.desc}</div></div>${badge(ui.role)}</div><div class="dealer-permission-list">${roleCfg.actions.map(a=>`<div><b>${ui.role}</b><span>${a}</span></div>`).join('')}</div></div><div class="card"><div class="card-head"><div><div class="card-title">Canlı Sistem Kilitleri</div><div class="card-sub">Rapor yayın ve teslim kapıları</div></div></div>${dealerMiniRows([['Teknik alan kilidi','Müdür onayından sonra değişiklik revizyon açar','Kural'],['KVKK / yol testi','Eksikse teslim tamamlanamaz','Blokaj'],['Ödeme / tahsilat','Kasa kapanmadan teslim tamamlanamaz','Blokaj']])}</div></aside></div></main>${dealerAppointmentDock()}</div>`;
+    }
+    function dealerApplyCockpitSearch(value){
+      const root=document.querySelector('.dealer-rich-cockpit');
+      if(!root) return;
+      const q=searchText(value||'');
+      ['.dealer-latest-orders tbody tr','.dealer-rich-table tbody tr','.dealer-module-card'].forEach(selector=>{
+        root.querySelectorAll(selector).forEach(row=>{
+          row.style.display=!q || searchText(row.textContent||'').includes(q) ? '' : 'none';
+        });
+      });
     }
     document.addEventListener('input',e=>{
       const phoneInput=e.target.closest?.('[data-dealer-phone-input],input[name="phone"],input[name="sellerPhone"]');
@@ -11560,6 +11573,11 @@
         document.querySelectorAll('[data-dealer-history-row]').forEach(row=>{
           row.style.display=!q || (row.dataset.search||'').includes(q) ? '' : 'none';
         });
+        return;
+      }
+      const cockpitSearch=e.target.closest('[data-dealer-cockpit-search]');
+      if(cockpitSearch){
+        dealerApplyCockpitSearch(cockpitSearch.value);
         return;
       }
       const search=e.target.closest('[data-dealer-report-search]');
