@@ -28,8 +28,6 @@ import '../../features/work_orders/work_order_detail_screen.dart';
 import '../../features/work_orders/work_order_summary_screen.dart';
 import '../../features/work_orders/work_orders_list_screen.dart';
 import '../../data/repositories/app_repositories.dart';
-import '../../data/repositories/dummy_work_order_repository.dart';
-import '../../data/services/role_permission_service.dart';
 import 'app_routes.dart';
 
 class AppRouter {
@@ -95,24 +93,6 @@ class AppRouter {
     if (AppRepositories.instance.hasRemoteWorkOrders) {
       return TechnicianTaskFormScreen(workOrderId: workOrderId, taskId: taskId);
     }
-
-    final repository = DummyWorkOrderRepository.instance;
-    final order = repository.getById(workOrderId);
-    final task = order.tasks.firstWhere((item) => item.taskId == taskId);
-    const permissionService = RolePermissionService();
-
-    final canEdit = permissionService.canEditTask(
-      repository.currentUser,
-      task,
-    );
-    final canViewReadOnly = task.isOwned &&
-        permissionService.canMonitorTask(repository.currentUser, task);
-
-    if (!permissionService.canOpenTechnicalEntry(order) ||
-        (!canEdit && !canViewReadOnly)) {
-      return TechnicianTasksScreen(workOrderId: workOrderId);
-    }
-
-    return TechnicianTaskFormScreen(workOrderId: workOrderId, taskId: taskId);
+    return TechnicianTasksScreen(workOrderId: workOrderId);
   }
 }

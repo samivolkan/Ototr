@@ -9,7 +9,6 @@ import '../../core/widgets/ototr_primary_button.dart';
 import '../../data/models/report_template_model.dart';
 import '../../data/models/technician_operation_model.dart';
 import '../../data/repositories/app_repositories.dart';
-import '../../data/repositories/dummy_work_order_repository.dart';
 import '../../data/repositories/report_template_repository.dart';
 import '../../data/repositories/work_order_report_repository.dart';
 import '../../data/services/work_order_report_service.dart';
@@ -31,7 +30,6 @@ class TechnicianTaskFormScreen extends StatefulWidget {
 }
 
 class _TechnicianTaskFormScreenState extends State<TechnicianTaskFormScreen> {
-  final _repository = DummyWorkOrderRepository.instance;
   TechnicianTask? _task;
   ReportTemplate? _template;
   List<WorkOrderReportAnswer> _answers = const [];
@@ -45,14 +43,10 @@ class _TechnicianTaskFormScreenState extends State<TechnicianTaskFormScreen> {
       TextEditingController();
 
   ReportTemplateRepository get _templateRepository =>
-      AppRepositories.instance.remoteWorkOrders == null
-          ? AssetReportTemplateRepository()
-          : AppRepositories.instance.reportTemplates;
+      AppRepositories.instance.reportTemplates;
 
   WorkOrderReportRepository get _reportRepository =>
-      AppRepositories.instance.remoteWorkOrders == null
-          ? LocalWorkOrderReportRepository.instance
-          : AppRepositories.instance.workOrderReports;
+      AppRepositories.instance.workOrderReports;
 
   WorkOrderReportService get _reportService => WorkOrderReportService(
         templateRepository: _templateRepository,
@@ -70,12 +64,14 @@ class _TechnicianTaskFormScreenState extends State<TechnicianTaskFormScreen> {
           );
       return;
     }
-
-    _task = _repository.getById(widget.workOrderId).tasks.firstWhere(
-          (task) => task.taskId == widget.taskId,
-        );
-    _noteController.text = _task!.customerFriendlyNote;
-    _ensureReportDataLoad();
+    if (AppRepositories.instance.hasLocalTestWorkOrders) {
+      _task = AppRepositories.instance.localWorkOrders
+          .getById(widget.workOrderId)
+          .tasks
+          .firstWhere((task) => task.taskId == widget.taskId);
+      _noteController.text = _task!.customerFriendlyNote;
+      _ensureReportDataLoad();
+    }
   }
 
   @override
@@ -88,7 +84,11 @@ class _TechnicianTaskFormScreenState extends State<TechnicianTaskFormScreen> {
   @override
   Widget build(BuildContext context) {
     final remoteRepository = AppRepositories.instance.remoteWorkOrders;
-    if (remoteRepository != null && _task == null) {
+    if (remoteRepository == null &&
+        !AppRepositories.instance.hasLocalTestWorkOrders) {
+      return _buildLiveRequired();
+    }
+    if (_task == null) {
       return FutureBuilder<TechnicianTask>(
         future: _remoteTaskFuture,
         builder: (context, snapshot) {
@@ -127,6 +127,23 @@ class _TechnicianTaskFormScreenState extends State<TechnicianTaskFormScreen> {
     return _buildForm();
   }
 
+  Widget _buildLiveRequired() {
+    return Scaffold(
+      appBar: const OtotrAppBar(title: 'Kontrol Formu'),
+      backgroundColor: AppColors.grayBg,
+      body: Padding(
+        padding: const EdgeInsets.all(AppSizes.lg),
+        child: OtotrCard(
+          child: Text(
+            AppRepositories.instance.liveConnectionError ??
+                'Canli veri baglantisi yok. Mock/local veri gosterilmiyor.',
+            style: const TextStyle(color: AppColors.red),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildForm() {
     final task = _task!;
     if (_template == null) {
@@ -139,7 +156,7 @@ class _TechnicianTaskFormScreenState extends State<TechnicianTaskFormScreen> {
     }
     final currentUser =
         AppRepositories.instance.remoteWorkOrders?.currentUser ??
-            _repository.currentUser;
+            AppRepositories.instance.localWorkOrders.currentUser;
     final isReadOnly = !task.canEditBy(currentUser);
     final completed = _completedCountForTask(task);
     final total = task.checklistItems.length;
@@ -431,7 +448,7 @@ class _TechnicianTaskFormScreenState extends State<TechnicianTaskFormScreen> {
     }
     final currentUser =
         AppRepositories.instance.remoteWorkOrders?.currentUser ??
-            _repository.currentUser;
+            AppRepositories.instance.localWorkOrders.currentUser;
 
     try {
       await _reportRepository.lockItem(
@@ -506,7 +523,7 @@ class _TechnicianTaskFormScreenState extends State<TechnicianTaskFormScreen> {
     final group = _groupForTask(task);
     final currentUser =
         AppRepositories.instance.remoteWorkOrders?.currentUser ??
-            _repository.currentUser;
+            AppRepositories.instance.localWorkOrders.currentUser;
     if (template != null && group != null) {
       final quickInputValues = sharedMicronInputValuesForGroup(
         group,
@@ -774,25 +791,31 @@ class _TechnicianTaskFormScreenState extends State<TechnicianTaskFormScreen> {
       return;
     }
 
-    _repository.updateTask(widget.workOrderId, task);
-    final next = _repository.submitTask(widget.workOrderId, task.taskId);
-    final savedTask = next.tasks.firstWhere(
-      (item) => item.taskId == task.taskId,
-    );
-    if (savedTask.status == TaskStatus.evidenceMissing && !rowsComplete) {
-      setState(() {
-        _task = savedTask;
-        _isSubmitting = false;
-      });
+    if (AppRepositories.instance.hasLocalTestWorkOrders) {
+      final repository = AppRepositories.instance.localWorkOrders;
+      repository.updateTask(widget.workOrderId, task);
+      final next = repository.submitTask(widget.workOrderId, task.taskId);
+      final savedTask = next.tasks.firstWhere(
+        (item) => item.taskId == task.taskId,
+      );
+      if (savedTask.status == TaskStatus.evidenceMissing && !rowsComplete) {
+        setState(() {
+          _task = savedTask;
+          _isSubmitting = false;
+        });
+        return;
+      }
+      if (savedTask.status == TaskStatus.evidenceMissing && rowsComplete) {
+        repository.updateTask(
+          widget.workOrderId,
+          savedTask.copyWith(status: TaskStatus.completed),
+        );
+      }
+      _returnToTaskList();
       return;
     }
-    if (savedTask.status == TaskStatus.evidenceMissing && rowsComplete) {
-      _repository.updateTask(
-        widget.workOrderId,
-        savedTask.copyWith(status: TaskStatus.completed),
-      );
-    }
-    _returnToTaskList();
+
+    throw StateError('Canli veri baglantisi yok.');
   }
 
   Future<void> _runSubmitProgress(int totalItems) async {

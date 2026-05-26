@@ -175,7 +175,7 @@ class _SourceBar extends StatelessWidget {
             child: Text(
               repository.isRemote
                   ? 'Supabase canli veri aktif'
-                  : 'Local demo veri aktif',
+                  : 'Canli veri baglantisi yok',
               style: const TextStyle(fontWeight: FontWeight.w700),
             ),
           ),

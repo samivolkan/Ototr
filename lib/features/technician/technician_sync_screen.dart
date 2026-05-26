@@ -7,7 +7,7 @@ import '../../core/widgets/ototr_card.dart';
 import '../../core/widgets/ototr_primary_button.dart';
 import '../../core/widgets/ototr_status_badge.dart';
 import '../../data/models/technician_operation_model.dart';
-import '../../data/repositories/dummy_work_order_repository.dart';
+import '../../data/repositories/app_repositories.dart';
 
 class TechnicianSyncScreen extends StatefulWidget {
   const TechnicianSyncScreen({super.key});
@@ -17,7 +17,7 @@ class TechnicianSyncScreen extends StatefulWidget {
 }
 
 class _TechnicianSyncScreenState extends State<TechnicianSyncScreen> {
-  final _repository = DummyWorkOrderRepository.instance;
+  final dynamic _repository = AppRepositories.instance.localWorkOrders;
 
   @override
   Widget build(BuildContext context) {

@@ -16,6 +16,8 @@ void main() {
 
   setUp(() {
     AppRepositories.instance.remoteWorkOrders = null;
+    AppRepositories.instance.localWorkOrders =
+        DummyWorkOrderRepository.instance;
     AppRepositories.instance.reportTemplates = AssetReportTemplateRepository();
     AppRepositories.instance.workOrderReports =
         LocalWorkOrderReportRepository.instance;

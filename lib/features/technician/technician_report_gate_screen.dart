@@ -7,7 +7,6 @@ import '../../core/widgets/ototr_card.dart';
 import '../../core/widgets/ototr_status_badge.dart';
 import '../../data/models/technician_operation_model.dart';
 import '../../data/repositories/app_repositories.dart';
-import '../../data/repositories/dummy_work_order_repository.dart';
 import '../../data/services/report_gate_calculator.dart';
 import 'widgets/technician_missing_notifications.dart';
 import 'widgets/technician_vehicle_header.dart';
@@ -68,7 +67,7 @@ class _TechnicianReportGateScreenState
       );
     }
 
-    final repository = DummyWorkOrderRepository.instance;
+    final repository = AppRepositories.instance.localWorkOrders;
     final order = repository.getById(widget.workOrderId);
     final result = const ReportGateCalculator().calculate(
       workOrder: order,

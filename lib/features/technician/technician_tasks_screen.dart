@@ -11,7 +11,6 @@ import '../../core/widgets/ototr_status_badge.dart';
 import '../../data/models/technician_operation_model.dart';
 import '../../data/models/user_profile_model.dart';
 import '../../data/repositories/app_repositories.dart';
-import '../../data/repositories/dummy_work_order_repository.dart';
 import '../../data/repositories/remote_work_order_repository.dart';
 import 'widgets/technician_missing_notifications.dart';
 import 'widgets/technician_vehicle_header.dart';
@@ -35,27 +34,43 @@ class _TechnicianTasksScreenState extends State<TechnicianTasksScreen> {
         workOrderId: widget.workOrderId,
       );
     }
+    if (AppRepositories.instance.hasLocalTestWorkOrders) {
+      final repository = AppRepositories.instance.localWorkOrders;
+      final order = repository.getById(widget.workOrderId);
+      final role = repository.currentTechnicianRole;
+      final tasks = order.tasksFor(role);
 
-    final repository = DummyWorkOrderRepository.instance;
-    final order = repository.getById(widget.workOrderId);
-    final role = repository.currentTechnicianRole;
-    final tasks = order.tasksFor(role);
+      return _TechnicianTasksView(
+        order: order,
+        role: role,
+        tasks: tasks,
+        workOrderId: widget.workOrderId,
+        currentUser: repository.currentUser,
+        onClaim: (taskId) async {
+          repository.claimTask(widget.workOrderId, taskId);
+          setState(() {});
+        },
+        onRelease: (taskId, reason) async {
+          repository.releaseTask(widget.workOrderId, taskId, reason);
+          setState(() {});
+        },
+        onTaskChanged: () => setState(() {}),
+      );
+    }
 
-    return _TechnicianTasksView(
-      order: order,
-      role: role,
-      tasks: tasks,
-      workOrderId: widget.workOrderId,
-      currentUser: repository.currentUser,
-      onClaim: (taskId) async {
-        repository.claimTask(widget.workOrderId, taskId);
-        setState(() {});
-      },
-      onRelease: (taskId, reason) async {
-        repository.releaseTask(widget.workOrderId, taskId, reason);
-        setState(() {});
-      },
-      onTaskChanged: () => setState(() {}),
+    return Scaffold(
+      appBar: const OtotrAppBar(title: 'GÃ¶revlerim'),
+      backgroundColor: AppColors.grayBg,
+      body: Padding(
+        padding: const EdgeInsets.all(AppSizes.lg),
+        child: OtotrCard(
+          child: Text(
+            AppRepositories.instance.liveConnectionError ??
+                'Canli veri baglantisi yok. Mock/local veri gosterilmiyor.',
+            style: const TextStyle(color: AppColors.red),
+          ),
+        ),
+      ),
     );
   }
 }

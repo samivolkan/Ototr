@@ -12,7 +12,6 @@ import '../../data/models/technician_operation_model.dart';
 import '../../data/models/user_profile_model.dart';
 import '../../data/models/work_order_model.dart';
 import '../../data/repositories/app_repositories.dart';
-import '../../data/repositories/dummy_work_order_repository.dart';
 import '../../data/repositories/remote_work_order_repository.dart';
 import 'widgets/technician_missing_notifications.dart';
 
@@ -24,7 +23,7 @@ class TechnicianJobsScreen extends StatefulWidget {
 }
 
 class _TechnicianJobsScreenState extends State<TechnicianJobsScreen> {
-  final _repository = DummyWorkOrderRepository.instance;
+  final _repository = AppRepositories.instance.localWorkOrders;
   Future<List<TechnicianWorkOrder>>? _remoteJobsFuture;
 
   @override
@@ -32,6 +31,22 @@ class _TechnicianJobsScreenState extends State<TechnicianJobsScreen> {
     final remoteRepository = AppRepositories.instance.remoteWorkOrders;
     if (remoteRepository != null) {
       return _buildRemote(context, remoteRepository);
+    }
+    if (!AppRepositories.instance.hasLocalTestWorkOrders) {
+      return Scaffold(
+        appBar: const OtotrAppBar(title: 'Usta Ä°ÅŸleri'),
+        backgroundColor: AppColors.grayBg,
+        body: Padding(
+          padding: const EdgeInsets.all(AppSizes.lg),
+          child: OtotrCard(
+            child: Text(
+              AppRepositories.instance.liveConnectionError ??
+                  'Canli veri baglantisi yok. Mock/local veri gosterilmiyor.',
+              style: const TextStyle(color: AppColors.red),
+            ),
+          ),
+        ),
+      );
     }
 
     final jobs = _repository.visibleWorkOrders();

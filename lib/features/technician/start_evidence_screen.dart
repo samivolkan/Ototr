@@ -10,7 +10,6 @@ import '../../core/widgets/ototr_primary_button.dart';
 import '../../core/widgets/ototr_secondary_button.dart';
 import '../../data/models/technician_operation_model.dart';
 import '../../data/repositories/app_repositories.dart';
-import '../../data/repositories/dummy_work_order_repository.dart';
 import 'widgets/technician_vehicle_header.dart';
 
 class StartEvidenceScreen extends StatefulWidget {
@@ -23,7 +22,6 @@ class StartEvidenceScreen extends StatefulWidget {
 }
 
 class _StartEvidenceScreenState extends State<StartEvidenceScreen> {
-  final _repository = DummyWorkOrderRepository.instance;
   late final TextEditingController _vinController;
   late final TextEditingController _kmController;
   String _vinPhoto = '';
@@ -39,8 +37,11 @@ class _StartEvidenceScreenState extends State<StartEvidenceScreen> {
     if (remoteRepository != null) {
       _remoteOrderFuture = remoteRepository.getById(widget.workOrderId);
     }
-    final evidence = remoteRepository == null
-        ? _repository.getById(widget.workOrderId).startEvidence
+    final evidence = remoteRepository == null &&
+            AppRepositories.instance.hasLocalTestWorkOrders
+        ? AppRepositories.instance.localWorkOrders
+            .getById(widget.workOrderId)
+            .startEvidence
         : null;
     _vinController = TextEditingController(text: evidence?.vin ?? '');
     _kmController = TextEditingController(
@@ -103,8 +104,26 @@ class _StartEvidenceScreenState extends State<StartEvidenceScreen> {
       );
     }
 
-    final order = _repository.getById(widget.workOrderId);
-    return _buildForm(order);
+    if (AppRepositories.instance.hasLocalTestWorkOrders) {
+      final order =
+          AppRepositories.instance.localWorkOrders.getById(widget.workOrderId);
+      return _buildForm(order);
+    }
+
+    return Scaffold(
+      appBar: const OtotrAppBar(title: 'AraÃ§ BaÅŸlama Ä°ÅŸ Emri'),
+      backgroundColor: AppColors.grayBg,
+      body: Padding(
+        padding: const EdgeInsets.all(AppSizes.lg),
+        child: OtotrCard(
+          child: Text(
+            AppRepositories.instance.liveConnectionError ??
+                'Canli veri baglantisi yok. Mock/local veri gosterilmiyor.',
+            style: const TextStyle(color: AppColors.red),
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildForm(TechnicianWorkOrder order) {
@@ -242,25 +261,33 @@ class _StartEvidenceScreenState extends State<StartEvidenceScreen> {
       return;
     }
 
-    final saved = _repository.saveStartEvidence(
-      widget.workOrderId,
-      previewEvidence,
-    );
-    if (!saved.isStartEvidenceComplete) {
-      setState(() {});
+    if (AppRepositories.instance.hasLocalTestWorkOrders) {
+      final repository = AppRepositories.instance.localWorkOrders;
+      final saved = repository.saveStartEvidence(
+        widget.workOrderId,
+        previewEvidence,
+      );
+      if (!saved.isStartEvidenceComplete) {
+        setState(() {});
+        return;
+      }
+      Navigator.pushReplacementNamed(
+        context,
+        AppRoutes.technicianTasks,
+        arguments: widget.workOrderId,
+      );
       return;
     }
-    Navigator.pushReplacementNamed(
-      context,
-      AppRoutes.technicianTasks,
-      arguments: widget.workOrderId,
-    );
+
+    throw StateError('Canli veri baglantisi yok.');
   }
 
   StartEvidence _buildEvidence() {
     final currentUser =
         AppRepositories.instance.remoteWorkOrders?.currentUser ??
-            _repository.currentUser;
+            (AppRepositories.instance.hasLocalTestWorkOrders
+                ? AppRepositories.instance.localWorkOrders.currentUser
+                : null);
 
     return StartEvidence(
       workOrderId: widget.workOrderId,
@@ -270,7 +297,7 @@ class _StartEvidenceScreenState extends State<StartEvidenceScreen> {
       odometerKm: int.tryParse(_kmController.text.trim()),
       odometerPhoto: _odometerPhoto,
       capturedAt: DateTime.now(),
-      capturedBy: currentUser.id,
+      capturedBy: currentUser?.id ?? '',
       deviceId: 'android-demo-device',
       gpsApprox: 'Bursa Nilüfer',
     );

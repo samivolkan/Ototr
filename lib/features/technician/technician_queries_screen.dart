@@ -6,7 +6,7 @@ import '../../core/widgets/ototr_app_bar.dart';
 import '../../core/widgets/ototr_card.dart';
 import '../../core/widgets/ototr_status_badge.dart';
 import '../../data/models/technician_operation_model.dart';
-import '../../data/repositories/dummy_work_order_repository.dart';
+import '../../data/repositories/app_repositories.dart';
 
 class TechnicianQueriesScreen extends StatelessWidget {
   const TechnicianQueriesScreen({super.key, required this.workOrderId});
@@ -15,7 +15,7 @@ class TechnicianQueriesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final order = DummyWorkOrderRepository.instance.getById(workOrderId);
+    final order = AppRepositories.instance.localWorkOrders.getById(workOrderId);
 
     return Scaffold(
       appBar: const OtotrAppBar(title: 'Tramer / KM'),

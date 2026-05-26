@@ -7,8 +7,6 @@ import '../../core/widgets/ototr_card.dart';
 import '../../data/models/report_template_model.dart';
 import '../../data/repositories/app_repositories.dart';
 import '../../data/repositories/final_report_repository.dart';
-import '../../data/repositories/report_template_repository.dart';
-import '../../data/repositories/work_order_report_repository.dart';
 import '../../data/services/final_report_builder.dart';
 
 class FinalReportPreviewScreen extends StatefulWidget {
@@ -129,13 +127,16 @@ class _FinalReportPreviewScreenState extends State<FinalReportPreviewScreen> {
   }
 
   Future<_FinalReportPreviewData> _load() async {
+    if (AppRepositories.instance.remoteWorkOrders == null &&
+        !AppRepositories.instance.hasLocalTestWorkOrders) {
+      throw StateError(
+        AppRepositories.instance.liveConnectionError ??
+            'Canli veri baglantisi yok. Mock/local veri gosterilmiyor.',
+      );
+    }
     final builder = FinalReportBuilder(
-      templateRepository: AppRepositories.instance.remoteWorkOrders == null
-          ? AssetReportTemplateRepository()
-          : AppRepositories.instance.reportTemplates,
-      reportRepository: AppRepositories.instance.remoteWorkOrders == null
-          ? LocalWorkOrderReportRepository.instance
-          : AppRepositories.instance.workOrderReports,
+      templateRepository: AppRepositories.instance.reportTemplates,
+      reportRepository: AppRepositories.instance.workOrderReports,
     );
     final draft = await builder.build(widget.workOrderId);
     final repository = _repository;
@@ -145,9 +146,7 @@ class _FinalReportPreviewScreenState extends State<FinalReportPreviewScreen> {
   }
 
   FinalReportRepository get _repository =>
-      AppRepositories.instance.remoteWorkOrders == null
-          ? LocalFinalReportRepository.instance
-          : AppRepositories.instance.finalReports;
+      AppRepositories.instance.finalReports;
 
   Future<void> _lockFinalReport(FinalReportDraft draft) async {
     try {

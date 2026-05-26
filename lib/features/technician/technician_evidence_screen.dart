@@ -6,7 +6,7 @@ import '../../core/widgets/ototr_app_bar.dart';
 import '../../core/widgets/ototr_card.dart';
 import '../../core/widgets/ototr_status_badge.dart';
 import '../../data/models/technician_operation_model.dart';
-import '../../data/repositories/dummy_work_order_repository.dart';
+import '../../data/repositories/app_repositories.dart';
 import 'widgets/technician_vehicle_header.dart';
 
 class TechnicianEvidenceScreen extends StatefulWidget {
@@ -20,11 +20,12 @@ class TechnicianEvidenceScreen extends StatefulWidget {
 }
 
 class _TechnicianEvidenceScreenState extends State<TechnicianEvidenceScreen> {
-  final _repository = DummyWorkOrderRepository.instance;
+  final dynamic _repository = AppRepositories.instance.localWorkOrders;
 
   @override
   Widget build(BuildContext context) {
-    final order = _repository.getById(widget.workOrderId);
+    final order =
+        _repository.getById(widget.workOrderId) as TechnicianWorkOrder;
     final tasks = order.tasksFor(_repository.currentTechnicianRole);
     final taskAssets = [
       for (final task in tasks) ...task.evidenceAssets,

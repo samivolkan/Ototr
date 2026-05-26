@@ -15,6 +15,8 @@ const baseUrl = process.env.OTOTR_SUPABASE_URL.replace(/\/$/, '');
 const anonKey = process.env.OTOTR_SUPABASE_ANON_KEY;
 const email = process.env.OTOTR_SUPABASE_TEST_EMAIL;
 const password = process.env.OTOTR_SUPABASE_TEST_PASSWORD;
+const keepSmokeData =
+  process.argv.includes('--keep') || process.env.OTOTR_KEEP_SMOKE_TEST === '1';
 
 const session = await signIn();
 const headers = {
@@ -199,6 +201,11 @@ console.log(
   ),
 );
 
+if (!keepSmokeData) {
+  await cleanupSmokeCase(caseId);
+  console.log(JSON.stringify({ cleanup: true, caseId }, null, 2));
+}
+
 async function signIn() {
   const response = await fetch(`${baseUrl}/auth/v1/token?grant_type=password`, {
     method: 'POST',
@@ -259,6 +266,20 @@ async function patch(path, payload) {
     throw new Error(`PATCH ${path} failed: ${response.status} ${await response.text()}`);
   }
   return response.json();
+}
+
+async function del(path) {
+  const response = await fetch(`${baseUrl}/rest/v1/${path}`, {
+    method: 'DELETE',
+    headers: { ...headers, Prefer: 'return=minimal' },
+  });
+  if (!response.ok) {
+    throw new Error(`DELETE ${path} failed: ${response.status} ${await response.text()}`);
+  }
+}
+
+async function cleanupSmokeCase(caseId) {
+  await del(`expertise_cases?id=eq.${caseId}`);
 }
 
 async function upsertStartEvidence(caseId, actorId, vin) {

@@ -13,7 +13,6 @@ import '../../../data/models/report_template_model.dart';
 import '../../../data/models/technician_operation_model.dart';
 import '../../../data/models/user_profile_model.dart';
 import '../../../data/repositories/app_repositories.dart';
-import '../../../data/repositories/dummy_work_order_repository.dart';
 import '../../../data/repositories/report_template_repository.dart';
 import '../../../data/repositories/work_order_report_repository.dart';
 import '../../../data/services/photo_upload_service.dart';
@@ -32,10 +31,6 @@ class ReportEntryScreen extends StatefulWidget {
 class _ReportEntryScreenState extends State<ReportEntryScreen> {
   Future<_ReportEntryData>? _future;
   String? _selectedGroupId;
-  final ReportTemplateRepository _assetTemplateRepository =
-      AssetReportTemplateRepository();
-  final WorkOrderReportRepository _localReportRepository =
-      LocalWorkOrderReportRepository.instance;
   final TextEditingController _bodyPaintMicronController =
       TextEditingController();
 
@@ -45,14 +40,10 @@ class _ReportEntryScreenState extends State<ReportEntryScreen> {
       );
 
   ReportTemplateRepository get _templateRepository =>
-      AppRepositories.instance.remoteWorkOrders == null
-          ? _assetTemplateRepository
-          : AppRepositories.instance.reportTemplates;
+      AppRepositories.instance.reportTemplates;
 
   WorkOrderReportRepository get _reportRepository =>
-      AppRepositories.instance.remoteWorkOrders == null
-          ? _localReportRepository
-          : AppRepositories.instance.workOrderReports;
+      AppRepositories.instance.workOrderReports;
 
   @override
   void initState() {
@@ -217,6 +208,13 @@ class _ReportEntryScreenState extends State<ReportEntryScreen> {
 
   Future<_ReportEntryData> _load() async {
     final repositories = AppRepositories.instance;
+    final remote = repositories.remoteWorkOrders;
+    if (remote == null && !repositories.hasLocalTestWorkOrders) {
+      throw StateError(
+        repositories.liveConnectionError ??
+            'Canli veri baglantisi yok. Mock/local veri gosterilmiyor.',
+      );
+    }
     final template = await _templateRepository.getActiveTemplate();
     final visibleGroups = [
       for (final group in template.groups)
@@ -227,12 +225,11 @@ class _ReportEntryScreenState extends State<ReportEntryScreen> {
     );
     final progressList = await _service.getReportProgress(widget.workOrderId);
     final overallPercent = _overallPercentForGroups(visibleGroups, answers);
-    final remote = repositories.remoteWorkOrders;
     final order = remote == null
-        ? DummyWorkOrderRepository.instance.getById(widget.workOrderId)
+        ? repositories.localWorkOrders.getById(widget.workOrderId)
         : await remote.getById(widget.workOrderId);
     final currentUser =
-        remote?.currentUser ?? DummyWorkOrderRepository.instance.currentUser;
+        remote?.currentUser ?? repositories.localWorkOrders.currentUser;
 
     return _ReportEntryData(
       template: template,
