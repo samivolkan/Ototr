@@ -277,10 +277,9 @@ class _TechnicianIdentityBar extends StatelessWidget {
 
 int _technicianMissingActionCount(TechnicianWorkOrder job) {
   final issues = const ReportGateCalculator()
-      .calculate(workOrder: job, syncQueue: const [])
-      .issues;
-  final hasStartEvidenceIssue =
-      issues.any((issue) => issue.code == ReportGateIssueCode.startEvidenceMissing);
+      .calculate(workOrder: job, syncQueue: const []).issues;
+  final hasStartEvidenceIssue = issues
+      .any((issue) => issue.code == ReportGateIssueCode.startEvidenceMissing);
   final technicalTaskIds = <String>{
     for (final issue in issues)
       if (_isTechnicalTaskIssue(issue) && issue.taskId != null) issue.taskId!,
@@ -392,30 +391,31 @@ class _JobSummaryCard extends StatelessWidget {
           const SizedBox(height: 10),
           Row(
             children: [
-              OtotrStatusBadge(
-                label: '${myTasks.length} görev',
-                tone: OtotrBadgeTone.neutral,
-              ),
-              const SizedBox(width: 6),
-              OtotrStatusBadge(
-                label: '$completed/${myTasks.length} tamamlandı',
-                tone: completed == myTasks.length && myTasks.isNotEmpty
-                    ? OtotrBadgeTone.success
-                    : OtotrBadgeTone.warning,
-              ),
-              if (missingCount > 0) ...[
-                const SizedBox(width: 6),
-                OtotrStatusBadge(
-                  label: '$missingCount eksik',
-                  tone: OtotrBadgeTone.danger,
+              Expanded(
+                child: Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: [
+                    OtotrStatusBadge(
+                      label: '${myTasks.length} görev',
+                      tone: OtotrBadgeTone.neutral,
+                    ),
+                    OtotrStatusBadge(
+                      label: '$completed/${myTasks.length} tamamlandı',
+                      tone: completed == myTasks.length && myTasks.isNotEmpty
+                          ? OtotrBadgeTone.success
+                          : OtotrBadgeTone.warning,
+                    ),
+                    if (missingCount > 0)
+                      OtotrStatusBadge(
+                        label: '$missingCount eksik',
+                        tone: OtotrBadgeTone.danger,
+                      ),
+                  ],
                 ),
-              ],
-              const Spacer(),
-              const Icon(
-                Icons.chevron_right,
-                color: AppColors.grayText,
-                size: 24,
               ),
+              const SizedBox(width: 8),
+              const Icon(Icons.chevron_right, color: AppColors.grayText),
             ],
           ),
         ],
@@ -555,11 +555,13 @@ class _JobCompletionProgress extends StatelessWidget {
     required this.completed,
     required this.total,
     required this.percent,
+    this.compact = false,
   });
 
   final int completed;
   final int total;
   final int percent;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -570,7 +572,10 @@ class _JobCompletionProgress extends StatelessWidget {
             : AppColors.info;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      padding: EdgeInsets.symmetric(
+        horizontal: compact ? 10 : 12,
+        vertical: compact ? 8 : 10,
+      ),
       decoration: BoxDecoration(
         color: AppColors.grayBg,
         borderRadius: BorderRadius.circular(14),
@@ -583,7 +588,7 @@ class _JobCompletionProgress extends StatelessWidget {
             children: [
               Icon(Icons.percent, size: 18, color: progressColor),
               const SizedBox(width: 8),
-              const Expanded(
+              Expanded(
                 child: Text(
                   'İş emri tamamlanma',
                   maxLines: 1,
@@ -591,7 +596,7 @@ class _JobCompletionProgress extends StatelessWidget {
                   style: TextStyle(
                     color: AppColors.darkText,
                     fontWeight: FontWeight.w900,
-                    fontSize: 13,
+                    fontSize: compact ? 12 : 13,
                   ),
                 ),
               ),
@@ -609,7 +614,7 @@ class _JobCompletionProgress extends StatelessWidget {
                 style: TextStyle(
                   color: progressColor,
                   fontWeight: FontWeight.w900,
-                  fontSize: 16,
+                  fontSize: compact ? 14 : 16,
                 ),
               ),
             ],
@@ -618,7 +623,7 @@ class _JobCompletionProgress extends StatelessWidget {
           ClipRRect(
             borderRadius: BorderRadius.circular(999),
             child: LinearProgressIndicator(
-              minHeight: 7,
+              minHeight: compact ? 6 : 7,
               value: percent / 100,
               color: progressColor,
               backgroundColor: AppColors.grayBorder,

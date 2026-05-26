@@ -36,6 +36,22 @@ void main() {
     expect(find.text('16 ABC 123'), findsOneWidget);
     expect(find.textContaining('tamamlanma'), findsWidgets);
     expect(find.text('%0'), findsWidgets);
+    expect(find.text('Görevlerim'), findsNothing);
+    expect(find.text('Rapor Girişi'), findsNothing);
+  });
+
+  testWidgets('Is emri kartina tiklayinca detay aksiyonlari acilir',
+      (tester) async {
+    await tester.pumpWidget(_app(const TechnicianJobsScreen()));
+    await tester.pump();
+
+    await tester.tap(find.text('16 ABC 123'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('İş Emri Detayı'), findsOneWidget);
+    expect(find.text('Görevlerim'), findsOneWidget);
+    expect(find.text('Rapor Girişi'), findsOneWidget);
+    expect(find.text('Eksik Bildirimleri'), findsOneWidget);
   });
 
   testWidgets('Arac baslama is emri eksikleri gosterir', (tester) async {
@@ -188,6 +204,13 @@ Widget _app(Widget home) {
       if (settings.name == AppRoutes.technicianStartEvidence) {
         return MaterialPageRoute<void>(
           builder: (_) => StartEvidenceScreen(
+            workOrderId: settings.arguments as String,
+          ),
+        );
+      }
+      if (settings.name == AppRoutes.technicianJobDetail) {
+        return MaterialPageRoute<void>(
+          builder: (_) => TechnicianJobDetailScreen(
             workOrderId: settings.arguments as String,
           ),
         );
