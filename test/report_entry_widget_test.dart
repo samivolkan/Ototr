@@ -74,7 +74,7 @@ void main() {
     await tester.tap(find.text('Başlığı Gönder'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Görevlerim'), findsOneWidget);
+    expect(find.text('Bekleyen Görevler'), findsOneWidget);
   });
 }
 
@@ -120,7 +120,7 @@ Widget _app() {
       }
       if (settings.name == AppRoutes.technicianTasks) {
         return MaterialPageRoute<void>(
-          builder: (_) => const Scaffold(body: Text('Görevlerim')),
+          builder: (_) => const Scaffold(body: Text('Bekleyen Görevler')),
         );
       }
       return null;

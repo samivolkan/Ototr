@@ -72,8 +72,15 @@ void main() {
         .tasks
         .firstWhere((task) => task.taskId == 'obd');
     expect(submittedTask.status, TaskStatus.completed);
-    expect(find.textContaining('Görev'), findsWidgets);
-    expect(find.textContaining('Test tamamlandi'), findsWidgets);
+    expect(find.text('Bekleyen Görevler'), findsWidgets);
+    expect(find.text('Tamamlanan Görevler'), findsOneWidget);
+
+    await tester.scrollUntilVisible(
+      find.textContaining('10/10'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.textContaining('10/10'), findsWidgets);
   });
 }
 

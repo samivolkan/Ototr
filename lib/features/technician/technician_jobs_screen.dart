@@ -526,7 +526,7 @@ class _JobCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           OtotrSecondaryButton(
-            label: 'Görevlerim',
+            label: 'Bekleyen Görevler',
             icon: Icons.checklist,
             onPressed: () => Navigator.pushNamed(
               context,

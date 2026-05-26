@@ -59,7 +59,7 @@ class _TechnicianTasksScreenState extends State<TechnicianTasksScreen> {
     }
 
     return Scaffold(
-      appBar: const OtotrAppBar(title: 'GÃ¶revlerim'),
+      appBar: const OtotrAppBar(title: 'Bekleyen Görevler'),
       backgroundColor: AppColors.grayBg,
       body: Padding(
         padding: const EdgeInsets.all(AppSizes.lg),
@@ -106,7 +106,7 @@ class _RemoteTechnicianTasksScreenState
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return Scaffold(
-            appBar: const OtotrAppBar(title: 'Görevlerim'),
+            appBar: const OtotrAppBar(title: 'Bekleyen Görevler'),
             backgroundColor: AppColors.grayBg,
             body: Padding(
               padding: const EdgeInsets.all(AppSizes.lg),
@@ -122,7 +122,7 @@ class _RemoteTechnicianTasksScreenState
 
         if (!snapshot.hasData) {
           return const Scaffold(
-            appBar: OtotrAppBar(title: 'Görevlerim'),
+            appBar: OtotrAppBar(title: 'Bekleyen Görevler'),
             backgroundColor: AppColors.grayBg,
             body: Center(child: CircularProgressIndicator()),
           );
@@ -186,8 +186,17 @@ class _TechnicianTasksView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final pendingTasks = [
+      for (final task in tasks)
+        if (task.status != TaskStatus.completed) task,
+    ];
+    final completedTasks = [
+      for (final task in tasks)
+        if (task.status == TaskStatus.completed) task,
+    ];
+
     return Scaffold(
-      appBar: const OtotrAppBar(title: 'Görevlerim'),
+      appBar: const OtotrAppBar(title: 'Bekleyen Görevler'),
       backgroundColor: AppColors.grayBg,
       body: ListView(
         padding: const EdgeInsets.all(AppSizes.lg),
@@ -209,7 +218,15 @@ class _TechnicianTasksView extends StatelessWidget {
             ).then((_) => onTaskChanged?.call()),
           ),
           const SizedBox(height: 8),
-          for (final task in tasks)
+          _TaskSectionHeader(
+            title: 'Bekleyen Görevler',
+            count: pendingTasks.length,
+          ),
+          if (pendingTasks.isEmpty)
+            const _EmptyTaskSectionCard(
+              message: 'Bekleyen teknik başlık bulunmuyor.',
+            ),
+          for (final task in pendingTasks)
             _TaskProgressCard(
               task: task,
               isUnlocked: order.isStartEvidenceComplete,
@@ -221,6 +238,23 @@ class _TechnicianTasksView extends StatelessWidget {
                   : (reason) => onRelease!(task.taskId, reason),
               onTaskChanged: onTaskChanged,
             ),
+          if (completedTasks.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            _TaskSectionHeader(
+              title: 'Tamamlanan Görevler',
+              count: completedTasks.length,
+            ),
+            for (final task in completedTasks)
+              _TaskProgressCard(
+                task: task,
+                isUnlocked: order.isStartEvidenceComplete,
+                workOrderId: workOrderId,
+                currentUser: currentUser,
+                onClaim: null,
+                onRelease: null,
+                onTaskChanged: onTaskChanged,
+              ),
+          ],
           OtotrSecondaryButton(
             label: 'Rapor Medyalarına Git',
             icon: Icons.photo_camera,
@@ -261,17 +295,25 @@ class _TaskProgressCard extends StatelessWidget {
     final isOwnedByCurrentUser = task.isOwnedBy(currentUser.id);
     final isReadOnly = task.isOwned && !canEdit;
     final canClaim = isUnlocked && task.isAvailableForClaim && onClaim != null;
-    final canOpenForm = isUnlocked && (canEdit || isReadOnly);
+    final isCompletedStatus = task.status == TaskStatus.completed;
+    final canOpenForm =
+        isUnlocked && (canEdit || isReadOnly || isCompletedStatus);
     final canOpenByTap = canClaim || canOpenForm;
-    final completed = task.completedCount;
     final total = task.checklistItems.length;
-    final percent = task.completionPercent;
+    final completed = isCompletedStatus && total > 0
+        ? total
+        : task.completedCount.clamp(0, total);
+    final percent = isCompletedStatus
+        ? 100
+        : total == 0
+            ? task.completionPercent
+            : ((completed / total) * 100).round();
     final rowsComplete = total > 0 && completed >= total;
     final elapsedMinutes = task.claimedAt == null
         ? 0
         : DateTime.now().difference(task.claimedAt!).inMinutes.clamp(0, 999);
-    final statusText = task.status == TaskStatus.completed || rowsComplete
-        ? 'Test tamamlandi'
+    final statusText = isCompletedStatus || rowsComplete
+        ? 'Test tamamlandı'
         : completed == 0
             ? 'Teste henuz baslanmadi'
             : 'Test devam ediyor';
@@ -335,8 +377,12 @@ class _TaskProgressCard extends StatelessWidget {
             children: [
               _SoftMetricPill(
                 label: '$completed/$total',
-                background: const Color(0xFFE5E7EB),
-                foreground: AppColors.grayText,
+                icon: rowsComplete ? Icons.check_circle : null,
+                background: rowsComplete
+                    ? const Color(0xFFEAF7F0)
+                    : const Color(0xFFE5E7EB),
+                foreground:
+                    rowsComplete ? AppColors.success : AppColors.grayText,
               ),
               _SoftMetricPill(
                 label: ownershipLabel,
@@ -369,7 +415,7 @@ class _TaskProgressCard extends StatelessWidget {
               style: TextStyle(color: AppColors.grayText),
             ),
           ],
-          if (isOwnedByCurrentUser) ...[
+          if (isOwnedByCurrentUser && !isCompletedStatus) ...[
             const SizedBox(height: AppSizes.md),
             OtotrSecondaryButton(
               label: 'Gorevi Birak',
@@ -411,16 +457,84 @@ class _TaskProgressCard extends StatelessWidget {
   }
 }
 
+class _TaskSectionHeader extends StatelessWidget {
+  const _TaskSectionHeader({
+    required this.title,
+    required this.count,
+  });
+
+  final String title;
+  final int count;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(2, 10, 2, 8),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              title,
+              style: const TextStyle(
+                color: AppColors.navy,
+                fontSize: 18,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: AppColors.white,
+              borderRadius: BorderRadius.circular(999),
+              border: Border.all(color: AppColors.grayBorder),
+            ),
+            child: Text(
+              '$count başlık',
+              style: const TextStyle(
+                color: AppColors.grayText,
+                fontWeight: FontWeight.w900,
+                fontSize: 12,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _EmptyTaskSectionCard extends StatelessWidget {
+  const _EmptyTaskSectionCard({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return OtotrCard(
+      child: Text(
+        message,
+        style: const TextStyle(
+          color: AppColors.grayText,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+}
+
 class _SoftMetricPill extends StatelessWidget {
   const _SoftMetricPill({
     required this.label,
     required this.background,
     required this.foreground,
+    this.icon,
   });
 
   final String label;
   final Color background;
   final Color foreground;
+  final IconData? icon;
 
   @override
   Widget build(BuildContext context) {
@@ -430,15 +544,24 @@ class _SoftMetricPill extends StatelessWidget {
         color: background,
         borderRadius: BorderRadius.circular(999),
       ),
-      child: Text(
-        label,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: TextStyle(
-          color: foreground,
-          fontSize: 12,
-          fontWeight: FontWeight.w900,
-        ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (icon != null) ...[
+            Icon(icon, color: foreground, size: 15),
+            const SizedBox(width: 5),
+          ],
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: foreground,
+              fontSize: 12,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ],
       ),
     );
   }

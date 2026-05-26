@@ -38,7 +38,7 @@ void main() {
     expect(find.text('16 ABC 123'), findsOneWidget);
     expect(find.textContaining('tamamlanma'), findsWidgets);
     expect(find.text('%0'), findsWidgets);
-    expect(find.text('Görevlerim'), findsNothing);
+    expect(find.text('Bekleyen Görevler'), findsNothing);
     expect(find.text('Rapor Girişi'), findsNothing);
   });
 
@@ -51,7 +51,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('İş Emri Detayı'), findsOneWidget);
-    expect(find.text('Görevlerim'), findsOneWidget);
+    expect(find.text('Bekleyen Görevler'), findsOneWidget);
     expect(find.text('Rapor Girişi'), findsOneWidget);
     expect(find.text('Eksik Bildirimleri'), findsOneWidget);
   });
