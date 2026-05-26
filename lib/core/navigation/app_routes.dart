@@ -21,6 +21,7 @@ class AppRoutes {
   static const String branchKpi = '/branch-kpi';
   static const String profile = '/profile';
   static const String technicianJobs = '/technician/jobs';
+  static const String technicianJobDetail = '/technician/job-detail';
   static const String technicianStartEvidence = '/technician/start-evidence';
   static const String technicianTasks = '/technician/tasks';
   static const String technicianReportEntry = '/technician/report-entry';

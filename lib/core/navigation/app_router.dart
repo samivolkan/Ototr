@@ -58,6 +58,9 @@ class AppRouter {
       AppRoutes.branchKpi => const BranchKpiScreen(),
       AppRoutes.profile => const ProfileScreen(),
       AppRoutes.technicianJobs => const TechnicianJobsScreen(),
+      AppRoutes.technicianJobDetail => TechnicianJobDetailScreen(
+          workOrderId: settings.arguments as String,
+        ),
       AppRoutes.technicianStartEvidence => StartEvidenceScreen(
           workOrderId: settings.arguments as String,
         ),
