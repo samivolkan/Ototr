@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="ototr-version" content="SVK v1.0.229-live-session-refresh" />
+  <meta name="ototr-version" content="SVK v1.0.230-dealer-login-persist" />
   <title>OTOTR Genel Merkez ERP + CRM</title>
   <link rel="icon" type="image/svg+xml" href="docs/ototr-favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -120,6 +120,16 @@
     body.dealer-standalone .dealer-erp-nav button.dealer-gate-nav{border-color:#334155;background:rgba(255,255,255,.06);color:#94a3b8;opacity:.78;cursor:not-allowed}
     body.dealer-standalone .dealer-erp-nav button.dealer-gate-nav.ready{border-color:#d71920;background:#d71920;color:#fff;opacity:1;cursor:pointer;box-shadow:0 10px 22px rgba(215,25,32,.28)}
     body.dealer-standalone .dealer-erp-nav button.dealer-gate-nav.ready i{color:#fff}
+    .dealer-login-shell{min-height:calc(100vh - 28px);display:grid;place-items:center;padding:24px;background:#eef1f5}
+    .dealer-login-card{width:min(620px,100%);display:grid;gap:14px}
+    .dealer-login-brand{border:1px solid #dbe3ee;border-radius:16px;background:#111827;color:#fff;padding:18px;display:grid;grid-template-columns:48px 1fr;gap:12px;align-items:center;box-shadow:0 18px 44px rgba(17,24,39,.16)}
+    .dealer-login-brand .dealer-erp-logo{width:48px;height:48px;border-radius:14px}
+    .dealer-login-brand b{font-size:22px;letter-spacing:.02em}
+    .dealer-login-brand span{display:block;margin-top:4px;color:#cbd5e1;font-size:12px}
+    .dealer-login-card .dealer-form-section{box-shadow:0 14px 34px rgba(17,24,39,.10)}
+    .dealer-login-card .dealer-workorder-form{display:block}
+    .dealer-login-card .dealer-wo-form-grid{grid-template-columns:1fr 1fr auto}
+    @media(max-width:760px){.dealer-login-shell{padding:14px}.dealer-login-card .dealer-wo-form-grid{grid-template-columns:1fr}.dealer-login-brand{grid-template-columns:42px 1fr}.dealer-login-brand .dealer-erp-logo{width:42px;height:42px}}
     .dealer-appointment-dock-tab.dealer-gate-nav{background:#111318;color:#94a3b8;border-color:#222936;opacity:.78;cursor:not-allowed}
     .dealer-appointment-dock-tab.dealer-gate-nav.ready{background:#d71920;color:#fff;border-color:#d71920;opacity:1;cursor:pointer;box-shadow:-10px 14px 28px rgba(215,25,32,.28)}
     .dealer-appointment-dock-tab.dealer-gate-nav.ready i{color:#fff}
@@ -1172,7 +1182,7 @@
   </script>
   <div class="app">
     <aside class="side">
-      <div class="brand-row"><a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.229</small><small class="update-tag" title="Son güncelleme: Bayi portalı canlı Supabase oturumunu güvenli şekilde yeniler; canlı iş emirleri oturum açınca listelenir.">26.05 · Canlı oturum yenileme</small></div></a><div class="brand-actions"><button class="theme-toggle" type="button" data-theme-toggle title="Koyu temaya geç" aria-label="Tema değiştir"><i data-lucide="sun-moon"></i><span id="themeToggleText">Açık</span></button><div class="online-pill" title="Online kullanıcı sayısı"><span class="online-dot"></span><b data-online-count>42</b><small>kişi</small></div></div></div>
+      <div class="brand-row"><a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.230</small><small class="update-tag" title="Son güncelleme: Bayi portalı girişte şifre ister, başarılı canlı oturumu tarayıcıda saklar ve tekrar şifre sormadan yeniler.">26.05 · Kalıcı bayi girişi</small></div></a><div class="brand-actions"><button class="theme-toggle" type="button" data-theme-toggle title="Koyu temaya geç" aria-label="Tema değiştir"><i data-lucide="sun-moon"></i><span id="themeToggleText">Açık</span></button><div class="online-pill" title="Online kullanıcı sayısı"><span class="online-dot"></span><b data-online-count>42</b><small>kişi</small></div></div></div>
       <div class="nav" id="nav"></div>
     </aside>
 
@@ -2751,6 +2761,16 @@
     const titles = {dashboard:'Yönetim Kokpiti',intelligence:'İş Zekası',branches:'Bayiler & Şubeler',dealer:'Bayi Portalı','ototr-web':'OTOTR Web',operations:'Operasyon',franchise:'Franchise Satış',crm:'CRM & Randevu',complaints:'Müşteri Şikayetleri','google-reviews':'Google Haritalar İtibar Merkezi',reputation:'İtibar Radar',finance:'Finans & Royalty',marketing:'Pazarlama',quality:'Kalite & Denetim','report-design':'Ekspertiz Rapor Tasarımı','vehicle-passport':'Dijital Araç Karnesi',academy:'OTOTR Academy',hr:'İnsan Kaynakları',legal:'Hukuk & Risk',crisis:'Kriz Merkezi',actions:'Aksiyon & Görev',ai:'AI Öneri',growth:'Bayii Büyüme',legacy:'Legacy Room',architecture:'Sistem Mimarisi',settings:'Ayarlar',branchProfile:'Şube Profili',franchiseProfile:'Aday Değerlendirme',customerProfile:'Müşteri 360'};
     function dealerPortalUrl(){ return 'bayi-portal/index.html'; }
     function openDealerPortalWindow(){ window.open(dealerPortalUrl(),'_blank','noopener,noreferrer'); }
+    function dealerScrubSensitiveUrlParams(){
+      try{
+        const params=new URLSearchParams(location.search);
+        const sensitive=['email','password','passwd','token','access_token','refresh_token'];
+        if(!sensitive.some(k=>params.has(k))) return;
+        sensitive.forEach(k=>params.delete(k));
+        const nextUrl=`${location.pathname}${params.toString()?`?${params.toString()}`:''}${location.hash||''}`;
+        history.replaceState(null,'',nextUrl);
+      }catch(err){}
+    }
     function syncDealerStandaloneMode(resolved){
       const forced = new URLSearchParams(location.search).get('portal')==='dealer';
       const on = resolved==='dealer' || forced;
@@ -3436,7 +3456,7 @@
         status:b.risk==='Yüksek'?'İnceleme':b.risk==='Orta'?'Takip':'Stabil'
       }));
       out.demoDataHealth={
-      version:'SVK v1.0.229',
+      version:'SVK v1.0.230',
         branchUniverse:'10 aktif şube / 4 bölge',
         packagePriceBand:'5.000 TL - 15.000 TL',
         avgTicketBand:'8.350 TL - 9.900 TL',
@@ -6684,7 +6704,10 @@
         const connectionLabel=session?'Canlı bağlı':'Oturum yenilenecek';
         return `<section class="dealer-form-section"><div class="dealer-section-head"><div><h3>Canlı Sistem Bağlantısı</h3><p>Supabase canlı veri açık. Bayi portalında oluşturulan iş emri mobil usta ekranına aynı database üzerinden düşer.</p></div><div class="quick-actions">${badge(connectionLabel)}${badge((state.lastCount??store?.workOrders?.length??0)+' kayıt')}${state.lastSyncAt?badge('Son: '+state.lastSyncAt):''}<button class="btn" data-dealer-live-sync>${icon('refresh-cw')}Canlı Yenile</button><button class="btn" data-dealer-live-disconnect>${icon('log-out')}Oturumu Kapat</button></div></div>${state.lastError?`<div class="dealer-wo-alert">${icon('triangle-alert')}Canlı bağlantı uyarısı: ${rpEsc(state.lastError)}</div>`:''}</section>`;
       }
-      return `<section class="dealer-form-section"><div class="dealer-section-head"><div><h3>Canlı Sistem Bağlantısı</h3><p>Canlı iş emirleri müşteri ve araç verisi içerdiği için güvenlik gereği bayi kullanıcı oturumu açılmadan listelenmez. Bir kez bağlanınca oturum tarayıcıda saklanır ve süresi dolduğunda otomatik yenilenir.</p></div>${badge('Oturum gerekli')}</div><form class="dealer-workorder-form" data-dealer-live-login-form><div class="dealer-wo-form-grid"><label class="dealer-field"><span>E-posta</span><input name="email" autocomplete="username" placeholder="kullanici@ototr.test"></label><label class="dealer-field"><span>Şifre</span><input name="password" type="password" autocomplete="current-password" placeholder="Şifre"></label><button class="btn primary" type="submit">${icon('plug-zap')}Canlıya Bağlan</button></div></form>${state.lastError?`<div class="dealer-wo-alert">${icon('triangle-alert')}Son hata: ${rpEsc(state.lastError)}</div>`:''}</section>`;
+      return `<section class="dealer-form-section"><div class="dealer-section-head"><div><h3>Canlı Sistem Bağlantısı</h3><p>Canlı iş emirleri müşteri ve araç verisi içerdiği için güvenlik gereği bayi kullanıcı oturumu açılmadan listelenmez. Bir kez bağlanınca oturum tarayıcıda saklanır ve süresi dolduğunda otomatik yenilenir.</p></div>${badge('Oturum gerekli')}</div><form class="dealer-workorder-form" data-dealer-live-login-form><div class="dealer-wo-form-grid"><label class="dealer-field"><span>E-posta</span><input name="email" autocomplete="username" inputmode="email" placeholder="kullanici@ototr.test" required></label><label class="dealer-field"><span>Şifre</span><input name="password" type="password" autocomplete="current-password" placeholder="Şifre" required></label><button class="btn primary" type="submit">${icon('plug-zap')}Canlıya Bağlan</button></div></form>${state.lastError?`<div class="dealer-wo-alert">${icon('triangle-alert')}Son hata: ${rpEsc(state.lastError)}</div>`:''}</section>`;
+    }
+    function dealerStandaloneLoginGate(branch){
+      return `<div class="dealer-login-shell"><div class="dealer-login-card"><div class="dealer-login-brand"><div class="dealer-erp-logo">OT</div><div><b>OTOTR Bayi Portalı</b><span>${rpEsc(branch?.name||'Aktif Şube')} canlı sistem girişi</span></div></div>${dealerSupabaseStatusPanel()}<div class="live-sync-note">Başarılı girişten sonra bu tarayıcıda oturum saklanır. Oturumu kapat butonuna basılmadıkça bayi portalı tekrar şifre sormadan canlı iş emirlerini açar.</div></div></div>`;
     }
     window.dealerSyncSupabaseWorkOrders=dealerSyncSupabaseWorkOrders;
     const DEALER_VIN_MIGRATION='smart-vin-v1';
@@ -9760,7 +9783,9 @@
       reportData.riskSummary=[['İş emri',wo.id,'blue'],['Paket',wo.packageName,'green'],['Usta girişi',dealerCompletion(wo).pct+'%','orange'],['Müdür onayı',wo.managerApproved?'Tamam':'Bekliyor',wo.managerApproved?'green':'orange'],['Sekreterya',wo.secretaryPrinted?'Teslim':'Basım bekliyor',wo.secretaryPrinted?'green':'gray']];
     }
     function DealerTabletReportPage(){
+      dealerScrubSensitiveUrlParams();
       const branch=DB.branches.find(b=>b.id===selectedBranchId) || DB.branches[0];
+      if(isDealerStandaloneRoute()&&!dealerStoredSupabaseSession()?.refresh_token) return dealerStandaloneLoginGate(branch);
       const appointments=DB.appointments.slice(0,6);
       const reports=DB.reports.slice(0,4);
       const dailyRevenue=Math.round((branch.revenue||0)/24);
@@ -10337,8 +10362,11 @@
       return `<section class="dealer-form-section"><div class="dealer-detail-head"><div class="dealer-detail-title"><h3>İş Emri Detayı · ${rpEsc(wo.id)}</h3><p>${rpEsc(wo.plate)} · ${rpEsc(wo.vehicle)} · ${rpEsc(wo.customer)} · ${rpEsc(wo.packageName)}. Bu ekran canlı sistemde herkesin aynı iş emrine kendi yetkisi kadar dokunduğu ana dosyadır.</p></div><div class="dealer-detail-actions"><button class="btn" data-dealer-tab="usta">${icon('tablet-smartphone')}Usta Görevleri</button><button class="btn" data-dealer-center-request>${icon('messages-square')}Merkeze Talep</button><button class="btn" data-dealer-objection>${icon('rotate-ccw')}İtiraz Aç</button><button class="btn" data-dealer-return>${icon('undo-2')}Geri Gönder</button><button class="btn primary" data-dealer-approve>${icon('shield-check')}Müdür Onayı</button></div></div><div class="dealer-revision-strip">${revisions.map(r=>`<div><span>${r[0]}</span><b>${rpEsc(r[1])}</b></div>`).join('')}</div><div class="dealer-detail-grid">${detailCard('Müşteri Kabul ve Rıza',access.acceptance,[['Müşteri',wo.customer],['Telefon',wo.phone],['Alıcı / vekil',wo.buyer],['Satıcı',wo.seller],['KVKK / rıza',wo.consent],['Teslim hedefi',wo.deliveryAt]],'Bu alanı müşteri kabul veya şube müdürü düzenler. Usta ve kasa personeli teknik/ödeme sınırı dışına çıkamaz.')}${detailCard('Araç Kimliği',access.vehicle,[['Plaka',wo.plate],['Şasi',wo.vin],['Motor no',wo.engineNo],['Araç',wo.vehicle],['Model yılı',wo.year],['Kilometre',wo.mileage]],'Araç kimliği rapor no ve QR doğrulama ile eşleştiği için sadece kabul yetkisiyle değişir.')}${detailCard('Finans ve Teslim',access.finance,[['Paket',wo.packageName],['Paket tutarı',wo.price],['Ödeme durumu',wo.payment],['Ödeme tipi',wo.paymentMethod||'Seçilmedi'],['Fatura',wo.invoiceStatus||'Fatura bekliyor'],['Kasa',wo.cashClose||'Gün sonu bekliyor'],['Teslim',wo.secretaryPrinted?'Teslim edildi':'Teslim bekliyor']],'Usta ve müşteri kabul teknik süreç dışındaki tahsilat/fatura bilgisini değiştiremez.')}</div><div class="dealer-detail-grid"><div class="dealer-detail-card"><h4>Teknik Görev Özeti ${badge(access.technical?'Teknik erişim':'İzleme')}</h4>${dealerPortalTable(['Görev','Sorumlu','Durum','Kanıt','Not'],(wo.tasks||[]).map(t=>[rpEsc(t.station),rpEsc(t.owner),badge(t.status),(t.evidence||[]).join(', ')||'-',rpEsc(t.returnNote||t.result?.customerText||'Giriş bekliyor')]))}</div><div class="dealer-detail-card"><h4>Rapor Blokajları ${badge(completion.done+'/'+completion.total)}</h4><div class="dealer-block-rules" style="grid-template-columns:1fr">${blockRules.map(r=>`<div class="dealer-block-rule ${r[1]?'block':''}"><b>${r[1]?'Engel':'Uygun'}</b><span>${r[0]}</span></div>`).join('')}</div></div><div class="dealer-detail-card"><h4>Audit / Revizyon Geçmişi ${badge(audit.length+' kayıt')}</h4><div class="dealer-audit-list">${audit.slice(0,7).map(a=>`<div class="dealer-audit-item"><b>${rpEsc(a.actor)}</b><span>${rpEsc(a.action)}<br>${rpEsc(a.note||'')}</span><small>${rpEsc(a.at)}</small></div>`).join('')}</div></div></div></section>`;
     }
     function DealerTabletReportPage(){
+      dealerScrubSensitiveUrlParams();
       dealerMaybeAutoSyncSupabase();
-      const branch=DB.branches.find(b=>b.id===selectedBranchId)||DB.branches[0], appointments=DB.appointments.slice(0,6), dealerOps=ensureDealerLiveData(branch,appointments), workOrder=dealerActiveWorkOrder(dealerOps);
+      const branch=DB.branches.find(b=>b.id===selectedBranchId)||DB.branches[0];
+      if(isDealerStandaloneRoute()&&!dealerStoredSupabaseSession()?.refresh_token) return dealerStandaloneLoginGate(branch);
+      const appointments=DB.appointments.slice(0,6), dealerOps=ensureDealerLiveData(branch,appointments), workOrder=dealerActiveWorkOrder(dealerOps);
       syncDealerReportData(workOrder);
       const completion=dealerCompletion(workOrder), activeTasks=workOrder?.tasks||[], activeResults=activeTasks.map(t=>t.result).filter(Boolean), evidenceCount=activeTasks.reduce((s,t)=>s+(t.evidence?.length||0),0), ui=dealerPortalState(), roleCfg=DEALER_PORTAL_ROLES[ui.role], packageDef=dealerPackage(workOrder?.packageName), selectedTask=dealerSelectedTask(workOrder);
       const dealerField=(label,value,type='input',span='',selected='')=>{const opts=String(value).split('|'),pick=selected||opts[0];return `<label class="dealer-field ${span}"><span>${label}</span>${type==='textarea'?`<textarea>${rpEsc(value)}</textarea>`:type==='select'?`<select>${opts.map(x=>`<option ${x===pick?'selected':''}>${rpEsc(x)}</option>`).join('')}</select>`:`<input value="${rpEsc(value)}">`}</label>`};
@@ -10572,7 +10600,7 @@
       const topWorkOrderMode=(ui.editingWorkOrderId||ui.viewingWorkOrderId)?'full':(ui.workOrderMode==='full'?'full':'fast');
       const topModeLocked=!!(ui.editingWorkOrderId||ui.viewingWorkOrderId);
       const dealerTopModeSwitch=ui.tab==='is-emirleri'?`<div class="dealer-top-mode-switch" aria-label="İş emri modu"><span>İş emri modu</span><div class="dealer-top-mode-actions"><button type="button" class="${topWorkOrderMode==='fast'?'active':''}" data-dealer-wo-mode="fast" ${topModeLocked?'disabled title="Açık iş emrinde mod değiştirilemez."':''}>Hızlı İş Emri</button><button type="button" class="${topWorkOrderMode==='full'?'active':''}" data-dealer-wo-mode="full" ${topModeLocked?'disabled title="Açık iş emrinde mod değiştirilemez."':''}>Tam İş Emri</button></div></div>`:'';
-      return `<div class="dealer-portal dealer-erp-shell"><aside class="dealer-erp-sidebar"><div class="dealer-erp-brand"><div class="dealer-erp-logo">OT</div><div class="dealer-erp-brand-text"><b>OTOTR</b><span>Bayi Portalı · Aktif Şube: ${rpEsc(branch.name)}</span><small class="dealer-version-tag">SVK v1.0.229</small><small class="dealer-update-tag" title="Son güncelleme: Bayi portalı canlı Supabase oturumunu güvenli şekilde yeniler; canlı iş emirleri oturum açınca listelenir.">26.05 · Canlı oturum yenileme</small></div></div><div class="dealer-erp-section-title">Şube Menüsü</div><nav class="dealer-erp-nav">${tabs.map(t=>`<button class="${t[0]===ui.tab?'active':''}" data-dealer-tab="${t[0]}">${icon(t[2])}<span>${ui.role==='M\u00fc\u015fteri Kabul / Sekreterya'&&t[0]==='finans'?'Günlük Finans':t[1]}</span></button>`).join('')}</nav><div class="dealer-erp-role-box"><span>Rol görünümü</span><div class="dealer-role-switcher">${Object.entries(DEALER_PORTAL_ROLES).map(([name,cfg])=>`<button class="${name===ui.role?'active':''}" data-dealer-role="${name}">${icon(cfg.icon)}${name}</button>`).join('')}</div></div></aside><main class="dealer-erp-workspace"><section class="dealer-top-branch dealer-action-bar"><label class="dealer-top-role-select"><span>Rol görünümü</span><select data-dealer-role-select>${Object.keys(DEALER_PORTAL_ROLES).map(name=>`<option value="${rpEsc(name)}" ${name===ui.role?'selected':''}>${rpEsc(name)}</option>`).join('')}</select></label>${dealerTopModeSwitch}<div class="dealer-top-actions">${dealerTopPrimaryAction}<button class="btn" data-dealer-calendar-modal-open>${icon('calendar-clock')}3 Günlük Takvim</button><button class="btn" data-dealer-tab="rapor-detay">${icon('file-search')}Rapor Detay</button><button class="btn" data-dealer-tab="rapor">${icon('printer')}Basım Kuyruğu</button></div></section><div class="dealer-portal-layout"><main class="dealer-shell">${(panes[ui.tab]||panes.kokpit)()}${ui.tab==='kurulum'?dealerApiModelPanel():ui.tab==='rapor'?dealerReportMappingPanel():ui.tab==='personel'?dealerAuthMatrixPanel():''}</main><aside class="dealer-rail"><div class="card"><div class="card-head"><div><div class="card-title">Rol Yetkileri</div><div class="card-sub">${roleCfg.desc}</div></div>${badge(ui.role)}</div><div class="dealer-permission-list">${roleCfg.actions.map(a=>`<div><b>${ui.role}</b><span>${a}</span></div>`).join('')}</div></div><div class="card"><div class="card-head"><div><div class="card-title">Canlı Sistem Kilitleri</div><div class="card-sub">Rapor yayın ve teslim kapıları</div></div></div>${dealerMiniRows([['Teknik alan kilidi','Müdür onayından sonra değişiklik revizyon açar','Kural'],['KVKK / yol testi','Eksikse teslim tamamlanamaz','Blokaj'],['Cihaz kalibrasyonu','Geçmiş cihaz rapor üretimini engeller','Blokaj']])}</div></aside></div></main>${dealerAppointmentDock()}</div>`;
+      return `<div class="dealer-portal dealer-erp-shell"><aside class="dealer-erp-sidebar"><div class="dealer-erp-brand"><div class="dealer-erp-logo">OT</div><div class="dealer-erp-brand-text"><b>OTOTR</b><span>Bayi Portalı · Aktif Şube: ${rpEsc(branch.name)}</span><small class="dealer-version-tag">SVK v1.0.230</small><small class="dealer-update-tag" title="Son güncelleme: Bayi portalı girişte şifre ister, başarılı canlı oturumu tarayıcıda saklar ve tekrar şifre sormadan yeniler.">26.05 · Kalıcı bayi girişi</small></div></div><div class="dealer-erp-section-title">Şube Menüsü</div><nav class="dealer-erp-nav">${tabs.map(t=>`<button class="${t[0]===ui.tab?'active':''}" data-dealer-tab="${t[0]}">${icon(t[2])}<span>${ui.role==='M\u00fc\u015fteri Kabul / Sekreterya'&&t[0]==='finans'?'Günlük Finans':t[1]}</span></button>`).join('')}</nav><div class="dealer-erp-role-box"><span>Rol görünümü</span><div class="dealer-role-switcher">${Object.entries(DEALER_PORTAL_ROLES).map(([name,cfg])=>`<button class="${name===ui.role?'active':''}" data-dealer-role="${name}">${icon(cfg.icon)}${name}</button>`).join('')}</div></div></aside><main class="dealer-erp-workspace"><section class="dealer-top-branch dealer-action-bar"><label class="dealer-top-role-select"><span>Rol görünümü</span><select data-dealer-role-select>${Object.keys(DEALER_PORTAL_ROLES).map(name=>`<option value="${rpEsc(name)}" ${name===ui.role?'selected':''}>${rpEsc(name)}</option>`).join('')}</select></label>${dealerTopModeSwitch}<div class="dealer-top-actions">${dealerTopPrimaryAction}<button class="btn" data-dealer-calendar-modal-open>${icon('calendar-clock')}3 Günlük Takvim</button><button class="btn" data-dealer-tab="rapor-detay">${icon('file-search')}Rapor Detay</button><button class="btn" data-dealer-tab="rapor">${icon('printer')}Basım Kuyruğu</button></div></section><div class="dealer-portal-layout"><main class="dealer-shell">${(panes[ui.tab]||panes.kokpit)()}${ui.tab==='kurulum'?dealerApiModelPanel():ui.tab==='rapor'?dealerReportMappingPanel():ui.tab==='personel'?dealerAuthMatrixPanel():''}</main><aside class="dealer-rail"><div class="card"><div class="card-head"><div><div class="card-title">Rol Yetkileri</div><div class="card-sub">${roleCfg.desc}</div></div>${badge(ui.role)}</div><div class="dealer-permission-list">${roleCfg.actions.map(a=>`<div><b>${ui.role}</b><span>${a}</span></div>`).join('')}</div></div><div class="card"><div class="card-head"><div><div class="card-title">Canlı Sistem Kilitleri</div><div class="card-sub">Rapor yayın ve teslim kapıları</div></div></div>${dealerMiniRows([['Teknik alan kilidi','Müdür onayından sonra değişiklik revizyon açar','Kural'],['KVKK / yol testi','Eksikse teslim tamamlanamaz','Blokaj'],['Cihaz kalibrasyonu','Geçmiş cihaz rapor üretimini engeller','Blokaj']])}</div></aside></div></main>${dealerAppointmentDock()}</div>`;
     }
     document.addEventListener('input',e=>{
       const phoneInput=e.target.closest?.('[data-dealer-phone-input],input[name="phone"],input[name="sellerPhone"]');
@@ -14587,6 +14615,8 @@
         current=titles[initialCanonical]?initialCanonical:'dashboard';
       }
       initTheme();
+      dealerScrubSensitiveUrlParams();
+      syncDealerStandaloneMode(current);
       renderAll(); route(initialHR||initialAcademy?initialCanonical:current);
     })();
     window.addEventListener('hashchange',()=>{
@@ -15612,23 +15642,6 @@
         }
       }
     });
-    document.addEventListener('submit',async e=>{
-      const form=e.target.closest('[data-dealer-live-login-form]');
-      if(!form) return;
-      e.preventDefault();
-      e.stopPropagation();
-      const data=Object.fromEntries(new FormData(form).entries());
-      try{
-        await dealerSupabaseSignIn(data.email,data.password);
-        await dealerSyncSupabaseWorkOrders({silent:true,noRender:true});
-        renderAll(); route('dealer');
-        toast('Canlı sistem bağlantısı açıldı.');
-      }catch(err){
-        saveDealerSupabaseSyncState({lastError:err.message||String(err)});
-        renderAll(); route('dealer');
-        toast('Canlı bağlantı hatası: '+(err.message||err));
-      }
-    });
     root.addEventListener('change',e=>{
       const check=e.target.closest('[data-academy-ready-check]');
       if(!check) return;
@@ -15650,6 +15663,25 @@
     if(tab==='settings') return typeof academySettings==='function'?academySettings():'';
     return `${academyChartsPanel()}<div class="grid g2" style="margin-top:10px"><div>${academyCourseGridPro()}</div><div>${typeof academyOnboarding==='function'?academyOnboarding():''}</div></div><div style="margin-top:10px">${academyMandatoryLockPanel()}</div><div style="margin-top:10px">${academyRetrainingPanel()}</div><div style="margin-top:10px">${academySlaDashboard()}</div><div style="margin-top:10px">${academyReportingPanel()}</div><div style="margin-top:10px">${academyAssignmentsPanel()}</div><div class="card" style="margin-top:10px"><div class="card-head"><div><div class="card-title">Kişi Bazlı Hedef Gerçekleştirme</div><div class="card-sub">Eğitime tabi herkesin hedef oranı, SLA durumu ve atanan eğitim planı</div></div></div>${academyPeopleTablePro()}</div>`;
   }
+  document.addEventListener('submit',async e=>{
+    const form=e.target.closest('[data-dealer-live-login-form]');
+    if(!form) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    const data=Object.fromEntries(new FormData(form).entries());
+    try{
+      await dealerSupabaseSignIn(data.email,data.password);
+      await dealerSyncSupabaseWorkOrders({silent:true,noRender:true});
+      dealerScrubSensitiveUrlParams();
+      if(isDealerStandaloneRoute()) saveDealerPortalState({tab:'aktif-is-emirleri',editingWorkOrderId:'',viewingWorkOrderId:''});
+      renderAll(); route('dealer');
+      toast('Canlı sistem bağlantısı açıldı.');
+    }catch(err){
+      saveDealerSupabaseSyncState({lastError:err.message||String(err)});
+      renderAll(); route('dealer');
+      toast('Canlı bağlantı hatası: '+(err.message||err));
+    }
+  });
   function academyChartsPanel(){
     const selected=academyChartBreakdown();
     const opts=[['region','Bölgesel'],['branch','Şube'],['role','Rol'],['instructor','Eğitmen'],['category','Kategori'],['status','Durum']];
