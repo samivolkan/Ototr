@@ -222,13 +222,10 @@ class _TechnicianEvidenceScreenState extends State<TechnicianEvidenceScreen> {
       return;
     }
     try {
-      final savedLocal = await remoteRepository.saveFinalMediaAsset(
+      await remoteRepository.saveFinalMediaAsset(
         localAsset.workOrderId,
         localAsset,
       );
-      if (mounted) {
-        setState(() => _order = savedLocal);
-      }
 
       final uploader = PhotoUploadService(client: _activeSupabaseClient());
       final result = await uploader.uploadReportMedia(

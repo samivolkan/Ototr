@@ -32,8 +32,14 @@ class SupabaseWorkOrderRepository implements RemoteWorkOrderRepository {
   }
 
   @override
-  Future<List<TechnicianWorkOrder>> visibleWorkOrders() async {
-    final bundles = await _dataSource.fetchVisibleWorkOrders();
+  Future<List<TechnicianWorkOrder>> visibleWorkOrders({
+    int? limit,
+    int offset = 0,
+  }) async {
+    final bundles = await _dataSource.fetchVisibleWorkOrders(
+      limit: limit,
+      offset: offset,
+    );
     return [
       for (final bundle in bundles) _mapper.toDomain(bundle),
     ];
@@ -121,12 +127,6 @@ class SupabaseWorkOrderRepository implements RemoteWorkOrderRepository {
     String workOrderId,
     TechnicianTask task,
   ) async {
-    final current = (await getById(workOrderId))
-        .tasks
-        .firstWhere((item) => item.taskId == task.taskId);
-    if (!current.canEditBy(currentUser)) {
-      throw StateError('Sadece görev sahibi bu başlığı düzenleyebilir.');
-    }
     final bundle = await _dataSource.updateTask(
       workOrderId,
       task.taskId,
@@ -137,13 +137,9 @@ class SupabaseWorkOrderRepository implements RemoteWorkOrderRepository {
 
   @override
   Future<TechnicianWorkOrder> submitTask(
-      String workOrderId, String taskId) async {
-    final current = (await getById(workOrderId))
-        .tasks
-        .firstWhere((item) => item.taskId == taskId);
-    if (!current.canEditBy(currentUser)) {
-      throw StateError('Sadece görev sahibi bu başlığı gönderebilir.');
-    }
+    String workOrderId,
+    String taskId,
+  ) async {
     final bundle = await _dataSource.submitTask(workOrderId, taskId);
     return _mapper.toDomain(bundle);
   }

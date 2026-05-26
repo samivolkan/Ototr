@@ -354,6 +354,9 @@ class _TestRemoteWorkOrderRepository implements RemoteWorkOrderRepository {
       _repository.updateTask(workOrderId, task);
 
   @override
-  Future<List<TechnicianWorkOrder>> visibleWorkOrders() async =>
+  Future<List<TechnicianWorkOrder>> visibleWorkOrders({
+    int? limit,
+    int offset = 0,
+  }) async =>
       _repository.visibleWorkOrders();
 }

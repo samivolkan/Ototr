@@ -155,7 +155,8 @@ void main() {
     expect(dataSource.lastEvidencePayload?['quality_status'], 'ACCEPTED');
   });
 
-  test('final medya quality status invalid ise UNCHECKED olarak normalize edilir',
+  test(
+      'final medya quality status invalid ise UNCHECKED olarak normalize edilir',
       () async {
     final dataSource = _FakeWorkOrderRemoteDataSource(_bundle());
     final repository = SupabaseWorkOrderRepository(
@@ -408,7 +409,10 @@ class _FakeWorkOrderRemoteDataSource implements WorkOrderRemoteDataSource {
   }
 
   @override
-  Future<List<WorkOrderRemoteBundle>> fetchVisibleWorkOrders() async {
+  Future<List<WorkOrderRemoteBundle>> fetchVisibleWorkOrders({
+    int? limit,
+    int offset = 0,
+  }) async {
     return [bundle];
   }
 

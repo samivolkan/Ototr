@@ -9,6 +9,32 @@ class SupabaseWorkOrderDataSource implements WorkOrderRemoteDataSource {
   const SupabaseWorkOrderDataSource(this._client);
 
   final SupabaseClient _client;
+  static const String _caseSelect = '''
+        id,
+        work_order_no,
+        report_no,
+        status,
+        assigned_technician_id,
+        manager_approved_at,
+        secretary_gate_ready,
+        payment_gate_ready,
+        kvkk_gate_ready,
+        vehicles (
+          plate,
+          brand,
+          model,
+          model_year,
+          fuel_type,
+          transmission
+        ),
+        package_plans (
+          name
+        ),
+        customers (
+          kvkk_consent,
+          service_consent
+        )
+      ''';
   static const List<String> _activeCaseStatuses = <String>[
     'DRAFT',
     'ASSIGNED',
@@ -31,33 +57,49 @@ class SupabaseWorkOrderDataSource implements WorkOrderRemoteDataSource {
   }
 
   @override
-  Future<List<WorkOrderRemoteBundle>> fetchVisibleWorkOrders() async {
-    final rows = await _client
+  Future<List<WorkOrderRemoteBundle>> fetchVisibleWorkOrders({
+    int? limit,
+    int offset = 0,
+  }) async {
+    var query = _client
         .from('expertise_cases')
-        .select('id')
+        .select(_caseSelect)
         .inFilter('status', _activeCaseStatuses)
         .order('opened_at', ascending: false);
-    final ids = [
-      for (final row in _asRowList(rows)) row['id']?.toString() ?? '',
-    ].where((id) => id.isNotEmpty).toList(growable: false);
+    if (limit != null) {
+      final end = offset + limit - 1;
+      query = query.range(offset, end);
+    }
 
-    if (ids.isEmpty) {
+    final caseRows = [
+      for (final row in _asRowList(await query))
+        ExpertiseCaseRow.fromJson(_normalizeCaseRow(row)),
+    ];
+
+    if (caseRows.isEmpty) {
       return const [];
     }
+    final caseIds = [
+      for (final caseRow in caseRows) caseRow.id,
+    ];
+    final results = await Future.wait<Object?>([
+      _fetchStartEvidenceForCases(caseIds),
+      _fetchTasksForCases(caseIds),
+    ]);
+    final startEvidenceByCaseId = results[0] as Map<String, StartEvidenceRow>;
+    final tasksByCaseId = results[1] as Map<String, List<InspectionTaskRow>>;
 
-    const batchSize = 4;
-    final bundles = <WorkOrderRemoteBundle>[];
-    for (var index = 0; index < ids.length; index += batchSize) {
-      final end =
-          (index + batchSize) > ids.length ? ids.length : (index + batchSize);
-      final batchIds = ids.sublist(index, end);
-      final batch = await Future.wait<WorkOrderRemoteBundle>([
-        for (final id in batchIds) _fetchWorkOrderSummaryById(id),
-      ]);
-      bundles.addAll(batch);
-    }
-
-    return bundles;
+    return [
+      for (final caseRow in caseRows)
+        WorkOrderRemoteBundle(
+          caseRow: caseRow,
+          startEvidence: startEvidenceByCaseId[caseRow.id],
+          tasks: tasksByCaseId[caseRow.id] ?? const [],
+          itemValues: const [],
+          evidenceAssets: const [],
+          externalQueries: const [],
+        ),
+    ];
   }
 
   @override
@@ -106,7 +148,7 @@ class SupabaseWorkOrderDataSource implements WorkOrderRemoteDataSource {
     await _client
         .from('expertise_cases')
         .update({'status': 'CLAIMED'}).eq('id', workOrderId);
-    return fetchWorkOrderById(workOrderId);
+    return _fetchWorkOrderSummaryById(workOrderId);
   }
 
   @override
@@ -117,7 +159,7 @@ class SupabaseWorkOrderDataSource implements WorkOrderRemoteDataSource {
     await _client.rpc('claim_inspection_task', params: {
       'target_task_id': taskId,
     });
-    return fetchWorkOrderById(workOrderId);
+    return _fetchWorkOrderSummaryById(workOrderId);
   }
 
   @override
@@ -130,7 +172,7 @@ class SupabaseWorkOrderDataSource implements WorkOrderRemoteDataSource {
       'target_task_id': taskId,
       'release_reason': releaseReason,
     });
-    return fetchWorkOrderById(workOrderId);
+    return _fetchWorkOrderSummaryById(workOrderId);
   }
 
   @override
@@ -145,7 +187,7 @@ class SupabaseWorkOrderDataSource implements WorkOrderRemoteDataSource {
       'next_owner_user_id': ownerUserId,
       'manager_assign_reason': managerAssignReason,
     });
-    return fetchWorkOrderById(workOrderId);
+    return _fetchWorkOrderSummaryById(workOrderId);
   }
 
   @override
@@ -158,7 +200,7 @@ class SupabaseWorkOrderDataSource implements WorkOrderRemoteDataSource {
       'target_task_id': taskId,
       'release_reason': releaseReason,
     });
-    return fetchWorkOrderById(workOrderId);
+    return _fetchWorkOrderSummaryById(workOrderId);
   }
 
   @override
@@ -186,7 +228,7 @@ class SupabaseWorkOrderDataSource implements WorkOrderRemoteDataSource {
           .inFilter('status', ['LOCKED', 'ASSIGNED']);
     }
 
-    return fetchWorkOrderById(workOrderId);
+    return _fetchWorkOrderSummaryById(workOrderId);
   }
 
   @override
@@ -223,7 +265,7 @@ class SupabaseWorkOrderDataSource implements WorkOrderRemoteDataSource {
       );
     }
 
-    return fetchWorkOrderById(workOrderId);
+    return _fetchWorkOrderSummaryById(workOrderId);
   }
 
   @override
@@ -234,7 +276,7 @@ class SupabaseWorkOrderDataSource implements WorkOrderRemoteDataSource {
     await _client.rpc('submit_inspection_task', params: {
       'target_task_id': taskId,
     });
-    return fetchWorkOrderById(workOrderId);
+    return _fetchWorkOrderSummaryById(workOrderId);
   }
 
   @override
@@ -259,32 +301,11 @@ class SupabaseWorkOrderDataSource implements WorkOrderRemoteDataSource {
   }
 
   Future<ExpertiseCaseRow> _fetchCase(String workOrderId) async {
-    final row = await _client.from('expertise_cases').select('''
-          id,
-          work_order_no,
-          report_no,
-          status,
-          assigned_technician_id,
-          manager_approved_at,
-          secretary_gate_ready,
-          payment_gate_ready,
-          kvkk_gate_ready,
-          vehicles (
-            plate,
-            brand,
-            model,
-            model_year,
-            fuel_type,
-            transmission
-          ),
-          package_plans (
-            name
-          ),
-          customers (
-            kvkk_consent,
-            service_consent
-          )
-        ''').eq('id', workOrderId).single();
+    final row = await _client
+        .from('expertise_cases')
+        .select(_caseSelect)
+        .eq('id', workOrderId)
+        .single();
 
     return ExpertiseCaseRow.fromJson(_normalizeCaseRow(_asRow(row)));
   }
@@ -304,6 +325,26 @@ class SupabaseWorkOrderDataSource implements WorkOrderRemoteDataSource {
     return StartEvidenceRow.fromJson(list.first);
   }
 
+  Future<Map<String, StartEvidenceRow>> _fetchStartEvidenceForCases(
+    List<String> workOrderIds,
+  ) async {
+    if (workOrderIds.isEmpty) {
+      return const {};
+    }
+    final rows = await _client
+        .from('technician_start_evidence')
+        .select()
+        .inFilter('expertise_case_id', workOrderIds)
+        .order('captured_at', ascending: false);
+
+    final result = <String, StartEvidenceRow>{};
+    for (final row in _asRowList(rows)) {
+      final mapped = StartEvidenceRow.fromJson(row);
+      result.putIfAbsent(mapped.expertiseCaseId, () => mapped);
+    }
+    return result;
+  }
+
   Future<List<InspectionTaskRow>> _fetchTasks(String workOrderId) async {
     final rows = await _client
         .from('inspection_tasks')
@@ -314,6 +355,26 @@ class SupabaseWorkOrderDataSource implements WorkOrderRemoteDataSource {
     return [
       for (final row in _asRowList(rows)) InspectionTaskRow.fromJson(row),
     ];
+  }
+
+  Future<Map<String, List<InspectionTaskRow>>> _fetchTasksForCases(
+    List<String> workOrderIds,
+  ) async {
+    if (workOrderIds.isEmpty) {
+      return const {};
+    }
+    final rows = await _client
+        .from('inspection_tasks')
+        .select()
+        .inFilter('expertise_case_id', workOrderIds)
+        .order('created_at');
+
+    final result = <String, List<InspectionTaskRow>>{};
+    for (final row in _asRowList(rows)) {
+      final task = InspectionTaskRow.fromJson(row);
+      (result[task.expertiseCaseId] ??= <InspectionTaskRow>[]).add(task);
+    }
+    return result;
   }
 
   Future<List<InspectionItemValueRow>> _fetchItemValues(

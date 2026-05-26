@@ -8,7 +8,10 @@ abstract class RemoteWorkOrderRepository {
 
   Future<List<UserProfile>> activeTechnicians();
 
-  Future<List<TechnicianWorkOrder>> visibleWorkOrders();
+  Future<List<TechnicianWorkOrder>> visibleWorkOrders({
+    int? limit,
+    int offset = 0,
+  });
 
   Future<TechnicianWorkOrder> getById(String workOrderId);
 

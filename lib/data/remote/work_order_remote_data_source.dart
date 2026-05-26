@@ -5,7 +5,10 @@ import 'work_order_remote_dto.dart';
 abstract class WorkOrderRemoteDataSource {
   Future<List<UserProfile>> fetchActiveTechnicians();
 
-  Future<List<WorkOrderRemoteBundle>> fetchVisibleWorkOrders();
+  Future<List<WorkOrderRemoteBundle>> fetchVisibleWorkOrders({
+    int? limit,
+    int offset = 0,
+  });
 
   Future<WorkOrderRemoteBundle> fetchWorkOrderById(String workOrderId);
 
