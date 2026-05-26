@@ -24,6 +24,7 @@ class ExpertiseCaseRow {
     required this.status,
     required this.plate,
     required this.vehicleSummary,
+    required this.vehicleTransmission,
     required this.packageName,
     required this.assignedTechnicianId,
     required this.managerApproved,
@@ -40,6 +41,7 @@ class ExpertiseCaseRow {
       status: _readString(json, 'status', fallback: 'DRAFT'),
       plate: _readString(json, 'plate'),
       vehicleSummary: _readString(json, 'vehicle_summary'),
+      vehicleTransmission: _readString(json, 'vehicle_transmission'),
       packageName: _readString(json, 'package_name'),
       assignedTechnicianId: _readString(json, 'assigned_technician_id'),
       managerApproved: _readBool(json, 'manager_approved'),
@@ -55,6 +57,7 @@ class ExpertiseCaseRow {
   final String status;
   final String plate;
   final String vehicleSummary;
+  final String vehicleTransmission;
   final String packageName;
   final String assignedTechnicianId;
   final bool managerApproved;

@@ -315,6 +315,7 @@ List<TechnicianWorkOrder> _seedWorkOrders() {
       number: 'OTO-2026-0001',
       plate: '16 ABC 123',
       vehicleSummary: '2020 Volkswagen Passat 1.5 TSI',
+      vehicleTransmission: 'Otomatik',
       packageName: 'OTOTR Premium 360',
       assignedRoles: const [
         TechnicianRole.bodyPaint,

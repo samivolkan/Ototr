@@ -1,3 +1,5 @@
+﻿import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -221,35 +223,8 @@ class _ReportItemFormSheetState extends State<ReportItemFormSheet> {
       return;
     }
 
-    final source = await showModalBottomSheet<ImageSource>(
-      context: context,
-      builder: (context) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: const Icon(Icons.photo_camera),
-                title: const Text('Kamera ile çek'),
-                onTap: () => Navigator.pop(context, ImageSource.camera),
-              ),
-              ListTile(
-                leading: const Icon(Icons.photo_library),
-                title: const Text('Galeriden seç'),
-                onTap: () => Navigator.pop(context, ImageSource.gallery),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-    if (source == null) {
-      return;
-    }
-
     final picked = await ImagePicker().pickImage(
-      source: source,
+      source: ImageSource.camera,
       imageQuality: 82,
       maxWidth: 1800,
     );
@@ -257,19 +232,29 @@ class _ReportItemFormSheetState extends State<ReportItemFormSheet> {
       return;
     }
 
-    setState(() => _saving = true);
-    final uploader = PhotoUploadService(client: _activeSupabaseClient());
+    setState(() => _imageUrls.add(picked.path));
+    unawaited(_uploadImageInBackground(picked.path));
+  }
+
+  Future<void> _uploadImageInBackground(String localPath) async {
+    final supabaseClient = _activeSupabaseClient();
+    if (supabaseClient == null) {
+      return;
+    }
+    final uploader = PhotoUploadService(client: supabaseClient);
     final result = await uploader.uploadReportPhoto(
       workOrderId: widget.workOrderId,
       itemId: widget.item.id,
-      localPath: picked.path,
+      localPath: localPath,
     );
-    if (!mounted) {
+    if (!mounted || !result.uploaded) {
       return;
     }
     setState(() {
-      _imageUrls.add(result.reference);
-      _saving = false;
+      final index = _imageUrls.indexOf(localPath);
+      if (index >= 0) {
+        _imageUrls[index] = result.reference;
+      }
     });
   }
 

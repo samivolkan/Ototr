@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
@@ -32,6 +34,7 @@ class _StartEvidenceScreenState extends State<StartEvidenceScreen> {
   String _odometerPhoto = '';
   String _transmission = '';
   bool _saving = false;
+  StartEvidence? _lastEvidenceSnapshot;
   Future<TechnicianWorkOrder>? _remoteOrderFuture;
 
   @override
@@ -131,6 +134,7 @@ class _StartEvidenceScreenState extends State<StartEvidenceScreen> {
   }
 
   Widget _buildForm(TechnicianWorkOrder order) {
+    _applyVehicleDefaults(order);
     final previewEvidence = _buildEvidence();
     final missing = previewEvidence.missingReasons();
 
@@ -252,6 +256,7 @@ class _StartEvidenceScreenState extends State<StartEvidenceScreen> {
     if (_saving) {
       return;
     }
+    _lastEvidenceSnapshot = previewEvidence;
     setState(() => _saving = true);
     final remoteRepository = AppRepositories.instance.remoteWorkOrders;
     try {
@@ -313,32 +318,8 @@ class _StartEvidenceScreenState extends State<StartEvidenceScreen> {
     if (_saving) {
       return;
     }
-    final source = await showModalBottomSheet<ImageSource>(
-      context: context,
-      builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.photo_camera),
-              title: const Text('Kamera ile çek'),
-              onTap: () => Navigator.pop(context, ImageSource.camera),
-            ),
-            ListTile(
-              leading: const Icon(Icons.photo_library),
-              title: const Text('Galeriden seç'),
-              onTap: () => Navigator.pop(context, ImageSource.gallery),
-            ),
-          ],
-        ),
-      ),
-    );
-    if (source == null) {
-      return;
-    }
-
     final picked = await ImagePicker().pickImage(
-      source: source,
+      source: ImageSource.camera,
       imageQuality: 82,
       maxWidth: 1800,
     );
@@ -346,45 +327,116 @@ class _StartEvidenceScreenState extends State<StartEvidenceScreen> {
       return;
     }
 
-    setState(() => _saving = true);
+    setState(() {
+      switch (type) {
+        case _StartEvidencePhoto.vin:
+          _vinPhoto = picked.path;
+          break;
+        case _StartEvidencePhoto.plate:
+          _platePhoto = picked.path;
+          break;
+        case _StartEvidencePhoto.odometer:
+          _odometerPhoto = picked.path;
+          break;
+      }
+    });
+    _showMessage('Fotoğraf alındı. Yükleme arka planda devam ediyor.');
+    unawaited(_uploadStartEvidencePhoto(type, picked.path, _buildEvidence()));
+  }
+
+  Future<void> _uploadStartEvidencePhoto(
+    _StartEvidencePhoto type,
+    String localPath,
+    StartEvidence evidenceSnapshot,
+  ) async {
+    final supabaseClient = _activeSupabaseClient();
+    if (supabaseClient == null) {
+      return;
+    }
     try {
-      final supabaseClient = _activeSupabaseClient();
       final uploader = PhotoUploadService(client: supabaseClient);
       final result = await uploader.uploadReportMedia(
         workOrderId: widget.workOrderId,
         itemId: type.storageItemId,
-        localPath: picked.path,
+        localPath: localPath,
       );
-      if (!mounted) {
-        return;
-      }
-      if (supabaseClient != null && !result.uploaded) {
-        _showMessage('Fotoğraf yüklenemedi. Lütfen tekrar deneyin.');
-        return;
-      }
-      setState(() {
-        switch (type) {
-          case _StartEvidencePhoto.vin:
-            _vinPhoto = result.reference;
-            break;
-          case _StartEvidencePhoto.plate:
-            _platePhoto = result.reference;
-            break;
-          case _StartEvidencePhoto.odometer:
-            _odometerPhoto = result.reference;
-            break;
+      if (!result.uploaded) {
+        if (mounted) {
+          _showMessage(
+              'Fotoğraf arka planda yüklenemedi. Tekrar çekebilirsiniz.');
         }
-      });
-      _showMessage(result.uploaded ? 'Fotoğraf yüklendi.' : 'Fotoğraf alındı.');
+        return;
+      }
+
+      if (mounted) {
+        setState(() {
+          switch (type) {
+            case _StartEvidencePhoto.vin:
+              if (_vinPhoto == localPath) _vinPhoto = result.reference;
+              break;
+            case _StartEvidencePhoto.plate:
+              if (_platePhoto == localPath) _platePhoto = result.reference;
+              break;
+            case _StartEvidencePhoto.odometer:
+              if (_odometerPhoto == localPath) {
+                _odometerPhoto = result.reference;
+              }
+              break;
+          }
+        });
+      }
+
+      final remoteRepository = AppRepositories.instance.remoteWorkOrders;
+      if (remoteRepository != null) {
+        final uploadedEvidence = _evidenceWithPhoto(
+          _lastEvidenceSnapshot ?? evidenceSnapshot,
+          type,
+          result.reference,
+        );
+        _lastEvidenceSnapshot = uploadedEvidence;
+        await remoteRepository.saveStartEvidence(
+          widget.workOrderId,
+          uploadedEvidence,
+        );
+      }
     } catch (error) {
       if (mounted) {
         _showMessage(error.toString());
       }
-    } finally {
-      if (mounted) {
-        setState(() => _saving = false);
-      }
     }
+  }
+
+  StartEvidence _evidenceWithPhoto(
+    StartEvidence evidence,
+    _StartEvidencePhoto type,
+    String reference,
+  ) {
+    switch (type) {
+      case _StartEvidencePhoto.vin:
+        return evidence.copyWith(vinPhoto: reference);
+      case _StartEvidencePhoto.plate:
+        return evidence.copyWith(platePhoto: reference);
+      case _StartEvidencePhoto.odometer:
+        return evidence.copyWith(odometerPhoto: reference);
+    }
+  }
+
+  void _applyVehicleDefaults(TechnicianWorkOrder order) {
+    if (_transmission.isNotEmpty) {
+      return;
+    }
+    _transmission = _normalizeTransmission(order.vehicleTransmission);
+  }
+
+  String _normalizeTransmission(String value) {
+    final normalized = value.toLowerCase();
+    if (normalized.contains('oto') || normalized.contains('auto')) {
+      return 'otomatik';
+    }
+    if (normalized.contains('man')) {
+      return 'manuel';
+    }
+    return '';
   }
 
   SupabaseClient? _activeSupabaseClient() {
@@ -426,7 +478,11 @@ class _StartEvidenceScreenState extends State<StartEvidenceScreen> {
   }
 
   String _validPhotoReference(String reference) {
-    return reference.startsWith('local/') ? '' : reference;
+    const legacyPlaceholders = {
+      'local/vin-label.jpg',
+      'local/odometer.jpg',
+    };
+    return legacyPlaceholders.contains(reference) ? '' : reference;
   }
 }
 

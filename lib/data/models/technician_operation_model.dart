@@ -190,7 +190,11 @@ class StartEvidence {
 }
 
 bool _isCapturedEvidencePhoto(String reference) {
-  return reference.isNotEmpty && !reference.startsWith('local/');
+  const legacyPlaceholders = {
+    'local/vin-label.jpg',
+    'local/odometer.jpg',
+  };
+  return reference.isNotEmpty && !legacyPlaceholders.contains(reference);
 }
 
 class EvidenceAsset {
@@ -759,6 +763,7 @@ class TechnicianWorkOrder {
     required this.number,
     required this.plate,
     required this.vehicleSummary,
+    this.vehicleTransmission = '',
     required this.packageName,
     required this.assignedRoles,
     required this.status,
@@ -777,6 +782,7 @@ class TechnicianWorkOrder {
   final String number;
   final String plate;
   final String vehicleSummary;
+  final String vehicleTransmission;
   final String packageName;
   final List<TechnicianRole> assignedRoles;
   final WorkOrderStatus status;
@@ -827,6 +833,7 @@ class TechnicianWorkOrder {
       number: number,
       plate: plate,
       vehicleSummary: vehicleSummary,
+      vehicleTransmission: vehicleTransmission,
       packageName: packageName,
       assignedRoles: assignedRoles,
       status: status ?? this.status,

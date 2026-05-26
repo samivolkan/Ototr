@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../core/constants/app_sizes.dart';
@@ -8,6 +10,7 @@ import '../../core/widgets/ototr_card.dart';
 import '../../core/widgets/ototr_primary_button.dart';
 import '../../data/models/report_template_model.dart';
 import '../../data/models/technician_operation_model.dart';
+import '../../data/models/user_profile_model.dart';
 import '../../data/repositories/app_repositories.dart';
 import '../../data/repositories/report_template_repository.dart';
 import '../../data/repositories/work_order_report_repository.dart';
@@ -37,8 +40,8 @@ class _TechnicianTaskFormScreenState extends State<TechnicianTaskFormScreen> {
   Future<void>? _reportDataFuture;
   final _noteController = TextEditingController();
   bool _isSubmitting = false;
-  int _submitProgress = 0;
-  int _submitTotal = 0;
+  bool _hasPendingAllGood = false;
+  Map<String, Map<String, String>> _pendingAllGoodInputValues = const {};
   final TextEditingController _bodyPaintMicronController =
       TextEditingController();
 
@@ -260,23 +263,11 @@ class _TechnicianTaskFormScreenState extends State<TechnicianTaskFormScreen> {
                       ),
                       if (_isSubmitting) ...[
                         const SizedBox(height: 14),
-                        Text(
-                          'Gönderiliyor: $_submitProgress/$_submitTotal',
-                          style: const TextStyle(
+                        const Text(
+                          'Başlık arka planda gönderiliyor.',
+                          style: TextStyle(
                             color: AppColors.navy,
                             fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(999),
-                          child: LinearProgressIndicator(
-                            minHeight: 8,
-                            value: _submitTotal == 0
-                                ? null
-                                : _submitProgress / _submitTotal,
-                            color: AppColors.info,
-                            backgroundColor: AppColors.grayBorder,
                           ),
                         ),
                       ],
@@ -521,9 +512,6 @@ class _TechnicianTaskFormScreenState extends State<TechnicianTaskFormScreen> {
     final task = _task!;
     final template = _template;
     final group = _groupForTask(task);
-    final currentUser =
-        AppRepositories.instance.remoteWorkOrders?.currentUser ??
-            AppRepositories.instance.localWorkOrders.currentUser;
     if (template != null && group != null) {
       final quickInputValues = sharedMicronInputValuesForGroup(
         group,
@@ -556,44 +544,22 @@ class _TechnicianTaskFormScreenState extends State<TechnicianTaskFormScreen> {
         );
       }
 
-      try {
-        await _reportService.markGroupAllGood(
-          workOrderId: widget.workOrderId,
-          template: template,
-          group: group,
-          user: currentUser,
-          inputValuesByItem: inputValuesByItem,
+      setState(() {
+        _hasPendingAllGood = true;
+        _pendingAllGoodInputValues = inputValuesByItem;
+        _task = task.copyWith(
+          checklistItems: [
+            for (final item in task.checklistItems)
+              item.copyWith(
+                result: TechnicianFindingResult.normal,
+                note: '',
+                notDoneReason: '',
+                isAnswered: true,
+              ),
+          ],
         );
-        final answers = await _reportRepository.getAnswers(widget.workOrderId);
-        if (!mounted) {
-          return;
-        }
-        setState(() {
-          _answers = answers;
-          _task = task.copyWith(
-            checklistItems: [
-              for (final item in task.checklistItems)
-                item.copyWith(
-                  result: TechnicianFindingResult.normal,
-                  note: '',
-                  notDoneReason: '',
-                  isAnswered: true,
-                ),
-            ],
-          );
-        });
-        return;
-      } catch (error) {
-        if (!mounted) {
-          return;
-        }
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(error.toString().replaceFirst('Bad state: ', '')),
-          ),
-        );
-        return;
-      }
+      });
+      return;
     }
 
     setState(() {
@@ -745,96 +711,100 @@ class _TechnicianTaskFormScreenState extends State<TechnicianTaskFormScreen> {
 
   // ignore: unused_element
   Future<void> _submitTask() async {
+    if (_isSubmitting) {
+      return;
+    }
     final task = _task!;
     final rowsComplete = task.checklistItems.isNotEmpty &&
         _completedCountForTask(task) >= task.checklistItems.length;
-    FocusScope.of(context).unfocus();
-    await _runSubmitProgress(task.checklistItems.length);
-    if (!mounted) {
+    if (!rowsComplete) {
       return;
     }
+    FocusScope.of(context).unfocus();
 
-    final remoteRepository = AppRepositories.instance.remoteWorkOrders;
-    if (remoteRepository != null) {
-      final updated =
-          await remoteRepository.updateTask(widget.workOrderId, task);
-      final submitted = await remoteRepository.submitTask(
-        widget.workOrderId,
-        task.taskId,
-      );
-      final savedTask = submitted.tasks.firstWhere(
-        (item) => item.taskId == task.taskId,
-        orElse: () =>
-            updated.tasks.firstWhere((item) => item.taskId == task.taskId),
-      );
-      if (!mounted) {
-        return;
+    final template = _template;
+    final group = _groupForTask(task);
+    final currentUser =
+        AppRepositories.instance.remoteWorkOrders?.currentUser ??
+            AppRepositories.instance.localWorkOrders.currentUser;
+    final hasPendingAllGood = _hasPendingAllGood;
+    final pendingAllGoodInputValues = _pendingAllGoodInputValues;
+
+    setState(() => _isSubmitting = true);
+    unawaited(_submitTaskInBackground(
+      task: task,
+      rowsComplete: rowsComplete,
+      template: template,
+      group: group,
+      currentUser: currentUser,
+      hasPendingAllGood: hasPendingAllGood,
+      pendingAllGoodInputValues: pendingAllGoodInputValues,
+    ));
+    _returnToTaskList();
+  }
+
+  Future<void> _submitTaskInBackground({
+    required TechnicianTask task,
+    required bool rowsComplete,
+    required ReportTemplate? template,
+    required ReportTemplateGroup? group,
+    required UserProfile currentUser,
+    required bool hasPendingAllGood,
+    required Map<String, Map<String, String>> pendingAllGoodInputValues,
+  }) async {
+    try {
+      if (hasPendingAllGood && template != null && group != null) {
+        await _reportService.markGroupAllGood(
+          workOrderId: widget.workOrderId,
+          template: template,
+          group: group,
+          user: currentUser,
+          inputValuesByItem: pendingAllGoodInputValues,
+        );
       }
-      if (savedTask.status == TaskStatus.evidenceMissing && !rowsComplete) {
-        setState(() {
-          _task = savedTask;
-          _isSubmitting = false;
-        });
-        return;
-      }
-      if (savedTask.status == TaskStatus.evidenceMissing && rowsComplete) {
-        try {
+
+      final remoteRepository = AppRepositories.instance.remoteWorkOrders;
+      if (remoteRepository != null) {
+        final updated =
+            await remoteRepository.updateTask(widget.workOrderId, task);
+        final submitted = await remoteRepository.submitTask(
+          widget.workOrderId,
+          task.taskId,
+        );
+        final savedTask = submitted.tasks.firstWhere(
+          (item) => item.taskId == task.taskId,
+          orElse: () =>
+              updated.tasks.firstWhere((item) => item.taskId == task.taskId),
+        );
+        if (savedTask.status == TaskStatus.evidenceMissing && rowsComplete) {
           await remoteRepository.updateTask(
             widget.workOrderId,
             savedTask.copyWith(status: TaskStatus.completed),
           );
-        } catch (_) {
-          // Submit navigation should not be blocked by legacy task status sync.
         }
-      }
-      _returnToTaskList();
-      return;
-    }
-
-    if (AppRepositories.instance.hasLocalTestWorkOrders) {
-      final repository = AppRepositories.instance.localWorkOrders;
-      repository.updateTask(widget.workOrderId, task);
-      final next = repository.submitTask(widget.workOrderId, task.taskId);
-      final savedTask = next.tasks.firstWhere(
-        (item) => item.taskId == task.taskId,
-      );
-      if (savedTask.status == TaskStatus.evidenceMissing && !rowsComplete) {
-        setState(() {
-          _task = savedTask;
-          _isSubmitting = false;
-        });
         return;
       }
-      if (savedTask.status == TaskStatus.evidenceMissing && rowsComplete) {
-        repository.updateTask(
-          widget.workOrderId,
-          savedTask.copyWith(status: TaskStatus.completed),
+
+      if (AppRepositories.instance.hasLocalTestWorkOrders) {
+        final repository = AppRepositories.instance.localWorkOrders;
+        repository.updateTask(widget.workOrderId, task);
+        final next = repository.submitTask(widget.workOrderId, task.taskId);
+        final savedTask = next.tasks.firstWhere(
+          (item) => item.taskId == task.taskId,
         );
-      }
-      _returnToTaskList();
-      return;
-    }
-
-    throw StateError('Canli veri baglantisi yok.');
-  }
-
-  Future<void> _runSubmitProgress(int totalItems) async {
-    final total = totalItems <= 0 ? 1 : totalItems;
-    setState(() {
-      _isSubmitting = true;
-      _submitTotal = total;
-      _submitProgress = 1;
-    });
-
-    for (var index = 2; index <= total; index++) {
-      await Future<void>.delayed(const Duration(milliseconds: 18));
-      if (!mounted) {
+        if (savedTask.status == TaskStatus.evidenceMissing && rowsComplete) {
+          repository.updateTask(
+            widget.workOrderId,
+            savedTask.copyWith(status: TaskStatus.completed),
+          );
+        }
         return;
       }
-      setState(() => _submitProgress = index);
-    }
 
-    await Future<void>.delayed(const Duration(milliseconds: 120));
+      throw StateError('Canli veri baglantisi yok.');
+    } catch (error) {
+      debugPrint('Arka plan başlık gönderimi başarısız: ');
+    }
   }
 
   void _returnToTaskList() {

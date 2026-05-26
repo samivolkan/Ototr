@@ -317,6 +317,7 @@ class SupabaseWorkOrderDataSource implements WorkOrderRemoteDataSource {
     final brand = vehicle['brand']?.toString() ?? '';
     final model = vehicle['model']?.toString() ?? '';
     final modelYear = vehicle['model_year']?.toString() ?? '';
+    final transmission = vehicle['transmission']?.toString() ?? '';
 
     return {
       ...row,
@@ -326,6 +327,7 @@ class SupabaseWorkOrderDataSource implements WorkOrderRemoteDataSource {
         if (brand.isNotEmpty) brand,
         if (model.isNotEmpty) model,
       ].join(' '),
+      'vehicle_transmission': transmission,
       'package_name': packagePlan['name']?.toString() ?? '',
       'manager_approved': row['manager_approved_at'] != null,
       'secretary_gate_ready': row['secretary_gate_ready'] == true,
@@ -385,7 +387,11 @@ class SupabaseWorkOrderDataSource implements WorkOrderRemoteDataSource {
 
   bool _isCapturedEvidencePhoto(Object? reference) {
     final value = reference?.toString() ?? '';
-    return value.isNotEmpty && !value.startsWith('local/');
+    const legacyPlaceholders = {
+      'local/vin-label.jpg',
+      'local/odometer.jpg',
+    };
+    return value.isNotEmpty && !legacyPlaceholders.contains(value);
   }
 
   Map<String, Object?> _asRow(Object? value) {

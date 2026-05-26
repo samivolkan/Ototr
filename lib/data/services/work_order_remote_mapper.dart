@@ -30,6 +30,7 @@ class WorkOrderRemoteMapper {
       number: bundle.caseRow.workOrderNo,
       plate: bundle.caseRow.plate,
       vehicleSummary: bundle.caseRow.vehicleSummary,
+      vehicleTransmission: bundle.caseRow.vehicleTransmission,
       packageName: bundle.caseRow.packageName,
       assignedRoles: bundle.tasks
           .map((task) => _roleFromRemote(task.assignedRole))

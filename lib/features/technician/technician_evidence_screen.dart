@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -25,7 +27,6 @@ class TechnicianEvidenceScreen extends StatefulWidget {
 class _TechnicianEvidenceScreenState extends State<TechnicianEvidenceScreen> {
   TechnicianWorkOrder? _order;
   bool _loading = true;
-  bool _saving = false;
   String? _error;
 
   @override
@@ -147,11 +148,6 @@ class _TechnicianEvidenceScreenState extends State<TechnicianEvidenceScreen> {
                 const OtotrCard(child: Text('Zorunlu rapor medyası yok.')),
             ],
           ),
-          if (_saving)
-            Container(
-              color: Colors.black.withValues(alpha: .18),
-              child: const Center(child: CircularProgressIndicator()),
-            ),
         ],
       ),
     );
@@ -173,39 +169,16 @@ class _TechnicianEvidenceScreenState extends State<TechnicianEvidenceScreen> {
       return;
     }
 
-    setState(() => _saving = true);
-    try {
-      final uploader = PhotoUploadService(client: _activeSupabaseClient());
-      final result = await uploader.uploadReportMedia(
-        workOrderId: order.id,
-        itemId: asset.fieldKey,
-        localPath: picked.path,
-      );
-      if (!result.uploaded) {
-        throw StateError('Dosya Supabase Storage alanına yüklenemedi.');
-      }
-
-      final nextAsset = asset.copyWith(
-        localPath: result.localPath,
-        remoteUrl: result.reference,
-        hash: 'uploaded-${DateTime.now().millisecondsSinceEpoch}',
-        uploadedAt: DateTime.now(),
-        uploadedBy: userId,
-        syncStatus: EvidenceStatus.uploaded,
-        qualityStatus: 'accepted',
-      );
-      final nextOrder =
-          await remoteRepository.saveFinalMediaAsset(order.id, nextAsset);
-      if (!mounted) return;
-      setState(() => _order = nextOrder);
-      _showMessage('${asset.title} yüklendi.');
-    } catch (error) {
-      _showMessage(error.toString());
-    } finally {
-      if (mounted) {
-        setState(() => _saving = false);
-      }
-    }
+    final localAsset = asset.copyWith(
+      localPath: picked.path,
+      hash: 'local-',
+      uploadedBy: userId,
+      syncStatus: EvidenceStatus.queued,
+      qualityStatus: 'pending_upload',
+    );
+    _replaceAssetInCurrentOrder(localAsset);
+    _showMessage(' alındı. Yükleme arka planda devam ediyor.');
+    unawaited(_saveAndUploadAsset(localAsset, picked.path, userId));
   }
 
   Future<void> _captureTaskAsset(
@@ -223,73 +196,106 @@ class _TechnicianEvidenceScreenState extends State<TechnicianEvidenceScreen> {
       return;
     }
 
-    setState(() => _saving = true);
+    final localAsset = asset.copyWith(
+      localPath: picked.path,
+      hash: 'local-',
+      uploadedBy: remoteRepository.currentUser.id,
+      syncStatus: EvidenceStatus.queued,
+      qualityStatus: 'pending_upload',
+    );
+    _replaceAssetInCurrentOrder(localAsset);
+    _showMessage(' alındı. Yükleme arka planda devam ediyor.');
+    unawaited(_saveAndUploadAsset(
+      localAsset,
+      picked.path,
+      remoteRepository.currentUser.id,
+    ));
+  }
+
+  Future<void> _saveAndUploadAsset(
+    EvidenceAsset localAsset,
+    String localPath,
+    String userId,
+  ) async {
+    final remoteRepository = AppRepositories.instance.remoteWorkOrders;
+    if (remoteRepository == null) {
+      return;
+    }
     try {
-      final uploader = PhotoUploadService(client: _activeSupabaseClient());
-      final result = await uploader.uploadReportMedia(
-        workOrderId: order.id,
-        itemId: asset.fieldKey,
-        localPath: picked.path,
+      final savedLocal = await remoteRepository.saveFinalMediaAsset(
+        localAsset.workOrderId,
+        localAsset,
       );
-      if (!result.uploaded) {
-        throw StateError('Dosya Supabase Storage alanına yüklenemedi.');
+      if (mounted) {
+        setState(() => _order = savedLocal);
       }
 
-      final nextAsset = asset.copyWith(
+      final uploader = PhotoUploadService(client: _activeSupabaseClient());
+      final result = await uploader.uploadReportMedia(
+        workOrderId: localAsset.workOrderId,
+        itemId: localAsset.fieldKey,
+        localPath: localPath,
+      );
+      if (!result.uploaded) {
+        if (mounted) {
+          _showMessage(' arka planda yüklenemedi.');
+        }
+        return;
+      }
+
+      final uploadedAsset = localAsset.copyWith(
         localPath: result.localPath,
         remoteUrl: result.reference,
-        hash: 'uploaded-${DateTime.now().millisecondsSinceEpoch}',
+        hash: 'uploaded-',
         uploadedAt: DateTime.now(),
-        uploadedBy: remoteRepository.currentUser.id,
+        uploadedBy: userId,
         syncStatus: EvidenceStatus.uploaded,
         qualityStatus: 'accepted',
       );
-      final nextOrder =
-          await remoteRepository.saveFinalMediaAsset(order.id, nextAsset);
+      final nextOrder = await remoteRepository.saveFinalMediaAsset(
+        localAsset.workOrderId,
+        uploadedAsset,
+      );
       if (!mounted) return;
       setState(() => _order = nextOrder);
-      _showMessage('${asset.title} yüklendi.');
+      _showMessage(' yüklendi.');
     } catch (error) {
       _showMessage(error.toString());
-    } finally {
-      if (mounted) {
-        setState(() => _saving = false);
-      }
     }
   }
 
-  Future<XFile?> _pickMedia(EvidenceAsset asset) async {
-    final isVideo = asset.evidenceType.toLowerCase() == 'video';
-    final source = await showModalBottomSheet<ImageSource>(
-      context: context,
-      builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: Icon(isVideo ? Icons.videocam : Icons.photo_camera),
-              title: Text(isVideo ? 'Kamera ile video çek' : 'Kamera ile çek'),
-              onTap: () => Navigator.pop(context, ImageSource.camera),
-            ),
-            ListTile(
-              leading: const Icon(Icons.photo_library),
-              title: const Text('Galeriden seç'),
-              onTap: () => Navigator.pop(context, ImageSource.gallery),
-            ),
-          ],
-        ),
-      ),
-    );
-    if (source == null) {
-      return null;
+  void _replaceAssetInCurrentOrder(EvidenceAsset asset) {
+    final order = _order;
+    if (order == null || !mounted) {
+      return;
     }
+    setState(() {
+      _order = order.copyWith(
+        finalMediaAssets: [
+          for (final current in order.finalMediaAssets)
+            if (current.id == asset.id) asset else current,
+        ],
+        tasks: [
+          for (final task in order.tasks)
+            task.copyWith(
+              evidenceAssets: [
+                for (final current in task.evidenceAssets)
+                  if (current.id == asset.id) asset else current,
+              ],
+            ),
+        ],
+      );
+    });
+  }
 
+  Future<XFile?> _pickMedia(EvidenceAsset asset) {
+    final isVideo = asset.evidenceType.toLowerCase() == 'video';
     final picker = ImagePicker();
     if (isVideo) {
-      return picker.pickVideo(source: source);
+      return picker.pickVideo(source: ImageSource.camera);
     }
     return picker.pickImage(
-      source: source,
+      source: ImageSource.camera,
       imageQuality: 82,
       maxWidth: 1800,
     );
