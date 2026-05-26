@@ -6609,6 +6609,19 @@
       Object.entries(data||{}).forEach(([key,value])=>{if(value!==undefined) payload[key]=value;});
       return payload;
     }
+    function dealerSupabaseWorkOrderSnapshot(data){
+      const snapshot={};
+      Object.entries(data||{}).forEach(([key,value])=>{
+        if(value!==undefined&&value!==null&&String(value).trim()!=='') snapshot[key]=value;
+      });
+      snapshot.savedAt=new Date().toISOString();
+      return snapshot;
+    }
+    async function dealerSupabaseVehicleMetadata(vehicleId){
+      if(!vehicleId) return {};
+      const rows=await dealerSupabaseRequest('/rest/v1/vehicles?select=metadata&id=eq.'+dealerSupabaseRestEq(vehicleId)+'&limit=1');
+      return rows?.[0]?.metadata&&typeof rows[0].metadata==='object'?rows[0].metadata:{};
+    }
     async function dealerSupabaseFindPackagePlanId(packageName){
       const code=dealerLivePackageCode(packageName);
       const rows=await dealerSupabaseRequest('/rest/v1/package_plans?select=id&code=eq.'+dealerSupabaseRestEq(code)+'&is_active=eq.true&limit=1');
@@ -6616,6 +6629,7 @@
     }
     function dealerLiveWorkOrderFromCase(row,tasks){
       const vehicle=row.vehicles||{}, customer=row.customers||{}, plan=row.package_plans||{};
+      const snapshot=(vehicle.metadata&&typeof vehicle.metadata==='object'?vehicle.metadata.dealer_work_order:null)||{};
       const taskRows=(tasks||[]).filter(t=>t.expertise_case_id===row.id);
       const id=row.work_order_no||row.id;
       const makeModel=[vehicle.brand,vehicle.model].filter(Boolean).join(' ').trim();
@@ -6630,33 +6644,56 @@
         branchName:'Canlı Supabase Şubesi',
         status:dealerLiveStatusLabel(row.status),
         liveStatus:row.status,
-        customer:customer.full_name||'Müşteri bekliyor',
-        phone:customer.phone||'',
-        buyer:customer.full_name||'Alıcı bilgisi bekliyor',
-        seller:vehicle.seller_type||'Satıcı bilgisi sekreterya',
+        customer:customer.full_name||snapshot.customer||'Müşteri bekliyor',
+        phone:customer.phone||snapshot.phone||'',
+        taxNo:customer.identity_number||snapshot.taxNo||'',
+        customerType:snapshot.customerType||customer.customer_role||'Bireysel',
+        contactPermission:snapshot.contactPermission||'Evet',
+        buyer:customer.full_name||snapshot.buyer||snapshot.customer||'Alıcı bilgisi bekliyor',
+        seller:snapshot.seller||vehicle.seller_type||'Satıcı bilgisi sekreterya',
+        sellerPhone:snapshot.sellerPhone||'',
+        sellerTaxNo:snapshot.sellerTaxNo||'',
+        sellerType:snapshot.sellerType||vehicle.seller_type||'Bireysel',
+        sellerContactPermission:snapshot.sellerContactPermission||'Evet',
         vehicle:makeModel||'Araç bilgisi bekliyor',
-        vehicleMake:vehicle.brand||'',
-        vehicleModel:vehicle.model||'',
-        year:String(vehicle.model_year||''),
+        vehicleMake:vehicle.brand||snapshot.vehicleMake||'',
+        vehicleModel:vehicle.model||snapshot.vehicleModel||'',
+        vehicleVariant:snapshot.vehicleVariant||'',
+        year:String(vehicle.model_year||snapshot.year||''),
         plate:vehicle.plate||'Plaka bekliyor',
-        vin:vehicle.vin||'',
-        engineNo:'',
+        vin:vehicle.vin||snapshot.vin||'',
+        engineNo:snapshot.engineNo||'',
         mileage:vehicle.mileage_km?String(vehicle.mileage_km).replace(/\B(?=(\d{3})+(?!\d))/g,'.')+' KM':'KM bekliyor',
-        fuel:vehicle.fuel_type||'',
-        transmission:vehicle.transmission||'',
+        fuel:vehicle.fuel_type||snapshot.fuel||'',
+        transmission:vehicle.transmission||snapshot.transmission||'',
         packageName:plan.name||dealerPackageName(plan.code||''),
+        spareKey:snapshot.spareKey||'Var',
+        payment:snapshot.payment||(row.payment_gate_ready?'Tahsil edildi':'Bekliyor'),
+        paymentMethod:snapshot.paymentMethod||(row.payment_gate_ready?'Canlı kayıt':'Bekliyor'),
+        consent:snapshot.consent||(row.kvkk_gate_ready?'İmzalandı':'Bekliyor'),
+        reportChannels:dealerAddonNamesFromValue(snapshot.reportChannels),
+        reportRecipientName:snapshot.reportRecipientName||'',
+        reportRecipientPhone:snapshot.reportRecipientPhone||'',
+        reportRecipientEmail:snapshot.reportRecipientEmail||'',
+        vehicleSource:snapshot.vehicleSource||'Bireysel',
+        arrivalChannel:snapshot.arrivalChannel||'Walk-in',
+        testDrivePermission:snapshot.testDrivePermission||'Evet',
+        arrivalStatus:snapshot.arrivalStatus||'Çalışır',
+        keyDelivery:snapshot.keyDelivery||'Var',
+        registrationDelivery:snapshot.registrationDelivery||'Var',
+        belongingsStatus:snapshot.belongingsStatus||'Yok',
+        customerWaiting:snapshot.customerWaiting||'Evet',
+        vehicleDropped:snapshot.vehicleDropped||'Hayır',
         source:'Supabase canlı',
         createdAt,
         entryAt:createdAt,
         deliveryAt:'Canlı süreçte',
-        payment:row.payment_gate_ready?'Tahsil edildi':'Bekliyor',
-        paymentMethod:row.payment_gate_ready?'Canlı kayıt':'Bekliyor',
-        consent:row.kvkk_gate_ready?'İmzalandı':'Bekliyor',
         managerApproved:!!row.manager_approved_at,
         managerApprovedAt:row.manager_approved_at?new Date(row.manager_approved_at).toLocaleString('tr-TR',{dateStyle:'short',timeStyle:'short'}):'',
         secretaryPrinted:/REPORT_DELIVERED|CLOSED/i.test(row.status||''),
         revisionNo:1,
         reprintCount:0,
+        liveDealerSnapshot:snapshot,
         tasks:taskRows.map((task,i)=>({
           id:task.id,
           station:task.title||task.task_key||('Görev '+(i+1)),
@@ -6679,7 +6716,7 @@
       }
       dealerSupabaseSyncInFlight=true;
       try{
-        const cases=await dealerSupabaseRequest('/rest/v1/expertise_cases?select=id,customer_id,vehicle_id,work_order_no,status,opened_at,customer_summary,manager_approved_at,secretary_gate_ready,payment_gate_ready,kvkk_gate_ready,package_plans(code,name,duration_minutes),customers(full_name,phone,email,identity_number,customer_role),vehicles(plate,vin,brand,model,model_year,fuel_type,transmission,mileage_km,seller_type,arrival_note)&order=opened_at.desc');
+        const cases=await dealerSupabaseRequest('/rest/v1/expertise_cases?select=id,customer_id,vehicle_id,work_order_no,status,opened_at,customer_summary,manager_approved_at,secretary_gate_ready,payment_gate_ready,kvkk_gate_ready,package_plans(code,name,duration_minutes),customers(full_name,phone,email,identity_number,customer_role,metadata),vehicles(plate,vin,brand,model,model_year,fuel_type,transmission,mileage_km,seller_type,arrival_note,metadata)&order=opened_at.desc');
         const ids=(cases||[]).map(row=>row.id).filter(Boolean);
         const tasks=ids.length?await dealerSupabaseRequest('/rest/v1/inspection_tasks?select=id,expertise_case_id,task_key,title,assigned_role,status,report_field_key,estimated_minutes,customer_friendly_note,risky_findings,owner_user_id,assigned_user_id&expertise_case_id=in.('+ids.join(',')+')&order=created_at.asc'):[];
         const workOrders=(cases||[]).map(row=>dealerLiveWorkOrderFromCase(row,tasks));
@@ -6729,6 +6766,16 @@
           work_order_notes:data.deliveryAt||''
         })
       });
+      const rows=await dealerSupabaseRequest('/rest/v1/expertise_cases?select=vehicle_id&id=eq.'+dealerSupabaseRestEq(createdId)+'&limit=1');
+      const vehicleId=rows?.[0]?.vehicle_id;
+      if(vehicleId){
+        const metadata=await dealerSupabaseVehicleMetadata(vehicleId).catch(()=>({}));
+        await dealerSupabaseRequest('/rest/v1/vehicles?id=eq.'+dealerSupabaseRestEq(vehicleId),{
+          method:'PATCH',
+          headers:{Prefer:'return=minimal'},
+          body:JSON.stringify({metadata:{...metadata,dealer_work_order:dealerSupabaseWorkOrderSnapshot(data)}})
+        });
+      }
       await dealerSyncSupabaseWorkOrders({silent:true,selectSupabaseId:createdId,noRender:true});
       return createdId;
     }
@@ -6755,6 +6802,7 @@
         });
       }
       if(vehicleId){
+        const metadata=await dealerSupabaseVehicleMetadata(vehicleId).catch(()=>({}));
         await dealerSupabaseRequest('/rest/v1/vehicles?id=eq.'+dealerSupabaseRestEq(vehicleId),{
           method:'PATCH',
           headers:{Prefer:'return=minimal'},
@@ -6769,7 +6817,8 @@
             transmission:String(data.transmission||wo.transmission||'').trim()||null,
             mileage_km:dealerMileageNumber(data.mileage)||dealerMileageNumber(wo.mileage)||0,
             seller_type:String(data.sellerType||wo.sellerType||'').trim()||null,
-            arrival_note:[data.source,data.seller].filter(Boolean).join(' | ')||null
+            arrival_note:[data.source,data.seller].filter(Boolean).join(' | ')||null,
+            metadata:{...metadata,dealer_work_order:dealerSupabaseWorkOrderSnapshot(data)}
           }))
         });
       }
