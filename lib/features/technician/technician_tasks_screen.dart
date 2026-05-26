@@ -8,10 +8,12 @@ import '../../core/widgets/ototr_card.dart';
 import '../../core/widgets/ototr_primary_button.dart';
 import '../../core/widgets/ototr_secondary_button.dart';
 import '../../core/widgets/ototr_status_badge.dart';
+import '../../data/models/report_template_model.dart';
 import '../../data/models/technician_operation_model.dart';
 import '../../data/models/user_profile_model.dart';
 import '../../data/repositories/app_repositories.dart';
 import '../../data/repositories/remote_work_order_repository.dart';
+import '../../data/services/work_order_report_service.dart';
 import 'widgets/technician_missing_notifications.dart';
 import 'widgets/technician_vehicle_header.dart';
 
@@ -99,17 +101,22 @@ class _RemoteTechnicianTasksScreen extends StatefulWidget {
 
 class _RemoteTechnicianTasksScreenState
     extends State<_RemoteTechnicianTasksScreen> {
-  Future<TechnicianWorkOrder>? _future;
+  Future<_RemoteTaskScreenData>? _future;
+
+  WorkOrderReportService get _reportService => WorkOrderReportService(
+        templateRepository: AppRepositories.instance.reportTemplates,
+        reportRepository: AppRepositories.instance.workOrderReports,
+      );
 
   @override
   void initState() {
     super.initState();
-    _future = widget.repository.getById(widget.workOrderId);
+    _future = _loadRemoteData();
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<TechnicianWorkOrder>(
+    return FutureBuilder<_RemoteTaskScreenData>(
       future: _future,
       builder: (context, snapshot) {
         if (snapshot.hasError) {
@@ -136,9 +143,14 @@ class _RemoteTechnicianTasksScreenState
           );
         }
 
-        final order = snapshot.data!;
+        final data = snapshot.data!;
+        final order = data.order;
         final role = widget.repository.currentTechnicianRole;
-        final tasks = order.tasksFor(role);
+        final tasks = _mergeTasksWithGroupProgress(
+          order.tasksFor(role),
+          data.template,
+          data.progressByGroupId,
+        );
         for (final task in tasks) {
           if (task.status == TaskStatus.completed) {
             AppRepositories.instance.clearOptimisticTaskCompleted(
@@ -174,9 +186,131 @@ class _RemoteTechnicianTasksScreenState
 
   void _refresh() {
     setState(() {
-      _future = widget.repository.getById(widget.workOrderId);
+      _future = _loadRemoteData();
     });
   }
+
+  Future<_RemoteTaskScreenData> _loadRemoteData() async {
+    final order = await widget.repository.getById(widget.workOrderId);
+    try {
+      final template =
+          await AppRepositories.instance.reportTemplates.getActiveTemplate();
+      final progress =
+          await _reportService.getReportProgress(widget.workOrderId);
+      final progressByGroupId = {
+        for (final item in progress) item.groupId: item,
+      };
+      return _RemoteTaskScreenData(
+        order: order,
+        template: template,
+        progressByGroupId: progressByGroupId,
+      );
+    } catch (_) {
+      return _RemoteTaskScreenData(
+        order: order,
+        template: null,
+        progressByGroupId: const {},
+      );
+    }
+  }
+
+  List<TechnicianTask> _mergeTasksWithGroupProgress(
+    List<TechnicianTask> tasks,
+    ReportTemplate? template,
+    Map<String, ReportGroupProgress> progressByGroupId,
+  ) {
+    if (template == null || progressByGroupId.isEmpty) {
+      return tasks;
+    }
+    return [
+      for (final task in tasks)
+        _taskWithGroupProgress(task, template, progressByGroupId),
+    ];
+  }
+
+  TechnicianTask _taskWithGroupProgress(
+    TechnicianTask task,
+    ReportTemplate template,
+    Map<String, ReportGroupProgress> progressByGroupId,
+  ) {
+    final group = _findGroupForTask(task, template);
+    if (group == null) {
+      return task;
+    }
+    final progress = progressByGroupId[group.id];
+    if (progress == null || progress.totalItems <= 0) {
+      return task;
+    }
+    final completed =
+        progress.completedItems.clamp(0, task.checklistItems.length);
+    final checklist = [
+      for (var index = 0; index < task.checklistItems.length; index += 1)
+        task.checklistItems[index].copyWith(isAnswered: index < completed),
+    ];
+    final status =
+        progress.progressPercent >= 100 ? TaskStatus.completed : task.status;
+    return task.copyWith(
+      status: status,
+      checklistItems: checklist,
+    );
+  }
+
+  ReportTemplateGroup? _findGroupForTask(
+    TechnicianTask task,
+    ReportTemplate template,
+  ) {
+    final checklistIds = task.checklistItems.map((item) => item.id).toSet();
+    final checklistTitles = {
+      for (final item in task.checklistItems) _normalize(item.title),
+    };
+    for (final group in template.groups) {
+      if (group.items.any(
+        (item) =>
+            checklistIds.contains(item.id) ||
+            checklistTitles.contains(_normalize(item.title)),
+      )) {
+        return group;
+      }
+    }
+    for (final group in template.groups) {
+      if (_normalize(group.title) == _normalize(task.title) ||
+          _normalize(task.reportFieldKey).contains(_normalize(group.code))) {
+        return group;
+      }
+    }
+    return null;
+  }
+
+  String _normalize(String value) {
+    return value
+        .trim()
+        .toUpperCase()
+        .replaceAll('İ', 'I')
+        .replaceAll('Ğ', 'G')
+        .replaceAll('Ü', 'U')
+        .replaceAll('Ş', 'S')
+        .replaceAll('Ö', 'O')
+        .replaceAll('Ç', 'C')
+        .replaceAll('ı', 'I')
+        .replaceAll('ğ', 'G')
+        .replaceAll('ü', 'U')
+        .replaceAll('ş', 'S')
+        .replaceAll('ö', 'O')
+        .replaceAll('ç', 'C')
+        .replaceAll(RegExp(r'[^A-Z0-9]+'), '_');
+  }
+}
+
+class _RemoteTaskScreenData {
+  const _RemoteTaskScreenData({
+    required this.order,
+    required this.template,
+    required this.progressByGroupId,
+  });
+
+  final TechnicianWorkOrder order;
+  final ReportTemplate? template;
+  final Map<String, ReportGroupProgress> progressByGroupId;
 }
 
 class _TechnicianTasksView extends StatelessWidget {

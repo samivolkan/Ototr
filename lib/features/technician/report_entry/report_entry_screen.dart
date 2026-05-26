@@ -384,15 +384,14 @@ class _ReportEntryScreenState extends State<ReportEntryScreen> {
         ),
       );
     } finally {
-      if (!mounted) {
-        return;
+      if (mounted) {
+        setState(() => _isSubmittingGroup = false);
+        Navigator.pushReplacementNamed(
+          context,
+          AppRoutes.technicianTasks,
+          arguments: widget.workOrderId,
+        );
       }
-      setState(() => _isSubmittingGroup = false);
-      Navigator.pushReplacementNamed(
-        context,
-        AppRoutes.technicianTasks,
-        arguments: widget.workOrderId,
-      );
     }
   }
 
