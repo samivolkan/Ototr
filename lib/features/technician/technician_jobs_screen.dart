@@ -5,7 +5,6 @@ import '../../core/navigation/app_routes.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/ototr_app_bar.dart';
 import '../../core/widgets/ototr_card.dart';
-import '../../core/widgets/ototr_primary_button.dart';
 import '../../core/widgets/ototr_secondary_button.dart';
 import '../../core/widgets/ototr_status_badge.dart';
 import '../../data/models/technician_operation_model.dart';
@@ -68,10 +67,6 @@ class _TechnicianJobsScreenState extends State<TechnicianJobsScreen> {
               job: job,
               currentRole: role,
               onNeedsRefresh: _refresh,
-              onClaim: () async {
-                _repository.claim(job.id);
-                _refresh();
-              },
             ),
           if (jobs.isEmpty)
             const OtotrCard(child: Text('Şu anda açık teknik iş emri yok.')),
@@ -116,10 +111,6 @@ class _TechnicianJobsScreenState extends State<TechnicianJobsScreen> {
                   job: job,
                   currentRole: repository.currentTechnicianRole,
                   onNeedsRefresh: _refreshRemote,
-                  onClaim: () async {
-                    await repository.claim(job.id);
-                    _refreshRemote();
-                  },
                 ),
               if (!isLoading && jobs.isEmpty && !snapshot.hasError)
                 const OtotrCard(
@@ -188,13 +179,11 @@ class _JobCard extends StatelessWidget {
   const _JobCard({
     required this.job,
     required this.currentRole,
-    required this.onClaim,
     this.onNeedsRefresh,
   });
 
   final TechnicianWorkOrder job;
   final TechnicianRole currentRole;
-  final Future<void> Function() onClaim;
   final VoidCallback? onNeedsRefresh;
 
   @override
@@ -277,24 +266,15 @@ class _JobCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: AppSizes.md),
-          if (!job.isClaimed)
-            OtotrPrimaryButton(
-              label: 'Sahiplen',
-              icon: Icons.assignment_ind,
-              onPressed: () {
-                onClaim();
-              },
-            )
-          else
-            OtotrSecondaryButton(
-              label: 'Araç Başlama İş Emri',
-              icon: Icons.camera_alt,
-              onPressed: () => Navigator.pushNamed(
-                context,
-                AppRoutes.technicianStartEvidence,
-                arguments: job.id,
-              ).then((_) => onNeedsRefresh?.call()),
-            ),
+          OtotrSecondaryButton(
+            label: 'Araç Başlama İş Emri',
+            icon: Icons.camera_alt,
+            onPressed: () => Navigator.pushNamed(
+              context,
+              AppRoutes.technicianStartEvidence,
+              arguments: job.id,
+            ).then((_) => onNeedsRefresh?.call()),
+          ),
           const SizedBox(height: 8),
           OtotrSecondaryButton(
             label: 'Görevlerim',
