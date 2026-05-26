@@ -209,6 +209,20 @@ void main() {
     );
   });
 
+  test('rapor kapisi mudur onayi beklemez', () {
+    final result = const ReportGateCalculator().calculate(
+      workOrder: repository.getById('wo-2026-0001'),
+      syncQueue: const [],
+    );
+
+    expect(result.managerApprovalRequired, isFalse);
+    expect(result.status, isNot(ReportGateStatus.managerApprovalRequired));
+    expect(
+      result.issues.map((issue) => issue.code),
+      isNot(contains(ReportGateIssueCode.managerApprovalPending)),
+    );
+  });
+
   test('tamamlanan teknik gorev musteri dili ozeti olmadan kilitlenmez', () {
     final order = repository.getById('wo-2026-0001');
     final task = order.tasks.first.copyWith(status: TaskStatus.completed);

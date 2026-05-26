@@ -149,7 +149,7 @@ class _ReportGateView extends StatelessWidget {
       case ReportGateStatus.syncPending:
         return 'Tamam';
       case ReportGateStatus.managerApprovalRequired:
-        return 'Müdür onayı bekliyor';
+        return 'Basım hazırlığı bekliyor';
     }
   }
 }

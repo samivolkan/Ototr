@@ -26,7 +26,6 @@ class ReportGateCalculator {
     final status = _statusFor(
       issues: issues,
       missingExternalQueries: missingExternalQueries,
-      managerApproved: workOrder.managerApproved,
     );
 
     return ReportGateResult(
@@ -36,7 +35,7 @@ class ReportGateCalculator {
       blockingReasons: blockingReasons,
       missingEvidence: missingEvidence,
       missingExternalQueries: missingExternalQueries,
-      managerApprovalRequired: !workOrder.managerApproved,
+      managerApprovalRequired: false,
       pendingSyncItems: pendingSyncItems,
       lastCalculatedAt: DateTime.now(),
     );
@@ -45,16 +44,12 @@ class ReportGateCalculator {
   ReportGateStatus _statusFor({
     required List<ReportGateIssue> issues,
     required List<String> missingExternalQueries,
-    required bool managerApproved,
   }) {
     if (issues.isEmpty) {
       return ReportGateStatus.ready;
     }
     if (missingExternalQueries.isNotEmpty) {
       return ReportGateStatus.externalQueryPending;
-    }
-    if (!managerApproved) {
-      return ReportGateStatus.managerApprovalRequired;
     }
     return ReportGateStatus.blocked;
   }

@@ -231,12 +231,6 @@ class ReportConsistencyValidator {
           message: 'Ödeme/tahsilat blokajı var. Usta düzenleyemez.',
           fieldKey: 'payment_gate',
         ),
-      if (!workOrder.managerApproved)
-        const ReportGateIssue(
-          code: ReportGateIssueCode.managerApprovalPending,
-          message: 'Müdür kalite onayı bekleniyor.',
-          fieldKey: 'manager_approval',
-        ),
     ];
   }
 
