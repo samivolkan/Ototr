@@ -6,6 +6,9 @@ on:
       - main
       - codex/smart-vin-work-order
   workflow_dispatch:
+  repository_dispatch:
+    types:
+      - deploy-pages
 
 permissions:
   contents: read
@@ -26,7 +29,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: codex/smart-vin-work-order
+          ref: main
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
