@@ -310,6 +310,18 @@ bool _isFinalMediaIssue(ReportGateIssue issue) {
   return key == 'final_media' || key.startsWith('report.final_media.');
 }
 
+bool _isTaskCompleted(TechnicianTask task, String workOrderId) {
+  final totalRows = task.checklistItems.length;
+  final rowsComplete = totalRows > 0 && task.completedCount >= totalRows;
+  if (task.status == TaskStatus.completed || rowsComplete) {
+    return true;
+  }
+  return AppRepositories.instance.isOptimisticTaskCompleted(
+    workOrderId,
+    task.taskId,
+  );
+}
+
 class _JobSummaryCard extends StatelessWidget {
   const _JobSummaryCard({
     required this.job,
@@ -325,10 +337,10 @@ class _JobSummaryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final myTasks = job.tasksFor(currentRole);
     final completed =
-        myTasks.where((task) => task.status == TaskStatus.completed).length;
+        myTasks.where((task) => _isTaskCompleted(task, job.id)).length;
     final totalTasks = job.tasks.length;
     final totalCompleted =
-        job.tasks.where((task) => task.status == TaskStatus.completed).length;
+        job.tasks.where((task) => _isTaskCompleted(task, job.id)).length;
     final totalPercent =
         totalTasks == 0 ? 0 : ((totalCompleted / totalTasks) * 100).round();
     final missingCount = _technicianMissingActionCount(job);
@@ -439,10 +451,10 @@ class _JobCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final myTasks = job.tasksFor(currentRole);
     final completed =
-        myTasks.where((task) => task.status == TaskStatus.completed).length;
+        myTasks.where((task) => _isTaskCompleted(task, job.id)).length;
     final totalTasks = job.tasks.length;
     final totalCompleted =
-        job.tasks.where((task) => task.status == TaskStatus.completed).length;
+        job.tasks.where((task) => _isTaskCompleted(task, job.id)).length;
     final totalPercent =
         totalTasks == 0 ? 0 : ((totalCompleted / totalTasks) * 100).round();
 

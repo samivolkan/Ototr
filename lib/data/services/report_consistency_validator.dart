@@ -69,7 +69,10 @@ class ReportConsistencyValidator {
     final issues = <ReportGateIssue>[];
 
     for (final task in tasks) {
-      if (task.status != TaskStatus.completed) {
+      final totalRows = task.checklistItems.length;
+      final rowsComplete = totalRows > 0 && task.completedCount >= totalRows;
+      final isCompleted = task.status == TaskStatus.completed || rowsComplete;
+      if (!isCompleted) {
         issues.add(
           ReportGateIssue(
             code: ReportGateIssueCode.taskIncomplete,

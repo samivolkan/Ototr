@@ -795,7 +795,7 @@ class _TechnicianTaskFormScreenState extends State<TechnicianTaskFormScreen> {
           orElse: () =>
               updated.tasks.firstWhere((item) => item.taskId == task.taskId),
         );
-        if (savedTask.status == TaskStatus.evidenceMissing && rowsComplete) {
+        if (rowsComplete && savedTask.status != TaskStatus.completed) {
           await remoteRepository.updateTask(
             widget.workOrderId,
             savedTask.copyWith(status: TaskStatus.completed),
@@ -815,7 +815,7 @@ class _TechnicianTaskFormScreenState extends State<TechnicianTaskFormScreen> {
         final savedTask = next.tasks.firstWhere(
           (item) => item.taskId == task.taskId,
         );
-        if (savedTask.status == TaskStatus.evidenceMissing && rowsComplete) {
+        if (rowsComplete && savedTask.status != TaskStatus.completed) {
           repository.updateTask(
             widget.workOrderId,
             savedTask.copyWith(status: TaskStatus.completed),
