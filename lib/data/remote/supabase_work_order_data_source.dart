@@ -9,6 +9,18 @@ class SupabaseWorkOrderDataSource implements WorkOrderRemoteDataSource {
   const SupabaseWorkOrderDataSource(this._client);
 
   final SupabaseClient _client;
+  static const List<String> _activeCaseStatuses = <String>[
+    'DRAFT',
+    'ASSIGNED',
+    'CLAIMED',
+    'START_EVIDENCE_REQUIRED',
+    'TECHNICAL_ENTRY_OPEN',
+    'SUBMITTED',
+    'MANAGER_REVIEW',
+    'REPORT_GATE_BLOCKED',
+    'REPORT_GATE_READY',
+    'APPROVED',
+  ];
 
   @override
   Future<List<UserProfile>> fetchActiveTechnicians() async {
@@ -23,12 +35,29 @@ class SupabaseWorkOrderDataSource implements WorkOrderRemoteDataSource {
     final rows = await _client
         .from('expertise_cases')
         .select('id')
+        .inFilter('status', _activeCaseStatuses)
         .order('opened_at', ascending: false);
+    final ids = [
+      for (final row in _asRowList(rows)) row['id']?.toString() ?? '',
+    ].where((id) => id.isNotEmpty).toList(growable: false);
 
-    return [
-      for (final row in _asRowList(rows))
-        await fetchWorkOrderById(row['id'].toString()),
-    ];
+    if (ids.isEmpty) {
+      return const [];
+    }
+
+    const batchSize = 4;
+    final bundles = <WorkOrderRemoteBundle>[];
+    for (var index = 0; index < ids.length; index += batchSize) {
+      final end =
+          (index + batchSize) > ids.length ? ids.length : (index + batchSize);
+      final batchIds = ids.sublist(index, end);
+      final batch = await Future.wait<WorkOrderRemoteBundle>([
+        for (final id in batchIds) _fetchWorkOrderSummaryById(id),
+      ]);
+      bundles.addAll(batch);
+    }
+
+    return bundles;
   }
 
   @override
@@ -50,6 +79,25 @@ class SupabaseWorkOrderDataSource implements WorkOrderRemoteDataSource {
       itemValues: results[2] as List<InspectionItemValueRow>,
       evidenceAssets: results[3] as List<EvidenceAssetRow>,
       externalQueries: results[4] as List<ExternalQueryRow>,
+    );
+  }
+
+  Future<WorkOrderRemoteBundle> _fetchWorkOrderSummaryById(
+    String workOrderId,
+  ) async {
+    final caseRow = await _fetchCase(workOrderId);
+    final results = await Future.wait<Object?>([
+      _fetchStartEvidence(workOrderId),
+      _fetchTasks(workOrderId),
+    ]);
+
+    return WorkOrderRemoteBundle(
+      caseRow: caseRow,
+      startEvidence: results[0] as StartEvidenceRow?,
+      tasks: results[1] as List<InspectionTaskRow>,
+      itemValues: const [],
+      evidenceAssets: const [],
+      externalQueries: const [],
     );
   }
 

@@ -17,6 +17,13 @@ class WorkOrderReportService {
     ReportTemplateGroup group,
   ) async {
     final answers = await reportRepository.getAnswers(workOrderId);
+    return _groupProgressFromAnswers(group, answers);
+  }
+
+  ReportGroupProgress _groupProgressFromAnswers(
+    ReportTemplateGroup group,
+    List<WorkOrderReportAnswer> answers,
+  ) {
     final groupAnswers = answers.where((answer) => answer.groupId == group.id);
     final answeredItems = groupAnswers.length;
     final completedItems =
@@ -45,9 +52,10 @@ class WorkOrderReportService {
     String workOrderId,
   ) async {
     final template = await templateRepository.getActiveTemplate();
+    final answers = await reportRepository.getAnswers(workOrderId);
     return [
       for (final group in template.groups)
-        await getGroupProgress(workOrderId, group),
+        _groupProgressFromAnswers(group, answers),
     ];
   }
 

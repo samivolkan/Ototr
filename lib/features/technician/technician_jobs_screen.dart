@@ -7,12 +7,14 @@ import '../../core/widgets/ototr_app_bar.dart';
 import '../../core/widgets/ototr_card.dart';
 import '../../core/widgets/ototr_secondary_button.dart';
 import '../../core/widgets/ototr_status_badge.dart';
+import '../../data/models/report_template_model.dart';
 import '../../data/models/technician_operation_model.dart';
 import '../../data/models/user_profile_model.dart';
 import '../../data/models/work_order_model.dart';
 import '../../data/repositories/app_repositories.dart';
 import '../../data/repositories/remote_work_order_repository.dart';
 import '../../data/services/report_gate_calculator.dart';
+import '../../data/services/work_order_report_service.dart';
 import 'widgets/technician_missing_notifications.dart';
 
 class TechnicianJobsScreen extends StatefulWidget {
@@ -25,6 +27,10 @@ class TechnicianJobsScreen extends StatefulWidget {
 class _TechnicianJobsScreenState extends State<TechnicianJobsScreen> {
   final _repository = AppRepositories.instance.localWorkOrders;
   Future<List<TechnicianWorkOrder>>? _remoteJobsFuture;
+  ReportTemplate? _remoteTemplate;
+  final Map<String, Map<String, ReportGroupProgress>>
+      _remoteProgressByWorkOrderId = {};
+  final Set<String> _progressLoadingWorkOrderIds = {};
 
   @override
   Widget build(BuildContext context) {
@@ -87,6 +93,11 @@ class _TechnicianJobsScreenState extends State<TechnicianJobsScreen> {
       builder: (context, snapshot) {
         final jobs = snapshot.data ?? const <TechnicianWorkOrder>[];
         final isLoading = snapshot.connectionState != ConnectionState.done;
+        if (jobs.isNotEmpty) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _loadProgressForVisibleJobs(jobs);
+          });
+        }
 
         return Scaffold(
           appBar: const OtotrAppBar(title: 'Usta İşleri'),
@@ -105,11 +116,15 @@ class _TechnicianJobsScreenState extends State<TechnicianJobsScreen> {
                     style: const TextStyle(color: AppColors.red),
                   ),
                 ),
-              if (isLoading)
+              if (isLoading && jobs.isEmpty)
                 const OtotrCard(child: Text('İş emirleri yükleniyor...')),
               for (final job in jobs)
                 _JobSummaryCard(
-                  job: job,
+                  job: _jobWithReportProgress(
+                    job,
+                    _remoteTemplate,
+                    _remoteProgressByWorkOrderId[job.id] ?? const {},
+                  ),
                   currentRole: repository.currentTechnicianRole,
                   onTap: () => _openJobDetail(job.id),
                 ),
@@ -125,6 +140,74 @@ class _TechnicianJobsScreenState extends State<TechnicianJobsScreen> {
   }
 
   void _refresh() => setState(() {});
+
+  Future<void> _loadProgressForVisibleJobs(
+    List<TechnicianWorkOrder> jobs,
+  ) async {
+    final pendingJobs = [
+      for (final job in jobs)
+        if (!_remoteProgressByWorkOrderId.containsKey(job.id) &&
+            !_progressLoadingWorkOrderIds.contains(job.id))
+          job,
+    ];
+    if (pendingJobs.isEmpty) {
+      return;
+    }
+    _progressLoadingWorkOrderIds.addAll(pendingJobs.map((job) => job.id));
+
+    try {
+      final template = _remoteTemplate ??
+          await AppRepositories.instance.reportTemplates.getActiveTemplate();
+      final reportService = WorkOrderReportService(
+        templateRepository: AppRepositories.instance.reportTemplates,
+        reportRepository: AppRepositories.instance.workOrderReports,
+      );
+      await Future.wait([
+        for (final job in pendingJobs)
+          _loadProgressForJobCard(
+            job.id,
+            template,
+            reportService,
+          ),
+      ]);
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        for (final job in pendingJobs) {
+          _progressLoadingWorkOrderIds.remove(job.id);
+        }
+      });
+    }
+  }
+
+  Future<void> _loadProgressForJobCard(
+    String workOrderId,
+    ReportTemplate template,
+    WorkOrderReportService reportService,
+  ) async {
+    try {
+      final progress = await reportService.getReportProgress(workOrderId);
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _remoteTemplate = template;
+        _remoteProgressByWorkOrderId[workOrderId] = {
+          for (final item in progress) item.groupId: item,
+        };
+        _progressLoadingWorkOrderIds.remove(workOrderId);
+      });
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _progressLoadingWorkOrderIds.remove(workOrderId);
+      });
+    }
+  }
 
   void _openJobDetail(String workOrderId) {
     Navigator.pushNamed(
@@ -147,6 +230,7 @@ class _TechnicianJobsScreenState extends State<TechnicianJobsScreen> {
     setState(() {
       final remoteRepository = AppRepositories.instance.remoteWorkOrders;
       _remoteJobsFuture = remoteRepository?.visibleWorkOrders();
+      _progressLoadingWorkOrderIds.clear();
     });
   }
 }
@@ -165,17 +249,24 @@ class TechnicianJobDetailScreen extends StatefulWidget {
 }
 
 class _TechnicianJobDetailScreenState extends State<TechnicianJobDetailScreen> {
-  Future<TechnicianWorkOrder>? _remoteJobFuture;
+  Future<_RemoteJobDetailData>? _remoteJobFuture;
 
   @override
   Widget build(BuildContext context) {
     final remoteRepository = AppRepositories.instance.remoteWorkOrders;
     if (remoteRepository != null) {
-      _remoteJobFuture ??= remoteRepository.getById(widget.workOrderId);
-      return FutureBuilder<TechnicianWorkOrder>(
+      _remoteJobFuture ??= _loadRemoteJob(remoteRepository);
+      return FutureBuilder<_RemoteJobDetailData>(
         future: _remoteJobFuture,
         builder: (context, snapshot) {
-          final job = snapshot.data;
+          final data = snapshot.data;
+          final job = data == null
+              ? null
+              : _jobWithReportProgress(
+                  data.job,
+                  data.template,
+                  data.progressByGroupId,
+                );
           return Scaffold(
             appBar: const OtotrAppBar(title: 'İş Emri Detayı'),
             backgroundColor: AppColors.grayBg,
@@ -228,9 +319,50 @@ class _TechnicianJobDetailScreenState extends State<TechnicianJobDetailScreen> {
   void _refreshRemote() {
     setState(() {
       final repository = AppRepositories.instance.remoteWorkOrders;
-      _remoteJobFuture = repository?.getById(widget.workOrderId);
+      _remoteJobFuture = repository == null ? null : _loadRemoteJob(repository);
     });
   }
+
+  Future<_RemoteJobDetailData> _loadRemoteJob(
+    RemoteWorkOrderRepository repository,
+  ) async {
+    final job = await repository.getById(widget.workOrderId);
+    try {
+      final template =
+          await AppRepositories.instance.reportTemplates.getActiveTemplate();
+      final reportService = WorkOrderReportService(
+        templateRepository: AppRepositories.instance.reportTemplates,
+        reportRepository: AppRepositories.instance.workOrderReports,
+      );
+      final progress =
+          await reportService.getReportProgress(widget.workOrderId);
+      return _RemoteJobDetailData(
+        job: job,
+        template: template,
+        progressByGroupId: {
+          for (final item in progress) item.groupId: item,
+        },
+      );
+    } catch (_) {
+      return _RemoteJobDetailData(
+        job: job,
+        template: null,
+        progressByGroupId: const {},
+      );
+    }
+  }
+}
+
+class _RemoteJobDetailData {
+  const _RemoteJobDetailData({
+    required this.job,
+    required this.template,
+    required this.progressByGroupId,
+  });
+
+  final TechnicianWorkOrder job;
+  final ReportTemplate? template;
+  final Map<String, ReportGroupProgress> progressByGroupId;
 }
 
 class _TechnicianIdentityBar extends StatelessWidget {
@@ -308,6 +440,111 @@ bool _isTechnicalTaskIssue(ReportGateIssue issue) {
 bool _isFinalMediaIssue(ReportGateIssue issue) {
   final key = issue.fieldKey ?? '';
   return key == 'final_media' || key.startsWith('report.final_media.');
+}
+
+TechnicianWorkOrder _jobWithReportProgress(
+  TechnicianWorkOrder job,
+  ReportTemplate? template,
+  Map<String, ReportGroupProgress> progressByGroupId,
+) {
+  if (template == null || progressByGroupId.isEmpty) {
+    return job;
+  }
+
+  return job.copyWith(
+    tasks: [
+      for (final task in job.tasks)
+        _taskWithReportProgress(task, template, progressByGroupId),
+    ],
+  );
+}
+
+TechnicianTask _taskWithReportProgress(
+  TechnicianTask task,
+  ReportTemplate template,
+  Map<String, ReportGroupProgress> progressByGroupId,
+) {
+  final group = _findReportGroupForTask(task, template);
+  if (group == null) {
+    return task;
+  }
+  final progress = progressByGroupId[group.id];
+  if (progress == null || progress.totalItems <= 0) {
+    return task;
+  }
+
+  final completed =
+      progress.completedItems.clamp(0, task.checklistItems.length);
+  final checklistItems = [
+    for (var index = 0; index < task.checklistItems.length; index += 1)
+      task.checklistItems[index].copyWith(
+        isAnswered: task.checklistItems[index].isAnswered || index < completed,
+      ),
+  ];
+
+  return task.copyWith(
+    status:
+        progress.progressPercent >= 100 ? TaskStatus.completed : task.status,
+    checklistItems: checklistItems,
+  );
+}
+
+ReportTemplateGroup? _findReportGroupForTask(
+  TechnicianTask task,
+  ReportTemplate template,
+) {
+  final checklistIds = task.checklistItems.map((item) => item.id).toSet();
+  final checklistTitles = {
+    for (final item in task.checklistItems)
+      _normalizeReportMatchText(item.title),
+  };
+  for (final group in template.groups) {
+    if (group.items.any(
+      (item) =>
+          checklistIds.contains(item.id) ||
+          checklistTitles.contains(_normalizeReportMatchText(item.title)),
+    )) {
+      return group;
+    }
+  }
+  for (final group in template.groups) {
+    if (_normalizeReportMatchText(group.title) ==
+            _normalizeReportMatchText(task.title) ||
+        _taskGroupCodeMatches(group.code, task.reportFieldKey)) {
+      return group;
+    }
+  }
+  return null;
+}
+
+bool _taskGroupCodeMatches(String groupCode, String reportFieldKey) {
+  final normalizedGroup = _normalizeReportMatchText(groupCode);
+  final normalizedReportKey = _normalizeReportMatchText(reportFieldKey);
+  if (normalizedGroup.isEmpty || normalizedReportKey.isEmpty) {
+    return false;
+  }
+  return normalizedReportKey.endsWith(normalizedGroup) ||
+      normalizedReportKey.contains(normalizedGroup);
+}
+
+String _normalizeReportMatchText(String value) {
+  return value
+      .trim()
+      .toUpperCase()
+      .replaceAll('İ', 'I')
+      .replaceAll('İ', 'I')
+      .replaceAll('Ğ', 'G')
+      .replaceAll('Ü', 'U')
+      .replaceAll('Ş', 'S')
+      .replaceAll('Ö', 'O')
+      .replaceAll('Ç', 'C')
+      .replaceAll('ı', 'I')
+      .replaceAll('ğ', 'G')
+      .replaceAll('ü', 'U')
+      .replaceAll('ş', 'S')
+      .replaceAll('ö', 'O')
+      .replaceAll('ç', 'C')
+      .replaceAll(RegExp(r'[^A-Z0-9]+'), '_');
 }
 
 bool _isTaskCompleted(TechnicianTask task, String workOrderId) {

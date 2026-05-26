@@ -174,7 +174,7 @@ class _TechnicianEvidenceScreenState extends State<TechnicianEvidenceScreen> {
       hash: 'local-',
       uploadedBy: userId,
       syncStatus: EvidenceStatus.queued,
-      qualityStatus: 'pending_upload',
+      qualityStatus: 'unchecked',
     );
     _replaceAssetInCurrentOrder(localAsset);
     _showMessage(' alındı. Yükleme arka planda devam ediyor.');
@@ -201,7 +201,7 @@ class _TechnicianEvidenceScreenState extends State<TechnicianEvidenceScreen> {
       hash: 'local-',
       uploadedBy: remoteRepository.currentUser.id,
       syncStatus: EvidenceStatus.queued,
-      qualityStatus: 'pending_upload',
+      qualityStatus: 'unchecked',
     );
     _replaceAssetInCurrentOrder(localAsset);
     _showMessage(' alındı. Yükleme arka planda devam ediyor.');

@@ -92,7 +92,7 @@ class WorkOrderRemoteMapper {
       'file_hash': asset.hash,
       'sync_status': _evidenceStatusToRemote(asset.syncStatus),
       'is_required': asset.isRequired,
-      'quality_status': asset.qualityStatus.toUpperCase(),
+      'quality_status': _qualityStatusToRemote(asset.qualityStatus),
       'rejection_reason': asset.rejectionReason,
       'captured_at': asset.capturedAt.toIso8601String(),
       'uploaded_at': asset.uploadedAt?.toIso8601String(),
@@ -556,6 +556,19 @@ class WorkOrderRemoteMapper {
         return 'REJECTED';
       case EvidenceStatus.missing:
         return 'MISSING';
+    }
+  }
+
+  String _qualityStatusToRemote(String status) {
+    switch (status.trim().toUpperCase()) {
+      case 'ACCEPTED':
+      case 'REJECTED':
+      case 'UNCHECKED':
+        return status.trim().toUpperCase();
+      case 'OK':
+        return 'ACCEPTED';
+      default:
+        return 'UNCHECKED';
     }
   }
 

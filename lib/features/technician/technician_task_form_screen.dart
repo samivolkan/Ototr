@@ -400,6 +400,9 @@ class _TechnicianTaskFormScreenState extends State<TechnicianTaskFormScreen> {
     setState(() {
       _template = template;
       _answers = answers;
+      if (_task != null) {
+        _task = _taskWithReportAnswers(_task!, template, answers);
+      }
     });
   }
 
@@ -639,6 +642,104 @@ class _TechnicianTaskFormScreenState extends State<TechnicianTaskFormScreen> {
     return null;
   }
 
+  TechnicianTask _taskWithReportAnswers(
+    TechnicianTask task,
+    ReportTemplate template,
+    List<WorkOrderReportAnswer> answers,
+  ) {
+    final group = _groupForTaskInTemplate(task, template);
+    if (group == null) {
+      return task;
+    }
+
+    final completedAnswerItemIds = {
+      for (final answer in answers)
+        if (answer.groupId == group.id && answer.isCompleted) answer.itemId,
+    };
+    if (completedAnswerItemIds.isEmpty) {
+      return task;
+    }
+
+    final completedCount =
+        completedAnswerItemIds.length.clamp(0, task.checklistItems.length);
+    final checklistItems = [
+      for (var index = 0; index < task.checklistItems.length; index += 1)
+        _checklistItemWithReportAnswerState(
+          task.checklistItems[index],
+          template,
+          completedAnswerItemIds,
+          index < completedCount,
+        ),
+    ];
+
+    return task.copyWith(
+      status: completedCount >= task.checklistItems.length
+          ? TaskStatus.completed
+          : task.status,
+      checklistItems: checklistItems,
+    );
+  }
+
+  TechnicianChecklistItem _checklistItemWithReportAnswerState(
+    TechnicianChecklistItem checklistItem,
+    ReportTemplate template,
+    Set<String> completedAnswerItemIds,
+    bool fallbackCompleted,
+  ) {
+    final binding = _bindingForInTemplate(checklistItem, template);
+    final isCompleted = binding == null
+        ? fallbackCompleted
+        : completedAnswerItemIds.contains(binding.item.id) || fallbackCompleted;
+    if (!isCompleted || checklistItem.isAnswered) {
+      return checklistItem;
+    }
+    return checklistItem.copyWith(
+      result: TechnicianFindingResult.normal,
+      isAnswered: true,
+    );
+  }
+
+  ReportTemplateGroup? _groupForTaskInTemplate(
+    TechnicianTask task,
+    ReportTemplate template,
+  ) {
+    final checklistIds = task.checklistItems.map((item) => item.id).toSet();
+    final checklistTitles = {
+      for (final item in task.checklistItems) _normalize(item.title),
+    };
+    for (final group in template.groups) {
+      if (group.items.any(
+        (item) =>
+            checklistIds.contains(item.id) ||
+            checklistTitles.contains(_normalize(item.title)),
+      )) {
+        return group;
+      }
+    }
+    for (final group in template.groups) {
+      if (_normalize(group.title) == _normalize(task.title) ||
+          _taskGroupCodeMatches(group.code, task.reportFieldKey)) {
+        return group;
+      }
+    }
+    return null;
+  }
+
+  _ReportItemBinding? _bindingForInTemplate(
+    TechnicianChecklistItem checklistItem,
+    ReportTemplate template,
+  ) {
+    for (final group in template.groups) {
+      for (final item in group.items) {
+        if (item.id == checklistItem.id ||
+            _normalize(item.title) == _normalize(checklistItem.title)) {
+          return _ReportItemBinding(group: group, item: item);
+        }
+      }
+    }
+    return null;
+  }
+
   bool _taskGroupCodeMatches(String groupCode, String reportFieldKey) {
     final normalizedGroup = _normalize(groupCode);
     final normalizedReportKey = _normalize(reportFieldKey);
@@ -697,7 +798,7 @@ class _TechnicianTaskFormScreenState extends State<TechnicianTaskFormScreen> {
                 ? EvidenceStatus.uploaded
                 : EvidenceStatus.localOnly,
             isRequired: false,
-            qualityStatus: 'ok',
+            qualityStatus: 'accepted',
             rejectionReason: '',
           ),
       ],

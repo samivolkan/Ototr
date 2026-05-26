@@ -152,6 +152,42 @@ void main() {
     expect(dataSource.lastEvidencePayload?['task_id'], isNull);
     expect(dataSource.lastEvidencePayload?['field_key'], 'final_media.front');
     expect(dataSource.lastEvidencePayload?['sync_status'], 'UPLOADED');
+    expect(dataSource.lastEvidencePayload?['quality_status'], 'ACCEPTED');
+  });
+
+  test('final medya quality status invalid ise UNCHECKED olarak normalize edilir',
+      () async {
+    final dataSource = _FakeWorkOrderRemoteDataSource(_bundle());
+    final repository = SupabaseWorkOrderRepository(
+      dataSource: dataSource,
+      currentUser: _user,
+      currentTechnicianRole: TechnicianRole.bodyPaint,
+    );
+
+    await repository.saveFinalMediaAsset(
+      'case-1',
+      EvidenceAsset(
+        id: 'final-right',
+        workOrderId: 'case-1',
+        taskId: '',
+        fieldKey: 'final_media.right',
+        reportFieldKey: 'report.final_media.right',
+        evidenceType: 'image',
+        title: 'Arac sag fotografi',
+        localPath: 'local/right.jpg',
+        remoteUrl: '',
+        hash: 'hash-right',
+        capturedAt: DateTime(2026, 5, 24, 11, 30),
+        uploadedAt: null,
+        uploadedBy: 'tech-1',
+        syncStatus: EvidenceStatus.queued,
+        isRequired: true,
+        qualityStatus: 'pending_upload',
+        rejectionReason: '',
+      ),
+    );
+
+    expect(dataSource.lastEvidencePayload?['quality_status'], 'UNCHECKED');
   });
 
   test('task update remote payload SQL kolon adlarini kullanir', () async {
