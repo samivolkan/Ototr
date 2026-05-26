@@ -11,6 +11,14 @@
   </style>
 </head>
 <body>
-  <iframe title="OTOTR Bayi Portalı" src="../index.html?portal=dealer#dealer"></iframe>
+  <iframe id="dealerFrame" title="OTOTR Bayi Portalı" src="../index.html?portal=dealer#dealer"></iframe>
+  <script>
+    (function(){
+      const params = new URLSearchParams(window.location.search);
+      params.set('portal','dealer');
+      const hash = window.location.hash || '#dealer';
+      document.getElementById('dealerFrame').src = `../index.html?${params.toString()}${hash}`;
+    })();
+  </script>
 </body>
 </html>

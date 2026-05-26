@@ -5,3 +5,27 @@ docs/ALL.docx
 .DS_Store
 Thumbs.db
 .vscode/
+*.log
+*.tmp
+
+# Flutter local tooling
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+build/
+.idea/
+*.iml
+android/.gradle/
+android/.kotlin/
+windows/flutter/ephemeral/
+
+# Local QA/build artifacts
+.codex-screenshots/
+artifacts/
+*.apk
+
+# Private/local source files
+*.docx
+*.rar
+downloads/
+docs/ototr-quality-gate-latest.json

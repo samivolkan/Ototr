@@ -4,6 +4,13 @@ Bu proje, OTOTR icin genel merkez ERP/CRM sisteminin yeniden baslangicidir.
 
 Mevcut calisir prototip: `index.html`
 
+## Calisma duzeni
+
+Aktif yerel klasor: `C:\Users\Samivolkannnn\Documents\ototr_25052026`
+
+Eski `New project` klasoru artik aktif calisma alani degildir. Detay ve arsiv
+notlari icin: `docs/calisma-duzeni.md`
+
 ## Su anki durum
 
 - Tek dosyalik, tarayicida calisan bir demo arayuz var.

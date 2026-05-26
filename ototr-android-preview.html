@@ -1,0 +1,1437 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OTOTR Android Usta MVP</title>
+  <style>
+    :root {
+      --navy: #07111f;
+      --navy-2: #122238;
+      --red: #d71920;
+      --red-dark: #9f1018;
+      --green: #0f8a3d;
+      --amber: #d97706;
+      --blue: #2563eb;
+      --bg: #eef2f7;
+      --card: #ffffff;
+      --line: #d6dde8;
+      --text: #111827;
+      --muted: #64748b;
+      --soft-red: #fff1f2;
+      --soft-green: #ecfdf3;
+      --soft-amber: #fff7ed;
+      --soft-blue: #eff6ff;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--text);
+      background: linear-gradient(180deg, #e6ebf2 0%, #f8fafc 100%);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+    button, input, textarea, select { font: inherit; }
+    button { cursor: pointer; }
+    button:disabled { cursor: not-allowed; opacity: .5; }
+
+    .layout {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 292px minmax(420px, 1fr) 380px;
+    }
+    .side {
+      max-height: 100vh;
+      overflow: auto;
+      padding: 18px;
+      background: var(--navy);
+      color: #fff;
+      border-right: 1px solid rgba(255,255,255,.08);
+    }
+    .brand {
+      display: grid;
+      grid-template-columns: 46px 1fr;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+    .logo {
+      width: 46px;
+      height: 46px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      background: var(--red);
+      color: #fff;
+      font-weight: 950;
+      letter-spacing: -.05em;
+    }
+    .brand b { display: block; font-size: 21px; letter-spacing: .05em; }
+    .brand span { color: #cbd5e1; font-size: 11px; font-weight: 800; }
+    .nav-title {
+      margin: 18px 2px 8px;
+      color: #94a3b8;
+      font-size: 10px;
+      font-weight: 950;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    .nav { display: grid; gap: 7px; }
+    .nav button {
+      width: 100%;
+      min-height: 42px;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 12px;
+      background: rgba(255,255,255,.05);
+      color: #e5e7eb;
+      display: grid;
+      grid-template-columns: 26px 1fr;
+      gap: 8px;
+      align-items: center;
+      text-align: left;
+      padding: 9px 10px;
+      font-size: 12px;
+      font-weight: 900;
+    }
+    .nav button.active { background: #fff; color: var(--text); border-color: #fff; }
+    .nav-no {
+      width: 26px;
+      height: 26px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      background: rgba(255,255,255,.12);
+      font-size: 11px;
+    }
+    .nav button.active .nav-no { background: var(--red); color: #fff; }
+    .side-note {
+      margin-top: 14px;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 14px;
+      padding: 12px;
+      background: rgba(255,255,255,.05);
+      color: #cbd5e1;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .stage {
+      max-height: 100vh;
+      overflow: auto;
+      padding: 22px;
+      display: grid;
+      justify-items: center;
+      align-items: start;
+    }
+    .device {
+      width: 405px;
+      min-height: 820px;
+      overflow: hidden;
+      border: 12px solid #0f172a;
+      border-radius: 38px;
+      background: #f4f6f9;
+      box-shadow: 0 30px 90px rgba(15,23,42,.26);
+    }
+    .statusbar {
+      height: 28px;
+      padding: 0 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #020617;
+      color: #e2e8f0;
+      font-size: 11px;
+      font-weight: 900;
+    }
+    .platebar {
+      min-height: 70px;
+      padding: 9px 12px;
+      display: grid;
+      grid-template-columns: 48px 1fr 48px;
+      gap: 9px;
+      align-items: center;
+      background: #b9bdc3;
+      border-bottom: 1px solid #8e949c;
+    }
+    .round-icon {
+      width: 46px;
+      height: 46px;
+      border: 0;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: rgba(15,23,42,.45);
+      color: #fff;
+      font-size: 24px;
+      font-weight: 900;
+    }
+    .plate {
+      height: 46px;
+      display: grid;
+      grid-template-columns: 58px 1fr;
+      overflow: hidden;
+      border: 5px solid #3d3d3d;
+      border-radius: 13px;
+      background: #fff;
+      box-shadow: inset 0 0 0 1px #d4d4d4;
+    }
+    .plate span {
+      display: grid;
+      place-items: center;
+      background: #0b63a8;
+      color: #fff;
+      font-size: 21px;
+      font-weight: 950;
+    }
+    .plate b {
+      display: grid;
+      place-items: center;
+      color: #050505;
+      font-size: 24px;
+      font-weight: 950;
+      letter-spacing: .02em;
+    }
+    .ototr-mark {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: #111827;
+      color: #fff;
+      border: 4px solid rgba(255,255,255,.25);
+      font-size: 13px;
+      font-weight: 950;
+    }
+    .top {
+      padding: 12px;
+      display: grid;
+      gap: 9px;
+      background: linear-gradient(135deg, #101827, #1e293b 70%, #5f1118 140%);
+      color: #fff;
+    }
+    .top-row { display: flex; justify-content: space-between; gap: 8px; align-items: flex-start; }
+    .top h1 { margin: 0; font-size: 18px; line-height: 1.15; }
+    .top p { margin: 4px 0 0; color: #d5dce8; font-size: 11px; line-height: 1.35; }
+    .role-pill {
+      border: 1px solid rgba(255,255,255,.22);
+      border-radius: 999px;
+      padding: 6px 9px;
+      background: rgba(255,255,255,.1);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 950;
+      white-space: nowrap;
+    }
+    .syncbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: center;
+      border: 1px solid rgba(255,255,255,.15);
+      border-radius: 12px;
+      padding: 8px 10px;
+      background: rgba(255,255,255,.08);
+      color: #e2e8f0;
+      font-size: 11px;
+    }
+    .progress {
+      height: 8px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: #e5e7eb;
+    }
+    .bar {
+      width: var(--value, 0%);
+      height: 100%;
+      border-radius: inherit;
+      background: var(--red);
+      transition: width .2s ease;
+    }
+    .bar.green { background: var(--green); }
+    .bar.amber { background: var(--amber); }
+
+    .screen {
+      padding: 12px;
+      display: grid;
+      gap: 10px;
+    }
+    .card, .work-card, .module-card, .evidence-card, .query-card {
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: var(--card);
+      padding: 12px;
+      box-shadow: 0 8px 24px rgba(15,23,42,.035);
+    }
+    .work-card, .module-card, .evidence-card, .query-card { display: grid; gap: 8px; }
+    .work-card.active { border-color: #fca5a5; background: linear-gradient(180deg, #fff, #fff7f7); }
+    .module-card {
+      min-height: 142px;
+      padding: 18px 18px 16px;
+      border-radius: 14px;
+      box-shadow: 0 12px 30px rgba(15,23,42,.12);
+    }
+    .module-card h3 {
+      min-height: 42px;
+      display: grid;
+      align-items: center;
+      font-size: 19px;
+      line-height: 1.12;
+      font-weight: 950;
+      letter-spacing: .01em;
+      text-transform: uppercase;
+    }
+    .module-card .state { text-align: center; font-size: 18px; }
+    .module-divider { height: 2px; background: #111827; opacity: .85; }
+    .module-footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: center;
+    }
+    .active-test {
+      margin: -12px -12px 0;
+      padding: 22px 14px 26px;
+      display: grid;
+      gap: 12px;
+      justify-items: center;
+      text-align: center;
+      background: radial-gradient(circle at 50% 20%, #ef1018 0%, #bb0710 62%, #8a050b 100%);
+      color: #fff;
+    }
+    .active-test h2 { margin: 0; font-size: 18px; text-transform: uppercase; line-height: 1.18; }
+    .active-test p { margin: 0; color: #ffe4e6; font-size: 15px; }
+    .active-test .down { font-size: 30px; line-height: 1; }
+    .active-test .leave {
+      width: min(282px, 86%);
+      min-height: 56px;
+      border: 0;
+      border-radius: 12px;
+      background: #fff;
+      color: #111827;
+      font-size: 21px;
+      font-weight: 950;
+    }
+    .inspect-row {
+      min-height: 82px;
+      display: grid;
+      grid-template-columns: 42px 1fr auto;
+      gap: 10px;
+      align-items: center;
+      margin: 0 -12px;
+      padding: 12px;
+      border-bottom: 1.5px solid #111827;
+      background: #fff;
+    }
+    .inspect-row:first-child { border-top: 1.5px solid #111827; }
+    .magnify { font-size: 30px; font-weight: 900; color: #050505; }
+    .inspect-row strong { display: block; font-size: 18px; line-height: 1.18; font-weight: 500; }
+    .inspect-row small {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+    }
+    .status-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #cbd5e1;
+      box-shadow: 0 0 0 4px #f1f5f9;
+    }
+    .status-dot.done { background: var(--green); }
+    .status-dot.risk { background: var(--red); }
+    .status-dot.pending { background: var(--amber); }
+    .good-footer {
+      position: sticky;
+      bottom: 0;
+      margin: 0 -12px -12px;
+      padding: 12px;
+      display: grid;
+      gap: 10px;
+      background: linear-gradient(90deg, #93070d, #db060f, #93070d);
+      border-top: 1px solid rgba(0,0,0,.12);
+    }
+    .good-button {
+      min-height: 58px;
+      border: 0;
+      border-radius: 11px;
+      background: #fff;
+      color: var(--green);
+      font-size: 18px;
+      font-weight: 850;
+    }
+    .micron-button {
+      min-height: 56px;
+      border: 0;
+      border-radius: 10px;
+      background: #fff;
+      color: #111827;
+      font-size: 19px;
+      font-weight: 800;
+      box-shadow: inset 0 0 0 1px #c9ced6;
+    }
+    .photo-card {
+      min-height: 164px;
+      border: 0;
+      border-radius: 14px;
+      padding: 16px;
+      display: grid;
+      grid-template-columns: 1fr 94px;
+      gap: 12px;
+      align-items: center;
+      background: #373737;
+      color: #fff;
+      text-align: left;
+    }
+    .photo-card h3 { margin: 0 0 12px; font-size: 25px; line-height: 1.1; }
+    .photo-card .placeholder {
+      width: 172px;
+      max-width: 100%;
+      aspect-ratio: 4 / 3;
+      border: 7px solid #fff;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, #f8fafc, #d7dde6);
+      color: #64748b;
+      font-size: 44px;
+    }
+    .camera {
+      width: 80px;
+      height: 80px;
+      border-radius: 18px;
+      display: grid;
+      place-items: center;
+      justify-self: center;
+      font-size: 44px;
+      color: #fff;
+    }
+    .photo-card.done { background: #264b36; }
+    .start-card {
+      min-height: 118px;
+      border: 0;
+      border-radius: 14px;
+      display: grid;
+      grid-template-columns: 1fr 82px;
+      gap: 10px;
+      align-items: center;
+      padding: 16px;
+      background: #373737;
+      color: #fff;
+      box-shadow: 0 10px 24px rgba(15,23,42,.12);
+    }
+    .start-card b { font-size: 27px; line-height: 1.05; }
+    .start-card.done { background: #24503a; }
+    .help-input {
+      border: 0;
+      border-radius: 14px;
+      padding: 14px;
+      display: grid;
+      grid-template-columns: 1fr 44px;
+      gap: 10px;
+      align-items: center;
+      background: #373737;
+      box-shadow: 0 10px 24px rgba(15,23,42,.12);
+    }
+    .help-input input, .help-input select {
+      width: 100%;
+      min-height: 54px;
+      border: 1px solid rgba(255,255,255,.35);
+      border-radius: 18px;
+      background: #626262;
+      color: #fff;
+      padding: 0 16px;
+      outline: none;
+      font-size: 16px;
+    }
+    .help-input input::placeholder { color: #f1f5f9; }
+    .help { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; background: #fff; color: #374151; font-size: 23px; font-weight: 950; }
+    .vehicle-hero {
+      margin: -12px -12px 0;
+      overflow: hidden;
+      background: #fff;
+      border-bottom: 1px solid #cbd5e1;
+      text-align: center;
+    }
+    .vehicle-hero .mark {
+      padding: 12px 0 4px;
+      background: #b9bdc3;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 950;
+      letter-spacing: .08em;
+    }
+    .vehicle-hero h2 { margin: 10px 0 2px; font-size: 28px; color: #111827; }
+    .vehicle-hero .model { font-size: 16px; margin-bottom: 2px; }
+    .vehicle-hero .brand-name { font-size: 26px; margin-bottom: 10px; }
+    .vehicle-meta {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      border-top: 1px solid #cbd5e1;
+      background: #f8fafc;
+    }
+    .vehicle-meta div { padding: 12px; font-size: 20px; }
+    h2, h3, h4 { margin: 0; line-height: 1.2; }
+    h2 { font-size: 18px; }
+    h3 { font-size: 14px; }
+    h4 { font-size: 13px; }
+    .sub { margin: 3px 0 0; color: var(--muted); font-size: 11px; line-height: 1.4; }
+    .row { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+    .row.wrap { flex-wrap: wrap; justify-content: flex-start; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+    .metric {
+      min-height: 72px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: #fff;
+      padding: 10px;
+    }
+    .metric span { display: block; color: var(--muted); font-size: 10px; font-weight: 950; text-transform: uppercase; }
+    .metric b { display: block; margin-top: 4px; font-size: 22px; letter-spacing: -.03em; }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      border: 1px solid #d8e1ed;
+      border-radius: 999px;
+      background: #f8fafc;
+      color: #475569;
+      padding: 5px 8px;
+      font-size: 10px;
+      font-weight: 950;
+      white-space: nowrap;
+    }
+    .badge.green { background: var(--soft-green); border-color: #bbf7d0; color: var(--green); }
+    .badge.red { background: var(--soft-red); border-color: #fecdd3; color: #be123c; }
+    .badge.amber { background: var(--soft-amber); border-color: #fed7aa; color: #b45309; }
+    .badge.blue { background: var(--soft-blue); border-color: #bfdbfe; color: #1d4ed8; }
+    .list { display: grid; gap: 8px; }
+    .mini { display: grid; grid-template-columns: 28px 1fr auto; gap: 8px; align-items: center; }
+    .symbol {
+      width: 28px;
+      height: 28px;
+      border-radius: 9px;
+      display: grid;
+      place-items: center;
+      background: #f1f5f9;
+      color: #0f172a;
+      font-size: 11px;
+      font-weight: 950;
+    }
+    .symbol.red { background: var(--red); color: #fff; }
+    .symbol.green { background: var(--green); color: #fff; }
+    .symbol.amber { background: var(--amber); color: #fff; }
+    .symbol.blue { background: var(--blue); color: #fff; }
+    .button-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+    .btn {
+      min-height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      padding: 8px 10px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      background: #fff;
+      color: var(--text);
+      font-size: 11px;
+      font-weight: 950;
+    }
+    .btn.primary { background: var(--red); border-color: var(--red); color: #fff; }
+    .btn.dark { background: var(--text); border-color: var(--text); color: #fff; }
+    .btn.green { background: var(--green); border-color: var(--green); color: #fff; }
+    .input { display: grid; gap: 5px; }
+    .input label, .field-label { color: #334155; font-size: 10px; font-weight: 950; text-transform: uppercase; }
+    .input input, .input textarea, .input select {
+      width: 100%;
+      min-height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+      padding: 9px 10px;
+      color: var(--text);
+      outline: none;
+    }
+    .input textarea { min-height: 82px; resize: vertical; }
+    .bottom-bar {
+      position: sticky;
+      bottom: 0;
+      margin: 0 -12px -12px;
+      padding: 10px 12px 12px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      background: rgba(247,249,252,.95);
+      border-top: 1px solid var(--line);
+      backdrop-filter: blur(8px);
+    }
+    .bottom-bar button {
+      min-height: 42px;
+      border: 0;
+      display: grid;
+      place-items: center;
+      gap: 3px;
+      background: transparent;
+      color: #64748b;
+      font-size: 9px;
+      font-weight: 950;
+    }
+    .bottom-bar button.active { color: var(--red); }
+    .dot {
+      width: 22px;
+      height: 22px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      background: #e2e8f0;
+      color: #334155;
+      font-size: 10px;
+      font-weight: 950;
+    }
+    .bottom-bar button.active .dot { background: var(--red); color: #fff; }
+
+    .panel {
+      max-height: 100vh;
+      overflow: auto;
+      padding: 20px;
+      background: #fff;
+      border-left: 1px solid var(--line);
+    }
+    .panel h2 { margin: 0 0 8px; font-size: 20px; }
+    .panel h3 { margin: 18px 0 8px; font-size: 14px; }
+    .plan-list { display: grid; gap: 8px; }
+    .plan-item {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px;
+      display: grid;
+      gap: 4px;
+      background: #f8fafc;
+      font-size: 12px;
+      line-height: 1.35;
+    }
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      z-index: 10;
+      transform: translateX(-50%) translateY(20px);
+      min-width: 260px;
+      max-width: 360px;
+      border-radius: 14px;
+      padding: 12px 14px;
+      background: #111827;
+      color: #fff;
+      box-shadow: 0 18px 50px rgba(15,23,42,.25);
+      opacity: 0;
+      pointer-events: none;
+      transition: .2s ease;
+      font-size: 12px;
+      font-weight: 850;
+    }
+    .toast.open { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    @media (max-width: 1100px) {
+      .layout { grid-template-columns: 1fr; }
+      .side, .panel, .stage { max-height: none; }
+      .device { width: min(405px, 100%); }
+    }
+  </style>
+</head>
+<body>
+  <main class="layout">
+    <aside class="side">
+      <div class="brand">
+        <div class="logo">OT</div>
+        <div><b>OTOTR</b><span>Tarafsız Araç Ekspertizi</span></div>
+      </div>
+      <div class="nav-title">Usta Mobil Akışı</div>
+      <div class="nav" id="nav"></div>
+      <div class="nav-title">Kapsam Dışı</div>
+      <div class="side-note">
+        Android Usta MVP'de sekreterya, ödeme, indirim, tahsilat, fatura, kasa ve müşteri pazarlık notu görünmez.
+        Usta sadece kendisine atanmış işi sahiplenir, başlangıç kanıtını alır, teknik başlığını doldurur ve rapora gönderir.
+      </div>
+    </aside>
+
+    <section class="stage">
+      <div class="device">
+        <div class="statusbar"><span>09:41</span><span>OTOTR LTE 100%</span></div>
+        <header class="platebar">
+          <button class="round-icon" data-back aria-label="Geri">‹</button>
+          <div class="plate"><span>TR</span><b id="plate-text">34 OTR 360</b></div>
+          <div class="ototr-mark">OT</div>
+        </header>
+        <header class="top">
+          <div class="top-row">
+            <div>
+              <h1 id="screen-title">Usta İşleri</h1>
+              <p id="screen-subtitle">Atanan iş emirleri ve teknik görevler</p>
+            </div>
+            <span class="role-pill" id="role-pill">Kaporta Ustası</span>
+          </div>
+          <div class="syncbar">
+            <span id="sync-label">2 kayıt senkron bekliyor</span>
+            <b>Offline hazır</b>
+          </div>
+          <div class="progress"><div class="bar green" id="global-progress" style="--value:0%"></div></div>
+        </header>
+        <section class="screen" id="screen"></section>
+      </div>
+    </section>
+
+    <aside class="panel">
+      <h2>Tasarım Kararı</h2>
+      <p class="sub">Otorapor görsellerinden faydalı saha desenlerini aldık; OTOTR için daha denetlenebilir ve rol bazlı hale getirdik.</p>
+      <h3>Aldığımız Desenler</h3>
+      <div class="plan-list">
+        <div class="plan-item"><b>Plaka sabit başlığı</b><span>Usta hangi araçta olduğunu her ekranda görür.</span></div>
+        <div class="plan-item"><b>Modül kartları</b><span>Gönderilen madde sayısı, süre, durum ve blokaj tek kartta görünür.</span></div>
+        <div class="plan-item"><b>Yoğun kontrol listesi</b><span>Sahada hızlı tarama korunur; ancak durum, kanıt ve risk etiketi eklenir.</span></div>
+        <div class="plan-item"><b>Fotoğraf kartları</b><span>Başlangıç ve teknik kanıtlar ayrı, zorunlu ve audit'e bağlıdır.</span></div>
+      </div>
+      <h3>OTOTR Farkı</h3>
+      <div class="plan-list">
+        <div class="plan-item"><b>Tek tıkla iyi yapma sınırlı</b><span>"Tüm noktalar iyi" sadece risksiz, kritik olmayan ve audit log'lu maddelerde çalışır.</span></div>
+        <div class="plan-item"><b>Yetki filtresi</b><span>Kaporta ustası sadece kaporta/boya görevlerini düzenler; finansal alan görmez.</span></div>
+        <div class="plan-item"><b>Rapor kapısı</b><span>Başlangıç kanıtı, zorunlu fotoğraf, dış sorgu, sync ve müdür onayı tamamlanmadan basım hazır olmaz.</span></div>
+      </div>
+    </aside>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const currentUser = {
+      id: "u-kaporta-001",
+      name: "Kadir Baş",
+      role: "Kaporta Ustası",
+      branch: "OTOTR Bursa Nilüfer",
+    };
+
+    const state = {
+      screen: "jobs",
+      selectedOrderId: "IE-2026-000901",
+      selectedTaskId: "kaporta",
+      syncPending: 2,
+      orders: [
+        {
+          id: "IE-2026-000901",
+          reportNo: "OTR-2026-001144",
+          plate: "34 OTR 360",
+          expectedVin: "W1KAF4HB8NR123456",
+          expectedKm: "126850",
+          vehicle: "2022 Mercedes-Benz C Serisi",
+          vehicleShort: "C 200",
+          fuel: "Benzin",
+          year: "2022",
+          customer: "Hasan Kaya",
+          packageName: "OTOTR Premium 360",
+          assignedRoles: ["Kaporta Ustası", "Mekanik Usta", "OBD Ustası", "Test Operatörü"],
+          status: "assigned",
+          owner: "",
+          priority: "Sıcak",
+          secretaryReady: true,
+          externalQueries: {
+            tramer: { status: "ready", source: "SBM Portal", time: "10:11", summary: "1 hasar kaydı bulundu, detay rapora işlenecek." },
+            km: { status: "ready", source: "KM Portal", time: "10:12", summary: "Son muayene 126.850 km, usta girişiyle eşleşmeli." },
+          },
+          startEvidence: {
+            vin: "",
+            vinPhoto: false,
+            platePhoto: false,
+            odometerKm: "",
+            odometerPhoto: false,
+            transmission: "",
+          },
+          managerApproved: false,
+          tasks: [
+            {
+              taskId: "kaporta",
+              title: "Kaporta - Boya Ekspertiz",
+              groupTitle: "KAPORTA - BOYA EKSPERTİZ VE CHECK-UP",
+              assignedRole: "Kaporta Ustası",
+              status: "locked",
+              sent: 0,
+              total: 59,
+              elapsed: "0 dk. / 15 dk.",
+              reportFieldKey: "body_paint_0_58",
+              revisionNo: 1,
+              customerFriendlyNote: "",
+              managerReturnReason: "",
+              requiredEvidence: ["Ön panel", "Sağ kadraj", "Sol kadraj", "İşlemli parça yakın plan", "Mikron cihaz ekranı"],
+              evidenceAssets: [],
+              checklistItems: [
+                { key: "hail_damage", label: "Araç Genelinde Dolu Hasarı Mevcut Mu?", result: "normal", required: true, evidence: [], tags: ["Risk"] },
+                { key: "right_front_inner_door", label: "Sağ Ön Kapı İçi", result: "normal", required: true, evidence: [], tags: [] },
+                { key: "right_front_chassis_tip", label: "Sağ Ön Şasi Ucu", result: "normal", required: true, evidence: [], tags: ["Kritik"] },
+                { key: "left_front_chassis_tip", label: "Sol Ön Şasi Ucu", result: "normal", required: true, evidence: [], tags: ["Kritik"] },
+                { key: "hail_repair", label: "Araç Genelinde Dolu Onarımı Mevcut mu?", result: "normal", required: true, evidence: [], tags: ["Risk"] },
+                { key: "bird_damage", label: "Araç Genelinde Kuş Pisliği ve Boya Bozulmaları Mevcut mu?", result: "normal", required: true, evidence: [], tags: [] },
+                { key: "front_hood", label: "Ön Kaput", result: "risk", required: true, evidence: [], tags: ["Foto", "Mikron"] },
+                { key: "front_panel", label: "Ön Panel", result: "normal", required: true, evidence: ["Ön panel"], tags: ["Foto"] },
+              ],
+            },
+            {
+              taskId: "mekanik",
+              title: "Motor / Mekanik",
+              groupTitle: "MOTOR EKSPERTİZ VE CHECK-UP",
+              assignedRole: "Mekanik Usta",
+              status: "locked",
+              sent: 0,
+              total: 37,
+              elapsed: "0 dk. / 8 dk.",
+              reportFieldKey: "engine_mechanic",
+              revisionNo: 1,
+              customerFriendlyNote: "",
+              managerReturnReason: "",
+              requiredEvidence: ["Motor üst", "Alt takım", "Kaçak noktası"],
+              evidenceAssets: [],
+              checklistItems: [
+                { key: "engine_cover", label: "Motor Koruyucu Kapağı / Hava Filtre ve Boruları", result: "normal", required: true, evidence: [], tags: [] },
+                { key: "brake_hydraulic", label: "Fren Ana Merkez Hidrolik Sızdırmazlığı", result: "normal", required: true, evidence: [], tags: [] },
+              ],
+            },
+            {
+              taskId: "obd",
+              title: "OBD / Beyin Test",
+              groupTitle: "OBD/BEYİN TEST",
+              assignedRole: "OBD Ustası",
+              status: "locked",
+              sent: 0,
+              total: 10,
+              elapsed: "0 dk. / 4 dk.",
+              reportFieldKey: "obd_electronics",
+              revisionNo: 1,
+              customerFriendlyNote: "",
+              managerReturnReason: "",
+              requiredEvidence: ["OBD ekranı", "Hata kodu ekranı", "Airbag/SRS ekranı"],
+              evidenceAssets: [],
+              checklistItems: [
+                { key: "airbag_electronics", label: "Hava Yastığı Elektroniği", result: "normal", required: true, evidence: [], tags: ["Cihaz"] },
+                { key: "engine_light", label: "Motor Işığı", result: "normal", required: true, evidence: [], tags: ["Risk"] },
+              ],
+            },
+            {
+              taskId: "test",
+              title: "Fren / Süspansiyon Testi",
+              groupTitle: "FREN / SÜSPANSİYON TESTİ",
+              assignedRole: "Test Operatörü",
+              status: "locked",
+              sent: 0,
+              total: 9,
+              elapsed: "0 dk. / 8 dk.",
+              reportFieldKey: "brake_suspension",
+              revisionNo: 1,
+              customerFriendlyNote: "",
+              managerReturnReason: "",
+              requiredEvidence: ["Fren test çıktısı", "Süspansiyon cihaz çıktısı"],
+              evidenceAssets: [],
+              checklistItems: [
+                { key: "service_brake", label: "Servis Fren Verimliliği", result: "normal", required: true, evidence: [], tags: ["Cihaz"] },
+                { key: "front_suspension", label: "Sağ Ön Süspansiyon", result: "not_done", required: true, reason: "", evidence: [], tags: ["Neden"] },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+
+    const screens = [
+      { key: "jobs", title: "Usta İşleri", subtitle: "Atanan araçlar ve sahiplenme" },
+      { key: "start", title: "İşe Başlama Kanıtı", subtitle: "VIN, plaka, KM ve fotoğraf eşleştirme" },
+      { key: "tasks", title: "Görevlerim", subtitle: "Rolüne açık teknik başlıklar" },
+      { key: "form", title: "Kontrol Formu", subtitle: "Teknik madde listesi ve gönderim" },
+      { key: "evidence", title: "Kanıt Fotoğrafları", subtitle: "Zorunlu fotoğraf ve cihaz çıktıları" },
+      { key: "queries", title: "Tramer / KM", subtitle: "Portal entegrasyonundan gelen veriler" },
+      { key: "gate", title: "Rapor Kapısı", subtitle: "Basım öncesi blokajlar" },
+      { key: "sync", title: "Senkron ve Audit", subtitle: "Offline kuyruk ve denetim izi" },
+    ];
+
+    const nav = document.getElementById("nav");
+    const screenEl = document.getElementById("screen");
+    const titleEl = document.getElementById("screen-title");
+    const subtitleEl = document.getElementById("screen-subtitle");
+    const rolePill = document.getElementById("role-pill");
+    const plateText = document.getElementById("plate-text");
+    const syncLabel = document.getElementById("sync-label");
+    const progressBar = document.getElementById("global-progress");
+    const toastEl = document.getElementById("toast");
+
+    function esc(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+    function order() {
+      return state.orders.find(item => item.id === state.selectedOrderId) || state.orders[0];
+    }
+    function task() {
+      const current = order();
+      return current.tasks.find(item => item.taskId === state.selectedTaskId) || myTasks(current)[0];
+    }
+    function myTasks(current = order()) {
+      return current.tasks.filter(item => item.assignedRole === currentUser.role);
+    }
+    function isClaimed(current = order()) {
+      return current.owner === currentUser.name;
+    }
+    function startEvidenceMissing(current = order()) {
+      const ev = current.startEvidence;
+      const missing = [];
+      if (ev.vin !== current.expectedVin) missing.push("VIN eşleşmedi");
+      if (!ev.vinPhoto) missing.push("Şasi etiketi fotoğrafı");
+      if (!ev.platePhoto) missing.push("Plaka fotoğrafı");
+      if (ev.odometerKm !== current.expectedKm) missing.push("KM eşleşmedi");
+      if (!ev.odometerPhoto) missing.push("KM ekran fotoğrafı");
+      if (!ev.transmission) missing.push("Vites tipi");
+      return missing;
+    }
+    function startEvidenceReady(current = order()) {
+      return startEvidenceMissing(current).length === 0;
+    }
+    function unlockTasks(current = order()) {
+      current.tasks.forEach(item => {
+        if (item.status === "locked") item.status = item.assignedRole === currentUser.role ? "open" : "assignedOther";
+      });
+    }
+    function taskMissingReasons(currentTask) {
+      const missing = [];
+      currentTask.checklistItems.forEach(item => {
+        if (item.result === "risk" && item.evidence.length === 0) missing.push(`${item.label}: riskli bulgu için fotoğraf/kanıt gerekli`);
+        if (item.result === "not_done" && !item.reason) missing.push(`${item.label}: yapılamadı nedeni gerekli`);
+      });
+      const missingEvidence = currentTask.requiredEvidence.filter(item => !currentTask.evidenceAssets.includes(item));
+      if (missingEvidence.length) missing.push(`Eksik kanıt: ${missingEvidence.join(", ")}`);
+      return missing;
+    }
+    function externalQueriesReady(current = order()) {
+      return current.externalQueries.tramer.status === "ready" && current.externalQueries.km.status === "ready";
+    }
+    function allEvidenceDone(current = order()) {
+      return myTasks(current).every(item => item.requiredEvidence.every(req => item.evidenceAssets.includes(req)));
+    }
+    function completion(current = order()) {
+      const mine = myTasks(current);
+      const taskDone = mine.filter(item => item.status === "done").length;
+      let score = 0;
+      if (isClaimed(current)) score += 15;
+      if (startEvidenceReady(current)) score += 25;
+      score += mine.length ? Math.round((taskDone / mine.length) * 35) : 0;
+      if (allEvidenceDone(current)) score += 15;
+      if (state.syncPending === 0) score += 10;
+      return Math.min(100, score);
+    }
+    function reportGateResult(current = order()) {
+      const blockingReasons = [];
+      if (!startEvidenceReady(current)) blockingReasons.push("Başlangıç kanıtı tamamlanmadı");
+      const undone = current.tasks.filter(item => item.status !== "done");
+      if (undone.length) blockingReasons.push(`${undone.length} teknik başlık tamamlanmadı`);
+      const missingEvidence = current.tasks.flatMap(item => item.requiredEvidence.filter(req => !item.evidenceAssets.includes(req)));
+      if (missingEvidence.length) blockingReasons.push("Zorunlu kanıt fotoğrafları eksik");
+      if (!externalQueriesReady(current)) blockingReasons.push("Dış sorgu bekliyor");
+      if (!current.managerApproved) blockingReasons.push("Müdür kalite onayı bekliyor");
+      if (state.syncPending > 0) blockingReasons.push("Offline senkron bekleyen kayıt var");
+      return { isReady: blockingReasons.length === 0, blockingReasons };
+    }
+    function badge(text, tone = "") {
+      return `<span class="badge ${tone}">${esc(text)}</span>`;
+    }
+    function statusText(status) {
+      return {
+        locked: "Kapalı",
+        assignedOther: "Başka rolde",
+        open: "Açık",
+        done: "Gönderildi",
+        evidenceMissing: "Kanıt eksik",
+      }[status] || status;
+    }
+    function statusTone(status) {
+      return {
+        locked: "amber",
+        assignedOther: "blue",
+        open: "amber",
+        done: "green",
+        evidenceMissing: "red",
+      }[status] || "";
+    }
+    function rowTone(item) {
+      if (item.result === "risk") return "risk";
+      if (item.result === "not_done") return "pending";
+      if (item.evidence.length || item.result === "normal") return "done";
+      return "";
+    }
+    function bottomBar() {
+      const tabs = [
+        ["jobs", "İşler"],
+        ["tasks", "Görev"],
+        ["evidence", "Kanıt"],
+        ["gate", "Kapı"],
+      ];
+      return `<nav class="bottom-bar">${tabs.map(([key, label], index) => `
+        <button data-screen="${key}" class="${state.screen === key ? "active" : ""}">
+          <span class="dot">${index + 1}</span><span>${label}</span>
+        </button>
+      `).join("")}</nav>`;
+    }
+    function vehicleHero(current = order()) {
+      return `
+        <div class="vehicle-hero">
+          <div class="mark">OTOTR</div>
+          <h2>${esc(current.plate)}</h2>
+          <div class="model">${esc(current.vehicleShort)}</div>
+          <div class="brand-name">${esc(current.vehicle.replace(/^\\d+\\s+/, ""))}</div>
+          <button class="btn primary" style="margin-bottom:12px">Önceki Raporları Gör</button>
+          <div class="vehicle-meta">
+            <div>▣<br>${esc(current.year)}</div>
+            <div>▥<br>${esc(current.fuel)}</div>
+          </div>
+        </div>
+      `;
+    }
+    function renderJobs() {
+      const current = order();
+      const jobs = state.orders.filter(item => item.assignedRoles.includes(currentUser.role));
+      return `
+        ${vehicleHero(current)}
+        <div class="card">
+          <div class="row">
+            <div><h2>Usta Kuyruğu</h2><p class="sub">Sadece ${esc(currentUser.role)} rolüne atanmış açık iş emirleri görünür.</p></div>
+            ${badge(`${completion(current)}%`, completion(current) > 60 ? "green" : "amber")}
+          </div>
+        </div>
+        <div class="list">
+          ${jobs.map(item => `
+            <article class="work-card ${item.id === current.id ? "active" : ""}">
+              <div class="row">
+                <div>
+                  <h3>${esc(item.plate)} · ${esc(item.vehicleShort)}</h3>
+                  <p class="sub">${esc(item.id)} · ${esc(item.packageName)} · ${esc(item.customer)}</p>
+                </div>
+                ${badge(item.priority, "red")}
+              </div>
+              <div class="row wrap">
+                ${badge(item.owner ? `Sahip: ${item.owner}` : "Sahipsiz", item.owner ? "green" : "amber")}
+                ${badge(startEvidenceReady(item) ? "Başlangıç tamam" : "Başlangıç bekler", startEvidenceReady(item) ? "green" : "red")}
+                ${badge(externalQueriesReady(item) ? "Tramer/KM hazır" : "Dış sorgu bekliyor", externalQueriesReady(item) ? "green" : "amber")}
+              </div>
+              <div class="button-row">
+                <button class="btn" data-open-order="${item.id}">Aç</button>
+                <button class="btn primary" data-claim="${item.id}">${item.owner === currentUser.name ? "İşe Devam Et" : "Sahiplen"}</button>
+              </div>
+            </article>
+          `).join("")}
+        </div>
+        ${bottomBar()}
+      `;
+    }
+    function renderStart() {
+      const current = order();
+      const ev = current.startEvidence;
+      const missing = startEvidenceMissing(current);
+      const canEdit = isClaimed(current);
+      return `
+        <div class="card">
+          <div class="card-head">
+            <div><h2>İşe Başlama Kanıtı</h2><p class="sub">Sekreterya kaydı referanstır; usta mobilde doğrulama yapar.</p></div>
+            ${badge(canEdit ? "Düzenlenebilir" : "Önce sahiplen", canEdit ? "green" : "amber")}
+          </div>
+          <div class="row wrap" style="margin-top:8px">${badge(`VIN: ${current.expectedVin}`, "blue")}${badge(`KM: ${current.expectedKm}`)}${badge(current.reportNo)}</div>
+        </div>
+        <button class="start-card ${ev.odometerPhoto ? "done" : ""}" data-start-photo="odometerPhoto" ${canEdit ? "" : "disabled"}>
+          <b>KM Kadrajı</b><span class="camera">▣</span>
+        </button>
+        <label class="help-input">
+          <input data-km inputmode="numeric" value="${esc(ev.odometerKm)}" placeholder="Km değerini girin!" ${canEdit ? "" : "disabled"}>
+          <span class="help">?</span>
+        </label>
+        <button class="start-card ${ev.platePhoto ? "done" : ""}" data-start-photo="platePhoto" ${canEdit ? "" : "disabled"}>
+          <b>Plaka Resmi</b><span class="camera">▣</span>
+        </button>
+        <label class="help-input">
+          <select data-transmission ${canEdit ? "" : "disabled"}>
+            <option value="">Vites Tipi Seçin</option>
+            <option value="Otomatik" ${ev.transmission === "Otomatik" ? "selected" : ""}>Otomatik</option>
+            <option value="Manuel" ${ev.transmission === "Manuel" ? "selected" : ""}>Manuel</option>
+          </select>
+          <span class="help">?</span>
+        </label>
+        <button class="start-card ${ev.vinPhoto ? "done" : ""}" data-start-photo="vinPhoto" ${canEdit ? "" : "disabled"}>
+          <b>Şase Resmi</b><span class="camera">▣</span>
+        </button>
+        <label class="help-input">
+          <input data-vin value="${esc(ev.vin)}" placeholder="Şase numarasını girin!" maxlength="17" ${canEdit ? "" : "disabled"}>
+          <span class="help">?</span>
+        </label>
+        <button class="btn primary" data-start-complete style="width:100%;min-height:54px" ${canEdit ? "" : "disabled"}>Eşleştir ve Teknik Başlıkları Aç</button>
+        ${missing.length ? `<div class="work-card blocked">${badge("Eksik kapı", "red")}<h3>Eksik kanıtlar</h3><p class="sub">${missing.map(esc).join(", ")}</p></div>` : `<div class="work-card done"><h3>Başlangıç kapısı tamam</h3><p class="sub">Teknik başlıklar açılabilir.</p></div>`}
+        ${bottomBar()}
+      `;
+    }
+    function renderTasks() {
+      const current = order();
+      const mine = myTasks(current);
+      const locked = !startEvidenceReady(current);
+      return `
+        ${vehicleHero(current)}
+        <div class="card">
+          <div class="row">
+            <div><h2>Teknik Modüller</h2><p class="sub">${locked ? "Başlangıç kanıtı tamamlanmadan düzenleme kapalıdır." : "Sadece rolüne düşen modül düzenlenebilir."}</p></div>
+            ${badge(`${mine.length} başlık`, "blue")}
+          </div>
+        </div>
+        <div class="list">
+          ${current.tasks.map(item => `
+            <article class="module-card">
+              <h3>${esc(item.groupTitle)}</h3>
+              <div class="state">${item.status === "done" ? "Gönderildi" : item.status === "locked" ? "Teste henüz başlanmadı" : item.assignedRole === currentUser.role ? "Doldurmaya hazır" : "Başka ustada"}</div>
+              <div class="module-divider"></div>
+              <div class="module-footer">
+                ${badge(`${item.sent}/${item.total} Gönderildi`, item.status === "done" ? "green" : "")}
+                ${badge(item.elapsed, item.status === "locked" ? "" : "green")}
+              </div>
+              <button class="btn primary" data-open-form="${item.taskId}" ${locked || item.assignedRole !== currentUser.role || item.status === "locked" ? "disabled" : ""}>Başlığı Aç</button>
+            </article>
+          `).join("")}
+        </div>
+        ${bottomBar()}
+      `;
+    }
+    function renderForm() {
+      const currentTask = task();
+      if (!currentTask) return `<div class="card"><h2>Görev yok</h2><p class="sub">Bu kullanıcı rolüne atanmış teknik başlık yok.</p></div>${bottomBar()}`;
+      const missing = taskMissingReasons(currentTask);
+      const isBody = currentTask.taskId === "kaporta";
+      return `
+        <div class="active-test">
+          <h2>${esc(currentTask.groupTitle)}</h2>
+          <p>Test noktalarını doldurmaya başlayabilirsiniz.</p>
+          <div class="down">⌄</div>
+          <button class="leave" data-screen="tasks">Testi Bırak</button>
+        </div>
+        <div class="list">
+          ${currentTask.checklistItems.map((item, index) => `
+            <button class="inspect-row" data-cycle-result="${index}">
+              <span class="magnify">⌕</span>
+              <span>
+                <strong>${esc(item.label)}</strong>
+                <small>
+                  ${item.tags.map(tag => `<em>${esc(tag)}</em>`).join("")}
+                  ${item.result === "risk" ? "<em>Riskli</em>" : item.result === "not_done" ? "<em>Yapılamadı</em>" : "<em>Normal</em>"}
+                </small>
+              </span>
+              <i class="status-dot ${rowTone(item)}"></i>
+            </button>
+          `).join("")}
+        </div>
+        <div class="card input">
+          <label>Müşteri dili notu</label>
+          <textarea data-customer-note placeholder="Rapora sade ve tarafsız teknik açıklama">${esc(currentTask.customerFriendlyNote)}</textarea>
+        </div>
+        ${missing.length ? `<div class="work-card blocked"><h3>Gönderim engelleri</h3><p class="sub">${missing.map(esc).join(", ")}</p></div>` : `<div class="work-card done"><h3>Başlık gönderime hazır</h3><p class="sub">Gönderildiğinde rapora işlenmek üzere kuyruğa alınır.</p></div>`}
+        <div class="good-footer">
+          ${isBody ? `<button class="micron-button" data-micron>Mikron Seçin</button>` : ""}
+          <button class="good-button" data-all-good>Uygun Maddeleri İyi Duruma Al ↴</button>
+          <button class="btn green" data-submit-task="${currentTask.taskId}" style="min-height:50px">Başlığı Gönder</button>
+        </div>
+      `;
+    }
+    function renderEvidence() {
+      const current = order();
+      return `
+        <div class="card">
+          <div class="card-head">
+            <div><h2>Kanıt Fotoğrafları</h2><p class="sub">Zorunlu kanıtlar fotoğraf no ile rapora gider.</p></div>
+            ${badge(allEvidenceDone(current) ? "Tam" : "Eksik", allEvidenceDone(current) ? "green" : "red")}
+          </div>
+        </div>
+        ${myTasks(current).map(t => `
+          <div class="list">
+            ${t.requiredEvidence.map(req => `
+              <button class="photo-card ${t.evidenceAssets.includes(req) ? "done" : ""}" data-evidence="${t.taskId}|${esc(req)}">
+                <span><h3>${esc(req)}</h3><span class="placeholder">${req.includes("kadraj") || req.includes("panel") ? "🚗" : "▧"}</span></span>
+                <span class="camera">▣</span>
+              </button>
+            `).join("")}
+          </div>
+        `).join("")}
+        <button class="btn green" style="min-height:54px">Çekilenleri Gönder</button>
+        ${bottomBar()}
+      `;
+    }
+    function renderQueries() {
+      const current = order();
+      const rows = [
+        ["Tramer / SBM", current.externalQueries.tramer],
+        ["KM / Muayene", current.externalQueries.km],
+      ];
+      return `
+        <div class="card">
+          <h2>Tramer / KM</h2>
+          <p class="sub">Bu veriler portal entegrasyonundan gelir. Android usta sonucu sadece okur; değiştiremez.</p>
+        </div>
+        <div class="list">
+          ${rows.map(([label, item]) => `
+            <article class="query-card ${item.status === "ready" ? "done" : ""}">
+              <div class="row"><h3>${esc(label)}</h3>${badge(item.status === "ready" ? "Rapora işlenecek" : "Dış sorgu bekliyor", item.status === "ready" ? "green" : "amber")}</div>
+              <p class="sub">${esc(item.summary)}</p>
+              <div class="row wrap">${badge(item.source, "blue")}${badge(`Saat ${item.time}`)}</div>
+            </article>
+          `).join("")}
+        </div>
+        ${bottomBar()}
+      `;
+    }
+    function renderGate() {
+      const current = order();
+      const result = reportGateResult(current);
+      return `
+        <div class="card">
+          <div class="row">
+            <div><h2>${result.isReady ? "Rapor Basıma Hazır" : "Rapor Kapısı Kapalı"}</h2><p class="sub">${esc(current.id)} · ${esc(current.reportNo)}</p></div>
+            ${badge(result.isReady ? "Hazır" : "Blokaj var", result.isReady ? "green" : "amber")}
+          </div>
+          <div class="progress" style="margin-top:10px"><div class="bar ${result.isReady ? "green" : "amber"}" style="--value:${completion(current)}%"></div></div>
+        </div>
+        <div class="list">
+          ${result.blockingReasons.map(reason => `<article class="work-card blocked"><div class="row"><h3>${esc(reason)}</h3>${badge("Kapalı", "red")}</div></article>`).join("") || `<article class="work-card done"><div class="row"><h3>Tüm kapılar açık</h3>${badge("Hazır", "green")}</div><p class="sub">Usta girişleri rapora işlenmek üzere tamamlandı.</p></article>`}
+        </div>
+        <div class="card">
+          <h3>Usta ne yapabilir?</h3>
+          <p class="sub">Kendi eksik kanıtını ve teknik başlığını tamamlayabilir. Sekreterya, ödeme, KVKK, dış sorgu ve müdür onayı kaynaklı blokajları sadece görür.</p>
+        </div>
+        ${bottomBar()}
+      `;
+    }
+    function renderSync() {
+      return `
+        <div class="card">
+          <h2>Senkron ve Audit</h2>
+          <p class="sub">Bağlantı yokken form ve fotoğraf metadata cihazda kuyruklanır. Aynı idempotencyKey rapora ikinci kez yazılmaz.</p>
+        </div>
+        <div class="list">
+          <article class="work-card"><div class="row"><h3>Teknik form payload</h3>${badge(state.syncPending > 0 ? "Bekliyor" : "Gönderildi", state.syncPending > 0 ? "amber" : "green")}</div><p class="sub">operationType=submitTask · idempotencyKey=IE-2026-000901-kaporta-r1</p></article>
+          <article class="work-card"><div class="row"><h3>Fotoğraf metadata</h3>${badge(state.syncPending > 1 ? "Bekliyor" : "Gönderildi", state.syncPending > 1 ? "amber" : "green")}</div><p class="sub">workOrderId, taskId, fieldKey, evidenceType, capturedAt ve uploadedBy saklanır.</p></article>
+          <article class="work-card"><div class="row"><h3>Audit Log</h3>${badge("Aktif", "blue")}</div><p class="sub">Sahiplenme, kanıt ekleme, başlık gönderme ve sync aksiyonları kayıt altına alınır.</p></article>
+        </div>
+        <button class="btn primary" style="width:100%" data-sync-complete>Sync Tamamla</button>
+        ${bottomBar()}
+      `;
+    }
+
+    const renderers = {
+      jobs: renderJobs,
+      start: renderStart,
+      tasks: renderTasks,
+      form: renderForm,
+      evidence: renderEvidence,
+      queries: renderQueries,
+      gate: renderGate,
+      sync: renderSync,
+    };
+
+    function render() {
+      const currentScreen = screens.find(item => item.key === state.screen) || screens[0];
+      const current = order();
+      titleEl.textContent = currentScreen.title;
+      subtitleEl.textContent = currentScreen.subtitle;
+      rolePill.textContent = currentUser.role;
+      plateText.textContent = current.plate;
+      progressBar.style.setProperty("--value", `${completion(current)}%`);
+      syncLabel.textContent = `${state.syncPending} kayıt senkron bekliyor`;
+      screenEl.innerHTML = renderers[currentScreen.key]();
+      document.querySelectorAll(".nav button").forEach(btn => btn.classList.toggle("active", btn.dataset.screen === state.screen));
+    }
+    function setScreen(key) {
+      state.screen = key;
+      render();
+    }
+    function toast(message) {
+      toastEl.textContent = message;
+      toastEl.classList.add("open");
+      window.clearTimeout(toast.timer);
+      toast.timer = window.setTimeout(() => toastEl.classList.remove("open"), 2200);
+    }
+    function saveForm() {
+      const currentTask = task();
+      if (!currentTask) return;
+      const note = document.querySelector("[data-customer-note]");
+      if (note) currentTask.customerFriendlyNote = note.value.trim();
+    }
+
+    screens.forEach((item, index) => {
+      const btn = document.createElement("button");
+      btn.dataset.screen = item.key;
+      btn.innerHTML = `<span class="nav-no">${index + 1}</span><span>${item.title}</span>`;
+      nav.appendChild(btn);
+    });
+
+    document.addEventListener("click", event => {
+      const screenButton = event.target.closest("[data-screen]");
+      if (screenButton) { setScreen(screenButton.dataset.screen); return; }
+
+      if (event.target.closest("[data-back]")) {
+        const orderMap = { start: "jobs", tasks: "start", form: "tasks", evidence: "form", queries: "tasks", gate: "tasks", sync: "gate" };
+        setScreen(orderMap[state.screen] || "jobs");
+        return;
+      }
+
+      const openOrder = event.target.closest("[data-open-order]");
+      if (openOrder) {
+        state.selectedOrderId = openOrder.dataset.openOrder;
+        setScreen("start");
+        return;
+      }
+
+      const claim = event.target.closest("[data-claim]");
+      if (claim) {
+        const item = state.orders.find(orderItem => orderItem.id === claim.dataset.claim);
+        if (item) {
+          item.owner = currentUser.name;
+          item.status = "claimed";
+          state.selectedOrderId = item.id;
+          toast("İş emri sahiplenildi. Başlangıç kanıtını tamamlayın.");
+          setScreen("start");
+        }
+        return;
+      }
+
+      const startPhoto = event.target.closest("[data-start-photo]");
+      if (startPhoto) {
+        const current = order();
+        if (!isClaimed(current)) { toast("Önce işi sahiplenmelisiniz."); return; }
+        current.startEvidence.vin = (document.querySelector("[data-vin]")?.value || current.startEvidence.vin).toUpperCase().trim();
+        current.startEvidence.odometerKm = (document.querySelector("[data-km]")?.value || current.startEvidence.odometerKm).replace(/\D/g, "");
+        current.startEvidence.transmission = document.querySelector("[data-transmission]")?.value || current.startEvidence.transmission;
+        current.startEvidence[startPhoto.dataset.startPhoto] = true;
+        toast("Başlangıç kanıtı eklendi.");
+        render();
+        return;
+      }
+
+      const startComplete = event.target.closest("[data-start-complete]");
+      if (startComplete) {
+        const current = order();
+        current.startEvidence.vin = (document.querySelector("[data-vin]")?.value || "").toUpperCase().trim();
+        current.startEvidence.odometerKm = (document.querySelector("[data-km]")?.value || "").replace(/\D/g, "");
+        current.startEvidence.transmission = document.querySelector("[data-transmission]")?.value || "";
+        const missing = startEvidenceMissing(current);
+        if (missing.length) {
+          toast(`Eksik/eşleşmeyen kanıt var: ${missing[0]}`);
+          render();
+          return;
+        }
+        unlockTasks(current);
+        toast("Eşleşme tamam. Teknik başlıklar açıldı.");
+        setScreen("tasks");
+        return;
+      }
+
+      const openForm = event.target.closest("[data-open-form]");
+      if (openForm) {
+        state.selectedTaskId = openForm.dataset.openForm;
+        setScreen("form");
+        return;
+      }
+
+      const cycle = event.target.closest("[data-cycle-result]");
+      if (cycle) {
+        const currentTask = task();
+        const item = currentTask.checklistItems[Number(cycle.dataset.cycleResult)];
+        if (!item) return;
+        item.result = item.result === "normal" ? "risk" : item.result === "risk" ? "not_done" : "normal";
+        if (item.result === "not_done" && !item.reason) item.reason = "Cihaz / ortam uygun değil";
+        if (item.result === "risk" && item.evidence.length === 0) toast("Riskli bulguda fotoğraf/kanıt zorunlu.");
+        render();
+        return;
+      }
+
+      const allGood = event.target.closest("[data-all-good]");
+      if (allGood) {
+        const currentTask = task();
+        currentTask.checklistItems.forEach(item => {
+          if (!item.tags.includes("Kritik") && !item.tags.includes("Risk")) item.result = "normal";
+        });
+        toast("Kritik olmayan maddeler iyi duruma alındı; audit kaydı oluşturuldu.");
+        render();
+        return;
+      }
+
+      const micron = event.target.closest("[data-micron]");
+      if (micron) {
+        const currentTask = task();
+        if (!currentTask.evidenceAssets.includes("Mikron cihaz ekranı")) currentTask.evidenceAssets.push("Mikron cihaz ekranı");
+        currentTask.checklistItems.forEach(item => {
+          if (item.key === "front_hood" && item.evidence.length === 0) item.evidence.push("Mikron cihaz ekranı");
+        });
+        toast("Mikron cihaz ekranı kanıta eklendi.");
+        render();
+        return;
+      }
+
+      const evidence = event.target.closest("[data-evidence]");
+      if (evidence) {
+        const [taskId, title] = evidence.dataset.evidence.split("|");
+        const currentTask = order().tasks.find(item => item.taskId === taskId);
+        if (currentTask && !currentTask.evidenceAssets.includes(title)) {
+          currentTask.evidenceAssets.push(title);
+          currentTask.checklistItems.forEach(item => {
+            if (item.result === "risk" && item.evidence.length === 0) item.evidence.push(title);
+          });
+          state.syncPending += 1;
+        }
+        toast("Kanıt kuyruğa eklendi.");
+        render();
+        return;
+      }
+
+      const submit = event.target.closest("[data-submit-task]");
+      if (submit) {
+        saveForm();
+        const currentTask = order().tasks.find(item => item.taskId === submit.dataset.submitTask);
+        if (!currentTask) return;
+        const missing = taskMissingReasons(currentTask);
+        if (missing.length) {
+          currentTask.status = "evidenceMissing";
+          toast(`Gönderim engellendi: ${missing[0]}`);
+          render();
+          return;
+        }
+        currentTask.status = "done";
+        currentTask.sent = currentTask.total;
+        order().status = "submitted";
+        state.syncPending += 1;
+        toast("Başlık rapora işlenmek üzere gönderildi.");
+        setScreen("gate");
+        return;
+      }
+
+      if (event.target.closest("[data-sync-complete]")) {
+        state.syncPending = 0;
+        toast("Senkron tamamlandı. Rapor kapısı tekrar hesaplandı.");
+        render();
+      }
+    });
+
+    document.addEventListener("input", event => {
+      const vin = event.target.closest("[data-vin]");
+      if (vin) {
+        vin.value = vin.value.toUpperCase().replace(/[\s-]+/g, "").replace(/[^A-Z0-9]/g, "").replace(/[IOQ]/g, "").slice(0, 17);
+      }
+      const km = event.target.closest("[data-km]");
+      if (km) {
+        km.value = km.value.replace(/\D/g, "").slice(0, 7);
+      }
+    });
+
+    render();
+  </script>
+</body>
+</html>
