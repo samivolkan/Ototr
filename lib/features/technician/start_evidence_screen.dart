@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/constants/app_sizes.dart';
 import '../../core/navigation/app_routes.dart';
@@ -10,6 +12,7 @@ import '../../core/widgets/ototr_primary_button.dart';
 import '../../core/widgets/ototr_secondary_button.dart';
 import '../../data/models/technician_operation_model.dart';
 import '../../data/repositories/app_repositories.dart';
+import '../../data/services/photo_upload_service.dart';
 import 'widgets/technician_vehicle_header.dart';
 
 class StartEvidenceScreen extends StatefulWidget {
@@ -28,6 +31,7 @@ class _StartEvidenceScreenState extends State<StartEvidenceScreen> {
   String _platePhoto = '';
   String _odometerPhoto = '';
   String _transmission = '';
+  bool _saving = false;
   Future<TechnicianWorkOrder>? _remoteOrderFuture;
 
   @override
@@ -47,9 +51,9 @@ class _StartEvidenceScreenState extends State<StartEvidenceScreen> {
     _kmController = TextEditingController(
       text: evidence?.odometerKm?.toString() ?? '',
     );
-    _vinPhoto = evidence?.vinPhoto ?? '';
-    _platePhoto = evidence?.platePhoto ?? '';
-    _odometerPhoto = evidence?.odometerPhoto ?? '';
+    _vinPhoto = _validPhotoReference(evidence?.vinPhoto ?? '');
+    _platePhoto = _validPhotoReference(evidence?.platePhoto ?? '');
+    _odometerPhoto = _validPhotoReference(evidence?.odometerPhoto ?? '');
   }
 
   @override
@@ -95,9 +99,9 @@ class _StartEvidenceScreenState extends State<StartEvidenceScreen> {
           if (_vinController.text.isEmpty && evidence != null) {
             _vinController.text = evidence.vin;
             _kmController.text = evidence.odometerKm?.toString() ?? '';
-            _vinPhoto = evidence.vinPhoto;
-            _platePhoto = evidence.platePhoto;
-            _odometerPhoto = evidence.odometerPhoto;
+            _vinPhoto = _validPhotoReference(evidence.vinPhoto);
+            _platePhoto = _validPhotoReference(evidence.platePhoto);
+            _odometerPhoto = _validPhotoReference(evidence.odometerPhoto);
           }
           return _buildForm(order);
         },
@@ -142,19 +146,28 @@ class _StartEvidenceScreenState extends State<StartEvidenceScreen> {
           ),
           _PhotoGateCard(
             title: 'Şasi Etiketi Fotoğrafı',
-            isDone: _vinPhoto.isNotEmpty,
-            onTap: () => setState(() => _vinPhoto = 'local/vin-label.jpg'),
+            isDone: _validPhotoReference(_vinPhoto).isNotEmpty,
+            isBusy: _saving,
+            onTap: () => _captureStartEvidencePhoto(_StartEvidencePhoto.vin),
           ),
           _PhotoGateCard(
             title: 'Plaka Fotoğrafı',
-            isDone: _platePhoto.isNotEmpty,
-            onTap: () => setState(() => _platePhoto = 'local/plate.jpg'),
+            isDone: _validPhotoReference(_platePhoto).isNotEmpty,
+            isBusy: _saving,
+            onTap: () => _captureStartEvidencePhoto(_StartEvidencePhoto.plate),
           ),
           _PhotoGateCard(
             title: 'KM Ekran Fotoğrafı',
-            isDone: _odometerPhoto.isNotEmpty,
-            onTap: () => setState(() => _odometerPhoto = 'local/odometer.jpg'),
+            isDone: _validPhotoReference(_odometerPhoto).isNotEmpty,
+            isBusy: _saving,
+            onTap: () =>
+                _captureStartEvidencePhoto(_StartEvidencePhoto.odometer),
           ),
+          if (_saving)
+            const Padding(
+              padding: EdgeInsets.only(bottom: AppSizes.md),
+              child: LinearProgressIndicator(),
+            ),
           OtotrCard(
             child: Column(
               children: [
@@ -222,9 +235,7 @@ class _StartEvidenceScreenState extends State<StartEvidenceScreen> {
           OtotrPrimaryButton(
             label: 'Araç İş Emri Açılış Başlat',
             icon: Icons.save,
-            onPressed: () {
-              _saveEvidence(previewEvidence);
-            },
+            onPressed: _saving ? null : () => _saveEvidence(previewEvidence),
           ),
           const SizedBox(height: 8),
           OtotrSecondaryButton(
@@ -238,48 +249,159 @@ class _StartEvidenceScreenState extends State<StartEvidenceScreen> {
   }
 
   Future<void> _saveEvidence(StartEvidence previewEvidence) async {
+    if (_saving) {
+      return;
+    }
+    setState(() => _saving = true);
     final remoteRepository = AppRepositories.instance.remoteWorkOrders;
-    if (remoteRepository != null) {
-      final saved = await remoteRepository.saveStartEvidence(
-        widget.workOrderId,
-        previewEvidence,
+    try {
+      if (remoteRepository != null) {
+        final saved = await remoteRepository.saveStartEvidence(
+          widget.workOrderId,
+          previewEvidence,
+        );
+        if (!mounted) {
+          return;
+        }
+        if (!saved.isStartEvidenceComplete) {
+          _showMessage('Araç başlama iş emri için eksik alan var.');
+          setState(() {
+            _remoteOrderFuture = remoteRepository.getById(widget.workOrderId);
+          });
+          return;
+        }
+        Navigator.pushReplacementNamed(
+          context,
+          AppRoutes.technicianTasks,
+          arguments: widget.workOrderId,
+        );
+        return;
+      }
+
+      if (AppRepositories.instance.hasLocalTestWorkOrders) {
+        final repository = AppRepositories.instance.localWorkOrders;
+        final saved = repository.saveStartEvidence(
+          widget.workOrderId,
+          previewEvidence,
+        );
+        if (!saved.isStartEvidenceComplete) {
+          _showMessage('Araç başlama iş emri için eksik alan var.');
+          setState(() {});
+          return;
+        }
+        Navigator.pushReplacementNamed(
+          context,
+          AppRoutes.technicianTasks,
+          arguments: widget.workOrderId,
+        );
+        return;
+      }
+
+      throw StateError('Canli veri baglantisi yok.');
+    } catch (error) {
+      if (mounted) {
+        _showMessage(error.toString());
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _saving = false);
+      }
+    }
+  }
+
+  Future<void> _captureStartEvidencePhoto(_StartEvidencePhoto type) async {
+    if (_saving) {
+      return;
+    }
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_camera),
+              title: const Text('Kamera ile çek'),
+              onTap: () => Navigator.pop(context, ImageSource.camera),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text('Galeriden seç'),
+              onTap: () => Navigator.pop(context, ImageSource.gallery),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (source == null) {
+      return;
+    }
+
+    final picked = await ImagePicker().pickImage(
+      source: source,
+      imageQuality: 82,
+      maxWidth: 1800,
+    );
+    if (picked == null) {
+      return;
+    }
+
+    setState(() => _saving = true);
+    try {
+      final supabaseClient = _activeSupabaseClient();
+      final uploader = PhotoUploadService(client: supabaseClient);
+      final result = await uploader.uploadReportMedia(
+        workOrderId: widget.workOrderId,
+        itemId: type.storageItemId,
+        localPath: picked.path,
       );
       if (!mounted) {
         return;
       }
-      if (!saved.isStartEvidenceComplete) {
-        setState(() {
-          _remoteOrderFuture = remoteRepository.getById(widget.workOrderId);
-        });
+      if (supabaseClient != null && !result.uploaded) {
+        _showMessage('Fotoğraf yüklenemedi. Lütfen tekrar deneyin.');
         return;
       }
-      Navigator.pushReplacementNamed(
-        context,
-        AppRoutes.technicianTasks,
-        arguments: widget.workOrderId,
-      );
-      return;
-    }
-
-    if (AppRepositories.instance.hasLocalTestWorkOrders) {
-      final repository = AppRepositories.instance.localWorkOrders;
-      final saved = repository.saveStartEvidence(
-        widget.workOrderId,
-        previewEvidence,
-      );
-      if (!saved.isStartEvidenceComplete) {
-        setState(() {});
-        return;
+      setState(() {
+        switch (type) {
+          case _StartEvidencePhoto.vin:
+            _vinPhoto = result.reference;
+            break;
+          case _StartEvidencePhoto.plate:
+            _platePhoto = result.reference;
+            break;
+          case _StartEvidencePhoto.odometer:
+            _odometerPhoto = result.reference;
+            break;
+        }
+      });
+      _showMessage(result.uploaded ? 'Fotoğraf yüklendi.' : 'Fotoğraf alındı.');
+    } catch (error) {
+      if (mounted) {
+        _showMessage(error.toString());
       }
-      Navigator.pushReplacementNamed(
-        context,
-        AppRoutes.technicianTasks,
-        arguments: widget.workOrderId,
-      );
-      return;
+    } finally {
+      if (mounted) {
+        setState(() => _saving = false);
+      }
     }
+  }
 
-    throw StateError('Canli veri baglantisi yok.');
+  SupabaseClient? _activeSupabaseClient() {
+    if (AppRepositories.instance.remoteWorkOrders == null) {
+      return null;
+    }
+    try {
+      return Supabase.instance.client;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  void _showMessage(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
   }
 
   StartEvidence _buildEvidence() {
@@ -292,15 +414,19 @@ class _StartEvidenceScreenState extends State<StartEvidenceScreen> {
     return StartEvidence(
       workOrderId: widget.workOrderId,
       vin: _vinController.text.trim().toUpperCase(),
-      vinPhoto: _vinPhoto,
-      platePhoto: _platePhoto,
+      vinPhoto: _validPhotoReference(_vinPhoto),
+      platePhoto: _validPhotoReference(_platePhoto),
       odometerKm: int.tryParse(_kmController.text.trim()),
-      odometerPhoto: _odometerPhoto,
+      odometerPhoto: _validPhotoReference(_odometerPhoto),
       capturedAt: DateTime.now(),
       capturedBy: currentUser?.id ?? '',
       deviceId: 'android-demo-device',
       gpsApprox: 'Bursa Nilüfer',
     );
+  }
+
+  String _validPhotoReference(String reference) {
+    return reference.startsWith('local/') ? '' : reference;
   }
 }
 
@@ -308,17 +434,19 @@ class _PhotoGateCard extends StatelessWidget {
   const _PhotoGateCard({
     required this.title,
     required this.isDone,
+    required this.isBusy,
     required this.onTap,
   });
 
   final String title;
   final bool isDone;
+  final bool isBusy;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     return OtotrCard(
-      onTap: onTap,
+      onTap: isBusy ? null : onTap,
       child: Row(
         children: [
           Icon(
@@ -338,6 +466,16 @@ class _PhotoGateCard extends StatelessWidget {
       ),
     );
   }
+}
+
+enum _StartEvidencePhoto {
+  vin('start-evidence-vin'),
+  plate('start-evidence-plate'),
+  odometer('start-evidence-odometer');
+
+  const _StartEvidencePhoto(this.storageItemId);
+
+  final String storageItemId;
 }
 
 class _TransmissionChoice extends StatelessWidget {

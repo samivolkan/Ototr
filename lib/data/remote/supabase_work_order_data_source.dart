@@ -374,16 +374,18 @@ class SupabaseWorkOrderDataSource implements WorkOrderRemoteDataSource {
 
   bool _isStartEvidenceComplete(Map<String, Object?> payload) {
     final vin = payload['vin']?.toString().trim() ?? '';
-    final vinPhoto = payload['vin_photo_url']?.toString() ?? '';
-    final platePhoto = payload['plate_photo_url']?.toString() ?? '';
     final odometerKm = payload['odometer_km'];
-    final odometerPhoto = payload['odometer_photo_url']?.toString() ?? '';
 
     return vin.length == 17 &&
-        vinPhoto.isNotEmpty &&
-        platePhoto.isNotEmpty &&
+        _isCapturedEvidencePhoto(payload['vin_photo_url']) &&
+        _isCapturedEvidencePhoto(payload['plate_photo_url']) &&
         odometerKm != null &&
-        odometerPhoto.isNotEmpty;
+        _isCapturedEvidencePhoto(payload['odometer_photo_url']);
+  }
+
+  bool _isCapturedEvidencePhoto(Object? reference) {
+    final value = reference?.toString() ?? '';
+    return value.isNotEmpty && !value.startsWith('local/');
   }
 
   Map<String, Object?> _asRow(Object? value) {

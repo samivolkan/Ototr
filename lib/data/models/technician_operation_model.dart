@@ -135,10 +135,10 @@ class StartEvidence {
 
   bool get isComplete =>
       vin.trim().length == 17 &&
-      vinPhoto.isNotEmpty &&
-      platePhoto.isNotEmpty &&
+      _isCapturedEvidencePhoto(vinPhoto) &&
+      _isCapturedEvidencePhoto(platePhoto) &&
       odometerKm != null &&
-      odometerPhoto.isNotEmpty;
+      _isCapturedEvidencePhoto(odometerPhoto);
 
   List<String> missingReasons() {
     final reasons = <String>[];
@@ -148,16 +148,16 @@ class StartEvidence {
     } else if (normalizedVin.length != 17) {
       reasons.add('\u015easi/VIN 17 karakter olmal\u0131d\u0131r.');
     }
-    if (vinPhoto.isEmpty) {
+    if (!_isCapturedEvidencePhoto(vinPhoto)) {
       reasons.add('\u015easi etiketi foto\u011fraf\u0131 eksik.');
     }
-    if (platePhoto.isEmpty) {
+    if (!_isCapturedEvidencePhoto(platePhoto)) {
       reasons.add('Plaka foto\u011fraf\u0131 eksik.');
     }
     if (odometerKm == null) {
       reasons.add('Kilometre degeri girilmedi.');
     }
-    if (odometerPhoto.isEmpty) {
+    if (!_isCapturedEvidencePhoto(odometerPhoto)) {
       reasons.add('KM ekran fotografi eksik.');
     }
     return reasons;
@@ -187,6 +187,10 @@ class StartEvidence {
       gpsApprox: gpsApprox ?? this.gpsApprox,
     );
   }
+}
+
+bool _isCapturedEvidencePhoto(String reference) {
+  return reference.isNotEmpty && !reference.startsWith('local/');
 }
 
 class EvidenceAsset {

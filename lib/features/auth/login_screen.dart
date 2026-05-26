@@ -58,11 +58,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: AppSizes.md),
                     const OtotrTextField(
                         label: 'E-posta / Telefon',
-                        initialValue: 'ahmet.demir@ototr.test'),
+                        initialValue: 'ahmet.usta@ototr.test'),
                     const SizedBox(height: AppSizes.md),
                     const OtotrTextField(
                         label: 'Şifre',
-                        initialValue: 'demo123',
+                        initialValue: 'demo123456',
                         obscureText: true),
                     const SizedBox(height: AppSizes.md),
                     const OtotrTextField(
