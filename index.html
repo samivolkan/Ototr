@@ -6447,6 +6447,213 @@
       });
     }
     const DEALER_LIVE_KEY='ototr-dealer-live-workorders-v1';
+    const DEALER_SUPABASE_URL='https://bsjkohwbtrfwrqcyhsfz.supabase.co';
+    const DEALER_SUPABASE_KEY='sb_publishable_2vkXvrJrWhex-e0wFdM3Bg_nVlqGGuE';
+    const DEALER_SUPABASE_SESSION_KEY='ototr-dealer-supabase-session-v1';
+    const DEALER_SUPABASE_SYNC_KEY='ototr-dealer-supabase-sync-v1';
+    let dealerSupabaseSyncInFlight=false;
+    function dealerSupabaseSession(){
+      try{
+        const session=JSON.parse(localStorage.getItem(DEALER_SUPABASE_SESSION_KEY)||'null');
+        if(!session?.access_token||!session?.expires_at) return null;
+        if(Number(session.expires_at)<Date.now()+60000) return null;
+        return session;
+      }catch(err){return null;}
+    }
+    function dealerSupabaseSyncState(){
+      try{return JSON.parse(localStorage.getItem(DEALER_SUPABASE_SYNC_KEY)||'{}')||{};}catch(err){return {};}
+    }
+    function saveDealerSupabaseSyncState(next){
+      const current=dealerSupabaseSyncState();
+      localStorage.setItem(DEALER_SUPABASE_SYNC_KEY,JSON.stringify({...current,...next}));
+    }
+    function dealerSupabaseHeaders(extra={}){
+      const session=dealerSupabaseSession();
+      if(!session){
+        const err=new Error('Canlı portal oturumu gerekli.');
+        err.code='NO_LIVE_SESSION';
+        throw err;
+      }
+      return {apikey:DEALER_SUPABASE_KEY,Authorization:'Bearer '+session.access_token,'Content-Type':'application/json',...extra};
+    }
+    async function dealerSupabaseRequest(path,options={}){
+      const res=await fetch(DEALER_SUPABASE_URL+path,{...options,headers:dealerSupabaseHeaders(options.headers||{})});
+      const text=await res.text();
+      const body=text?JSON.parse(text):null;
+      if(!res.ok){
+        const err=new Error(body?.message||body?.error_description||body?.error||res.statusText||'Supabase isteği başarısız.');
+        err.status=res.status;
+        err.body=body;
+        throw err;
+      }
+      return body;
+    }
+    async function dealerSupabaseSignIn(email,password){
+      const res=await fetch(DEALER_SUPABASE_URL+'/auth/v1/token?grant_type=password',{
+        method:'POST',
+        headers:{apikey:DEALER_SUPABASE_KEY,'Content-Type':'application/json'},
+        body:JSON.stringify({email:String(email||'').trim(),password:String(password||'')})
+      });
+      const text=await res.text();
+      const body=text?JSON.parse(text):null;
+      if(!res.ok) throw new Error(body?.error_description||body?.message||'Canlı oturum açılamadı.');
+      const session={access_token:body.access_token,refresh_token:body.refresh_token,email:String(email||'').trim(),expires_at:Date.now()+Math.max(60,Number(body.expires_in)||3600)*1000};
+      localStorage.setItem(DEALER_SUPABASE_SESSION_KEY,JSON.stringify(session));
+      saveDealerSupabaseSyncState({connectedAt:new Date().toLocaleString('tr-TR',{dateStyle:'short',timeStyle:'short'}),lastError:''});
+      return session;
+    }
+    function dealerLiveStatusLabel(status){
+      const map={START_EVIDENCE_REQUIRED:'Araç iş emri açılışı bekliyor',TECHNICAL_ENTRY_OPEN:'Teknik giriş açık',MANAGER_REVIEW:'Müdür onayı bekliyor',APPROVED:'Rapor onaylandı',REPORT_DELIVERED:'Rapor teslim edildi',CLOSED:'Kapandı',CANCELLED:'İptal'};
+      return map[status]||String(status||'Açık');
+    }
+    function dealerLiveTaskStatusLabel(status){
+      const map={LOCKED:'Kilitli',AVAILABLE:'Bekliyor',ASSIGNED:'Bekliyor',CLAIMED:'Devam Ediyor',IN_PROGRESS:'Devam Ediyor',COMPLETED:'Tamamlandı',RETURNED:'Geri Gönderildi',CANCELLED:'İptal'};
+      return map[status]||String(status||'Bekliyor');
+    }
+    function dealerLiveRoleLabel(role){
+      const map={MECHANIC:'Mekanik Usta',BODY_PAINT:'Kaporta Ustası',OBD:'OBD Ustası',TEST_OPERATOR:'Test Operatörü',RECEPTION:'Müşteri Kabul',SECRETARY:'Sekreterya'};
+      return map[role]||String(role||'Usta Havuzu');
+    }
+    function dealerLivePackageCode(name){
+      const pkg=dealerPackageName(name);
+      if(pkg==='Mini Ekspertiz') return 'MINI';
+      if(pkg==='Esnaf Ekspertiz') return 'ESNAF';
+      if(pkg==='Full Ekspertiz') return 'FULL';
+      if(pkg==='OTOTR Premium 360') return 'PREMIUM';
+      return 'STANDARD';
+    }
+    function dealerLiveVehicleParts(data){
+      const brand=(data.vehicleMake||'').trim();
+      const model=[data.vehicleModel,data.vehicleVariant].filter(Boolean).join(' ').trim();
+      if(brand||model) return {brand:brand||'Marka',model:model||'Model'};
+      const parts=String(data.vehicle||'').trim().split(/\s+/);
+      return {brand:parts.shift()||'Marka',model:parts.join(' ')||'Model'};
+    }
+    function dealerLiveWorkOrderFromCase(row,tasks){
+      const vehicle=row.vehicles||{}, customer=row.customers||{}, plan=row.package_plans||{};
+      const taskRows=(tasks||[]).filter(t=>t.expertise_case_id===row.id);
+      const id=row.work_order_no||row.id;
+      const makeModel=[vehicle.brand,vehicle.model].filter(Boolean).join(' ').trim();
+      const createdAt=row.opened_at?new Date(row.opened_at).toLocaleString('tr-TR',{dateStyle:'short',timeStyle:'short'}):'Canlı';
+      return {
+        id,
+        supabaseId:row.id,
+        reportNo:id,
+        branchId:selectedBranchId,
+        branchName:'Canlı Supabase Şubesi',
+        status:dealerLiveStatusLabel(row.status),
+        liveStatus:row.status,
+        customer:customer.full_name||'Müşteri bekliyor',
+        phone:customer.phone||'',
+        buyer:customer.full_name||'Alıcı bilgisi bekliyor',
+        seller:vehicle.seller_type||'Satıcı bilgisi sekreterya',
+        vehicle:makeModel||'Araç bilgisi bekliyor',
+        vehicleMake:vehicle.brand||'',
+        vehicleModel:vehicle.model||'',
+        year:String(vehicle.model_year||''),
+        plate:vehicle.plate||'Plaka bekliyor',
+        vin:vehicle.vin||'',
+        engineNo:'',
+        mileage:vehicle.mileage_km?String(vehicle.mileage_km).replace(/\B(?=(\d{3})+(?!\d))/g,'.')+' KM':'KM bekliyor',
+        fuel:vehicle.fuel_type||'',
+        transmission:vehicle.transmission||'',
+        packageName:plan.name||dealerPackageName(plan.code||''),
+        source:'Supabase canlı',
+        createdAt,
+        entryAt:createdAt,
+        deliveryAt:'Canlı süreçte',
+        payment:row.payment_gate_ready?'Tahsil edildi':'Bekliyor',
+        paymentMethod:row.payment_gate_ready?'Canlı kayıt':'Bekliyor',
+        consent:row.kvkk_gate_ready?'İmzalandı':'Bekliyor',
+        managerApproved:!!row.manager_approved_at,
+        managerApprovedAt:row.manager_approved_at?new Date(row.manager_approved_at).toLocaleString('tr-TR',{dateStyle:'short',timeStyle:'short'}):'',
+        secretaryPrinted:/REPORT_DELIVERED|CLOSED/i.test(row.status||''),
+        revisionNo:1,
+        reprintCount:0,
+        tasks:taskRows.map((task,i)=>({
+          id:task.id,
+          station:task.title||task.task_key||('Görev '+(i+1)),
+          owner:dealerLiveRoleLabel(task.assigned_role),
+          scope:task.report_field_key||task.task_key||'Canlı teknik görev',
+          status:dealerLiveTaskStatusLabel(task.status),
+          liveStatus:task.status,
+          evidence:[],
+          result:task.status==='COMPLETED'?{customerText:task.customer_friendly_note||'Tamamlandı.'}:null
+        })),
+        liveSyncedAt:new Date().toLocaleString('tr-TR',{dateStyle:'short',timeStyle:'short'})
+      };
+    }
+    async function dealerSyncSupabaseWorkOrders(options={}){
+      if(dealerSupabaseSyncInFlight) return;
+      const session=dealerSupabaseSession();
+      if(!session){
+        if(!options.silent) toast('Canlı sistem için bayi portalı oturumu açın.');
+        return;
+      }
+      dealerSupabaseSyncInFlight=true;
+      try{
+        const cases=await dealerSupabaseRequest('/rest/v1/expertise_cases?select=id,work_order_no,status,opened_at,customer_summary,manager_approved_at,secretary_gate_ready,payment_gate_ready,kvkk_gate_ready,package_plans(code,name,duration_minutes),customers(full_name,phone,email,identity_number,customer_role),vehicles(plate,vin,brand,model,model_year,fuel_type,transmission,mileage_km,seller_type,arrival_note)&order=opened_at.desc');
+        const ids=(cases||[]).map(row=>row.id).filter(Boolean);
+        const tasks=ids.length?await dealerSupabaseRequest('/rest/v1/inspection_tasks?select=id,expertise_case_id,task_key,title,assigned_role,status,report_field_key,estimated_minutes,customer_friendly_note,risky_findings,owner_user_id,assigned_user_id&expertise_case_id=in.('+ids.join(',')+')&order=created_at.asc'):[];
+        const workOrders=(cases||[]).map(row=>dealerLiveWorkOrderFromCase(row,tasks));
+        const current=ensureDealerLiveData(DB.branches.find(b=>b.id===selectedBranchId)||DB.branches[0],DB.appointments);
+        const selected=options.selectSupabaseId?workOrders.find(w=>w.supabaseId===options.selectSupabaseId):null;
+        const activeId=selected?.id || (current.activeId&&workOrders.some(w=>w.id===current.activeId)?current.activeId:workOrders[0]?.id||'');
+        saveDealerLiveData({activeId,workOrders,lastNo:current.lastNo||842,source:'supabase',liveSyncedAt:new Date().toISOString()});
+        saveDealerSupabaseSyncState({lastSyncAt:new Date().toLocaleString('tr-TR',{dateStyle:'short',timeStyle:'short'}),lastCount:workOrders.length,lastError:''});
+        if(!options.silent) toast(workOrders.length+' canlı iş emri senkronize edildi.');
+        if(!options.noRender){renderAll();route('dealer');}
+      }catch(err){
+        saveDealerSupabaseSyncState({lastError:err.message||String(err)});
+        if(!options.silent) toast('Canlı senkron hatası: '+(err.message||err));
+      }finally{
+        dealerSupabaseSyncInFlight=false;
+      }
+    }
+    function dealerMaybeAutoSyncSupabase(){
+      const session=dealerSupabaseSession();
+      if(!session||dealerSupabaseSyncInFlight) return;
+      const state=dealerSupabaseSyncState();
+      const lastMs=state.lastSyncAtMs||0;
+      if(Date.now()-lastMs<30000) return;
+      saveDealerSupabaseSyncState({lastSyncAtMs:Date.now()});
+      dealerSyncSupabaseWorkOrders({silent:true,noRender:false});
+    }
+    async function dealerCreateSupabaseWorkOrder(data){
+      const parts=dealerLiveVehicleParts(data), createdId=await dealerSupabaseRequest('/rest/v1/rpc/create_branch_work_order',{
+        method:'POST',
+        body:JSON.stringify({
+          customer_full_name:data.customer||data.buyer||'Müşteri',
+          customer_phone:data.phone||'',
+          customer_email:'',
+          customer_identity_number:data.taxNo||'',
+          customer_role:data.customerType||'Musteri',
+          vehicle_plate:data.plate||'',
+          vehicle_vin:data.vin||'',
+          vehicle_brand:parts.brand,
+          vehicle_model:parts.model,
+          vehicle_year:Number(data.year)||new Date().getFullYear(),
+          vehicle_fuel_type:data.fuel||'',
+          vehicle_transmission:data.transmission||'',
+          vehicle_kilometers:dealerMileageNumber(data.mileage),
+          vehicle_seller_type:data.sellerType||'Bireysel',
+          vehicle_arrival_note:[data.source,data.seller].filter(Boolean).join(' | '),
+          package_type:dealerLivePackageCode(data.packageName),
+          work_order_notes:data.deliveryAt||''
+        })
+      });
+      await dealerSyncSupabaseWorkOrders({silent:true,selectSupabaseId:createdId,noRender:true});
+      return createdId;
+    }
+    function dealerSupabaseStatusPanel(){
+      const session=dealerSupabaseSession(), state=dealerSupabaseSyncState();
+      const store=dealerCurrentStore?.();
+      if(session){
+        return `<section class="dealer-form-section"><div class="dealer-section-head"><div><h3>Canlı Sistem Bağlantısı</h3><p>Supabase canlı veri açık. Bayi portalında oluşturulan iş emri mobil usta ekranına aynı database üzerinden düşer.</p></div><div class="quick-actions">${badge('Canlı bağlı')}${badge((state.lastCount??store?.workOrders?.length??0)+' kayıt')}${state.lastSyncAt?badge('Son: '+state.lastSyncAt):''}<button class="btn" data-dealer-live-sync>${icon('refresh-cw')}Canlı Yenile</button><button class="btn" data-dealer-live-disconnect>${icon('log-out')}Oturumu Kapat</button></div></div>${state.lastError?`<div class="dealer-wo-alert">${icon('triangle-alert')}Canlı bağlantı uyarısı: ${rpEsc(state.lastError)}</div>`:''}</section>`;
+      }
+      return `<section class="dealer-form-section"><div class="dealer-section-head"><div><h3>Canlı Sistem Bağlantısı</h3><p>Canlı iş emirlerini görmek ve webden açılan aracı mobile düşürmek için bayi kullanıcı oturumunu açın. Şifre dosyada saklanmaz.</p></div>${badge('Oturum gerekli')}</div><form class="dealer-workorder-form" data-dealer-live-login-form><div class="dealer-wo-form-grid"><label class="dealer-field"><span>E-posta</span><input name="email" autocomplete="username" placeholder="kullanici@ototr.test"></label><label class="dealer-field"><span>Şifre</span><input name="password" type="password" autocomplete="current-password" placeholder="Şifre"></label><button class="btn primary" type="submit">${icon('plug-zap')}Canlıya Bağlan</button></div></form>${state.lastError?`<div class="dealer-wo-alert">${icon('triangle-alert')}Son hata: ${rpEsc(state.lastError)}</div>`:''}</section>`;
+    }
+    window.dealerSyncSupabaseWorkOrders=dealerSyncSupabaseWorkOrders;
     const DEALER_VIN_MIGRATION='smart-vin-v1';
     const DEALER_PACKAGES={
       'Paket Bekliyor':{price:'0 TL',scope:['Hızlı kabul','Araç tanımlama','Paket seçimi bekliyor'],tasks:[
@@ -9336,7 +9543,21 @@
         return;
       }
       if(!options.skipNativeValidity&&!f.reportValidity()){const nativeStatus=dealerWorkOrderGateStatus(f,false);dealerShowWorkOrderMissingNotice(nativeStatus.missing);dealerFocusFirstInvalidWorkOrderField(f,nativeStatus.invalid);return;}
-      const data=Object.fromEntries(new FormData(f).entries()), store=ensureDealerLiveData(DB.branches.find(b=>b.id===selectedBranchId)||DB.branches[0],DB.appointments), no=(store.lastNo||842)+1, packageName=dealerPackageName(data.packageName), addonNames=dealerAddonNamesFromValue(data.addons), giftedAddonNames=dealerAddonNamesFromValue(data.addonGifts), createdAsFull=dealerIsFullWorkOrderMode(f);
+      const data=Object.fromEntries(new FormData(f).entries());
+      if(dealerSupabaseSession()){
+        try{
+          const createdId=await dealerCreateSupabaseWorkOrder(data);
+          saveDealerPortalState({tab:'aktif-is-emirleri',editingWorkOrderId:'',viewingWorkOrderId:''});
+          renderDealerPageOnly(); route('dealer');
+          toast('Canlı iş emri açıldı ve mobile gönderildi: '+createdId);
+        }catch(err){
+          saveDealerSupabaseSyncState({lastError:err.message||String(err)});
+          renderDealerPageOnly(); route('dealer');
+          toast('Canlı iş emri açılamadı: '+(err.message||err));
+        }
+        return;
+      }
+      const store=ensureDealerLiveData(DB.branches.find(b=>b.id===selectedBranchId)||DB.branches[0],DB.appointments), no=(store.lastNo||842)+1, packageName=dealerPackageName(data.packageName), addonNames=dealerAddonNamesFromValue(data.addons), giftedAddonNames=dealerAddonNamesFromValue(data.addonGifts), createdAsFull=dealerIsFullWorkOrderMode(f);
       const entryAt=new Date().toLocaleString('tr-TR',{dateStyle:'short',timeStyle:'short'});
       const loyaltyCalc=dealerPricing(packageName,addonNames,{name:data.customer,phone:data.phone,taxNo:data.taxNo,type:data.customerType||'Bireysel'},giftedAddonNames);
       const sellerLoyalty=dealerSellerLoyaltyProfile(data);
@@ -10075,6 +10296,7 @@
       return `<section class="dealer-form-section"><div class="dealer-detail-head"><div class="dealer-detail-title"><h3>İş Emri Detayı · ${rpEsc(wo.id)}</h3><p>${rpEsc(wo.plate)} · ${rpEsc(wo.vehicle)} · ${rpEsc(wo.customer)} · ${rpEsc(wo.packageName)}. Bu ekran canlı sistemde herkesin aynı iş emrine kendi yetkisi kadar dokunduğu ana dosyadır.</p></div><div class="dealer-detail-actions"><button class="btn" data-dealer-tab="usta">${icon('tablet-smartphone')}Usta Görevleri</button><button class="btn" data-dealer-center-request>${icon('messages-square')}Merkeze Talep</button><button class="btn" data-dealer-objection>${icon('rotate-ccw')}İtiraz Aç</button><button class="btn" data-dealer-return>${icon('undo-2')}Geri Gönder</button><button class="btn primary" data-dealer-approve>${icon('shield-check')}Müdür Onayı</button></div></div><div class="dealer-revision-strip">${revisions.map(r=>`<div><span>${r[0]}</span><b>${rpEsc(r[1])}</b></div>`).join('')}</div><div class="dealer-detail-grid">${detailCard('Müşteri Kabul ve Rıza',access.acceptance,[['Müşteri',wo.customer],['Telefon',wo.phone],['Alıcı / vekil',wo.buyer],['Satıcı',wo.seller],['KVKK / rıza',wo.consent],['Teslim hedefi',wo.deliveryAt]],'Bu alanı müşteri kabul veya şube müdürü düzenler. Usta ve kasa personeli teknik/ödeme sınırı dışına çıkamaz.')}${detailCard('Araç Kimliği',access.vehicle,[['Plaka',wo.plate],['Şasi',wo.vin],['Motor no',wo.engineNo],['Araç',wo.vehicle],['Model yılı',wo.year],['Kilometre',wo.mileage]],'Araç kimliği rapor no ve QR doğrulama ile eşleştiği için sadece kabul yetkisiyle değişir.')}${detailCard('Finans ve Teslim',access.finance,[['Paket',wo.packageName],['Paket tutarı',wo.price],['Ödeme durumu',wo.payment],['Ödeme tipi',wo.paymentMethod||'Seçilmedi'],['Fatura',wo.invoiceStatus||'Fatura bekliyor'],['Kasa',wo.cashClose||'Gün sonu bekliyor'],['Teslim',wo.secretaryPrinted?'Teslim edildi':'Teslim bekliyor']],'Usta ve müşteri kabul teknik süreç dışındaki tahsilat/fatura bilgisini değiştiremez.')}</div><div class="dealer-detail-grid"><div class="dealer-detail-card"><h4>Teknik Görev Özeti ${badge(access.technical?'Teknik erişim':'İzleme')}</h4>${dealerPortalTable(['Görev','Sorumlu','Durum','Kanıt','Not'],(wo.tasks||[]).map(t=>[rpEsc(t.station),rpEsc(t.owner),badge(t.status),(t.evidence||[]).join(', ')||'-',rpEsc(t.returnNote||t.result?.customerText||'Giriş bekliyor')]))}</div><div class="dealer-detail-card"><h4>Rapor Blokajları ${badge(completion.done+'/'+completion.total)}</h4><div class="dealer-block-rules" style="grid-template-columns:1fr">${blockRules.map(r=>`<div class="dealer-block-rule ${r[1]?'block':''}"><b>${r[1]?'Engel':'Uygun'}</b><span>${r[0]}</span></div>`).join('')}</div></div><div class="dealer-detail-card"><h4>Audit / Revizyon Geçmişi ${badge(audit.length+' kayıt')}</h4><div class="dealer-audit-list">${audit.slice(0,7).map(a=>`<div class="dealer-audit-item"><b>${rpEsc(a.actor)}</b><span>${rpEsc(a.action)}<br>${rpEsc(a.note||'')}</span><small>${rpEsc(a.at)}</small></div>`).join('')}</div></div></div></section>`;
     }
     function DealerTabletReportPage(){
+      dealerMaybeAutoSyncSupabase();
       const branch=DB.branches.find(b=>b.id===selectedBranchId)||DB.branches[0], appointments=DB.appointments.slice(0,6), dealerOps=ensureDealerLiveData(branch,appointments), workOrder=dealerActiveWorkOrder(dealerOps);
       syncDealerReportData(workOrder);
       const completion=dealerCompletion(workOrder), activeTasks=workOrder?.tasks||[], activeResults=activeTasks.map(t=>t.result).filter(Boolean), evidenceCount=activeTasks.reduce((s,t)=>s+(t.evidence?.length||0),0), ui=dealerPortalState(), roleCfg=DEALER_PORTAL_ROLES[ui.role], packageDef=dealerPackage(workOrder?.packageName), selectedTask=dealerSelectedTask(workOrder);
@@ -10167,7 +10389,7 @@
       const renderKokpit=()=>ui.role==='Şube Sahibi'?ownerDashboard():ui.role==='Müşteri Kabul / Sekreterya'?receptionDashboard():ui.role==='Muhasebe / Kasa'?cashierDashboard():(ui.role.includes('Usta')||ui.role==='Test Operatörü')?technicianDashboard():managerDashboard();
       const renderRandevular=()=>`${dealerAppointmentCalendar(true)}<section class="dealer-form-section"><div class="dealer-section-head"><div><h3>Randevu Listesi</h3><p>Telefon, WhatsApp, web, Google ve genel merkez kaynaklı randevular iş emrine çevrilir. 3 saat önce arama durumu müşteri bazında kaydedilir; mesai dışına düşen aramalar 08:30 açılış kuyruğuna alınır.</p></div>${badge('CRM bağlantılı')}</div>${dealerPortalTable(['Saat','Müşteri','Plaka','Araç','Paket','Randevu','Arama durumu','Aksiyon'],appointmentRows)}</section>`;
       const renderKampanyalar=()=>{const s=dealerCampaignSummary();return `<section class="dealer-form-section"><div class="dealer-section-head"><div><h3>Tanımlı Kampanyalar</h3><p>Genel merkez satış/pazarlama tarafından tanımlanan kampanyalar şube iş emri ekranındaki kampanya kodu alanına bağlanır.</p></div><div class="quick-actions"><button class="btn" data-route="marketing">${icon('megaphone')}Genel Merkez Kampanya</button><button class="btn primary" data-dealer-tab="is-emirleri">${icon('clipboard-plus')}İş Emrinde Kullan</button></div></div><div class="dealer-kpi-grid">${[['Aktif Kampanya',s.active,'Şubede kullanılabilir','normal'],['Toplam Bütçe',fmtTL(s.budget),'Genel merkez planı','normal'],['Hedef Lead',s.target,'Kampanya hedefi','normal'],['Gerçekleşen Lead',s.actual,'%'+pct(s.actual,s.target)+' gerçekleşme','normal']].map(k=>`<div class="dealer-kpi-card ${k[3]}"><span>${k[0]}</span><b>${k[1]}</b><small>${k[2]}</small></div>`).join('')}</div><div class="dealer-ops-grid" style="margin-top:12px">${s.rows.map(c=>`<div class="dealer-panel actionable"><h3>${rpEsc(c.name)}</h3>${dealerMiniRows([['Kod',c.code,'İş emri'],['Kapsam',c.goal+' · '+c.branch,c.status],['Kanal',c.channel,fmtTL(c.budget)],['Lead',c.actual+' / '+c.target,'%'+pct(c.actual,c.target)]])}<div class="quick-actions" style="margin-top:10px"><button class="micro-btn" data-dealer-tab="is-emirleri">Kodu Kullan</button><button class="micro-btn" data-route="marketing">Merkez Detayı</button></div></div>`).join('')}</div></section>`};
-      const renderAktifIsEmirleri=()=>`<section class="dealer-form-section"><div class="dealer-section-head"><div><h3>Aktif İş Emirleri</h3><p>Şubedeki kapanmamış iş emirleri burada izlenir; satır veya Detay butonu iş emri ilerlemesini, alt bölüm de rapor JSON noktalarını açar.</p></div><div class="quick-actions">${badge(activeWorkOrderRows.length+' açık kayıt')}${badge(workOrder?.id||'Seçili iş emri yok')}</div></div>${dealerPortalTable(['İş emri','Plaka','Müşteri','Paket','Durum','Giriş Saati','Toplam %','Aksiyon'],activeWorkOrderRows)}</section>${dealerActiveWorkOrderProgressPanel(workOrder,ui.role)}`;
+      const renderAktifIsEmirleri=()=>`${dealerSupabaseStatusPanel()}<section class="dealer-form-section"><div class="dealer-section-head"><div><h3>Aktif İş Emirleri</h3><p>Şubedeki kapanmamış iş emirleri burada izlenir; satır veya Detay butonu iş emri ilerlemesini, alt bölüm de rapor JSON noktalarını açar.</p></div><div class="quick-actions">${badge(activeWorkOrderRows.length+' açık kayıt')}${badge(workOrder?.id||'Seçili iş emri yok')}</div></div>${dealerPortalTable(['İş emri','Plaka','Müşteri','Paket','Durum','Giriş Saati','Toplam %','Aksiyon'],activeWorkOrderRows)}</section>${dealerActiveWorkOrderProgressPanel(workOrder,ui.role)}`;
       const renderIsEmirleri=()=>`<section class="dealer-form-section"><div class="dealer-section-head"><div><h3>İş Emri Pipeline</h3><p>Her iş emri silinmez; iptal, revizyon, itiraz veya kapatma durumuna alınır.</p></div>${badge(workOrder?.id||'Aktif iş emri yok')}</div><div class="dealer-pipeline">${pipeline.map((p,i)=>`<div class="dealer-pipeline-step ${i<currentStep?'done':i===currentStep?'current':i===5&&completion.done<completion.total?'blocked':''}"><b>${i+1}. ${p}</b><span>${i===currentStep?'Aktif durum':'Süreç kapısı'}</span></div>`).join('')}</div>${dealerPortalTable(['İş emri','Plaka','Müşteri','Paket','Durum','Giriş Saati','Tamamlanma','Aksiyon'],workOrderRows)}</section><section class="dealer-live-grid"><div class="card"><div class="card-head"><div><div class="card-title">${workOrder?'İş Emri Bilgileri':'İş Emri Oluştur'}</div><div class="card-sub">${workOrder?'Aktif iş emrindeki müşteri, araç, paket ve teslim bilgilerini düzenle.':'Paket seçimine göre görevler otomatik oluşur; teknik görevler ustalara düşer.'}</div></div>${workOrder?`<button class="btn primary" data-dealer-edit-workorder>${icon('file-pen-line')}Düzenle</button>`:`<button class="btn primary" data-dealer-create-work-order>${icon('play-circle')}İş Emri Aç</button>`}</div><form id="dealerWorkOrderForm" class="dealer-workorder-form" data-workorder-locked="${workOrder?'1':'0'}"><fieldset class="dealer-workorder-fieldset" ${workOrder?'disabled':''}>${dealerField('Müşteri adı',workOrder?.customer||'Hasan Kaya','','wide').replace('<input','<input name="customer" required')}${dealerField('Telefon',workOrder?.phone||'0530 100 10 20').replace('<input','<input name="phone" required')}${dealerField('Paket','Mini Ekspertiz|Standart Ekspertiz|Full Ekspertiz|OTOTR Premium 360','select','',workOrder?.packageName||'Mini Ekspertiz').replace('<select','<select name="packageName"')}${dealerField('Plaka',workOrder?.plate||'34 SLA 018').replace('<input','<input name="plate" required')}${dealerField('Araç',workOrder?.vehicle||'Mercedes C200 AMG','','wide').replace('<input','<input name="vehicle" required')}${dealerField('Model yılı',workOrder?.year||'2022').replace('<input','<input name="year"')}${dealerField('Giriş km',dealerFormatMileageInput(workOrder?.mileage||'76400')).replace('class="dealer-field ','class="dealer-field dealer-mileage-field ').replace('<input','<input name="mileage" inputmode="numeric" autocomplete="off" data-dealer-mileage-input')}${dealerField('Şasi no',workOrder?.vin||'W1KAF4HB8NR123456','','wide').replace('<input','<input name="vin"')}${dealerField('Motor no',workOrder?.engineNo||'M264920123456').replace('<input','<input name="engineNo"')}${dealerField('Şube',workOrder?.branchName||branch.name).replace('<input','<input name="branchName"')}${dealerField('Alıcı / vekil',workOrder?.buyer||workOrder?.customer||'Hasan Kaya').replace('<input','<input name="buyer"')}${dealerField('Satıcı',workOrder?.seller||'Deniz Yılmaz').replace('<input','<input name="seller"')}${dealerField('Kaynak','Bayi ekranı|Web / WhatsApp|CRM randevu','select','',workOrder?.source||'Bayi ekranı').replace('<select','<select name="source"')}${dealerField('Ödeme durumu','Tahsil edildi|Bekliyor|Kısmi ödeme|Kapora alındı|İade edildi','select','',workOrder?.payment||'Tahsil edildi').replace('<select','<select name="payment"')}${dealerField('Ödeme tipi','POS / Kredi Kartı|Nakit|Havale / EFT|Karma|Açık Hesap|Bekliyor','select','',workOrder?.paymentMethod||'POS / Kredi Kartı').replace('<select','<select name="paymentMethod"')}${dealerField('KVKK / rıza','İmzalandı|Bekliyor','select','',workOrder?.consent||'İmzalandı').replace('<select','<select name="consent"')}${dealerField('Teslim hedefi',workOrder?.deliveryAt||'Bugün 14:30').replace('<input','<input name="deliveryAt"')}</fieldset></form><div class="dealer-block-rules" style="margin-top:12px"><div class="dealer-block-rule"><b>Sadakat önerisi</b><span>${activeLoyalty.name} · ${activeLoyalty.tier} · ${activeLoyalty.visits} geliş · önerilen indirim %${activeLoyalty.discount}</span>${badge(fmtTL(activeDiscount.gross)+' > '+fmtTL(activeDiscount.net))}</div>${acceptanceChecks.map(r=>`<div class="dealer-block-rule ${r[2]==='Blokaj'&&r[1]==='Eksik'?'block':''}"><b>${rpEsc(r[0])}</b><span>${rpEsc(r[1])}</span>${badge(r[2])}</div>`).join('')}</div></div><div class="card"><div class="card-head"><div><div class="card-title">Paket Kapsamı</div><div class="card-sub">${workOrder?.packageName} seçilince ${activeTasks.length} görev açıldı · tamamlanma %${completion.pct}</div></div>${badge('%'+completion.pct)}${badge(workOrder?.status||'Hazır')}</div><div class="progress"><div class="bar ${completion.pct>=100?'green':completion.pct>=50?'amber':'red'}" style="width:${completion.pct}%"></div></div>${dealerPackageHealthBoard(activeTasks)}<div class="package-scope">${packageDef.scope.map((s,i)=>dealerPackageScopeCard(packageDef,activeTasks,i,s)).join('')}</div></div></section>${dealerWorkOrderDetail(workOrder,ui.role,completion,evidenceCount,blockRules)}`;
       const renderIsEmirleriUX=()=>{
         const pkgNames=['Mini Ekspertiz','Esnaf Ekspertiz','Standart Ekspertiz','Full Ekspertiz','OTOTR Premium 360'];
@@ -10204,7 +10426,7 @@
         const modelPreviewSection=`<section class="dealer-wo-card dealer-wo-reception-card dealer-wo-data-model-card"><div class="dealer-wo-card-head"><div class="dealer-wo-step">11</div><h3>Canlı Sisteme Gidecek Veri Modeli</h3></div><div class="dealer-model-preview" data-dealer-model-preview></div></section>`;
         const missing=[['Müşteri Ad Soyad',!!workOrder?.customer],['Telefon',!!workOrder?.phone],['Araç Model',!!(workOrder?.vehicle||selectedModel)],['KVKK Onayı',workOrder?.consent==='İmzalandı']];
         const packageScope='';
-        return `<section class="dealer-wo-screen"><div class="dealer-wo-main"><div class="dealer-wo-kpis">${[['calendar-plus','Bugünkü Randevu',String(appointments.length||18),'Randevu ve sıra akışı',''],['users-round','Bekleyen Müşteri','4','Şu an şubede','amber'],['clock-3','Ort. Bekleme','12 dk','Hedef altında','blue'],['shield-check','SLA Durumu','%96','Hedef: %95','green']].map(k=>`<div class="dealer-wo-kpi ${k[4]}"><div class="dealer-wo-kpi-icon">${icon(k[0])}</div><div><span>${k[1]}</span><b>${k[2]}</b><small>${k[3]}</small></div></div>`).join('')}</div><form id="dealerWorkOrderForm" class="dealer-workorder-form dealer-wo-form ${formModeClass}" data-workorder-locked="${formReadOnly?'1':'0'}"><fieldset class="dealer-workorder-fieldset dealer-wo-fieldset" ${formReadOnly?'disabled':''}><div class="dealer-wo-grid"><section class="dealer-wo-card"><div class="dealer-wo-card-head"><div class="dealer-wo-step">1</div><h3>Müşteri Bilgileri</h3></div><div class="dealer-wo-form-grid">${field('Ad Soyad','customer',selectedWo?.customer==='Alıcı bilgisi bekliyor'?'':selectedWo?.customer||modeDraft.customer||'')}${field('Telefon','phone',selectedWo?.phone||modeDraft.phone||'')}${field('T.C. / Vergi No','taxNo',selectedWo?.taxNo||modeDraft.taxNo||'')}${field('Müşteri Tipi','customerType',selectedWo?.customerType||modeDraft.customerType||'','select',['Bireysel','Kurumsal','Galeri'])}${field('İletişim İzni','contactPermission',selectedWo?.contactPermission||modeDraft.contactPermission||'','select',['Evet','Hayır'])}${dealerLoyaltyStripMarkup(initialPricing.loyalty)}</div></section><section class="dealer-wo-card"><div class="dealer-wo-card-head"><div class="dealer-wo-step">2</div><h3>Araç Bilgileri</h3></div><div class="dealer-wo-form-grid">${field('Plaka *','plate',selectedWo?.plate||modeDraft.plate||'')}${field('Şasi No *','vin',selectedWo?.vin||modeDraft.vin||'')}${field('Motor No','engineNo',selectedWo?.engineNo||modeDraft.engineNo||'')}${field('Marka *','vehicleMake',selectedMake,'select',Object.keys(DEALER_VEHICLE_CATALOG))}${field('Model *','vehicleModel',selectedModel,'select',DEALER_VEHICLE_CATALOG[selectedMake]||[])}${field('Alt Paket','vehicleVariant',selectedVariant,'select',dealerVehicleVariantsFor(selectedMake,selectedModel))}${field('Model Yılı *','year',selectedWo?.year||modeDraft.year||'')}${field('Giriş KM','mileage',dealerFormatMileageInput(selectedWo?.mileage||modeDraft.mileage||''))}${field('Yakıt Tipi','fuel',selectedWo?.fuel||modeDraft.fuel||'','select',DEALER_FUEL_TYPES)}${field('Vites Tipi','transmission',selectedWo?.transmission||modeDraft.transmission||'','select',DEALER_TRANSMISSION_TYPES)}<input type="hidden" name="vehicle" value="${rpEsc(dealerVehicleFromParts(selectedMake,selectedModel,selectedVariant))}">${field('Yedek Anahtar','spareKey',selectedWo?.spareKey||modeDraft.spareKey||'','select',['Var','Yok'])}</div></section><section class="dealer-wo-card"><div class="dealer-wo-card-head"><div class="dealer-wo-step">3</div><h3>Hizmet / Paket Seçimi</h3></div><div class="dealer-wo-packages">${pkgCard('Mini Ekspertiz','car','Motor, fren ve süspansiyon kontrolü')}${pkgCard('Esnaf Ekspertiz','briefcase-business','Esnaf/galeri hızlı al-sat kontrolü')}${pkgCard('Standart Ekspertiz','star','Mini + detaylı mekanik kontrol')}${pkgCard('Full Ekspertiz','shield-check','Standart + elektronik kontrol')}${pkgCard('OTOTR Premium 360','gem','Full + kaporta/boya ve 360 kapsam')}</div><input type="hidden" name="packageName" value="${rpEsc(selectedPkg)}"></section><input type="hidden" name="branchName" value="${rpEsc(selectedWo?.branchName||modeDraft.branchName||branch.name)}"><input type="hidden" name="source" value="${rpEsc(selectedWo?.source||modeDraft.source||'Bayi ekranı')}"><input type="hidden" name="deliveryAt" value="${rpEsc(selectedWo?.deliveryAt||modeDraft.deliveryAt||'Bugün 14:30')}"><input type="hidden" name="density" value="${rpEsc(modeDraft.density||'Orta')}"><section class="dealer-wo-card"><div class="dealer-wo-card-head"><div class="dealer-wo-step">4</div><h3>Ek Hizmetler</h3></div><div class="dealer-wo-addons">${DEALER_ADDON_OPTIONS.map(a=>`<div class="dealer-wo-addon ${selectedAddonNames.includes(a.name)?'selected':''}" role="button" tabindex="0" data-dealer-addon-choice="${rpEsc(a.name)}" data-addon-price="${a.price}">${icon(a.icon)}<b>${rpEsc(a.name)}</b><span>${fmtTL(a.price)}</span></div>`).join('')}</div><input type="hidden" name="addons" value="${rpEsc(selectedAddonValue)}"></section><section class="dealer-wo-card"><div class="dealer-wo-card-head"><div class="dealer-wo-step">5</div><h3>Ödeme ve Onay</h3></div><div class="dealer-wo-payment"><div class="dealer-wo-summary"><h4>Ücret Özeti</h4><div><span>Seçilen Paket</span><b data-summary="package">${fmtTL(initialPricing.packageGross)}</b></div><div><span>Ek Hizmetler</span><b data-summary="addons">${initialPricing.addonTotal?fmtTL(initialPricing.addonTotal):'₺0'}</b></div><div><span>Sadakat indirimi</span><b data-summary="discount">${initialPricing.discountAmount?'-'+fmtTL(initialPricing.discountAmount):'₺0'}</b></div><div class="total"><span>Toplam</span><b data-summary="total">${fmtTL(initialPricing.net)}</b></div></div><div class="dealer-wo-payment-controls"><div class="dealer-wo-control-panel">${field('Ödeme','payment',selectedWo?.payment||modeDraft.payment||'Tahsil edildi','select',['Tahsil edildi','Bekliyor','Kısmi ödeme'])}</div><div class="dealer-wo-control-panel">${field('Ödeme Yöntemi','paymentMethod',selectedWo?.paymentMethod||modeDraft.paymentMethod||'POS / Kredi Kartı','select',['POS / Kredi Kartı','Nakit','Havale'])}</div><div class="dealer-wo-control-panel">${field('KVKK / Rıza','consent',selectedWo?.consent||modeDraft.consent||'İmzalandı','select',['İmzalandı','Bekliyor'])}</div></div></div></section></div><div class="dealer-wo-alert">${icon('triangle-alert')}Zorunlu alanlar ve rıza/ödeme kontrolleri tamamlanmadan rapor teslim kapısı açılmaz.</div><section class="dealer-wo-card dealer-wo-pipeline-card"><div class="dealer-wo-card-head"><div class="dealer-wo-step">6</div><h3>İş Emri Pipeline</h3></div><div class="dealer-pipeline">${pipeline.map((p,i)=>`<div class="dealer-pipeline-step ${i<currentStep?'done':i===currentStep?'current':i===5&&completion.done<completion.total?'blocked':''}"><b>${i+1}. ${p}</b><span>${i===currentStep?'Aktif durum':'Süreç kapısı'}</span></div>`).join('')}</div></section><section class="dealer-wo-card dealer-wo-table"><div class="dealer-wo-card-head"><div class="dealer-wo-step">7</div><h3>Aktif İş Emirleri</h3></div>${dealerPortalTable(['İş emri','Plaka','Müşteri','Paket','Durum','Giriş Saati','Tamamlanma','Aksiyon'],workOrderRows)}</section></fieldset></form><div class="dealer-wo-bottom"><button class="btn" data-dealer-create-work-order>${icon('save')}Taslak Kaydet</button><button class="btn" data-dealer-calendar-modal-open>${icon('calendar-plus')}Randevu Oluştur</button><button class="btn primary" ${formReadOnly?`data-dealer-update-wo="${rpEsc(selectedWo?.id||'')}"`:'data-dealer-create-work-order'}>${icon(formReadOnly?'file-pen-line':'clipboard-plus')}${formReadOnly?(dealerWorkOrderNeedsFullCompletion(selectedWo)?'Tam İş Emri Aç':'Düzenle'):'İş Emrini Aç'}</button><button class="btn" data-dealer-tab="rapor">${icon('file-search')}PDF Önizleme</button></div>${dealerWorkOrderDetail(workOrder,ui.role,completion,evidenceCount,blockRules)}</div><aside class="dealer-wo-side"><div class="dealer-wo-side-title"><span>${icon('lightbulb')} Hızlı Öneriler</span>${badge(workOrder?.id||'Yeni')}</div><div class="dealer-wo-advice green"><h4>${icon('shield-check')}Uygun Paket Önerisi</h4><p>${activeLoyalty.name} için ${activeLoyalty.tier} sadakat seviyesi var. Önerilen net fiyat: ${fmtTL(activeDiscount?.net||pkgPrice(selectedPkg))}.</p><a href="#" data-dealer-tab="crm">Müşteri geçmişini gör</a></div><div class="dealer-wo-advice amber"><h4>${icon('users-round')}Yoğunluk Uyarısı</h4><p>10:00 - 12:00 arası yoğun. Randevu yoğunluğu orta seviyede; teslim hedefini 14:30 sonrası tutmak güvenli.</p><a href="#" data-dealer-calendar-modal-open>Randevu takvimini aç</a></div><div class="dealer-wo-advice yellow"><h4>${icon('triangle-alert')}Eksik Bilgiler</h4><ul>${missing.map(m=>`<li>${rpEsc(m[0])}: ${m[1]?'Tamam':'Eksik'}</li>`).join('')}</ul></div><div class="dealer-wo-advice blue"><h4>${icon('route')}Müşteri Yolculuğu</h4><div class="dealer-wo-journey"><div class="active">${icon('user-round')}<span>Karşılama</span></div><div>${icon('list')}<span>Bilgi</span></div><div>${icon('calendar-days')}<span>Randevu</span></div><div>${icon('file-text')}<span>İş Emri</span></div></div></div>${packageScope}</aside></section>`;
+        return `${dealerSupabaseStatusPanel()}<section class="dealer-wo-screen"><div class="dealer-wo-main"><div class="dealer-wo-kpis">${[['calendar-plus','Bugünkü Randevu',String(appointments.length||18),'Randevu ve sıra akışı',''],['users-round','Bekleyen Müşteri','4','Şu an şubede','amber'],['clock-3','Ort. Bekleme','12 dk','Hedef altında','blue'],['shield-check','SLA Durumu','%96','Hedef: %95','green']].map(k=>`<div class="dealer-wo-kpi ${k[4]}"><div class="dealer-wo-kpi-icon">${icon(k[0])}</div><div><span>${k[1]}</span><b>${k[2]}</b><small>${k[3]}</small></div></div>`).join('')}</div><form id="dealerWorkOrderForm" class="dealer-workorder-form dealer-wo-form ${formModeClass}" data-workorder-locked="${formReadOnly?'1':'0'}"><fieldset class="dealer-workorder-fieldset dealer-wo-fieldset" ${formReadOnly?'disabled':''}><div class="dealer-wo-grid"><section class="dealer-wo-card"><div class="dealer-wo-card-head"><div class="dealer-wo-step">1</div><h3>Müşteri Bilgileri</h3></div><div class="dealer-wo-form-grid">${field('Ad Soyad','customer',selectedWo?.customer==='Alıcı bilgisi bekliyor'?'':selectedWo?.customer||modeDraft.customer||'')}${field('Telefon','phone',selectedWo?.phone||modeDraft.phone||'')}${field('T.C. / Vergi No','taxNo',selectedWo?.taxNo||modeDraft.taxNo||'')}${field('Müşteri Tipi','customerType',selectedWo?.customerType||modeDraft.customerType||'','select',['Bireysel','Kurumsal','Galeri'])}${field('İletişim İzni','contactPermission',selectedWo?.contactPermission||modeDraft.contactPermission||'','select',['Evet','Hayır'])}${dealerLoyaltyStripMarkup(initialPricing.loyalty)}</div></section><section class="dealer-wo-card"><div class="dealer-wo-card-head"><div class="dealer-wo-step">2</div><h3>Araç Bilgileri</h3></div><div class="dealer-wo-form-grid">${field('Plaka *','plate',selectedWo?.plate||modeDraft.plate||'')}${field('Şasi No *','vin',selectedWo?.vin||modeDraft.vin||'')}${field('Motor No','engineNo',selectedWo?.engineNo||modeDraft.engineNo||'')}${field('Marka *','vehicleMake',selectedMake,'select',Object.keys(DEALER_VEHICLE_CATALOG))}${field('Model *','vehicleModel',selectedModel,'select',DEALER_VEHICLE_CATALOG[selectedMake]||[])}${field('Alt Paket','vehicleVariant',selectedVariant,'select',dealerVehicleVariantsFor(selectedMake,selectedModel))}${field('Model Yılı *','year',selectedWo?.year||modeDraft.year||'')}${field('Giriş KM','mileage',dealerFormatMileageInput(selectedWo?.mileage||modeDraft.mileage||''))}${field('Yakıt Tipi','fuel',selectedWo?.fuel||modeDraft.fuel||'','select',DEALER_FUEL_TYPES)}${field('Vites Tipi','transmission',selectedWo?.transmission||modeDraft.transmission||'','select',DEALER_TRANSMISSION_TYPES)}<input type="hidden" name="vehicle" value="${rpEsc(dealerVehicleFromParts(selectedMake,selectedModel,selectedVariant))}">${field('Yedek Anahtar','spareKey',selectedWo?.spareKey||modeDraft.spareKey||'','select',['Var','Yok'])}</div></section><section class="dealer-wo-card"><div class="dealer-wo-card-head"><div class="dealer-wo-step">3</div><h3>Hizmet / Paket Seçimi</h3></div><div class="dealer-wo-packages">${pkgCard('Mini Ekspertiz','car','Motor, fren ve süspansiyon kontrolü')}${pkgCard('Esnaf Ekspertiz','briefcase-business','Esnaf/galeri hızlı al-sat kontrolü')}${pkgCard('Standart Ekspertiz','star','Mini + detaylı mekanik kontrol')}${pkgCard('Full Ekspertiz','shield-check','Standart + elektronik kontrol')}${pkgCard('OTOTR Premium 360','gem','Full + kaporta/boya ve 360 kapsam')}</div><input type="hidden" name="packageName" value="${rpEsc(selectedPkg)}"></section><input type="hidden" name="branchName" value="${rpEsc(selectedWo?.branchName||modeDraft.branchName||branch.name)}"><input type="hidden" name="source" value="${rpEsc(selectedWo?.source||modeDraft.source||'Bayi ekranı')}"><input type="hidden" name="deliveryAt" value="${rpEsc(selectedWo?.deliveryAt||modeDraft.deliveryAt||'Bugün 14:30')}"><input type="hidden" name="density" value="${rpEsc(modeDraft.density||'Orta')}"><section class="dealer-wo-card"><div class="dealer-wo-card-head"><div class="dealer-wo-step">4</div><h3>Ek Hizmetler</h3></div><div class="dealer-wo-addons">${DEALER_ADDON_OPTIONS.map(a=>`<div class="dealer-wo-addon ${selectedAddonNames.includes(a.name)?'selected':''}" role="button" tabindex="0" data-dealer-addon-choice="${rpEsc(a.name)}" data-addon-price="${a.price}">${icon(a.icon)}<b>${rpEsc(a.name)}</b><span>${fmtTL(a.price)}</span></div>`).join('')}</div><input type="hidden" name="addons" value="${rpEsc(selectedAddonValue)}"></section><section class="dealer-wo-card"><div class="dealer-wo-card-head"><div class="dealer-wo-step">5</div><h3>Ödeme ve Onay</h3></div><div class="dealer-wo-payment"><div class="dealer-wo-summary"><h4>Ücret Özeti</h4><div><span>Seçilen Paket</span><b data-summary="package">${fmtTL(initialPricing.packageGross)}</b></div><div><span>Ek Hizmetler</span><b data-summary="addons">${initialPricing.addonTotal?fmtTL(initialPricing.addonTotal):'₺0'}</b></div><div><span>Sadakat indirimi</span><b data-summary="discount">${initialPricing.discountAmount?'-'+fmtTL(initialPricing.discountAmount):'₺0'}</b></div><div class="total"><span>Toplam</span><b data-summary="total">${fmtTL(initialPricing.net)}</b></div></div><div class="dealer-wo-payment-controls"><div class="dealer-wo-control-panel">${field('Ödeme','payment',selectedWo?.payment||modeDraft.payment||'Tahsil edildi','select',['Tahsil edildi','Bekliyor','Kısmi ödeme'])}</div><div class="dealer-wo-control-panel">${field('Ödeme Yöntemi','paymentMethod',selectedWo?.paymentMethod||modeDraft.paymentMethod||'POS / Kredi Kartı','select',['POS / Kredi Kartı','Nakit','Havale'])}</div><div class="dealer-wo-control-panel">${field('KVKK / Rıza','consent',selectedWo?.consent||modeDraft.consent||'İmzalandı','select',['İmzalandı','Bekliyor'])}</div></div></div></section></div><div class="dealer-wo-alert">${icon('triangle-alert')}Zorunlu alanlar ve rıza/ödeme kontrolleri tamamlanmadan rapor teslim kapısı açılmaz.</div><section class="dealer-wo-card dealer-wo-pipeline-card"><div class="dealer-wo-card-head"><div class="dealer-wo-step">6</div><h3>İş Emri Pipeline</h3></div><div class="dealer-pipeline">${pipeline.map((p,i)=>`<div class="dealer-pipeline-step ${i<currentStep?'done':i===currentStep?'current':i===5&&completion.done<completion.total?'blocked':''}"><b>${i+1}. ${p}</b><span>${i===currentStep?'Aktif durum':'Süreç kapısı'}</span></div>`).join('')}</div></section><section class="dealer-wo-card dealer-wo-table"><div class="dealer-wo-card-head"><div class="dealer-wo-step">7</div><h3>Aktif İş Emirleri</h3></div>${dealerPortalTable(['İş emri','Plaka','Müşteri','Paket','Durum','Giriş Saati','Tamamlanma','Aksiyon'],workOrderRows)}</section></fieldset></form><div class="dealer-wo-bottom"><button class="btn" data-dealer-create-work-order>${icon('save')}Taslak Kaydet</button><button class="btn" data-dealer-calendar-modal-open>${icon('calendar-plus')}Randevu Oluştur</button><button class="btn primary" ${formReadOnly?`data-dealer-update-wo="${rpEsc(selectedWo?.id||'')}"`:'data-dealer-create-work-order'}>${icon(formReadOnly?'file-pen-line':'clipboard-plus')}${formReadOnly?(dealerWorkOrderNeedsFullCompletion(selectedWo)?'Tam İş Emri Aç':'Düzenle'):'İş Emrini Aç'}</button><button class="btn" data-dealer-tab="rapor">${icon('file-search')}PDF Önizleme</button></div>${dealerWorkOrderDetail(workOrder,ui.role,completion,evidenceCount,blockRules)}</div><aside class="dealer-wo-side"><div class="dealer-wo-side-title"><span>${icon('lightbulb')} Hızlı Öneriler</span>${badge(workOrder?.id||'Yeni')}</div><div class="dealer-wo-advice green"><h4>${icon('shield-check')}Uygun Paket Önerisi</h4><p>${activeLoyalty.name} için ${activeLoyalty.tier} sadakat seviyesi var. Önerilen net fiyat: ${fmtTL(activeDiscount?.net||pkgPrice(selectedPkg))}.</p><a href="#" data-dealer-tab="crm">Müşteri geçmişini gör</a></div><div class="dealer-wo-advice amber"><h4>${icon('users-round')}Yoğunluk Uyarısı</h4><p>10:00 - 12:00 arası yoğun. Randevu yoğunluğu orta seviyede; teslim hedefini 14:30 sonrası tutmak güvenli.</p><a href="#" data-dealer-calendar-modal-open>Randevu takvimini aç</a></div><div class="dealer-wo-advice yellow"><h4>${icon('triangle-alert')}Eksik Bilgiler</h4><ul>${missing.map(m=>`<li>${rpEsc(m[0])}: ${m[1]?'Tamam':'Eksik'}</li>`).join('')}</ul></div><div class="dealer-wo-advice blue"><h4>${icon('route')}Müşteri Yolculuğu</h4><div class="dealer-wo-journey"><div class="active">${icon('user-round')}<span>Karşılama</span></div><div>${icon('list')}<span>Bilgi</span></div><div>${icon('calendar-days')}<span>Randevu</span></div><div>${icon('file-text')}<span>İş Emri</span></div></div></div>${packageScope}</aside></section>`;
       };
       const renderUsta=()=>`${dealerInspectionCatalogPanel('compact')}<section class="dealer-command"><div class="grid"><div class="dealer-form-section"><div class="dealer-section-head"><div><h3>Usta Görevleri</h3><p>Usta sadece kendine atanmış teknik alanı düzenler; finans ve ödeme bilgisi görmez.</p></div>${badge(`${completion.done}/${completion.total} tamam`)}</div>${dealerPortalTable(['Görev','Usta / rol','Kapsam','Durum','Rapora düşen müşteri dili','Kanıt','Aksiyon'],taskRows)}</div><div class="dealer-form-section"><div class="dealer-section-head"><div><h3>Teknik Giriş Formları</h3><p>Kaporta, mekanik, OBD ve test girişleri aynı kanıt standardına bağlanır.</p></div>${badge('Tablet uyumlu')}</div><div class="station-grid">${activeTasks.map(t=>`<article class="station-card ${dealerTaskStatusClass(t.status)} ${t.id===selectedTask?.id?'active-task':''}"><div class="station-meta"><span>${rpEsc(t.owner)}</span><span>${rpEsc(t.status)}</span></div><b>${rpEsc(t.station)}</b><div class="station-checks">${[t.scope,'Fotoğraf / cihaz kanıtı zorunlu',t.result?.customerText||t.returnNote||'Usta girişi bekleniyor'].map(c=>`<div class="station-check">${icon('check-circle-2')}<span>${rpEsc(c)}</span></div>`).join('')}</div><button class="micro-btn" data-dealer-open-task="${t.id}">${t.id===selectedTask?.id?'Form Açık':'Formu Aç'}</button></article>`).join('')}</div></div>${dealerTabletStationForm(selectedTask,ui.role)}</div><div class="tablet-frame"><div class="tablet-screen"><div class="tablet-top"><div><b>Tablet Modu</b><div class="card-sub">${workOrder?.plate} · ${workOrder?.vehicle}</div></div>${badge(selectedTask?.station||'Araç başı')}</div><div class="dealer-mobile-actions"><button class="btn primary" data-dealer-complete-task="${selectedTask?.id||activeTasks[0]?.id}">${icon('check')}Tamamla</button><button class="btn" data-dealer-missing-task="${selectedTask?.id||activeTasks[0]?.id}">${icon('circle-alert')}Eksik Bildir</button><button class="btn" data-dealer-add-evidence="${selectedTask?.id||activeTasks[0]?.id}">${icon('image-plus')}Kanıt Ekle</button></div><div class="tablet-steps">${activeTasks.map((t,i)=>`<div class="tablet-step ${dealerTaskStatusClass(t.status)}"><div class="step-num">${i+1}</div><div><b>${rpEsc(t.station)}</b><span class="card-sub">${rpEsc(t.scope)}</span></div>${badge(t.id===selectedTask?.id?'Açık':dealerTaskBadge(t.status))}</div>`).join('')}</div></div></div></section>`;
       const renderRapor=()=>`<section class="dealer-form-section"><div class="dealer-section-head"><div><h3>Rapor Merkezi ve Sekreterya Teslimi</h3><p>Müdür onayından sonra teknik alanlar kilitlenir; sekreterya PDF basım, QR gönderim, bayi/müşteri nüshası ve teslim kanıtını kapatır.</p></div><div class="quick-actions"><button class="btn primary" data-dealer-approve>${icon('shield-check')}Müdür Onayı</button>${dealerReportPrintButton(workOrder,completion,'PDF Bas / QR Teslim')}<button class="btn" data-dealer-return>${icon('undo-2')}Ustaya Geri Gönder</button></div></div>${dealerPortalTable(['Rapor no','Plaka','Müşteri','Paket','Durum','Revizyon','QR / Teslim','Aksiyon'],dealerOps.workOrders.map(w=>({attrs:'data-route="report-design" class="dealer-click-row" role="button" tabindex="0"',cells:[w.reportNo,w.plate,w.customer,w.packageName,badge(w.status),w.managerApproved?'Teknik kilitli · v'+(w.revisionNo||1):'Taslak · v'+(w.revisionNo||1),w.qrSent?'QR gönderildi':'Gönderim bekliyor',`<button class="micro-btn" data-route="report-design">Raporu Aç</button>`]})))}<div class="dealer-ops-grid" style="margin-top:12px"><div class="dealer-panel"><h3>Müdür Onay Blokajları</h3>${dealerMiniRows((approvalBlockers.length?approvalBlockers:['Onay için blokaj görünmüyor.']).slice(0,6).map((x,i)=>[i?'Kural':'Durum',x,approvalBlockers.length?'Blokaj':'Uygun']))}</div><div class="dealer-panel"><h3>Sekreterya Basım Kuyruğu</h3>${dealerMiniRows([['Müşteri nüshası',dealerReportPrintGate(workOrder,completion).ready?'PDF basıma hazır':'Basım kapısı kapalı',dealerReportPrintGate(workOrder,completion).ready?'Hazır':'Bekliyor'],['Bayi nüshası','İmza, kabul ve arşiv kopyası','Hazır'],['QR link',workOrder?.qrSent?'Gönderildi':'Gönderim bekliyor',workOrder?.qrSent?'Tamam':'Bekliyor'],['Teslim kanıtı',workOrder?.deliveryProof||'Teslim imzası / dijital kayıt bekliyor',workOrder?.secretaryPrinted?'Kapalı':'Açık']])}</div></div><div class="dealer-block-rules" style="margin-top:12px">${blockRules.map(r=>`<div class="dealer-block-rule ${r[1]?'block':''}"><b>${r[1]?'Blokaj':'Kural'}</b><span>${r[0]}</span>${badge(r[1]?'Engel':'Uygun')}</div>`).join('')}</div></section>`;
@@ -13876,6 +14098,23 @@
         showRiskImpactDetail(riskEl);
         return;
       }
+      const dealerLiveSyncEl=e.target.closest('[data-dealer-live-sync]');
+      if(dealerLiveSyncEl){
+        e.preventDefault();
+        e.stopPropagation();
+        dealerSyncSupabaseWorkOrders({silent:false});
+        return;
+      }
+      const dealerLiveDisconnectEl=e.target.closest('[data-dealer-live-disconnect]');
+      if(dealerLiveDisconnectEl){
+        e.preventDefault();
+        e.stopPropagation();
+        localStorage.removeItem(DEALER_SUPABASE_SESSION_KEY);
+        saveDealerSupabaseSyncState({lastError:'',lastCount:0});
+        renderAll(); route('dealer');
+        toast('Canlı portal oturumu kapatıldı.');
+        return;
+      }
       const dealerCreateEl=e.target.closest('[data-dealer-create-work-order]');
       if(dealerCreateEl){
         e.preventDefault();
@@ -15331,6 +15570,23 @@
           rerenderAcademyRoom();
           if(typeof toast==='function') toast('Academy canlıya hazırlık tikleri sıfırlandı.');
         }
+      }
+    });
+    document.addEventListener('submit',async e=>{
+      const form=e.target.closest('[data-dealer-live-login-form]');
+      if(!form) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const data=Object.fromEntries(new FormData(form).entries());
+      try{
+        await dealerSupabaseSignIn(data.email,data.password);
+        await dealerSyncSupabaseWorkOrders({silent:true,noRender:true});
+        renderAll(); route('dealer');
+        toast('Canlı sistem bağlantısı açıldı.');
+      }catch(err){
+        saveDealerSupabaseSyncState({lastError:err.message||String(err)});
+        renderAll(); route('dealer');
+        toast('Canlı bağlantı hatası: '+(err.message||err));
       }
     });
     root.addEventListener('change',e=>{
