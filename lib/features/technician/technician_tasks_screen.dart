@@ -39,6 +39,14 @@ class _TechnicianTasksScreenState extends State<TechnicianTasksScreen> {
       final order = repository.getById(widget.workOrderId);
       final role = repository.currentTechnicianRole;
       final tasks = order.tasksFor(role);
+      for (final task in tasks) {
+        if (task.status == TaskStatus.completed) {
+          AppRepositories.instance.clearOptimisticTaskCompleted(
+            widget.workOrderId,
+            task.taskId,
+          );
+        }
+      }
 
       return _TechnicianTasksView(
         order: order,
@@ -131,6 +139,14 @@ class _RemoteTechnicianTasksScreenState
         final order = snapshot.data!;
         final role = widget.repository.currentTechnicianRole;
         final tasks = order.tasksFor(role);
+        for (final task in tasks) {
+          if (task.status == TaskStatus.completed) {
+            AppRepositories.instance.clearOptimisticTaskCompleted(
+              widget.workOrderId,
+              task.taskId,
+            );
+          }
+        }
 
         return _TechnicianTasksView(
           order: order,
@@ -188,11 +204,11 @@ class _TechnicianTasksView extends StatelessWidget {
   Widget build(BuildContext context) {
     final pendingTasks = [
       for (final task in tasks)
-        if (task.status != TaskStatus.completed) task,
+        if (!_isCompleted(task)) task,
     ];
     final completedTasks = [
       for (final task in tasks)
-        if (task.status == TaskStatus.completed) task,
+        if (_isCompleted(task)) task,
     ];
 
     return Scaffold(
@@ -237,6 +253,7 @@ class _TechnicianTasksView extends StatelessWidget {
                   ? null
                   : (reason) => onRelease!(task.taskId, reason),
               onTaskChanged: onTaskChanged,
+              isOptimisticCompleted: _isOptimisticCompleted(task),
             ),
           if (completedTasks.isNotEmpty) ...[
             const SizedBox(height: 4),
@@ -253,6 +270,7 @@ class _TechnicianTasksView extends StatelessWidget {
                 onClaim: null,
                 onRelease: null,
                 onTaskChanged: onTaskChanged,
+                isOptimisticCompleted: _isOptimisticCompleted(task),
               ),
           ],
           OtotrSecondaryButton(
@@ -268,6 +286,17 @@ class _TechnicianTasksView extends StatelessWidget {
       ),
     );
   }
+
+  bool _isOptimisticCompleted(TechnicianTask task) {
+    return AppRepositories.instance.isOptimisticTaskCompleted(
+      workOrderId,
+      task.taskId,
+    );
+  }
+
+  bool _isCompleted(TechnicianTask task) {
+    return task.status == TaskStatus.completed || _isOptimisticCompleted(task);
+  }
 }
 
 class _TaskProgressCard extends StatelessWidget {
@@ -279,6 +308,7 @@ class _TaskProgressCard extends StatelessWidget {
     this.onClaim,
     this.onRelease,
     this.onTaskChanged,
+    this.isOptimisticCompleted = false,
   });
 
   final TechnicianTask task;
@@ -288,6 +318,7 @@ class _TaskProgressCard extends StatelessWidget {
   final Future<void> Function()? onClaim;
   final Future<void> Function(String reason)? onRelease;
   final VoidCallback? onTaskChanged;
+  final bool isOptimisticCompleted;
 
   @override
   Widget build(BuildContext context) {
@@ -295,7 +326,8 @@ class _TaskProgressCard extends StatelessWidget {
     final isOwnedByCurrentUser = task.isOwnedBy(currentUser.id);
     final isReadOnly = task.isOwned && !canEdit;
     final canClaim = isUnlocked && task.isAvailableForClaim && onClaim != null;
-    final isCompletedStatus = task.status == TaskStatus.completed;
+    final isCompletedStatus =
+        task.status == TaskStatus.completed || isOptimisticCompleted;
     final canOpenForm =
         isUnlocked && (canEdit || isReadOnly || isCompletedStatus);
     final canOpenByTap = canClaim || canOpenForm;

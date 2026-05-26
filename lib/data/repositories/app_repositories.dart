@@ -40,11 +40,33 @@ class AppRepositories {
   BranchWorkOrderRepository branchWorkOrders =
       const _UnavailableBranchWorkOrderRepository();
   String? liveConnectionError;
+  final Map<String, Set<String>> _optimisticCompletedTaskIds = {};
 
   bool get hasRemoteWorkOrders => remoteWorkOrders != null;
 
   bool get hasLocalTestWorkOrders =>
       localWorkOrders is! _UnavailableWorkOrderRepository;
+
+  void markOptimisticTaskCompleted(String workOrderId, String taskId) {
+    final taskIds =
+        _optimisticCompletedTaskIds.putIfAbsent(workOrderId, () => <String>{});
+    taskIds.add(taskId);
+  }
+
+  bool isOptimisticTaskCompleted(String workOrderId, String taskId) {
+    return _optimisticCompletedTaskIds[workOrderId]?.contains(taskId) ?? false;
+  }
+
+  void clearOptimisticTaskCompleted(String workOrderId, String taskId) {
+    final taskIds = _optimisticCompletedTaskIds[workOrderId];
+    if (taskIds == null) {
+      return;
+    }
+    taskIds.remove(taskId);
+    if (taskIds.isEmpty) {
+      _optimisticCompletedTaskIds.remove(workOrderId);
+    }
+  }
 
   Future<void> configureSupabase({
     SupabaseConfig config = SupabaseConfig.fromEnvironment,

@@ -730,6 +730,10 @@ class _TechnicianTaskFormScreenState extends State<TechnicianTaskFormScreen> {
     final hasPendingAllGood = _hasPendingAllGood;
     final pendingAllGoodInputValues = _pendingAllGoodInputValues;
 
+    AppRepositories.instance.markOptimisticTaskCompleted(
+      widget.workOrderId,
+      task.taskId,
+    );
     setState(() => _isSubmitting = true);
     unawaited(_submitTaskInBackground(
       task: task,
@@ -782,6 +786,10 @@ class _TechnicianTaskFormScreenState extends State<TechnicianTaskFormScreen> {
             savedTask.copyWith(status: TaskStatus.completed),
           );
         }
+        AppRepositories.instance.clearOptimisticTaskCompleted(
+          widget.workOrderId,
+          task.taskId,
+        );
         return;
       }
 
@@ -798,11 +806,19 @@ class _TechnicianTaskFormScreenState extends State<TechnicianTaskFormScreen> {
             savedTask.copyWith(status: TaskStatus.completed),
           );
         }
+        AppRepositories.instance.clearOptimisticTaskCompleted(
+          widget.workOrderId,
+          task.taskId,
+        );
         return;
       }
 
       throw StateError('Canli veri baglantisi yok.');
     } catch (error) {
+      AppRepositories.instance.clearOptimisticTaskCompleted(
+        widget.workOrderId,
+        task.taskId,
+      );
       debugPrint('Arka plan başlık gönderimi başarısız: ');
     }
   }
