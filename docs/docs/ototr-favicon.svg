@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="OTOTR">
+  <defs>
+    <linearGradient id="bg" x1="8" y1="6" x2="58" y2="62" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#061f3d"/>
+      <stop offset=".58" stop-color="#082b52"/>
+      <stop offset="1" stop-color="#020b17"/>
+    </linearGradient>
+    <linearGradient id="shine" x1="10" y1="8" x2="54" y2="56" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffffff" stop-opacity=".18"/>
+      <stop offset=".45" stop-color="#ffffff" stop-opacity=".04"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#bg)"/>
+  <rect x="3" y="3" width="58" height="58" rx="12" fill="url(#shine)" stroke="#ffffff" stroke-opacity=".22" stroke-width="2"/>
+  <path d="M0 52 12 64H0Z" fill="#e30613"/>
+  <path d="M12 64 28 64 0 38 0 52Z" fill="#b80000"/>
+  <text x="6.5" y="38" font-family="Inter, Arial, Helvetica, sans-serif" font-size="18" font-weight="950" letter-spacing="-1.6">
+    <tspan fill="#ffffff">OTO</tspan><tspan fill="#e30613">TR</tspan>
+  </text>
+  <rect x="7" y="44" width="50" height="2.3" rx="1.15" fill="#ff8a00"/>
+</svg>

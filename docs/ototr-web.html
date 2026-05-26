@@ -1,0 +1,3236 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OTOTR | Yeni Nesil Tarafsız Araç Ekspertizi</title>
+  <meta name="description" content="OTOTR; karekod doğrulamalı dijital rapor, merkezi kalite denetimi, TSE/HYB uyumlu operasyon ve sigortalı ekspertiz yaklaşımıyla yeni nesil oto ekspertiz markasıdır.">
+  <meta name="ototr-web-version" content="SVK WEB v1.3.2-location-disabled">
+  <style>
+    :root {
+      --bg: #ffffff;
+      --bg-2: #f7f9fc;
+      --panel: rgba(255,255,255,.075);
+      --panel-strong: rgba(255,255,255,.11);
+      --paper: #f5f7fb;
+      --white: #ffffff;
+      --ink: #111827;
+      --muted: #9aa4b2;
+      --muted-dark: #5b6472;
+      --line: rgba(255,255,255,.14);
+      --line-light: #e4e7ec;
+      --red: #d71920;
+      --red-2: #ff3b30;
+      --red-soft: #fff1f2;
+      --red-line: #ffd6d9;
+      --metal: #c9d1dc;
+      --green: #1dbf73;
+      --amber: #f59e0b;
+      --blue: #38bdf8;
+      --shadow: 0 24px 70px rgba(0,0,0,.28);
+      --soft-shadow: 0 18px 42px rgba(17,24,39,.12);
+      --radius: 22px;
+      --radius-sm: 16px;
+      --max: 1180px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 10% 0%, rgba(215,25,32,.12), transparent 28%),
+        radial-gradient(circle at 88% 6%, rgba(215,25,32,.08), transparent 26%),
+        linear-gradient(180deg, #ffffff 0%, #f7f9fc 58%, #eef2f7 100%);
+    }
+
+    body.locked { overflow: hidden; }
+    a { color: inherit; text-decoration: none; }
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      border-bottom: 1px solid rgba(215,25,32,.12);
+      background: rgba(255,255,255,.94);
+      backdrop-filter: blur(18px);
+      box-shadow: 0 12px 34px rgba(17,24,39,.08);
+    }
+
+    .nav {
+      width: 100%;
+      padding: 8px 16px;
+      display: grid;
+      grid-template-columns: auto minmax(0,1fr) auto;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      min-width: max-content;
+    }
+
+    .brand-mark {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(145deg, #d71920, #ff3b30);
+      color: #fff;
+      font-weight: 950;
+      box-shadow: inset 0 -4px 0 rgba(17,24,39,.18);
+      letter-spacing: -.02em;
+    }
+
+    .brand b {
+      display: block;
+      font-size: 15px;
+      letter-spacing: .08em;
+      color: var(--ink);
+    }
+
+    .brand span {
+      display: block;
+      color: var(--muted-dark);
+      font-size: 10px;
+      margin-top: 1px;
+      font-weight: 800;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      justify-self: center;
+      max-width: 100%;
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
+      min-width: 0;
+    }
+
+    .nav-links a,
+    .nav-drop-toggle {
+      min-height: 40px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      border: 0;
+      background: transparent;
+      color: #293241;
+      font-size: 13px;
+      font-weight: 850;
+      padding: 10px 12px;
+      border-radius: 8px;
+      white-space: nowrap;
+      transition: background .18s ease, color .18s ease;
+    }
+
+    .nav-links a span,
+    .nav-links a b {
+      display: inline;
+      color: inherit;
+      font-size: inherit;
+      line-height: 1;
+      text-transform: none;
+      letter-spacing: 0;
+      font-weight: inherit;
+    }
+
+    .nav-links a:hover,
+    .nav-drop-toggle:hover {
+      background: var(--red-soft);
+      color: var(--red);
+    }
+
+    .nav-dropdown {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .nav-caret {
+      width: 8px;
+      height: 8px;
+      border-right: 2px solid currentColor;
+      border-bottom: 2px solid currentColor;
+      transform: rotate(45deg) translateY(-2px);
+      opacity: .65;
+    }
+
+    .nav-dropdown-menu {
+      position: absolute;
+      top: calc(100% + 10px);
+      left: 0;
+      z-index: 40;
+      min-width: 210px;
+      border: 1px solid rgba(17,24,39,.10);
+      border-radius: 14px;
+      background: #fff;
+      box-shadow: 0 18px 46px rgba(17,24,39,.14);
+      padding: 8px;
+      display: grid;
+      gap: 2px;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(6px);
+      transition: opacity .16s ease, transform .16s ease, visibility .16s ease;
+    }
+
+    .nav-dropdown:hover .nav-dropdown-menu,
+    .nav-dropdown:focus-within .nav-dropdown-menu {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    .nav-dropdown-menu a {
+      min-height: 36px;
+      justify-content: flex-start;
+      width: 100%;
+      padding: 10px 11px;
+      border-radius: 10px;
+      color: #344054;
+      font-size: 13px;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      justify-content: flex-end;
+      min-width: max-content;
+      border: 1px solid rgba(215,25,32,.12);
+      border-radius: 999px;
+      background: rgba(255,255,255,.88);
+      padding: 4px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.92), 0 14px 34px rgba(17,24,39,.08);
+    }
+
+    .menu-btn {
+      display: none;
+      width: 36px;
+      height: 36px;
+      border: 1px solid rgba(215,25,32,.16);
+      background: #fff;
+      color: var(--ink);
+      border-radius: 10px;
+      font-weight: 950;
+      box-shadow: none;
+      transition: background .18s ease, border-color .18s ease, color .18s ease;
+    }
+
+    .menu-btn:hover {
+      color: var(--red);
+      background: var(--red-soft);
+      border-color: rgba(215,25,32,.28);
+    }
+
+    .menu-btn:active {
+      background: #ffe7e9;
+    }
+
+    .nav-actions .btn {
+      min-height: 36px;
+      padding: 8px 12px;
+      font-size: 12px;
+    }
+
+    .nav-secondary {
+      border-color: transparent;
+      background: transparent;
+      color: #344054;
+      box-shadow: none;
+    }
+
+    .nav-secondary:hover {
+      background: #f6f8fb;
+      color: var(--red);
+      border-color: transparent;
+      box-shadow: none;
+    }
+
+    .nav-primary {
+      padding-right: 10px;
+      position: relative;
+    }
+
+    .nav-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 0 4px rgba(29,191,115,.13);
+    }
+
+    .nav-arrow {
+      display: none;
+    }
+
+    .btn {
+      position: relative;
+      isolation: isolate;
+      overflow: hidden;
+      border: 1px solid rgba(215,25,32,.18);
+      background: #fff;
+      color: var(--ink);
+      border-radius: 10px;
+      min-height: 42px;
+      padding: 11px 16px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      font-size: 13px;
+      font-weight: 850;
+      line-height: 1;
+      white-space: nowrap;
+      letter-spacing: 0;
+      box-shadow: none;
+      transform: translateZ(0);
+      transition: background .18s ease, border-color .18s ease, color .18s ease, transform .18s ease;
+    }
+
+    .btn:before {
+      content: none;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      background: var(--red-soft);
+      border-color: rgba(215,25,32,.30);
+      box-shadow: none;
+    }
+
+    .btn:active {
+      transform: translateY(0);
+      background: #ffe7e9;
+      box-shadow: none;
+    }
+
+    .btn:focus-visible,
+    .menu-btn:focus-visible,
+    .online-card:focus-visible {
+      outline: 3px solid rgba(215,25,32,.18);
+      outline-offset: 3px;
+    }
+
+    .btn.primary {
+      border-color: var(--red);
+      background: var(--red);
+      color: #fff;
+      box-shadow: none;
+    }
+
+    .btn.primary:hover {
+      border-color: #b90f18;
+      background: #b90f18;
+      box-shadow: none;
+    }
+
+    .btn.light {
+      border-color: #d8dde6;
+      background: #fff;
+      color: var(--ink);
+    }
+
+    .btn.light:hover {
+      color: var(--red);
+      border-color: rgba(215,25,32,.25);
+    }
+
+    .btn.dark {
+      border-color: #111827;
+      background: #111827;
+      color: #fff;
+      box-shadow: none;
+    }
+
+    .btn.dark:hover {
+      border-color: #0b1220;
+      background: #0b1220;
+      box-shadow: none;
+    }
+
+    .btn.primary:not(.nav-primary):after,
+    .btn.dark:after {
+      content: none;
+      display: none;
+    }
+
+    .btn.primary:not(.nav-primary):hover:after,
+    .btn.dark:hover:after {
+      transform: none;
+    }
+
+    .section {
+      padding: 74px 20px;
+      color: var(--ink);
+      background: var(--paper);
+    }
+
+    .section.dark {
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 82% 0%, rgba(215,25,32,.10), transparent 26%),
+        radial-gradient(circle at 8% 12%, rgba(215,25,32,.06), transparent 28%),
+        linear-gradient(180deg, #ffffff, #f7f9fc);
+    }
+
+    .inner {
+      max-width: var(--max);
+      margin: 0 auto;
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 18px;
+      margin-bottom: 22px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      width: max-content;
+      border: 1px solid rgba(215,25,32,.24);
+      border-radius: 999px;
+      background: rgba(215,25,32,.08);
+      color: #b42318;
+      padding: 7px 10px;
+      font-size: 11px;
+      font-weight: 950;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    .dark .eyebrow,
+    .hero .eyebrow {
+      border-color: rgba(215,25,32,.24);
+      background: rgba(215,25,32,.08);
+      color: #b42318;
+    }
+
+    h1, h2, h3, p { margin-top: 0; }
+    h1 {
+      max-width: 900px;
+      font-size: clamp(44px, 8vw, 92px);
+      line-height: .9;
+      letter-spacing: -.04em;
+      margin: 16px 0;
+      text-wrap: balance;
+    }
+
+    h2 {
+      font-size: clamp(28px, 4vw, 46px);
+      line-height: 1.02;
+      letter-spacing: -.03em;
+      margin-bottom: 10px;
+      text-wrap: balance;
+    }
+
+    .dark h2,
+    .dark .section-head h2 { color: var(--ink); }
+
+    .lead {
+      max-width: 760px;
+      color: var(--muted-dark);
+      line-height: 1.62;
+      margin: 0;
+    }
+
+    .dark .lead,
+    .hero .lead { color: var(--muted-dark); }
+
+    .hero {
+      position: relative;
+      min-height: calc(92vh - 51px);
+      display: grid;
+      align-items: center;
+      padding: 78px 20px 48px;
+      overflow: hidden;
+      background:
+        linear-gradient(100deg, rgba(255,255,255,.98) 0 45%, rgba(255,255,255,.88) 63%, rgba(255,255,255,.48) 100%),
+        radial-gradient(circle at 14% 16%, rgba(215,25,32,.14), transparent 28%),
+        url("https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?auto=format&fit=crop&w=2200&q=84") center/cover;
+    }
+
+    .hero:before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(rgba(215,25,32,.045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(215,25,32,.04) 1px, transparent 1px),
+        radial-gradient(circle at 82% 22%, rgba(215,25,32,.16), transparent 28%);
+      background-size: 52px 52px, 52px 52px, auto;
+      mask-image: linear-gradient(180deg, rgba(0,0,0,.82), rgba(0,0,0,.36));
+      pointer-events: none;
+      mix-blend-mode: normal;
+    }
+
+    .hero:after {
+      content: "";
+      position: absolute;
+      inset: auto 0 0;
+      height: 150px;
+      background: linear-gradient(180deg, transparent, #f5f7fb);
+      pointer-events: none;
+    }
+
+    .hero-grid {
+      position: relative;
+      z-index: 1;
+      max-width: var(--max);
+      margin: 0 auto;
+      width: 100%;
+      display: grid;
+      grid-template-columns: minmax(0,1.04fr) minmax(340px,.48fr);
+      gap: 34px;
+      align-items: center;
+    }
+
+    .hero-copy p {
+      max-width: 820px;
+      color: #344054;
+      font-size: 17px;
+      line-height: 1.68;
+    }
+
+    .hero-copy h1 {
+      color: var(--ink);
+      text-shadow: none;
+    }
+
+    .hero-copy h1 span {
+      display: block;
+      color: var(--red);
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 24px;
+    }
+
+    .trust-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 24px;
+      max-width: 850px;
+    }
+
+    .trust-badge {
+      border: 1px solid rgba(215,25,32,.14);
+      background: rgba(255,255,255,.86);
+      backdrop-filter: blur(14px);
+      border-radius: 999px;
+      padding: 8px 11px;
+      color: #344054;
+      font-size: 12px;
+      font-weight: 850;
+    }
+
+    .hero-card {
+      border: 1px solid rgba(215,25,32,.18);
+      background: rgba(255,255,255,.88);
+      backdrop-filter: blur(20px);
+      border-radius: 24px;
+      padding: 18px;
+      box-shadow: 0 24px 70px rgba(17,24,39,.15);
+      color: var(--ink);
+    }
+
+    .hero-card h3 { font-size: 18px; margin-bottom: 10px; }
+    .hero-card p { color: var(--muted-dark); line-height: 1.5; margin-bottom: 14px; }
+
+    .quick-form {
+      display: grid;
+      gap: 10px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid #dce2eb;
+      background: #fff;
+      color: var(--ink);
+      border-radius: 14px;
+      padding: 12px;
+      outline: none;
+    }
+
+    .hero-card input,
+    .hero-card select {
+      border-color: #dce2eb;
+      background: rgba(255,255,255,.94);
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: rgba(215,25,32,.62);
+      box-shadow: 0 0 0 4px rgba(215,25,32,.11);
+    }
+
+    .metric-row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap: 9px;
+      margin-top: 12px;
+    }
+
+    .metric {
+      border: 1px solid rgba(215,25,32,.14);
+      background: var(--red-soft);
+      border-radius: 16px;
+      padding: 12px;
+      min-height: 82px;
+    }
+
+    .metric b { display: block; font-size: 22px; color: var(--red); }
+    .metric span { display: block; color: var(--muted-dark); font-size: 11px; line-height: 1.35; margin-top: 4px; }
+
+    .hero-stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap: 10px;
+      max-width: 720px;
+      margin-top: 26px;
+    }
+
+    .hero-stat {
+      border: 1px solid rgba(215,25,32,.14);
+      background: rgba(255,255,255,.84);
+      border-radius: 18px;
+      padding: 14px;
+      backdrop-filter: blur(14px);
+    }
+
+    .hero-stat b {
+      display: block;
+      color: var(--red);
+      font-size: clamp(22px, 3vw, 34px);
+      line-height: 1;
+      letter-spacing: -.03em;
+    }
+
+    .hero-stat span {
+      display: block;
+      margin-top: 6px;
+      color: var(--muted-dark);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .trust-ticker {
+      overflow: hidden;
+      border-top: 1px solid var(--red-line);
+      border-bottom: 1px solid var(--red-line);
+      background: #fff;
+      color: #344054;
+      padding: 13px 0;
+    }
+
+    .trust-ticker-track {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 42px;
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    .trust-ticker span {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      white-space: nowrap;
+      font-size: 12px;
+      font-weight: 850;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+
+    .trust-ticker span:before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--red);
+      box-shadow: 0 0 0 5px rgba(215,25,32,.10);
+    }
+
+    .online-panel {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .online-intro {
+      border: 1px solid var(--red-line);
+      border-radius: 24px;
+      background:
+        linear-gradient(180deg, rgba(215,25,32,.08), rgba(255,255,255,.96)),
+        #fff;
+      padding: 24px;
+      box-shadow: var(--soft-shadow);
+      display: grid;
+      align-content: space-between;
+      gap: 18px;
+    }
+
+    .online-intro h2 {
+      margin-bottom: 12px;
+    }
+
+    .online-summary {
+      display: grid;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .online-summary span {
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      gap: 9px;
+      align-items: start;
+      color: #475467;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .online-summary span:before {
+      content: "";
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-top: 5px;
+      background: var(--red);
+      box-shadow: 0 0 0 5px rgba(215,25,32,.09);
+    }
+
+    .online-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0,1fr));
+      gap: 12px;
+    }
+
+    .online-card {
+      min-height: 150px;
+      border: 1px solid var(--line-light);
+      border-radius: 20px;
+      background: #fff;
+      padding: 16px;
+      box-shadow: 0 12px 30px rgba(17,24,39,.07);
+      display: grid;
+      align-content: space-between;
+      gap: 14px;
+      text-align: left;
+      color: inherit;
+      transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+    }
+
+    .online-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(215,25,32,.32);
+      box-shadow: var(--soft-shadow);
+    }
+
+    .online-card:active {
+      transform: translateY(0) scale(.99);
+      box-shadow: 0 10px 22px rgba(17,24,39,.09);
+    }
+
+    .online-card strong {
+      width: 42px;
+      height: 42px;
+      border-radius: 15px;
+      display: grid;
+      place-items: center;
+      background: var(--red-soft);
+      color: var(--red);
+      border: 1px solid var(--red-line);
+      font-size: 13px;
+    }
+
+    .online-card b {
+      display: block;
+      color: var(--ink);
+      font-size: 15px;
+      margin-bottom: 6px;
+    }
+
+    .online-card span {
+      display: block;
+      color: var(--muted-dark);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .download-panel {
+      border: 1px solid var(--red-line);
+      border-radius: 28px;
+      background:
+        linear-gradient(120deg, rgba(255,255,255,.98), rgba(255,241,242,.88)),
+        #fff;
+      box-shadow: var(--soft-shadow);
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(280px, .65fr);
+      gap: 22px;
+      align-items: center;
+      padding: 30px;
+    }
+
+    .download-copy h2 {
+      margin: 12px 0;
+    }
+
+    .download-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 18px;
+    }
+
+    .download-meta span {
+      border: 1px solid rgba(215,25,32,.15);
+      border-radius: 999px;
+      background: rgba(255,255,255,.82);
+      color: #344054;
+      padding: 8px 11px;
+      font-size: 12px;
+      font-weight: 850;
+    }
+
+    .download-action {
+      border: 1px solid var(--line-light);
+      border-radius: 22px;
+      background: #fff;
+      padding: 20px;
+      box-shadow: 0 14px 32px rgba(17,24,39,.08);
+      display: grid;
+      gap: 14px;
+    }
+
+    .download-file {
+      display: grid;
+      grid-template-columns: 48px 1fr;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .download-file strong {
+      width: 48px;
+      height: 48px;
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      background: var(--red-soft);
+      color: var(--red);
+      border: 1px solid var(--red-line);
+      font-size: 14px;
+    }
+
+    .download-file b {
+      display: block;
+      color: var(--ink);
+      font-size: 15px;
+      margin-bottom: 4px;
+      word-break: break-word;
+    }
+
+    .download-file span {
+      color: var(--muted-dark);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .download-status {
+      min-height: 18px;
+      color: var(--muted-dark);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap: 16px;
+    }
+
+    .grid.four { grid-template-columns: repeat(4, minmax(0,1fr)); }
+
+    .vehicle-count-panel {
+      border: 1px solid var(--red-line);
+      border-radius: 28px;
+      background:
+        linear-gradient(135deg, rgba(255,255,255,.98), rgba(255,241,242,.80)),
+        #fff;
+      box-shadow: var(--soft-shadow);
+      padding: 24px;
+      display: grid;
+      gap: 18px;
+    }
+
+    .vehicle-count-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      align-items: end;
+    }
+
+    .vehicle-count-head h2 {
+      margin: 10px 0 0;
+    }
+
+    .vehicle-count-head p {
+      max-width: 520px;
+      color: var(--muted-dark);
+      line-height: 1.55;
+      margin: 0;
+      font-size: 14px;
+    }
+
+    .vehicle-count-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0,1fr));
+      gap: 12px;
+    }
+
+    .vehicle-count-card {
+      border: 1px solid var(--line-light);
+      border-radius: 20px;
+      background: #fff;
+      padding: 18px;
+      box-shadow: 0 12px 28px rgba(17,24,39,.07);
+    }
+
+    .vehicle-count-card b {
+      display: block;
+      color: var(--red);
+      font-size: clamp(28px, 4vw, 44px);
+      line-height: 1;
+      letter-spacing: -.04em;
+      margin-bottom: 8px;
+    }
+
+    .vehicle-count-card b .vehicle-counter {
+      font: inherit;
+      color: inherit;
+    }
+
+    .vehicle-count-card b .vehicle-counter-suffix {
+      color: inherit;
+      font-size: .82em;
+      margin-left: 1px;
+    }
+
+    .vehicle-count-card span {
+      display: block;
+      color: var(--ink);
+      font-size: 14px;
+      font-weight: 900;
+      line-height: 1.25;
+    }
+
+    .vehicle-count-card small {
+      display: block;
+      color: var(--muted-dark);
+      font-size: 12px;
+      line-height: 1.45;
+      margin-top: 7px;
+    }
+
+    .testimonials-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap: 16px;
+    }
+
+    .testimonial-card {
+      border: 1px solid var(--line-light);
+      border-radius: 22px;
+      background: #fff;
+      box-shadow: var(--soft-shadow);
+      padding: 20px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .testimonial-stars {
+      color: var(--red);
+      letter-spacing: .08em;
+      font-size: 13px;
+      font-weight: 950;
+    }
+
+    .testimonial-card p {
+      color: #344054;
+      line-height: 1.6;
+      margin: 0;
+      font-size: 14px;
+    }
+
+    .testimonial-person {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding-top: 4px;
+    }
+
+    .testimonial-avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: var(--red-soft);
+      color: var(--red);
+      border: 1px solid var(--red-line);
+      font-weight: 950;
+      font-size: 13px;
+    }
+
+    .testimonial-person b {
+      display: block;
+      font-size: 14px;
+      color: var(--ink);
+    }
+
+    .testimonial-person span {
+      display: block;
+      color: var(--muted-dark);
+      font-size: 12px;
+      margin-top: 2px;
+    }
+
+    .glass-card,
+    .card {
+      border: 1px solid var(--line-light);
+      background: rgba(255,255,255,.88);
+      backdrop-filter: blur(16px);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--soft-shadow);
+      color: var(--ink);
+    }
+
+    .card {
+      border-color: var(--line-light);
+      background: #fff;
+      color: var(--ink);
+      box-shadow: var(--soft-shadow);
+    }
+
+    .card:hover,
+    .glass-card:hover {
+      transform: translateY(-2px);
+      transition: transform .18s ease;
+    }
+
+    .icon-pill {
+      width: 44px;
+      height: 44px;
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, var(--red), var(--red-2));
+      color: #fff;
+      font-weight: 950;
+      margin-bottom: 16px;
+    }
+
+    .card h3,
+    .glass-card h3 {
+      margin-bottom: 8px;
+      font-size: 19px;
+      letter-spacing: -.01em;
+    }
+
+    .card p,
+    .glass-card p {
+      color: var(--muted-dark);
+      line-height: 1.58;
+      margin-bottom: 0;
+      font-size: 14px;
+    }
+
+    .glass-card p { color: var(--muted-dark); }
+
+    .expertise-layout {
+      display: grid;
+      grid-template-columns: minmax(0,1fr) 320px;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .expertise-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap: 14px;
+    }
+
+    .expertise-card,
+    .side-note {
+      border-radius: 22px;
+      border: 1px solid var(--line-light);
+      background: #fff;
+      box-shadow: var(--soft-shadow);
+      padding: 20px;
+    }
+
+    .expertise-card {
+      display: grid;
+      grid-template-columns: 54px 1fr;
+      gap: 14px;
+      align-items: start;
+      min-height: 176px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .expertise-card:after {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto;
+      height: 4px;
+      background: linear-gradient(90deg, var(--red), var(--red-2));
+    }
+
+    .expertise-icon {
+      width: 54px;
+      height: 54px;
+      border-radius: 18px;
+      display: grid;
+      place-items: center;
+      background: var(--red-soft);
+      color: var(--red);
+      font-weight: 950;
+      border: 1px solid var(--red-line);
+    }
+
+    .expertise-card h3,
+    .side-note h3 {
+      color: var(--ink);
+      font-size: 18px;
+      margin: 0 0 8px;
+      letter-spacing: -.01em;
+    }
+
+    .expertise-card p,
+    .side-note p {
+      color: var(--muted-dark);
+      line-height: 1.58;
+      margin: 0;
+      font-size: 14px;
+    }
+
+    .side-note {
+      position: sticky;
+      top: 78px;
+      background:
+        linear-gradient(180deg, rgba(215,25,32,.06), rgba(255,255,255,.96)),
+        #fff;
+    }
+
+    .side-note ul {
+      margin: 16px 0 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 10px;
+    }
+
+    .side-note li {
+      display: grid;
+      grid-template-columns: 26px 1fr;
+      gap: 9px;
+      color: #475467;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .side-note li:before {
+      content: "";
+      width: 10px;
+      height: 10px;
+      margin-top: 5px;
+      border-radius: 50%;
+      background: var(--red);
+      box-shadow: 0 0 0 5px rgba(215,25,32,.09);
+    }
+
+    .package-layout {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0,1fr));
+      gap: 14px;
+    }
+
+    .package-card {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--line-light);
+      border-radius: 24px;
+      background: #fff;
+      color: var(--ink);
+      padding: 18px;
+      box-shadow: var(--soft-shadow);
+      display: grid;
+      gap: 12px;
+    }
+
+    .package-card.featured {
+      background:
+        linear-gradient(145deg, rgba(215,25,32,.10), rgba(255,255,255,.96)),
+        #fff;
+      color: var(--ink);
+      border-color: rgba(215,25,32,.30);
+    }
+
+    .package-card.featured p,
+    .package-card.featured li,
+    .package-card.featured small { color: #475467; }
+
+    .package-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: start;
+    }
+
+    .tag {
+      display: inline-flex;
+      width: max-content;
+      border-radius: 999px;
+      padding: 6px 9px;
+      font-size: 11px;
+      font-weight: 950;
+      color: #9f1239;
+      background: #fff1f2;
+    }
+
+    .package-card.featured .tag { color: #fff; background: rgba(215,25,32,.92); }
+
+    .package-card h3 { margin: 0; font-size: 22px; }
+    .package-card p { color: var(--muted-dark); line-height: 1.5; font-size: 13px; margin: 0; }
+
+    .package-card ul {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 8px;
+    }
+
+    .package-card li {
+      color: #475467;
+      font-size: 13px;
+      line-height: 1.45;
+      display: grid;
+      grid-template-columns: 18px 1fr;
+      gap: 7px;
+    }
+
+    .package-card li:before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      margin-top: 6px;
+      border-radius: 50%;
+      background: var(--red);
+    }
+
+    .package-meta {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap: 8px;
+    }
+
+    .package-meta span {
+      border: 1px solid var(--line-light);
+      border-radius: 14px;
+      background: #f8fafc;
+      padding: 10px;
+      color: var(--muted-dark);
+      font-size: 11px;
+      line-height: 1.35;
+    }
+
+    .package-meta b {
+      display: block;
+      color: var(--ink);
+      font-size: 12px;
+      margin-bottom: 3px;
+    }
+
+    .report-panel {
+      display: grid;
+      grid-template-columns: minmax(0,.82fr) minmax(0,1.18fr);
+      gap: 20px;
+      align-items: stretch;
+    }
+
+    .qr-mock {
+      min-height: 430px;
+      border-radius: 28px;
+      border: 1px solid rgba(215,25,32,.18);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.96), rgba(255,255,255,.88)),
+        radial-gradient(circle at 100% 0%, rgba(215,25,32,.14), transparent 32%);
+      box-shadow: var(--soft-shadow);
+      padding: 22px;
+      display: grid;
+      align-content: space-between;
+    }
+
+    .qr-link {
+      width: max-content;
+      display: grid;
+      gap: 8px;
+      text-decoration: none;
+      color: var(--muted-dark);
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .qr-box {
+      width: 132px;
+      height: 132px;
+      border-radius: 20px;
+      border: 10px solid #fff;
+      background: #fff;
+      padding: 8px;
+      box-shadow: 0 18px 40px rgba(215,25,32,.18), inset 0 0 0 1px rgba(7,24,45,.08);
+    }
+
+    .qr-box path {
+      fill: #111827;
+      shape-rendering: crispEdges;
+    }
+
+    .qr-link span {
+      display: inline-flex;
+      width: max-content;
+      max-width: 170px;
+      border: 1px solid var(--line-light);
+      border-radius: 999px;
+      background: rgba(255,255,255,.92);
+      padding: 6px 10px;
+    }
+
+    .report-card {
+      display: grid;
+      gap: 14px;
+      align-content: start;
+    }
+
+    .lookup-result {
+      border: 1px solid var(--line-light);
+      background: rgba(255,255,255,.88);
+      border-radius: 20px;
+      padding: 16px;
+      min-height: 150px;
+      color: #344054;
+      line-height: 1.55;
+      box-shadow: var(--soft-shadow);
+    }
+
+    .result-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .result-tile {
+      border: 1px solid var(--line-light);
+      background: #f8fafc;
+      border-radius: 14px;
+      padding: 11px;
+    }
+
+    .result-tile b { display: block; color: var(--ink); font-size: 15px; }
+    .result-tile span { display: block; color: var(--muted-dark); font-size: 11px; margin-top: 4px; }
+
+    .report-sample {
+      border: 1px solid var(--line-light);
+      border-radius: 20px;
+      background: rgba(255,255,255,.82);
+      padding: 14px;
+      box-shadow: 0 12px 28px rgba(17,24,39,.08);
+    }
+
+    .report-sample-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: start;
+      margin-bottom: 12px;
+    }
+
+    .report-sample-top b {
+      display: block;
+      color: var(--ink);
+      font-size: 14px;
+    }
+
+    .report-sample-top span {
+      display: block;
+      color: var(--muted-dark);
+      font-size: 11px;
+      margin-top: 3px;
+    }
+
+    .report-status {
+      border-radius: 999px;
+      background: rgba(29,191,115,.12);
+      color: #057a48;
+      padding: 6px 9px;
+      font-size: 11px;
+      font-weight: 950;
+      white-space: nowrap;
+    }
+
+    .report-sample-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap: 8px;
+    }
+
+    .report-sample-grid span {
+      border: 1px solid var(--line-light);
+      border-radius: 13px;
+      background: #f8fafc;
+      padding: 9px;
+      color: #475467;
+      font-size: 11px;
+      line-height: 1.35;
+    }
+
+    .report-sample-grid b {
+      display: block;
+      color: var(--ink);
+      font-size: 12px;
+      margin-bottom: 2px;
+    }
+
+    .ai-showcase {
+      display: grid;
+      grid-template-columns: minmax(0,.92fr) minmax(0,1.08fr);
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .ai-command {
+      border: 1px solid var(--line-light);
+      border-radius: 28px;
+      background:
+        radial-gradient(circle at 0% 0%, rgba(56,189,248,.12), transparent 34%),
+        radial-gradient(circle at 100% 0%, rgba(215,25,32,.10), transparent 30%),
+        rgba(255,255,255,.94);
+      backdrop-filter: blur(18px);
+      box-shadow: var(--soft-shadow);
+      padding: 22px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .ai-recommender {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap: 10px;
+    }
+
+    .ai-recommender .full { grid-column: 1 / -1; }
+
+    .ai-output {
+      border: 1px solid var(--line-light);
+      background: #f8fafc;
+      border-radius: 18px;
+      color: #344054;
+      padding: 14px;
+      min-height: 138px;
+      line-height: 1.55;
+    }
+
+    .ai-output b { color: var(--ink); }
+
+    .ai-tool-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap: 12px;
+    }
+
+    .ai-tool-card {
+      border: 1px solid var(--line-light);
+      border-radius: 20px;
+      background: rgba(255,255,255,.92);
+      backdrop-filter: blur(16px);
+      padding: 16px;
+      min-height: 154px;
+      box-shadow: var(--soft-shadow);
+    }
+
+    .ai-tool-card strong {
+      display: inline-grid;
+      place-items: center;
+      width: 38px;
+      height: 38px;
+      border-radius: 14px;
+      background: rgba(215,25,32,.95);
+      color: #fff;
+      margin-bottom: 12px;
+      font-size: 12px;
+    }
+
+    .ai-tool-card b {
+      display: block;
+      color: var(--ink);
+      font-size: 16px;
+      margin-bottom: 7px;
+    }
+
+    .ai-tool-card span {
+      display: block;
+      color: var(--muted-dark);
+      font-size: 13px;
+      line-height: 1.48;
+    }
+
+    .passport-strip {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0,1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .passport-tile {
+      border: 1px solid var(--line-light);
+      background: #fff;
+      border-radius: 16px;
+      padding: 12px;
+    }
+
+    .passport-tile b { display: block; color: var(--ink); font-size: 14px; }
+    .passport-tile span { display: block; color: var(--muted-dark); font-size: 11px; line-height: 1.4; margin-top: 4px; }
+
+    .data-spine {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0,1fr));
+      gap: 9px;
+      margin-top: 18px;
+    }
+
+    .data-node {
+      border: 1px solid var(--line-light);
+      border-radius: 16px;
+      background: rgba(255,255,255,.88);
+      padding: 12px;
+      color: var(--ink);
+      min-height: 96px;
+      box-shadow: var(--soft-shadow);
+    }
+
+    .data-node b { display: block; font-size: 13px; }
+    .data-node span { display: block; color: var(--muted-dark); font-size: 11px; line-height: 1.4; margin-top: 5px; }
+
+    .timeline {
+      display: grid;
+      grid-template-columns: repeat(9, minmax(130px,1fr));
+      gap: 10px;
+      overflow-x: auto;
+      padding-bottom: 6px;
+    }
+
+    .timeline-step {
+      border: 1px solid var(--line-light);
+      background: rgba(255,255,255,.90);
+      border-radius: 20px;
+      padding: 14px;
+      min-height: 152px;
+      color: var(--ink);
+      box-shadow: var(--soft-shadow);
+    }
+
+    .timeline-step strong {
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+      background: var(--red);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      margin-bottom: 12px;
+    }
+
+    .timeline-step b { display: block; font-size: 13px; }
+    .timeline-step span { display: block; color: var(--muted-dark); font-size: 12px; line-height: 1.45; margin-top: 6px; }
+
+    .branch-panel {
+      display: grid;
+      grid-template-columns: minmax(300px,.42fr) minmax(0,1fr);
+      gap: 18px;
+    }
+
+    .search-panel {
+      border: 1px solid var(--line-light);
+      border-radius: 24px;
+      background: #fff;
+      padding: 18px;
+      box-shadow: var(--soft-shadow);
+      display: grid;
+      gap: 10px;
+    }
+
+    .map-card {
+      border-radius: 26px;
+      min-height: 360px;
+      overflow: hidden;
+      border: 1px solid var(--line-light);
+      background:
+        linear-gradient(135deg, rgba(17,24,39,.88), rgba(17,24,39,.40)),
+        url("https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&w=1500&q=84") center/cover;
+      color: #fff;
+      padding: 20px;
+      display: grid;
+      align-content: end;
+      box-shadow: var(--soft-shadow);
+    }
+
+    .branch-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .branch-item {
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.09);
+      border-radius: 16px;
+      padding: 13px;
+    }
+
+    .branch-item b { display: block; }
+    .branch-item span { display: block; color: #d5dce8; font-size: 12px; line-height: 1.45; margin-top: 5px; }
+
+    .blog-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0,1fr));
+      gap: 14px;
+    }
+
+    .blog-card {
+      border: 1px solid var(--line-light);
+      background: #fff;
+      border-radius: 22px;
+      overflow: hidden;
+      box-shadow: var(--soft-shadow);
+    }
+
+    .blog-image {
+      height: 128px;
+      background: linear-gradient(135deg, #111827, #374151);
+    }
+
+    .blog-image.one { background: linear-gradient(135deg, rgba(17,24,39,.70), rgba(215,25,32,.42)), url("https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?auto=format&fit=crop&w=800&q=80") center/cover; }
+    .blog-image.two { background: linear-gradient(135deg, rgba(17,24,39,.72), rgba(56,189,248,.28)), url("https://images.unsplash.com/photo-1517524008697-84bbe3c3fd98?auto=format&fit=crop&w=800&q=80") center/cover; }
+    .blog-image.three { background: linear-gradient(135deg, rgba(17,24,39,.72), rgba(245,158,11,.30)), url("https://images.unsplash.com/photo-1487754180451-c456f719a1fc?auto=format&fit=crop&w=800&q=80") center/cover; }
+    .blog-image.four { background: linear-gradient(135deg, rgba(17,24,39,.72), rgba(29,191,115,.28)), url("https://images.unsplash.com/photo-1493238792000-8113da705763?auto=format&fit=crop&w=800&q=80") center/cover; }
+
+    .blog-card div:last-child { padding: 16px; }
+    .blog-card h3 { margin: 0 0 8px; font-size: 17px; }
+    .blog-card p { color: var(--muted-dark); line-height: 1.5; font-size: 13px; margin: 0; }
+
+    .assurance-grid {
+      display: grid;
+      grid-template-columns: minmax(0,.92fr) minmax(0,1.08fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .assurance-card {
+      border: 1px solid var(--line-light);
+      background: #fff;
+      border-radius: 24px;
+      padding: 20px;
+      box-shadow: var(--soft-shadow);
+    }
+
+    .customer-support-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0,1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .support-card {
+      border: 1px solid var(--line-light);
+      border-radius: 20px;
+      background: #fff;
+      box-shadow: 0 12px 30px rgba(17,24,39,.07);
+      padding: 16px;
+    }
+
+    .support-card strong {
+      width: 38px;
+      height: 38px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      background: var(--red-soft);
+      color: var(--red);
+      border: 1px solid var(--red-line);
+      font-size: 12px;
+      margin-bottom: 12px;
+    }
+
+    .support-card b {
+      display: block;
+      color: var(--ink);
+      font-size: 15px;
+      margin-bottom: 7px;
+    }
+
+    .support-card span {
+      display: block;
+      color: var(--muted-dark);
+      font-size: 12px;
+      line-height: 1.48;
+    }
+
+    .assurance-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .assurance-item {
+      border: 1px solid var(--line-light);
+      border-radius: 16px;
+      padding: 13px;
+      display: grid;
+      grid-template-columns: 38px 1fr;
+      gap: 10px;
+      align-items: start;
+      background: #f8fafc;
+    }
+
+    .assurance-item strong {
+      width: 38px;
+      height: 38px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      background: #111827;
+      color: #fff;
+      font-size: 12px;
+    }
+
+    .assurance-item b { display: block; font-size: 14px; }
+    .assurance-item span { display: block; color: var(--muted-dark); font-size: 12px; line-height: 1.45; margin-top: 4px; }
+
+    .faq {
+      display: grid;
+      gap: 10px;
+    }
+
+    details {
+      border: 1px solid var(--line-light);
+      border-radius: 18px;
+      background: #fff;
+      box-shadow: 0 12px 30px rgba(17,24,39,.07);
+      padding: 16px 18px;
+    }
+
+    summary {
+      cursor: pointer;
+      font-weight: 950;
+      color: var(--ink);
+    }
+
+    details p {
+      color: var(--muted-dark);
+      line-height: 1.58;
+      font-size: 14px;
+      margin: 10px 0 0;
+    }
+
+    .final-cta {
+      border-radius: 30px;
+      padding: 34px;
+      color: var(--ink);
+      background:
+        linear-gradient(90deg, rgba(255,255,255,.97), rgba(255,255,255,.82)),
+        url("https://images.unsplash.com/photo-1542362567-b07e54358753?auto=format&fit=crop&w=1600&q=82") center/cover;
+      border: 1px solid var(--line-light);
+      box-shadow: var(--soft-shadow);
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      align-items: center;
+    }
+
+    footer {
+      background: #fff;
+      color: #475467;
+      padding: 28px 20px 86px;
+      border-top: 1px solid var(--red-line);
+    }
+
+    .foot {
+      max-width: var(--max);
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 18px;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .foot b { color: var(--red); display: block; margin-bottom: 7px; }
+
+    dialog {
+      width: min(920px, calc(100vw - 24px));
+      border: 0;
+      border-radius: 24px;
+      padding: 0;
+      background: #fff;
+      box-shadow: 0 28px 90px rgba(0,0,0,.32);
+    }
+
+    dialog::backdrop { background: rgba(0,0,0,.62); }
+
+    .modal-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 18px;
+      border-bottom: 1px solid var(--line-light);
+      color: var(--ink);
+    }
+
+    .modal-head h3 { margin: 0 0 5px; font-size: 24px; }
+    .modal-head p { color: var(--muted-dark); margin: 0; font-size: 13px; line-height: 1.45; }
+
+    .close {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      border: 1px solid var(--line-light);
+      background: #fff;
+      font-weight: 950;
+    }
+
+    .modal-body {
+      padding: 18px;
+      color: var(--ink);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap: 12px;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+
+    .field.full { grid-column: 1 / -1; }
+    .field label { color: #344054; font-size: 11px; font-weight: 950; text-transform: uppercase; }
+    textarea { min-height: 104px; resize: vertical; }
+
+    .modal-actions {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px 18px;
+      border-top: 1px solid var(--line-light);
+      color: var(--muted-dark);
+      font-size: 12px;
+    }
+
+    .success {
+      display: none;
+      border: 1px solid #bbf7d0;
+      background: #f0fdf4;
+      color: #166534;
+      border-radius: 14px;
+      padding: 12px;
+      font-weight: 850;
+      margin-bottom: 12px;
+    }
+
+    .sticky-conversion {
+      position: fixed;
+      left: 50%;
+      bottom: 16px;
+      transform: translateX(-50%);
+      z-index: 22;
+      width: min(720px, calc(100vw - 24px));
+      border: 1px solid rgba(17,24,39,.10);
+      border-radius: 20px;
+      background: rgba(255,255,255,.92);
+      backdrop-filter: blur(18px);
+      color: var(--ink);
+      box-shadow: var(--soft-shadow);
+      padding: 9px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .sticky-conversion span { color: var(--muted-dark); font-size: 12px; line-height: 1.35; }
+
+    .sticky-conversion .btn {
+      min-height: 42px;
+      padding-inline: 16px;
+    }
+
+    .sticky-conversion div {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .whatsapp-float {
+      position: fixed;
+      right: 22px;
+      bottom: 92px;
+      z-index: 24;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .whatsapp-bubble {
+      width: 176px;
+      border: 1px solid rgba(17,24,39,.10);
+      border-radius: 16px;
+      background: rgba(255,255,255,.94);
+      backdrop-filter: blur(14px);
+      box-shadow: var(--soft-shadow);
+      padding: 10px 12px;
+      font-size: 12px;
+      line-height: 1.35;
+      color: var(--ink);
+    }
+
+    .whatsapp-bubble b { display: block; }
+    .whatsapp-bubble span { display: block; color: var(--muted-dark); margin-top: 4px; }
+
+    .whatsapp-icon {
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      background: linear-gradient(145deg, #25d366, #128c4a);
+      border: 3px solid rgba(255,255,255,.88);
+      display: grid;
+      place-items: center;
+      box-shadow: 0 18px 38px rgba(18,140,74,.36);
+    }
+
+    .whatsapp-icon svg { width: 32px; height: 32px; fill: #fff; }
+
+    @media (max-width: 980px) {
+      .nav {
+        grid-template-columns: auto 1fr;
+        row-gap: 6px;
+      }
+      .brand { grid-column: 1; }
+      .nav-actions { grid-column: 2; justify-self: end; }
+      .nav-links {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        padding-top: 6px;
+        border-top: 1px solid rgba(17,24,39,.06);
+      }
+      .menu-btn { display: none; }
+      .nav-links.open {
+        position: absolute;
+        top: 51px;
+        left: 12px;
+        right: 12px;
+        display: grid;
+        justify-content: stretch;
+        background: rgba(255,255,255,.98);
+        border: 1px solid rgba(17,24,39,.10);
+        border-radius: 18px;
+        padding: 10px;
+        box-shadow: var(--soft-shadow);
+      }
+      .nav-links.open a,
+      .nav-links.open .nav-drop-toggle {
+        width: 100%;
+        justify-content: flex-start;
+      }
+      .nav-links.open .nav-dropdown {
+        display: grid;
+        width: 100%;
+      }
+      .nav-links.open .nav-dropdown-menu {
+        position: static;
+        opacity: 1;
+        visibility: visible;
+        transform: none;
+        box-shadow: none;
+        border: 0;
+        background: #f8fafc;
+        margin: 0 0 6px;
+      }
+      .hero-grid,
+      .report-panel,
+      .branch-panel,
+      .expertise-layout,
+      .online-panel,
+      .download-panel,
+      .ai-showcase,
+      .assurance-grid { grid-template-columns: 1fr; }
+      .package-layout,
+      .grid.four,
+      .customer-support-grid,
+      .vehicle-count-grid,
+      .online-grid,
+      .testimonials-grid,
+      .blog-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .data-spine { grid-template-columns: repeat(3, minmax(0,1fr)); }
+    }
+
+    @media (max-width: 720px) {
+      .nav { grid-template-columns: auto auto auto; padding: 7px 12px; gap: 8px; }
+      .brand span { display: none; }
+      .brand-mark { width: 32px; height: 32px; }
+      .brand { grid-column: auto; }
+      .nav-links { display: none; }
+      .menu-btn { display: grid; place-items: center; }
+      .nav-actions { grid-column: auto; justify-self: end; }
+      .nav-actions { padding: 3px; gap: 4px; }
+      .nav-actions .btn { min-height: 36px; padding: 8px 11px; font-size: 12px; }
+      .nav-secondary { display: none; }
+      .nav-arrow { display: none; }
+      .hero { padding: 48px 16px 34px; min-height: auto; }
+      h1 { font-size: clamp(38px, 12vw, 58px); }
+      .hero-copy p { font-size: 15px; }
+      .section { padding: 50px 16px; }
+      .section-head { display: block; }
+      .grid,
+      .grid.four,
+      .expertise-grid,
+      .package-layout,
+      .package-meta,
+      .customer-support-grid,
+      .vehicle-count-grid,
+      .online-grid,
+      .hero-stats,
+      .metric-row,
+      .result-grid,
+      .report-sample-grid,
+      .ai-recommender,
+      .ai-tool-grid,
+      .passport-strip,
+      .data-spine,
+      .branch-list,
+      .testimonials-grid,
+      .blog-grid,
+      .form-grid,
+      .foot { grid-template-columns: 1fr; }
+      .field.full { grid-column: auto; }
+      .hero-card,
+      .card,
+      .glass-card,
+      .package-card { border-radius: 18px; }
+      .expertise-card { grid-template-columns: 1fr; }
+      .side-note { position: static; }
+      .final-cta { display: block; padding: 24px; }
+      .download-panel { padding: 22px; border-radius: 22px; }
+      .download-action { border-radius: 18px; }
+      .vehicle-count-panel { padding: 20px; border-radius: 22px; }
+      .vehicle-count-head { display: block; }
+      .vehicle-count-head p { margin-top: 10px; }
+      .final-cta .hero-actions { margin-top: 16px; }
+      .sticky-conversion { display: grid; border-radius: 18px; }
+      .sticky-conversion div { justify-content: stretch; }
+      .sticky-conversion .btn { flex: 1 1 0; min-width: 0; padding-inline: 12px; }
+      .whatsapp-float { right: 14px; bottom: 118px; }
+      .whatsapp-bubble { display: none; }
+      .whatsapp-icon { width: 54px; height: 54px; }
+    }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://www.ototr.com/#organization",
+        "name": "OTOTR",
+        "url": "https://www.ototr.com/",
+        "logo": "https://www.ototr.com/logo.png",
+        "contactPoint": {
+          "@type": "ContactPoint",
+          "telephone": "+90-555-888-0501",
+          "contactType": "customer service",
+          "areaServed": "TR",
+          "availableLanguage": ["tr"]
+        }
+      },
+      {
+        "@type": ["LocalBusiness", "AutoRepair"],
+        "@id": "https://www.ototr.com/#localbusiness",
+        "name": "OTOTR Araç Ekspertiz",
+        "url": "https://www.ototr.com/",
+        "telephone": "+90-555-888-0501",
+        "priceRange": "$$",
+        "areaServed": "TR",
+        "parentOrganization": { "@id": "https://www.ototr.com/#organization" },
+        "makesOffer": [
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "OTOTR Mini Ekspertiz" } },
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "OTOTR Standart Ekspertiz" } },
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "OTOTR Plus Ekspertiz" } },
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "OTOTR Premium Ekspertiz" } }
+        ]
+      },
+      {
+        "@type": "FAQPage",
+        "@id": "https://www.ototr.com/#faq",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "OTOTR raporu nasıl doğrulanır?",
+            "acceptedAnswer": { "@type": "Answer", "text": "OTOTR dijital raporu karekod veya rapor numarası ile doğrulanabilir. Canlı sistemde rapor tarihi, şube, paket ve temel bulgular kontrol edilir." }
+          },
+          {
+            "@type": "Question",
+            "name": "OTOTR randevusu nasıl alınır?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Web formu, WhatsApp veya şube arama alanı üzerinden il, ilçe, paket ve iletişim bilgileriyle randevu talebi oluşturulur. Canlı sistemde talep CRM randevu kuyruğuna düşer." }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <header class="topbar">
+    <nav class="nav" aria-label="Ana menü">
+      <a class="brand" href="#top" aria-label="OTOTR ana sayfa">
+        <span class="brand-mark">OT</span>
+        <span><b>OTOTR</b><span>Tarafsız ekspertiz standardı</span></span>
+      </a>
+      <div class="nav-links" id="navLinks">
+        <a href="#top">Anasayfa</a>
+        <div class="nav-dropdown">
+          <button class="nav-drop-toggle" type="button">Kurumsal <span class="nav-caret" aria-hidden="true"></span></button>
+          <div class="nav-dropdown-menu">
+            <a href="#neden">Hakkımızda</a>
+            <a href="#franchise-basvuru">Bayilik Başvurusu</a>
+            <a href="#guvence-merkezi">İstek ve Şikayet</a>
+            <a href="#rehber">Haberler</a>
+          </div>
+        </div>
+        <a href="#paketler">Paketler</a>
+        <a href="#subeler">Bayiler</a>
+        <a href="#guvence-merkezi">Kampanyalar</a>
+        <div class="nav-dropdown">
+          <button class="nav-drop-toggle" type="button">İnsan Kaynakları <span class="nav-caret" aria-hidden="true"></span></button>
+          <div class="nav-dropdown-menu">
+            <a href="#surec">İnsan Kaynakları</a>
+            <a href="#ai-destek">Usta Ol</a>
+            <a href="#franchise-basvuru">Bayilik Başvurusu</a>
+          </div>
+        </div>
+        <a href="#rehber">Blog</a>
+        <a href="#sss">İletişim</a>
+      </div>
+      <div class="nav-actions">
+        <button class="menu-btn" id="menuBtn" type="button" aria-label="Menüyü aç">☰</button>
+        <a class="btn nav-secondary" href="#dijital-rapor"><span class="nav-dot" aria-hidden="true"></span>Randevu Sorgula</a>
+        <button class="btn primary nav-primary" data-open-appointment type="button">Randevu Alın</button>
+      </div>
+    </nav>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <span class="eyebrow">Tarafsız ekspertiz, açık rapor, net karar</span>
+          <h1>Aracınızı almadan önce <span>riski net görün.</span></h1>
+          <p>Kaporta-boya ölçümünden motor, mekanik, OBD, fren, süspansiyon ve güvenlik kontrollerine kadar kritik başlıklar anlaşılır rapor diliyle sunulur. OTOTR müşteriyi yormayan, sade ve doğrulanabilir bir ekspertiz deneyimi kurar.</p>
+          <div class="hero-actions">
+            <button class="btn primary" data-open-appointment type="button">Randevu Al</button>
+            <a class="btn light" href="#paketler">Paketleri İncele</a>
+            <a class="btn" href="#dijital-rapor">Rapor Sorgula</a>
+            <a class="btn" href="#indir" hidden>İndir</a>
+          </div>
+          <div class="hero-stats" aria-label="OTOTR öne çıkan göstergeler">
+            <div class="hero-stat"><b>200+</b><span>Detaylı kontrolde takip edilen teknik başlık</span></div>
+            <div class="hero-stat"><b>QR</b><span>Rapor numarasıyla doğrulanabilir sonuç</span></div>
+            <div class="hero-stat"><b>Net</b><span>Kritik, takip gerekli ve normal bulgu ayrımı</span></div>
+          </div>
+          <div class="trust-badges" aria-label="Güven rozetleri">
+            <span class="trust-badge">TSE/HYB Uyumlu Altyapı</span>
+            <span class="trust-badge">Karekodlu Dijital Rapor</span>
+            <span class="trust-badge">Merkezi Denetim</span>
+            <span class="trust-badge">Detaylı Ekspertiz Kapsamı</span>
+            <span class="trust-badge">Tarafsız Rapor Dili</span>
+          </div>
+        </div>
+
+        <aside class="hero-card" aria-label="Hızlı randevu">
+          <h3>Hızlı Randevu Talebi</h3>
+          <p>İl, ilçe ve paket seçimi CRM kuyruğuna düşer; canlı sistemde şube kapasitesi ve uygun saatle eşleşir.</p>
+          <form class="quick-form" id="quickAppointmentForm">
+            <input name="name" required placeholder="Ad soyad">
+            <input name="phone" required placeholder="Telefon">
+            <select name="service" required>
+              <option value="">Paket seçin</option>
+              <option>OTOTR Mini</option>
+              <option>OTOTR Standart</option>
+              <option>OTOTR Plus</option>
+              <option>OTOTR Premium</option>
+            </select>
+            <select name="province" data-province-select="quickDistrict" required></select>
+            <select name="district" id="quickDistrict" required></select>
+            <button class="btn primary" type="submit">Talebi Oluştur</button>
+          </form>
+          <div class="metric-row">
+            <div class="metric"><b>QR</b><span>Karekod doğrulama</span></div>
+            <div class="metric"><b>SLA</b><span>İtiraz takip sistemi</span></div>
+            <div class="metric"><b>GM</b><span>Merkezi kalite denetimi</span></div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <div class="trust-ticker" aria-label="OTOTR güven bandı">
+      <div class="trust-ticker-track">
+        <span>Tarafsız rapor dili</span>
+        <span>QR doğrulamalı dijital rapor</span>
+        <span>Kaporta boya ölçümü</span>
+        <span>Dijital araç karnesi</span>
+        <span>Motor ve mekanik kontrol</span>
+        <span>Merkezi kalite denetimi</span>
+        <span>OBD elektronik tarama</span>
+      </div>
+    </div>
+
+    <section class="section" id="arac-adetleri">
+      <div class="inner">
+        <div class="vehicle-count-panel">
+          <div class="vehicle-count-head">
+            <div>
+              <span class="eyebrow">Operasyon rakamları</span>
+              <h2>Her gün daha fazla araç, aynı standart rapor diliyle kontrol edilir.</h2>
+            </div>
+            <p>Bu alan canlı sistemde şube, paket ve dönem filtresine göre güncellenebilir. Şimdilik OTOTR web vitrini için örnek operasyon göstergeleri olarak kurgulandı.</p>
+          </div>
+          <div class="vehicle-count-grid" aria-label="Araç ekspertiz adetleri">
+            <article class="vehicle-count-card">
+              <b><span class="vehicle-counter" data-target="12480">0</span><span class="vehicle-counter-suffix">+</span></b>
+              <span>Toplam ekspertiz kaydı</span>
+              <small>Randevu, rapor ve araç karnesi akışına bağlanan örnek toplam.</small>
+            </article>
+            <article class="vehicle-count-card">
+              <b><span class="vehicle-counter" data-target="3240">0</span><span class="vehicle-counter-suffix">+</span></b>
+              <span>Kaporta boya kontrolü</span>
+              <small>Mikron ölçümü, değişen/boyalı/lokal ayrımı ve foto delil takibi.</small>
+            </article>
+            <article class="vehicle-count-card">
+              <b><span class="vehicle-counter" data-target="1860">0</span><span class="vehicle-counter-suffix">+</span></b>
+              <span>Motor ve mekanik kontrol</span>
+              <small>Motor genel durum, fren, süspansiyon ve yürüyen aksam başlıkları.</small>
+            </article>
+            <article class="vehicle-count-card">
+              <b><span class="vehicle-counter" data-target="980">0</span><span class="vehicle-counter-suffix">+</span></b>
+              <span>QR doğrulamalı rapor</span>
+              <small>Rapor numarası veya karekod ile doğrulanabilir demo kayıt yapısı.</small>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="online-islemler">
+      <div class="inner">
+        <div class="online-panel">
+          <aside class="online-intro">
+            <div>
+              <span class="eyebrow">Online İşlemler</span>
+              <h2>Randevu, rapor ve araç alım süreci için hızlı erişim.</h2>
+              <p class="lead">Müşteri sitede kaybolmadan en çok ihtiyaç duyduğu işlemlere tek panelden ulaşır. Ana amaç daha az menü, daha hızlı karar.</p>
+            </div>
+            <div class="online-summary">
+              <span>Önce randevu ve rapor doğrulama gibi OTOTR işlemleri gösterilir.</span>
+              <span>Vergi, noter ve muayene bağlantıları yardımcı dış işlem olarak ayrılır.</span>
+              <span>Yatırımcı dili yerine müşteri satın alma yolculuğu öne çıkarılır.</span>
+            </div>
+          </aside>
+          <div class="online-grid" aria-label="Online işlem kısayolları">
+            <button class="online-card" data-open-appointment type="button"><strong>01</strong><span><b>Online Randevu</b>İl, ilçe, paket ve iletişim bilgisiyle hızlı ekspertiz talebi oluşturun.</span></button>
+            <a class="online-card" href="#dijital-rapor"><strong>02</strong><span><b>Rapor Sorgula</b>Rapor numarası veya plaka ile demo QR doğrulama ekranına gidin.</span></a>
+            <a class="online-card" href="#paketler"><strong>03</strong><span><b>Paket Seçimi</b>Mini, Standart, Plus ve Premium kapsamlarını karşılaştırın.</span></a>
+            <a class="online-card" href="#subeler"><strong>04</strong><span><b>Yakın Şube</b>İl ve ilçe seçerek uygun OTOTR noktasına yönlenin.</span></a>
+            <a class="online-card" href="https://dijital.gib.gov.tr/" target="_blank" rel="noopener noreferrer"><strong>05</strong><span><b>Vergi / MTV</b>Resmi GİB ekranından araç vergi borcu ve ödeme işlemlerine ulaşın.</span></a>
+            <a class="online-card" href="https://reservation.tuvturk.com.tr/" target="_blank" rel="noopener noreferrer"><strong>06</strong><span><b>Muayene Randevusu</b>TÜVTÜRK resmi randevu ekranına güvenli şekilde geçin.</span></a>
+            <a class="online-card" href="https://portal.tnb.org.tr/" target="_blank" rel="noopener noreferrer"><strong>07</strong><span><b>Nöbetçi Noter</b>Satış öncesi noter işlemleri için resmi TNB portalını açın.</span></a>
+            <a class="online-card" href="#rehber"><strong>08</strong><span><b>Alım Satım Rehberi</b>Ekspertiz raporu okuma ve ikinci el araç kontrol içeriklerine gidin.</span></a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="hizmetler">
+      <div class="inner">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">Ekspertizde neye bakıyoruz?</span>
+            <h2>Müşterinin kararını kolaylaştıran açık, detaylı ve okunabilir kontrol kapsamı.</h2>
+            <p class="lead">Her başlık teknik ekibe göre değil, aracı alacak müşterinin anlayacağı karar diliyle raporlanır. Amaç fazla efekt değil; güven veren netliktir.</p>
+          </div>
+        </div>
+        <div class="expertise-layout">
+          <div class="expertise-grid">
+            <article class="expertise-card"><div class="expertise-icon">KB</div><div><h3>Kaporta ve boya ölçümü</h3><p>Mikron değerleri, boyalı/değişen parça şüphesi, lokal işlem izleri ve dış gövde deformasyonları standart kontrol diliyle ayrıştırılır.</p></div></article>
+            <article class="expertise-card"><div class="expertise-icon">MT</div><div><h3>Motor ve mekanik kontrol</h3><p>Yağ kaçağı, sıvı seviyesi, motor çalışma sesi, hararet riski, conta belirtisi ve genel mekanik durum satın alma kararı için özetlenir.</p></div></article>
+            <article class="expertise-card"><div class="expertise-icon">OBD</div><div><h3>Elektronik ve OBD tarama</h3><p>Motor, şanzıman, ABS, airbag/SRS ve elektronik kontrol ünitelerindeki arıza kayıtları raporla ilişkilendirilir.</p></div></article>
+            <article class="expertise-card"><div class="expertise-icon">FR</div><div><h3>Fren, süspansiyon ve yürüyen aksam</h3><p>Fren performansı, amortisör davranışı, alt takım boşlukları ve yol tutuşa etki eden başlıklar takip gerekli alanlar olarak işaretlenir.</p></div></article>
+            <article class="expertise-card"><div class="expertise-icon">KM</div><div><h3>Kilometre ve geçmiş tutarlılığı</h3><p>Mevcut kilometre, önceki kayıtlar ve dijital araç karnesi verileriyle birlikte okunur; tutarsızlık şüphesi varsa ayrıca belirtilir.</p></div></article>
+            <article class="expertise-card"><div class="expertise-icon">QR</div><div><h3>Foto delil ve QR rapor</h3><p>Kritik bulgular fotoğraf ve rapor numarasıyla desteklenir; müşteri raporu sonradan doğrulama ekranından kontrol edebilir.</p></div></article>
+          </div>
+          <aside class="side-note" aria-label="Toplu araç notu">
+            <span class="eyebrow">Yan bilgi</span>
+            <h3>Toplu araç ve filo talepleri ayrı akışta değerlendirilir.</h3>
+            <p>Ana sayfanın önceliği bireysel müşterinin ekspertiz kararını kolaylaştırmaktır. Galeri, filo ve toplu kontrol talepleri randevu sonrasında operasyon ekibine yönlendirilir.</p>
+            <ul>
+              <li>Toplu araç için standart kontrol formu</li>
+              <li>Özet risk raporu ve teslim planı</li>
+              <li>Şube kapasitesine göre zamanlama</li>
+            </ul>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="neden">
+      <div class="inner">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">Neden OTOTR?</span>
+            <h2>Güveni slogandan çıkarıp doğrulanabilir sisteme bağlarız.</h2>
+            <p class="lead">OTOTR; rapor dili, kalite denetimi, şikayet yönetimi, şube hizmet standardı ve dijital doğrulama yapısını tek merkezden kontrol eder.</p>
+          </div>
+        </div>
+        <div class="grid">
+          <article class="card"><div class="icon-pill">01</div><h3>Tarafsız rapor dili</h3><p>Ekspertiz sonucu satış baskısıyla değil, ölçülebilir bulgu ve net sorumluluk sınırıyla yazılır.</p></article>
+          <article class="card"><div class="icon-pill">02</div><h3>Merkezi kalite denetimi</h3><p>Şube performansı, rapor kalitesi, şikayet SLA ve personel yetkinliği genel merkezden izlenir.</p></article>
+          <article class="card"><div class="icon-pill">QR</div><h3>Karekodlu doğrulanabilir rapor</h3><p>Rapor numarası, tarih, şube, paket ve temel bulgular dijital doğrulama ekranına bağlanır.</p></article>
+          <article class="card"><div class="icon-pill">SLA</div><h3>İtiraz ve şikayet sistemi</h3><p>Müşteri itirazı kalite, hukuk, operasyon ve yeniden eğitim aksiyonlarına ayrıştırılır.</p></article>
+          <article class="card"><div class="icon-pill">SG</div><h3>Sigortalı ekspertiz yaklaşımı</h3><p>Paket ve kampanya yapısına göre sigorta/partner faydaları şeffaf kapsam diliyle sunulur.</p></article>
+          <article class="card"><div class="icon-pill">HYB</div><h3>Yönetmelik dönemine hazır</h3><p>TSE/HYB, cihaz, kalibrasyon, eğitim ve evrak süreçleri şube hizmet standardına bağlanır.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section dark" id="ai-destek">
+      <div class="inner">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">Yapay Zeka Öneri</span>
+            <h2>OTOTR, raporu sadece üretmez; müşterinin doğru kararı daha hızlı vermesine yardımcı olur.</h2>
+            <p class="lead">Yapay Zeka Öneri katmanı; paket seçimi, rapor okuma, foto ön kontrol, araç karnesi karşılaştırması, şikayet triage ve yakın şube yönlendirmesiyle müşteriye daha anlaşılır bir ekspertiz deneyimi sunar.</p>
+          </div>
+        </div>
+
+        <div class="ai-showcase">
+          <div class="ai-command">
+            <div>
+              <span class="eyebrow">Yapay Zeka Öneri Motoru</span>
+              <h3>Araca ve satın alma riskine göre doğru paketi önerir.</h3>
+              <p class="lead">Bu demo karar destek alanı, müşteri ihtiyacını satış baskısı yerine risk mantığıyla doğru pakete yönlendirir.</p>
+            </div>
+            <form class="ai-recommender" id="aiPackageForm">
+              <select name="purpose">
+                <option value="buy">Araç satın alacağım</option>
+                <option value="sell">Satış öncesi kontrol istiyorum</option>
+                <option value="paint">Sadece boya/değişen merak ediyorum</option>
+                <option value="fleet">Toplu araç / filo kontrol</option>
+              </select>
+              <select name="age">
+                <option value="0-3">0-3 yaş</option>
+                <option value="4-7">4-7 yaş</option>
+                <option value="8+">8 yaş ve üzeri</option>
+              </select>
+              <select name="mileage">
+                <option value="low">0-80 bin km</option>
+                <option value="mid">80-160 bin km</option>
+                <option value="high">160 bin km üzeri</option>
+              </select>
+              <select name="risk">
+                <option value="normal">Normal risk</option>
+                <option value="suspicious">Boya, arıza veya km şüphem var</option>
+                <option value="premium">Araç değeri yüksek</option>
+              </select>
+              <button class="btn primary full" type="submit">Yapay Zeka Önerisi Al</button>
+            </form>
+            <div class="ai-output" id="aiPackageOutput">Araç yaşı, kilometre, kullanım amacı ve şüphe sinyaline göre önerilen paket ve dikkat edilmesi gereken kontrol başlıkları burada görünür.</div>
+          </div>
+
+          <div class="ai-tool-grid">
+            <article class="ai-tool-card"><strong>YZ</strong><b>Yapay Zeka rapor okuma asistanı</b><span>Ekspertiz raporundaki kritik, takip gerekli ve güvenli alanları sade müşteri diliyle özetler.</span></article>
+            <article class="ai-tool-card"><strong>IMG</strong><b>Foto ön kontrol</b><span>Araç fotoğraflarından kozmetik risk sinyali üretir; ekspertiz yerine geçmediğini açıkça belirtir.</span></article>
+            <article class="ai-tool-card"><strong>KM</strong><b>Kilometre ve geçmiş tutarlılığı</b><span>Önceki OTOTR kayıtlarıyla güncel kilometreyi karşılaştırır; olağan dışı düşüşte alarm verir.</span></article>
+            <article class="ai-tool-card"><strong>ŞB</strong><b>Yakın şube ve zaman önerisi</b><span>İl, ilçe, paket ihtiyacı ve yoğunluk sinyaline göre müşteriyi en uygun şube akışına yönlendirir.</span></article>
+            <article class="ai-tool-card"><strong>SLA</strong><b>Şikayet triage motoru</b><span>Webden gelen itirazı kalite, hukuk, operasyon veya Academy yeniden eğitim aksiyonuna ayırır.</span></article>
+            <article class="ai-tool-card"><strong>CRM</strong><b>WhatsApp / web asistanı</b><span>Randevu, paket, rapor sorgu, şube bulma ve itiraz başvurusu akışlarını doğru kanala yönlendirir.</span></article>
+          </div>
+        </div>
+
+        <div class="data-spine" aria-label="Yapay Zeka Öneri veri omurgası">
+          <div class="data-node"><b>Randevu</b><span>İl, ilçe, paket ve talep sebebi CRM kuyruğuna düşer.</span></div>
+          <div class="data-node"><b>Rapor</b><span>QR, foto delil, OBD ve mikron verisi doğrulama ekranına bağlanır.</span></div>
+          <div class="data-node"><b>Araç Karnesi</b><span>Plaka/şasi bazlı eski-yeni rapor karşılaştırması yapılır.</span></div>
+          <div class="data-node"><b>Kalite</b><span>İtiraz, şikayet, SLA ve denetim sonucu merkezi kaliteye aktarılır.</span></div>
+          <div class="data-node"><b>Academy</b><span>Personel hatasında otomatik tekrar eğitim önerisi oluşur.</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section dark" id="paketler">
+      <div class="inner">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">Ekspertiz paketleri</span>
+            <h2>İhtiyaca göre net paket, net kapsam, net yönlendirme.</h2>
+            <p class="lead">Müşteri hangi paketi neden seçtiğini, hangi kontrollerin kapsama girdiğini ve karar riskini tek bakışta görür.</p>
+          </div>
+        </div>
+        <div class="package-layout">
+          <article class="package-card">
+            <div class="package-top"><h3>OTOTR Mini</h3><span class="tag">Hızlı</span></div>
+            <p>Temel ön kontrol isteyen kullanıcılar için.</p>
+            <ul>
+              <li>Hedef müşteri: hızlı karar öncesi ön bakış</li>
+              <li>Kapsam: temel kaporta ve görsel kontrol</li>
+              <li>Kontrol noktası: 40+ başlık</li>
+            </ul>
+            <div class="package-meta">
+              <span><b>Süre</b>Ortalama 30-45 dk</span>
+              <span><b>Fiyat</b>Şube seçimine göre netleşir</span>
+            </div>
+            <button class="btn dark" data-open-appointment type="button">Randevu Al</button>
+          </article>
+          <article class="package-card">
+            <div class="package-top"><h3>OTOTR Standart</h3><span class="tag">Dengeli</span></div>
+            <p>İkinci el araç alımında temel riskleri görmek isteyenler için.</p>
+            <ul>
+              <li>Hedef müşteri: bireysel alıcı</li>
+              <li>Kapsam: kaporta, boya, motor genel, fren</li>
+              <li>Kontrol noktası: 90+ başlık</li>
+            </ul>
+            <div class="package-meta">
+              <span><b>Süre</b>Ortalama 45-60 dk</span>
+              <span><b>Fiyat</b>Şube seçimine göre netleşir</span>
+            </div>
+            <button class="btn dark" data-open-appointment type="button">Randevu Al</button>
+          </article>
+          <article class="package-card">
+            <div class="package-top"><h3>OTOTR Plus</h3><span class="tag">Akıllı</span></div>
+            <p>Elektronik, OBD ve mekanik riskleri birlikte görmek isteyenler için.</p>
+            <ul>
+              <li>Hedef müşteri: orta-yüksek riskli araç alıcısı</li>
+              <li>Kapsam: boya, mekanik, OBD, foto delil</li>
+              <li>Kontrol noktası: 140+ başlık</li>
+            </ul>
+            <div class="package-meta">
+              <span><b>Süre</b>Ortalama 60-90 dk</span>
+              <span><b>Fiyat</b>Şube seçimine göre netleşir</span>
+            </div>
+            <button class="btn dark" data-open-appointment type="button">Randevu Al</button>
+          </article>
+          <article class="package-card featured">
+            <div class="package-top"><h3>OTOTR Premium</h3><span class="tag">Önerilen</span></div>
+            <p>Dijital karne, kapsamlı risk okuması ve doğrulanabilir rapor isteyenler için.</p>
+            <ul>
+              <li>Hedef müşteri: satın alma öncesi maksimum güven</li>
+              <li>Kapsam: 360 kontrol, QR rapor, dijital karne</li>
+              <li>Kontrol noktası: 200+ başlık</li>
+            </ul>
+            <div class="package-meta">
+              <span><b>Süre</b>Ortalama 90-120 dk</span>
+              <span><b>Fiyat</b>Şube seçimine göre netleşir</span>
+            </div>
+            <button class="btn primary" data-open-appointment type="button">Premium Seç</button>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section dark" id="dijital-rapor">
+      <div class="inner">
+        <div class="report-panel">
+          <div class="qr-mock">
+            <div>
+              <span class="eyebrow">Dijital rapor</span>
+              <h2>Raporun doğruluğunu saniyeler içinde kontrol edin.</h2>
+              <p class="lead">Karekod veya rapor numarasıyla raporun şube, tarih, paket ve temel bulgu doğrulaması yapılır.</p>
+            </div>
+            <a class="qr-link" href="https://www.ototr.com.tr" target="_blank" rel="noopener" aria-label="https://www.ototr.com.tr karekod">
+              <svg class="qr-box" viewBox="0 0 29 29" role="img" aria-label="https://www.ototr.com.tr karekod"><title>https://www.ototr.com.tr</title><rect width="29" height="29" fill="#fff"/><path d="M2 2h1v1h-1zM3 2h1v1h-1zM4 2h1v1h-1zM5 2h1v1h-1zM6 2h1v1h-1zM7 2h1v1h-1zM8 2h1v1h-1zM10 2h1v1h-1zM12 2h1v1h-1zM15 2h1v1h-1zM16 2h1v1h-1zM17 2h1v1h-1zM18 2h1v1h-1zM20 2h1v1h-1zM21 2h1v1h-1zM22 2h1v1h-1zM23 2h1v1h-1zM24 2h1v1h-1zM25 2h1v1h-1zM26 2h1v1h-1zM2 3h1v1h-1zM8 3h1v1h-1zM10 3h1v1h-1zM11 3h1v1h-1zM16 3h1v1h-1zM17 3h1v1h-1zM20 3h1v1h-1zM26 3h1v1h-1zM2 4h1v1h-1zM4 4h1v1h-1zM5 4h1v1h-1zM6 4h1v1h-1zM8 4h1v1h-1zM10 4h1v1h-1zM13 4h1v1h-1zM16 4h1v1h-1zM17 4h1v1h-1zM18 4h1v1h-1zM20 4h1v1h-1zM22 4h1v1h-1zM23 4h1v1h-1zM24 4h1v1h-1zM26 4h1v1h-1zM2 5h1v1h-1zM4 5h1v1h-1zM5 5h1v1h-1zM6 5h1v1h-1zM8 5h1v1h-1zM11 5h1v1h-1zM14 5h1v1h-1zM16 5h1v1h-1zM17 5h1v1h-1zM18 5h1v1h-1zM20 5h1v1h-1zM22 5h1v1h-1zM23 5h1v1h-1zM24 5h1v1h-1zM26 5h1v1h-1zM2 6h1v1h-1zM4 6h1v1h-1zM5 6h1v1h-1zM6 6h1v1h-1zM8 6h1v1h-1zM10 6h1v1h-1zM11 6h1v1h-1zM14 6h1v1h-1zM16 6h1v1h-1zM17 6h1v1h-1zM20 6h1v1h-1zM22 6h1v1h-1zM23 6h1v1h-1zM24 6h1v1h-1zM26 6h1v1h-1zM2 7h1v1h-1zM8 7h1v1h-1zM10 7h1v1h-1zM12 7h1v1h-1zM13 7h1v1h-1zM14 7h1v1h-1zM17 7h1v1h-1zM20 7h1v1h-1zM26 7h1v1h-1zM2 8h1v1h-1zM3 8h1v1h-1zM4 8h1v1h-1zM5 8h1v1h-1zM6 8h1v1h-1zM7 8h1v1h-1zM8 8h1v1h-1zM10 8h1v1h-1zM12 8h1v1h-1zM14 8h1v1h-1zM16 8h1v1h-1zM18 8h1v1h-1zM20 8h1v1h-1zM21 8h1v1h-1zM22 8h1v1h-1zM23 8h1v1h-1zM24 8h1v1h-1zM25 8h1v1h-1zM26 8h1v1h-1zM10 9h1v1h-1zM13 9h1v1h-1zM15 9h1v1h-1zM16 9h1v1h-1zM17 9h1v1h-1zM18 9h1v1h-1zM4 10h1v1h-1zM8 10h1v1h-1zM9 10h1v1h-1zM10 10h1v1h-1zM14 10h1v1h-1zM15 10h1v1h-1zM20 10h1v1h-1zM21 10h1v1h-1zM22 10h1v1h-1zM24 10h1v1h-1zM25 10h1v1h-1zM26 10h1v1h-1zM5 11h1v1h-1zM6 11h1v1h-1zM9 11h1v1h-1zM10 11h1v1h-1zM11 11h1v1h-1zM13 11h1v1h-1zM14 11h1v1h-1zM18 11h1v1h-1zM20 11h1v1h-1zM26 11h1v1h-1zM2 12h1v1h-1zM3 12h1v1h-1zM4 12h1v1h-1zM5 12h1v1h-1zM8 12h1v1h-1zM10 12h1v1h-1zM12 12h1v1h-1zM13 12h1v1h-1zM14 12h1v1h-1zM15 12h1v1h-1zM19 12h1v1h-1zM20 12h1v1h-1zM21 12h1v1h-1zM24 12h1v1h-1zM25 12h1v1h-1zM26 12h1v1h-1zM2 13h1v1h-1zM3 13h1v1h-1zM9 13h1v1h-1zM11 13h1v1h-1zM12 13h1v1h-1zM14 13h1v1h-1zM15 13h1v1h-1zM16 13h1v1h-1zM18 13h1v1h-1zM20 13h1v1h-1zM25 13h1v1h-1zM7 14h1v1h-1zM8 14h1v1h-1zM9 14h1v1h-1zM12 14h1v1h-1zM13 14h1v1h-1zM15 14h1v1h-1zM17 14h1v1h-1zM18 14h1v1h-1zM19 14h1v1h-1zM20 14h1v1h-1zM21 14h1v1h-1zM23 14h1v1h-1zM25 14h1v1h-1zM26 14h1v1h-1zM3 15h1v1h-1zM7 15h1v1h-1zM11 15h1v1h-1zM12 15h1v1h-1zM13 15h1v1h-1zM18 15h1v1h-1zM20 15h1v1h-1zM23 15h1v1h-1zM26 15h1v1h-1zM2 16h1v1h-1zM5 16h1v1h-1zM7 16h1v1h-1zM8 16h1v1h-1zM10 16h1v1h-1zM12 16h1v1h-1zM18 16h1v1h-1zM19 16h1v1h-1zM20 16h1v1h-1zM21 16h1v1h-1zM24 16h1v1h-1zM25 16h1v1h-1zM26 16h1v1h-1zM3 17h1v1h-1zM4 17h1v1h-1zM5 17h1v1h-1zM9 17h1v1h-1zM10 17h1v1h-1zM11 17h1v1h-1zM13 17h1v1h-1zM15 17h1v1h-1zM16 17h1v1h-1zM17 17h1v1h-1zM18 17h1v1h-1zM20 17h1v1h-1zM22 17h1v1h-1zM25 17h1v1h-1zM2 18h1v1h-1zM4 18h1v1h-1zM8 18h1v1h-1zM12 18h1v1h-1zM14 18h1v1h-1zM15 18h1v1h-1zM16 18h1v1h-1zM18 18h1v1h-1zM19 18h1v1h-1zM20 18h1v1h-1zM21 18h1v1h-1zM22 18h1v1h-1zM23 18h1v1h-1zM10 19h1v1h-1zM13 19h1v1h-1zM14 19h1v1h-1zM18 19h1v1h-1zM22 19h1v1h-1zM23 19h1v1h-1zM25 19h1v1h-1zM26 19h1v1h-1zM2 20h1v1h-1zM3 20h1v1h-1zM4 20h1v1h-1zM5 20h1v1h-1zM6 20h1v1h-1zM7 20h1v1h-1zM8 20h1v1h-1zM10 20h1v1h-1zM13 20h1v1h-1zM14 20h1v1h-1zM15 20h1v1h-1zM17 20h1v1h-1zM18 20h1v1h-1zM20 20h1v1h-1zM22 20h1v1h-1zM23 20h1v1h-1zM25 20h1v1h-1zM26 20h1v1h-1zM2 21h1v1h-1zM8 21h1v1h-1zM12 21h1v1h-1zM14 21h1v1h-1zM15 21h1v1h-1zM18 21h1v1h-1zM22 21h1v1h-1zM23 21h1v1h-1zM25 21h1v1h-1zM2 22h1v1h-1zM4 22h1v1h-1zM5 22h1v1h-1zM6 22h1v1h-1zM8 22h1v1h-1zM13 22h1v1h-1zM14 22h1v1h-1zM15 22h1v1h-1zM18 22h1v1h-1zM19 22h1v1h-1zM20 22h1v1h-1zM21 22h1v1h-1zM22 22h1v1h-1zM23 22h1v1h-1zM2 23h1v1h-1zM4 23h1v1h-1zM5 23h1v1h-1zM6 23h1v1h-1zM8 23h1v1h-1zM11 23h1v1h-1zM13 23h1v1h-1zM15 23h1v1h-1zM16 23h1v1h-1zM18 23h1v1h-1zM19 23h1v1h-1zM21 23h1v1h-1zM22 23h1v1h-1zM23 23h1v1h-1zM24 23h1v1h-1zM2 24h1v1h-1zM4 24h1v1h-1zM5 24h1v1h-1zM6 24h1v1h-1zM8 24h1v1h-1zM10 24h1v1h-1zM11 24h1v1h-1zM14 24h1v1h-1zM17 24h1v1h-1zM22 24h1v1h-1zM26 24h1v1h-1zM2 25h1v1h-1zM8 25h1v1h-1zM15 25h1v1h-1zM17 25h1v1h-1zM18 25h1v1h-1zM20 25h1v1h-1zM22 25h1v1h-1zM23 25h1v1h-1zM25 25h1v1h-1zM2 26h1v1h-1zM3 26h1v1h-1zM4 26h1v1h-1zM5 26h1v1h-1zM6 26h1v1h-1zM7 26h1v1h-1zM8 26h1v1h-1zM12 26h1v1h-1zM15 26h1v1h-1zM17 26h1v1h-1zM18 26h1v1h-1zM21 26h1v1h-1zM25 26h1v1h-1zM26 26h1v1h-1z"/></svg>
+              <span>www.ototr.com.tr</span>
+            </a>
+            <div class="report-sample" aria-label="Örnek dijital rapor özeti">
+              <div class="report-sample-top">
+                <div>
+                  <b>OTR-2026-1842 · 2023 Renault Clio</b>
+                  <span>Bursa Nilüfer · Plus Paket · Demo veridir</span>
+                </div>
+                <span class="report-status">Geçerli rapor</span>
+              </div>
+              <div class="report-sample-grid">
+                <span><b>Kaporta</b>Detaylı kontrol</span>
+                <span><b>Motor</b>Normal</span>
+                <span><b>Mekanik</b>Kontrol edildi</span>
+                <span><b>Elektronik</b>Arıza kaydı yok</span>
+                <span><b>Airbag</b>Kontrol edildi</span>
+                <span><b>Conta kaçak testi</b>Negatif</span>
+              </div>
+            </div>
+          </div>
+          <div class="report-card">
+            <div class="glass-card">
+              <h3>Rapor no sorgulama</h3>
+              <form class="quick-form" id="reportLookupForm">
+                <input name="lookup" required placeholder="Örn. OTR-2026-1842 veya 16 OTR 042">
+                <button class="btn primary" type="submit">Raporu Doğrula</button>
+                <button class="btn" type="button" data-fill-demo-report>Demo Kaydı Getir</button>
+              </form>
+            </div>
+            <div class="lookup-result" id="reportLookupResult">Rapor numarası girildiğinde doğrulama sonucu, dijital araç karnesi ve kritik bulgu özeti burada görünür.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section dark" id="surec">
+      <div class="inner">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">Müşteri yolculuğu</span>
+            <h2>Randevudan güvenli satın alma kararına kadar net ve izlenebilir süreç.</h2>
+            <p class="lead">OTOTR web vitrini müşteriyi yatırımcı akışına değil; doğru paketi seçmeye, yakın şubeyi bulmaya, raporu doğrulamaya ve ikinci el araç kararını güvenle vermeye yönlendirir.</p>
+          </div>
+          <button class="btn primary" data-open-appointment type="button">Randevu Al</button>
+        </div>
+        <div class="timeline">
+          <div class="timeline-step"><strong>1</strong><b>Randevu oluştur</b><span>İl, ilçe, paket ve uygun zaman talebi CRM kuyruğuna düşer.</span></div>
+          <div class="timeline-step"><strong>2</strong><b>Şube kabul</b><span>Araç, müşteri beyanı ve kontrol kapsamı kayıt altına alınır.</span></div>
+          <div class="timeline-step"><strong>3</strong><b>Ön risk okuma</b><span>Plaka, şasi, kilometre ve müşteri şüphesi ilk ekranda değerlendirilir.</span></div>
+          <div class="timeline-step"><strong>4</strong><b>Kaporta-boya</b><span>Mikron, değişen, boya ve kozmetik bulgular standart dille işlenir.</span></div>
+          <div class="timeline-step"><strong>5</strong><b>Mekanik / OBD</b><span>Motor, şanzıman, yürüyen aksam ve elektronik arıza kayıtları kontrol edilir.</span></div>
+          <div class="timeline-step"><strong>6</strong><b>Yapay Zeka Öneri</b><span>Bulgular müşteri diline çevrilir; kritik ve takip gereken alanlar ayrışır.</span></div>
+          <div class="timeline-step"><strong>7</strong><b>QR dijital rapor</b><span>Rapor karekod ve rapor numarasıyla doğrulanabilir hale gelir.</span></div>
+          <div class="timeline-step"><strong>8</strong><b>Araç karnesi</b><span>Önceki OTOTR kayıtları varsa güncel raporla karşılaştırılır.</span></div>
+          <div class="timeline-step"><strong>9</strong><b>Güvenli karar</b><span>Müşteri satın alma öncesi riskleri açık ve ölçülebilir şekilde görür.</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="subeler">
+      <div class="inner">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">Şube ağı</span>
+            <h2>Size en yakın OTOTR şubesini bulun.</h2>
+            <p class="lead">İl veya ilçe seçin; uygun şube üzerinden ekspertiz randevu talebinizi oluşturun.</p>
+          </div>
+        </div>
+        <div class="branch-panel">
+          <aside class="search-panel">
+            <h3>Şube arama</h3>
+            <select name="province" data-province-select="branchDistrict"></select>
+            <select name="district" id="branchDistrict"></select>
+            <input id="branchSearch" placeholder="Şube, il veya ilçe yazın">
+            <button class="btn primary" data-open-appointment type="button">Size en yakın OTOTR şubesini bulun</button>
+          </aside>
+          <div class="map-card">
+            <div>
+              <h3>Türkiye genelinde kontrollü büyüme</h3>
+              <p class="lead">Canlı sistemde bu alan harita, çalışma saati, şube doluluğu, Google puanı ve uygun randevu slotlarıyla beslenecek.</p>
+              <div class="branch-list" id="branchList">
+                <div class="branch-item"><b>OTOTR Bursa Nilüfer</b><span>Marmara · Premium, Plus, Standart · SLA %94</span></div>
+                <div class="branch-item"><b>OTOTR İstanbul Ataşehir</b><span>Marmara · Yoğun şube · QR rapor aktif</span></div>
+                <div class="branch-item"><b>OTOTR Ankara Çukurambar</b><span>İç Anadolu · Toplu araç kontrolüne uygun</span></div>
+                <div class="branch-item"><b>OTOTR İzmir Bornova</b><span>Ege · Açılış hazırlığı takipte</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="rehber">
+      <div class="inner">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">Blog / Rehber</span>
+            <h2>İkinci el araç alırken daha bilinçli karar verin.</h2>
+            <p class="lead">Kısa, net ve karar destek odaklı rehber içerikleriyle müşterinin raporu doğru okumasını sağlıyoruz.</p>
+          </div>
+        </div>
+        <div class="blog-grid">
+          <article class="blog-card"><div class="blog-image one"></div><div><h3>Ekspertiz raporu nasıl okunur?</h3><p>Kritik bulgu, takip gerekli alan ve hukuki sınırı ayırt edin.</p></div></article>
+          <article class="blog-card"><div class="blog-image two"></div><div><h3>Airbag kontrolü neden önemlidir?</h3><p>Güvenlik sistemleri ve elektronik kayıtlar satın alma kararını etkiler.</p></div></article>
+          <article class="blog-card"><div class="blog-image three"></div><div><h3>Conta kaçak testi nedir?</h3><p>Motor sağlığı ve yüksek maliyetli riskler için temel kontrol başlığıdır.</p></div></article>
+          <article class="blog-card"><div class="blog-image four"></div><div><h3>İkinci el araç alırken dikkat edilmesi gerekenler</h3><p>KM, hasar, boya, mekanik ve dijital rapor doğrulama adımları.</p></div></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="guvence-merkezi">
+      <div class="inner">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">Güvence ve itiraz yönetimi</span>
+            <h2>Ekspertiz sonrası süreç de OTOTR standardının parçasıdır.</h2>
+            <p class="lead">Önceki versiyondaki şikayet, kalite ve hukuki sınır katmanlarını geri ekledik. Canlı sistemde her itiraz kalite, hukuk, operasyon ve Academy aksiyonlarına bağlanır.</p>
+          </div>
+        </div>
+        <div class="customer-support-grid" aria-label="Ekspertiz sonrası müşteri destek başlıkları">
+          <article class="support-card">
+            <strong>01</strong>
+            <b>Ücret iadesi değerlendirmesi</b>
+            <span>Memnuniyet talepleri belirlenen kapsam, kayıt ve koşullara bağlı olarak incelenir.</span>
+          </article>
+          <article class="support-card">
+            <strong>02</strong>
+            <b>1 ay / 1000 km mekanik destek</b>
+            <span>Uygun paket ve koşullarda mekanik destek süreciyle müşteri yanında olunur.</span>
+          </article>
+          <article class="support-card">
+            <strong>03</strong>
+            <b>7/24 VIP yönlendirme</b>
+            <span>Araç alım sürecinde ihtiyaç duyulan destek kanallarına hızlı yönlendirme sağlanır.</span>
+          </article>
+          <article class="support-card">
+            <strong>04</strong>
+            <b>Noter öncesi son kontrol</b>
+            <span>Satıştan önce kritik rapor başlıkları ve karar notları tekrar gözden geçirilebilir.</span>
+          </article>
+        </div>
+        <div class="assurance-grid">
+          <article class="assurance-card">
+            <h3>İtiraz / şikayet SLA akışı</h3>
+            <p class="lead">Müşteri itirazı sadece iletişim formu olarak kalmaz; rapor, foto delil, şube, personel ve eğitim kayıtlarıyla birlikte incelenir.</p>
+            <div class="assurance-list">
+              <div class="assurance-item"><strong>01</strong><div><b>Başvuru alınır</b><span>Rapor no, plaka, şube, müşteri notu ve iletişim bilgisi CRM kaydına dönüşür.</span></div></div>
+              <div class="assurance-item"><strong>02</strong><div><b>Yapay Zeka triage yapılır</b><span>Metin kalite, hukuk, operasyon veya Academy yeniden eğitim başlığına ayrılır.</span></div></div>
+              <div class="assurance-item"><strong>03</strong><div><b>Delil kontrol edilir</b><span>Fotoğraf arşivi, mikron ölçümü, OBD kaydı ve rapor revizyon geçmişi incelenir.</span></div></div>
+              <div class="assurance-item"><strong>04</strong><div><b>SLA ile kapatılır</b><span>Yanıt süresi, sorumlu ekip, sonuç notu ve gerekiyorsa eğitim/denetim aksiyonu takip edilir.</span></div></div>
+            </div>
+          </article>
+          <article class="assurance-card">
+            <h3>Sigortalı model ve hukuki sınır</h3>
+            <p class="lead">Sigortalı ekspertiz yaklaşımı güçlü bir güven unsurudur; ancak kapsam, kapsam dışı ve raporun hukuki sınırı müşteriye açık anlatılmalıdır.</p>
+            <div class="assurance-list">
+              <div class="assurance-item"><strong>QR</strong><div><b>Karekod doğrulama</b><span>Sahte rapor ve ekran görüntüsü riskini azaltır.</span></div></div>
+              <div class="assurance-item"><strong>SG</strong><div><b>Sigorta / partner faydası</b><span>Paket bazlı güvence canlıda kampanya ve poliçe şartlarına göre yönetilir.</span></div></div>
+              <div class="assurance-item"><strong>KVK</strong><div><b>Veri ve yetki sınırı</b><span>Rapor detayları müşteri doğrulaması ve KVKK izinlerine göre gösterilir.</span></div></div>
+              <div class="assurance-item"><strong>YZ</strong><div><b>Yapay Zeka Öneri notu</b><span>Yapay Zeka çıktısı teknik ekspertiz, resmi sicil veya bilirkişi raporu yerine geçmez.</span></div></div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="franchise-basvuru">
+      <div class="inner">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">Franchise başvurusu</span>
+            <h2>Yatırım bölgenizi seçin, il ve ilçe alanları otomatik hazırlansın.</h2>
+            <p class="lead">Bölge seçimine göre il listesi yenilenir. Konum izni istemeden bölge, il ve ilçe seçimini manuel olarak hazırlayabilirsiniz.</p>
+          </div>
+        </div>
+        <div class="assurance-grid">
+          <article class="assurance-card">
+            <h3>Franchise Ön Başvuru</h3>
+            <p class="lead">Başvuru demo ortamda ERP franchise ön eleme kuyruğuna kaydedilir.</p>
+            <div class="success" id="franchiseSuccess"></div>
+            <form id="franchiseApplicationForm" class="form-grid">
+              <div class="field"><label>Ad soyad</label><input name="fullName" required placeholder="Adınız Soyadınız"></div>
+              <div class="field"><label>Telefon</label><input name="phone" required placeholder="05xx xxx xx xx"></div>
+              <div class="field"><label>Başvuru tipi</label><select name="applicationType"><option>Sıfırdan franchise yatırımcısı</option><option>Mevcut ekspertiz firmamı dönüştürmek istiyorum</option><option>Lokasyonum / Otopoint alanım var</option><option>Mevcut bayi ikinci şube talebi</option></select></div>
+              <div class="field"><label>Bütçe</label><select name="budget"><option>3M - 5M TL</option><option>5M - 7M TL</option><option>7M - 10M TL</option><option>10M TL üzeri</option></select></div>
+              <div class="field"><label>Bölge</label><select name="region"><option value="">Bölge seçin</option></select></div>
+              <div class="field"><label>İl</label><select name="province" data-province-select="franchiseDistrict" required></select></div>
+              <div class="field"><label>İlçe</label><select name="district" id="franchiseDistrict" required></select></div>
+              <div class="field"><label>Lokasyon var mı?</label><select name="hasLocation"><option>Evet</option><option>Hayır</option><option>Görüşmek istiyorum</option></select></div>
+              <div class="field"><label>Metrekare</label><input name="squareMeters" placeholder="Örn. 450"></div>
+              <div class="field"><label>Günlük araç hedefi</label><input name="dailyTarget" placeholder="Örn. 10"></div>
+              <div class="field full"><label>Not</label><textarea name="note" placeholder="Lokasyon, deneyim, işletmeyi kimin yöneteceği veya yatırım planınızı yazabilirsiniz."></textarea></div>
+              <div class="field full"><button class="btn primary" type="submit">Franchise Başvurusu Gönder</button></div>
+            </form>
+          </article>
+          <article class="assurance-card">
+            <h3>Bölge Seçim Mantığı</h3>
+            <div class="assurance-list">
+              <div class="assurance-item"><strong>01</strong><div><b>Tüm bölgeler desteklenir</b><span>Marmara, İç Anadolu, Ege, Akdeniz, Karadeniz, Doğu Anadolu ve Güneydoğu Anadolu seçiminde il listesi otomatik yenilenir.</span></div></div>
+              <div class="assurance-item"><strong>02</strong><div><b>Manuel bölge seçimi</b><span>Şimdilik tarayıcı konum izni istenmez; yatırımcı bölge, il ve ilçe seçimini kendisi yapar.</span></div></div>
+              <div class="assurance-item"><strong>03</strong><div><b>ERP kuyruğu</b><span>Gönderilen kayıtlar demo ortamda Public Web yönetim alanı ve Franchise açılış merkezinde okunabilir.</span></div></div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="sss">
+      <div class="inner">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">Sık sorulan sorular</span>
+            <h2>Araç alacak müşterinin en kritik soruları.</h2>
+            <p class="lead">SSS alanı canlı yayında SEO, Yapay Zeka arama motorları ve müşteri güveni için genişletilecek temel içerik omurgasıdır.</p>
+          </div>
+        </div>
+        <div class="faq">
+          <details open><summary>OTOTR raporu resmi sicil veya bilirkişi raporu yerine geçer mi?</summary><p>Hayır. OTOTR ekspertiz raporu, kontrol tarihinde tespit edilen teknik ve operasyonel bulguların özetidir. Resmi sicil, kriminal inceleme veya bilirkişi raporu yerine geçmez.</p></details>
+          <details><summary>Karekodlu dijital rapor nasıl doğrulanır?</summary><p>Rapor üzerindeki karekod veya rapor numarası ile doğrulama ekranına gidilir. Canlı sistemde rapor tarihi, şube, paket, temel bulgular ve doğrulama durumu gösterilir.</p></details>
+          <details><summary>Dijital Araç Karnesi ne işe yarar?</summary><p>Aynı araç daha önce OTOTR sisteminde kontrol edildiyse, yeni rapor önceki kayıtla karşılaştırılır. Mikron artışı, yeni OBD kodu, mekanik risk veya kilometre tutarsızlığı daha kolay fark edilir.</p></details>
+          <details><summary>Yapay Zeka Öneri rapor yorumu teknik ekspertiz yerine geçer mi?</summary><p>Hayır. Yapay Zeka Öneri yorumu, müşterinin raporu daha kolay anlaması için karar destek sağlar. Teknik ekspertiz, resmi kayıt, sigorta kararı veya hukuki değerlendirme yerine geçmez.</p></details>
+          <details><summary>Yapay Zeka paket önerici nasıl çalışır?</summary><p>Araç yaşı, kilometre, satın alma amacı ve risk sinyaline göre Mini, Standart, Plus veya Premium pakete yönlendirme yapar. Amaç yanlış paket satışını azaltmak ve müşteri ihtiyacını netleştirmektir.</p></details>
+          <details><summary>Fotoğraf ön kontrol sonucu kesin hasar tespiti midir?</summary><p>Hayır. Fotoğraf ön kontrol sadece kozmetik risk sinyali üretir. Kesin değerlendirme için araç fiziki ekspertiz sürecinden geçmelidir.</p></details>
+          <details><summary>Sigortalı ekspertiz modeli ne anlama gelir?</summary><p>Paket ve kampanya yapısına göre sigorta veya partner faydalarının ekspertiz hizmetiyle birlikte sunulabilmesi anlamına gelir. Kapsam ve kapsam dışı şartlar canlı sistemde açıkça gösterilmelidir.</p></details>
+          <details><summary>Şikayet veya rapor itirazı nasıl yönetilir?</summary><p>İtiraz kaydı rapor no, şube, müşteri açıklaması ve delil arşiviyle birlikte kalite kuyruğuna düşer. Gerekirse hukuk, operasyon ve Academy yeniden eğitim aksiyonu açılır.</p></details>
+          <details><summary>Randevu talebi oluşturunca ne olur?</summary><p>İl, ilçe, paket ve iletişim bilgisi CRM randevu kuyruğuna düşer. Canlı sistemde şube kapasitesi, uygun saat ve müşteri kabul ekranı üzerinden talep netleştirilir.</p></details>
+          <details><summary>Hangi paketi seçmem gerektiğini bilmiyorsam ne yapmalıyım?</summary><p>Yapay Zeka Öneri alanı araç yaşı, kilometre, satın alma amacı ve risk şüphesine göre uygun paket yönlendirmesi yapar. Son karar şubedeki müşteri kabul ve teknik ekip değerlendirmesiyle netleşir.</p></details>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="musteri-yorumlari">
+      <div class="inner">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">Müşteri yorumları</span>
+            <h2>Raporu daha rahat okuyup karar veren müşterilerden kısa notlar.</h2>
+            <p class="lead">Yorumlar demo vitrin içeriğidir. Canlı yayında Google yorumları veya onaylı müşteri değerlendirmeleriyle beslenebilir.</p>
+          </div>
+        </div>
+        <div class="testimonials-grid" aria-label="Müşteri değerlendirmeleri">
+          <article class="testimonial-card">
+            <div class="testimonial-stars">★★★★★</div>
+            <p>Rapor ekranı sade olduğu için kaporta, motor ve elektronik tarafındaki riskleri tek bakışta ayırabildim. Satın alma kararımı aceleye getirmedim.</p>
+            <div class="testimonial-person">
+              <span class="testimonial-avatar">EA</span>
+              <div><b>Emre A.</b><span>Bursa · Bireysel alıcı</span></div>
+            </div>
+          </article>
+          <article class="testimonial-card">
+            <div class="testimonial-stars">★★★★★</div>
+            <p>Randevu, paket ve rapor sorgulama adımları anlaşılırdı. Ekspertiz sonrası notların kapsam ve koşullarla anlatılması güven verdi.</p>
+            <div class="testimonial-person">
+              <span class="testimonial-avatar">SK</span>
+              <div><b>Selin K.</b><span>İstanbul · Plus paket</span></div>
+            </div>
+          </article>
+          <article class="testimonial-card">
+            <div class="testimonial-stars">★★★★☆</div>
+            <p>QR rapor doğrulama ve foto delil fikri özellikle hoşuma gitti. Aracı almadan önce satıcıyla konuşacağım başlıkları netleştirdi.</p>
+            <div class="testimonial-person">
+              <span class="testimonial-avatar">MY</span>
+              <div><b>Murat Y.</b><span>Gemlik · Premium kontrol</span></div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="indir" hidden>
+      <div class="inner">
+        <div class="download-panel">
+          <div class="download-copy">
+            <span class="eyebrow">İndir</span>
+            <h2>Special dosyasını tek tıkla indirin.</h2>
+            <p class="lead">Dosya GitHub üzerinde tutulur ve indir butonu resmi OTOTR deposundaki güncel arşive yönlendirir.</p>
+            <div class="download-meta" aria-label="İndirilecek dosya bilgileri">
+              <span>Special.rar</span>
+              <span>RAR arşivi</span>
+              <span>Yaklaşık 22 MB</span>
+              <span>GitHub üzerinden indirme</span>
+            </div>
+          </div>
+          <div class="download-action">
+            <div class="download-file">
+              <strong>RAR</strong>
+              <div>
+                <b>Special.rar</b>
+                <span>Butona tıklayınca GitHub'daki dosya indirme bağlantısı açılır.</span>
+              </div>
+            </div>
+            <button class="btn primary" type="button" data-download-file data-download-url="https://raw.githubusercontent.com/samivolkan/Ototr/main/downloads/Special.rar" data-download-name="Special.rar">Dosyayı İndir</button>
+            <span class="download-status" id="downloadStatus" aria-live="polite"></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="inner">
+        <div class="final-cta">
+          <div>
+            <span class="eyebrow">OTOTR standardıyla karar verin</span>
+            <h2>Aracınızı almadan önce raporu doğrulayın, riski görün, doğru şubeden randevu alın.</h2>
+            <p class="lead">OTOTR public web deneyimi müşteriyi hızlı randevu, QR rapor doğrulama, yakın şube bulma ve Yapay Zeka Öneri desteğiyle güvenli satın alma kararına taşır.</p>
+          </div>
+          <div class="hero-actions">
+            <button class="btn primary" data-open-appointment type="button">Randevu Al</button>
+            <a class="btn light" href="#dijital-rapor">Rapor Sorgula</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="appointmentDialog">
+    <form id="appointmentForm" method="dialog">
+      <div class="modal-head">
+        <div><h3>Ekspertiz Randevu Talebi</h3><p>Talep demo CRM kuyruğuna kaydedilir. Canlı sistemde şube kapasite ve müşteri kabul ekranına düşer.</p></div>
+        <button class="close" type="button" data-close-appointment>×</button>
+      </div>
+      <div class="modal-body">
+        <div class="success" id="appointmentSuccess"></div>
+        <div class="form-grid">
+          <div class="field"><label>Ad soyad</label><input name="fullName" required placeholder="Adınız Soyadınız"></div>
+          <div class="field"><label>Telefon</label><input name="phone" required placeholder="05xx xxx xx xx"></div>
+          <div class="field"><label>İl</label><select name="province" data-province-select="appointmentDistrict" required></select></div>
+          <div class="field"><label>İlçe</label><select name="district" id="appointmentDistrict" required></select></div>
+          <div class="field"><label>Plaka</label><input name="plate" placeholder="34 OTR 360"></div>
+          <div class="field"><label>Paket</label><select name="service" required><option>OTOTR Mini</option><option>OTOTR Standart</option><option>OTOTR Plus</option><option>OTOTR Premium</option></select></div>
+          <div class="field full"><label>Not</label><textarea name="note" placeholder="Araç modeli, özel kontrol talebi veya uygun saat aralığını yazabilirsiniz."></textarea></div>
+        </div>
+      </div>
+      <div class="modal-actions"><span>Randevu talebi ön kayıttır.</span><button class="btn primary" type="submit">Talebi Gönder</button></div>
+    </form>
+  </dialog>
+
+  <footer>
+    <div class="foot">
+      <div><b>OTOTR</b>Yeni nesil tarafsız araç ekspertizi, karekodlu dijital rapor ve merkezi kalite standardı.</div>
+      <div><b>İletişim</b>WhatsApp: 0555 888 0501<br>Canlı yayında telefon, harita ve şube listesi ERP'den beslenecek.</div>
+      <div><b>Yasal Not</b>Ekspertiz raporu resmi sicil, kriminal inceleme veya bilirkişi raporu yerine geçmez.</div>
+    </div>
+  </footer>
+
+  <div class="sticky-conversion" aria-label="Hızlı işlem çubuğu">
+    <span><b>OTOTR</b><br>Randevu, rapor sorgulama ve yakın şube tek ekranda.</span>
+    <div class="hero-actions" style="margin:0">
+      <button class="btn primary" data-open-appointment type="button">Randevu</button>
+      <a class="btn light" href="#dijital-rapor">Rapor</a>
+    </div>
+  </div>
+
+  <a class="whatsapp-float" href="https://wa.me/905558880501?text=Merhaba%20OTOTR%2C%20bilgi%20almak%20istiyorum." target="_blank" rel="noopener noreferrer" aria-label="WhatsApp ile iletişime geç">
+    <span class="whatsapp-bubble"><b>WhatsApp destek</b><span>Randevu, rapor ve paket sorularınız için yazın.</span></span>
+    <span class="whatsapp-icon" aria-hidden="true">
+      <svg viewBox="0 0 32 32" role="img" focusable="false"><path d="M16.02 3.2c-7.05 0-12.78 5.7-12.78 12.72 0 2.25.59 4.45 1.71 6.38L3.13 28.8l6.68-1.75a12.86 12.86 0 0 0 6.21 1.58c7.05 0 12.78-5.7 12.78-12.72S23.07 3.2 16.02 3.2Zm0 23.27c-2.02 0-4-.54-5.72-1.55l-.41-.24-3.96 1.04 1.06-3.85-.26-.4a10.49 10.49 0 0 1-1.61-5.55c0-5.83 4.89-10.56 10.9-10.56 6 0 10.89 4.73 10.89 10.56 0 5.82-4.89 10.55-10.89 10.55Zm5.98-7.9c-.33-.16-1.95-.96-2.25-1.07-.3-.11-.52-.16-.74.16-.22.32-.85 1.07-1.04 1.29-.19.21-.38.24-.71.08-.33-.16-1.39-.51-2.65-1.63-.98-.87-1.64-1.94-1.83-2.26-.19-.32-.02-.5.14-.66.14-.14.33-.38.49-.57.16-.19.22-.32.33-.54.11-.21.05-.4-.03-.56-.08-.16-.74-1.77-1.01-2.43-.27-.64-.54-.55-.74-.56h-.63c-.22 0-.57.08-.87.4-.3.32-1.15 1.12-1.15 2.72 0 1.6 1.18 3.15 1.34 3.36.16.21 2.33 3.53 5.64 4.95.79.34 1.4.54 1.88.69.79.25 1.51.21 2.08.13.63-.09 1.95-.79 2.22-1.55.27-.76.27-1.41.19-1.55-.08-.13-.3-.21-.63-.37Z"/></svg>
+    </span>
+  </a>
+
+  <script>
+    const provinceDistricts = {
+      "Adana":["Seyhan","Yüreğir","Çukurova","Sarıçam","Ceyhan"], "Adıyaman":["Merkez","Besni","Kahta","Gölbaşı"], "Afyonkarahisar":["Merkez","Sandıklı","Dinar","Bolvadin"], "Ağrı":["Merkez","Doğubayazıt","Patnos","Eleşkirt"], "Amasya":["Merkez","Merzifon","Suluova","Taşova"], "Ankara":["Çankaya","Keçiören","Yenimahalle","Mamak","Etimesgut","Sincan","Gölbaşı"], "Antalya":["Muratpaşa","Kepez","Konyaaltı","Alanya","Manavgat","Serik"], "Artvin":["Merkez","Hopa","Borçka","Arhavi"], "Aydın":["Efeler","Nazilli","Söke","Kuşadası","Didim"], "Balıkesir":["Altıeylül","Karesi","Bandırma","Edremit"], "Bilecik":["Merkez","Bozüyük","Osmaneli"], "Bingöl":["Merkez","Genç","Solhan"], "Bitlis":["Merkez","Tatvan","Ahlat"], "Bolu":["Merkez","Gerede","Mudurnu"], "Burdur":["Merkez","Bucak","Gölhisar"], "Bursa":["Nilüfer","Osmangazi","Yıldırım","Mudanya","Gemlik","İnegöl"], "Çanakkale":["Merkez","Biga","Gelibolu"], "Çankırı":["Merkez","Çerkeş","Ilgaz"], "Çorum":["Merkez","Sungurlu","Osmancık"], "Denizli":["Pamukkale","Merkezefendi","Çivril"], "Diyarbakır":["Bağlar","Kayapınar","Yenişehir","Sur"], "Edirne":["Merkez","Keşan","Uzunköprü"], "Elazığ":["Merkez","Kovancılar","Palu"], "Erzincan":["Merkez","Tercan","Üzümlü"], "Erzurum":["Yakutiye","Palandöken","Aziziye"], "Eskişehir":["Odunpazarı","Tepebaşı","Sivrihisar"], "Gaziantep":["Şahinbey","Şehitkamil","Nizip"], "Giresun":["Merkez","Bulancak","Tirebolu"], "Gümüşhane":["Merkez","Kelkit","Şiran"], "Hakkari":["Merkez","Yüksekova","Şemdinli"], "Hatay":["Antakya","İskenderun","Defne"], "Isparta":["Merkez","Yalvaç","Eğirdir"], "Mersin":["Yenişehir","Mezitli","Toroslar","Akdeniz","Tarsus"], "İstanbul":["Ataşehir","Bağcılar","Bakırköy","Başakşehir","Beşiktaş","Kadıköy","Pendik","Ümraniye"], "İzmir":["Bornova","Karşıyaka","Konak","Buca","Çiğli"], "Kars":["Merkez","Kağızman","Sarıkamış"], "Kastamonu":["Merkez","Tosya","Taşköprü"], "Kayseri":["Melikgazi","Kocasinan","Talas"], "Kırklareli":["Merkez","Lüleburgaz","Babaeski"], "Kırşehir":["Merkez","Kaman","Mucur"], "Kocaeli":["İzmit","Gebze","Darıca","Körfez"], "Konya":["Selçuklu","Meram","Karatay"], "Kütahya":["Merkez","Tavşanlı","Simav"], "Malatya":["Battalgazi","Yeşilyurt","Doğanşehir"], "Manisa":["Şehzadeler","Yunusemre","Akhisar"], "Kahramanmaraş":["Onikişubat","Dulkadiroğlu","Elbistan"], "Mardin":["Artuklu","Kızıltepe","Midyat"], "Muğla":["Menteşe","Bodrum","Fethiye"], "Muş":["Merkez","Malazgirt","Bulanık"], "Nevşehir":["Merkez","Ürgüp","Avanos"], "Niğde":["Merkez","Bor","Ulukışla"], "Ordu":["Altınordu","Ünye","Fatsa"], "Rize":["Merkez","Çayeli","Pazar"], "Sakarya":["Adapazarı","Serdivan","Erenler"], "Samsun":["Atakum","İlkadım","Canik"], "Siirt":["Merkez","Kurtalan","Pervari"], "Sinop":["Merkez","Boyabat","Gerze"], "Sivas":["Merkez","Şarkışla","Suşehri"], "Tekirdağ":["Süleymanpaşa","Çorlu","Çerkezköy"], "Tokat":["Merkez","Turhal","Niksar"], "Trabzon":["Ortahisar","Akçaabat","Yomra"], "Tunceli":["Merkez","Pertek","Mazgirt"], "Şanlıurfa":["Haliliye","Eyyübiye","Karaköprü"], "Uşak":["Merkez","Banaz","Eşme"], "Van":["İpekyolu","Tuşba","Edremit"], "Yozgat":["Merkez","Sorgun","Akdağmadeni"], "Zonguldak":["Merkez","Ereğli","Çaycuma"], "Aksaray":["Merkez","Ortaköy","Eskil"], "Bayburt":["Merkez","Demirözü","Aydıntepe"], "Karaman":["Merkez","Ermenek","Ayrancı"], "Kırıkkale":["Merkez","Yahşihan","Keskin"], "Batman":["Merkez","Kozluk","Sason"], "Şırnak":["Merkez","Cizre","Silopi"], "Bartın":["Merkez","Amasra","Ulus"], "Ardahan":["Merkez","Göle","Çıldır"], "Iğdır":["Merkez","Tuzluca","Aralık"], "Yalova":["Merkez","Çiftlikköy","Altınova"], "Karabük":["Merkez","Safranbolu","Eskipazar"], "Kilis":["Merkez","Musabeyli","Elbeyli"], "Osmaniye":["Merkez","Kadirli","Düziçi"], "Düzce":["Merkez","Akçakoca","Kaynaşlı"]
+    };
+
+    const provinceRegions = {
+      "Marmara":["İstanbul","Bursa","Kocaeli","Sakarya","Tekirdağ","Edirne","Kırklareli","Balıkesir","Çanakkale","Bilecik","Yalova"],
+      "İç Anadolu":["Ankara","Konya","Kayseri","Eskişehir","Sivas","Kırıkkale","Kırşehir","Aksaray","Karaman","Nevşehir","Niğde","Yozgat","Çankırı"],
+      "Ege":["İzmir","Aydın","Muğla","Manisa","Denizli","Afyonkarahisar","Kütahya","Uşak"],
+      "Akdeniz":["Antalya","Mersin","Adana","Hatay","Osmaniye","Kahramanmaraş","Isparta","Burdur"],
+      "Karadeniz":["Samsun","Trabzon","Ordu","Rize","Giresun","Zonguldak","Bartın","Karabük","Düzce","Bolu","Sinop","Tokat","Amasya","Çorum","Kastamonu","Artvin","Gümüşhane","Bayburt"],
+      "Doğu Anadolu":["Erzurum","Erzincan","Malatya","Elazığ","Van","Ağrı","Kars","Ardahan","Iğdır","Muş","Bitlis","Bingöl","Tunceli","Hakkari"],
+      "Güneydoğu Anadolu":["Gaziantep","Şanlıurfa","Diyarbakır","Mardin","Batman","Şırnak","Siirt","Adıyaman","Kilis"]
+    };
+
+    const branchGeoLocations = [
+      { province: "Bursa", district: "Nilüfer", branch: "OTOTR Bursa Nilüfer", region: "Marmara", lat: 40.213, lon: 28.967, services: "Premium, Plus, Standart", sla: "%94" },
+      { province: "İstanbul", district: "Ataşehir", branch: "OTOTR İstanbul Ataşehir", region: "Marmara", lat: 40.992, lon: 29.124, services: "Premium, Plus, Standart", sla: "%91" },
+      { province: "Ankara", district: "Çankaya", branch: "OTOTR Ankara Çukurambar", region: "İç Anadolu", lat: 39.910, lon: 32.790, services: "Plus, Standart, Filo", sla: "%89" },
+      { province: "İzmir", district: "Bornova", branch: "OTOTR İzmir Bornova", region: "Ege", lat: 38.462, lon: 27.217, services: "Premium, Plus, Standart", sla: "%88" },
+      { province: "Antalya", district: "Kepez", branch: "OTOTR Antalya Kepez", region: "Akdeniz", lat: 36.922, lon: 30.713, services: "Premium, Plus, Standart", sla: "%86" },
+      { province: "Samsun", district: "Atakum", branch: "OTOTR Samsun Atakum", region: "Karadeniz", lat: 41.342, lon: 36.256, services: "Standart, Plus", sla: "%87" },
+      { province: "Erzurum", district: "Yakutiye", branch: "OTOTR Erzurum Yakutiye", region: "Doğu Anadolu", lat: 39.905, lon: 41.267, services: "Standart, Plus", sla: "%84" },
+      { province: "Gaziantep", district: "Şahinbey", branch: "OTOTR Gaziantep Şahinbey", region: "Güneydoğu Anadolu", lat: 37.066, lon: 37.383, services: "Premium, Plus, Standart", sla: "%85" }
+    ];
+
+    const appointmentDialog = document.getElementById('appointmentDialog');
+    const navLinks = document.getElementById('navLinks');
+    const menuBtn = document.getElementById('menuBtn');
+    let geoSuggestedLocation = null;
+
+    function appendOption(select, value, label) {
+      const option = document.createElement('option');
+      option.value = value;
+      option.textContent = label || value;
+      select.appendChild(option);
+    }
+
+    function ensureRegionOptions(regionSelect) {
+      if (!regionSelect) return;
+      const existing = new Set([...regionSelect.options].map((option) => option.value || option.textContent));
+      Object.keys(provinceRegions).forEach((region) => {
+        if (!existing.has(region)) appendOption(regionSelect, region);
+      });
+    }
+
+    function initProvinceDistricts() {
+      document.querySelectorAll('[data-province-select]').forEach((provinceSelect) => {
+        const districtSelect = document.getElementById(provinceSelect.dataset.provinceSelect);
+        const regionSelect = provinceSelect.closest('form')?.querySelector('select[name="region"]');
+        ensureRegionOptions(regionSelect);
+        const provinceKeys = () => {
+          const regionValue = regionSelect?.value;
+          return regionValue && provinceRegions[regionValue] ? provinceRegions[regionValue] : Object.keys(provinceDistricts);
+        };
+        const fillDistricts = () => {
+          districtSelect.innerHTML = '';
+          appendOption(districtSelect, '', 'İlçe seçin');
+          (provinceDistricts[provinceSelect.value] || []).forEach((district) => appendOption(districtSelect, district));
+        };
+        const fillProvinces = () => {
+          provinceSelect.innerHTML = '';
+          appendOption(provinceSelect, '', 'İl seçin');
+          provinceKeys().forEach((city) => appendOption(provinceSelect, city));
+          fillDistricts();
+        };
+        provinceSelect.addEventListener('change', fillDistricts);
+        regionSelect?.addEventListener('change', fillProvinces);
+        fillProvinces();
+      });
+    }
+
+    function toRad(value) { return value * Math.PI / 180; }
+
+    function geoDistanceKm(a, b) {
+      const radius = 6371;
+      const dLat = toRad(b.lat - a.lat);
+      const dLon = toRad(b.lon - a.lon);
+      const lat1 = toRad(a.lat);
+      const lat2 = toRad(b.lat);
+      const h = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
+      return 2 * radius * Math.asin(Math.sqrt(h));
+    }
+
+    function nearestBranchLocation(coords) {
+      const point = { lat: coords.latitude, lon: coords.longitude };
+      return branchGeoLocations
+        .map((item) => ({ ...item, distance: geoDistanceKm(point, item) }))
+        .sort((a, b) => a.distance - b.distance)[0];
+    }
+
+    function setRegionProvinceDistrict(provinceSelect, location) {
+      const districtSelect = document.getElementById(provinceSelect.dataset.provinceSelect);
+      if (!districtSelect) return;
+      const regionSelect = provinceSelect.closest('form')?.querySelector('select[name="region"]');
+      if (regionSelect && location.region && [...regionSelect.options].some((option) => option.value === location.region)) {
+        regionSelect.value = location.region;
+        regionSelect.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+      const province = location.province;
+      const district = location.district;
+      if ([...provinceSelect.options].some((option) => option.value === province)) {
+        provinceSelect.value = province;
+        provinceSelect.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+      if ([...districtSelect.options].some((option) => option.value === district)) {
+        districtSelect.value = district;
+      }
+    }
+
+    function renderNearestBranch(location) {
+      const list = document.getElementById('branchList');
+      if (!list || !location) return;
+      const km = Math.max(1, Math.round(location.distance || 0));
+      const others = branchGeoLocations
+        .filter((item) => item.branch !== location.branch)
+        .slice(0, 3)
+        .map((item) => `<div class="branch-item"><b>${item.branch}</b><span>${item.region} · ${item.services} · SLA ${item.sla}</span></div>`)
+        .join('');
+      list.innerHTML = `<div class="branch-item"><b>Size en yakın: ${location.branch}</b><span>${location.province} / ${location.district} · Yaklaşık ${km} km · ${location.services} · SLA ${location.sla}</span></div>${others}`;
+    }
+
+    function applyDetectedLocation(location) {
+      if (!location) return;
+      geoSuggestedLocation = location;
+      document.querySelectorAll('[data-province-select]').forEach((provinceSelect) => {
+        setRegionProvinceDistrict(provinceSelect, location);
+      });
+      const branchSearch = document.getElementById('branchSearch');
+      if (branchSearch && !branchSearch.value) branchSearch.value = `${location.province} ${location.district}`;
+      renderNearestBranch(location);
+      localStorage.setItem('ototrLastGeoSuggestion', JSON.stringify({
+        province: location.province,
+        district: location.district,
+        branch: location.branch,
+        region: location.region,
+        distance: Math.round(location.distance || 0)
+      }));
+    }
+
+    function applyStoredLocationSuggestion() {
+      try {
+        const saved = JSON.parse(localStorage.getItem('ototrLastGeoSuggestion') || 'null');
+        if (saved?.province && saved?.district) {
+          const full = branchGeoLocations.find((item) => item.branch === saved.branch || (item.province === saved.province && item.district === saved.district));
+          applyDetectedLocation({ ...(full || saved), ...saved });
+        }
+      } catch (error) {}
+    }
+
+    function requestLocationSuggestion() {
+      applyStoredLocationSuggestion();
+      return;
+    }
+
+    function saveRecord(key, prefix, data) {
+      const list = JSON.parse(localStorage.getItem(key) || '[]');
+      const record = { id: `${prefix}-${String(2600 + list.length + 1)}`, createdAt: new Date().toISOString(), ...data };
+      list.unshift(record);
+      localStorage.setItem(key, JSON.stringify(list));
+      return record;
+    }
+
+    function showSuccess(id, text) {
+      const box = document.getElementById(id);
+      box.style.display = 'block';
+      box.textContent = text;
+    }
+
+    function closeMobileMenu() { navLinks.classList.remove('open'); }
+
+    initProvinceDistricts();
+    requestLocationSuggestion();
+
+    menuBtn.addEventListener('click', () => navLinks.classList.toggle('open'));
+    navLinks.querySelectorAll('a').forEach((link) => link.addEventListener('click', closeMobileMenu));
+
+    function formatCounterValue(value) {
+      return Math.round(value).toLocaleString('tr-TR');
+    }
+
+    function animateVehicleCounter(element) {
+      if (element.dataset.counted === 'true') return;
+      element.dataset.counted = 'true';
+      const target = Number(element.dataset.target || 0);
+      const duration = 1400;
+      const start = Date.now();
+      const timer = setInterval(() => {
+        const progress = Math.min((Date.now() - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        element.textContent = formatCounterValue(target * eased);
+        if (progress >= 1) {
+          element.textContent = formatCounterValue(target);
+          clearInterval(timer);
+        }
+      }, 22);
+    }
+
+    function initVehicleCounters() {
+      const counters = document.querySelectorAll('.vehicle-counter[data-target]');
+      if (!counters.length) return;
+
+      const animateVisibleCounters = () => {
+        counters.forEach((counter) => {
+          if (counter.dataset.counted === 'true') return;
+          const rect = counter.getBoundingClientRect();
+          const nearViewport = rect.top < window.innerHeight * 0.92 && rect.bottom > 0;
+          if (nearViewport || window.location.hash === '#arac-adetleri') {
+            animateVehicleCounter(counter);
+          }
+        });
+      };
+
+      if (!('IntersectionObserver' in window)) {
+        counters.forEach(animateVehicleCounter);
+        return;
+      }
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          animateVehicleCounter(entry.target);
+          observer.unobserve(entry.target);
+        });
+      }, { threshold: 0.45 });
+
+      counters.forEach((counter) => observer.observe(counter));
+      window.addEventListener('scroll', animateVisibleCounters, { passive: true });
+      window.addEventListener('hashchange', animateVisibleCounters);
+      setTimeout(animateVisibleCounters, 250);
+    }
+
+    initVehicleCounters();
+
+    document.querySelectorAll('[data-download-file]').forEach((button) => {
+      button.addEventListener('click', async () => {
+        const status = document.getElementById('downloadStatus');
+        const url = button.dataset.downloadUrl;
+        const filename = button.dataset.downloadName || 'Special.rar';
+        const originalText = button.textContent;
+        button.disabled = true;
+        button.textContent = 'Hazırlanıyor...';
+        if (status) status.textContent = 'Dosya hazırlanıyor, indirme birazdan başlayacak.';
+        try {
+          const response = await fetch(url, { mode: 'cors' });
+          if (!response.ok) throw new Error(`Download failed: ${response.status}`);
+          const blob = await response.blob();
+          const objectUrl = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = objectUrl;
+          link.download = filename;
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+          window.setTimeout(() => URL.revokeObjectURL(objectUrl), 30000);
+          if (status) status.textContent = 'İndirme başladı. Tarayıcınızın indirilenler bölümünü kontrol edin.';
+        } catch (error) {
+          if (status) status.textContent = 'Otomatik indirme başlatılamadı; dosya bağlantısı yeni sekmede açılıyor.';
+          window.open(url, '_blank', 'noopener,noreferrer');
+        } finally {
+          button.disabled = false;
+          button.textContent = originalText;
+        }
+      });
+    });
+
+    document.querySelectorAll('[data-open-appointment]').forEach((button) => {
+      button.addEventListener('click', (event) => {
+        event.preventDefault();
+        if (geoSuggestedLocation) applyDetectedLocation(geoSuggestedLocation);
+        appointmentDialog.showModal();
+      });
+    });
+
+    document.querySelector('[data-close-appointment]').addEventListener('click', () => appointmentDialog.close());
+
+    document.getElementById('quickAppointmentForm').addEventListener('submit', (event) => {
+      event.preventDefault();
+      const data = Object.fromEntries(new FormData(event.currentTarget).entries());
+      const record = saveRecord('ototrPublicAppointmentLeads', 'WEB-CRM', { source: 'Hero hızlı randevu', status: 'CRM randevu kuyruğu', ...data });
+      event.currentTarget.reset();
+      if (geoSuggestedLocation) applyDetectedLocation(geoSuggestedLocation);
+      alert(`Randevu talebi alındı: ${record.id}`);
+    });
+
+    document.getElementById('appointmentForm').addEventListener('submit', (event) => {
+      event.preventDefault();
+      const data = Object.fromEntries(new FormData(event.currentTarget).entries());
+      const record = saveRecord('ototrPublicAppointmentLeads', 'WEB-CRM', { source: 'Public web randevu formu', status: 'CRM randevu kuyruğu', ...data });
+      showSuccess('appointmentSuccess', `Randevu talebi alındı: ${record.id}.`);
+      event.currentTarget.reset();
+      if (geoSuggestedLocation) applyDetectedLocation(geoSuggestedLocation);
+    });
+
+    document.getElementById('franchiseApplicationForm')?.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const data = Object.fromEntries(new FormData(event.currentTarget).entries());
+      const cityDistrict = [data.province, data.district].filter(Boolean).join(' / ');
+      const record = saveRecord('ototrPublicFranchiseApplications', 'WEB-FR', {
+        source: 'Public web franchise formu',
+        status: 'ERP ön eleme kuyruğu',
+        cityDistrict,
+        ...data
+      });
+      showSuccess('franchiseSuccess', `Franchise başvurusu alındı: ${record.id}.`);
+      event.currentTarget.reset();
+      if (geoSuggestedLocation) applyDetectedLocation(geoSuggestedLocation);
+    });
+
+    document.getElementById('aiPackageForm')?.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const data = Object.fromEntries(new FormData(event.currentTarget).entries());
+      let packageName = 'OTOTR Standart';
+      const reasons = [];
+      if (data.purpose === 'fleet') {
+        packageName = 'OTOTR Plus / Filo Kontrol';
+        reasons.push('Toplu araç akışı için SLA, standart kontrol formu ve özet risk raporu gerekir.');
+      } else if (data.purpose === 'paint') {
+        packageName = 'OTOTR Mini + Kaporta/Boya Odaklı Kontrol';
+        reasons.push('Talep boya/değişen odağında; mekanik karar için ek paket önerilir.');
+      } else if (data.age === '8+' || data.mileage === 'high' || data.risk !== 'normal' || data.purpose === 'buy') {
+        packageName = 'OTOTR Premium';
+        reasons.push('Satın alma kararı, yaş/km veya şüphe sinyali kapsamlı kontrol gerektiriyor.');
+      } else {
+        reasons.push('Temel riskleri görmek için standart kontrol yeterli başlangıç sağlar.');
+      }
+      if (data.mileage === 'high') reasons.push('Yüksek kilometrede motor, şanzıman, OBD ve yağ kaçağı başlıkları özellikle okunmalı.');
+      if (data.risk === 'premium') reasons.push('Araç değeri yüksek olduğu için QR rapor, foto delil ve Dijital Araç Karnesi kaydı önem kazanır.');
+      document.getElementById('aiPackageOutput').innerHTML = `<b>${packageName}</b><br>${reasons.map((item) => `• ${item}`).join('<br>')}<br><br><span style="color:#667085">Yapay Zeka Önerisi satış yönlendirmesidir; teknik ekspertiz veya hukuki değerlendirme yerine geçmez.</span>`;
+    });
+
+    const demoReport = {
+      reportNo: 'OTR-2026-1842',
+      legacyReportNo: 'OTR-2026-000154',
+      plate: '16 OTR 042',
+      vehicle: '2023 Renault Clio',
+      branch: 'OTOTR Bursa Nilüfer',
+      packageName: 'OTOTR Plus',
+      score: 88,
+      finding: 'Kaporta detaylı kontrol tamamlandı; motor normal, elektronik arıza kaydı yok.',
+      verify: 'Geçerli rapor',
+      categories: ['Kaporta', 'Motor', 'Mekanik', 'Elektronik', 'Airbag', 'Conta kaçak testi']
+    };
+
+    function renderReportResult(report) {
+      document.getElementById('reportLookupResult').innerHTML = `
+        <b style="color:#111827">${report.plate} · ${report.reportNo}</b>
+        <div class="result-grid">
+          <div class="result-tile"><b>${report.score}/100</b><span>Rapor skoru</span></div>
+          <div class="result-tile"><b>${report.packageName}</b><span>Paket</span></div>
+          <div class="result-tile"><b>${report.verify}</b><span>Doğrulama</span></div>
+        </div>
+        <p style="margin:12px 0 0;color:#667085">${report.branch}. Araç: ${report.vehicle}. Kritik bulgu: ${report.finding}. Bu demo sonuçtur; canlı sistemde KVKK ve yetki kontrolleri uygulanır.</p>
+        <p style="margin:10px 0 0;color:#667085;font-size:12px">Kontrol başlıkları: ${report.categories.join(', ')}.</p>
+      `;
+    }
+
+    document.getElementById('reportLookupForm').addEventListener('submit', (event) => {
+      event.preventDefault();
+      const query = String(new FormData(event.currentTarget).get('lookup') || '').replace(/\s+/g, '').toUpperCase();
+      if (['OTR-2026-1842', demoReport.legacyReportNo, '34OTR360', '16OTR042'].some((item) => item.replace(/\s+/g, '').toUpperCase() === query)) {
+        renderReportResult(demoReport);
+      } else {
+        document.getElementById('reportLookupResult').textContent = 'Bu demo arşivde eşleşen rapor bulunamadı. Canlı sistemde yeni ekspertiz randevusu önerilir.';
+      }
+    });
+
+    document.querySelector('[data-fill-demo-report]').addEventListener('click', () => {
+      document.querySelector('#reportLookupForm input[name="lookup"]').value = demoReport.reportNo;
+      renderReportResult(demoReport);
+    });
+  </script>
+</body>
+</html>
