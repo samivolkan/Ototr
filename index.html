@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="ototr-version" content="SVK v1.0.228-live-only-work-orders" />
+  <meta name="ototr-version" content="SVK v1.0.229-live-session-refresh" />
   <title>OTOTR Genel Merkez ERP + CRM</title>
   <link rel="icon" type="image/svg+xml" href="docs/ototr-favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1172,7 +1172,7 @@
   </script>
   <div class="app">
     <aside class="side">
-      <div class="brand-row"><a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.228</small><small class="update-tag" title="Son güncelleme: Bayi portalı eski demo iş emirlerinden arındırıldı; yalnız canlı Supabase iş emirleri listelenir.">26.05 · Canlı tek iş emri</small></div></a><div class="brand-actions"><button class="theme-toggle" type="button" data-theme-toggle title="Koyu temaya geç" aria-label="Tema değiştir"><i data-lucide="sun-moon"></i><span id="themeToggleText">Açık</span></button><div class="online-pill" title="Online kullanıcı sayısı"><span class="online-dot"></span><b data-online-count>42</b><small>kişi</small></div></div></div>
+      <div class="brand-row"><a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.229</small><small class="update-tag" title="Son güncelleme: Bayi portalı canlı Supabase oturumunu güvenli şekilde yeniler; canlı iş emirleri oturum açınca listelenir.">26.05 · Canlı oturum yenileme</small></div></a><div class="brand-actions"><button class="theme-toggle" type="button" data-theme-toggle title="Koyu temaya geç" aria-label="Tema değiştir"><i data-lucide="sun-moon"></i><span id="themeToggleText">Açık</span></button><div class="online-pill" title="Online kullanıcı sayısı"><span class="online-dot"></span><b data-online-count>42</b><small>kişi</small></div></div></div>
       <div class="nav" id="nav"></div>
     </aside>
 
@@ -3436,7 +3436,7 @@
         status:b.risk==='Yüksek'?'İnceleme':b.risk==='Orta'?'Takip':'Stabil'
       }));
       out.demoDataHealth={
-      version:'SVK v1.0.228',
+      version:'SVK v1.0.229',
         branchUniverse:'10 aktif şube / 4 bölge',
         packagePriceBand:'5.000 TL - 15.000 TL',
         avgTicketBand:'8.350 TL - 9.900 TL',
@@ -6447,13 +6447,49 @@
     const DEALER_SUPABASE_SESSION_KEY='ototr-dealer-supabase-session-v1';
     const DEALER_SUPABASE_SYNC_KEY='ototr-dealer-supabase-sync-v1';
     let dealerSupabaseSyncInFlight=false;
-    function dealerSupabaseSession(){
+    function dealerStoredSupabaseSession(){
       try{
         const session=JSON.parse(localStorage.getItem(DEALER_SUPABASE_SESSION_KEY)||'null');
+        if(!session?.access_token&&!session?.refresh_token) return null;
+        return session;
+      }catch(err){return null;}
+    }
+    function dealerSupabaseSession(){
+      const session=dealerStoredSupabaseSession();
+      try{
         if(!session?.access_token||!session?.expires_at) return null;
         if(Number(session.expires_at)<Date.now()+60000) return null;
         return session;
       }catch(err){return null;}
+    }
+    async function dealerRefreshSupabaseSession(session){
+      if(!session?.refresh_token) return null;
+      const res=await fetch(DEALER_SUPABASE_URL+'/auth/v1/token?grant_type=refresh_token',{
+        method:'POST',
+        headers:{apikey:DEALER_SUPABASE_KEY,'Content-Type':'application/json'},
+        body:JSON.stringify({refresh_token:session.refresh_token})
+      });
+      const text=await res.text();
+      const body=text?JSON.parse(text):null;
+      if(!res.ok){
+        localStorage.removeItem(DEALER_SUPABASE_SESSION_KEY);
+        throw new Error(body?.error_description||body?.message||'Canlı oturum yenilenemedi.');
+      }
+      const next={access_token:body.access_token,refresh_token:body.refresh_token||session.refresh_token,email:session.email||'',expires_at:Date.now()+Math.max(60,Number(body.expires_in)||3600)*1000};
+      localStorage.setItem(DEALER_SUPABASE_SESSION_KEY,JSON.stringify(next));
+      saveDealerSupabaseSyncState({lastError:''});
+      return next;
+    }
+    async function dealerSupabaseActiveSession(){
+      const active=dealerSupabaseSession();
+      if(active) return active;
+      const stored=dealerStoredSupabaseSession();
+      if(!stored?.refresh_token) return null;
+      try{return await dealerRefreshSupabaseSession(stored);}
+      catch(err){
+        saveDealerSupabaseSyncState({lastError:err.message||String(err)});
+        return null;
+      }
     }
     function dealerSupabaseSyncState(){
       try{return JSON.parse(localStorage.getItem(DEALER_SUPABASE_SYNC_KEY)||'{}')||{};}catch(err){return {};}
@@ -6462,8 +6498,8 @@
       const current=dealerSupabaseSyncState();
       localStorage.setItem(DEALER_SUPABASE_SYNC_KEY,JSON.stringify({...current,...next}));
     }
-    function dealerSupabaseHeaders(extra={}){
-      const session=dealerSupabaseSession();
+    async function dealerSupabaseHeaders(extra={}){
+      const session=await dealerSupabaseActiveSession();
       if(!session){
         const err=new Error('Canlı portal oturumu gerekli.');
         err.code='NO_LIVE_SESSION';
@@ -6472,7 +6508,8 @@
       return {apikey:DEALER_SUPABASE_KEY,Authorization:'Bearer '+session.access_token,'Content-Type':'application/json',...extra};
     }
     async function dealerSupabaseRequest(path,options={}){
-      const res=await fetch(DEALER_SUPABASE_URL+path,{...options,headers:dealerSupabaseHeaders(options.headers||{})});
+      const headers=await dealerSupabaseHeaders(options.headers||{});
+      const res=await fetch(DEALER_SUPABASE_URL+path,{...options,headers});
       const text=await res.text();
       const body=text?JSON.parse(text):null;
       if(!res.ok){
@@ -6580,7 +6617,7 @@
     }
     async function dealerSyncSupabaseWorkOrders(options={}){
       if(dealerSupabaseSyncInFlight) return;
-      const session=dealerSupabaseSession();
+      const session=await dealerSupabaseActiveSession();
       if(!session){
         if(!options.silent) toast('Canlı sistem için bayi portalı oturumu açın.');
         return;
@@ -6606,7 +6643,7 @@
       }
     }
     function dealerMaybeAutoSyncSupabase(){
-      const session=dealerSupabaseSession();
+      const session=dealerSupabaseSession()||dealerStoredSupabaseSession();
       if(!session||dealerSupabaseSyncInFlight) return;
       const state=dealerSupabaseSyncState();
       const lastMs=state.lastSyncAtMs||0;
@@ -6641,12 +6678,13 @@
       return createdId;
     }
     function dealerSupabaseStatusPanel(){
-      const session=dealerSupabaseSession(), state=dealerSupabaseSyncState();
+      const session=dealerSupabaseSession(), storedSession=dealerStoredSupabaseSession(), state=dealerSupabaseSyncState();
       const store=dealerCurrentStore?.();
-      if(session){
-        return `<section class="dealer-form-section"><div class="dealer-section-head"><div><h3>Canlı Sistem Bağlantısı</h3><p>Supabase canlı veri açık. Bayi portalında oluşturulan iş emri mobil usta ekranına aynı database üzerinden düşer.</p></div><div class="quick-actions">${badge('Canlı bağlı')}${badge((state.lastCount??store?.workOrders?.length??0)+' kayıt')}${state.lastSyncAt?badge('Son: '+state.lastSyncAt):''}<button class="btn" data-dealer-live-sync>${icon('refresh-cw')}Canlı Yenile</button><button class="btn" data-dealer-live-disconnect>${icon('log-out')}Oturumu Kapat</button></div></div>${state.lastError?`<div class="dealer-wo-alert">${icon('triangle-alert')}Canlı bağlantı uyarısı: ${rpEsc(state.lastError)}</div>`:''}</section>`;
+      if(session||storedSession?.refresh_token){
+        const connectionLabel=session?'Canlı bağlı':'Oturum yenilenecek';
+        return `<section class="dealer-form-section"><div class="dealer-section-head"><div><h3>Canlı Sistem Bağlantısı</h3><p>Supabase canlı veri açık. Bayi portalında oluşturulan iş emri mobil usta ekranına aynı database üzerinden düşer.</p></div><div class="quick-actions">${badge(connectionLabel)}${badge((state.lastCount??store?.workOrders?.length??0)+' kayıt')}${state.lastSyncAt?badge('Son: '+state.lastSyncAt):''}<button class="btn" data-dealer-live-sync>${icon('refresh-cw')}Canlı Yenile</button><button class="btn" data-dealer-live-disconnect>${icon('log-out')}Oturumu Kapat</button></div></div>${state.lastError?`<div class="dealer-wo-alert">${icon('triangle-alert')}Canlı bağlantı uyarısı: ${rpEsc(state.lastError)}</div>`:''}</section>`;
       }
-      return `<section class="dealer-form-section"><div class="dealer-section-head"><div><h3>Canlı Sistem Bağlantısı</h3><p>Canlı iş emirlerini görmek ve webden açılan aracı mobile düşürmek için bayi kullanıcı oturumunu açın. Şifre dosyada saklanmaz.</p></div>${badge('Oturum gerekli')}</div><form class="dealer-workorder-form" data-dealer-live-login-form><div class="dealer-wo-form-grid"><label class="dealer-field"><span>E-posta</span><input name="email" autocomplete="username" placeholder="kullanici@ototr.test"></label><label class="dealer-field"><span>Şifre</span><input name="password" type="password" autocomplete="current-password" placeholder="Şifre"></label><button class="btn primary" type="submit">${icon('plug-zap')}Canlıya Bağlan</button></div></form>${state.lastError?`<div class="dealer-wo-alert">${icon('triangle-alert')}Son hata: ${rpEsc(state.lastError)}</div>`:''}</section>`;
+      return `<section class="dealer-form-section"><div class="dealer-section-head"><div><h3>Canlı Sistem Bağlantısı</h3><p>Canlı iş emirleri müşteri ve araç verisi içerdiği için güvenlik gereği bayi kullanıcı oturumu açılmadan listelenmez. Bir kez bağlanınca oturum tarayıcıda saklanır ve süresi dolduğunda otomatik yenilenir.</p></div>${badge('Oturum gerekli')}</div><form class="dealer-workorder-form" data-dealer-live-login-form><div class="dealer-wo-form-grid"><label class="dealer-field"><span>E-posta</span><input name="email" autocomplete="username" placeholder="kullanici@ototr.test"></label><label class="dealer-field"><span>Şifre</span><input name="password" type="password" autocomplete="current-password" placeholder="Şifre"></label><button class="btn primary" type="submit">${icon('plug-zap')}Canlıya Bağlan</button></div></form>${state.lastError?`<div class="dealer-wo-alert">${icon('triangle-alert')}Son hata: ${rpEsc(state.lastError)}</div>`:''}</section>`;
     }
     window.dealerSyncSupabaseWorkOrders=dealerSyncSupabaseWorkOrders;
     const DEALER_VIN_MIGRATION='smart-vin-v1';
@@ -9547,7 +9585,7 @@
       }
       if(!options.skipNativeValidity&&!f.reportValidity()){const nativeStatus=dealerWorkOrderGateStatus(f,false);dealerShowWorkOrderMissingNotice(nativeStatus.missing);dealerFocusFirstInvalidWorkOrderField(f,nativeStatus.invalid);return;}
       const data=Object.fromEntries(new FormData(f).entries());
-      if(dealerSupabaseSession()){
+      if(await dealerSupabaseActiveSession()){
         try{
           const createdId=await dealerCreateSupabaseWorkOrder(data);
           saveDealerPortalState({tab:'aktif-is-emirleri',editingWorkOrderId:'',viewingWorkOrderId:''});
@@ -10534,7 +10572,7 @@
       const topWorkOrderMode=(ui.editingWorkOrderId||ui.viewingWorkOrderId)?'full':(ui.workOrderMode==='full'?'full':'fast');
       const topModeLocked=!!(ui.editingWorkOrderId||ui.viewingWorkOrderId);
       const dealerTopModeSwitch=ui.tab==='is-emirleri'?`<div class="dealer-top-mode-switch" aria-label="İş emri modu"><span>İş emri modu</span><div class="dealer-top-mode-actions"><button type="button" class="${topWorkOrderMode==='fast'?'active':''}" data-dealer-wo-mode="fast" ${topModeLocked?'disabled title="Açık iş emrinde mod değiştirilemez."':''}>Hızlı İş Emri</button><button type="button" class="${topWorkOrderMode==='full'?'active':''}" data-dealer-wo-mode="full" ${topModeLocked?'disabled title="Açık iş emrinde mod değiştirilemez."':''}>Tam İş Emri</button></div></div>`:'';
-      return `<div class="dealer-portal dealer-erp-shell"><aside class="dealer-erp-sidebar"><div class="dealer-erp-brand"><div class="dealer-erp-logo">OT</div><div class="dealer-erp-brand-text"><b>OTOTR</b><span>Bayi Portalı · Aktif Şube: ${rpEsc(branch.name)}</span><small class="dealer-version-tag">SVK v1.0.228</small><small class="dealer-update-tag" title="Son güncelleme: Bayi portalı eski demo iş emirlerinden arındırıldı; yalnız canlı Supabase iş emirleri listelenir.">26.05 · Canlı tek iş emri</small></div></div><div class="dealer-erp-section-title">Şube Menüsü</div><nav class="dealer-erp-nav">${tabs.map(t=>`<button class="${t[0]===ui.tab?'active':''}" data-dealer-tab="${t[0]}">${icon(t[2])}<span>${ui.role==='M\u00fc\u015fteri Kabul / Sekreterya'&&t[0]==='finans'?'Günlük Finans':t[1]}</span></button>`).join('')}</nav><div class="dealer-erp-role-box"><span>Rol görünümü</span><div class="dealer-role-switcher">${Object.entries(DEALER_PORTAL_ROLES).map(([name,cfg])=>`<button class="${name===ui.role?'active':''}" data-dealer-role="${name}">${icon(cfg.icon)}${name}</button>`).join('')}</div></div></aside><main class="dealer-erp-workspace"><section class="dealer-top-branch dealer-action-bar"><label class="dealer-top-role-select"><span>Rol görünümü</span><select data-dealer-role-select>${Object.keys(DEALER_PORTAL_ROLES).map(name=>`<option value="${rpEsc(name)}" ${name===ui.role?'selected':''}>${rpEsc(name)}</option>`).join('')}</select></label>${dealerTopModeSwitch}<div class="dealer-top-actions">${dealerTopPrimaryAction}<button class="btn" data-dealer-calendar-modal-open>${icon('calendar-clock')}3 Günlük Takvim</button><button class="btn" data-dealer-tab="rapor-detay">${icon('file-search')}Rapor Detay</button><button class="btn" data-dealer-tab="rapor">${icon('printer')}Basım Kuyruğu</button></div></section><div class="dealer-portal-layout"><main class="dealer-shell">${(panes[ui.tab]||panes.kokpit)()}${ui.tab==='kurulum'?dealerApiModelPanel():ui.tab==='rapor'?dealerReportMappingPanel():ui.tab==='personel'?dealerAuthMatrixPanel():''}</main><aside class="dealer-rail"><div class="card"><div class="card-head"><div><div class="card-title">Rol Yetkileri</div><div class="card-sub">${roleCfg.desc}</div></div>${badge(ui.role)}</div><div class="dealer-permission-list">${roleCfg.actions.map(a=>`<div><b>${ui.role}</b><span>${a}</span></div>`).join('')}</div></div><div class="card"><div class="card-head"><div><div class="card-title">Canlı Sistem Kilitleri</div><div class="card-sub">Rapor yayın ve teslim kapıları</div></div></div>${dealerMiniRows([['Teknik alan kilidi','Müdür onayından sonra değişiklik revizyon açar','Kural'],['KVKK / yol testi','Eksikse teslim tamamlanamaz','Blokaj'],['Cihaz kalibrasyonu','Geçmiş cihaz rapor üretimini engeller','Blokaj']])}</div></aside></div></main>${dealerAppointmentDock()}</div>`;
+      return `<div class="dealer-portal dealer-erp-shell"><aside class="dealer-erp-sidebar"><div class="dealer-erp-brand"><div class="dealer-erp-logo">OT</div><div class="dealer-erp-brand-text"><b>OTOTR</b><span>Bayi Portalı · Aktif Şube: ${rpEsc(branch.name)}</span><small class="dealer-version-tag">SVK v1.0.229</small><small class="dealer-update-tag" title="Son güncelleme: Bayi portalı canlı Supabase oturumunu güvenli şekilde yeniler; canlı iş emirleri oturum açınca listelenir.">26.05 · Canlı oturum yenileme</small></div></div><div class="dealer-erp-section-title">Şube Menüsü</div><nav class="dealer-erp-nav">${tabs.map(t=>`<button class="${t[0]===ui.tab?'active':''}" data-dealer-tab="${t[0]}">${icon(t[2])}<span>${ui.role==='M\u00fc\u015fteri Kabul / Sekreterya'&&t[0]==='finans'?'Günlük Finans':t[1]}</span></button>`).join('')}</nav><div class="dealer-erp-role-box"><span>Rol görünümü</span><div class="dealer-role-switcher">${Object.entries(DEALER_PORTAL_ROLES).map(([name,cfg])=>`<button class="${name===ui.role?'active':''}" data-dealer-role="${name}">${icon(cfg.icon)}${name}</button>`).join('')}</div></div></aside><main class="dealer-erp-workspace"><section class="dealer-top-branch dealer-action-bar"><label class="dealer-top-role-select"><span>Rol görünümü</span><select data-dealer-role-select>${Object.keys(DEALER_PORTAL_ROLES).map(name=>`<option value="${rpEsc(name)}" ${name===ui.role?'selected':''}>${rpEsc(name)}</option>`).join('')}</select></label>${dealerTopModeSwitch}<div class="dealer-top-actions">${dealerTopPrimaryAction}<button class="btn" data-dealer-calendar-modal-open>${icon('calendar-clock')}3 Günlük Takvim</button><button class="btn" data-dealer-tab="rapor-detay">${icon('file-search')}Rapor Detay</button><button class="btn" data-dealer-tab="rapor">${icon('printer')}Basım Kuyruğu</button></div></section><div class="dealer-portal-layout"><main class="dealer-shell">${(panes[ui.tab]||panes.kokpit)()}${ui.tab==='kurulum'?dealerApiModelPanel():ui.tab==='rapor'?dealerReportMappingPanel():ui.tab==='personel'?dealerAuthMatrixPanel():''}</main><aside class="dealer-rail"><div class="card"><div class="card-head"><div><div class="card-title">Rol Yetkileri</div><div class="card-sub">${roleCfg.desc}</div></div>${badge(ui.role)}</div><div class="dealer-permission-list">${roleCfg.actions.map(a=>`<div><b>${ui.role}</b><span>${a}</span></div>`).join('')}</div></div><div class="card"><div class="card-head"><div><div class="card-title">Canlı Sistem Kilitleri</div><div class="card-sub">Rapor yayın ve teslim kapıları</div></div></div>${dealerMiniRows([['Teknik alan kilidi','Müdür onayından sonra değişiklik revizyon açar','Kural'],['KVKK / yol testi','Eksikse teslim tamamlanamaz','Blokaj'],['Cihaz kalibrasyonu','Geçmiş cihaz rapor üretimini engeller','Blokaj']])}</div></aside></div></main>${dealerAppointmentDock()}</div>`;
     }
     document.addEventListener('input',e=>{
       const phoneInput=e.target.closest?.('[data-dealer-phone-input],input[name="phone"],input[name="sellerPhone"]');
