@@ -41,6 +41,7 @@ class _TechnicianTaskFormScreenState extends State<TechnicianTaskFormScreen> {
   final _noteController = TextEditingController();
   bool _isSubmitting = false;
   bool _hasPendingAllGood = false;
+  bool _quickSubmitArmed = false;
   Map<String, Map<String, String>> _pendingAllGoodInputValues = const {};
   final TextEditingController _bodyPaintMicronController =
       TextEditingController();
@@ -174,6 +175,29 @@ class _TechnicianTaskFormScreenState extends State<TechnicianTaskFormScreen> {
     return Scaffold(
       appBar: const OtotrAppBar(title: 'Kontrol Formu'),
       backgroundColor: AppColors.grayBg,
+      floatingActionButton: isReadOnly
+          ? null
+          : FloatingActionButton.extended(
+              onPressed: _isSubmitting
+                  ? null
+                  : () async {
+                      if (_quickSubmitArmed && canSubmitRows) {
+                        await _submitTask();
+                        return;
+                      }
+                      await _markAllItemsNormal();
+                      if (!mounted) {
+                        return;
+                      }
+                      setState(() {
+                        _quickSubmitArmed = true;
+                      });
+                    },
+              icon: Icon(_quickSubmitArmed ? Icons.send : Icons.done_all),
+              label: Text(
+                _quickSubmitArmed ? 'Başlığı Gönder' : 'Tüm Noktalar İyi',
+              ),
+            ),
       body: ListView(
         children: [
           Container(
@@ -277,7 +301,7 @@ class _TechnicianTaskFormScreenState extends State<TechnicianTaskFormScreen> {
                 for (final item in task.checklistItems)
                   _ChecklistRow(
                     item: item,
-                    answer: answersByItem[item.id],
+                    answer: _answerForChecklistItem(item, answersByItem),
                     enabled: !isReadOnly,
                     onTap: () => _openReportItem(item),
                   ),
@@ -287,28 +311,6 @@ class _TechnicianTaskFormScreenState extends State<TechnicianTaskFormScreen> {
                   _TaskMicronQuickInputCard(
                     controller: _bodyPaintMicronController,
                   ),
-                OtotrCard(
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: AppSizes.buttonHeight,
-                    child: FilledButton.icon(
-                      onPressed: isReadOnly ? null : _markAllItemsNormal,
-                      style: FilledButton.styleFrom(
-                        backgroundColor: AppColors.white,
-                        foregroundColor: AppColors.success,
-                        side: const BorderSide(color: AppColors.grayBorder),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(AppSizes.radius),
-                        ),
-                      ),
-                      icon: const Icon(Icons.done_all),
-                      label: const Text(
-                        'Tüm Noktalar İyi Durumda',
-                        style: TextStyle(fontWeight: FontWeight.w900),
-                      ),
-                    ),
-                  ),
-                ),
                 OtotrCard(
                   child: TextField(
                     controller: _noteController,
@@ -360,6 +362,17 @@ class _TechnicianTaskFormScreenState extends State<TechnicianTaskFormScreen> {
         ],
       ),
     );
+  }
+
+  WorkOrderReportAnswer? _answerForChecklistItem(
+    TechnicianChecklistItem item,
+    Map<String, WorkOrderReportAnswer> answersByItem,
+  ) {
+    final reportItem = _reportItemFor(item);
+    if (reportItem != null) {
+      return answersByItem[reportItem.id];
+    }
+    return answersByItem[item.id];
   }
 
   void _replaceItem(TechnicianChecklistItem item) {
@@ -546,6 +559,7 @@ class _TechnicianTaskFormScreenState extends State<TechnicianTaskFormScreen> {
 
       setState(() {
         _hasPendingAllGood = true;
+        _quickSubmitArmed = true;
         _pendingAllGoodInputValues = inputValuesByItem;
         _task = task.copyWith(
           checklistItems: [
@@ -563,6 +577,7 @@ class _TechnicianTaskFormScreenState extends State<TechnicianTaskFormScreen> {
     }
 
     setState(() {
+      _quickSubmitArmed = true;
       _task = task.copyWith(
         checklistItems: [
           for (final item in task.checklistItems)

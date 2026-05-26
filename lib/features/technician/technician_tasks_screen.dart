@@ -234,6 +234,15 @@ class _TechnicianTasksView extends StatelessWidget {
             ).then((_) => onTaskChanged?.call()),
           ),
           const SizedBox(height: 8),
+          OtotrSecondaryButton(
+            label: 'İş Emirlerine Dön',
+            icon: Icons.home_work_outlined,
+            onPressed: () => Navigator.pushNamed(
+              context,
+              AppRoutes.technicianJobs,
+            ).then((_) => onTaskChanged?.call()),
+          ),
+          const SizedBox(height: 8),
           _TaskSectionHeader(
             title: 'Bekleyen Görevler',
             count: pendingTasks.length,
@@ -295,7 +304,11 @@ class _TechnicianTasksView extends StatelessWidget {
   }
 
   bool _isCompleted(TechnicianTask task) {
-    return task.status == TaskStatus.completed || _isOptimisticCompleted(task);
+    final total = task.checklistItems.length;
+    final rowsComplete = total > 0 && task.completedCount >= total;
+    return task.status == TaskStatus.completed ||
+        _isOptimisticCompleted(task) ||
+        rowsComplete;
   }
 }
 

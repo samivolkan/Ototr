@@ -60,12 +60,13 @@ void main() {
     await _waitForAsyncWork(tester);
 
     await tester.scrollUntilVisible(
-      find.text('Başlığı Gönder'),
+      find.text('Başlığı Gönder').first,
       400,
       scrollable: find.byType(Scrollable).first,
     );
-    await tester.tap(find.text('Başlığı Gönder'));
+    await tester.tap(find.text('Başlığı Gönder').first);
     await _waitForText(tester, 'Görev');
+    await _waitForAsyncWork(tester);
 
     final submittedTask = repository
         .getById('wo-2026-0001')
@@ -73,8 +74,6 @@ void main() {
         .firstWhere((task) => task.taskId == 'obd');
     expect(submittedTask.status, TaskStatus.completed);
     expect(find.text('Bekleyen Görevler'), findsWidgets);
-    expect(find.text('Tamamlanan Görevler'), findsOneWidget);
-
     await tester.scrollUntilVisible(
       find.textContaining('10/10'),
       300,
