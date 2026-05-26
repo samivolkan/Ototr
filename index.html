@@ -6603,6 +6603,17 @@
       const parts=String(data.vehicle||'').trim().split(/\s+/);
       return {brand:parts.shift()||'Marka',model:parts.join(' ')||'Model'};
     }
+    function dealerSupabaseRestEq(value){return encodeURIComponent(String(value||''));}
+    function dealerSupabasePayload(data){
+      const payload={};
+      Object.entries(data||{}).forEach(([key,value])=>{if(value!==undefined) payload[key]=value;});
+      return payload;
+    }
+    async function dealerSupabaseFindPackagePlanId(packageName){
+      const code=dealerLivePackageCode(packageName);
+      const rows=await dealerSupabaseRequest('/rest/v1/package_plans?select=id&code=eq.'+dealerSupabaseRestEq(code)+'&is_active=eq.true&limit=1');
+      return rows?.[0]?.id||null;
+    }
     function dealerLiveWorkOrderFromCase(row,tasks){
       const vehicle=row.vehicles||{}, customer=row.customers||{}, plan=row.package_plans||{};
       const taskRows=(tasks||[]).filter(t=>t.expertise_case_id===row.id);
@@ -6612,6 +6623,8 @@
       return {
         id,
         supabaseId:row.id,
+        liveCustomerId:row.customer_id||'',
+        liveVehicleId:row.vehicle_id||'',
         reportNo:id,
         branchId:selectedBranchId,
         branchName:'Canlı Supabase Şubesi',
@@ -6666,7 +6679,7 @@
       }
       dealerSupabaseSyncInFlight=true;
       try{
-        const cases=await dealerSupabaseRequest('/rest/v1/expertise_cases?select=id,work_order_no,status,opened_at,customer_summary,manager_approved_at,secretary_gate_ready,payment_gate_ready,kvkk_gate_ready,package_plans(code,name,duration_minutes),customers(full_name,phone,email,identity_number,customer_role),vehicles(plate,vin,brand,model,model_year,fuel_type,transmission,mileage_km,seller_type,arrival_note)&order=opened_at.desc');
+        const cases=await dealerSupabaseRequest('/rest/v1/expertise_cases?select=id,customer_id,vehicle_id,work_order_no,status,opened_at,customer_summary,manager_approved_at,secretary_gate_ready,payment_gate_ready,kvkk_gate_ready,package_plans(code,name,duration_minutes),customers(full_name,phone,email,identity_number,customer_role),vehicles(plate,vin,brand,model,model_year,fuel_type,transmission,mileage_km,seller_type,arrival_note)&order=opened_at.desc');
         const ids=(cases||[]).map(row=>row.id).filter(Boolean);
         const tasks=ids.length?await dealerSupabaseRequest('/rest/v1/inspection_tasks?select=id,expertise_case_id,task_key,title,assigned_role,status,report_field_key,estimated_minutes,customer_friendly_note,risky_findings,owner_user_id,assigned_user_id&expertise_case_id=in.('+ids.join(',')+')&order=created_at.asc'):[];
         const workOrders=(cases||[]).map(row=>dealerLiveWorkOrderFromCase(row,tasks));
@@ -6718,6 +6731,62 @@
       });
       await dealerSyncSupabaseWorkOrders({silent:true,selectSupabaseId:createdId,noRender:true});
       return createdId;
+    }
+    async function dealerUpdateSupabaseWorkOrder(wo,data){
+      if(!wo?.supabaseId) return false;
+      const caseRows=await dealerSupabaseRequest('/rest/v1/expertise_cases?select=id,customer_id,vehicle_id&id=eq.'+dealerSupabaseRestEq(wo.supabaseId)+'&limit=1');
+      const caseRow=caseRows?.[0]||{};
+      const customerId=wo.liveCustomerId||caseRow.customer_id;
+      const vehicleId=wo.liveVehicleId||caseRow.vehicle_id;
+      const parts=dealerLiveVehicleParts(data);
+      if(customerId){
+        await dealerSupabaseRequest('/rest/v1/customers?id=eq.'+dealerSupabaseRestEq(customerId),{
+          method:'PATCH',
+          headers:{Prefer:'return=minimal'},
+          body:JSON.stringify(dealerSupabasePayload({
+            full_name:String(data.customer||data.buyer||wo.customer||'Müşteri').trim(),
+            phone:String(data.phone||wo.phone||'').trim(),
+            identity_number:String(data.taxNo||wo.taxNo||'').trim()||null,
+            customer_role:String(data.customerType||wo.customerType||'Musteri').trim(),
+            kvkk_consent:dealerWorkOrderConsentSigned(data.consent||wo.consent),
+            service_consent:dealerWorkOrderConsentSigned(data.consent||wo.consent),
+            marketing_consent:String(data.contactPermission||wo.contactPermission||'Evet')==='Evet'
+          }))
+        });
+      }
+      if(vehicleId){
+        await dealerSupabaseRequest('/rest/v1/vehicles?id=eq.'+dealerSupabaseRestEq(vehicleId),{
+          method:'PATCH',
+          headers:{Prefer:'return=minimal'},
+          body:JSON.stringify(dealerSupabasePayload({
+            plate:String(data.plate||wo.plate||'').trim().toUpperCase(),
+            vin:String(data.vin||wo.vin||'').trim().toUpperCase()||null,
+            vin_normalized:String(data.vin||wo.vin||'').trim().toUpperCase()||null,
+            brand:parts.brand,
+            model:parts.model,
+            model_year:Number(data.year)||Number(wo.year)||null,
+            fuel_type:String(data.fuel||wo.fuel||'').trim()||null,
+            transmission:String(data.transmission||wo.transmission||'').trim()||null,
+            mileage_km:dealerMileageNumber(data.mileage)||dealerMileageNumber(wo.mileage)||0,
+            seller_type:String(data.sellerType||wo.sellerType||'').trim()||null,
+            arrival_note:[data.source,data.seller].filter(Boolean).join(' | ')||null
+          }))
+        });
+      }
+      const packagePlanId=await dealerSupabaseFindPackagePlanId(data.packageName||wo.packageName).catch(()=>null);
+      const casePayload=dealerSupabasePayload({
+        package_plan_id:packagePlanId||undefined,
+        customer_summary:[data.deliveryAt,data.source].filter(Boolean).join(' | ')||null,
+        payment_gate_ready:dealerWorkOrderMeaningfulValue('payment',data.payment||wo.payment)==='Tahsil edildi',
+        kvkk_gate_ready:dealerWorkOrderConsentSigned(data.consent||wo.consent),
+        secretary_gate_ready:true
+      });
+      await dealerSupabaseRequest('/rest/v1/expertise_cases?id=eq.'+dealerSupabaseRestEq(wo.supabaseId),{
+        method:'PATCH',
+        headers:{Prefer:'return=minimal'},
+        body:JSON.stringify(casePayload)
+      });
+      return true;
     }
     function dealerSupabaseStatusPanel(){
       const session=dealerSupabaseSession(), storedSession=dealerStoredSupabaseSession(), state=dealerSupabaseSyncState();
@@ -9688,6 +9757,26 @@
       const store=ensureDealerLiveData(DB.branches.find(b=>b.id===selectedBranchId)||DB.branches[0],DB.appointments);
       const wo=dealerActiveWorkOrder(store);
       if(!wo) return;
+      if(wo.supabaseId){
+        const session=await dealerSupabaseActiveSession();
+        if(!session){toast('Canlı iş emrini güncellemek için bayi oturumu gerekli.');return;}
+        try{
+          await dealerUpdateSupabaseWorkOrder(wo,data);
+          await dealerSyncSupabaseWorkOrders({silent:true,selectSupabaseId:wo.supabaseId,noRender:true});
+          const savedMessage=wo.id+' canlıda güncellendi.';
+          dealerMarkWorkOrderSaved(wo.id,savedMessage);
+          dealerClearStoredWorkOrderDraft();
+          saveDealerPortalState({tab:'is-emirleri',editingWorkOrderId:'',viewingWorkOrderId:wo.id,workOrderMode:'full'});
+          renderDealerPageOnly();
+          route('dealer');
+          requestAnimationFrame(()=>dealerShowWorkOrderSavedNotice(savedMessage+' Supabase kaydı güncellendi.'));
+          toast('Kaydedildi: '+savedMessage);
+        }catch(err){
+          saveDealerSupabaseSyncState({lastError:err.message||String(err)});
+          toast('Canlı iş emri güncellenemedi: '+(err.message||err));
+        }
+        return;
+      }
       const oldPackage=wo.packageName;
       const packageName=dealerPackageName(data.packageName||wo.packageName), addonNames=dealerAddonNamesFromValue(data.addons||wo.additionalServices), giftedAddonNames=dealerAddonNamesFromValue(data.addonGifts||wo.giftedAdditionalServices);
       const loyaltyCalc=dealerPricing(packageName,addonNames,{name:data.customer||wo.customer,phone:data.phone||wo.phone,taxNo:data.taxNo||wo.taxNo,type:data.customerType||wo.customerType||'Bireysel'},giftedAddonNames);
