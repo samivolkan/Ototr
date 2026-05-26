@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/constants/app_sizes.dart';
 import '../../core/theme/app_colors.dart';
@@ -7,6 +9,7 @@ import '../../core/widgets/ototr_card.dart';
 import '../../core/widgets/ototr_status_badge.dart';
 import '../../data/models/technician_operation_model.dart';
 import '../../data/repositories/app_repositories.dart';
+import '../../data/services/photo_upload_service.dart';
 import 'widgets/technician_vehicle_header.dart';
 
 class TechnicianEvidenceScreen extends StatefulWidget {
@@ -22,6 +25,7 @@ class TechnicianEvidenceScreen extends StatefulWidget {
 class _TechnicianEvidenceScreenState extends State<TechnicianEvidenceScreen> {
   TechnicianWorkOrder? _order;
   bool _loading = true;
+  bool _saving = false;
   String? _error;
 
   @override
@@ -38,9 +42,13 @@ class _TechnicianEvidenceScreenState extends State<TechnicianEvidenceScreen> {
 
     try {
       final remoteRepository = AppRepositories.instance.remoteWorkOrders;
-      final order = remoteRepository == null
-          ? AppRepositories.instance.localWorkOrders.getById(widget.workOrderId)
-          : await remoteRepository.getById(widget.workOrderId);
+      if (remoteRepository == null) {
+        throw StateError(
+          AppRepositories.instance.liveConnectionError ??
+              'Canlı Supabase bağlantısı kurulmadan rapor medyası açılamaz.',
+        );
+      }
+      final order = await remoteRepository.getById(widget.workOrderId);
       if (!mounted) return;
       setState(() {
         _order = order;
@@ -84,12 +92,16 @@ class _TechnicianEvidenceScreenState extends State<TechnicianEvidenceScreen> {
     }
 
     final order = _order!;
-    final role =
-        AppRepositories.instance.remoteWorkOrders?.currentTechnicianRole ??
-            AppRepositories.instance.localWorkOrders.currentTechnicianRole;
-    final currentUser =
-        AppRepositories.instance.remoteWorkOrders?.currentUser ??
-            AppRepositories.instance.localWorkOrders.currentUser;
+    final remoteRepository = AppRepositories.instance.remoteWorkOrders;
+    if (remoteRepository == null) {
+      return _ErrorScaffold(
+        message: AppRepositories.instance.liveConnectionError ??
+            'Canlı Supabase bağlantısı kurulmadan rapor medyası açılamaz.',
+      );
+    }
+
+    final role = remoteRepository.currentTechnicianRole;
+    final currentUser = remoteRepository.currentUser;
     final tasks = order.tasksFor(role);
     final taskAssets = [
       for (final task in tasks) ...task.evidenceAssets,
@@ -99,38 +111,47 @@ class _TechnicianEvidenceScreenState extends State<TechnicianEvidenceScreen> {
     return Scaffold(
       appBar: const OtotrAppBar(title: 'Rapor Medyaları'),
       backgroundColor: AppColors.grayBg,
-      body: ListView(
-        padding: const EdgeInsets.all(AppSizes.lg),
+      body: Stack(
         children: [
-          TechnicianVehicleHeader(
-            order: order,
-            role: role,
-            message:
-                'Rapor kapanmadan önce araç çevre fotoğrafları ve video kaydı tamamlanmalıdır.',
+          ListView(
+            padding: const EdgeInsets.all(AppSizes.lg),
+            children: [
+              TechnicianVehicleHeader(
+                order: order,
+                role: role,
+                message:
+                    'Rapor kapanmadan önce araç çevre fotoğrafları ve video kaydı tamamlanmalıdır.',
+              ),
+              if (finalMediaAssets.isNotEmpty)
+                _EvidenceSection(
+                  title: 'Araç çevre fotoğrafları ve video',
+                  subtitle:
+                      '${finalMediaAssets.where((asset) => asset.isAvailable).length}/${finalMediaAssets.length} medya tamamlandı',
+                  assets: finalMediaAssets,
+                  canCapture: true,
+                  onCapture: (asset) =>
+                      _captureFinalMediaAsset(order, asset, currentUser.id),
+                ),
+              if (taskAssets.isNotEmpty)
+                _EvidenceSection(
+                  title: 'Test sırasında gereken ek kanıtlar',
+                  subtitle:
+                      '${taskAssets.where((asset) => asset.isAvailable).length}/${taskAssets.length} kanıt tamamlandı',
+                  assets: taskAssets,
+                  canCaptureFor: (asset) => tasks
+                      .firstWhere((task) => task.taskId == asset.taskId)
+                      .canEditBy(currentUser),
+                  onCapture: (asset) => _captureTaskAsset(order, asset),
+                ),
+              if (taskAssets.isEmpty && finalMediaAssets.isEmpty)
+                const OtotrCard(child: Text('Zorunlu rapor medyası yok.')),
+            ],
           ),
-          if (finalMediaAssets.isNotEmpty)
-            _EvidenceSection(
-              title: 'Araç çevre fotoğrafları ve video',
-              subtitle:
-                  '${finalMediaAssets.where((asset) => asset.isAvailable).length}/${finalMediaAssets.length} medya tamamlandı',
-              assets: finalMediaAssets,
-              canCapture: true,
-              onCapture: (asset) =>
-                  _captureFinalMediaAsset(order, asset, currentUser.id),
+          if (_saving)
+            Container(
+              color: Colors.black.withValues(alpha: .18),
+              child: const Center(child: CircularProgressIndicator()),
             ),
-          if (taskAssets.isNotEmpty)
-            _EvidenceSection(
-              title: 'Test sırasında gereken ek kanıtlar',
-              subtitle:
-                  '${taskAssets.where((asset) => asset.isAvailable).length}/${taskAssets.length} kanıt tamamlandı',
-              assets: taskAssets,
-              canCaptureFor: (asset) => tasks
-                  .firstWhere((task) => task.taskId == asset.taskId)
-                  .canEditBy(currentUser),
-              onCapture: (asset) => _captureTaskAsset(order, asset),
-            ),
-          if (taskAssets.isEmpty && finalMediaAssets.isEmpty)
-            const OtotrCard(child: Text('Zorunlu rapor medyası yok.')),
         ],
       ),
     );
@@ -141,77 +162,182 @@ class _TechnicianEvidenceScreenState extends State<TechnicianEvidenceScreen> {
     EvidenceAsset asset,
     String userId,
   ) async {
-    final extension = asset.evidenceType == 'video' ? 'mp4' : 'jpg';
-    final nextAsset = asset.copyWith(
-      localPath: 'local/${asset.fieldKey}.$extension',
-      remoteUrl: 'remote/${asset.fieldKey}.$extension',
-      hash: 'demo-hash-${asset.fieldKey}',
-      uploadedAt: DateTime.now(),
-      uploadedBy: userId,
-      syncStatus: EvidenceStatus.uploaded,
-      qualityStatus: 'accepted',
-    );
-
     final remoteRepository = AppRepositories.instance.remoteWorkOrders;
     if (remoteRepository == null) {
-      final nextOrder = AppRepositories.instance.localWorkOrders
-          .saveFinalMediaAsset(order.id, nextAsset);
-      setState(() => _order = nextOrder);
+      _showMessage('Canlı Supabase bağlantısı yok. Medya kaydedilmedi.');
       return;
     }
 
-    final nextOrder =
-        await remoteRepository.saveFinalMediaAsset(order.id, nextAsset);
-    if (!mounted) return;
-    setState(() => _order = nextOrder);
+    final picked = await _pickMedia(asset);
+    if (picked == null) {
+      return;
+    }
+
+    setState(() => _saving = true);
+    try {
+      final uploader = PhotoUploadService(client: _activeSupabaseClient());
+      final result = await uploader.uploadReportMedia(
+        workOrderId: order.id,
+        itemId: asset.fieldKey,
+        localPath: picked.path,
+      );
+      if (!result.uploaded) {
+        throw StateError('Dosya Supabase Storage alanına yüklenemedi.');
+      }
+
+      final nextAsset = asset.copyWith(
+        localPath: result.localPath,
+        remoteUrl: result.reference,
+        hash: 'uploaded-${DateTime.now().millisecondsSinceEpoch}',
+        uploadedAt: DateTime.now(),
+        uploadedBy: userId,
+        syncStatus: EvidenceStatus.uploaded,
+        qualityStatus: 'accepted',
+      );
+      final nextOrder =
+          await remoteRepository.saveFinalMediaAsset(order.id, nextAsset);
+      if (!mounted) return;
+      setState(() => _order = nextOrder);
+      _showMessage('${asset.title} yüklendi.');
+    } catch (error) {
+      _showMessage(error.toString());
+    } finally {
+      if (mounted) {
+        setState(() => _saving = false);
+      }
+    }
   }
 
   Future<void> _captureTaskAsset(
     TechnicianWorkOrder order,
     EvidenceAsset asset,
   ) async {
-    final extension = asset.evidenceType == 'video' ? 'mp4' : 'jpg';
-    final tasks = [
-      for (final task in order.tasks)
-        if (task.taskId == asset.taskId)
-          task.copyWith(
-            evidenceAssets: [
-              for (final current in task.evidenceAssets)
-                if (current.id == asset.id)
-                  current.copyWith(
-                    localPath: 'local/${asset.fieldKey}.$extension',
-                    remoteUrl: 'remote/${asset.fieldKey}.$extension',
-                    hash: 'demo-hash-${asset.fieldKey}',
-                    uploadedAt: DateTime.now(),
-                    syncStatus: EvidenceStatus.uploaded,
-                    qualityStatus: 'accepted',
-                  )
-                else
-                  current,
-            ],
-          )
-        else
-          task,
-    ];
-
-    final nextTask =
-        order.tasks.firstWhere((task) => task.taskId == asset.taskId).copyWith(
-              evidenceAssets: tasks
-                  .firstWhere((task) => task.taskId == asset.taskId)
-                  .evidenceAssets,
-            );
-
     final remoteRepository = AppRepositories.instance.remoteWorkOrders;
     if (remoteRepository == null) {
-      final nextOrder = AppRepositories.instance.localWorkOrders
-          .updateTask(order.id, nextTask);
-      setState(() => _order = nextOrder);
+      _showMessage('Canlı Supabase bağlantısı yok. Kanıt kaydedilmedi.');
       return;
     }
 
-    final nextOrder = await remoteRepository.updateTask(order.id, nextTask);
-    if (!mounted) return;
-    setState(() => _order = nextOrder);
+    final picked = await _pickMedia(asset);
+    if (picked == null) {
+      return;
+    }
+
+    setState(() => _saving = true);
+    try {
+      final uploader = PhotoUploadService(client: _activeSupabaseClient());
+      final result = await uploader.uploadReportMedia(
+        workOrderId: order.id,
+        itemId: asset.fieldKey,
+        localPath: picked.path,
+      );
+      if (!result.uploaded) {
+        throw StateError('Dosya Supabase Storage alanına yüklenemedi.');
+      }
+
+      final nextAsset = asset.copyWith(
+        localPath: result.localPath,
+        remoteUrl: result.reference,
+        hash: 'uploaded-${DateTime.now().millisecondsSinceEpoch}',
+        uploadedAt: DateTime.now(),
+        uploadedBy: remoteRepository.currentUser.id,
+        syncStatus: EvidenceStatus.uploaded,
+        qualityStatus: 'accepted',
+      );
+      final nextOrder =
+          await remoteRepository.saveFinalMediaAsset(order.id, nextAsset);
+      if (!mounted) return;
+      setState(() => _order = nextOrder);
+      _showMessage('${asset.title} yüklendi.');
+    } catch (error) {
+      _showMessage(error.toString());
+    } finally {
+      if (mounted) {
+        setState(() => _saving = false);
+      }
+    }
+  }
+
+  Future<XFile?> _pickMedia(EvidenceAsset asset) async {
+    final isVideo = asset.evidenceType.toLowerCase() == 'video';
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: Icon(isVideo ? Icons.videocam : Icons.photo_camera),
+              title: Text(isVideo ? 'Kamera ile video çek' : 'Kamera ile çek'),
+              onTap: () => Navigator.pop(context, ImageSource.camera),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text('Galeriden seç'),
+              onTap: () => Navigator.pop(context, ImageSource.gallery),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (source == null) {
+      return null;
+    }
+
+    final picker = ImagePicker();
+    if (isVideo) {
+      return picker.pickVideo(source: source);
+    }
+    return picker.pickImage(
+      source: source,
+      imageQuality: 82,
+      maxWidth: 1800,
+    );
+  }
+
+  SupabaseClient? _activeSupabaseClient() {
+    if (AppRepositories.instance.remoteWorkOrders == null) {
+      return null;
+    }
+    try {
+      return Supabase.instance.client;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  void _showMessage(String message) {
+    if (!mounted) {
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+}
+
+class _ErrorScaffold extends StatelessWidget {
+  const _ErrorScaffold({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: const OtotrAppBar(title: 'Rapor Medyaları'),
+      backgroundColor: AppColors.grayBg,
+      body: ListView(
+        padding: const EdgeInsets.all(AppSizes.lg),
+        children: [
+          OtotrCard(
+            child: Text(
+              message,
+              style: const TextStyle(color: AppColors.red),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

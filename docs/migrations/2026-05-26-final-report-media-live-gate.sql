@@ -3,6 +3,31 @@
 -- mobile can show and upload the required report media instead of a generic
 -- "media fields not prepared" blocker.
 
+update storage.buckets
+set allowed_mime_types = array[
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/heic',
+  'image/heif',
+  'video/mp4',
+  'video/quicktime',
+  'video/webm'
+]
+where id = 'report-media';
+
+update public.inspection_evidence_assets
+set
+  local_path = '',
+  remote_url = '',
+  file_hash = '',
+  sync_status = 'MISSING',
+  uploaded_at = null,
+  quality_status = 'UNCHECKED',
+  updated_at = now()
+where remote_url like 'remote/%'
+  and sync_status = 'UPLOADED';
+
 create or replace function app_private.ensure_final_media_assets(
   target_case_id uuid
 )

@@ -32,6 +32,18 @@ class PhotoUploadService {
     required String itemId,
     required String localPath,
   }) async {
+    return uploadReportMedia(
+      workOrderId: workOrderId,
+      itemId: itemId,
+      localPath: localPath,
+    );
+  }
+
+  Future<PhotoUploadResult> uploadReportMedia({
+    required String workOrderId,
+    required String itemId,
+    required String localPath,
+  }) async {
     final file = File(localPath);
     if (!await file.exists()) {
       return PhotoUploadResult(
@@ -93,6 +105,12 @@ class PhotoUploadService {
       case '.heic':
       case '.heif':
         return 'image/heic';
+      case '.mp4':
+        return 'video/mp4';
+      case '.mov':
+        return 'video/quicktime';
+      case '.webm':
+        return 'video/webm';
       default:
         return 'image/jpeg';
     }

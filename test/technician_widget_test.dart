@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ototr_branch_app/core/navigation/app_routes.dart';
 import 'package:ototr_branch_app/data/models/technician_operation_model.dart';
+import 'package:ototr_branch_app/data/models/user_profile_model.dart';
 import 'package:ototr_branch_app/data/repositories/app_repositories.dart';
 import 'package:ototr_branch_app/data/repositories/dummy_work_order_repository.dart';
 import 'package:ototr_branch_app/data/repositories/final_report_repository.dart';
 import 'package:ototr_branch_app/data/repositories/report_template_repository.dart';
+import 'package:ototr_branch_app/data/repositories/remote_work_order_repository.dart';
 import 'package:ototr_branch_app/data/repositories/work_order_report_repository.dart';
 import 'package:ototr_branch_app/features/technician/start_evidence_screen.dart';
 import 'package:ototr_branch_app/features/technician/technician_evidence_screen.dart';
@@ -95,6 +97,10 @@ void main() {
   });
 
   testWidgets('Rapor medyalari cevre fotografi ve video ister', (tester) async {
+    AppRepositories.instance.remoteWorkOrders = _TestRemoteWorkOrderRepository(
+      DummyWorkOrderRepository.instance,
+    );
+
     await tester.pumpWidget(
       _app(const TechnicianEvidenceScreen(workOrderId: 'wo-2026-0001')),
     );
@@ -260,4 +266,94 @@ void _completeStartEvidence() {
       gpsApprox: 'Bursa Nilufer',
     ),
   );
+}
+
+class _TestRemoteWorkOrderRepository implements RemoteWorkOrderRepository {
+  const _TestRemoteWorkOrderRepository(this._repository);
+
+  final DummyWorkOrderRepository _repository;
+
+  @override
+  UserProfile get currentUser => _repository.currentUser;
+
+  @override
+  TechnicianRole get currentTechnicianRole => _repository.currentTechnicianRole;
+
+  @override
+  Future<List<UserProfile>> activeTechnicians() async => const [];
+
+  @override
+  Future<TechnicianWorkOrder> claim(String workOrderId) async =>
+      _repository.claim(workOrderId);
+
+  @override
+  Future<TechnicianWorkOrder> claimTask(
+    String workOrderId,
+    String taskId,
+  ) async =>
+      _repository.claimTask(workOrderId, taskId);
+
+  @override
+  Future<TechnicianWorkOrder> getById(String workOrderId) async =>
+      _repository.getById(workOrderId);
+
+  @override
+  Future<TechnicianWorkOrder> managerAssignTask(
+    String workOrderId,
+    String taskId,
+    String ownerUserId,
+    String managerAssignReason,
+  ) =>
+      throw UnimplementedError();
+
+  @override
+  Future<TechnicianWorkOrder> managerClearTaskOwner(
+    String workOrderId,
+    String taskId,
+    String releaseReason,
+  ) =>
+      throw UnimplementedError();
+
+  @override
+  Future<TechnicianWorkOrder> releaseTask(
+    String workOrderId,
+    String taskId,
+    String releaseReason,
+  ) async =>
+      _repository.releaseTask(workOrderId, taskId, releaseReason);
+
+  @override
+  Future<TechnicianWorkOrder> saveFinalMediaAsset(
+    String workOrderId,
+    EvidenceAsset asset,
+  ) async =>
+      _repository.saveFinalMediaAsset(workOrderId, asset);
+
+  @override
+  Future<TechnicianWorkOrder> saveStartEvidence(
+    String workOrderId,
+    StartEvidence startEvidence,
+  ) async =>
+      _repository.saveStartEvidence(workOrderId, startEvidence);
+
+  @override
+  Future<List<OfflineSyncQueue>> syncQueue() async => const [];
+
+  @override
+  Future<TechnicianWorkOrder> submitTask(
+    String workOrderId,
+    String taskId,
+  ) async =>
+      _repository.submitTask(workOrderId, taskId);
+
+  @override
+  Future<TechnicianWorkOrder> updateTask(
+    String workOrderId,
+    TechnicianTask task,
+  ) async =>
+      _repository.updateTask(workOrderId, task);
+
+  @override
+  Future<List<TechnicianWorkOrder>> visibleWorkOrders() async =>
+      _repository.visibleWorkOrders();
 }
