@@ -20,13 +20,77 @@ class TechnicianEvidenceScreen extends StatefulWidget {
 }
 
 class _TechnicianEvidenceScreenState extends State<TechnicianEvidenceScreen> {
-  final dynamic _repository = AppRepositories.instance.localWorkOrders;
+  TechnicianWorkOrder? _order;
+  bool _loading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadOrder();
+  }
+
+  Future<void> _loadOrder() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+
+    try {
+      final remoteRepository = AppRepositories.instance.remoteWorkOrders;
+      final order = remoteRepository == null
+          ? AppRepositories.instance.localWorkOrders.getById(widget.workOrderId)
+          : await remoteRepository.getById(widget.workOrderId);
+      if (!mounted) return;
+      setState(() {
+        _order = order;
+        _loading = false;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _error = error.toString();
+        _loading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final order =
-        _repository.getById(widget.workOrderId) as TechnicianWorkOrder;
-    final tasks = order.tasksFor(_repository.currentTechnicianRole);
+    if (_loading) {
+      return const Scaffold(
+        appBar: OtotrAppBar(title: 'Rapor Medyaları'),
+        backgroundColor: AppColors.grayBg,
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_error != null || _order == null) {
+      return Scaffold(
+        appBar: const OtotrAppBar(title: 'Rapor Medyaları'),
+        backgroundColor: AppColors.grayBg,
+        body: ListView(
+          padding: const EdgeInsets.all(AppSizes.lg),
+          children: [
+            OtotrCard(
+              child: Text(
+                _error ?? 'İş emri medyaları yüklenemedi.',
+                style: const TextStyle(color: AppColors.red),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final order = _order!;
+    final role =
+        AppRepositories.instance.remoteWorkOrders?.currentTechnicianRole ??
+            AppRepositories.instance.localWorkOrders.currentTechnicianRole;
+    final currentUser =
+        AppRepositories.instance.remoteWorkOrders?.currentUser ??
+            AppRepositories.instance.localWorkOrders.currentUser;
+    final tasks = order.tasksFor(role);
     final taskAssets = [
       for (final task in tasks) ...task.evidenceAssets,
     ];
@@ -40,7 +104,7 @@ class _TechnicianEvidenceScreenState extends State<TechnicianEvidenceScreen> {
         children: [
           TechnicianVehicleHeader(
             order: order,
-            role: _repository.currentTechnicianRole,
+            role: role,
             message:
                 'Rapor kapanmadan önce araç çevre fotoğrafları ve video kaydı tamamlanmalıdır.',
           ),
@@ -51,7 +115,8 @@ class _TechnicianEvidenceScreenState extends State<TechnicianEvidenceScreen> {
                   '${finalMediaAssets.where((asset) => asset.isAvailable).length}/${finalMediaAssets.length} medya tamamlandı',
               assets: finalMediaAssets,
               canCapture: true,
-              onCapture: (asset) => _captureFinalMediaAsset(order, asset),
+              onCapture: (asset) =>
+                  _captureFinalMediaAsset(order, asset, currentUser.id),
             ),
           if (taskAssets.isNotEmpty)
             _EvidenceSection(
@@ -61,7 +126,7 @@ class _TechnicianEvidenceScreenState extends State<TechnicianEvidenceScreen> {
               assets: taskAssets,
               canCaptureFor: (asset) => tasks
                   .firstWhere((task) => task.taskId == asset.taskId)
-                  .canEditBy(_repository.currentUser),
+                  .canEditBy(currentUser),
               onCapture: (asset) => _captureTaskAsset(order, asset),
             ),
           if (taskAssets.isEmpty && finalMediaAssets.isEmpty)
@@ -71,23 +136,40 @@ class _TechnicianEvidenceScreenState extends State<TechnicianEvidenceScreen> {
     );
   }
 
-  void _captureFinalMediaAsset(TechnicianWorkOrder order, EvidenceAsset asset) {
+  Future<void> _captureFinalMediaAsset(
+    TechnicianWorkOrder order,
+    EvidenceAsset asset,
+    String userId,
+  ) async {
     final extension = asset.evidenceType == 'video' ? 'mp4' : 'jpg';
-    _repository.saveFinalMediaAsset(
-      order.id,
-      asset.copyWith(
-        localPath: 'local/${asset.fieldKey}.$extension',
-        remoteUrl: 'remote/${asset.fieldKey}.$extension',
-        hash: 'demo-hash-${asset.fieldKey}',
-        uploadedAt: DateTime.now(),
-        syncStatus: EvidenceStatus.uploaded,
-        qualityStatus: 'placeholder-ok',
-      ),
+    final nextAsset = asset.copyWith(
+      localPath: 'local/${asset.fieldKey}.$extension',
+      remoteUrl: 'remote/${asset.fieldKey}.$extension',
+      hash: 'demo-hash-${asset.fieldKey}',
+      uploadedAt: DateTime.now(),
+      uploadedBy: userId,
+      syncStatus: EvidenceStatus.uploaded,
+      qualityStatus: 'accepted',
     );
-    setState(() {});
+
+    final remoteRepository = AppRepositories.instance.remoteWorkOrders;
+    if (remoteRepository == null) {
+      final nextOrder = AppRepositories.instance.localWorkOrders
+          .saveFinalMediaAsset(order.id, nextAsset);
+      setState(() => _order = nextOrder);
+      return;
+    }
+
+    final nextOrder =
+        await remoteRepository.saveFinalMediaAsset(order.id, nextAsset);
+    if (!mounted) return;
+    setState(() => _order = nextOrder);
   }
 
-  void _captureTaskAsset(TechnicianWorkOrder order, EvidenceAsset asset) {
+  Future<void> _captureTaskAsset(
+    TechnicianWorkOrder order,
+    EvidenceAsset asset,
+  ) async {
     final extension = asset.evidenceType == 'video' ? 'mp4' : 'jpg';
     final tasks = [
       for (final task in order.tasks)
@@ -102,7 +184,7 @@ class _TechnicianEvidenceScreenState extends State<TechnicianEvidenceScreen> {
                     hash: 'demo-hash-${asset.fieldKey}',
                     uploadedAt: DateTime.now(),
                     syncStatus: EvidenceStatus.uploaded,
-                    qualityStatus: 'placeholder-ok',
+                    qualityStatus: 'accepted',
                   )
                 else
                   current,
@@ -111,15 +193,25 @@ class _TechnicianEvidenceScreenState extends State<TechnicianEvidenceScreen> {
         else
           task,
     ];
-    _repository.updateTask(
-      order.id,
-      order.tasks.firstWhere((task) => task.taskId == asset.taskId).copyWith(
-            evidenceAssets: tasks
-                .firstWhere((task) => task.taskId == asset.taskId)
-                .evidenceAssets,
-          ),
-    );
-    setState(() {});
+
+    final nextTask =
+        order.tasks.firstWhere((task) => task.taskId == asset.taskId).copyWith(
+              evidenceAssets: tasks
+                  .firstWhere((task) => task.taskId == asset.taskId)
+                  .evidenceAssets,
+            );
+
+    final remoteRepository = AppRepositories.instance.remoteWorkOrders;
+    if (remoteRepository == null) {
+      final nextOrder = AppRepositories.instance.localWorkOrders
+          .updateTask(order.id, nextTask);
+      setState(() => _order = nextOrder);
+      return;
+    }
+
+    final nextOrder = await remoteRepository.updateTask(order.id, nextTask);
+    if (!mounted) return;
+    setState(() => _order = nextOrder);
   }
 }
 

@@ -227,6 +227,13 @@ class _UnavailableWorkOrderRepository implements WorkOrderRepository {
       _fail();
 
   @override
+  TechnicianWorkOrder saveFinalMediaAsset(
+    String workOrderId,
+    EvidenceAsset asset,
+  ) =>
+      _fail();
+
+  @override
   TechnicianWorkOrder submitTask(String workOrderId, String taskId) => _fail();
 
   @override

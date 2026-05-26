@@ -225,6 +225,7 @@ class DummyWorkOrderRepository implements WorkOrderRepository {
     return _syncService.wasSubmitted(idempotencyKey);
   }
 
+  @override
   TechnicianWorkOrder saveFinalMediaAsset(
     String workOrderId,
     EvidenceAsset asset,

@@ -55,6 +55,10 @@ class WorkOrderRemoteMapper {
       secretaryGateReady: bundle.caseRow.secretaryGateReady,
       paymentGateReady: bundle.caseRow.paymentGateReady,
       kvkkGateReady: bundle.caseRow.kvkkGateReady,
+      finalMediaAssets: [
+        for (final evidence in bundle.evidenceAssets)
+          if (_isFinalMediaEvidence(evidence)) _evidenceFromRemote(evidence),
+      ],
     );
   }
 
@@ -70,6 +74,28 @@ class WorkOrderRemoteMapper {
       'captured_by': evidence.capturedBy,
       'device_id': evidence.deviceId,
       'gps_approx': evidence.gpsApprox,
+    };
+  }
+
+  Map<String, Object?> evidenceAssetToRemote(EvidenceAsset asset) {
+    return {
+      'id': asset.id,
+      'expertise_case_id': asset.workOrderId,
+      'task_id': asset.taskId.isEmpty ? null : asset.taskId,
+      'field_key': asset.fieldKey,
+      'report_field_key': asset.reportFieldKey,
+      'evidence_type': asset.evidenceType.toUpperCase(),
+      'title': asset.title,
+      'local_path': asset.localPath,
+      'remote_url': asset.remoteUrl,
+      'file_hash': asset.hash,
+      'sync_status': _evidenceStatusToRemote(asset.syncStatus),
+      'is_required': asset.isRequired,
+      'quality_status': asset.qualityStatus.toUpperCase(),
+      'rejection_reason': asset.rejectionReason,
+      'captured_at': asset.capturedAt.toIso8601String(),
+      'uploaded_at': asset.uploadedAt?.toIso8601String(),
+      'captured_by': asset.uploadedBy.isEmpty ? null : asset.uploadedBy,
     };
   }
 
@@ -339,6 +365,13 @@ class WorkOrderRemoteMapper {
     );
   }
 
+  bool _isFinalMediaEvidence(EvidenceAssetRow row) {
+    return row.fieldKey == 'final_media' ||
+        row.fieldKey.startsWith('final_media.') ||
+        row.reportFieldKey == 'report.final_media' ||
+        row.reportFieldKey.startsWith('report.final_media.');
+  }
+
   ExternalQuery _queryFromRemote(ExternalQueryRow row) {
     return ExternalQuery(
       id: row.id,
@@ -507,6 +540,21 @@ class WorkOrderRemoteMapper {
       case 'MISSING':
       default:
         return EvidenceStatus.missing;
+    }
+  }
+
+  String _evidenceStatusToRemote(EvidenceStatus status) {
+    switch (status) {
+      case EvidenceStatus.localOnly:
+        return 'LOCAL_ONLY';
+      case EvidenceStatus.queued:
+        return 'QUEUED';
+      case EvidenceStatus.uploaded:
+        return 'UPLOADED';
+      case EvidenceStatus.rejected:
+        return 'REJECTED';
+      case EvidenceStatus.missing:
+        return 'MISSING';
     }
   }
 

@@ -44,6 +44,11 @@ abstract class WorkOrderRepository {
 
   TechnicianWorkOrder submitTask(String workOrderId, String taskId);
 
+  TechnicianWorkOrder saveFinalMediaAsset(
+    String workOrderId,
+    EvidenceAsset asset,
+  );
+
   List<OfflineSyncQueue> syncQueue();
 
   void reset();

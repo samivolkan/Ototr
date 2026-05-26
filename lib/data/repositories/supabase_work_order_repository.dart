@@ -149,6 +149,18 @@ class SupabaseWorkOrderRepository implements RemoteWorkOrderRepository {
   }
 
   @override
+  Future<TechnicianWorkOrder> saveFinalMediaAsset(
+    String workOrderId,
+    EvidenceAsset asset,
+  ) async {
+    final bundle = await _dataSource.upsertEvidenceAsset(
+      workOrderId,
+      _mapper.evidenceAssetToRemote(asset),
+    );
+    return _mapper.toDomain(bundle);
+  }
+
+  @override
   Future<List<OfflineSyncQueue>> syncQueue() {
     return _dataSource.fetchSyncQueue();
   }

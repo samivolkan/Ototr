@@ -45,5 +45,10 @@ abstract class WorkOrderRemoteDataSource {
 
   Future<WorkOrderRemoteBundle> submitTask(String workOrderId, String taskId);
 
+  Future<WorkOrderRemoteBundle> upsertEvidenceAsset(
+    String workOrderId,
+    Map<String, Object?> payload,
+  );
+
   Future<List<OfflineSyncQueue>> fetchSyncQueue();
 }

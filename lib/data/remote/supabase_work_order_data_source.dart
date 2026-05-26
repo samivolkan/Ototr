@@ -190,6 +190,22 @@ class SupabaseWorkOrderDataSource implements WorkOrderRemoteDataSource {
   }
 
   @override
+  Future<WorkOrderRemoteBundle> upsertEvidenceAsset(
+    String workOrderId,
+    Map<String, Object?> payload,
+  ) async {
+    final evidencePayload = Map<String, Object?>.from(payload)
+      ..removeWhere((key, value) => value == null && key != 'task_id');
+
+    await _client.from('inspection_evidence_assets').upsert(
+          evidencePayload,
+          onConflict: 'id',
+        );
+
+    return fetchWorkOrderById(workOrderId);
+  }
+
+  @override
   Future<List<OfflineSyncQueue>> fetchSyncQueue() async {
     return const [];
   }

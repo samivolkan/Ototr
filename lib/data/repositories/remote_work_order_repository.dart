@@ -47,5 +47,10 @@ abstract class RemoteWorkOrderRepository {
 
   Future<TechnicianWorkOrder> submitTask(String workOrderId, String taskId);
 
+  Future<TechnicianWorkOrder> saveFinalMediaAsset(
+    String workOrderId,
+    EvidenceAsset asset,
+  );
+
   Future<List<OfflineSyncQueue>> syncQueue();
 }

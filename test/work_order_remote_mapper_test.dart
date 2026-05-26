@@ -53,6 +53,37 @@ void main() {
     expect((itemValues.last as Map)['task_id'], 'task-body');
   });
 
+  test('final medya evidence satirlari is emrine baglanir', () {
+    final order = const WorkOrderRemoteMapper().toDomain(
+      _bundle(evidenceAssets: [
+        EvidenceAssetRow.fromJson({
+          'id': 'final-front',
+          'expertise_case_id': 'case-1',
+          'task_id': '',
+          'item_value_id': '',
+          'field_key': 'final_media.front',
+          'report_field_key': 'report.final_media.front',
+          'evidence_type': 'IMAGE',
+          'title': 'Arac on fotografi',
+          'local_path': '',
+          'remote_url': 'remote/final_media.front.jpg',
+          'file_hash': 'hash-final-front',
+          'sync_status': 'UPLOADED',
+          'is_required': true,
+          'quality_status': 'ACCEPTED',
+          'rejection_reason': '',
+          'captured_at': '2026-05-24T10:35:00.000',
+          'uploaded_at': '2026-05-24T10:36:00.000',
+          'captured_by': 'tech-1',
+        }),
+      ]),
+    );
+
+    expect(order.finalMediaAssets, hasLength(1));
+    expect(order.finalMediaAssets.single.fieldKey, 'final_media.front');
+    expect(order.finalMediaAssets.single.isAvailable, isTrue);
+  });
+
   test('SupabaseWorkOrderRepository data source sonucunu domain modele cevirir',
       () async {
     final dataSource = _FakeWorkOrderRemoteDataSource(_bundle());
@@ -85,6 +116,42 @@ void main() {
     expect(saved.startEvidence?.vin, 'WVWZZZ3CZLE000001');
     expect(dataSource.lastStartEvidencePayload?['vin_photo_url'],
         'remote/vin.jpg');
+  });
+
+  test('final medya kaydi remote evidence payload olarak yazilir', () async {
+    final dataSource = _FakeWorkOrderRemoteDataSource(_bundle());
+    final repository = SupabaseWorkOrderRepository(
+      dataSource: dataSource,
+      currentUser: _user,
+      currentTechnicianRole: TechnicianRole.bodyPaint,
+    );
+
+    await repository.saveFinalMediaAsset(
+      'case-1',
+      EvidenceAsset(
+        id: 'final-front',
+        workOrderId: 'case-1',
+        taskId: '',
+        fieldKey: 'final_media.front',
+        reportFieldKey: 'report.final_media.front',
+        evidenceType: 'image',
+        title: 'Arac on fotografi',
+        localPath: 'local/front.jpg',
+        remoteUrl: 'remote/front.jpg',
+        hash: 'hash-front',
+        capturedAt: DateTime(2026, 5, 24, 10, 30),
+        uploadedAt: DateTime(2026, 5, 24, 10, 31),
+        uploadedBy: 'tech-1',
+        syncStatus: EvidenceStatus.uploaded,
+        isRequired: true,
+        qualityStatus: 'accepted',
+        rejectionReason: '',
+      ),
+    );
+
+    expect(dataSource.lastEvidencePayload?['task_id'], isNull);
+    expect(dataSource.lastEvidencePayload?['field_key'], 'final_media.front');
+    expect(dataSource.lastEvidencePayload?['sync_status'], 'UPLOADED');
   });
 
   test('task update remote payload SQL kolon adlarini kullanir', () async {
@@ -253,6 +320,7 @@ class _FakeWorkOrderRemoteDataSource implements WorkOrderRemoteDataSource {
   final WorkOrderRemoteBundle bundle;
   Map<String, Object?>? lastStartEvidencePayload;
   Map<String, Object?>? lastTaskPayload;
+  Map<String, Object?>? lastEvidencePayload;
 
   @override
   Future<WorkOrderRemoteBundle> claimWorkOrder(String workOrderId) async {
@@ -335,6 +403,15 @@ class _FakeWorkOrderRemoteDataSource implements WorkOrderRemoteDataSource {
     Map<String, Object?> payload,
   ) async {
     lastStartEvidencePayload = payload;
+    return bundle;
+  }
+
+  @override
+  Future<WorkOrderRemoteBundle> upsertEvidenceAsset(
+    String workOrderId,
+    Map<String, Object?> payload,
+  ) async {
+    lastEvidencePayload = payload;
     return bundle;
   }
 }
