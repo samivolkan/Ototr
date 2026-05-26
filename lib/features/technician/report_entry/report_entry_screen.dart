@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -35,6 +35,7 @@ class _ReportEntryScreenState extends State<ReportEntryScreen> {
   String? _selectedGroupId;
   final TextEditingController _bodyPaintMicronController =
       TextEditingController();
+  bool _isSubmittingGroup = false;
 
   WorkOrderReportService get _service => WorkOrderReportService(
         templateRepository: _templateRepository,
@@ -202,7 +203,7 @@ class _ReportEntryScreenState extends State<ReportEntryScreen> {
           completed: completed,
           total: total,
           isComplete: isGroupComplete,
-          onSubmit: () => _submitGroup(group),
+          onSubmit: _isSubmittingGroup ? null : () => _submitGroup(data, group),
         ),
       ],
     );
@@ -363,12 +364,150 @@ class _ReportEntryScreenState extends State<ReportEntryScreen> {
     });
   }
 
-  void _submitGroup(ReportTemplateGroup group) {
-    Navigator.pushReplacementNamed(
-      context,
-      AppRoutes.technicianTasks,
-      arguments: widget.workOrderId,
+  Future<void> _submitGroup(
+    _ReportEntryData data,
+    ReportTemplateGroup group,
+  ) async {
+    if (_isSubmittingGroup) {
+      return;
+    }
+    setState(() => _isSubmittingGroup = true);
+    try {
+      await _completeLinkedTaskForGroup(data, group);
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(error.toString().replaceFirst('Bad state: ', '')),
+        ),
+      );
+    } finally {
+      if (!mounted) {
+        return;
+      }
+      setState(() => _isSubmittingGroup = false);
+      Navigator.pushReplacementNamed(
+        context,
+        AppRoutes.technicianTasks,
+        arguments: widget.workOrderId,
+      );
+    }
+  }
+
+  Future<void> _completeLinkedTaskForGroup(
+    _ReportEntryData data,
+    ReportTemplateGroup group,
+  ) async {
+    var linkedTask = _findTaskForGroup(data.order.tasks, group);
+    if (linkedTask == null) {
+      return;
+    }
+    final linkedTaskId = linkedTask.taskId;
+
+    final remote = AppRepositories.instance.remoteWorkOrders;
+    if (remote != null &&
+        linkedTask.isAvailableForClaim &&
+        !linkedTask.isOwnedBy(data.currentUser.id)) {
+      final claimed =
+          await remote.claimTask(widget.workOrderId, linkedTask.taskId);
+      final matches = claimed.tasks
+          .where((task) => task.taskId == linkedTaskId)
+          .toList(growable: false);
+      if (matches.isNotEmpty) {
+        linkedTask = matches.first;
+      }
+    }
+
+    if (AppRepositories.instance.hasLocalTestWorkOrders &&
+        linkedTask.isAvailableForClaim &&
+        !linkedTask.isOwnedBy(data.currentUser.id)) {
+      final claimed = AppRepositories.instance.localWorkOrders.claimTask(
+        widget.workOrderId,
+        linkedTask.taskId,
+      );
+      final matches = claimed.tasks
+          .where((task) => task.taskId == linkedTaskId)
+          .toList(growable: false);
+      if (matches.isNotEmpty) {
+        linkedTask = matches.first;
+      }
+    }
+
+    final completedTask = linkedTask.copyWith(
+      checklistItems: [
+        for (final item in linkedTask.checklistItems)
+          item.copyWith(isAnswered: true),
+      ],
+      status: TaskStatus.completed,
     );
+
+    if (remote != null) {
+      final updated =
+          await remote.updateTask(widget.workOrderId, completedTask);
+      final savedTask = updated.tasks.firstWhere(
+        (task) => task.taskId == linkedTaskId,
+        orElse: () => completedTask,
+      );
+      if (savedTask.status != TaskStatus.completed) {
+        await remote.updateTask(
+          widget.workOrderId,
+          savedTask.copyWith(status: TaskStatus.completed),
+        );
+      }
+      return;
+    }
+
+    if (AppRepositories.instance.hasLocalTestWorkOrders) {
+      AppRepositories.instance.localWorkOrders.updateTask(
+        widget.workOrderId,
+        completedTask,
+      );
+    }
+  }
+
+  TechnicianTask? _findTaskForGroup(
+    List<TechnicianTask> tasks,
+    ReportTemplateGroup group,
+  ) {
+    final groupItemIds = group.items.map((item) => item.id).toSet();
+    final groupItemTitles = {
+      for (final item in group.items) _normalize(item.title),
+    };
+    for (final task in tasks) {
+      if (task.checklistItems.any(
+        (item) =>
+            groupItemIds.contains(item.id) ||
+            groupItemTitles.contains(_normalize(item.title)),
+      )) {
+        return task;
+      }
+      if (_normalize(task.title) == _normalize(group.title) ||
+          _normalize(task.reportFieldKey).contains(_normalize(group.code))) {
+        return task;
+      }
+    }
+    return null;
+  }
+
+  String _normalize(String value) {
+    return value
+        .trim()
+        .toUpperCase()
+        .replaceAll('İ', 'I')
+        .replaceAll('Ğ', 'G')
+        .replaceAll('Ü', 'U')
+        .replaceAll('Ş', 'S')
+        .replaceAll('Ö', 'O')
+        .replaceAll('Ç', 'C')
+        .replaceAll('ı', 'I')
+        .replaceAll('ğ', 'G')
+        .replaceAll('ü', 'U')
+        .replaceAll('ş', 'S')
+        .replaceAll('ö', 'O')
+        .replaceAll('ç', 'C')
+        .replaceAll(RegExp(r'[^A-Z0-9]+'), '_');
   }
 }
 
@@ -412,7 +551,7 @@ class _SubmitGroupCard extends StatelessWidget {
   final int completed;
   final int total;
   final bool isComplete;
-  final VoidCallback onSubmit;
+  final VoidCallback? onSubmit;
 
   @override
   Widget build(BuildContext context) {
