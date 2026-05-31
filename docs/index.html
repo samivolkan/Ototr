@@ -7330,6 +7330,15 @@
           if(!(t.evidence||[]).length) reasons.push(t.station+' fotoğraf / cihaz kanıtı eksik.');
           if(missing.length) reasons.push(t.station+' eksik alan: '+missing.join(', '));
         });
+        const reportGroups=dealerReportSchemaGroups(wo);
+        if(reportGroups.length){
+          const progressRows=reportGroups.map(g=>dealerReportGroupProgress(wo,g));
+          const reportTotal=progressRows.reduce((s,p)=>s+p.total,0), reportDone=progressRows.reduce((s,p)=>s+p.done,0);
+          const openRows=progressRows.filter(p=>p.done<p.total);
+          if(reportTotal&&reportDone<reportTotal) reasons.push('Rapor noktaları canlı usta girişleriyle tamamlanmalı: '+reportDone+' / '+reportTotal);
+          const unmapped=openRows.filter(p=>!p.task?.id).length;
+          if(unmapped) reasons.push(unmapped+' rapor başlığına usta görevi eşleşmedi.');
+        }
       }
       return [...new Set(reasons)];
     }
@@ -7785,15 +7794,55 @@
       if(/warning/i.test(opt?.severity||'')) return badge('Düzeltme');
       return badge('Tamam');
     }
-    function dealerReportGroupProgress(wo,group){
-      const total=group.items.length, done=group.items.filter(item=>dealerReportPointAnswered(dealerReportPointValue(wo,item))).length;
-      const risk=group.items.filter(item=>dealerReportPointTone(item,dealerReportPointValue(wo,item))==='risk').length;
-      const pct=dealerRoundPct(done/Math.max(1,total)*100);
-      return {total,done,risk,pct,score:Math.max(0,10-risk)};
-    }
     function dealerReportGroupTask(wo,group){
-      const key=dealerSimpleTextKey(group.title+' '+(group.taskTypeCode||''));
-      return (wo?.tasks||[]).find(t=>dealerSimpleTextKey(t.station).includes(key)||key.includes(dealerSimpleTextKey(t.station)))||(wo?.tasks||[]).find(t=>dealerSimpleTextKey(group.owner||'').includes(dealerSimpleTextKey(t.owner||'')))||{};
+      const tasks=wo?.tasks||[], key=dealerSimpleTextKey(group.title+' '+(group.taskTypeCode||''));
+      const direct=tasks.find(t=>{const s=dealerSimpleTextKey(t.station+' '+(t.scope||''));return s.includes(key)||key.includes(s);});
+      if(direct) return direct;
+      const words=['MOTOR','CHECK','ALT','ON','MEKANIK','LIFT','KAPORTA','BOYA','PAINT','BODY','OBD','BEYIN','ELEKTRONIK','FREN','SUSPANSIYON','BRAKE','DYNO','YOL','ROAD','IC','INTERIOR','DONANIM','DIS','KONDISYON','EXTERIOR','CONTA','AIRBAG','SRS','KM','KILOMETRE'];
+      const scored=tasks.map(t=>{
+        const s=dealerSimpleTextKey([t.station,t.scope,t.owner].filter(Boolean).join(' '));
+        let score=0;
+        words.forEach(w=>{if(key.includes(w)&&s.includes(w)) score+=10;});
+        if(/MOTOR|CHECK/.test(key)&&/MOTOR|MEKANIK/.test(s)) score+=35;
+        if(/ALT|LIFT|ON MEKANIK/.test(key)&&/ALT|MEKANIK|LIFT/.test(s)) score+=35;
+        if(/KAPORTA|BOYA|PAINT|BODY/.test(key)&&/KAPORTA|BOYA|SASI|DIREK/.test(s)) score+=35;
+        if(/OBD|BEYIN|ELEKTRONIK/.test(key)&&/OBD|BEYIN|ELEKTRONIK|DIAGNOSTIK/.test(s)) score+=35;
+        if(/FREN|SUSPANSIYON|BRAKE/.test(key)&&/FREN|SUSPANSIYON|TEST/.test(s)) score+=35;
+        if(/DYNO|YOL|ROAD/.test(key)&&/DYNO|YOL/.test(s)) score+=35;
+        if(/IC|INTERIOR|DONANIM/.test(key)&&/IC|DONANIM|KONDISYON/.test(s)) score+=30;
+        if(/DIS|EXTERIOR|KONDISYON/.test(key)&&/DIS|KONDISYON|ARAC/.test(s)) score+=25;
+        if(/CONTA/.test(key)&&/CONTA|KACAK|MOTOR/.test(s)) score+=30;
+        if(/AIRBAG|SRS/.test(key)&&/AIRBAG|SRS|OBD/.test(s)) score+=30;
+        if(/KM|KILOMETRE/.test(key)&&/KM|KILOMETRE|ARAC KABUL/.test(s)) score+=30;
+        return {task:t,score};
+      }).sort((a,b)=>b.score-a.score)[0];
+      if(scored?.score>0) return scored.task;
+      return tasks.find(t=>dealerSimpleTextKey(group.owner||'').includes(dealerSimpleTextKey(t.owner||'')))||{};
+    }
+    function dealerReportTaskLivePct(task){
+      if(!task||!task.id) return null;
+      if(task.status==='Tamamlandı'||task.result) return 100;
+      if(task.status==='Devam Ediyor') return 50;
+      const evidence=(task.evidence||[]).length;
+      if(evidence) return Math.min(80,20+(evidence*15));
+      return 0;
+    }
+    function dealerReportTaskRisk(task){
+      const text=[task?.returnNote,task?.result?.severity,task?.result?.customerText,task?.result?.rawNote].filter(Boolean).join(' ');
+      return /risk|kritik|uyar|red|ağır|agir|eksik|blokaj/i.test(text)?1:0;
+    }
+    function dealerReportGroupProgress(wo,group){
+      const total=group.items.length, jsonDone=group.items.filter(item=>dealerReportPointAnswered(dealerReportPointValue(wo,item))).length;
+      const jsonRisk=group.items.filter(item=>dealerReportPointTone(item,dealerReportPointValue(wo,item))==='risk').length;
+      const jsonPct=dealerRoundPct(jsonDone/Math.max(1,total)*100), task=dealerReportGroupTask(wo,group), taskPct=dealerReportTaskLivePct(task);
+      let pct=jsonPct, done=jsonDone, source='JSON nokta';
+      if(taskPct!==null&&taskPct>jsonPct){
+        pct=dealerRoundPct(taskPct);
+        done=pct>=100?total:Math.min(total,Math.max(jsonDone,Math.round(total*pct/100)));
+        source='Canlı usta girişi';
+      }
+      const risk=Math.max(jsonRisk,dealerReportTaskRisk(task));
+      return {total,done,risk,pct,score:Math.max(0,10-risk),source,task};
     }
     function dealerReportOptionClass(option){
       const color=String(option?.color||'gray').toLowerCase();
@@ -7807,18 +7856,27 @@
     function dealerReportActionsMenu(w){
       return `<details class="dealer-report-action-menu"><summary>İŞLEMLER</summary><div class="dealer-report-action-list"><button type="button" data-dealer-report-action="query" data-dealer-report-id="${rpEsc(w.id)}">Sorgu Formu</button><button type="button" data-dealer-report-detail="${rpEsc(w.id)}">Detay</button><button type="button" data-dealer-report-action="send-center" data-dealer-report-id="${rpEsc(w.id)}">Raporu Merkeze Gönder</button><button type="button" class="danger" data-dealer-report-action="cancel" data-dealer-report-id="${rpEsc(w.id)}">Raporu İptal Et</button></div></details>`;
     }
+    function dealerReportLiveStats(wo,groups=dealerReportSchemaGroups(wo)){
+      const progressRows=groups.map(g=>dealerReportGroupProgress(wo,g));
+      const total=progressRows.reduce((s,p)=>s+p.total,0), done=progressRows.reduce((s,p)=>s+p.done,0), risk=progressRows.reduce((s,p)=>s+p.risk,0);
+      const completion=dealerCompletion(wo);
+      const pct=dealerRoundPct(completion.pct);
+      return {groups,total,done,risk,pct,completion,progressRows};
+    }
     function dealerReportDetailTableRows(workOrders){
       const store=ensureDealerLiveData(DB.branches.find(b=>b.id===selectedBranchId)||DB.branches[0],DB.appointments), activeId=dealerActiveWorkOrder(store)?.id;
       return workOrders.map(w=>{
-        const groups=dealerReportSchemaGroups(w), total=groups.reduce((s,g)=>s+g.items.length,0), done=groups.reduce((s,g)=>s+dealerReportGroupProgress(w,g).done,0);
-        const pct=dealerRoundPct(done/Math.max(1,total)*100);
-        return {attrs:`data-dealer-report-row="${rpEsc(w.id)}" class="${w.id===activeId?'dealer-dashboard-selected':''}" role="button" tabindex="0"`,cells:[dealerReportActionsMenu(w),rpEsc(w.reportNo),rpEsc(w.id),rpEsc(w.plate),rpEsc([w.vehicle,w.year].filter(Boolean).join(' / ')),`<button class="micro-btn" data-action="Hasar detayları açıldı.">${icon('check')}HASAR DETAYLARI</button>`,`<button class="micro-btn" data-action="KM detayları açıldı.">${icon('check')}KM DETAYLARI</button>`,rpEsc(dealerReportPrintGate(w,dealerCompletion(w)).ready?'Basıma hazır':w.reportCenterStatus||'Bekliyor'),`${pct}% ${done} / ${total}`]};
+        const groups=dealerReportSchemaGroups(w), stats=dealerReportLiveStats(w,groups), completion=stats.completion, gate=dealerReportPrintGate(w,completion);
+        const status=gate.ready?'Basıma hazır':(completion.technicalPct<100?'Usta girişi bekliyor':w.reportCenterStatus||'Bekliyor');
+        return {attrs:`data-dealer-report-row="${rpEsc(w.id)}" class="${w.id===activeId?'dealer-dashboard-selected':''}" role="button" tabindex="0"`,cells:[dealerReportActionsMenu(w),rpEsc(w.reportNo),rpEsc(w.id),rpEsc(w.plate),rpEsc([w.vehicle,w.year].filter(Boolean).join(' / ')),`<button class="micro-btn" data-action="Hasar detayları açıldı.">${icon('check')}HASAR DETAYLARI</button>`,`<button class="micro-btn" data-action="KM detayları açıldı.">${icon('check')}KM DETAYLARI</button>`,rpEsc(status),`%${stats.pct} / ${completion.technicalPct}% usta · ${stats.done}/${stats.total} nokta`]};
       });
     }
     function dealerRenderReportModule(wo,group){
+      const groupProgress=dealerReportGroupProgress(wo,group), liveSynced=/Canlı usta/i.test(groupProgress.source||'')&&groupProgress.pct>=100;
       const rows=group.items.map(item=>{
-        const value=dealerReportPointValue(wo,item), opt=dealerReportPointOption(item,value), tone=dealerReportPointTone(item,value);
-        return `<button class="dealer-report-point-row ${tone}" data-dealer-report-point="${rpEsc(wo.id)}|${rpEsc(item.id)}"><span class="dealer-report-point-icon">${icon('search')}</span><span class="dealer-report-point-copy"><b>${rpEsc(item.name||item.title)}</b><span>${opt?rpEsc(opt.label):'Seçim bekliyor'}${value.note?' · '+rpEsc(value.note):''}</span></span>${dealerReportPointBadge(item,value)}</button>`;
+        const value=dealerReportPointValue(wo,item), opt=dealerReportPointOption(item,value), answered=dealerReportPointAnswered(value), tone=answered?dealerReportPointTone(item,value):(liveSynced?'done':'wait');
+        const sub=answered?`${opt?rpEsc(opt.label):'Seçim yapıldı'}${value.note?' · '+rpEsc(value.note):''}`:(liveSynced?'Canlı usta girişi tamamlandı':'Seçim bekliyor');
+        return `<button class="dealer-report-point-row ${tone}" data-dealer-report-point="${rpEsc(wo.id)}|${rpEsc(item.id)}"><span class="dealer-report-point-icon">${icon(liveSynced&&!answered?'check-circle-2':'search')}</span><span class="dealer-report-point-copy"><b>${rpEsc(item.name||item.title)}</b><span>${sub}</span></span>${answered?dealerReportPointBadge(item,value):(liveSynced?badge('Canlı'):badge('Bekliyor'))}</button>`;
       }).join('');
       return `<section class="dealer-report-module-card dealer-report-point-panel" id="dealer-report-selected-points" data-selected-report-group="${rpEsc(dealerReportGroupKey(group))}"><div class="dealer-report-point-list">${rows||'<div class="dealer-report-empty">Bu test için kontrol noktası bulunamadı.</div>'}</div></section>`;
     }
@@ -7827,9 +7885,9 @@
       const selected=selectedGroup||groups[0], selectedKey=dealerReportGroupKey(selected), selectedProgress=dealerReportGroupProgress(wo,selected);
       const groupButtons=groups.map(group=>{
         const key=dealerReportGroupKey(group), progress=dealerReportGroupProgress(wo,group);
-        return `<button type="button" class="${key===selectedKey?'active':''}" data-dealer-report-open-group="${rpEsc(key)}"><div><b>${rpEsc(group.title)}</b><span>${progress.done}/${progress.total} nokta · %${progress.pct} tamamlandı</span></div>${progress.risk?badge(progress.risk+' risk'):badge(progress.pct>=100?'Tamamlandı':'Bekliyor')}</button>`;
+        return `<button type="button" class="${key===selectedKey?'active':''}" data-dealer-report-open-group="${rpEsc(key)}"><div><b>${rpEsc(group.title)}</b><span>${progress.done}/${progress.total} nokta · %${progress.pct} · ${rpEsc(progress.source)}</span></div>${progress.risk?badge(progress.risk+' risk'):badge(progress.pct>=100?'Tamamlandı':'Bekliyor')}</button>`;
       }).join('');
-      return `<section class="dealer-report-test-workbench"><aside class="dealer-report-test-list">${groupButtons}</aside><div class="dealer-report-test-content"><div class="dealer-report-test-head"><div><h4>${rpEsc(selected.title)}</h4><p>Soldan test başlığı seç; sağdaki kontrol noktaları ve yüzde canlı kayıt durumuna göre güncellenir.</p></div><div class="dealer-report-test-kpis">${badge('%'+selectedProgress.pct)}${badge(selectedProgress.done+' / '+selectedProgress.total+' nokta')}${selectedProgress.risk?badge(selectedProgress.risk+' risk'):badge('Risk yok')}</div></div>${dealerRenderReportModule(wo,selected)}</div></section>`;
+      return `<section class="dealer-report-test-workbench"><aside class="dealer-report-test-list">${groupButtons}</aside><div class="dealer-report-test-content"><div class="dealer-report-test-head"><div><h4>${rpEsc(selected.title)}</h4><p>Soldan test başlığı seç; sağdaki kontrol noktaları ve yüzde canlı usta girişleriyle aynı iş emrinden güncellenir.</p></div><div class="dealer-report-test-kpis">${badge('%'+selectedProgress.pct)}${badge(selectedProgress.done+' / '+selectedProgress.total+' nokta')}${badge(selectedProgress.source)}${selectedProgress.risk?badge(selectedProgress.risk+' risk'):badge('Risk yok')}</div></div>${dealerRenderReportModule(wo,selected)}</div></section>`;
     }
     function dealerReportDossierTable(rows){
       return `<div class="dealer-report-dossier-table">${rows.map(([label,value])=>`<div><b>${rpEsc(label)}</b><span>${value||''}</span></div>`).join('')}</div>`;
@@ -7870,10 +7928,9 @@
     function dealerReportDetailPage(wo,workOrders){
       if(!wo) return `<section class="dealer-form-section"><div class="dealer-section-head"><div><h3>Rapor Detay</h3><p>Detay göstermek için iş emri açın veya seçin.</p></div></div></section>`;
       const openReports=(workOrders||[]).filter(w=>dealerWorkOrderStillOpen(w)&&!/iptal/i.test(String(w.status||'')));
-      const groups=dealerReportSchemaGroups(wo), total=groups.reduce((s,g)=>s+g.items.length,0), done=groups.reduce((s,g)=>s+dealerReportGroupProgress(wo,g).done,0), risk=groups.reduce((s,g)=>s+dealerReportGroupProgress(wo,g).risk,0);
-      const pct=dealerRoundPct(done/Math.max(1,total)*100), stats={total,done,risk,pct};
+      const groups=dealerReportSchemaGroups(wo), stats=dealerReportLiveStats(wo,groups), total=stats.total, done=stats.done, risk=stats.risk, pct=stats.pct, completion=stats.completion;
       const ui=dealerPortalState(), selectedGroup=groups.find(g=>dealerReportGroupKey(g)===(ui.reportGroupKey||''))||groups[0], selectedGroupKey=selectedGroup?dealerReportGroupKey(selectedGroup):'';
-      return `<div class="dealer-report-detail-shell"><section class="dealer-form-section"><div class="dealer-section-head"><div><h3>Açık Raporlar</h3><p>Otorapor mantığındaki liste burada; İşlemler menüsünden Sorgu Formu uzun iş emrini düzenler, Detay ise tüm JSON kontrol noktalarını ve seçeneklerini açar.</p></div><div class="quick-actions">${badge(openReports.length+' açık rapor')}${badge('TRAMER kontrolü unutulmayacak')}<button class="btn primary" data-dealer-report-detail="${rpEsc(wo.id)}">${icon('file-search')}Seçili Rapor Detayı</button></div></div>${dealerPortalTable(['İşlemler','Rapor Kodu','İş Emri','Plaka','Marka/Model/Yıl','Hasar','Km','GD Açk.','İlerleme'],dealerReportDetailTableRows(openReports))}</section><section class="dealer-form-section"><div class="dealer-section-head"><div><h3>Rapor Detay · ${rpEsc(wo.reportNo)}</h3><p>${rpEsc(wo.plate)} · ${rpEsc(wo.vehicle)} · ${rpEsc(wo.packageName)}. Rapor testleri solda, seçilen testin kontrol noktaları sağda canlı takip edilir.</p></div><div class="quick-actions"><button class="btn" data-dealer-update-wo="${rpEsc(wo.id)}">${icon('file-pen-line')}Sorgu Formu</button><button class="btn" data-dealer-tab="usta">${icon('tablet-smartphone')}Usta Girişleri</button><button class="btn" data-dealer-return>${icon('undo-2')}Ustaya İade</button>${dealerReportPrintButton(wo,dealerCompletion(wo),'Raporu Bas')}</div></div><div class="dealer-report-summary-grid"><div><span>İş emri</span><b>${rpEsc(wo.id)}</b></div><div><span>Toplam ilerleme</span><b>%${pct}</b></div><div><span>JSON nokta</span><b>${done} / ${total}</b></div><div><span>Riskli seçim</span><b>${risk}</b></div><div><span>Bekleyen</span><b>${Math.max(0,total-done)}</b></div></div></section>${dealerRenderReportTestWorkbench(wo,groups,selectedGroup)}${dealerReportDossier(wo,groups,stats,selectedGroupKey)}${dealerReportPointModalShell(wo)}</div>`;
+      return `<div class="dealer-report-detail-shell"><section class="dealer-form-section"><div class="dealer-section-head"><div><h3>Açık Raporlar</h3><p>Otorapor mantığındaki liste burada; İşlemler menüsünden Sorgu Formu uzun iş emrini düzenler, Detay ise canlı usta girişleri ve JSON kontrol noktalarını aynı yüzdeyle açar.</p></div><div class="quick-actions">${badge(openReports.length+' açık rapor')}${badge('TRAMER kontrolü unutulmayacak')}<button class="btn primary" data-dealer-report-detail="${rpEsc(wo.id)}">${icon('file-search')}Seçili Rapor Detayı</button></div></div>${dealerPortalTable(['İşlemler','Rapor Kodu','İş Emri','Plaka','Marka/Model/Yıl','Hasar','Km','GD Açk.','İlerleme'],dealerReportDetailTableRows(openReports))}</section><section class="dealer-form-section"><div class="dealer-section-head"><div><h3>Rapor Detay · ${rpEsc(wo.reportNo)}</h3><p>${rpEsc(wo.plate)} · ${rpEsc(wo.vehicle)} · ${rpEsc(wo.packageName)}. Rapor testleri solda, seçilen testin kontrol noktaları sağda canlı usta girişleriyle takip edilir.</p></div><div class="quick-actions"><button class="btn" data-dealer-update-wo="${rpEsc(wo.id)}">${icon('file-pen-line')}Sorgu Formu</button><button class="btn" data-dealer-tab="usta">${icon('tablet-smartphone')}Usta Girişleri</button><button class="btn" data-dealer-return>${icon('undo-2')}Ustaya İade</button>${dealerReportPrintButton(wo,completion,'Raporu Bas')}</div></div><div class="dealer-report-summary-grid"><div><span>İş emri</span><b>${rpEsc(wo.id)}</b></div><div><span>Toplam ilerleme</span><b>%${pct}</b></div><div><span>Usta ilerleme</span><b>%${completion.technicalPct}</b></div><div><span>Canlı nokta</span><b>${done} / ${total}</b></div><div><span>Bekleyen</span><b>${Math.max(0,total-done)}</b></div></div></section>${dealerRenderReportTestWorkbench(wo,groups,selectedGroup)}${dealerReportDossier(wo,groups,stats,selectedGroupKey)}${dealerReportPointModalShell(wo)}</div>`;
     }
     function dealerReportPointModalShell(wo){return `<div class="dealer-report-modal" data-dealer-report-point-modal><div class="dealer-report-modal-card"><div class="dealer-report-modal-head"><h3 data-dealer-report-point-title>Kontrol noktası</h3><button class="dock-close" data-dealer-report-point-close>${icon('x')}</button></div><div data-dealer-report-point-body></div><div class="dealer-report-modal-foot"><b data-dealer-report-point-workorder>${rpEsc(wo?.id||'')}</b><div class="dealer-report-modal-actions"><button class="btn" data-dealer-report-point-close>Kapat</button><button class="btn primary" data-dealer-report-point-save>Kaydet</button></div></div></div></div>`;}
     function dealerOpenReportPoint(payload){
