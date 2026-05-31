@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="ototr-version" content="SVK v1.0.232-cancel-work-order" />
+  <meta name="ototr-version" content="SVK v1.0.233-cancel-first" />
   <title>OTOTR Genel Merkez ERP + CRM</title>
   <link rel="icon" type="image/svg+xml" href="docs/ototr-favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -122,6 +122,15 @@
     body.dealer-standalone .dealer-erp-nav button.dealer-gate-nav.ready i{color:#fff}
     .dealer-login-shell{min-height:calc(100vh - 28px);display:grid;place-items:center;padding:24px;background:#eef1f5}
     .dealer-login-card{width:min(620px,100%);display:grid;gap:14px}
+    .dealer-login-shell.pro{min-height:auto;place-items:start center;padding:18px 0 34px;background:transparent}
+    .dealer-login-card.pro{width:min(1120px,100%);grid-template-columns:minmax(0,1.12fr) minmax(380px,.88fr);align-items:stretch;gap:16px}
+    .dealer-login-intro{border:1px solid #dbe3ee;border-radius:14px;background:linear-gradient(135deg,#fff,#f8fbff 58%,#fff7f8);box-shadow:0 16px 42px rgba(15,23,42,.08);padding:18px;display:grid;gap:14px;min-width:0}
+    .dealer-login-intro-head{display:grid;grid-template-columns:52px minmax(0,1fr);gap:13px;align-items:center}.dealer-login-intro-head h2{margin:0;font-size:24px;letter-spacing:-.04em}.dealer-login-intro-head p{margin:4px 0 0;color:#536173;font-size:12px;line-height:1.45}.dealer-login-live-mark{width:52px;height:52px;border-radius:14px;background:#111827;color:#fff;display:grid;place-items:center;font-weight:950;box-shadow:0 12px 24px rgba(15,23,42,.18)}
+    .dealer-login-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}.dealer-login-metric{border:1px solid #e2e8f0;border-radius:10px;background:#fff;padding:10px;min-width:0}.dealer-login-metric span{display:block;color:#64748b;font-size:9px;font-weight:950;text-transform:uppercase}.dealer-login-metric b{display:block;margin-top:4px;font-size:18px;letter-spacing:-.03em}.dealer-login-metric small{display:block;margin-top:3px;color:#64748b;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .dealer-login-flow{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}.dealer-login-flow div{border:1px solid #dbeafe;border-radius:10px;background:#eff6ff;padding:10px;display:grid;gap:6px;min-height:86px}.dealer-login-flow i{width:18px;height:18px;color:#1769e0}.dealer-login-flow b{font-size:11px}.dealer-login-flow span{color:#475569;font-size:10px;line-height:1.35}
+    .dealer-login-module-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.dealer-login-module{border:1px solid #e2e8f0;border-radius:10px;background:#fff;padding:10px;display:grid;grid-template-columns:28px minmax(0,1fr);gap:8px;align-items:start}.dealer-login-module i{width:18px;height:18px;color:#d71920}.dealer-login-module b{display:block;font-size:11px}.dealer-login-module span{display:block;margin-top:2px;color:#64748b;font-size:10px;line-height:1.3}
+    .dealer-login-security{border:1px solid #bbf7d0;border-radius:12px;background:#f0fdf4;color:#14532d;padding:12px;display:grid;grid-template-columns:28px minmax(0,1fr);gap:9px}.dealer-login-security i{width:20px;height:20px;color:#16a34a}.dealer-login-security b{display:block;font-size:12px}.dealer-login-security span{display:block;margin-top:3px;font-size:11px;line-height:1.4;color:#166534}
+    .dealer-login-card.pro .dealer-login-brand{height:max-content}.dealer-login-card.pro .dealer-form-section{align-content:start}.dealer-login-card.pro .live-sync-note{box-shadow:0 10px 24px rgba(15,23,42,.05)}
     .dealer-login-brand{border:1px solid #dbe3ee;border-radius:16px;background:#111827;color:#fff;padding:18px;display:grid;grid-template-columns:48px 1fr;gap:12px;align-items:center;box-shadow:0 18px 44px rgba(17,24,39,.16)}
     .dealer-login-brand .dealer-erp-logo{width:48px;height:48px;border-radius:14px}
     .dealer-login-brand b{font-size:22px;letter-spacing:.02em}
@@ -129,6 +138,7 @@
     .dealer-login-card .dealer-form-section{box-shadow:0 14px 34px rgba(17,24,39,.10)}
     .dealer-login-card .dealer-workorder-form{display:block}
     .dealer-login-card .dealer-wo-form-grid{grid-template-columns:1fr 1fr auto}
+    @media(max-width:960px){.dealer-login-card.pro,.dealer-login-metrics,.dealer-login-flow,.dealer-login-module-grid{grid-template-columns:1fr}.dealer-login-shell.pro{padding:14px 0 28px}body.dealer-standalone #page-dealer{max-width:100vw;overflow:hidden}body.dealer-standalone .module-page-head,body.dealer-standalone #page-dealer>.dept-plan-card,body.dealer-standalone .dealer-erp-workspace{margin-left:0!important}body.dealer-standalone .module-page-head{width:calc(100vw - 24px)!important;max-width:calc(100vw - 24px)!important;flex-direction:column;align-items:stretch;overflow:hidden}body.dealer-standalone .module-page-head>div{min-width:0}body.dealer-standalone .module-page-head h1,body.dealer-standalone .module-page-head p{max-width:100%;overflow-wrap:anywhere}body.dealer-standalone .module-page-actions{display:grid!important;grid-template-columns:1fr;width:100%;justify-content:stretch}body.dealer-standalone .module-page-actions .btn{width:100%;justify-content:center;min-width:0;white-space:normal}.dealer-standalone .dealer-theme-switch{width:100%!important}body.dealer-standalone .module-page-head .dealer-header-search{width:100%}body.dealer-standalone .wrap{padding:12px!important}.dealer-login-card.pro{width:calc(100vw - 24px)!important;max-width:calc(100vw - 24px)!important}}
     @media(max-width:760px){.dealer-login-shell{padding:14px}.dealer-login-card .dealer-wo-form-grid{grid-template-columns:1fr}.dealer-login-brand{grid-template-columns:42px 1fr}.dealer-login-brand .dealer-erp-logo{width:42px;height:42px}}
     .dealer-appointment-dock-tab.dealer-gate-nav{background:#111318;color:#94a3b8;border-color:#222936;opacity:.78;cursor:not-allowed}
     .dealer-appointment-dock-tab.dealer-gate-nav.ready{background:#d71920;color:#fff;border-color:#d71920;opacity:1;cursor:pointer;box-shadow:-10px 14px 28px rgba(215,25,32,.28)}
@@ -999,7 +1009,7 @@
     .dealer-rich-card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}.dealer-rich-card-head h3{margin:0;font-size:16px}.dealer-rich-card-head a,.dealer-rich-link{color:var(--ototr-blue);font-size:12px;font-weight:950;text-decoration:none}.dealer-rich-badge{display:inline-flex;border-radius:999px;background:#eef5ff;color:var(--ototr-blue);padding:5px 9px;font-size:11px;font-weight:950}
     .dealer-module-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.dealer-module-card{border:1px solid var(--ototr-border);border-radius:8px;background:#fff;color:var(--ototr-text);min-height:76px;padding:13px;display:grid;grid-template-columns:42px minmax(0,1fr) 18px;gap:11px;align-items:center;text-align:left;cursor:pointer}.dealer-module-card:hover{border-color:#bcd5ff;box-shadow:0 12px 24px rgba(23,105,224,.09);transform:translateY(-1px)}.dealer-module-card b{font-size:13px}.dealer-module-card span{display:block;margin-top:4px;color:var(--ototr-muted);font-size:11px;line-height:1.35}.dealer-module-icon{width:42px;height:42px;border-radius:10px;display:grid;place-items:center;background:#edf4ff;color:var(--ototr-blue)}.dealer-module-card.green .dealer-module-icon{background:#eaf7f0;color:var(--ototr-green)}.dealer-module-card.orange .dealer-module-icon{background:#fff3e8;color:var(--ototr-orange)}.dealer-module-card.red .dealer-module-icon{background:#fff0f1;color:var(--ototr-red)}.dealer-module-card.purple .dealer-module-icon{background:#f1edff;color:var(--ototr-purple)}.dealer-module-icon i{width:21px;height:21px}
     .dealer-rich-table{width:100%;border-collapse:collapse}.dealer-rich-table th,.dealer-rich-table td{border-bottom:1px solid var(--ototr-border);padding:12px 10px;text-align:left;font-size:12px;white-space:nowrap}.dealer-rich-table th{color:#3f4b5f;font-size:11px;background:#fbfcfe}.dealer-rich-table td{color:#182235}.dealer-status-pill{display:inline-flex;border-radius:7px;padding:5px 9px;font-size:11px;font-weight:900}.dealer-status-pill.blue{background:#eaf2ff;color:var(--ototr-blue)}.dealer-status-pill.orange{background:#fff2e6;color:#ea580c}.dealer-status-pill.green{background:#eaf7f0;color:#15803d}
-    .dealer-rich-charts{display:grid;grid-template-columns:1fr .62fr;gap:16px}.dealer-chart-value{font-size:22px;font-weight:950}.dealer-chart-trend{color:var(--ototr-green);font-size:13px;font-weight:950;margin-left:10px}.dealer-line-chart{width:100%;height:150px}.dealer-chart-labels{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;color:#667085;font-size:10px;text-align:center}.dealer-donut-row{display:grid;grid-template-columns:135px minmax(0,1fr);gap:16px;align-items:center}.dealer-donut{width:126px;height:126px;border-radius:50%;background:conic-gradient(var(--ototr-blue) 0 50%,var(--ototr-green) 50% 82%,var(--ototr-orange) 82% 100%);display:grid;place-items:center}.dealer-donut:before{content:"";width:72px;height:72px;border-radius:50%;background:#fff;position:absolute}.dealer-donut{position:relative}.dealer-donut-center{position:relative;text-align:center;font-weight:950}.dealer-donut-center span{display:block;color:var(--ototr-muted);font-size:10px}.dealer-legend{display:grid;gap:9px}.dealer-legend div{display:grid;grid-template-columns:12px minmax(0,1fr) auto;gap:8px;align-items:center;font-size:12px}.dealer-legend i{width:10px;height:10px;border-radius:3px}.dealer-legend .blue{background:var(--ototr-blue)}.dealer-legend .green{background:var(--ototr-green)}.dealer-legend .orange{background:var(--ototr-orange)}
+    .dealer-rich-charts{display:grid;grid-template-columns:1fr .62fr;gap:16px}.dealer-chart-value{font-size:22px;font-weight:950}.dealer-chart-trend{color:var(--ototr-green);font-size:13px;font-weight:950;margin-left:10px}.dealer-line-chart{width:100%;height:150px}.dealer-chart-labels{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;color:#667085;font-size:10px;text-align:center}.dealer-revenue-pro{display:grid;gap:12px}.dealer-revenue-pro-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.dealer-revenue-pro-title{display:grid;gap:4px}.dealer-revenue-pro-title h3{margin:0;font-size:16px}.dealer-revenue-pro-title span{color:var(--ototr-muted);font-size:11px;font-weight:850}.dealer-revenue-mode{display:inline-flex;gap:4px;border:1px solid var(--ototr-border);border-radius:8px;background:#f8fafc;padding:3px}.dealer-revenue-mode button{border:0;border-radius:6px;background:transparent;color:#667085;height:28px;padding:0 10px;font-size:11px;font-weight:950;cursor:pointer}.dealer-revenue-mode button.active{background:#fff;color:var(--ototr-blue);box-shadow:0 1px 3px rgba(15,23,42,.08)}.dealer-revenue-summary{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:end}.dealer-revenue-summary strong{display:block;font-size:26px;letter-spacing:-.04em}.dealer-revenue-summary span{display:block;margin-top:3px;color:var(--ototr-green);font-size:12px;font-weight:950}.dealer-revenue-hover{border:1px solid #d9e8ff;border-radius:8px;background:#f6fbff;padding:8px 10px;min-width:145px;text-align:right}.dealer-revenue-hover b{display:block;font-size:14px}.dealer-revenue-hover small{display:block;color:#64748b;font-size:10.5px;margin-top:2px}.dealer-revenue-svg{width:100%;height:178px;display:block;overflow:visible}.dealer-revenue-area{fill:url(#dealerRevenueGradient)}.dealer-revenue-line{fill:none;stroke:var(--ototr-blue);stroke-width:4;stroke-linecap:round;stroke-linejoin:round}.dealer-revenue-point{fill:#fff;stroke:var(--ototr-blue);stroke-width:3;cursor:pointer}.dealer-revenue-hit{fill:transparent;cursor:pointer}.dealer-revenue-hit:hover+.dealer-revenue-point,.dealer-revenue-point:hover,.dealer-revenue-point.active{fill:var(--ototr-blue);stroke:#fff;filter:drop-shadow(0 7px 12px rgba(23,105,224,.24))}.dealer-revenue-labels{display:grid;grid-template-columns:repeat(var(--revenue-cols,7),1fr);gap:4px;color:#667085;font-size:10px;text-align:center}.dealer-revenue-foot{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.dealer-revenue-foot div{border:1px solid var(--ototr-border);border-radius:8px;background:#fbfcfe;padding:8px}.dealer-revenue-foot span{display:block;color:#667085;font-size:9px;font-weight:950;text-transform:uppercase}.dealer-revenue-foot b{display:block;margin-top:3px;font-size:12px}.dealer-donut-row{display:grid;grid-template-columns:135px minmax(0,1fr);gap:16px;align-items:center}.dealer-donut{width:126px;height:126px;border-radius:50%;background:conic-gradient(var(--ototr-blue) 0 50%,var(--ototr-green) 50% 82%,var(--ototr-orange) 82% 100%);display:grid;place-items:center}.dealer-donut:before{content:"";width:72px;height:72px;border-radius:50%;background:#fff;position:absolute}.dealer-donut{position:relative}.dealer-donut-center{position:relative;text-align:center;font-weight:950}.dealer-donut-center span{display:block;color:var(--ototr-muted);font-size:10px}.dealer-legend{display:grid;gap:9px}.dealer-legend div{display:grid;grid-template-columns:12px minmax(0,1fr) auto;gap:8px;align-items:center;font-size:12px}.dealer-legend i{width:10px;height:10px;border-radius:3px}.dealer-legend .blue{background:var(--ototr-blue)}.dealer-legend .green{background:var(--ototr-green)}.dealer-legend .orange{background:var(--ototr-orange)}
     .dealer-alert-list,.dealer-finance-list,.dealer-device-list{display:grid;gap:10px}.dealer-alert-item{display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px;align-items:start;border:1px solid var(--ototr-border);border-radius:8px;padding:10px}.dealer-alert-item i{width:22px;height:22px;color:var(--ototr-orange)}.dealer-alert-item.red i{color:var(--ototr-red)}.dealer-alert-item b{font-size:12px}.dealer-alert-item span{display:block;color:var(--ototr-muted);font-size:11px;margin-top:3px}.dealer-finance-list div,.dealer-device-list div{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;font-size:12px}.dealer-finance-list strong{font-size:16px;color:var(--ototr-blue)}.dealer-finance-list .red{color:var(--ototr-red)}.dealer-academy-box{display:grid;grid-template-columns:92px minmax(0,1fr);gap:12px;align-items:center}.dealer-circle{width:84px;height:84px;border-radius:50%;background:conic-gradient(var(--ototr-blue) 0 82%,#e8edf5 82% 100%);display:grid;place-items:center;position:relative}.dealer-circle:before{content:"";position:absolute;width:58px;height:58px;border-radius:50%;background:#fff}.dealer-circle b{position:relative;color:var(--ototr-blue);font-size:20px}.dealer-device-list .ok{color:var(--ototr-green);font-weight:900}.dealer-device-list .warn{color:var(--ototr-orange);font-weight:900}
     .dealer-manager-actions{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}.dealer-manager-actions button{min-height:38px;border-radius:8px;border:1px solid currentColor;background:#fff;font-weight:950;display:flex;align-items:center;justify-content:center;gap:8px}.dealer-manager-actions .blue{color:var(--ototr-blue)}.dealer-manager-actions .purple{color:var(--ototr-purple)}.dealer-manager-actions .green{color:var(--ototr-green)}.dealer-manager-actions .red{color:var(--ototr-red)}.dealer-manager-actions .orange{color:var(--ototr-orange)}
     @media(max-width:1280px){.dealer-rich-main{grid-template-columns:1fr}.dealer-rich-right{grid-template-columns:repeat(2,minmax(0,1fr))}.dealer-rich-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.dealer-rich-charts{grid-template-columns:1fr}.dealer-cockpit-topbar{grid-template-columns:1fr 1fr;height:auto;min-height:68px;padding:10px 22px}.dealer-cockpit-search{grid-column:1/-1}.dealer-cockpit-top-actions{grid-column:1/-1;justify-content:flex-start}}
@@ -1266,6 +1276,8 @@
     @media(max-width:760px){.dealer-wo-reception-grid,.dealer-technical-preview,.dealer-model-grid{grid-template-columns:1fr!important}.dealer-wo-reception-grid .dealer-wo-field.wide{grid-column:auto!important}}
     .dealer-dashboard-wo-row{cursor:pointer}.dealer-dashboard-wo-row:hover td{background:#f8fbff!important}.dealer-dashboard-wo-row.dealer-dashboard-selected td{background:#f0fdf4!important;border-top:1px solid #bbf7d0;border-bottom:1px solid #bbf7d0}.dealer-dashboard-wo-row.dealer-dashboard-selected td:first-child{box-shadow:inset 4px 0 0 #16a34a}.dealer-wo-field{position:relative}
     .dealer-secretary-fill-modal{position:fixed;inset:0;z-index:10000;display:none;align-items:center;justify-content:center;background:rgba(15,23,42,.52);padding:18px}.dealer-secretary-fill-modal.open{display:flex}.dealer-secretary-fill-card{width:min(560px,calc(100vw - 28px));border:1px solid #dbe3ee;border-radius:12px;background:#fff;box-shadow:0 24px 80px rgba(15,23,42,.28);overflow:hidden}.dealer-secretary-fill-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line);background:#f8fafc}.dealer-secretary-fill-head h3{margin:0;font-size:16px}.dealer-secretary-fill-head p{margin:4px 0 0;color:#64748b;font-size:12px;line-height:1.35}.dealer-secretary-fill-card form{padding:16px;display:grid;gap:14px}.dealer-secretary-fill-card label{display:grid;gap:7px;color:#303641;font-size:11px;font-weight:950;text-transform:uppercase}.dealer-secretary-fill-card input:not([type="checkbox"]),.dealer-secretary-fill-card select{height:40px;border:1px solid #d7dbe3;border-radius:8px;background:#fff;color:var(--ink);font:inherit;font-size:13px;padding:0 10px;outline:0}.dealer-secretary-fill-card input:focus,.dealer-secretary-fill-card select:focus{border-color:var(--red);box-shadow:0 0 0 3px rgba(215,25,32,.10)}.dealer-secretary-fill-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.dealer-secretary-fill-options label{border:1px solid var(--line);border-radius:9px;background:#f8fafc;padding:9px;display:flex;align-items:center;gap:7px;text-transform:none;font-size:12px;font-weight:850}.dealer-secretary-fill-actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}@media(max-width:640px){.dealer-secretary-fill-options{grid-template-columns:1fr}.dealer-secretary-fill-actions .btn{flex:1 1 140px;justify-content:center}}
+    @media(max-width:960px){html.dealer-standalone-root,html.dealer-standalone-root body{width:100%!important;max-width:100%!important;overflow-x:hidden!important}body.dealer-standalone .app,body.dealer-standalone .main,body.dealer-standalone .wrap,body.dealer-standalone #page-dealer{width:100%!important;max-width:100vw!important;overflow-x:hidden!important}body.dealer-standalone #page-dealer{overflow:hidden!important}body.dealer-standalone .module-page-head{width:calc(100vw - 24px)!important;max-width:calc(100vw - 24px)!important;margin-left:0!important;flex-direction:column!important;align-items:stretch!important;overflow:hidden!important}body.dealer-standalone .module-page-head>div{min-width:0!important;width:100%!important}body.dealer-standalone .module-page-head h1,body.dealer-standalone .module-page-head p{max-width:100%!important;overflow-wrap:anywhere!important;word-break:normal!important;white-space:normal!important}body.dealer-standalone .module-page-actions{display:grid!important;grid-template-columns:1fr!important;width:100%!important}body.dealer-standalone .module-page-actions .btn{width:100%!important;justify-content:center!important;white-space:normal!important}body.dealer-standalone .module-page-head .dealer-header-search,.dealer-login-card.pro{width:calc(100vw - 24px)!important;max-width:calc(100vw - 24px)!important}}
+    @media(max-width:520px){body.dealer-standalone .module-page-head{width:calc(100vw - 48px)!important;max-width:calc(100vw - 48px)!important;padding:14px!important;border-radius:12px!important;gap:10px!important}body.dealer-standalone .module-page-head h1{font-size:20px!important;line-height:1.16!important;margin-bottom:5px!important}body.dealer-standalone .module-page-head p{font-size:11px!important;line-height:1.38!important}body.dealer-standalone .module-page-head .dealer-header-search{width:100%!important;max-width:100%!important;height:38px!important;margin-top:10px!important;padding:0 10px!important}body.dealer-standalone .module-page-actions{gap:7px!important}body.dealer-standalone .module-page-actions .btn{min-height:40px!important;padding:8px 10px!important}.dealer-login-card.pro{width:calc(100vw - 48px)!important;max-width:calc(100vw - 48px)!important}}
   </style>
 </head>
 <body>
@@ -1274,7 +1286,7 @@
   </script>
   <div class="app">
     <aside class="side">
-      <div class="brand-row"><a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.232</small><small class="update-tag" title="Son güncelleme: İş emri iptal canlı silme ve aktif listeden düşme akışı düzeltildi.">01.06 · İş emri iptal düzeltmesi</small></div></a><div class="brand-actions"><button class="theme-toggle" type="button" data-theme-toggle title="Koyu temaya geç" aria-label="Tema değiştir"><i data-lucide="sun-moon"></i><span id="themeToggleText">Açık</span></button><div class="online-pill" title="Online kullanıcı sayısı"><span class="online-dot"></span><b data-online-count>42</b><small>kişi</small></div></div></div>
+      <div class="brand-row"><a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.233</small><small class="update-tag" title="Son güncelleme: İş emri iptal canlı silme ve aktif listeden düşme akışı düzeltildi.">01.06 · İş emri iptal düzeltmesi</small></div></a><div class="brand-actions"><button class="theme-toggle" type="button" data-theme-toggle title="Koyu temaya geç" aria-label="Tema değiştir"><i data-lucide="sun-moon"></i><span id="themeToggleText">Açık</span></button><div class="online-pill" title="Online kullanıcı sayısı"><span class="online-dot"></span><b data-online-count>42</b><small>kişi</small></div></div></div>
       <div class="nav" id="nav"></div>
     </aside>
 
@@ -3548,7 +3560,7 @@
         status:b.risk==='Yüksek'?'İnceleme':b.risk==='Orta'?'Takip':'Stabil'
       }));
       out.demoDataHealth={
-        version:'SVK v1.0.232',
+        version:'SVK v1.0.233',
         branchUniverse:'10 aktif şube / 4 bölge',
         packagePriceBand:'5.000 TL - 15.000 TL',
         avgTicketBand:'8.350 TL - 9.900 TL',
@@ -5692,16 +5704,16 @@
               <button class="metric-toggle royalty" data-revenue-metric="royalty">Royalty</button>
             </div>
           </div>
-          <div class="seg" aria-label="Dönem seçimi"><button class="active" data-revenue-period="month">Aylık</button><button data-revenue-period="quarter">3 Ay</button><button data-revenue-period="half">6 Ay</button><button data-revenue-period="year">Yıllık</button></div>
+          <div class="seg" aria-label="Dönem seçimi"><button class="active" data-revenue-period="week">Haftalık</button><button data-revenue-period="month">Aylık</button><button data-revenue-period="quarter">3 Ay</button><button data-revenue-period="half">6 Ay</button><button data-revenue-period="year">Yıllık</button></div>
         </div>
-        <div class="chart-kpis" id="revenueTrendKpis">${revenueTrendKpis([2024,2025,2026],'month')}</div>
+        <div class="chart-kpis" id="revenueTrendKpis">${revenueTrendKpis([2024,2025,2026],'week')}</div>
         <canvas id="chartRevenue" height="150"></canvas>
-        <div class="ai-insight" id="revenueAiInsight">${revenueAiInsight([2024,2025,2026],'month')}</div>
+        <div class="ai-insight" id="revenueAiInsight">${revenueAiInsight([2024,2025,2026],'week')}</div>
       </div>`;
     }
     function revenueTrendState(){
       const years=[...document.querySelectorAll('[data-revenue-year].active')].map(x=>Number(x.dataset.revenueYear)).sort((a,b)=>a-b);
-      const period=document.querySelector('[data-revenue-period].active')?.dataset.revenuePeriod || 'month';
+      const period=document.querySelector('[data-revenue-period].active')?.dataset.revenuePeriod || 'week';
       const metrics=[...document.querySelectorAll('[data-revenue-metric].active')].map(x=>x.dataset.revenueMetric);
       return {years:years.length?years:[2026],period,metrics};
     }
@@ -5711,6 +5723,12 @@
     }
     function groupFinance(year,period){
       const selected=financeRows().filter(r=>r.year===year);
+      if(period==='week'){
+        const actualCount=selected.filter(x=>x.status!=='forecast').length;
+        const month=selected[Math.max(0,Math.min(selected.length-1,(year===2026?actualCount:selected.length)-1))]||selected[0]||{};
+        const weights=[.21,.24,.26,.29], total=weights.reduce((s,x)=>s+x,0);
+        return weights.map((w,i)=>sumFinance(`${i+1}. Hafta`,[{...month,revenue:Math.round((month.revenue||0)*w/total),royalty:Math.round((month.royalty||0)*w/total),ad:Math.round((month.ad||0)*w/total),ebitda:Math.round((month.ebitda||0)*w/total)}],year));
+      }
       if(period==='quarter') return [
         sumFinance('Ocak-Mart',selected.slice(0,3),year),
         sumFinance('Nisan-Haziran',selected.slice(3,6),year),
@@ -5747,7 +5765,7 @@
     }
     function revenueAiInsight(years,period){
       const latest=Math.max(...years), rows=financeRows(), latestRows=rows.filter(x=>x.year===latest), actual=latestRows.filter(x=>x.status!=='forecast'), lastActual=actual.at(-1), prevActual=actual.at(-2), sameLastYear=rows.find(x=>x.year===latest-1 && x.month===lastActual?.month);
-      const label={month:'aylık',quarter:'3 aylık',half:'6 aylık',year:'yıllık'}[period]||'aylık';
+      const label={week:'haftalık',month:'aylık',quarter:'3 aylık',half:'6 aylık',year:'yıllık'}[period]||'haftalık';
       let headline=`Seçili ${years.join(', ')} yılları ${label} görünümde karşılaştırılıyor. En yeni yıl ${latest}; grafik şube detayı vermeden merkez ciro, royalty ve EBITDA trendini okur.`;
       let chips=[];
       if(latest===2026 && period==='month' && years.length===1 && lastActual){
@@ -6960,7 +6978,11 @@
       return `<section class="dealer-form-section"><div class="dealer-section-head"><div><h3>Canlı Sistem Bağlantısı</h3><p>Canlı iş emirleri müşteri ve araç verisi içerdiği için güvenlik gereği bayi kullanıcı oturumu açılmadan listelenmez. Bir kez bağlanınca oturum tarayıcıda saklanır ve süresi dolduğunda otomatik yenilenir.</p></div>${badge('Oturum gerekli')}</div><form class="dealer-workorder-form" data-dealer-live-login-form><div class="dealer-wo-form-grid"><label class="dealer-field"><span>E-posta</span><input name="email" autocomplete="username" inputmode="email" placeholder="kullanici@ototr.test" required></label><label class="dealer-field"><span>Şifre</span><input name="password" type="password" autocomplete="current-password" placeholder="Şifre" required></label><button class="btn primary" type="submit">${icon('plug-zap')}Canlıya Bağlan</button></div></form>${state.lastError?`<div class="dealer-live-alert">${icon('triangle-alert')}Son hata: ${rpEsc(state.lastError)}</div>`:''}</section>`;
     }
     function dealerStandaloneLoginGate(branch){
-      return `<div class="dealer-login-shell"><div class="dealer-login-card"><div class="dealer-login-brand"><div class="dealer-erp-logo">OT</div><div><b>OTOTR Bayi Portalı</b><span>${rpEsc(branch?.name||'Aktif Şube')} canlı sistem girişi</span></div></div>${dealerSupabaseStatusPanel()}<div class="live-sync-note">Başarılı girişten sonra bu tarayıcıda oturum saklanır. Oturumu kapat butonuna basılmadıkça bayi portalı tekrar şifre sormadan canlı iş emirlerini açar.</div></div></div>`;
+      const activeBranch=branch?.name||'Aktif Şube';
+      const metrics=[['Bugünkü randevu','18','Kabul ve 3 saat arama takibi'],['Açık iş emri','14','Canlı oturumdan sonra listelenir'],['Basım kuyruğu','7','Rapor kapıları ve QR teslim'],['Kasa kontrolü','Günlük','Rol bazlı finans görünümü']];
+      const flow=[['calendar-check','Randevu','Telefon, web, WhatsApp'],['clipboard-list','İş emri','Müşteri, araç, paket'],['wrench','Usta girişi','Tablet görevleri'],['file-check-2','Rapor','JSON nokta kontrolü'],['qr-code','Teslim','PDF, QR ve arşiv']];
+      const modules=[['layout-dashboard','Kokpit','Günlük şube ekranı'],['users','CRM','Müşteri ve sadakat'],['banknote','Finans','Kasa, tahsilat, royalty'],['graduation-cap','Academy','Yetki ve sertifika'],['shield-alert','Kalite','CAPA, itiraz, şikayet'],['messages-square','Merkez','SLA talepleri']];
+      return `<div class="dealer-login-shell pro"><div class="dealer-login-card pro"><section class="dealer-login-intro"><div class="dealer-login-intro-head"><div class="dealer-login-live-mark">OT</div><div><h2>OTOTR Bayi İşletim Ekranı</h2><p>${rpEsc(activeBranch)} için canlı iş emirleri, randevu, usta görevleri, rapor basım, kasa ve merkez talepleri tek güvenli portalda yönetilir.</p></div></div><div class="dealer-login-metrics">${metrics.map(m=>`<div class="dealer-login-metric"><span>${rpEsc(m[0])}</span><b>${rpEsc(m[1])}</b><small>${rpEsc(m[2])}</small></div>`).join('')}</div><div class="dealer-login-flow">${flow.map(f=>`<div>${icon(f[0])}<b>${rpEsc(f[1])}</b><span>${rpEsc(f[2])}</span></div>`).join('')}</div><div class="dealer-login-module-grid">${modules.map(m=>`<div class="dealer-login-module">${icon(m[0])}<div><b>${rpEsc(m[1])}</b><span>${rpEsc(m[2])}</span></div></div>`).join('')}</div><div class="dealer-login-security">${icon('shield-check')}<div><b>Veri güvenliği nedeniyle canlı kayıtlar girişten önce gösterilmez.</b><span>Oturum açıldığında müşteri, araç, ödeme ve rapor bilgileri rol yetkisine göre yüklenir; hassas veri bu ekranda açık edilmez.</span></div></div></section><section><div class="dealer-login-brand"><div class="dealer-erp-logo">OT</div><div><b>OTOTR Bayi Portalı</b><span>${rpEsc(activeBranch)} canlı sistem girişi</span></div></div>${dealerSupabaseStatusPanel()}<div class="live-sync-note">Başarılı girişten sonra bu tarayıcıda oturum saklanır. Oturumu kapat butonuna basılmadıkça bayi portalı tekrar şifre sormadan canlı iş emirlerini açar.</div></section></div></div>`;
     }
     window.dealerSyncSupabaseWorkOrders=dealerSyncSupabaseWorkOrders;
     const DEALER_VIN_MIGRATION='smart-vin-v1';
@@ -10259,15 +10281,16 @@
       const session=await dealerSupabaseActiveSession();
       if(!session) throw new Error('Canlı kaydı silmek için bayi oturumu gerekli.');
       const caseId=dealerSupabaseRestEq(wo.supabaseId);
-      await dealerSupabaseTryDelete('/rest/v1/inspection_evidence_assets?expertise_case_id=eq.'+caseId,true);
-      await dealerSupabaseTryDelete('/rest/v1/inspection_item_values?expertise_case_id=eq.'+caseId,true);
-      await dealerSupabaseTryDelete('/rest/v1/external_query_results?expertise_case_id=eq.'+caseId,true);
-      await dealerSupabaseTryDelete('/rest/v1/technician_start_evidence?expertise_case_id=eq.'+caseId,true);
-      await dealerSupabaseTryDelete('/rest/v1/inspection_tasks?expertise_case_id=eq.'+caseId,false);
+      await dealerUpdateSupabaseCaseStatus(wo,'CANCELLED');
       try{
+        await dealerSupabaseTryDelete('/rest/v1/inspection_evidence_assets?expertise_case_id=eq.'+caseId,true);
+        await dealerSupabaseTryDelete('/rest/v1/inspection_item_values?expertise_case_id=eq.'+caseId,true);
+        await dealerSupabaseTryDelete('/rest/v1/external_query_results?expertise_case_id=eq.'+caseId,true);
+        await dealerSupabaseTryDelete('/rest/v1/technician_start_evidence?expertise_case_id=eq.'+caseId,true);
+        await dealerSupabaseTryDelete('/rest/v1/inspection_tasks?expertise_case_id=eq.'+caseId,true);
         await dealerSupabaseTryDelete('/rest/v1/expertise_cases?id=eq.'+caseId,false);
       }catch(err){
-        await dealerUpdateSupabaseCaseStatus(wo,'CANCELLED').catch(()=>{throw err;});
+        saveDealerSupabaseSyncState({lastError:'İş emri iptal edildi; canlı hard-delete daha sonra tekrar denenebilir: '+(err.message||String(err))});
       }
     }
     async function dealerCancelWorkOrder(id){
@@ -11192,7 +11215,84 @@
       const navItems=isRichCockpit?cockpitNavItems:tabs;
       const cockpitTopbar=isRichCockpit?`<section class="dealer-cockpit-topbar"><button class="dealer-cockpit-chip" type="button">${icon('building-2')}<span>Bursa Küçük Sanayi Şubesi</span>${icon('chevron-down')}</button><button class="dealer-cockpit-chip" type="button">${icon('calendar-days')}<span>26 Mayıs 2026, Salı</span>${icon('chevron-down')}</button><label class="dealer-cockpit-search">${icon('search')}<input data-dealer-cockpit-search placeholder="Ara (Plaka, Müşteri, İş Emri No...)" aria-label="Bayi portalı arama"><span class="dealer-cockpit-shortcut">? K</span></label><div class="dealer-cockpit-top-actions"><button class="dealer-cockpit-bell" type="button" aria-label="Bildirimler">${icon('bell')}<span>7</span></button><label class="dealer-cockpit-user dealer-cockpit-role-select"><span class="dealer-cockpit-avatar">SV</span><select data-dealer-role-select aria-label="Rol seçimi">${Object.keys(DEALER_PORTAL_ROLES).map(name=>`<option value="${rpEsc(name)}" ${name===ui.role?'selected':''}>${rpEsc(name)}</option>`).join('')}</select>${icon('chevron-down')}</label></div></section>`:'';
       const cockpitBranchCard='';
-      return `<div class="dealer-portal dealer-erp-shell ${isRichCockpit?'dealer-rich-cockpit-shell':''}"><aside class="dealer-erp-sidebar"><div class="dealer-erp-brand"><div class="dealer-erp-logo">OT</div><div class="dealer-erp-brand-text"><b>OTOTR</b><span>${isRichCockpit?'Tarafsız Araç Ekspertizi':'Bayi Portalı · Aktif Şube: '+rpEsc(branch.name)}</span><small class="dealer-version-tag">SVK v1.0.232</small><small class="dealer-update-tag" title="Son güncelleme: İş emri iptal canlı silme ve aktif listeden düşme akışı düzeltildi.">01.06 · İş emri iptal düzeltmesi</small></div></div><div class="dealer-erp-section-title">Şube Menüsü</div><nav class="dealer-erp-nav">${navItems.map(t=>`<button class="${t[0]===ui.tab?'active':''}" data-dealer-tab="${t[0]}">${icon(t[2])}<span>${ui.role==='M\u00fc\u015fteri Kabul / Sekreterya'&&t[0]==='finans'&&!isRichCockpit?'Günlük Finans':t[1]}</span></button>`).join('')}</nav><div class="dealer-sidebar-bottom">${cockpitBranchCard}<div class="dealer-sidebar-account"><div class="dealer-sidebar-avatar" aria-hidden="true"></div><div class="dealer-sidebar-user"><b>Sami Volkan</b><span>${rpEsc(ui.role)}</span></div><i class="dealer-online-dot" title="Çevrimiçi"></i></div><label class="dealer-sidebar-field"><span>Rol görünümü</span><select data-dealer-role-select>${Object.keys(DEALER_PORTAL_ROLES).map(name=>`<option value="${rpEsc(name)}" ${name===ui.role?'selected':''}>${rpEsc(name)}</option>`).join('')}</select></label><label class="dealer-sidebar-field"><span>Şube Seçimi</span><select data-dealer-branch-select>${DB.branches.map(b=>`<option value="${rpEsc(b.id)}" ${b.id===selectedBranchId?'selected':''}>${rpEsc(b.name)}</option>`).join('')}</select></label><div class="dealer-sidebar-footer"><b>OTOTR Bayi Portalı</b><span>© 2026 OTOTR. Tüm hakları saklıdır.<br>v1.0.232</span></div></div></aside><main class="dealer-erp-workspace">${cockpitTopbar}${dealerActionBar}<div class="dealer-portal-layout"><main class="dealer-shell">${(panes[ui.tab]||panes.kokpit)()}${ui.tab==='kurulum'?dealerApiModelPanel():ui.tab==='rapor'?dealerReportMappingPanel():ui.tab==='personel'?dealerAuthMatrixPanel():''}</main><aside class="dealer-rail"><div class="card"><div class="card-head"><div><div class="card-title">Rol Yetkileri</div><div class="card-sub">${roleCfg.desc}</div></div>${badge(ui.role)}</div><div class="dealer-permission-list">${roleCfg.actions.map(a=>`<div><b>${ui.role}</b><span>${a}</span></div>`).join('')}</div></div><div class="card"><div class="card-head"><div><div class="card-title">Canlı Sistem Kilitleri</div><div class="card-sub">Rapor yayın ve teslim kapıları</div></div></div>${dealerMiniRows([['Teknik alan kilidi','Eksik veri veya kanıt varsa revizyon açar','Kural'],['KVKK / yol testi','Eksikse teslim tamamlanamaz','Blokaj'],['Ödeme / tahsilat','Kasa kapanmadan teslim tamamlanamaz','Blokaj']])}</div></aside></div></main>${dealerAppointmentDock()}</div>`;
+      return `<div class="dealer-portal dealer-erp-shell ${isRichCockpit?'dealer-rich-cockpit-shell':''}"><aside class="dealer-erp-sidebar"><div class="dealer-erp-brand"><div class="dealer-erp-logo">OT</div><div class="dealer-erp-brand-text"><b>OTOTR</b><span>${isRichCockpit?'Tarafsız Araç Ekspertizi':'Bayi Portalı · Aktif Şube: '+rpEsc(branch.name)}</span><small class="dealer-version-tag">SVK v1.0.233</small><small class="dealer-update-tag" title="Son güncelleme: İş emri iptal canlı silme ve aktif listeden düşme akışı düzeltildi.">01.06 · İş emri iptal düzeltmesi</small></div></div><div class="dealer-erp-section-title">Şube Menüsü</div><nav class="dealer-erp-nav">${navItems.map(t=>`<button class="${t[0]===ui.tab?'active':''}" data-dealer-tab="${t[0]}">${icon(t[2])}<span>${ui.role==='M\u00fc\u015fteri Kabul / Sekreterya'&&t[0]==='finans'&&!isRichCockpit?'Günlük Finans':t[1]}</span></button>`).join('')}</nav><div class="dealer-sidebar-bottom">${cockpitBranchCard}<div class="dealer-sidebar-account"><div class="dealer-sidebar-avatar" aria-hidden="true"></div><div class="dealer-sidebar-user"><b>Sami Volkan</b><span>${rpEsc(ui.role)}</span></div><i class="dealer-online-dot" title="Çevrimiçi"></i></div><label class="dealer-sidebar-field"><span>Rol görünümü</span><select data-dealer-role-select>${Object.keys(DEALER_PORTAL_ROLES).map(name=>`<option value="${rpEsc(name)}" ${name===ui.role?'selected':''}>${rpEsc(name)}</option>`).join('')}</select></label><label class="dealer-sidebar-field"><span>Şube Seçimi</span><select data-dealer-branch-select>${DB.branches.map(b=>`<option value="${rpEsc(b.id)}" ${b.id===selectedBranchId?'selected':''}>${rpEsc(b.name)}</option>`).join('')}</select></label><div class="dealer-sidebar-footer"><b>OTOTR Bayi Portalı</b><span>© 2026 OTOTR. Tüm hakları saklıdır.<br>v1.0.233</span></div></div></aside><main class="dealer-erp-workspace">${cockpitTopbar}${dealerActionBar}<div class="dealer-portal-layout"><main class="dealer-shell">${(panes[ui.tab]||panes.kokpit)()}${ui.tab==='kurulum'?dealerApiModelPanel():ui.tab==='rapor'?dealerReportMappingPanel():ui.tab==='personel'?dealerAuthMatrixPanel():''}</main><aside class="dealer-rail"><div class="card"><div class="card-head"><div><div class="card-title">Rol Yetkileri</div><div class="card-sub">${roleCfg.desc}</div></div>${badge(ui.role)}</div><div class="dealer-permission-list">${roleCfg.actions.map(a=>`<div><b>${ui.role}</b><span>${a}</span></div>`).join('')}</div></div><div class="card"><div class="card-head"><div><div class="card-title">Canlı Sistem Kilitleri</div><div class="card-sub">Rapor yayın ve teslim kapıları</div></div></div>${dealerMiniRows([['Teknik alan kilidi','Eksik veri veya kanıt varsa revizyon açar','Kural'],['KVKK / yol testi','Eksikse teslim tamamlanamaz','Blokaj'],['Ödeme / tahsilat','Kasa kapanmadan teslim tamamlanamaz','Blokaj']])}</div></aside></div></main>${dealerAppointmentDock()}</div>`;
+    }
+    function dealerActiveBranch(){
+      return DB?.branches?.find?.(b=>b.id===selectedBranchId) || DB?.branches?.[0] || {};
+    }
+    function dealerCockpitRevenueData(mode='week'){
+      const branch=dealerActiveBranch(), branchRevenue=Number(branch.revenue)||2150000;
+      if(mode==='month'){
+        const rows=(typeof financeRows==='function'?financeRows():[]).filter(x=>x.year===2026).slice(0,6);
+        const labels=rows.length?rows.map(x=>x.month):['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran'];
+        const base=rows.length?rows.map(x=>Math.round((Number(x.revenue)||0)/Math.max(1,(DB?.branches?.length||6)))):[.72,.76,.82,.9,.96,1.04].map(x=>Math.round(branchRevenue*x/6));
+        return {mode,labels,values:base,title:'Aylık Ciro',note:'Son 6 ay şube ciro görünümü',compare:'Önceki 6 aya göre'};
+      }
+      const weeklyTarget=Math.round(branchRevenue/4.2);
+      const labels=['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'];
+      const weights=[.88,1.02,1.08,1.18,1.26,.78,.54], total=weights.reduce((s,x)=>s+x,0);
+      const values=weights.map(x=>Math.round(weeklyTarget*x/total));
+      return {mode:'week',labels,values,title:'Haftalık Ciro',note:'Gün bazlı tahsilat ve paket satış etkisi',compare:'Geçen haftaya göre'};
+    }
+    function dealerCockpitRevenueHtml(mode='week',activeIndex){
+      const data=dealerCockpitRevenueData(mode), values=data.values, max=Math.max(...values,1), min=Math.min(...values,0), pad=22, w=520, h=178, innerH=118, step=(w-60)/Math.max(1,values.length-1);
+      const points=values.map((v,i)=>({x:30+i*step,y:pad+(1-(v-min)/Math.max(1,max-min))*innerH,value:v,label:data.labels[i]}));
+      const line=points.map(p=>`${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+      const area=`30,154 ${line} ${points.at(-1)?.x||490},154`;
+      const total=values.reduce((s,x)=>s+x,0), prev=Math.round(total*(mode==='week'?0.845:0.91)), change=prev?Math.round((total-prev)/prev*100):0, avg=Math.round(total/Math.max(1,values.length));
+      const best=points.slice().sort((a,b)=>b.value-a.value)[0]||points[0], active=points[activeIndex ?? points.length-1]||points.at(-1)||{};
+      const labelsStyle=`--revenue-cols:${values.length}`;
+      return `<div class="dealer-revenue-pro" data-dealer-revenue-widget data-dealer-revenue-mode="${mode}">
+        <div class="dealer-revenue-pro-head">
+          <div class="dealer-revenue-pro-title"><h3>Ciro Performansı</h3><span>${rpEsc(data.note)}</span></div>
+          <div class="dealer-revenue-mode" aria-label="Ciro dönem seçimi"><button type="button" class="${mode==='week'?'active':''}" data-dealer-revenue-mode="week">Haftalık</button><button type="button" class="${mode==='month'?'active':''}" data-dealer-revenue-mode="month">Aylık</button></div>
+        </div>
+        <div class="dealer-revenue-summary"><div><strong>${fmtTL(total)}</strong><span>${change>=0?'+':''}%${change} ${rpEsc(data.compare)}</span></div><div class="dealer-revenue-hover" data-dealer-revenue-hover><b>${fmtTL(active.value||0)}</b><small>${rpEsc(active.label||'Son nokta')}</small></div></div>
+        <svg class="dealer-revenue-svg" viewBox="0 0 520 178" role="img" aria-label="${rpEsc(data.title)} grafiği">
+          <defs><linearGradient id="dealerRevenueGradient" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#1769e0" stop-opacity=".22"/><stop offset="100%" stop-color="#1769e0" stop-opacity="0"/></linearGradient></defs>
+          <line x1="30" y1="154" x2="500" y2="154" stroke="#e5eaf2"/><line x1="30" y1="104" x2="500" y2="104" stroke="#eef2f7"/><line x1="30" y1="54" x2="500" y2="54" stroke="#eef2f7"/>
+          <polygon class="dealer-revenue-area" points="${area}"></polygon><polyline class="dealer-revenue-line" points="${line}"></polyline>
+          ${points.map((p,i)=>`<rect class="dealer-revenue-hit" data-dealer-revenue-index="${i}" x="${Math.max(0,p.x-step/2)}" y="18" width="${Math.max(38,step)}" height="140" rx="8"></rect><circle class="dealer-revenue-point ${i===(activeIndex??points.length-1)?'active':''}" data-dealer-revenue-index="${i}" cx="${p.x}" cy="${p.y}" r="6"><title>${rpEsc(p.label)} - ${fmtTL(p.value)}</title></circle>`).join('')}
+        </svg>
+        <div class="dealer-revenue-labels" style="${labelsStyle}">${data.labels.map(x=>`<span>${rpEsc(x)}</span>`).join('')}</div>
+        <div class="dealer-revenue-foot"><div><span>Ortalama</span><b>${fmtTL(avg)}</b></div><div><span>En iyi dönem</span><b>${rpEsc(best?.label||'-')} · ${fmtTL(best?.value||0)}</b></div><div><span>Tahmini işlem</span><b>${Math.max(1,Math.round(total/9200))} rapor</b></div></div>
+      </div>`;
+    }
+    function dealerPaintCockpitRevenueCard(card,mode,activeIndex){
+      if(!card) return;
+      const selectedMode=mode || localStorage.getItem('ototrDealerRevenueMode') || 'week';
+      card.dataset.dealerRevenueCard='1';
+      card.innerHTML=dealerCockpitRevenueHtml(selectedMode,activeIndex);
+      dealerBindCockpitRevenueCard(card);
+    }
+    function dealerBindCockpitRevenueCard(card){
+      if(!card) return;
+      card.querySelectorAll('[data-dealer-revenue-mode]').forEach(btn=>{
+        btn.addEventListener('click',e=>{
+          e.preventDefault();
+          const mode=btn.dataset.dealerRevenueMode || 'week';
+          localStorage.setItem('ototrDealerRevenueMode',mode);
+          dealerPaintCockpitRevenueCard(card,mode);
+        });
+      });
+      card.querySelectorAll('[data-dealer-revenue-index]').forEach(el=>{
+        const update=()=>{
+          const widget=card.querySelector('[data-dealer-revenue-widget]'), data=dealerCockpitRevenueData(widget?.dataset.dealerRevenueMode||'week'), index=Number(el.dataset.dealerRevenueIndex)||0, point={label:data.labels[index],value:data.values[index]};
+          card.querySelectorAll('.dealer-revenue-point').forEach(x=>x.classList.toggle('active',Number(x.dataset.dealerRevenueIndex)===index));
+          const hover=card.querySelector('[data-dealer-revenue-hover]');
+          if(hover) hover.innerHTML=`<b>${fmtTL(point.value||0)}</b><small>${rpEsc(point.label||'Dönem')}</small>`;
+        };
+        el.addEventListener('mouseenter',update);
+        el.addEventListener('focus',update);
+      });
+    }
+    function dealerEnhanceCockpitRevenue(){
+      const cards=[...document.querySelectorAll('.dealer-rich-card')];
+      const card=cards.find(c=>c.dataset.dealerRevenueCard==='1') || cards.find(c=>/Haftalık Ciro|Ciro Performansı/.test(c.querySelector('h3')?.textContent||''));
+      if(!card) return;
+      if(card.dataset.dealerRevenueCard==='1') dealerBindCockpitRevenueCard(card);
+      else dealerPaintCockpitRevenueCard(card);
+      if(window.lucide) lucide.createIcons();
     }
     function dealerApplyCockpitSearch(value){
       const root=document.querySelector('.dealer-rich-cockpit');
@@ -14688,7 +14788,7 @@
       renderNav();
       history.replaceState(null,'','#'+(resolved==='hr'?hrRouteFor(HR_VIEW.room):resolved==='academy'?academyRouteFor(ACADEMY_VIEW.room):resolved));
       if(!options.preserveScroll) window.scrollTo({top:0,behavior:'smooth'});
-      setTimeout(()=>{renderCharts();initBranchMap();},40);
+      setTimeout(()=>{renderCharts();initBranchMap();dealerEnhanceCockpitRevenue();},40);
       if(resolved==='report-design') setTimeout(()=>{ syncExpertiseReportQuickMenu(); updateExpertiseReportNavActive(); },80);
       if(resolved==='dealer') setTimeout(()=>{
         document.querySelector('#dealerWorkOrderForm [name="vin"],#dealerWorkOrderForm [name="plate"],#dealerWorkOrderForm [name="vehicleMake"]')?.dispatchEvent(new Event('input',{bubbles:true}));
@@ -15142,7 +15242,7 @@
       Object.values(charts).forEach(c=>c.destroy()); charts={};
       const theme=chartTheme();
       const make=(id,type,data,options={})=>{ const el=document.getElementById(id); if(!el) return; if(window.Chart) charts[id]=new Chart(el,{type,data,options:{responsive:true,maintainAspectRatio:true,animation:{duration:900,easing:'easeOutQuart'},interaction:{mode:'index',intersect:false},plugins:{legend:{position:'bottom',labels:{color:theme.text,usePointStyle:true,boxWidth:8}}},scales:{x:{ticks:{color:theme.muted},grid:{color:theme.grid}},y:{ticks:{color:theme.muted},grid:{color:theme.grid}}},...options}}); else fallbackChart(el,data); };
-      const trend=revenueTrendState(), colors={2024:'#69707d',2025:'#d71920',2026:'#185abc'}, periodLabels={month:['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'],quarter:['Ocak-Mart','Nisan-Haziran','Temmuz-Eylül','Ekim-Aralık'],half:['İlk 6 Ay','Son 6 Ay']};
+      const trend=revenueTrendState(), colors={2024:'#69707d',2025:'#d71920',2026:'#185abc'}, periodLabels={week:['1. Hafta','2. Hafta','3. Hafta','4. Hafta'],month:['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'],quarter:['Ocak-Mart','Nisan-Haziran','Temmuz-Eylül','Ekim-Aralık'],half:['İlk 6 Ay','Son 6 Ay']};
       const kpis=document.getElementById('revenueTrendKpis'); if(kpis) kpis.innerHTML=revenueTrendKpis(trend.years,trend.period);
       const insight=document.getElementById('revenueAiInsight'); if(insight) insight.innerHTML=revenueAiInsight(trend.years,trend.period);
       const showEbitda=trend.metrics.includes('ebitda'), showRoyalty=trend.metrics.includes('royalty');
@@ -15240,7 +15340,7 @@
         },180);
       }
     }
-    function renderAll(){ renderHero(); renderNav(); renderPages(); syncOnlineIndicator(); if(typeof dealerInitVehicleSelects==='function') dealerInitVehicleSelects(document); if(typeof dealerRefreshSmartWorkOrderFormState==='function') dealerRefreshSmartWorkOrderFormState(); }
+    function renderAll(){ renderHero(); renderNav(); renderPages(); syncOnlineIndicator(); if(typeof dealerInitVehicleSelects==='function') dealerInitVehicleSelects(document); if(typeof dealerRefreshSmartWorkOrderFormState==='function') dealerRefreshSmartWorkOrderFormState(); dealerEnhanceCockpitRevenue(); }
     (async function init(){
       const apiStatus=document.getElementById('apiStatus');
       if(apiStatus) apiStatus.textContent='Mock API bağlanıyor';
