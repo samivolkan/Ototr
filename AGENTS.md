@@ -1,6 +1,7 @@
 # OTOTR Aktif Calisma Notu
 
 - Aktif local calisma klasoru: `C:\Users\Samivolkannnn\Documents\ototr_25052026`
+- Bu proje icin tum sohbetlerde mevcut calisma dizini bu klasor kabul edilecek; `New project` aktif proje olarak kullanilmayacak.
 - Aktif GitHub reposu: `https://github.com/samivolkan/Ototr.git`
 - Aktif gelistirme branch'i: `codex/smart-vin-work-order`
 - Eski `C:\Users\Samivolkannnn\Documents\New project` klasoru aktif gelistirme icin kullanilmayacak; sadece gerekirse eski kaynak/yedek kontrolu icin bakilacak.

@@ -286,6 +286,9 @@ class SupabaseWorkOrderDataSource implements WorkOrderRemoteDataSource {
   ) async {
     final evidencePayload = Map<String, Object?>.from(payload)
       ..removeWhere((key, value) => value == null && key != 'task_id');
+    evidencePayload['quality_status'] = _normalizeQualityStatus(
+      evidencePayload['quality_status']?.toString(),
+    );
 
     await _client.from('inspection_evidence_assets').upsert(
           evidencePayload,
@@ -501,6 +504,19 @@ class SupabaseWorkOrderDataSource implements WorkOrderRemoteDataSource {
       'local/odometer.jpg',
     };
     return value.isNotEmpty && !legacyPlaceholders.contains(value);
+  }
+
+  String _normalizeQualityStatus(String? status) {
+    switch ((status ?? '').trim().toUpperCase()) {
+      case 'ACCEPTED':
+      case 'REJECTED':
+      case 'UNCHECKED':
+        return status!.trim().toUpperCase();
+      case 'OK':
+        return 'ACCEPTED';
+      default:
+        return 'UNCHECKED';
+    }
   }
 
   Map<String, Object?> _asRow(Object? value) {

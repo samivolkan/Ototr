@@ -81,7 +81,7 @@ assert.equal(await page.locator('#page-dealer.active #dealerWorkOrderForm [name=
 await page.locator('#page-dealer.active .dealer-top-mode-switch [data-dealer-wo-mode="fast"]').click();
 await page.locator("#page-dealer.active #dealerWorkOrderForm.dealer-wo-fast-open").waitFor();
 await page.locator("#page-dealer.active .dealer-top-branch", { hasText: "3 Günlük Takvim" }).waitFor();
-await page.locator("#page-dealer.active .dealer-top-branch", { hasText: "Basım Kuyruğu" }).waitFor();
+await page.locator("#page-dealer.active .dealer-top-branch", { hasText: "Rapor Arşiv" }).waitFor();
 
 const form = page.locator("#page-dealer.active #dealerWorkOrderForm.dealer-wo-form");
 await form.locator('[name="vin"]').fill(" wau-zzz8k-9aa123456 ");

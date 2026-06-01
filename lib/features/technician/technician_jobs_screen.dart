@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../core/constants/app_sizes.dart';
@@ -27,10 +29,26 @@ class TechnicianJobsScreen extends StatefulWidget {
 class _TechnicianJobsScreenState extends State<TechnicianJobsScreen> {
   final _repository = AppRepositories.instance.localWorkOrders;
   Future<List<TechnicianWorkOrder>>? _remoteJobsFuture;
-  ReportTemplate? _remoteTemplate;
-  final Map<String, Map<String, ReportGroupProgress>>
-      _remoteProgressByWorkOrderId = {};
-  final Set<String> _progressLoadingWorkOrderIds = {};
+  Timer? _remoteRefreshTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _remoteRefreshTimer = Timer.periodic(const Duration(seconds: 12), (_) {
+      if (!mounted) {
+        return;
+      }
+      if (AppRepositories.instance.remoteWorkOrders != null) {
+        _refreshRemote();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _remoteRefreshTimer?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -93,12 +111,6 @@ class _TechnicianJobsScreenState extends State<TechnicianJobsScreen> {
       builder: (context, snapshot) {
         final jobs = snapshot.data ?? const <TechnicianWorkOrder>[];
         final isLoading = snapshot.connectionState != ConnectionState.done;
-        if (jobs.isNotEmpty) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            _loadProgressForVisibleJobs(jobs);
-          });
-        }
-
         return Scaffold(
           appBar: const OtotrAppBar(title: 'Usta İşleri'),
           backgroundColor: AppColors.grayBg,
@@ -120,11 +132,7 @@ class _TechnicianJobsScreenState extends State<TechnicianJobsScreen> {
                 const OtotrCard(child: Text('İş emirleri yükleniyor...')),
               for (final job in jobs)
                 _JobSummaryCard(
-                  job: _jobWithReportProgress(
-                    job,
-                    _remoteTemplate,
-                    _remoteProgressByWorkOrderId[job.id] ?? const {},
-                  ),
+                  job: job,
                   currentRole: repository.currentTechnicianRole,
                   onTap: () => _openJobDetail(job.id),
                 ),
@@ -140,74 +148,6 @@ class _TechnicianJobsScreenState extends State<TechnicianJobsScreen> {
   }
 
   void _refresh() => setState(() {});
-
-  Future<void> _loadProgressForVisibleJobs(
-    List<TechnicianWorkOrder> jobs,
-  ) async {
-    final pendingJobs = [
-      for (final job in jobs)
-        if (!_remoteProgressByWorkOrderId.containsKey(job.id) &&
-            !_progressLoadingWorkOrderIds.contains(job.id))
-          job,
-    ];
-    if (pendingJobs.isEmpty) {
-      return;
-    }
-    _progressLoadingWorkOrderIds.addAll(pendingJobs.map((job) => job.id));
-
-    try {
-      final template = _remoteTemplate ??
-          await AppRepositories.instance.reportTemplates.getActiveTemplate();
-      final reportService = WorkOrderReportService(
-        templateRepository: AppRepositories.instance.reportTemplates,
-        reportRepository: AppRepositories.instance.workOrderReports,
-      );
-      await Future.wait([
-        for (final job in pendingJobs)
-          _loadProgressForJobCard(
-            job.id,
-            template,
-            reportService,
-          ),
-      ]);
-    } catch (_) {
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        for (final job in pendingJobs) {
-          _progressLoadingWorkOrderIds.remove(job.id);
-        }
-      });
-    }
-  }
-
-  Future<void> _loadProgressForJobCard(
-    String workOrderId,
-    ReportTemplate template,
-    WorkOrderReportService reportService,
-  ) async {
-    try {
-      final progress = await reportService.getReportProgress(workOrderId);
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        _remoteTemplate = template;
-        _remoteProgressByWorkOrderId[workOrderId] = {
-          for (final item in progress) item.groupId: item,
-        };
-        _progressLoadingWorkOrderIds.remove(workOrderId);
-      });
-    } catch (_) {
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        _progressLoadingWorkOrderIds.remove(workOrderId);
-      });
-    }
-  }
 
   void _openJobDetail(String workOrderId) {
     Navigator.pushNamed(
@@ -230,7 +170,6 @@ class _TechnicianJobsScreenState extends State<TechnicianJobsScreen> {
     setState(() {
       final remoteRepository = AppRepositories.instance.remoteWorkOrders;
       _remoteJobsFuture = remoteRepository?.visibleWorkOrders();
-      _progressLoadingWorkOrderIds.clear();
     });
   }
 }
