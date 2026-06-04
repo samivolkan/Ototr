@@ -4,16 +4,15 @@ Bu dosya Codex için mobil uygulamanın ana tasarım sistemidir. Tüm ekranlar b
 
 ## 1. Ana Tasarım Kararı
 
-OTOTR Usta Mobil Uygulama açık, kurumsal, premium ve operasyon odaklı bir mobil arayüz olacaktır.
+- Uygulama **dark theme** olmayacak.
+- Ana tema: açık, kurumsal, premium, servis/otomotiv hissi veren mobil arayüz.
+- Renk dili: beyaz, kırık beyaz, grafit ve OTOTR kırmızısı.
+- Üst alan beyaz başlar, alta indikçe pastel kırmızı yoğunluğu artar.
+- Zemin ve kartlarda çok hafif dalga/tarama/dot pattern kullanılır.
+- Kartlar beyaz kalır ama düz/çiğ görünmez.
+- Tasarım dili tüm ekranlarda aynı kalır.
 
-- Koyu tema kullanılmayacak.
-- Ana renk dili: beyaz, kırık beyaz, grafit ve OTOTR kırmızısı.
-- Uygulama profesyonel servis/otomotiv hissi vermeli.
-- Ekranlar sade ama zengin görünmeli.
-- Gereksiz ikon büyütme, aşırı gölge, yoğun gradient veya karmaşık arka plan kullanılmayacak.
-- Mobil alan verimli kullanılacak.
-
-## 2. Renk Paleti
+## 2. Renk Tokenları
 
 ```txt
 Primary Red: #E30613
@@ -36,11 +35,15 @@ Evidence Purple: #7C3AED
 
 ## 3. Zemin Standardı
 
-Tüm ana ekranlarda üst alan beyazdan başlamalı, aşağı indikçe pastel kırmızı yoğunluğu artmalıdır.
+Tüm ana ekranlarda aşağıdaki mantık uygulanır:
 
-Zeminde çok hafif dalga/tarama/dot pattern olmalıdır. Bu desen metni bastırmamalı, arka planı çiğ göstermemeli, sadece kurumsal bir doku vermelidir.
+- Üst kısım neredeyse beyaz.
+- Orta alanda çok hafif pembe/kırmızı geçiş.
+- Alt alanda pastel kırmızı daha hissedilir.
+- Çok hafif dalga/tarama/dot pattern.
+- Pattern metin okunabilirliğini bozmaz.
 
-Örnek CSS yaklaşımı:
+CSS yaklaşımı:
 
 ```css
 .app-bg {
@@ -52,8 +55,6 @@ Zeminde çok hafif dalga/tarama/dot pattern olmalıdır. Bu desen metni bastırm
 
 ## 4. Kart Standardı
 
-Kartlar beyaz ve kurumsal kalmalı, fakat düz/çiğ beyaz görünmemelidir.
-
 ```txt
 Background: #FFFFFF
 Border: 1px solid #E5E7EB
@@ -62,37 +63,33 @@ Shadow: 0 10px 30px rgba(15,23,42,0.06)
 Padding: 16-20px
 ```
 
-Kart içlerinde çok hafif gri tarama veya dalga dokusu kullanılabilir. Doku opaklığı düşük olmalıdır.
+Kart içinde düşük opaklıkta gri tarama/dalga dokusu olabilir. Kartlar kirli veya yoğun görünmemeli.
 
-## 5. Buton Standardı
+## 5. Butonlar
 
-### Primary Button
-
-- OTOTR kırmızısı gradient.
-- Beyaz metin.
-- Radius 16px civarı.
-- Ana CTA ekranda tek ve net olmalı.
+Primary button:
 
 ```css
 background: linear-gradient(135deg, #E30613 0%, #B8000B 100%);
+color: #FFFFFF;
+border-radius: 16px;
 ```
 
-### Secondary Button
+Secondary button:
+- Beyaz zemin
+- Grafit metin
+- İnce border
+- Hafif gölge
 
-- Beyaz zemin.
-- Grafit metin.
-- İnce border.
-- Hafif gölge.
-
-### Danger / Warning / Success
-
-- Danger: rapor engelleyici eksik, onaydan döndü, hata.
-- Warning: uyarı, eksik ama raporu engellemeyen durum.
-- Success: tamamlandı, onaylandı, senkronize edildi.
+Durum renkleri:
+- Başarı: yeşil
+- Uyarı: turuncu
+- Kritik/hata: kırmızı
+- Bilgi: mavi sadece bilgi durumunda kullanılabilir; ana tema mavi olmayacak.
 
 ## 6. Alt Navigasyon
 
-Alt navigasyon tüm ana ekranlarda tutarlı olacaktır:
+Alt navigasyon tüm ana ekranlarda aynı olacak:
 
 ```txt
 Ana Sayfa
@@ -103,83 +100,35 @@ Profil
 ```
 
 Kurallar:
-
-- Ortadaki `Tara` butonu kırmızı, yuvarlak ve yükseltilmiş FAB gibi olacak.
-- Aktif sekme kırmızı olacak.
-- Pasif ikonlar grafit/gri olacak.
-- Bildirim badge kırmızı olacak.
-- Alt navigasyon safe area ile uyumlu olacak.
+- Ortadaki `Tara` FAB kırmızı, yuvarlak ve yükseltilmiş.
+- Aktif sekme kırmızı.
+- Pasif sekmeler grafit/gri.
+- Bildirim badge kırmızı.
 - CTA butonları alt navigasyonla çakışmayacak.
 
 ## 7. Tipografi
 
 ```txt
-Ana başlık: 28-32px / 700-800
-Ekran başlığı: 22-26px / 700
-Kart başlığı: 16-18px / 700
-Body: 13-15px / 400-500
+Ana başlık: 28-32px, 700-800
+Ekran başlığı: 22-26px, 700
+Kart başlığı: 16-18px, 700
+Body: 13-15px, 400-500
 Caption: 11-12px
-Sayısal değerler: 24-32px / 700-800
+Sayısal değer: 24-32px, 700-800
 ```
 
-Türkçe karakterler doğru görünmelidir.
+## 8. Görsel Kullanımı
 
-## 8. İkon ve Görsel Standardı
+- Araç görselleri sade, premium ve alanı verimli kullanır.
+- Liste kartlarında araçlar çok büyük olmaz.
+- Gerekirse hafif gölge/yansıma kullanılabilir.
+- Kamera ve kanıt ekranlarında mock preview kullanılabilir.
 
-- İkonlar sade, çizgisel ve profesyonel olmalı.
-- İkonlar gereksiz büyütülmemeli.
-- Araç görselleri premium ama alanı boğmayacak boyutta olmalı.
-- Liste ekranlarında araç görselleri kompakt kalmalı.
-- Gerektiğinde hafif gölge/yansıma kullanılabilir ama kart yüksekliğini artırmamalıdır.
-
-## 9. Component Standardı
-
-Codex mümkün olduğunca reusable component oluşturmalıdır:
-
-```txt
-AppScreen
-AppHeader
-BottomNavigation
-FloatingScanButton
-PrimaryButton
-SecondaryButton
-OutlineButton
-DangerButton
-TextInput
-PasswordInput
-SearchBar
-FilterButton
-SegmentedTabs
-Chip
-Toggle
-RadioRow
-StatusBadge
-StatCard
-VehicleSummaryCard
-WorkOrderCard
-ProgressRing
-ProgressBar
-ModuleCard
-ModuleRow
-EvidenceCard
-IssueCard
-EmptyState
-ErrorState
-LoadingSkeleton
-OfflineBanner
-SyncStatusCard
-Timeline
-ActionPanel
-BottomSheet
-PhotoGrid
-CameraOverlay
-```
-
-## 10. Yasaklar
+## 9. Yasaklar
 
 - Koyu tema üretme.
 - Google / Apple giriş ekleme.
 - Kayıt ol ekranı ekleme.
 - Usta tipi seçim alanı ekleme.
 - Mavi rengi ana tema yapma.
-- Mevcut ERP/CRM ana prototipini bozma.
+- Çiğ kırmızı veya aşırı yoğun zemin kullanma.
