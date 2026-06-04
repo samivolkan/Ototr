@@ -1,6 +1,6 @@
 # OTOTR Usta Mobil Uygulama — Codex Desktop Ana Prompt
 
-Bu dosya, Codex Desktop içinde yeni bir sohbet/task açıldığında doğrudan kullanılacak ana talimattır.
+Bu dosya, Codex Desktop içinde **samivolkan/Ototr** reposunda yeni task/sohbet açıldığında doğrudan kullanılacak ana talimattır.
 
 ## Görev
 
@@ -18,15 +18,25 @@ docs/codex/OTOTR_MOBILE_QA_CHECKLIST.md
 
 ## Mutlak hedef
 
-- Mevcut repo yapısını bozma.
-- Önce proje stack'ini tespit et.
-- Eğer mevcut proje tek HTML prototip ise, yeni mobil uygulama dosyalarını ayrı ve temiz klasörde oluştur.
-- Ana hedef klasör adı: `ototr-mobile-app` veya repo standardına en uygun ayrı mobil klasör.
-- Uygulama temiz mobil arayüz olacak.
-- Mümkünse Android debug APK üret.
-- APK üretilemiyorsa nedeni ve kurulması gereken araçları net raporla.
+- Mevcut ERP/CRM prototipini bozma.
+- Önce repo yapısını ve mevcut dosyaları incele.
+- Eğer mevcut proje tek HTML prototip ise, mobil uygulamayı ayrı ve temiz klasörde oluştur.
+- Ana hedef klasör adı: `ototr-mobile-app`.
+- Hedef: temiz mobil UI + APK üretimine hazır Android yapı.
+- Mümkünse debug APK üret.
+- APK üretilemezse nedeni ve gereken kurulumları raporla.
 
-## Uygulanacak ana ekranlar
+## Tasarım standardı
+
+- Koyu tema yok.
+- Ana tema: beyaz + kırık beyaz + grafit + OTOTR kırmızısı.
+- Üst alan beyaz başlar, aşağı indikçe pastel kırmızı yoğunluğu artar.
+- Zeminde çok hafif dalga/tarama/dot pattern olur.
+- Kartlar beyaz kalır ama düz/çiğ görünmez; çok hafif gri dokulu olur.
+- Alt navigasyon: Ana Sayfa, İşlerim, Tara, Bildirimler, Profil.
+- Ortadaki Tara butonu kırmızı, yuvarlak, yükseltilmiş FAB olur.
+
+## Uygulanacak ekranlar
 
 1. Splash
 2. Giriş
@@ -63,52 +73,34 @@ docs/codex/OTOTR_MOBILE_QA_CHECKLIST.md
 33. Teknik Destek / Yardım Merkezi
 34. Raporlar & Geçmiş
 
-## Tasarım özeti
-
-- Koyu tema yok.
-- Ana tema: beyaz + kırık beyaz + grafit + OTOTR kırmızısı.
-- Üst alan beyaz başlayacak, aşağı indikçe pastel kırmızı yoğunluğu artacak.
-- Zeminde çok hafif dalga/tarama/dot pattern olacak.
-- Kartlar beyaz ama çiğ görünmeyecek; çok hafif gri dokulu olacak.
-- Alt navigasyon: Ana Sayfa, İşlerim, Tara, Bildirimler, Profil.
-- Ortadaki Tara butonu kırmızı, yuvarlak ve yükseltilmiş FAB olacak.
-
-## Kesin yasaklar
-
-- Google / Apple login ekleme.
-- Kayıt ol ekranı ekleme.
-- Usta tipi seçim alanı ekleme.
-- Koyu tema üretme.
-- Teknisyene rapor onaylatma.
-- Mevcut ERP/CRM prototipini bozma.
-- Gereksiz dependency ekleme.
-
 ## İş mantığı
 
-- Kullanıcılar bayi portalından açılır.
-- Teknisyen giriş yapar, şube seçer, iş emirlerini görür.
+- Kullanıcılar bayi portalından açılır; mobilde kayıt ol yoktur.
+- Google / Apple login yoktur.
+- Usta tipi giriş ekranında seçilmez; kullanıcı profilinden gelir.
 - İş emri teknik olarak `İşe Başlama Kanıtı` ile başlar.
-- Bir modülü aynı anda iki usta düzenleyemez.
+- Aynı modülü iki usta aynı anda düzenleyemez.
 - Modül sahiplenme/kilit mantığı uygulanır.
 - Usta görevi devredebilir.
-- Müdür/teknik onay rolü modül devralabilir ve rapor onaylayabilir.
-- Teknisyen raporu sadece teknik onaya gönderir.
+- Müdür/teknik onay rolü modül devralabilir.
+- Teknisyen raporu onaylamaz; sadece teknik onaya gönderir.
 - Rapor engelleyici eksikler çözülmeden teknik onaya gönderilemez.
 - Fotoğraf, not ve ölçüm offline kuyruğa alınabilir.
 
-## Teknoloji kararı
+## Teknik yaklaşım
 
-Repo yapısını incele ve karar ver:
+Repo yapısını incele ve en temiz yolu seç:
 
 - Mevcut mobil/Capacitor altyapısı varsa onu kullan.
-- Yoksa hafif, temiz ve APK üretilebilir bir yapı kur.
-- Öncelikli öneri: HTML/CSS/JS veya mevcut web stack + Capacitor Android.
-- Android paket adı: `com.ototr.terminal` veya mevcut proje standardı.
-- Uygulama adı: `OTOTR Usta` veya `OTOTR Terminal`.
+- Yoksa `ototr-mobile-app` klasöründe yeni, bağımsız, temiz bir mobil PWA/Capacitor projesi kur.
+- Uygulama adı: `OTOTR Usta` veya repo standardına göre `OTOTR Terminal`.
+- Android paket adı: `com.ototr.terminal`.
+- Mock data kullan.
+- Backend/API entegrasyonu yapma; ileride bağlanacak şekilde temiz state/mock servis katmanı bırak.
 
 ## APK üretim beklentisi
 
-Proje uygun ise:
+Capacitor ise:
 
 ```bash
 npm install
@@ -118,7 +110,7 @@ cd android
 ./gradlew assembleDebug
 ```
 
-veya Flutter ise:
+Flutter ise:
 
 ```bash
 flutter pub get
@@ -126,11 +118,23 @@ flutter analyze
 flutter build apk --debug
 ```
 
-veya Native Android ise:
+Native Android ise:
 
 ```bash
 ./gradlew assembleDebug
 ```
+
+Android SDK/Gradle yoksa kodu tamamla, APK üretilemedi nedenini ve kurulması gerekenleri raporla.
+
+## Kesin yasaklar
+
+- Koyu tema üretme.
+- Google/Apple giriş ekleme.
+- Kayıt ol ekranı ekleme.
+- Usta tipi seçim alanı ekleme.
+- Teknisyene rapor onaylatma.
+- Mevcut ERP/CRM prototipini bozma.
+- Gereksiz dependency ekleme.
 
 ## Rapor
 
@@ -148,6 +152,7 @@ Raporda şunlar olmalı:
 - Oluşturulan ekranlar
 - Oluşturulan componentler
 - Mock data yapısı
+- Routing değişiklikleri
 - Çalıştırılan komutlar
 - Başarılı kontroller
 - Başarısız kontroller
@@ -156,6 +161,6 @@ Raporda şunlar olmalı:
 - Kalan riskler
 - Sonraki önerilen adım
 
-## Çalışma yöntemi
+## Başlama talimatı
 
-Önce kısa plan yaz. Sonra onay beklemeden uygula. Küçük adımlarla ilerle, her faz sonunda test/build çalıştır. Gereksiz dosya silme veya ana prototipi bozma.
+Önce kısa plan yaz. Sonra onay beklemeden uygula. Küçük adımlarla ilerle. Her faz sonunda test/build çalıştır. Gereksiz dosya silme veya ana prototipi bozma.
