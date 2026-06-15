@@ -2895,7 +2895,9 @@
       document.title = on ? 'OTOTR Bayi Portalı' : 'OTOTR Genel Merkez ERP + CRM';
     }
     function isDealerStandaloneRoute(){
-      return new URLSearchParams(location.search).get('portal')==='dealer' || !!window.__OTOTR_DEALER_STANDALONE__ || document.body?.classList.contains('dealer-standalone');
+      const params = new URLSearchParams(location.search);
+      const hashRoute = (location.hash || '').replace(/^#\/?/, '').split('/')[0];
+      return params.get('portal')==='dealer' || hashRoute==='dealer';
     }
     function dealerStandaloneRouteTab(id){
       return {
