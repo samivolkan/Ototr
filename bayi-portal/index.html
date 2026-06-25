@@ -13,13 +13,16 @@
   </style>
 </head>
 <body>
-  <p>OTOTR Bayi Portali aciliyor. Acilmazsa <a id="dealerLink" href="../index.html?portal=dealer#dealer">buradan devam edin</a>.</p>
+  <p>OTOTR Bayi Portali aciliyor. Acilmazsa <a id="dealerLink" href="../index.html?portal=dealer&version=v3#dealer">buradan devam edin</a>.</p>
   <script>
     (function(){
       const params = new URLSearchParams(window.location.search);
       params.set('portal','dealer');
       ['email','password','passwd','token','access_token','refresh_token'].forEach(function(key){ params.delete(key); });
       const hash = window.location.hash || '#dealer';
+      if (!params.get('version')) {
+        params.set('version', 'v3');
+      }
       const target = '../index.html?' + params.toString() + hash;
       document.getElementById('dealerLink').href = target;
       window.location.replace(target);
