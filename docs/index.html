@@ -3,26 +3,26 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="ototr-version" content="SVK v1.0.233-cancel-first" />
+  <meta name="ototr-version" content="SVK v1.0.234-bayi-portal-v4" />
+  <meta name="ototr-bayi-portal-version" content="v4.2026.06.25-1811" />
   <title>OTOTR Genel Merkez ERP + CRM</title>
   <link rel="icon" type="image/svg+xml" href="docs/ototr-favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script async src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" onload="try{ if(window.DB&&window.renderCharts) window.renderCharts(); }catch(err){}"></script>
+  <script async src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" onload="try{ if(window.initBranchMap) window.initBranchMap(); }catch(err){}"></script>
+  <script async src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" onload="try{ window.lucide&&window.lucide.createIcons(); }catch(err){}"></script>
   <script src="data/inspection_schema_web.js"></script>
   <script>
     (function(){
       try{
         var params = new URLSearchParams(window.location.search);
         var hashRoute = (window.location.hash || '').replace(/^#\/?/, '').split('/')[0];
-        window.__OTOTR_DEALER_STANDALONE__ = params.get('portal') === 'dealer' || hashRoute === 'dealer';
-        if(window.__OTOTR_DEALER_STANDALONE__){
-          document.documentElement.classList.add('dealer-standalone-root');
-          document.title = 'OTOTR Bayi Portalı';
+        window.__OTOTR_DEALER_STANDALONE__ = false;
+        if(params.get('portal') === 'dealer' || hashRoute === 'dealer'){
+          window.location.replace('bayi-portal/index.html#dealer');
         }
       }catch(err){}
     })();
@@ -1297,7 +1297,7 @@
   </script>
   <div class="app">
     <aside class="side">
-      <div class="brand-row"><a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.233</small><small class="update-tag" title="Son güncelleme: İş emri iptal canlı silme ve aktif listeden düşme akışı düzeltildi.">01.06 · İş emri iptal düzeltmesi</small></div></a><div class="brand-actions"><button class="theme-toggle" type="button" data-theme-toggle title="Koyu temaya geç" aria-label="Tema değiştir"><i data-lucide="sun-moon"></i><span id="themeToggleText">Açık</span></button><div class="online-pill" title="Online kullanıcı sayısı"><span class="online-dot"></span><b data-online-count>42</b><small>kişi</small></div></div></div>
+      <div class="brand-row"><a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.234</small><small class="update-tag" title="Son güncelleme: Bayii Portal v4 ayrı sayfa olarak yayına alındı.">25.06 18:11 · Bayii Portal v4</small></div></a><div class="brand-actions"><button class="theme-toggle" type="button" data-theme-toggle title="Koyu temaya geç" aria-label="Tema değiştir"><i data-lucide="sun-moon"></i><span id="themeToggleText">Açık</span></button><div class="online-pill" title="Online kullanıcı sayısı"><span class="online-dot"></span><b data-online-count>42</b><small>kişi</small></div></div></div>
       <div class="nav" id="nav"></div>
     </aside>
 
@@ -2874,8 +2874,8 @@
       ['Ayarlar', [['architecture','Sistem Mimarisi','network'],['settings','Ayarlar','settings'],['legacy','Legacy Room','landmark']]]
     ];
     const titles = {dashboard:'Yönetim Kokpiti',intelligence:'İş Zekası',branches:'Bayiler & Şubeler',dealer:'Bayi Portalı','ototr-web':'OTOTR Web',operations:'Operasyon',franchise:'Franchise Satış',crm:'CRM & Randevu',complaints:'Müşteri Şikayetleri','google-reviews':'Google Haritalar İtibar Merkezi',reputation:'İtibar Radar',finance:'Finans & Royalty',marketing:'Pazarlama',quality:'Kalite & Denetim','report-design':'Ekspertiz Rapor Tasarımı','vehicle-passport':'Dijital Araç Karnesi',academy:'OTOTR Academy',hr:'İnsan Kaynakları',legal:'Hukuk & Risk',crisis:'Kriz Merkezi',actions:'Aksiyon & Görev',ai:'AI Öneri',growth:'Bayii Büyüme',legacy:'Legacy Room',architecture:'Sistem Mimarisi',settings:'Ayarlar',branchProfile:'Şube Profili',franchiseProfile:'Aday Değerlendirme',customerProfile:'Müşteri 360'};
-    function dealerPortalUrl(){ return 'bayi-portal/index.html'; }
-    function openDealerPortalWindow(){ window.open(dealerPortalUrl(),'_blank','noopener,noreferrer'); }
+    function dealerPortalUrl(){ return 'bayi-portal/index.html#dealer'; }
+    function openDealerPortalWindow(){ window.location.assign(dealerPortalUrl()); }
     function dealerScrubSensitiveUrlParams(){
       try{
         const params=new URLSearchParams(location.search);
@@ -2887,17 +2887,14 @@
       }catch(err){}
     }
     function syncDealerStandaloneMode(resolved){
-      const forced = new URLSearchParams(location.search).get('portal')==='dealer';
-      const on = resolved==='dealer' || forced;
+      const on = false;
       window.__OTOTR_DEALER_STANDALONE__ = on;
       document.documentElement.classList.toggle('dealer-standalone-root',on);
       document.body.classList.toggle('dealer-standalone',on);
       document.title = on ? 'OTOTR Bayi Portalı' : 'OTOTR Genel Merkez ERP + CRM';
     }
     function isDealerStandaloneRoute(){
-      const params = new URLSearchParams(location.search);
-      const hashRoute = (location.hash || '').replace(/^#\/?/, '').split('/')[0];
-      return params.get('portal')==='dealer' || hashRoute==='dealer';
+      return false;
     }
     function dealerStandaloneRouteTab(id){
       return {
@@ -14925,6 +14922,10 @@
     }
     function route(id,options={}){
       id = id==='expertise-report' ? 'report-design' : id;
+      if(id==='dealer' && !document.body.classList.contains('dealer-standalone')){
+        window.location.assign(dealerPortalUrl());
+        return;
+      }
       if(id!=='dealer' && isDealerStandaloneRoute()){
         const dealerTab = dealerStandaloneRouteTab(id);
         if(dealerTab) saveDealerPortalState({tab:dealerTab});
@@ -15549,6 +15550,10 @@
     window.addEventListener('hashchange',()=>{
       const id=(location.hash||'#dashboard').replace('#','');
       const canonical=id==='expertise-report'?'report-design':id;
+      if(canonical==='dealer'){
+        window.location.assign(dealerPortalUrl());
+        return;
+      }
       const hr=parseHRRoute(canonical);
       const academy=parseAcademyRoute(canonical);
       if(hr || academy || (titles[canonical] && canonical!==current)) route(canonical);
@@ -15670,7 +15675,14 @@
   document.addEventListener('click',e=>{const t=e.target.closest('[data-crm-new-lead],[data-crm-close-modal],[data-crm-save-lead],[data-crm-convert],[data-crm-close-appt],[data-crm-create-appointment],[data-crm-bot],[data-crm-assign],[data-crm-distribution],[data-crm-detail]'); if(!t) return; if(t.matches('[data-crm-new-lead]')) openLeadModal(); if(t.matches('[data-crm-close-modal]')) closeLeadModal(); if(t.matches('[data-crm-save-lead]')) saveLead(t.dataset.crmSaveLead); if(t.matches('[data-crm-convert]')) openApptModal(t.dataset.crmConvert); if(t.matches('[data-crm-close-appt]')) closeApptModal(); if(t.matches('[data-crm-create-appointment]')) createAppointment(); if(t.matches('[data-crm-bot]')) advanceBot(t.dataset.crmBot); if(t.matches('[data-crm-assign]')) assignLead(t.dataset.crmAssign); if(t.matches('[data-crm-distribution]')) toast('Dağıtım modeli seçildi: '+t.dataset.crmDistribution); if(t.matches('[data-crm-detail]')) openCrmLeadDetail(t.dataset.crmDetail);});
   const oldWire=window.wirePageEvents;
   if(typeof oldWire==='function') window.wirePageEvents=function(){oldWire(); document.querySelectorAll('[data-crm-tab]').forEach(b=>{b.onclick=()=>{document.querySelectorAll('.crm-tab').forEach(x=>x.classList.remove('active')); b.classList.add('active'); refreshCrmPane(); bindCrmLiveFilters();}}); bindCrmLiveFilters();};
-  setTimeout(()=>{ if(typeof DB!=='undefined'&&DB){ ensureEnterprise(); renderAll(); route(current||'dashboard'); } },500);
+  setTimeout(()=>{
+    if(typeof DB==='undefined'||!DB) return;
+    ensureEnterprise();
+    if(current==='crm'){
+      renderAll();
+      route('crm');
+    }
+  },500);
 })();
 </script>
 
