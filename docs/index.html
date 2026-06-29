@@ -19,9 +19,8 @@
     (function(){
       try{
         var params = new URLSearchParams(window.location.search);
-        var hashRoute = (window.location.hash || '').replace(/^#\/?/, '').split('/')[0];
-        window.__OTOTR_DEALER_STANDALONE__ = false;
-        if(params.get('portal') === 'dealer' || hashRoute === 'dealer'){
+        window.__OTOTR_DEALER_STANDALONE__ = params.get('portal') === 'dealer';
+        if(window.__OTOTR_DEALER_STANDALONE__){
           window.location.replace('bayi-portal/index.html#dealer');
         }
       }catch(err){}
