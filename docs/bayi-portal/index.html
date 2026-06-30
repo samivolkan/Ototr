@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta name="ototr-bayi-portal-version" content="v5.2026.07.01-0148" />
+<meta name="ototr-bayi-portal-version" content="v5.2026.07.01-0156" />
 <title>OTOTR Bayii ERP - Operasyon Merkezi V2</title>
 <link rel="icon" href="data:," />
 <style>
@@ -490,7 +490,7 @@ button,input,select,textarea{font:inherit}.app{min-height:100vh;display:grid;gri
 <body class="module-page-open">
 <div class="app">
   <aside class="sidebar">
-    <button class="brand" id="brandHome" type="button" aria-label="Bayii dashboard'a dön"><div class="brand-mark">OT</div><div class="brand-copy"><strong>OTOTR ERP</strong><small>YÖNETİM PANELİ</small><small id="dealerBuildStamp">v5 · 01.07.2026 01:48</small></div></button>
+    <button class="brand" id="brandHome" type="button" aria-label="Bayii dashboard'a dön"><div class="brand-mark">OT</div><div class="brand-copy"><strong>OTOTR ERP</strong><small>YÖNETİM PANELİ</small><small id="dealerBuildStamp">v5 · 01.07.2026 01:56</small></div></button>
     <nav class="nav">
       <div class="nav-group">Yönetim</div>
       <a class="active" href="#" id="navDashboard"><span class="nav-icon">▦</span>Bayii Kokpiti</a>
@@ -1056,7 +1056,7 @@ button,input,select,textarea{font:inherit}.app{min-height:100vh;display:grid;gri
             <h1>Paket İçeriği Oluşturucu</h1>
           </div>
           <div class="package-builder-head-actions">
-            <span class="package-update-stamp" id="packageBuilderUpdateStamp">Son güncelleme: 01.07.2026 01:48</span>
+            <span class="package-update-stamp" id="packageBuilderUpdateStamp">Son güncelleme: 01.07.2026 01:56</span>
             <button class="btn" data-open-module="dashboardPage" data-open-module-nav="navDashboard" type="button">Kokpite Dön</button>
             <button class="btn primary" data-package-submit="approval" type="button">Merkez Onayına Gönder</button>
           </div>
@@ -1292,6 +1292,33 @@ const packageMainTests=[
   {id:'engineTest',name:'Motor Testi',short:'MT',category:'mainModules',schemaGroupCodes:['MOTOR_CHECKUP'],description:'Motor sesi, yağ/su kaçağı, duman, soğutma, kayış ve genel motor çalışma kontrolleri.',controlPoints:36,evidence:'Kanıt önerilir',risk:'Yüksek',defaultSelected:true,requiredForGuaranteed:true},
   {id:'underFrontMechanical',name:'Alt/Ön Mekanik Testi',short:'AM',category:'mainModules',schemaGroupCodes:['MECHANICAL_CHECKUP'],description:'Lift üstünde yürür aksam, aks, salıncak, amortisör, egzoz ve kaçak kontrolleri.',controlPoints:28,evidence:'Foto kanıt',risk:'Yüksek',defaultSelected:true,requiredForGuaranteed:true}
 ];
+const packageManualControlPointRows={
+  debtQueries:[
+    {title:'Araç borç durumu',subPoints:['Borç yok','Vergi borcu var','MTV borcu var','Trafik cezası var','Diğer borç mevcut']},
+    {title:'Rehin / haciz kontrolü',subPoints:['Kayıt yok','Rehin mevcut','Haciz mevcut','Bloke mevcut','Kontrol edilemedi']},
+    {title:'Sorgu belgesi',subPoints:['E-devlet çıktısı alındı','Resmi sorgu ekran görüntüsü eklendi','Müşteri beyanı alındı','Belge eksik']}
+  ],
+  tramer5664:[
+    {title:'5664 hasar kaydı',subPoints:['Hasar kaydı yok','Hasar kaydı var','Ağır hasar kaydı var','Pert kaydı var','Sorgu sonucu alınamadı']},
+    {title:'Hasar tutarı ve tarihleri',subPoints:['Tutar tutarlı','Tutar yüksek riskli','Tarih bilgisi tutarlı','Tarih bilgisi eksik','Ek doğrulama gerekli']},
+    {title:'Değişen / işlem gören kayıt kontrolü',subPoints:['Kayıt yok','Kayıt var','Müşteri bilgilendirildi','Rapor notu eklendi']}
+  ],
+  kmQuery:[
+    {title:'Kilometre geçmişi',subPoints:['Kilometre tutarlı','Kilometre düşürme şüphesi var','Geçmiş kayıt bulunamadı','Ek doğrulama gerekli']},
+    {title:'TÜVTÜRK / servis kayıt karşılaştırması',subPoints:['Kayıtlar uyumlu','Servis kaydı uyumsuz','Muayene kaydı uyumsuz','Kayıt eksik']},
+    {title:'Güncel kilometre doğrulaması',subPoints:['Gösterge km fotoğrafı eklendi','İş emri km bilgisiyle uyumlu','Müşteri beyanı alındı','Rapor notu eklendi']}
+  ],
+  mechanicalWarranty1m:[
+    {title:'Garanti süresi ve kilometre limiti',subPoints:['1 ay aktif','1000 km limit aktif','Hangisi önce dolarsa garanti biter']},
+    {title:'Garanti ön koşulları',subPoints:['Ana testler tamamlandı','Riskli arıza yok','Merkez onayı alındı','Müşteri bilgilendirildi']},
+    {title:'Garanti kapsam notu',subPoints:['Motor mekanik kapsamda','Şanzıman kontrol edildi','Sarf parçalar kapsam dışı','Kullanım hatası kapsam dışı']}
+  ],
+  mechanicalWarranty3m5k:[
+    {title:'Garanti süresi ve kilometre limiti',subPoints:['3 ay aktif','5000 km limit aktif','Hangisi önce dolarsa garanti biter']},
+    {title:'Garanti ön koşulları',subPoints:['Ana testler tamamlandı','Ek garanti testleri tamamlandı','Merkez onayı alındı','Müşteri bilgilendirildi']},
+    {title:'Garanti kapsam notu',subPoints:['Motor mekanik kapsamda','Şanzıman kontrol edildi','Sarf parçalar kapsam dışı','Kullanım hatası kapsam dışı']}
+  ]
+};
 const packageExtraServices=[
   {id:'obdBrain',name:'OBD/Beyin Testi',short:'OBD',category:'extraTests',schemaGroupCodes:['OBD_ECU_TEST'],description:'Motor, şanzıman, ABS, airbag ve elektronik kontrol ünitelerindeki hata kayıtları okunur.',controlPoints:18,evidence:'Veri kaydı',risk:'Orta',priceImpact:0,priceLabel:'Paket içi',approval:'Otomatik',defaultSelected:false,requiredForGuaranteed:true},
   {id:'dynoTest',name:'DYNO Testi',short:'DYN',category:'extraTests',schemaGroupCodes:['DYNO_ROAD_TEST'],description:'Motor performansı ve güç aktarım değerleri dyno cihaz çıktısıyla kontrol edilir.',controlPoints:14,evidence:'Grafik çıktı',risk:'Orta',priceImpact:0,priceLabel:'Paket içi',approval:'Otomatik',defaultSelected:false,requiredForGuaranteed:true},
@@ -1302,11 +1329,11 @@ const packageExtraServices=[
   {id:'gasketLeak',name:'Conta Kaçak Testi',short:'CK',category:'extraTests',schemaGroupCodes:['HEAD_GASKET_LEAK_TEST'],description:'Conta kaçağı, soğutma basıncı, yağ/su karışımı ve kaçak riskleri kontrol edilir.',controlPoints:12,evidence:'Foto/veri kanıtı',risk:'Yüksek',priceImpact:0,priceLabel:'Paket içi',approval:'Otomatik',defaultSelected:false,requiredForGuaranteed:true},
   {id:'brakeSuspension',name:'Fren Süspansiyon Testi',short:'FS',category:'extraTests',schemaGroupCodes:['BRAKE_SUSPENSION_TEST'],description:'Fren kuvveti, sapma, süspansiyon dengesi ve test hattı ölçümleri ayrı modül olarak çalışır.',controlPoints:16,evidence:'Test hattı çıktısı',risk:'Orta',priceImpact:0,priceLabel:'Paket içi',approval:'Otomatik',defaultSelected:false,requiredForGuaranteed:true},
   {id:'roadDynoTransmission',name:'Dyno - Yol Testi - Şanzıman Kontrolü',short:'DYŞ',category:'extraTests',schemaGroupCodes:['DYNO_ROAD_TEST'],description:'Yol testi, şanzıman geçişleri, çekiş, titreşim ve sürüş davranışı birlikte kontrol edilir.',controlPoints:18,evidence:'Kanıt önerilir',risk:'Yüksek',priceImpact:0,priceLabel:'Paket içi',approval:'Otomatik',defaultSelected:false},
-  {id:'debtQueries',name:'Borç Sorguları',short:'BOR',category:'queries',schemaGroupCodes:['WORK_ORDER_ACCEPTANCE','VEHICLE_FILE_CHECK'],description:'Araç borç, rehin, haciz ve sorgu kontrol adımlarını paket kapsamına ekler.',controlPoints:0,evidence:'Sorgu kaydı',risk:'Orta',priceImpact:0,priceLabel:'Paket içi',approval:'Otomatik',defaultSelected:false},
-  {id:'tramer5664',name:'5664 Tramer Sorgusu',short:'5664',category:'queries',schemaGroupCodes:['VEHICLE_FILE_CHECK'],description:'Araç hasar geçmişi ve tramer kaydı sorgusunu rapora ekler.',controlPoints:0,evidence:'Sorgu kaydı',risk:'Orta',priceImpact:0,priceLabel:'Paket içi',approval:'Otomatik',defaultSelected:true},
-  {id:'kmQuery',name:'Kilometre Sorgusu',short:'KM',category:'queries',schemaGroupCodes:['VEHICLE_FILE_CHECK'],description:'Kilometre geçmişi ve tutarlılık kontrolünü pakete ekler.',controlPoints:0,evidence:'Sorgu kaydı',risk:'Orta',priceImpact:0,priceLabel:'Paket içi',approval:'Otomatik',defaultSelected:false},
-  {id:'mechanicalWarranty1m',name:'Mekanik Garantisi 1 ay / 1000 km',short:'G1',category:'warranties',description:'1 ay / 1000 km mekanik garanti kuralını paket kapsamına ekler.',controlPoints:0,evidence:'Merkez onayı',risk:'Yüksek',priceImpact:0,priceLabel:'Paket içi',approval:'Merkez onayı gerekli',defaultSelected:false,recommendedForGuaranteed:true},
-  {id:'mechanicalWarranty3m5k',name:'Mekanik Garantisi 3 ay / 5000 km',short:'G3',category:'warranties',description:'3 ay / 5000 km mekanik garanti kuralını paket kapsamına ekler.',controlPoints:0,evidence:'Merkez onayı',risk:'Yüksek',priceImpact:0,priceLabel:'Paket içi',approval:'Merkez onayı gerekli',defaultSelected:false,recommendedForGuaranteed:true}
+  {id:'debtQueries',name:'Borç Sorguları',short:'BOR',category:'queries',description:'Araç borç, rehin, haciz ve sorgu kontrol adımlarını paket kapsamına ekler.',controlPointRows:packageManualControlPointRows.debtQueries,controlPoints:3,evidence:'Sorgu kaydı',risk:'Orta',priceImpact:0,priceLabel:'Paket içi',approval:'Otomatik',defaultSelected:false},
+  {id:'tramer5664',name:'5664 Tramer Sorgusu',short:'5664',category:'queries',description:'Araç hasar geçmişi ve tramer kaydı sorgusunu rapora ekler.',controlPointRows:packageManualControlPointRows.tramer5664,controlPoints:3,evidence:'Sorgu kaydı',risk:'Orta',priceImpact:0,priceLabel:'Paket içi',approval:'Otomatik',defaultSelected:true},
+  {id:'kmQuery',name:'Kilometre Sorgusu',short:'KM',category:'queries',description:'Kilometre geçmişi ve tutarlılık kontrolünü pakete ekler.',controlPointRows:packageManualControlPointRows.kmQuery,controlPoints:3,evidence:'Sorgu kaydı',risk:'Orta',priceImpact:0,priceLabel:'Paket içi',approval:'Otomatik',defaultSelected:false},
+  {id:'mechanicalWarranty1m',name:'Mekanik Garantisi 1 ay / 1000 km',short:'G1',category:'warranties',description:'1 ay / 1000 km mekanik garanti kuralını paket kapsamına ekler.',controlPointRows:packageManualControlPointRows.mechanicalWarranty1m,controlPoints:3,evidence:'Merkez onayı',risk:'Yüksek',priceImpact:0,priceLabel:'Paket içi',approval:'Merkez onayı gerekli',defaultSelected:false,recommendedForGuaranteed:true},
+  {id:'mechanicalWarranty3m5k',name:'Mekanik Garantisi 3 ay / 5000 km',short:'G3',category:'warranties',description:'3 ay / 5000 km mekanik garanti kuralını paket kapsamına ekler.',controlPointRows:packageManualControlPointRows.mechanicalWarranty3m5k,controlPoints:3,evidence:'Merkez onayı',risk:'Yüksek',priceImpact:0,priceLabel:'Paket içi',approval:'Merkez onayı gerekli',defaultSelected:false,recommendedForGuaranteed:true}
 ];
 const packageTemplates=[
   {id:'package1',name:'Paket 1',description:'Kaporta/boya, motor, alt/ön mekanik ve 5664 sorgusu ile temel başlangıç kapsamı.',price:5500,category:'Standart Paket',warrantyDuration:'Yok',warrantyKm:'Yok',mainTests:['bodyPaint','engineTest','underFrontMechanical'],extraServices:['tramer5664']},
@@ -1341,7 +1368,7 @@ const packageBuilderCustomTestStorageKey='ototr-package-builder-custom-tests-v1'
 const packageBuilderTestPriceStorageKey='ototr-package-builder-test-prices-v1';
 const packageBuilderControlPointStorageKey='ototr-package-builder-control-points-v1';
 const packageBuilderManagedTestStorageKey='ototr-package-builder-managed-tests-v1';
-const dealerPortalBuildStamp='01.07.2026 01:48';
+const dealerPortalBuildStamp='01.07.2026 01:56';
 function packageBuilderReadPackages(){
   try{
     const saved=JSON.parse(localStorage.getItem(packageBuilderStorageKey)||'[]');
@@ -1483,10 +1510,11 @@ function packageBuilderSchemaPointsForItem(item){
     .sort((a,b)=>(order.get(a.groupCode)||0)-(order.get(b.groupCode)||0)||Number(a.sortOrder||0)-Number(b.sortOrder||0));
 }
 function packageBuilderItemControlPointCount(item){
-  const schemaPoints=packageBuilderSchemaPointsForItem(item);
+  const manualPoints=Array.isArray(item?.controlPointRows)?item.controlPointRows:[];
+  const schemaPoints=manualPoints.length ? [] : packageBuilderSchemaPointsForItem(item);
   const baseIds=schemaPoints.length
     ? schemaPoints.map(point=>point.id)
-    : (Array.isArray(item?.subPoints)?item.subPoints.map((_,index)=>`base-${index}`):[]);
+    : (manualPoints.length ? manualPoints.map((_,index)=>`manual-base-${index}`) : (Array.isArray(item?.subPoints)?item.subPoints.map((_,index)=>`base-${index}`):[]));
   const bucket=packageBuilderControlPointOverrides[item?.id]||{};
   const deletedCount=baseIds.filter(id=>bucket[id]?.deleted).length;
   const customCount=Object.values(bucket).filter(value=>value?.custom&&!value.deleted).length;
@@ -1549,8 +1577,17 @@ function packageBuilderPointBucket(testId){
 function packageBuilderPointRowsForItem(item){
   if(!item)return [];
   const bucket=packageBuilderPointBucket(item.id);
-  const schemaPoints=packageBuilderSchemaPointsForItem(item);
-  const basePoints=schemaPoints.length ? schemaPoints : (Array.isArray(item.subPoints)?item.subPoints:[]).map((title,index)=>({
+  const manualPoints=Array.isArray(item.controlPointRows)?item.controlPointRows:[];
+  const schemaPoints=manualPoints.length ? [] : packageBuilderSchemaPointsForItem(item);
+  const basePoints=manualPoints.length ? manualPoints.map((point,index)=>({
+    id:`manual-base-${index}`,
+    name:point.title,
+    groupCode:'MANUAL_PACKAGE_DETAIL',
+    groupLabel:'Paket Detayı',
+    sortOrder:index+1,
+    suggestedOptions:Array.isArray(point.subPoints)?point.subPoints:[],
+    isRequired:true
+  })) : (schemaPoints.length ? schemaPoints : (Array.isArray(item.subPoints)?item.subPoints:[]).map((title,index)=>({
     id:`base-${index}`,
     name:title,
     groupCode:'CUSTOM_TEST',
@@ -1558,7 +1595,7 @@ function packageBuilderPointRowsForItem(item){
     sortOrder:index+1,
     suggestedOptions:['Kontrol sonucu girilecek'],
     isRequired:false
-  }));
+  })));
   const rows=basePoints
     .filter(point=>!bucket[point.id]?.deleted)
     .map(point=>{
@@ -1672,6 +1709,7 @@ function packageBuilderSerializableTestItem(item){
     risk:item.risk||'Orta',
     approval:item.approval||'Otomatik',
     subPoints:Array.isArray(item.subPoints)?item.subPoints:[],
+    controlPointRows:Array.isArray(item.controlPointRows)?item.controlPointRows:undefined,
     custom:Boolean(item.custom),
     defaultSelected:false,
     requiredForGuaranteed:Boolean(item.requiredForGuaranteed),
