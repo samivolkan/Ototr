@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta name="ototr-bayi-portal-version" content="v5.2026.07.01-0156" />
+<meta name="ototr-bayi-portal-version" content="v5.2026.07.01-0210" />
 <title>OTOTR Bayii ERP - Operasyon Merkezi V2</title>
 <link rel="icon" href="data:," />
 <style>
@@ -470,7 +470,7 @@ button,input,select,textarea{font:inherit}.app{min-height:100vh;display:grid;gri
 .package-point-add-form[hidden]{display:none}.package-point-add-form .field textarea{min-height:72px;resize:vertical}
 .package-point-list{display:grid;gap:10px;padding:14px 16px;background:#fff}
 .package-point-row{border:1px solid #e5e7eb;border-radius:12px;background:#fff;padding:12px;display:grid;grid-template-columns:128px minmax(0,1fr) 220px auto;gap:10px;align-items:start}
-.package-point-row-meta{display:flex;gap:6px;flex-wrap:wrap}.package-point-row label{display:grid;gap:5px;color:#667085;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.02em}
+.package-point-row-meta{display:flex;gap:6px;flex-wrap:wrap}.package-point-toggle{height:23px;border:0;border-radius:7px;padding:0 8px;font-size:10.5px;font-weight:750;cursor:pointer;background:#f3f4f6;color:#374151}.package-point-toggle.is-required,.package-point-toggle.is-photo-required{background:#fee2e2;color:#e30613}.package-point-toggle.is-optional{background:#dcfce7;color:#16a34a}.package-point-toggle.is-photo-optional{background:#fff7ed;color:#b45309}.package-point-row label{display:grid;gap:5px;color:#667085;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.02em}
 .package-point-row input,.package-point-row textarea{width:100%;border:1px solid #d1d5db;border-radius:9px;background:#fff;color:#111827;font:750 12px/1.35 inherit;padding:9px;min-width:0}
 .package-point-row textarea{min-height:72px;resize:vertical}.package-point-row-actions{display:grid;gap:7px}
 .package-point-empty{border:1px dashed #d1d5db;border-radius:12px;background:#f9fafb;padding:22px;text-align:center;color:#667085;font-size:12px;font-weight:800}
@@ -490,7 +490,7 @@ button,input,select,textarea{font:inherit}.app{min-height:100vh;display:grid;gri
 <body class="module-page-open">
 <div class="app">
   <aside class="sidebar">
-    <button class="brand" id="brandHome" type="button" aria-label="Bayii dashboard'a dön"><div class="brand-mark">OT</div><div class="brand-copy"><strong>OTOTR ERP</strong><small>YÖNETİM PANELİ</small><small id="dealerBuildStamp">v5 · 01.07.2026 01:56</small></div></button>
+    <button class="brand" id="brandHome" type="button" aria-label="Bayii dashboard'a dön"><div class="brand-mark">OT</div><div class="brand-copy"><strong>OTOTR ERP</strong><small>YÖNETİM PANELİ</small><small id="dealerBuildStamp">v5 · 01.07.2026 02:10</small></div></button>
     <nav class="nav">
       <div class="nav-group">Yönetim</div>
       <a class="active" href="#" id="navDashboard"><span class="nav-icon">▦</span>Bayii Kokpiti</a>
@@ -1056,7 +1056,7 @@ button,input,select,textarea{font:inherit}.app{min-height:100vh;display:grid;gri
             <h1>Paket İçeriği Oluşturucu</h1>
           </div>
           <div class="package-builder-head-actions">
-            <span class="package-update-stamp" id="packageBuilderUpdateStamp">Son güncelleme: 01.07.2026 01:56</span>
+            <span class="package-update-stamp" id="packageBuilderUpdateStamp">Son güncelleme: 01.07.2026 02:10</span>
             <button class="btn" data-open-module="dashboardPage" data-open-module-nav="navDashboard" type="button">Kokpite Dön</button>
             <button class="btn primary" data-package-submit="approval" type="button">Merkez Onayına Gönder</button>
           </div>
@@ -1368,7 +1368,7 @@ const packageBuilderCustomTestStorageKey='ototr-package-builder-custom-tests-v1'
 const packageBuilderTestPriceStorageKey='ototr-package-builder-test-prices-v1';
 const packageBuilderControlPointStorageKey='ototr-package-builder-control-points-v1';
 const packageBuilderManagedTestStorageKey='ototr-package-builder-managed-tests-v1';
-const dealerPortalBuildStamp='01.07.2026 01:56';
+const dealerPortalBuildStamp='01.07.2026 02:10';
 function packageBuilderReadPackages(){
   try{
     const saved=JSON.parse(localStorage.getItem(packageBuilderStorageKey)||'[]');
@@ -1565,9 +1565,14 @@ function packageBuilderPointDraft(testId,point){
   const defaultSubPoints=packageBuilderDefaultPointSubpoints(point);
   const savedSubPoints=Array.isArray(saved.subPoints)&&saved.subPoints.length?saved.subPoints:null;
   const shouldUseSaved=savedSubPoints && !(packageBuilderPointOptionLabels(point).length&&packageBuilderLegacyFallbackSubpoints(savedSubPoints));
+  const baseRequiresMedia=Boolean(point.requiresMedia||Number(point.requiredImageCount||0)>0);
+  const requiresMedia=typeof saved.requiresMedia==='boolean'?saved.requiresMedia:baseRequiresMedia;
   return {
     title:saved.title||point.name||'Kontrol noktası',
-    subPoints:shouldUseSaved?savedSubPoints:defaultSubPoints
+    subPoints:shouldUseSaved?savedSubPoints:defaultSubPoints,
+    isRequired:typeof saved.isRequired==='boolean'?saved.isRequired:Boolean(point.isRequired),
+    requiresMedia,
+    requiredImageCount:requiresMedia ? Math.max(1,Number(saved.requiredImageCount||point.requiredImageCount||1)) : 0
   };
 }
 function packageBuilderPointBucket(testId){
@@ -1606,9 +1611,9 @@ function packageBuilderPointRowsForItem(item){
         subPoints:draft.subPoints,
         groupLabel:point.groupLabel||packageBuilderSchemaGroupLabel(point.groupCode)||'Kontrol',
         legacyNoktaId:point.legacyNoktaId||point.sortOrder||'',
-        isRequired:Boolean(point.isRequired),
-        requiresMedia:Boolean(point.requiresMedia||Number(point.requiredImageCount||0)>0),
-        requiredImageCount:Number(point.requiredImageCount||0)||0,
+        isRequired:Boolean(draft.isRequired),
+        requiresMedia:Boolean(draft.requiresMedia),
+        requiredImageCount:Number(draft.requiredImageCount||0)||0,
         custom:false
       };
     });
@@ -1628,12 +1633,29 @@ function packageBuilderPointRowsForItem(item){
   });
   return rows;
 }
-function packageBuilderSavePointOverride(testId,pointId,title,subPointText){
+function packageBuilderSavePointOverride(testId,pointId,title,subPointText,options={}){
   if(!testId||!pointId)return;
   const lines=String(subPointText||'').split(/\r?\n|,/).map(item=>item.trim()).filter(Boolean);
   const bucket=packageBuilderPointBucket(testId);
-  bucket[pointId]={...(bucket[pointId]||{}),title:String(title||'').trim(),subPoints:lines,deleted:false};
+  const next={...(bucket[pointId]||{}),title:String(title||'').trim(),subPoints:lines,deleted:false};
+  if(Object.prototype.hasOwnProperty.call(options,'isRequired'))next.isRequired=Boolean(options.isRequired);
+  if(Object.prototype.hasOwnProperty.call(options,'requiresMedia')){
+    next.requiresMedia=Boolean(options.requiresMedia);
+    next.requiredImageCount=next.requiresMedia?Math.max(1,Number(options.requiredImageCount||1)):0;
+  }
+  bucket[pointId]=next;
   packageBuilderSaveControlPointOverrides();
+}
+function packageBuilderTogglePointFlag(testId,pointId,flag){
+  if(!testId||!pointId)return;
+  const item=packageBuilderFindTestItem(testId);
+  const row=packageBuilderPointRowsForItem(item).find(value=>value.id===pointId);
+  if(!row)return;
+  packageBuilderSavePointOverride(testId,pointId,row.title,row.subPoints.join('\n'),{
+    isRequired:flag==='required'?!row.isRequired:row.isRequired,
+    requiresMedia:flag==='photo'?!row.requiresMedia:row.requiresMedia,
+    requiredImageCount:flag==='photo'&&!row.requiresMedia?1:row.requiredImageCount
+  });
 }
 function packageBuilderDeletePoint(testId,pointId){
   if(!testId||!pointId)return;
@@ -4015,8 +4037,8 @@ function renderPackagePointEditorPage(){
     <div class="package-point-row-meta">
       <span class="package-chip blue">#${escapeHtml(String(row.legacyNoktaId||index+1))}</span>
       <span class="package-chip purple">${escapeHtml(row.groupLabel)}</span>
-      <span class="package-chip ${row.isRequired?'red':'green'}">${row.isRequired?'Zorunlu':'Opsiyon'}</span>
-      ${row.requiresMedia?`<span class="package-chip orange">Foto ${row.requiredImageCount||1}</span>`:''}
+      <button class="package-point-toggle ${row.isRequired?'is-required':'is-optional'}" data-package-point-toggle-required="${escapeHtml(row.id)}" type="button">${row.isRequired?'Zorunlu':'Opsiyon'}</button>
+      <button class="package-point-toggle ${row.requiresMedia?'is-photo-required':'is-photo-optional'}" data-package-point-toggle-photo="${escapeHtml(row.id)}" type="button">${row.requiresMedia?'Fotoğraf Zorunlu':'Fotoğraf Opsiyonel'}</button>
       ${row.custom?'<span class="package-chip blue">Manuel</span>':''}
     </div>
     <label>Madde<input data-package-point-title value="${escapeHtml(row.title)}" aria-label="${escapeHtml(item.name)} madde başlığı"></label>
@@ -4317,6 +4339,28 @@ function wirePackagePointEditorPage(){
     }
     const reset=event.target.closest('[data-package-point-add-reset]');
     if(reset){event.preventDefault();packageBuilderResetPointAddForm(false);return;}
+    const toggleRequired=event.target.closest('[data-package-point-toggle-required]');
+    if(toggleRequired){
+      event.preventDefault();
+      const row=toggleRequired.closest('[data-package-point-row]');
+      if(row){
+        packageBuilderTogglePointFlag(row.dataset.packagePointTest,row.dataset.packagePointRow,'required');
+        renderPackagePointEditorPage();
+        renderPackageBuilderPage();
+      }
+      return;
+    }
+    const togglePhoto=event.target.closest('[data-package-point-toggle-photo]');
+    if(togglePhoto){
+      event.preventDefault();
+      const row=togglePhoto.closest('[data-package-point-row]');
+      if(row){
+        packageBuilderTogglePointFlag(row.dataset.packagePointTest,row.dataset.packagePointRow,'photo');
+        renderPackagePointEditorPage();
+        renderPackageBuilderPage();
+      }
+      return;
+    }
     const add=event.target.closest('[data-package-point-add-save]');
     if(add){
       event.preventDefault();
