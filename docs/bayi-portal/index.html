@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta name="ototr-bayi-portal-version" content="v5.2026.07.01-0128" />
+<meta name="ototr-bayi-portal-version" content="v5.2026.07.01-0140" />
 <title>OTOTR Bayii ERP - Operasyon Merkezi V2</title>
 <link rel="icon" href="data:," />
 <style>
@@ -490,7 +490,7 @@ button,input,select,textarea{font:inherit}.app{min-height:100vh;display:grid;gri
 <body class="module-page-open">
 <div class="app">
   <aside class="sidebar">
-    <button class="brand" id="brandHome" type="button" aria-label="Bayii dashboard'a dön"><div class="brand-mark">OT</div><div class="brand-copy"><strong>OTOTR ERP</strong><small>YÖNETİM PANELİ</small><small id="dealerBuildStamp">v5 · 01.07.2026 01:28</small></div></button>
+    <button class="brand" id="brandHome" type="button" aria-label="Bayii dashboard'a dön"><div class="brand-mark">OT</div><div class="brand-copy"><strong>OTOTR ERP</strong><small>YÖNETİM PANELİ</small><small id="dealerBuildStamp">v5 · 01.07.2026 01:40</small></div></button>
     <nav class="nav">
       <div class="nav-group">Yönetim</div>
       <a class="active" href="#" id="navDashboard"><span class="nav-icon">▦</span>Bayii Kokpiti</a>
@@ -1056,7 +1056,7 @@ button,input,select,textarea{font:inherit}.app{min-height:100vh;display:grid;gri
             <h1>Paket İçeriği Oluşturucu</h1>
           </div>
           <div class="package-builder-head-actions">
-            <span class="package-update-stamp" id="packageBuilderUpdateStamp">Son güncelleme: 01.07.2026 01:28</span>
+            <span class="package-update-stamp" id="packageBuilderUpdateStamp">Son güncelleme: 01.07.2026 01:40</span>
             <button class="btn" data-open-module="dashboardPage" data-open-module-nav="navDashboard" type="button">Kokpite Dön</button>
             <button class="btn primary" data-package-submit="approval" type="button">Merkez Onayına Gönder</button>
           </div>
@@ -1098,6 +1098,7 @@ button,input,select,textarea{font:inherit}.app{min-height:100vh;display:grid;gri
                       <div class="field"><label>Onay kuralı</label><select data-test-point-field="approval"><option>Otomatik</option><option>Merkez onayı gerekli</option></select></div>
                       <div class="field wide"><label>Alt seçenekler / kontrol içerikleri</label><textarea data-test-point-field="subPoints" rows="4" placeholder="Ön sol açı&#10;Ön sağ açı&#10;İç kabin fotoğrafı"></textarea><small>Her satır bir alt kontrol başlığı olarak kaydedilir.</small></div>
                       <div class="package-test-point-actions">
+                        <button class="btn" data-test-point-action="cancel" type="button">İptal Et</button>
                         <button class="btn" data-test-point-action="reset" type="button">Temizle</button>
                         <button class="btn primary" data-test-point-action="save" type="button" id="packageTestPointSaveButton">Kaydet ve Pakete Ekle</button>
                       </div>
@@ -1340,7 +1341,7 @@ const packageBuilderCustomTestStorageKey='ototr-package-builder-custom-tests-v1'
 const packageBuilderTestPriceStorageKey='ototr-package-builder-test-prices-v1';
 const packageBuilderControlPointStorageKey='ototr-package-builder-control-points-v1';
 const packageBuilderManagedTestStorageKey='ototr-package-builder-managed-tests-v1';
-const dealerPortalBuildStamp='01.07.2026 01:28';
+const dealerPortalBuildStamp='01.07.2026 01:40';
 function packageBuilderReadPackages(){
   try{
     const saved=JSON.parse(localStorage.getItem(packageBuilderStorageKey)||'[]');
@@ -4199,6 +4200,7 @@ function wirePackageBuilderPage(){
           form.querySelector('[data-test-point-field="name"]')?.focus();
         }
       }
+      if(action==='cancel')packageBuilderResetNewTestPointForm(true);
       if(action==='reset')packageBuilderResetNewTestPointForm(false);
       if(action==='save')packageBuilderCreateTestPoint();
       return;
