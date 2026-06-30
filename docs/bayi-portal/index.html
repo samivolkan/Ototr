@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta name="ototr-bayi-portal-version" content="v5.2026.07.01-0210" />
+<meta name="ototr-bayi-portal-version" content="v5.2026.07.01-0224" />
 <title>OTOTR Bayii ERP - Operasyon Merkezi V2</title>
 <link rel="icon" href="data:," />
 <style>
@@ -456,6 +456,32 @@ button,input,select,textarea{font:inherit}.app{min-height:100vh;display:grid;gri
 .package-action-link.danger{border-color:#fecdd3!important;background:#fff1f2!important;color:#d71920!important}
 .package-action-link.archive{border-color:#dbe3ee!important;background:#f8fafc!important;color:#475467!important}
 .package-selected-panel .package-control-point-panel{display:none!important}
+.package-builder-layout{display:grid!important;grid-template-columns:1fr!important;gap:14px!important;align-items:stretch!important}
+.package-builder-layout>.package-panel{width:100%}
+.package-builder-layout>.package-panel:nth-child(1){order:1}
+.package-builder-layout>.package-panel:nth-child(2){order:2}
+.package-builder-layout>.package-selected-panel{order:3;position:static!important;top:auto!important}
+.package-info-grid{display:grid!important;grid-template-columns:repeat(6,minmax(140px,1fr))!important;gap:12px!important;align-items:end}
+.package-info-grid .field.wide{grid-column:span 2!important}
+.package-info-grid .field{min-width:0}
+.package-pool-head{align-items:center!important}
+.package-pool-toolbar{align-items:center!important;justify-content:flex-end!important;flex:1 1 auto}
+.package-pool-toolbar .package-tabs{display:flex;flex-wrap:wrap;justify-content:flex-end}
+.package-pool-tools{display:block!important}
+.package-card-list,.package-test-section-grid,.package-template-grid{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))!important;gap:10px!important;max-height:none!important;overflow:visible!important;padding-right:0!important}
+.package-all-sections{gap:18px}
+.package-test-section{border-top:1px solid #eef1f5;padding-top:12px}
+.package-test-section:first-child{border-top:0;padding-top:0}
+.package-option-card{min-height:156px}
+.package-selected-panel .package-panel-body{display:grid;grid-template-columns:minmax(420px,1.35fr) minmax(300px,.9fr) minmax(270px,.75fr);gap:12px;align-items:start}
+.package-selected-list{grid-column:1;max-height:260px!important}
+.package-selected-panel .package-price-editor{grid-column:2;margin-top:0!important}
+.package-selected-panel .package-summary{grid-column:3;margin-top:0!important}
+.package-selected-panel .package-validation{grid-column:2;margin-top:0!important}
+.package-selected-panel .package-actions{grid-column:3;display:grid!important;grid-template-columns:1fr 1fr!important;margin-top:0!important}
+.package-created-list{grid-column:1/-1;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
+@media(max-width:1350px){.package-info-grid{grid-template-columns:repeat(3,minmax(160px,1fr))!important}.package-selected-panel .package-panel-body{grid-template-columns:1fr 1fr}.package-selected-list,.package-created-list{grid-column:1/-1}.package-selected-panel .package-price-editor,.package-selected-panel .package-validation{grid-column:1}.package-selected-panel .package-summary,.package-selected-panel .package-actions{grid-column:2}}
+@media(max-width:820px){.package-info-grid{grid-template-columns:1fr!important}.package-info-grid .field.wide{grid-column:1!important}.package-pool-head{display:grid!important}.package-pool-toolbar{justify-content:flex-start!important}.package-pool-toolbar .package-tabs{justify-content:flex-start}.package-card-list,.package-test-section-grid,.package-template-grid{grid-template-columns:1fr!important}.package-selected-panel .package-panel-body{grid-template-columns:1fr}.package-selected-list,.package-selected-panel .package-price-editor,.package-selected-panel .package-summary,.package-selected-panel .package-validation,.package-selected-panel .package-actions,.package-created-list{grid-column:1!important}.package-selected-panel .package-actions{grid-template-columns:1fr!important}}
 .package-point-editor-page{display:none}.package-point-editor-page.active-module{display:block!important}
 .package-point-editor-layout{display:grid;grid-template-columns:minmax(280px,.35fr) minmax(0,1fr);gap:14px;align-items:start}
 .package-point-summary{border:1px solid #e5e7eb;border-radius:14px;background:#fff;box-shadow:0 4px 18px rgba(17,24,39,.045);overflow:hidden;position:sticky;top:92px}
@@ -490,7 +516,7 @@ button,input,select,textarea{font:inherit}.app{min-height:100vh;display:grid;gri
 <body class="module-page-open">
 <div class="app">
   <aside class="sidebar">
-    <button class="brand" id="brandHome" type="button" aria-label="Bayii dashboard'a dön"><div class="brand-mark">OT</div><div class="brand-copy"><strong>OTOTR ERP</strong><small>YÖNETİM PANELİ</small><small id="dealerBuildStamp">v5 · 01.07.2026 02:10</small></div></button>
+    <button class="brand" id="brandHome" type="button" aria-label="Bayii dashboard'a dön"><div class="brand-mark">OT</div><div class="brand-copy"><strong>OTOTR ERP</strong><small>YÖNETİM PANELİ</small><small id="dealerBuildStamp">v5 · 01.07.2026 02:24</small></div></button>
     <nav class="nav">
       <div class="nav-group">Yönetim</div>
       <a class="active" href="#" id="navDashboard"><span class="nav-icon">▦</span>Bayii Kokpiti</a>
@@ -1056,7 +1082,7 @@ button,input,select,textarea{font:inherit}.app{min-height:100vh;display:grid;gri
             <h1>Paket İçeriği Oluşturucu</h1>
           </div>
           <div class="package-builder-head-actions">
-            <span class="package-update-stamp" id="packageBuilderUpdateStamp">Son güncelleme: 01.07.2026 02:10</span>
+            <span class="package-update-stamp" id="packageBuilderUpdateStamp">Son güncelleme: 01.07.2026 02:24</span>
             <button class="btn" data-open-module="dashboardPage" data-open-module-nav="navDashboard" type="button">Kokpite Dön</button>
             <button class="btn primary" data-package-submit="approval" type="button">Merkez Onayına Gönder</button>
           </div>
@@ -1368,7 +1394,7 @@ const packageBuilderCustomTestStorageKey='ototr-package-builder-custom-tests-v1'
 const packageBuilderTestPriceStorageKey='ototr-package-builder-test-prices-v1';
 const packageBuilderControlPointStorageKey='ototr-package-builder-control-points-v1';
 const packageBuilderManagedTestStorageKey='ototr-package-builder-managed-tests-v1';
-const dealerPortalBuildStamp='01.07.2026 02:10';
+const dealerPortalBuildStamp='01.07.2026 02:24';
 function packageBuilderReadPackages(){
   try{
     const saved=JSON.parse(localStorage.getItem(packageBuilderStorageKey)||'[]');
