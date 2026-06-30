@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta name="ototr-bayi-portal-version" content="v4.2026.06.30-1600" />
+<meta name="ototr-bayi-portal-version" content="v4.2026.06.30-2357" />
 <title>OTOTR Bayii ERP - Operasyon Merkezi V2</title>
 <link rel="icon" href="data:," />
 <style>
@@ -304,6 +304,29 @@ button,input,select,textarea{font:inherit}.app{min-height:100vh;display:grid;gri
 .package-control-point-actions{display:flex;justify-content:flex-end}
 .package-created-item{display:grid;gap:8px}
 .package-created-item.is-archived{background:#f8fafc;color:#667085}
+.package-pool-head{align-items:center}
+.package-pool-toolbar{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+.package-pool-toolbar .package-tabs{gap:6px}
+.package-test-toggle{height:30px;background:#101828!important;border-color:#101828!important;color:#fff!important;font-size:11px;font-weight:800}
+.package-test-point-builder{border:0;border-top:1px solid #eef2f6;border-radius:0;background:transparent;padding:10px 0 0;margin:10px 0 0}
+.package-test-point-head{display:none}
+.package-test-point-form{margin-top:0;padding-top:0;border-top:0;gap:8px}
+.package-builder-page .package-panel-head{padding:11px 14px}
+.package-builder-page .package-panel-title{font-size:14px;font-weight:850}
+.package-builder-page .package-panel-sub{font-size:11px}
+.package-builder-page .package-panel-body{padding:12px 14px}
+.package-builder-page .package-tab{height:29px;font-weight:750}
+.package-builder-page .package-option-card{padding:10px;gap:7px;border-radius:10px;box-shadow:none}
+.package-builder-page .package-option-top{gap:8px}
+.package-builder-page .package-option-title b{font-size:12.5px;font-weight:760}
+.package-builder-page .package-option-card p{font-size:11.5px;line-height:1.35}
+.package-builder-page .package-chip{height:22px;font-size:10px;font-weight:700}
+.package-builder-page .package-add-btn{height:30px;font-size:11px;font-weight:800}
+.package-builder-page .package-action-link{font-weight:750}
+.package-builder-page .package-card-list{gap:7px}
+.package-builder-page .package-template-card{padding:10px;box-shadow:none}
+.package-builder-page .package-template-card b{font-size:12.5px;font-weight:760}
+.package-builder-page .package-template-card span{font-size:11px;line-height:1.32}
 #dashboardPage .quick-form-note,#dashboardPage .form-actions .hint,#dashboardPage .form-actions .entry-note{display:none}
 .package-update-stamp{height:36px;border:1px solid #dbe3ee;border-radius:9px;background:#f8fafc;color:#475467;padding:0 11px;display:inline-flex;align-items:center;font-size:11px;font-weight:900;white-space:nowrap}
 .custom-package-card,.custom-package-pill{border-color:#b7e4c7;background:#f8fffb}
@@ -886,7 +909,7 @@ button,input,select,textarea{font:inherit}.app{min-height:100vh;display:grid;gri
             <p>Yeni ekspertiz paketinin test türleri, test fiyatları, taban fiyatı ve merkez onay kuralı tek ekranda yönetilir.</p>
           </div>
           <div class="package-builder-head-actions">
-            <span class="package-update-stamp" id="packageBuilderUpdateStamp">Son güncelleme: 30.06.2026 16:00</span>
+            <span class="package-update-stamp" id="packageBuilderUpdateStamp">Son güncelleme: 30.06.2026 23:57</span>
             <button class="btn" data-open-module="dashboardPage" data-open-module-nav="navDashboard" type="button">Kokpite Dön</button>
             <button class="btn primary" data-package-submit="approval" type="button">Merkez Onayına Gönder</button>
           </div>
@@ -906,17 +929,13 @@ button,input,select,textarea{font:inherit}.app{min-height:100vh;display:grid;gri
             </div>
           </aside>
           <section class="package-panel">
-            <div class="package-panel-head"><div><div class="package-panel-title">Seçilebilir Paket Havuzu</div><div class="package-panel-sub">Ana testleri, ek testleri veya hazır şablonları seç.</div></div><div class="package-tabs"><button class="package-tab active" data-package-tab="mainTests" type="button">Ana Testler</button><button class="package-tab" data-package-tab="extraServices" type="button">Ek Testler</button><button class="package-tab" data-package-tab="templates" type="button">Hazır Şablonlar</button></div></div>
+            <div class="package-panel-head package-pool-head"><div><div class="package-panel-title">Seçilebilir Paket Havuzu</div><div class="package-panel-sub">Ana test, ek test, sorgu ve garanti kalemlerini ayrı yönetin.</div></div><div class="package-pool-toolbar"><div class="package-tabs"><button class="package-tab active" data-package-tab="mainTests" type="button">Ana Testler</button><button class="package-tab" data-package-tab="extraServices" type="button">Ek Testler</button><button class="package-tab" data-package-tab="queries" type="button">Sorgular</button><button class="package-tab" data-package-tab="warranties" type="button">Garanti Paketleri</button><button class="package-tab" data-package-tab="templates" type="button">Hazır Şablonlar</button></div><button class="package-add-btn package-test-toggle" data-test-point-action="toggle" type="button">Test Türü Ekle</button></div></div>
             <div class="package-panel-body">
               <div class="package-pool-tools">
                 <nav class="package-category-menu" id="packageCategoryMenu" aria-label="Paket iç kategori menüsü"></nav>
                 <div class="package-pool-main">
                   <div class="package-search"><span>ARA</span><input id="packageSearchInput" placeholder="Modül ara: kaporta, motor, OBD..."></div>
                   <div class="package-test-point-builder">
-                    <div class="package-test-point-head">
-                      <div><b>Yeni Test Türü</b><span>Ana test mi ek test mi olacağını, nokta sayısını ve alt kontrol içeriklerini tanımla.</span></div>
-                      <button class="package-add-btn" data-test-point-action="toggle" type="button">Test Türü Ekle</button>
-                    </div>
                     <div class="package-test-point-form" id="packageTestPointForm" hidden>
                       <div class="field"><label>Test türü</label><select data-test-point-field="target"><option value="main">Ana Test</option><option value="extra">Ek Test</option></select></div>
                       <div class="field wide"><label>Test türü adı</label><input data-test-point-field="name" placeholder="Aracı 360 derece fotoğraflama"></div>
@@ -1100,11 +1119,11 @@ const packageExtraServices=[
   {id:'gasketLeak',name:'Conta Kaçak Testi',short:'CK',category:'extraTests',schemaGroupCodes:['HEAD_GASKET_LEAK_TEST'],description:'Conta kaçağı, soğutma basıncı, yağ/su karışımı ve kaçak riskleri kontrol edilir.',controlPoints:12,evidence:'Foto/veri kanıtı',risk:'Yüksek',priceImpact:0,priceLabel:'Paket içi',approval:'Otomatik',defaultSelected:false,requiredForGuaranteed:true},
   {id:'brakeSuspension',name:'Fren Süspansiyon Testi',short:'FS',category:'extraTests',schemaGroupCodes:['BRAKE_SUSPENSION_TEST'],description:'Fren kuvveti, sapma, süspansiyon dengesi ve test hattı ölçümleri ayrı modül olarak çalışır.',controlPoints:16,evidence:'Test hattı çıktısı',risk:'Orta',priceImpact:0,priceLabel:'Paket içi',approval:'Otomatik',defaultSelected:false,requiredForGuaranteed:true},
   {id:'roadDynoTransmission',name:'Dyno - Yol Testi - Şanzıman Kontrolü',short:'DYŞ',category:'extraTests',schemaGroupCodes:['DYNO_ROAD_TEST'],description:'Yol testi, şanzıman geçişleri, çekiş, titreşim ve sürüş davranışı birlikte kontrol edilir.',controlPoints:18,evidence:'Kanıt önerilir',risk:'Yüksek',priceImpact:0,priceLabel:'Paket içi',approval:'Otomatik',defaultSelected:false},
-  {id:'debtQueries',name:'Borç Sorguları',short:'BOR',category:'extraTests',schemaGroupCodes:['WORK_ORDER_ACCEPTANCE','VEHICLE_FILE_CHECK'],description:'Araç borç, rehin, haciz ve sorgu kontrol adımlarını paket kapsamına ekler.',controlPoints:0,evidence:'Sorgu kaydı',risk:'Orta',priceImpact:0,priceLabel:'Paket içi',approval:'Otomatik',defaultSelected:false},
-  {id:'tramer5664',name:'5664 Tramer Sorgusu',short:'5664',category:'extraTests',schemaGroupCodes:['VEHICLE_FILE_CHECK'],description:'Araç hasar geçmişi ve tramer kaydı sorgusunu rapora ekler.',controlPoints:0,evidence:'Sorgu kaydı',risk:'Orta',priceImpact:0,priceLabel:'Paket içi',approval:'Otomatik',defaultSelected:true},
-  {id:'kmQuery',name:'Kilometre Sorgusu',short:'KM',category:'extraTests',schemaGroupCodes:['VEHICLE_FILE_CHECK'],description:'Kilometre geçmişi ve tutarlılık kontrolünü pakete ekler.',controlPoints:0,evidence:'Sorgu kaydı',risk:'Orta',priceImpact:0,priceLabel:'Paket içi',approval:'Otomatik',defaultSelected:false},
-  {id:'mechanicalWarranty1m',name:'Mekanik Garantisi 1 ay / 1000 km',short:'G1',category:'extraTests',description:'1 ay / 1000 km mekanik garanti kuralını paket kapsamına ekler.',controlPoints:0,evidence:'Merkez onayı',risk:'Yüksek',priceImpact:0,priceLabel:'Paket içi',approval:'Merkez onayı gerekli',defaultSelected:false,recommendedForGuaranteed:true},
-  {id:'mechanicalWarranty3m5k',name:'Mekanik Garantisi 3 ay / 5000 km',short:'G3',category:'extraTests',description:'3 ay / 5000 km mekanik garanti kuralını paket kapsamına ekler.',controlPoints:0,evidence:'Merkez onayı',risk:'Yüksek',priceImpact:0,priceLabel:'Paket içi',approval:'Merkez onayı gerekli',defaultSelected:false,recommendedForGuaranteed:true}
+  {id:'debtQueries',name:'Borç Sorguları',short:'BOR',category:'queries',schemaGroupCodes:['WORK_ORDER_ACCEPTANCE','VEHICLE_FILE_CHECK'],description:'Araç borç, rehin, haciz ve sorgu kontrol adımlarını paket kapsamına ekler.',controlPoints:0,evidence:'Sorgu kaydı',risk:'Orta',priceImpact:0,priceLabel:'Paket içi',approval:'Otomatik',defaultSelected:false},
+  {id:'tramer5664',name:'5664 Tramer Sorgusu',short:'5664',category:'queries',schemaGroupCodes:['VEHICLE_FILE_CHECK'],description:'Araç hasar geçmişi ve tramer kaydı sorgusunu rapora ekler.',controlPoints:0,evidence:'Sorgu kaydı',risk:'Orta',priceImpact:0,priceLabel:'Paket içi',approval:'Otomatik',defaultSelected:true},
+  {id:'kmQuery',name:'Kilometre Sorgusu',short:'KM',category:'queries',schemaGroupCodes:['VEHICLE_FILE_CHECK'],description:'Kilometre geçmişi ve tutarlılık kontrolünü pakete ekler.',controlPoints:0,evidence:'Sorgu kaydı',risk:'Orta',priceImpact:0,priceLabel:'Paket içi',approval:'Otomatik',defaultSelected:false},
+  {id:'mechanicalWarranty1m',name:'Mekanik Garantisi 1 ay / 1000 km',short:'G1',category:'warranties',description:'1 ay / 1000 km mekanik garanti kuralını paket kapsamına ekler.',controlPoints:0,evidence:'Merkez onayı',risk:'Yüksek',priceImpact:0,priceLabel:'Paket içi',approval:'Merkez onayı gerekli',defaultSelected:false,recommendedForGuaranteed:true},
+  {id:'mechanicalWarranty3m5k',name:'Mekanik Garantisi 3 ay / 5000 km',short:'G3',category:'warranties',description:'3 ay / 5000 km mekanik garanti kuralını paket kapsamına ekler.',controlPoints:0,evidence:'Merkez onayı',risk:'Yüksek',priceImpact:0,priceLabel:'Paket içi',approval:'Merkez onayı gerekli',defaultSelected:false,recommendedForGuaranteed:true}
 ];
 const packageTemplates=[
   {id:'package1',name:'Paket 1',description:'Kaporta/boya, motor, alt/ön mekanik ve 5664 sorgusu ile temel başlangıç kapsamı.',price:5500,category:'Standart Paket',warrantyDuration:'Yok',warrantyKm:'Yok',mainTests:['bodyPaint','engineTest','underFrontMechanical'],extraServices:['tramer5664']},
@@ -1125,16 +1144,25 @@ const packageRules=[
 ];
 const packageWorkflowSteps=[
   {id:'mainModules',label:'Ana Test Modülleri',caption:'Raporu oluşturan kontroller',tab:'mainTests',category:'mainModules'},
-  {id:'extraTests',label:'Ek Hizmetler',caption:'Garanti, sorgu, detay',tab:'extraServices',category:'extraTests'},
+  {id:'extraTests',label:'Ek Hizmetler',caption:'Test, detay ve kozmetik kontroller',tab:'extraServices',category:'extraTests'},
+  {id:'queries',label:'Sorgular',caption:'Borç, 5664 ve kilometre',tab:'queries',category:'queries'},
+  {id:'warranties',label:'Garanti Paketleri',caption:'Mekanik garanti seçenekleri',tab:'warranties',category:'warranties'},
   {id:'evidence',label:'Kanıt & Fotoğraf',caption:'JSON madde ve alt maddeler',tab:'extraServices',category:'extraTests'},
   {id:'costs',label:'Maliyet Kalemleri',caption:'Test türü fiyatları',tab:'templates',category:'extraTests'},
   {id:'publish',label:'Yayın Kontrolü',caption:'Eksik alan ve onay',tab:'templates',category:'extraTests'}
 ];
+const packageBuilderTabConfig={
+  mainTests:{step:'mainModules',category:'mainModules'},
+  extraServices:{step:'extraTests',category:'extraTests'},
+  queries:{step:'queries',category:'queries'},
+  warranties:{step:'warranties',category:'warranties'},
+  templates:{step:'costs',category:'extraTests'}
+};
 const packageBuilderStorageKey='ototr-package-builder-drafts-v1';
 const packageBuilderCustomTestStorageKey='ototr-package-builder-custom-tests-v1';
 const packageBuilderTestPriceStorageKey='ototr-package-builder-test-prices-v1';
 const packageBuilderControlPointStorageKey='ototr-package-builder-control-points-v1';
-const dealerPortalBuildStamp='30.06.2026 16:00';
+const dealerPortalBuildStamp='30.06.2026 23:57';
 function packageBuilderReadPackages(){
   try{
     const saved=JSON.parse(localStorage.getItem(packageBuilderStorageKey)||'[]');
@@ -3226,6 +3254,13 @@ function renderPackageCategoryMenu(){
   if(!menu)return;
   menu.innerHTML=packageWorkflowSteps.map((step,index)=>`<button class="package-category-button ${step.id===packageBuilderState.activeStep?'active':''}" data-package-step="${escapeHtml(step.id)}" type="button"><span class="package-step-no">${String(index+1).padStart(2,'0')}</span><span><b>${escapeHtml(step.label)}</b><small>${escapeHtml(step.caption)}</small></span></button>`).join('');
 }
+function packageBuilderActivateTab(tabId){
+  const nextTab=packageBuilderTabConfig[tabId]?tabId:'mainTests';
+  const config=packageBuilderTabConfig[nextTab];
+  packageBuilderState.activeTab=nextTab;
+  packageBuilderState.activeStep=config.step;
+  packageBuilderState.activeCategory=config.category;
+}
 function packageBuilderFiltered(items){
   const search=packageBuilderState.search.trim().toLocaleLowerCase('tr-TR');
   return items.filter(item=>{
@@ -3260,7 +3295,8 @@ function renderPackageExtraServiceCard(item){
   const selected=packageBuilderState.selectedExtraServices.has(item.id);
   const recommended=packageBuilderIsGuaranteed() && item.recommendedForGuaranteed;
   const pointCount=packageBuilderItemControlPointCount(item);
-  const optionBadge=item.requiredForGuaranteed?'Premium':recommended?'AI Önerisi':'Opsiyon';
+  const optionBadge=item.category==='queries'?'Sorgu':item.category==='warranties'?'Garanti':item.requiredForGuaranteed?'Premium':recommended?'AI Önerisi':'Opsiyon';
+  const badgeTone=item.category==='queries'?'blue':item.category==='warranties'?'purple':item.requiredForGuaranteed||recommended?'purple':'blue';
   const meta=[
     pointCount>0 ? `${pointCount} nokta` : 'Sorgu / garanti kalemi',
     packageBuilderItemPriceLabel(item),
@@ -3269,7 +3305,7 @@ function renderPackageExtraServiceCard(item){
   ].filter(Boolean);
   return `<article class="package-option-card ${selected?'selected':''} ${recommended&&!selected?'required':''}">
     <div class="package-option-top">
-      <div class="package-option-title"><span class="package-option-icon">${escapeHtml(item.short)}</span><div><b>${escapeHtml(item.name)}</b><div class="package-option-meta" style="margin-top:5px"><span class="package-chip ${item.requiredForGuaranteed?'purple':recommended?'purple':'blue'}">${escapeHtml(optionBadge)}</span>${recommended?'<span class="package-chip orange">Garantili paket önerisi</span>':''}</div></div></div>
+      <div class="package-option-title"><span class="package-option-icon">${escapeHtml(item.short)}</span><div><b>${escapeHtml(item.name)}</b><div class="package-option-meta" style="margin-top:5px"><span class="package-chip ${badgeTone}">${escapeHtml(optionBadge)}</span>${recommended?'<span class="package-chip orange">Garantili paket önerisi</span>':''}</div></div></div>
       <button class="package-add-btn ${selected?'selected':''}" data-package-toggle-extra="${item.id}" type="button">${selected?'Eklendi ✓':'+ Ekle'}</button>
     </div>
     <p>${escapeHtml(item.description)}</p>
@@ -3564,7 +3600,7 @@ function wirePackageBuilderPage(){
       return;
     }
     const tab=event.target.closest('[data-package-tab]');
-    if(tab){event.preventDefault();packageBuilderState.activeTab=tab.dataset.packageTab;packageBuilderState.activeStep=tab.dataset.packageTab==='mainTests'?'mainModules':tab.dataset.packageTab==='extraServices'?'extraTests':'costs';packageBuilderState.activeCategory=tab.dataset.packageTab==='extraServices'?'extraTests':'mainModules';packageBuilderRefresh();return;}
+    if(tab){event.preventDefault();packageBuilderActivateTab(tab.dataset.packageTab);packageBuilderRefresh();return;}
     const step=event.target.closest('[data-package-step]');
     if(step){event.preventDefault();const workflow=packageWorkflowSteps.find(item=>item.id===step.dataset.packageStep);if(workflow){packageBuilderState.activeStep=workflow.id;packageBuilderState.activeTab=workflow.tab;packageBuilderState.activeCategory=workflow.category;}packageBuilderRefresh();return;}
     const openPoints=event.target.closest('[data-package-open-points]');
