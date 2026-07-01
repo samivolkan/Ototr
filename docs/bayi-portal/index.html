@@ -664,7 +664,7 @@ button,input,select,textarea{font:inherit}.app{min-height:100vh;display:grid;gri
 <body class="module-page-open">
 <div class="app">
   <aside class="sidebar">
-    <button class="brand" id="brandHome" type="button" aria-label="Bayii dashboard'a dön"><div class="brand-mark">OT</div><div class="brand-copy"><strong>OTOTR ERP</strong><small>YÖNETİM PANELİ</small><small id="dealerBuildStamp">v5 · 01.07.2026 23:49:29</small></div></button>
+    <button class="brand" id="brandHome" type="button" aria-label="Bayii dashboard'a dön"><div class="brand-mark">OT</div><div class="brand-copy"><strong>OTOTR ERP</strong><small>YÖNETİM PANELİ</small><small id="dealerBuildStamp">v5 · 02.07.2026 00:13:19</small></div></button>
     <nav class="nav">
       <div class="nav-group">Yönetim</div>
       <a class="active" href="#" id="navDashboard"><span class="nav-icon">▦</span>Bayii Kokpiti</a>
@@ -1250,7 +1250,7 @@ button,input,select,textarea{font:inherit}.app{min-height:100vh;display:grid;gri
             <div class="package-settings-hero">
               <div>
                 <div class="package-settings-hero-title"><h2>Paket Ayarları</h2><span class="package-chip blue" data-package-status-chip>Taslak</span></div>
-                <div class="package-settings-hero-meta"><span>Son kaydedilme: <b data-package-last-saved>01.07.2026 23:49:29</b></span><span>•</span><span>Sami Korkmaz</span></div>
+                <div class="package-settings-hero-meta"><span>Son kaydedilme: <b data-package-last-saved>02.07.2026 00:13:19</b></span><span>•</span><span>Sami Korkmaz</span></div>
               </div>
               <div class="package-settings-actions">
                 <button class="btn" type="button">Önizle</button>
@@ -1263,24 +1263,24 @@ button,input,select,textarea{font:inherit}.app{min-height:100vh;display:grid;gri
                 <div class="package-settings-menu">
                   <div class="package-settings-menu-title">Paket Bölümleri</div>
                   <div class="package-settings-menu-list">
-                    <button class="package-settings-menu-item active" type="button"><span>▣</span><b>Paket Bilgileri</b><span class="menu-count">✓</span></button>
-                    <button class="package-settings-menu-item" type="button"><span>▤</span><b>Seçilebilir Paket Havuzu</b><span class="menu-count">12</span></button>
-                    <button class="package-settings-menu-item" type="button"><span>₺</span><b>Fiyatlandırma</b><span class="menu-count">3</span></button>
-                    <button class="package-settings-menu-item" type="button"><span>⌁</span><b>Paket Yetkileri</b><span class="menu-count">5</span></button>
-                    <button class="package-settings-menu-item" type="button"><span>☰</span><b>Paket Notları</b><span class="menu-count">2</span></button>
-                    <button class="package-settings-menu-item" type="button"><span>▧</span><b>Log Kayıtları</b><span class="menu-count">18</span></button>
+                    <button class="package-settings-menu-item active" data-package-section-target="packageSettingsMain" type="button"><span>▣</span><b>Paket Bilgileri</b><span class="menu-count">✓</span></button>
+                    <button class="package-settings-menu-item" data-package-section-target="packagePoolSection" type="button"><span>▤</span><b>Seçilebilir Paket Havuzu</b><span class="menu-count">12</span></button>
+                    <button class="package-settings-menu-item" data-package-section-target="packageTestPriceEditor" type="button"><span>₺</span><b>Fiyatlandırma</b><span class="menu-count">3</span></button>
+                    <button class="package-settings-menu-item" data-package-section-target="packageValidationPanel" type="button"><span>⌁</span><b>Paket Yetkileri</b><span class="menu-count">5</span></button>
+                    <button class="package-settings-menu-item" data-package-section-target="selectedPackageContentPanel" type="button"><span>☰</span><b>Paket Notları</b><span class="menu-count">2</span></button>
+                    <button class="package-settings-menu-item" data-package-section-target="packagePriceSummary" type="button"><span>▧</span><b>Log Kayıtları</b><span class="menu-count">18</span></button>
                   </div>
                 </div>
                 <div class="package-settings-status">
                   <div class="package-settings-status-head">Paket Durumu <span class="package-chip blue">Taslak</span></div>
                   <div class="package-settings-status-body">
                     <div class="package-settings-status-row"><span class="package-settings-shield">⬟</span><span>Bu paket henüz yayında değil.</span></div>
-                    <div><b>Son değişiklik:</b><br><span data-package-last-saved>01.07.2026 23:49:29</span></div>
+                    <div><b>Son değişiklik:</b><br><span data-package-last-saved>02.07.2026 00:13:19</span></div>
                     <div>Sami Korkmaz</div>
                   </div>
                 </div>
               </aside>
-              <div class="package-settings-main">
+              <div class="package-settings-main" id="packageSettingsMain" tabindex="-1">
                 <div class="package-basic-card">
                   <div class="package-basic-grid">
                     <div class="field"><label>Paket adı *</label><input data-package-info="name" value="Paket 1"></div>
@@ -1348,7 +1348,7 @@ button,input,select,textarea{font:inherit}.app{min-height:100vh;display:grid;gri
               </div>
             </div>
           </aside>
-          <section class="package-panel">
+          <section class="package-panel" id="packagePoolSection" tabindex="-1">
             <div class="package-panel-head package-pool-head"><div><div class="package-panel-title">Seçilebilir Paket Havuzu</div></div><div class="package-pool-toolbar"><div class="package-tabs"><button class="package-tab active" data-package-tab="allTests" type="button">Tüm Testler</button><button class="package-tab" data-package-tab="mainTests" type="button">Ana Testler</button><button class="package-tab" data-package-tab="extraServices" type="button">Ek Testler</button><button class="package-tab" data-package-tab="queries" type="button">Sorgular</button><button class="package-tab" data-package-tab="warranties" type="button">Garanti Paketleri</button><button class="package-tab" data-package-tab="templates" type="button">Hazır Şablonlar</button></div></div></div>
             <div class="package-panel-body">
               <div class="package-test-point-builder">
@@ -1646,7 +1646,7 @@ const packageBuilderTestPriceStorageKey='ototr-package-builder-test-prices-v1';
 const packageBuilderControlPointStorageKey='ototr-package-builder-control-points-v1';
 const packageBuilderManagedTestStorageKey='ototr-package-builder-managed-tests-v1';
 const packageBuilderHiddenSeedPackageStorageKey='ototr-package-builder-hidden-seed-packages-v1';
-const dealerPortalBuildStamp='01.07.2026 23:49:29';
+const dealerPortalBuildStamp='02.07.2026 00:13:19';
 function packageBuilderReadHiddenSeedPackages(){
   try{
     const saved=JSON.parse(localStorage.getItem(packageBuilderHiddenSeedPackageStorageKey)||'[]');
@@ -4567,6 +4567,14 @@ function packageBuilderUpdateGuaranteeUI(){
   packageBuilderUpdateCheckCounts();
   packageBuilderRenderRuleSummaries();
 }
+function packageBuilderScrollToSection(targetId,button=null){
+  const target=document.getElementById(targetId);
+  if(!target)return;
+  document.querySelectorAll('[data-package-section-target]').forEach(item=>item.classList.toggle('active',item===button));
+  const scrollTarget=target.closest('.package-panel') || target;
+  scrollTarget.scrollIntoView({behavior:'smooth',block:'start'});
+  if(target.tabIndex<0)target.focus({preventScroll:true});
+}
 function packageBuilderIsGuaranteed(info=packageBuilderInfo()){
   return info.guaranteeEnabled===true || isGuaranteedPackageCategory(info.category);
 }
@@ -5722,6 +5730,12 @@ function wirePackageBuilderPage(){
   if(!page||page.dataset.packageBuilderWired)return;
   page.dataset.packageBuilderWired='1';
   page.addEventListener('click',event=>{
+    const sectionButton=event.target.closest('[data-package-section-target]');
+    if(sectionButton){
+      event.preventDefault();
+      packageBuilderScrollToSection(sectionButton.dataset.packageSectionTarget,sectionButton);
+      return;
+    }
     const ruleToggle=event.target.closest('[data-package-rule-toggle]');
     if(ruleToggle){
       event.preventDefault();
