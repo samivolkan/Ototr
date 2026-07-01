@@ -1290,7 +1290,7 @@ button,input,select,textarea{font:inherit}.app{min-height:100vh;display:grid;gri
             <div class="package-settings-hero">
               <div>
                 <div class="package-settings-hero-title"><h2>Paket Ayarları</h2><span class="package-chip blue" data-package-status-chip>Taslak</span></div>
-                <div class="package-settings-hero-meta"><span>Son kaydedilme: <b data-package-last-saved>02.07.2026 00:32:04</b></span><span>•</span><span>Sami Korkmaz</span></div>
+                <div class="package-settings-hero-meta"><span>Son kaydedilme: <b data-package-last-saved>02.07.2026 00:48:36</b></span><span>•</span><span>Sami Korkmaz</span></div>
               </div>
               <div class="package-settings-actions">
                 <button class="btn" type="button">Önizle</button>
@@ -1315,7 +1315,7 @@ button,input,select,textarea{font:inherit}.app{min-height:100vh;display:grid;gri
                   <div class="package-settings-status-head">Paket Durumu <span class="package-chip blue">Taslak</span></div>
                   <div class="package-settings-status-body">
                     <div class="package-settings-status-row"><span class="package-settings-shield">⬟</span><span>Bu paket henüz yayında değil.</span></div>
-                    <div><b>Son değişiklik:</b><br><span data-package-last-saved>02.07.2026 00:32:04</span></div>
+                    <div><b>Son değişiklik:</b><br><span data-package-last-saved>02.07.2026 00:48:36</span></div>
                     <div>Sami Korkmaz</div>
                   </div>
                 </div>
@@ -1324,9 +1324,9 @@ button,input,select,textarea{font:inherit}.app{min-height:100vh;display:grid;gri
                 <div class="package-basic-card">
                   <div class="package-basic-grid">
                     <div class="field"><label>Paket adı *</label><input data-package-info="name" value="Paket 1"></div>
-                    <div class="field"><label>Paket kategorisi *</label><div class="package-category-select-wrap"><span class="package-category-icon">▣</span><select data-package-info="category"><option>Standart Paket</option><option selected>Garantili Paket</option><option>Luxury Paket</option><option>Kurumsal / Filo Paket</option><option>Galeri Paketi</option><option>Garantisiz Paket</option></select></div></div>
+                    <div class="field"><label>Paket kategorisi *</label><div class="package-category-select-wrap"><span class="package-category-icon">▣</span><select data-package-info="category"><option>Standart Paket</option><option>Garantili Paket</option><option selected>Filo Garantili Paket</option><option>Luxury Paket</option><option>Kurumsal / Filo Paket</option><option>Galeri Paketi</option><option>Garantisiz Paket</option></select></div></div>
                     <div class="field"><label>Taban paket fiyatı *</label><div class="package-price-input-wrap"><span class="package-price-prefix">₺</span><input data-package-info="price" type="number" min="0" step="50" value="5500"></div></div>
-                    <div class="package-guarantee-card" data-guarantee-status-card><span class="package-guarantee-card-icon">⬡</span><div><b data-guarantee-status-title>Garantili Paket</b><span data-guarantee-status-text>Garanti ve geri alım kuralları aktif</span></div><span class="package-guarantee-dot"></span></div>
+                    <div class="package-guarantee-card" data-guarantee-status-card><span class="package-guarantee-card-icon">⬡</span><div><b data-guarantee-status-title>Filo Garantili Paket</b><span data-guarantee-status-text>Garanti ve geri alım kuralları aktif</span></div><span class="package-guarantee-dot"></span></div>
                   </div>
                 </div>
                 <div class="package-info-alert" data-guarantee-alert><span>ⓘ</span><span>Bu paket garanti kapsamındadır. Aşağıdaki garanti ve uygunluk kuralları, paket satışı sırasında uygulanacaktır.</span></div>
@@ -1677,7 +1677,7 @@ const packageBuilderTestPriceStorageKey='ototr-package-builder-test-prices-v1';
 const packageBuilderControlPointStorageKey='ototr-package-builder-control-points-v1';
 const packageBuilderManagedTestStorageKey='ototr-package-builder-managed-tests-v1';
 const packageBuilderHiddenSeedPackageStorageKey='ototr-package-builder-hidden-seed-packages-v1';
-const dealerPortalBuildStamp='02.07.2026 00:32:04';
+const dealerPortalBuildStamp='02.07.2026 00:48:36';
 function packageBuilderReadHiddenSeedPackages(){
   try{
     const saved=JSON.parse(localStorage.getItem(packageBuilderHiddenSeedPackageStorageKey)||'[]');
@@ -2514,7 +2514,7 @@ const packageBuilderState={
   pointStatusFilter:'all',
   pointPackageFilter:'all',
   pointIssueFilter:'all',
-  lastCategory:'Garantili Paket',
+  lastCategory:'Filo Garantili Paket',
   collapsedRuleSections:new Set(['guarantee','eligibility']),
   selectedMainTests:new Set(packageMainTests.filter(item=>item.defaultSelected).map(item=>item.id)),
   selectedExtraServices:new Set(packageExtraServices.filter(item=>item.defaultSelected).map(item=>item.id)),
@@ -4579,7 +4579,7 @@ function packageBuilderUpdateGuaranteeUI(){
   const statusCard=document.querySelector('[data-guarantee-status-card]');
   if(statusCard)statusCard.classList.toggle('warn',!guaranteed);
   const title=document.querySelector('[data-guarantee-status-title]');
-  if(title)title.textContent=guaranteed?'Garantili Paket':'Garanti uygulanmaz';
+  if(title)title.textContent=guaranteed?category:'Garanti uygulanmaz';
   const text=document.querySelector('[data-guarantee-status-text]');
   if(text)text.textContent=guaranteed?'Garanti ve geri alım kuralları aktif':'Garanti kuralları pasif';
   const statusChip=document.querySelector('[data-package-status-chip]');
