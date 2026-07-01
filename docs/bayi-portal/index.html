@@ -663,7 +663,7 @@ button,input,select,textarea{font:inherit}.app{min-height:100vh;display:grid;gri
 <body class="module-page-open">
 <div class="app">
   <aside class="sidebar">
-    <button class="brand" id="brandHome" type="button" aria-label="Bayii dashboard'a dön"><div class="brand-mark">OT</div><div class="brand-copy"><strong>OTOTR ERP</strong><small>YÖNETİM PANELİ</small><small id="dealerBuildStamp">v5 · 01.07.2026 16:15:27</small></div></button>
+    <button class="brand" id="brandHome" type="button" aria-label="Bayii dashboard'a dön"><div class="brand-mark">OT</div><div class="brand-copy"><strong>OTOTR ERP</strong><small>YÖNETİM PANELİ</small><small id="dealerBuildStamp">v5 · 01.07.2026 23:22:56</small></div></button>
     <nav class="nav">
       <div class="nav-group">Yönetim</div>
       <a class="active" href="#" id="navDashboard"><span class="nav-icon">▦</span>Bayii Kokpiti</a>
@@ -1252,12 +1252,10 @@ button,input,select,textarea{font:inherit}.app{min-height:100vh;display:grid;gri
                 <div class="field wide"><label>Paket adı</label><input data-package-info="name" value="Paket 1"></div>
                 <div class="field"><label>Paket kategorisi</label><select data-package-info="category"><option>Standart Paket</option><option>Garantili Paket</option><option>Luxury Paket</option><option>Kurumsal / Filo Paket</option><option>Galeri Paketi</option></select></div>
                 <div class="field"><label>Taban paket fiyatı</label><input data-package-info="price" type="number" min="0" step="50" value="5500"></div>
-                <div class="field"><label>Garanti süresi</label><select data-package-info="warrantyDuration"><option>Yok</option><option>1 Ay</option><option>3 Ay</option></select></div>
-                <div class="field"><label>KM limiti</label><select data-package-info="warrantyKm"><option>Yok</option><option>1000 KM</option><option>5000 KM</option></select></div>
                 <div class="package-rule-section">
                   <div class="package-rule-section-title">Garanti ve Geri Alım <span>Paket satışı sırasında uygulanacak kurallar</span></div>
                   <div class="package-rule-grid">
-                    <div class="field"><label>Garanti tipi</label><select data-package-info="warrantyType"><option>Yok</option><option>7 gün / 1000 km</option><option>1 ay / 1000 km</option><option>3 ay / 5000 km</option><option>Özel garanti</option></select></div>
+                    <div class="field"><label>Garanti tipi</label><select data-package-info="warrantyType"><option>Yok</option><option>1 hafta / 1000 km</option><option>1 ay / 1000 km</option><option>3 ay / 5000 km</option><option>Özel garanti</option></select></div>
                     <div class="field"><label>Geri alım garantisi</label><select data-package-info="buybackGuarantee"><option>Yok</option><option>Var</option><option>Merkez onayı ile</option></select></div>
                     <div class="field"><label>Geri alım bedeli kuralı</label><select data-package-info="buybackRule"><option>Yok</option><option>Noter satış bedeli üzerinden</option><option>Maksimum kasko üst sınırı</option><option>Merkez manuel hesaplar</option></select></div>
                     <div class="field"><label>Garanti başlangıcı</label><select data-package-info="warrantyStart"><option>Rapor tarihi</option><option>Noter satış tarihi</option><option>Teslim tarihi</option></select></div>
@@ -1270,10 +1268,6 @@ button,input,select,textarea{font:inherit}.app{min-height:100vh;display:grid;gri
                     <label class="package-check"><input type="checkbox" data-package-multi="warrantyExclusions" value="Ticari kullanım" checked>Ticari kullanım</label>
                     <label class="package-check"><input type="checkbox" data-package-multi="warrantyExclusions" value="Pert kayıt" checked>Pert kayıt</label>
                     <label class="package-check"><input type="checkbox" data-package-multi="warrantyExclusions" value="Kilometre şüphesi" checked>Kilometre şüphesi</label>
-                    <label class="package-check"><input type="checkbox" data-package-multi="warrantyExclusions" value="Modifiyeli araç" checked>Modifiyeli araç</label>
-                    <label class="package-check"><input type="checkbox" data-package-multi="warrantyExclusions" value="LPG dönüşümü" checked>LPG dönüşümü</label>
-                    <label class="package-check"><input type="checkbox" data-package-multi="warrantyExclusions" value="Yazılım / tuning" checked>Yazılım / tuning</label>
-                    <label class="package-check"><input type="checkbox" data-package-multi="warrantyExclusions" value="Yarış / performans kullanımı" checked>Yarış / performans</label>
                   </div>
                   <div class="package-check-title">Garanti evrak zorunluluğu</div>
                   <div class="package-check-grid">
@@ -1597,7 +1591,7 @@ const packageBuilderTestPriceStorageKey='ototr-package-builder-test-prices-v1';
 const packageBuilderControlPointStorageKey='ototr-package-builder-control-points-v1';
 const packageBuilderManagedTestStorageKey='ototr-package-builder-managed-tests-v1';
 const packageBuilderHiddenSeedPackageStorageKey='ototr-package-builder-hidden-seed-packages-v1';
-const dealerPortalBuildStamp='01.07.2026 16:15:27';
+const dealerPortalBuildStamp='01.07.2026 23:22:56';
 function packageBuilderReadHiddenSeedPackages(){
   try{
     const saved=JSON.parse(localStorage.getItem(packageBuilderHiddenSeedPackageStorageKey)||'[]');
@@ -1632,8 +1626,22 @@ function packageBuilderNormalizeVisibility(visibility){
 }
 function packageBuilderWarrantyTypeFromLegacy(duration,km){
   const text=`${duration||''} ${km||''}`.toLocaleLowerCase('tr-TR');
+  if(text.includes('hafta')||text.includes('7 gün')||text.includes('7 gun'))return '1 hafta / 1000 km';
   if(text.includes('3')||text.includes('5000'))return '3 ay / 5000 km';
-  if(text.includes('1')||text.includes('1000'))return '1 ay / 1000 km';
+  if(text.includes('1 ay')||text.includes('1000'))return '1 ay / 1000 km';
+  return 'Yok';
+}
+function packageBuilderDurationFromWarrantyType(type){
+  const text=String(type||'').toLocaleLowerCase('tr-TR');
+  if(text.includes('hafta')||text.includes('7 gün')||text.includes('7 gun'))return '1 Hafta';
+  if(text.includes('1 ay'))return '1 Ay';
+  if(text.includes('3 ay'))return '3 Ay';
+  return 'Yok';
+}
+function packageBuilderKmFromWarrantyType(type){
+  const text=String(type||'').toLocaleLowerCase('tr-TR');
+  if(text.includes('5000'))return '5000 KM';
+  if(text.includes('1000'))return '1000 KM';
   return 'Yok';
 }
 function packageBuilderHasWarrantySignal(source={}){
@@ -1650,7 +1658,7 @@ function packageBuilderDefaultRuleFields(source={}){
     warrantyStart:source.warrantyStart||'Rapor tarihi',
     warrantyEndCondition:source.warrantyEndCondition||'Gün veya KM hangisi önce dolarsa',
     approvalAuthority:source.approvalAuthority||(guaranteed?'Merkez onayı gerekir':'Her bayi satabilir'),
-    warrantyExclusions:Array.isArray(source.warrantyExclusions)?source.warrantyExclusions:['Ağır hasarlı araç','Ticari kullanım','Pert kayıt','Kilometre şüphesi','Modifiyeli araç','LPG dönüşümü','Yazılım / tuning','Yarış / performans kullanımı'],
+    warrantyExclusions:Array.isArray(source.warrantyExclusions)?source.warrantyExclusions:['Ağır hasarlı araç','Ticari kullanım','Pert kayıt','Kilometre şüphesi'],
     warrantyDocuments:Array.isArray(source.warrantyDocuments)?source.warrantyDocuments:(guaranteed?['Noter satış belgesi','Ruhsat','Ödeme dekontu']:[]),
     maxVehicleAge:Number(source.maxVehicleAge ?? (guaranteed?10:0)),
     maxKm:Number(source.maxKm ?? (guaranteed?180000:0)),
@@ -4273,6 +4281,7 @@ function packageBuilderSetMulti(key,values=[]){
 }
 function packageBuilderInfo(){
   const read=(key)=>document.querySelector(`[data-package-info="${key}"]`)?.value || '';
+  const warrantyType=read('warrantyType') || packageBuilderWarrantyTypeFromLegacy(read('warrantyDuration'),read('warrantyKm'));
   return {
     name:read('name').trim(),
     category:read('category'),
@@ -4282,9 +4291,9 @@ function packageBuilderInfo(){
     vat:'KDV Dahil',
     discount:0,
     status:read('status') || packageBuilderState.status || 'Taslak',
-    warrantyDuration:read('warrantyDuration'),
-    warrantyKm:read('warrantyKm'),
-    warrantyType:read('warrantyType') || packageBuilderWarrantyTypeFromLegacy(read('warrantyDuration'),read('warrantyKm')),
+    warrantyDuration:read('warrantyDuration') || packageBuilderDurationFromWarrantyType(warrantyType),
+    warrantyKm:read('warrantyKm') || packageBuilderKmFromWarrantyType(warrantyType),
+    warrantyType,
     buybackGuarantee:read('buybackGuarantee') || 'Yok',
     buybackRule:read('buybackRule') || 'Yok',
     warrantyStart:read('warrantyStart') || 'Rapor tarihi',
