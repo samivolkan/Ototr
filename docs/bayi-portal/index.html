@@ -663,7 +663,7 @@ button,input,select,textarea{font:inherit}.app{min-height:100vh;display:grid;gri
 <body class="module-page-open">
 <div class="app">
   <aside class="sidebar">
-    <button class="brand" id="brandHome" type="button" aria-label="Bayii dashboard'a dön"><div class="brand-mark">OT</div><div class="brand-copy"><strong>OTOTR ERP</strong><small>YÖNETİM PANELİ</small><small id="dealerBuildStamp">v5 · 01.07.2026 23:28:58</small></div></button>
+    <button class="brand" id="brandHome" type="button" aria-label="Bayii dashboard'a dön"><div class="brand-mark">OT</div><div class="brand-copy"><strong>OTOTR ERP</strong><small>YÖNETİM PANELİ</small><small id="dealerBuildStamp">v5 · 01.07.2026 23:34:11</small></div></button>
     <nav class="nav">
       <div class="nav-group">Yönetim</div>
       <a class="active" href="#" id="navDashboard"><span class="nav-icon">▦</span>Bayii Kokpiti</a>
@@ -1281,7 +1281,7 @@ button,input,select,textarea{font:inherit}.app{min-height:100vh;display:grid;gri
                   <div class="package-rule-section-title">Araç Uygunluk Kuralları <span>Garanti ve geri alım satış engelleri</span></div>
                   <div class="package-rule-grid">
                     <div class="field"><label>Maksimum araç yaşı</label><input data-package-info="maxVehicleAge" type="number" min="0" step="1" value="5"></div>
-                    <div class="field"><label>Maksimum KM</label><input data-package-info="maxKm" type="number" min="0" step="1000" value="100000"></div>
+                    <div class="field"><label>Maksimum KM</label><input data-package-info="maxKm" type="text" inputmode="numeric" value="100.000"></div>
                     <div class="field"><label>Yakıt tipi uygunluğu</label><select data-package-info="fuelEligibility"><option>Tüm yakıtlar</option><option>Benzin + Dizel + Hybrid</option><option>Elektrik hariç</option><option>Sadece merkez onaylı</option></select></div>
                     <div class="field"><label>Şanzıman uygunluğu</label><select data-package-info="transmissionEligibility"><option>Tümü</option><option>DSG/CVT merkez onayı</option><option>DSG/CVT hariç</option><option>Sadece manuel/otomatik</option></select></div>
                     <div class="field"><label>Araç segmenti</label><select data-package-info="segmentEligibility"><option>Binek + Hafif ticari</option><option>Sadece binek</option><option>Ticari dahil</option><option>Ağır vasıta/motosiklet hariç</option></select></div>
@@ -1591,7 +1591,7 @@ const packageBuilderTestPriceStorageKey='ototr-package-builder-test-prices-v1';
 const packageBuilderControlPointStorageKey='ototr-package-builder-control-points-v1';
 const packageBuilderManagedTestStorageKey='ototr-package-builder-managed-tests-v1';
 const packageBuilderHiddenSeedPackageStorageKey='ototr-package-builder-hidden-seed-packages-v1';
-const dealerPortalBuildStamp='01.07.2026 23:28:58';
+const dealerPortalBuildStamp='01.07.2026 23:34:11';
 function packageBuilderReadHiddenSeedPackages(){
   try{
     const saved=JSON.parse(localStorage.getItem(packageBuilderHiddenSeedPackageStorageKey)||'[]');
@@ -4279,6 +4279,14 @@ function packageBuilderSetMulti(key,values=[]){
     input.checked=selected.has(input.value);
   });
 }
+function packageBuilderParseInteger(value){
+  const digits=String(value||'').replace(/[^\d]/g,'');
+  return digits?Number(digits):0;
+}
+function packageBuilderFormatThousands(value){
+  const number=packageBuilderParseInteger(value);
+  return number?number.toLocaleString('tr-TR'):'';
+}
 function packageBuilderInfo(){
   const read=(key)=>document.querySelector(`[data-package-info="${key}"]`)?.value || '';
   const warrantyType=read('warrantyType') || packageBuilderWarrantyTypeFromLegacy(read('warrantyDuration'),read('warrantyKm'));
@@ -4302,7 +4310,7 @@ function packageBuilderInfo(){
     warrantyExclusions:packageBuilderReadMulti('warrantyExclusions'),
     warrantyDocuments:packageBuilderReadMulti('warrantyDocuments'),
     maxVehicleAge:Number(read('maxVehicleAge')||0),
-    maxKm:Number(read('maxKm')||0),
+    maxKm:packageBuilderParseInteger(read('maxKm')),
     fuelEligibility:read('fuelEligibility') || 'Tüm yakıtlar',
     transmissionEligibility:read('transmissionEligibility') || 'Tümü',
     segmentEligibility:read('segmentEligibility') || 'Binek + Hafif ticari',
@@ -4314,7 +4322,7 @@ function packageBuilderSetInfo(next){
   Object.entries(next).forEach(([key,value])=>{
     if(key==='status')packageBuilderState.status=value;
     const input=document.querySelector(`[data-package-info="${key}"]`);
-    if(input)input.value=value;
+    if(input)input.value=key==='maxKm'?packageBuilderFormatThousands(value):value;
   });
   if(Object.prototype.hasOwnProperty.call(next,'warrantyExclusions'))packageBuilderSetMulti('warrantyExclusions',next.warrantyExclusions||[]);
   if(Object.prototype.hasOwnProperty.call(next,'warrantyDocuments'))packageBuilderSetMulti('warrantyDocuments',next.warrantyDocuments||[]);
@@ -5561,7 +5569,8 @@ function wirePackageBuilderPage(){
   });
   document.querySelectorAll('[data-package-info]').forEach(input=>{
     input.addEventListener('input',packageBuilderRefresh);
-    input.addEventListener('change',packageBuilderRefresh);
+    input.addEventListener('change',()=>{if(input.dataset.packageInfo==='maxKm')input.value=packageBuilderFormatThousands(input.value);packageBuilderRefresh();});
+    input.addEventListener('blur',()=>{if(input.dataset.packageInfo==='maxKm')input.value=packageBuilderFormatThousands(input.value);});
   });
   document.getElementById('packageSearchInput')?.addEventListener('input',event=>{packageBuilderState.search=event.target.value;renderPackagePool();});
 }
