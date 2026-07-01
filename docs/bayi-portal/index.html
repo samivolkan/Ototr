@@ -553,6 +553,25 @@ button,input,select,textarea{font:inherit}.app{min-height:100vh;display:grid;gri
 .package-management-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
 .package-management-head h2{margin:0;color:#101828;font-size:18px}.package-management-head span{color:#667085;font-size:12px;font-weight:800}
 .package-management-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px}
+.package-test-point-form[hidden]{display:none!important}
+.package-test-management-panel{display:grid;gap:12px}
+.package-test-management-grid{display:grid;grid-template-columns:minmax(300px,.52fr) minmax(0,1fr);gap:12px;align-items:start}
+.package-test-management-form-card,.package-test-management-list-card{border:1px solid #e5e7eb;border-radius:13px;background:#fff;padding:12px;box-shadow:0 6px 18px rgba(17,24,39,.035)}
+.package-form-section-title,.package-test-management-title{font-size:13px;font-weight:950;color:#111827;margin-bottom:10px}
+.package-test-management-form-card .package-test-point-form{display:grid;grid-template-columns:1fr;gap:10px;margin-top:0;padding-top:0;border-top:0}
+.package-test-management-form-card .package-test-point-actions{display:flex;gap:8px;justify-content:flex-end}
+.package-test-management-list{display:grid;gap:12px}
+.package-test-management-section{border:1px solid #edf0f4;border-radius:12px;background:#fbfcfe;padding:10px}
+.package-test-management-section-head{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:8px;color:#111827;font-size:12px;font-weight:950}
+.package-test-management-section-head span{height:22px;border:1px solid #dbe3ee;border-radius:999px;background:#fff;color:#475467;padding:0 8px;display:inline-flex;align-items:center;font-size:10px;font-weight:900}
+.package-test-management-card{border:1px solid #e4e7ec;border-radius:11px;background:#fff;padding:10px;display:grid;gap:8px}
+.package-test-management-card+.package-test-management-card{margin-top:8px}
+.package-test-management-card-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.package-test-management-card-title{display:flex;gap:8px;min-width:0;align-items:flex-start}
+.package-test-management-card-title .package-option-icon{width:28px;height:28px;border-radius:9px}
+.package-test-management-card-title b{display:block;font-size:12.5px;color:#101828;line-height:1.25}
+.package-test-management-card-title span{display:block;margin-top:3px;color:#667085;font-size:10.5px;font-weight:800}
+.package-test-management-actions{display:flex;gap:6px;flex-wrap:wrap}
 .package-created-item{min-width:0}.package-created-item b{display:flex;justify-content:space-between;gap:8px;align-items:center}.package-created-item .package-created-meta{display:block;margin-top:3px;color:#667085;font-size:11px;line-height:1.35}
 .nav{scrollbar-width:thin;scrollbar-color:#3f4753 #050505}.nav::-webkit-scrollbar{width:8px}.nav::-webkit-scrollbar-track{background:#050505}.nav::-webkit-scrollbar-thumb{background:#3f4753;border:2px solid #050505;border-radius:999px}.nav::-webkit-scrollbar-thumb:hover{background:#667085}
 .package-visibility-actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;border:1px solid var(--package-line);background:#fbfcff;border-radius:10px;padding:7px 8px}
@@ -1244,13 +1263,34 @@ button,input,select,textarea{font:inherit}.app{min-height:100vh;display:grid;gri
             <div class="package-management-list" id="packageArchiveList"></div>
           </div>
         </section>
+        <section class="package-manager-panel" data-package-manager-panel="tests">
+          <div class="package-management-panel package-test-management-panel">
+            <div class="package-management-head"><div><h2>Test Oluştur / Düzenle / Sil</h2><span>Test türlerini paket oluşturma ekranından bağımsız yönetin.</span></div><button class="btn primary" data-package-test-add-toggle type="button">+ Yeni Test Tipi</button></div>
+            <div class="package-test-management-grid">
+              <div class="package-test-management-form-card">
+                <div class="package-form-section-title">Test Türü Bilgileri</div>
+                <form class="package-test-point-form" id="packageTestPointForm">
+                  <div class="field"><label>Ekleneceği liste</label><select data-test-point-field="target"><option value="main">Ana Testler</option><option value="extra">Ek Testler</option><option value="query">Sorgular</option><option value="warranty">Garanti Paketleri</option></select></div>
+                  <div class="field"><label>Test türü adı</label><input data-test-point-field="name" placeholder="Örn. Kaporta/Boya Testi"></div>
+                  <div class="field"><label>Test fiyatı</label><input data-test-point-field="priceImpact" type="number" min="0" step="50" placeholder="0"></div>
+                  <div class="field"><label>Risk seviyesi</label><select data-test-point-field="risk"><option>Düşük</option><option>Yüksek</option></select></div>
+                  <div class="package-test-point-actions"><button class="btn" data-package-test-point-reset type="button">İptal Et</button><button class="btn primary" id="packageTestPointSaveButton" data-package-test-point-save type="button">Kaydet ve Listeye Ekle</button></div>
+                </form>
+              </div>
+              <div class="package-test-management-list-card">
+                <div class="package-test-management-title">Kayıtlı Test Türleri</div>
+                <div class="package-test-management-list" id="packageTestManagementList"></div>
+              </div>
+            </div>
+          </div>
+        </section>
         <div class="package-manager-panel" data-package-manager-panel="builder">
         <div class="package-builder-layout" aria-label="Paket oluşturma sihirbazı">
           <aside class="package-panel package-settings-panel">
             <div class="package-settings-hero">
               <div>
                 <div class="package-settings-hero-title"><h2>Paket Ayarları</h2><span class="package-chip blue" data-package-status-chip>Taslak</span></div>
-                <div class="package-settings-hero-meta"><span>Son kaydedilme: <b data-package-last-saved>02.07.2026 00:13:19</b></span><span>•</span><span>Sami Korkmaz</span></div>
+                <div class="package-settings-hero-meta"><span>Son kaydedilme: <b data-package-last-saved>02.07.2026 00:32:04</b></span><span>•</span><span>Sami Korkmaz</span></div>
               </div>
               <div class="package-settings-actions">
                 <button class="btn" type="button">Önizle</button>
@@ -1275,7 +1315,7 @@ button,input,select,textarea{font:inherit}.app{min-height:100vh;display:grid;gri
                   <div class="package-settings-status-head">Paket Durumu <span class="package-chip blue">Taslak</span></div>
                   <div class="package-settings-status-body">
                     <div class="package-settings-status-row"><span class="package-settings-shield">⬟</span><span>Bu paket henüz yayında değil.</span></div>
-                    <div><b>Son değişiklik:</b><br><span data-package-last-saved>02.07.2026 00:13:19</span></div>
+                    <div><b>Son değişiklik:</b><br><span data-package-last-saved>02.07.2026 00:32:04</span></div>
                     <div>Sami Korkmaz</div>
                   </div>
                 </div>
@@ -1351,15 +1391,6 @@ button,input,select,textarea{font:inherit}.app{min-height:100vh;display:grid;gri
           <section class="package-panel" id="packagePoolSection" tabindex="-1">
             <div class="package-panel-head package-pool-head"><div><div class="package-panel-title">Seçilebilir Paket Havuzu</div></div><div class="package-pool-toolbar"><div class="package-tabs"><button class="package-tab active" data-package-tab="allTests" type="button">Tüm Testler</button><button class="package-tab" data-package-tab="mainTests" type="button">Ana Testler</button><button class="package-tab" data-package-tab="extraServices" type="button">Ek Testler</button><button class="package-tab" data-package-tab="queries" type="button">Sorgular</button><button class="package-tab" data-package-tab="warranties" type="button">Garanti Paketleri</button><button class="package-tab" data-package-tab="templates" type="button">Hazır Şablonlar</button></div></div></div>
             <div class="package-panel-body">
-              <div class="package-test-point-builder">
-                <form class="package-test-point-form" id="packageTestPointForm" hidden>
-                  <div class="field"><label>Eklenecegi liste</label><select data-test-point-field="target"><option value="main">Ana Testler</option><option value="extra">Ek Testler</option><option value="query">Sorgular</option><option value="warranty">Garanti Paketleri</option></select></div>
-                  <div class="field"><label>Test adı</label><input data-test-point-field="name" placeholder="Örn. Kaporta/Boya Testi"></div>
-                  <div class="field"><label>Test fiyati</label><input data-test-point-field="priceImpact" type="number" min="0" step="50" placeholder="0"></div>
-                  <div class="field"><label>Risk seviyesi</label><select data-test-point-field="risk"><option>Düşük</option><option>Yüksek</option></select></div>
-                  <div class="package-test-point-actions"><button class="btn" data-package-test-point-reset type="button">Iptal Et</button><button class="btn primary" id="packageTestPointSaveButton" data-package-test-point-save type="button">Kaydet ve Listeye Ekle</button></div>
-                </form>
-              </div>
               <div class="package-pool-tools">
                 <div class="package-pool-main">
                   <div class="package-search"><span>ARA</span><input id="packageSearchInput" placeholder="Modül ara: kaporta, motor, dyno..."></div>
@@ -1646,7 +1677,7 @@ const packageBuilderTestPriceStorageKey='ototr-package-builder-test-prices-v1';
 const packageBuilderControlPointStorageKey='ototr-package-builder-control-points-v1';
 const packageBuilderManagedTestStorageKey='ototr-package-builder-managed-tests-v1';
 const packageBuilderHiddenSeedPackageStorageKey='ototr-package-builder-hidden-seed-packages-v1';
-const dealerPortalBuildStamp='02.07.2026 00:13:19';
+const dealerPortalBuildStamp='02.07.2026 00:32:04';
 function packageBuilderReadHiddenSeedPackages(){
   try{
     const saved=JSON.parse(localStorage.getItem(packageBuilderHiddenSeedPackageStorageKey)||'[]');
@@ -2484,7 +2515,7 @@ const packageBuilderState={
   pointPackageFilter:'all',
   pointIssueFilter:'all',
   lastCategory:'Garantili Paket',
-  collapsedRuleSections:new Set(),
+  collapsedRuleSections:new Set(['guarantee','eligibility']),
   selectedMainTests:new Set(packageMainTests.filter(item=>item.defaultSelected).map(item=>item.id)),
   selectedExtraServices:new Set(packageExtraServices.filter(item=>item.defaultSelected).map(item=>item.id)),
   createdPackages:packageBuilderReadPackages(),
@@ -4650,6 +4681,26 @@ function packageBuilderResetNewTestPointForm(hide=false){
   if(saveButton)saveButton.textContent='Kaydet ve Listeye Ekle';
   if(hide)form.hidden=true;
 }
+function packageBuilderEditTestType(testId){
+  const item=packageBuilderFindTestItem(testId);
+  const form=packageBuilderTestPointForm();
+  if(!item||!form)return;
+  packageBuilderState.managerView='tests';
+  packageBuilderState.editingTestId=testId;
+  const record=packageBuilderManagedTests[testId]||{};
+  const target=packageBuilderCustomTargetConfig[record.target] ? record.target : packageBuilderTargetForItem(item);
+  const set=(name,value)=>{const input=form.querySelector(`[data-test-point-field="${name}"]`);if(input)input.value=value;};
+  set('target',target);
+  set('name',item.name||'');
+  set('priceImpact',String(packageBuilderItemPrice(item)||0));
+  set('risk',packageBuilderNormalizeRisk(item.risk)==='Yuksek'?'Yüksek':'Düşük');
+  const saveButton=document.getElementById('packageTestPointSaveButton');
+  if(saveButton)saveButton.textContent='Testi Güncelle';
+  form.hidden=false;
+  renderPackageManagerView();
+  form.scrollIntoView({behavior:'smooth',block:'start'});
+  form.querySelector('[data-test-point-field="name"]')?.focus();
+}
 function packageBuilderOpenTestEdit(testId){
   packageBuilderOpenPointEditor(testId);
 }
@@ -4730,14 +4781,21 @@ function packageBuilderCreateTestPoint(){
   packageBuilderState.search='';
   const search=document.getElementById('packageSearchInput');
   if(search)search.value='';
-  if(config.selected==='main')packageBuilderState.selectedMainTests.add(id);
-  else packageBuilderState.selectedExtraServices.add(id);
+  const attachToCurrentPackage=packageBuilderState.managerView==='builder';
+  if(attachToCurrentPackage){
+    if(config.selected==='main')packageBuilderState.selectedMainTests.add(id);
+    else packageBuilderState.selectedExtraServices.add(id);
+    packageBuilderState.activePointTestId=id;
+  }
   packageBuilderState.activeTab=config.tab;
   packageBuilderState.activeStep=config.step;
   packageBuilderState.activeCategory=config.category;
-  packageBuilderState.activePointTestId=id;
-  packageBuilderResetNewTestPointForm(true);
+  packageBuilderResetNewTestPointForm(packageBuilderState.managerView!=='tests');
   packageBuilderRefresh();
+  if(packageBuilderState.managerView==='tests'){
+    const form=packageBuilderTestPointForm();
+    if(form)form.hidden=false;
+  }
   packageBuilderShowToast(`${data.name} ${config.typeLabel.toLocaleLowerCase('tr-TR')} listesine eklendi.`);
 }
 function packageBuilderArchiveTest(testId){
@@ -4806,6 +4864,7 @@ function packageBuilderActivateTab(tabId){
 function packageBuilderPanelForManagerView(view){
   if(view==='archive')return 'archive';
   if(view==='existing')return 'existing';
+  if(view==='tests')return 'tests';
   return 'builder';
 }
 function renderPackageManagerView(){
@@ -4866,14 +4925,11 @@ function packageBuilderEnsurePoolToolbarActions(){
   const toolbar=document.querySelector('.package-pool-toolbar');
   const tabs=toolbar?.querySelector('.package-tabs');
   if(!toolbar||!tabs)return;
-  if(!toolbar.querySelector('[data-package-test-add-toggle]')){
-    tabs.insertAdjacentHTML('beforebegin','<button class="btn primary package-test-toggle" data-package-test-add-toggle type="button">+ Test Ekle</button>');
-  }
-  if(!tabs.querySelector('[data-package-tab="archive"]')){
-    tabs.insertAdjacentHTML('beforeend','<button class="package-tab" data-package-tab="archive" type="button">Arsiv</button>');
-  }
+  toolbar.querySelector('[data-package-test-add-toggle]')?.remove();
+  tabs.querySelector('[data-package-tab="archive"]')?.remove();
 }
 function packageBuilderRenderTestActions(item){
+  if(packageBuilderState.managerView!=='tests')return '';
   const id=escapeHtml(item.id);
   return `<div class="package-card-secondary-actions">
     <button class="package-action-link primary" data-package-test-edit="${id}" type="button">Test Düzenle</button>
@@ -4927,6 +4983,54 @@ function renderPackageArchive(){
     return `<article class="package-template-card"><div><b>${escapeHtml(item.name)}</b><span>${escapeHtml(target.typeLabel)} · ${escapeHtml(packageBuilderItemPriceLabel(item))} · ${escapeHtml(packageBuilderNormalizeRisk(item.risk))} risk</span><div class="package-option-meta" style="margin-top:9px"><span class="package-chip blue">Arsiv</span>${record.archivedAt?`<span class="package-chip green">${escapeHtml(record.archivedAt)}</span>`:''}</div></div><div class="package-template-actions"><button class="package-action-link primary" data-package-test-restore="${escapeHtml(item.id)}" type="button">Geri Al</button><button class="package-action-link" data-package-test-reload="${escapeHtml(item.id)}" type="button">Tekrar Yukle</button></div></article>`;
   }).join('')}</div>`;
 }
+function packageBuilderTestTypeLabel(item){
+  const record=packageBuilderManagedTests[item?.id]||{};
+  const target=packageBuilderCustomTargetConfig[record.target] ? record.target : packageBuilderTargetForItem(item);
+  return packageBuilderCustomTargetConfig[target]?.typeLabel || 'Ek Test';
+}
+function renderPackageTestManagementCard(item,archived=false){
+  if(!item)return '';
+  const id=escapeHtml(item.id);
+  const targetLabel=packageBuilderTestTypeLabel(item);
+  const pointCount=packageBuilderItemControlPointCount(item);
+  const meta=[
+    targetLabel,
+    packageBuilderItemPriceLabel(item),
+    pointCount>0 ? `${pointCount} madde` : 'Madde yok',
+    `${packageBuilderNormalizeRisk(item.risk)} risk`
+  ].filter(Boolean);
+  const archivedActions=`
+    <button class="package-action-link primary" data-package-test-restore="${id}" type="button">Geri Al</button>
+    <button class="package-action-link danger" data-package-test-delete="${id}" type="button">Sil</button>`;
+  const activeActions=`
+    <button class="package-action-link primary" data-package-test-type-edit="${id}" type="button">Test Türü Düzenle</button>
+    <button class="package-action-link" data-package-test-edit="${id}" type="button">Maddeleri Düzenle</button>
+    <button class="package-action-link archive" data-package-test-archive="${id}" type="button">Arşivle</button>
+    <button class="package-action-link danger" data-package-test-delete="${id}" type="button">Sil</button>`;
+  return `<article class="package-test-management-card ${archived?'is-archived':''}">
+    <div class="package-test-management-card-top">
+      <div class="package-test-management-card-title"><span class="package-option-icon">${escapeHtml(item.short||packageBuilderShort(item.name))}</span><div><b>${escapeHtml(item.name)}</b><span>${meta.map(escapeHtml).join(' · ')}</span></div></div>
+      <span class="package-chip ${archived?'orange':'green'}">${archived?'Arşiv':'Aktif'}</span>
+    </div>
+    <div class="package-test-management-actions">${archived?archivedActions:activeActions}</div>
+  </article>`;
+}
+function renderPackageTestManagementSection(title,items,archived=false){
+  if(!items.length)return '';
+  return `<section class="package-test-management-section"><div class="package-test-management-section-head"><b>${escapeHtml(title)}</b><span>${items.length} test</span></div>${items.map(item=>renderPackageTestManagementCard(item,archived)).join('')}</section>`;
+}
+function renderPackageTestManagementList(){
+  const target=document.getElementById('packageTestManagementList');
+  if(!target)return;
+  const sections=[
+    renderPackageTestManagementSection('Ana Testler',packageMainTests.filter(item=>item.category==='mainModules')),
+    renderPackageTestManagementSection('Ek Testler',packageExtraServices.filter(item=>item.category==='extraTests')),
+    renderPackageTestManagementSection('Sorgular',packageExtraServices.filter(item=>item.category==='queries')),
+    renderPackageTestManagementSection('Garanti Paketleri',packageExtraServices.filter(item=>item.category==='warranties')),
+    renderPackageTestManagementSection('Test Arşivi',packageBuilderManagedItemsByStatus('archived'),true)
+  ].filter(Boolean);
+  target.innerHTML=sections.length?sections.join(''):'<div class="package-empty">Kayıtlı test türü bulunamadı.</div>';
+}
 function renderPackagePoolSection(title,items,renderer){
   const visible=items.filter(packageBuilderMatchesSearch);
   if(!visible.length)return '';
@@ -4945,6 +5049,7 @@ function renderPackagePool(){
   const target=document.getElementById('packagePoolList');
   if(!target)return;
   packageBuilderEnsurePoolToolbarActions();
+  if(packageBuilderState.activeTab==='archive')packageBuilderActivateTab('allTests');
   document.querySelectorAll('[data-package-tab]').forEach(tab=>tab.classList.toggle('active',tab.dataset.packageTab===packageBuilderState.activeTab));
   if(packageBuilderState.activeTab==='allTests'){
     target.innerHTML=renderAllPackageTests();
@@ -5504,6 +5609,7 @@ function renderPackageBuilderPage(){
   renderPackageValidationPanel();
   renderPackageCreatedList();
   renderPackageArchiveList();
+  renderPackageTestManagementList();
   renderPackageManagerView();
   renderDealerCreatedPackagesInEntry();
   packageBuilderUpdateGuaranteeUI();
@@ -5755,6 +5861,9 @@ function wirePackageBuilderPage(){
     const testAddToggle=event.target.closest('[data-package-test-add-toggle]');
     if(testAddToggle){
       event.preventDefault();
+      if(packageBuilderState.managerView!=='tests'){
+        packageBuilderSetManagerView('tests');
+      }
       const form=packageBuilderTestPointForm();
       if(form){
         packageBuilderResetNewTestPointForm(false);
@@ -5794,6 +5903,8 @@ function wirePackageBuilderPage(){
     if(step){event.preventDefault();const workflow=packageWorkflowSteps.find(item=>item.id===step.dataset.packageStep);if(workflow){packageBuilderState.activeStep=workflow.id;packageBuilderState.activeTab=workflow.tab;packageBuilderState.activeCategory=workflow.category;}packageBuilderRefresh();return;}
     const openPoints=event.target.closest('[data-package-open-points]');
     if(openPoints){event.preventDefault();packageBuilderOpenPointEditor(openPoints.dataset.packageOpenPoints);return;}
+    const testTypeEdit=event.target.closest('[data-package-test-type-edit]');
+    if(testTypeEdit){event.preventDefault();packageBuilderEditTestType(testTypeEdit.dataset.packageTestTypeEdit);return;}
     const testEdit=event.target.closest('[data-package-test-edit]');
     if(testEdit){event.preventDefault();packageBuilderOpenTestEdit(testEdit.dataset.packageTestEdit);return;}
     const testArchive=event.target.closest('[data-package-test-archive]');
