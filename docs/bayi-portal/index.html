@@ -410,6 +410,7 @@ button,input,select,textarea{font:inherit}.app{min-height:100vh;display:grid;gri
 .package-panel-title{font-size:13px;text-transform:none;letter-spacing:0;font-weight:900}
 .package-panel-sub{font-size:11.5px;line-height:1.35}
 .package-info-grid{gap:11px}
+.package-rule-section{grid-column:1/-1;border:1px solid #e5e7eb;border-radius:12px;background:#f8fafc;padding:10px;display:grid;gap:10px}.package-rule-section-title{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#111827;font-size:12px;font-weight:950}.package-rule-section-title span{color:#667085;font-size:10.5px;font-weight:800}.package-rule-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}.package-check-title{color:#344054;font-size:11px;font-weight:900}.package-check-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.package-check{min-height:32px;border:1px solid #dbe3ee;border-radius:8px;background:#fff;display:flex;align-items:center;gap:7px;padding:7px 8px;color:#344054;font-size:10.8px;font-weight:800}.package-check input{accent-color:#e30613}.package-risk-preview{grid-column:1/-1;border:1px solid #fed7aa;background:#fff7ed;color:#9a3412;border-radius:10px;padding:9px 10px;font-size:11px;font-weight:850}.entry-risk-panel{border:1px solid #dbe3ee;border-radius:11px;background:#f8fafc;padding:10px;margin-top:10px;display:grid;gap:8px;grid-column:1/-1}.entry-risk-panel.good{border-color:#bbf7d0;background:#ecfdf3;color:#067647}.entry-risk-panel.warn{border-color:#fed7aa;background:#fff7ed;color:#b54708}.entry-risk-panel.bad{border-color:#fecdd3;background:#fff1f3;color:#b42318}.entry-risk-top{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:12px;font-weight:900}.entry-risk-score{height:26px;border-radius:999px;background:#fff;display:inline-flex;align-items:center;padding:0 10px;font-size:12px;font-weight:950}.entry-risk-list{display:grid;gap:5px;margin:0;padding:0;list-style:none}.entry-risk-list li{border:1px solid rgba(0,0,0,.06);border-radius:8px;background:rgba(255,255,255,.72);padding:7px 8px;font-size:11px;font-weight:800}
 .package-info-grid .field label,.package-test-point-form .field label{font-size:11px;font-weight:800;color:#344054;text-transform:none;letter-spacing:0}
 .package-info-grid input,.package-info-grid select,.package-test-point-form input,.package-test-point-form select,.package-test-point-form textarea{border-color:#d8dee8;border-radius:9px;background:#fff;box-shadow:0 1px 0 rgba(16,24,40,.02);font-weight:750}
 .package-rule-title{display:flex;align-items:center;gap:8px;margin:16px 0 9px;font-size:12px;font-weight:950;color:#101828}
@@ -557,7 +558,7 @@ button,input,select,textarea{font:inherit}.app{min-height:100vh;display:grid;gri
 .package-visibility-toggle{height:30px;border:1px solid #dbe3ee;border-radius:8px;background:#f8fafc;color:#667085;font-size:10.5px;font-weight:950;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:4px;white-space:nowrap}
 .package-visibility-toggle.is-on{border-color:#bbf7d0;background:#ecfdf3;color:#067647}.package-visibility-toggle.is-off{opacity:.72}.package-visibility-toggle:hover{border-color:#a4b1c4}.package-visibility-toggle.is-on:hover{border-color:#86efac}
 .entry-package-card[hidden],.package-pill[hidden]{display:none!important}
-@media(max-width:1350px){.package-info-grid{grid-template-columns:repeat(3,minmax(160px,1fr))!important}.package-selected-panel .package-panel-body{grid-template-columns:1fr 1fr}.package-selected-list,.package-created-list{grid-column:1/-1}.package-selected-panel .package-price-editor,.package-selected-panel .package-validation{grid-column:1}.package-selected-panel .package-summary,.package-selected-panel .package-actions{grid-column:2}}
+@media(max-width:1350px){.package-info-grid{grid-template-columns:repeat(3,minmax(160px,1fr))!important}.package-rule-grid,.package-check-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.package-selected-panel .package-panel-body{grid-template-columns:1fr 1fr}.package-selected-list,.package-created-list{grid-column:1/-1}.package-selected-panel .package-price-editor,.package-selected-panel .package-validation{grid-column:1}.package-selected-panel .package-summary,.package-selected-panel .package-actions{grid-column:2}}
 @media(max-width:820px){.package-info-grid{grid-template-columns:1fr!important}.package-info-grid .field.wide{grid-column:1!important}.package-pool-head{display:grid!important}.package-pool-toolbar{justify-content:flex-start!important}.package-pool-toolbar .package-tabs{justify-content:flex-start}.package-card-list,.package-test-section-grid,.package-template-grid{grid-template-columns:1fr!important}.package-test-point-form{grid-template-columns:1fr!important}.package-test-point-form .wide,.package-test-point-actions{grid-column:1!important;grid-row:auto!important}.package-test-point-actions{border-width:1px}.package-selected-panel .package-panel-body{grid-template-columns:1fr}.package-selected-list,.package-selected-panel .package-price-editor,.package-selected-panel .package-summary,.package-selected-panel .package-validation,.package-selected-panel .package-actions,.package-created-list{grid-column:1!important}.package-selected-panel .package-actions{grid-template-columns:1fr!important}}
 .package-point-editor-page{display:none}.package-point-editor-page.active-module{display:block!important}
 .package-point-editor-layout{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(500px,1fr);gap:14px;align-items:start}
@@ -1253,6 +1254,48 @@ button,input,select,textarea{font:inherit}.app{min-height:100vh;display:grid;gri
                 <div class="field"><label>Taban paket fiyatı</label><input data-package-info="price" type="number" min="0" step="50" value="5500"></div>
                 <div class="field"><label>Garanti süresi</label><select data-package-info="warrantyDuration"><option>Yok</option><option>1 Ay</option><option>3 Ay</option></select></div>
                 <div class="field"><label>KM limiti</label><select data-package-info="warrantyKm"><option>Yok</option><option>1000 KM</option><option>5000 KM</option></select></div>
+                <div class="package-rule-section">
+                  <div class="package-rule-section-title">Garanti ve Geri Alım <span>Paket satışı sırasında uygulanacak kurallar</span></div>
+                  <div class="package-rule-grid">
+                    <div class="field"><label>Garanti tipi</label><select data-package-info="warrantyType"><option>Yok</option><option>7 gün / 1000 km</option><option>1 ay / 1000 km</option><option>3 ay / 5000 km</option><option>Özel garanti</option></select></div>
+                    <div class="field"><label>Geri alım garantisi</label><select data-package-info="buybackGuarantee"><option>Yok</option><option>Var</option><option>Merkez onayı ile</option></select></div>
+                    <div class="field"><label>Geri alım bedeli kuralı</label><select data-package-info="buybackRule"><option>Yok</option><option>Noter satış bedeli üzerinden</option><option>Maksimum kasko üst sınırı</option><option>Merkez manuel hesaplar</option></select></div>
+                    <div class="field"><label>Garanti başlangıcı</label><select data-package-info="warrantyStart"><option>Rapor tarihi</option><option>Noter satış tarihi</option><option>Teslim tarihi</option></select></div>
+                    <div class="field"><label>Garanti bitiş şartı</label><select data-package-info="warrantyEndCondition"><option>Gün veya KM hangisi önce dolarsa</option><option>Sadece gün</option><option>Sadece KM</option><option>Gün ve KM birlikte dolunca</option></select></div>
+                    <div class="field"><label>Garanti onay yetkisi</label><select data-package-info="approvalAuthority"><option>Her bayi satabilir</option><option>Merkez onayı gerekir</option><option>Risk puanı yüksekse merkez onayı</option></select></div>
+                  </div>
+                  <div class="package-check-title">Kapsam dışı durumlar</div>
+                  <div class="package-check-grid">
+                    <label class="package-check"><input type="checkbox" data-package-multi="warrantyExclusions" value="Ağır hasarlı araç" checked>Ağır hasarlı araç</label>
+                    <label class="package-check"><input type="checkbox" data-package-multi="warrantyExclusions" value="Ticari kullanım" checked>Ticari kullanım</label>
+                    <label class="package-check"><input type="checkbox" data-package-multi="warrantyExclusions" value="Pert kayıt" checked>Pert kayıt</label>
+                    <label class="package-check"><input type="checkbox" data-package-multi="warrantyExclusions" value="Kilometre şüphesi" checked>Kilometre şüphesi</label>
+                    <label class="package-check"><input type="checkbox" data-package-multi="warrantyExclusions" value="Modifiyeli araç" checked>Modifiyeli araç</label>
+                    <label class="package-check"><input type="checkbox" data-package-multi="warrantyExclusions" value="LPG dönüşümü" checked>LPG dönüşümü</label>
+                    <label class="package-check"><input type="checkbox" data-package-multi="warrantyExclusions" value="Yazılım / tuning" checked>Yazılım / tuning</label>
+                    <label class="package-check"><input type="checkbox" data-package-multi="warrantyExclusions" value="Yarış / performans kullanımı" checked>Yarış / performans</label>
+                  </div>
+                  <div class="package-check-title">Garanti evrak zorunluluğu</div>
+                  <div class="package-check-grid">
+                    <label class="package-check"><input type="checkbox" data-package-multi="warrantyDocuments" value="Noter satış belgesi">Noter satış belgesi</label>
+                    <label class="package-check"><input type="checkbox" data-package-multi="warrantyDocuments" value="Ruhsat">Ruhsat</label>
+                    <label class="package-check"><input type="checkbox" data-package-multi="warrantyDocuments" value="Alıcı / satıcı muvafakatnamesi">Muvafakatname</label>
+                    <label class="package-check"><input type="checkbox" data-package-multi="warrantyDocuments" value="Ödeme dekontu">Ödeme dekontu</label>
+                  </div>
+                </div>
+                <div class="package-rule-section">
+                  <div class="package-rule-section-title">Araç Uygunluk Kuralları <span>Garanti ve geri alım satış engelleri</span></div>
+                  <div class="package-rule-grid">
+                    <div class="field"><label>Maksimum araç yaşı</label><input data-package-info="maxVehicleAge" type="number" min="0" step="1" value="10"></div>
+                    <div class="field"><label>Maksimum KM</label><input data-package-info="maxKm" type="number" min="0" step="1000" value="180000"></div>
+                    <div class="field"><label>Yakıt tipi uygunluğu</label><select data-package-info="fuelEligibility"><option>Tüm yakıtlar</option><option>Benzin + Dizel + Hybrid</option><option>Elektrik hariç</option><option>Sadece merkez onaylı</option></select></div>
+                    <div class="field"><label>Şanzıman uygunluğu</label><select data-package-info="transmissionEligibility"><option>Tümü</option><option>DSG/CVT merkez onayı</option><option>DSG/CVT hariç</option><option>Sadece manuel/otomatik</option></select></div>
+                    <div class="field"><label>Araç segmenti</label><select data-package-info="segmentEligibility"><option>Binek + Hafif ticari</option><option>Sadece binek</option><option>Ticari dahil</option><option>Ağır vasıta/motosiklet hariç</option></select></div>
+                    <div class="field"><label>Tramer / ağır hasar kuralı</label><select data-package-info="damageRule"><option>Ağır hasarda merkez onayı</option><option>Ağır hasarda satışı engelle</option><option>Risk puanını artır</option></select></div>
+                    <div class="field wide"><label>Marka/model risk listesi</label><input data-package-info="brandRiskList" placeholder="Örn. DSG Golf, CVT Juke, yüksek riskli modeller"></div>
+                  </div>
+                  <div class="package-risk-preview">Risk puanı, iş emri paket seçiminde araç yaşı, KM, yakıt, şanzıman, marka/model ve hasar kuralına göre canlı önizlenir.</div>
+                </div>
               </div>
             </div>
           </aside>
@@ -1423,7 +1466,7 @@ button,input,select,textarea{font:inherit}.app{min-height:100vh;display:grid;gri
       <section class="entry-panel" data-entry-panel="full">
         <div class="entry-pipeline-top" aria-label="İş emri pipeline"><div class="entry-pipeline"><div class="entry-pipeline-step done"><b>Randevu</b><span>Alındı</span></div><div class="entry-pipeline-step done"><b>Araç Kabul</b><span>Alındı</span></div><div class="entry-pipeline-step done"><b>Evrak</b><span>KVKK hazır</span></div><div class="entry-pipeline-step done"><b>Ödeme</b><span>Kontrol edildi</span></div><div class="entry-pipeline-step active"><b>İş Emri</b><span>Düzenleniyor</span></div><div class="entry-pipeline-step"><b>Usta</b><span>Görev bekler</span></div><div class="entry-pipeline-step"><b>Eksik Veri</b><span>Kontrol</span></div><div class="entry-pipeline-step"><b>Rapor</b><span>Hazırlık</span></div><div class="entry-pipeline-step"><b>Baskı</b><span>QR bekler</span></div><div class="entry-pipeline-step"><b>Teslim</b><span>Müşteri</span></div></div></div>
         <div class="entry-history-bar" id="entryVehicleHistoryBar" aria-live="polite"><div class="entry-history-grid"><div class="entry-history-item"><span>Plaka</span><b data-history="plate">-</b></div><div class="entry-history-item"><span>Raporlama Tarihi</span><b data-history="reportDate">-</b></div><div class="entry-history-item"><span>KM</span><b data-history="km">-</b></div><div class="entry-history-item"><span>Yapılan Paket</span><b data-history="packageName">-</b></div><div class="entry-history-item"><span>Yapılan Şube</span><b data-history="branch">-</b></div></div><div class="entry-history-actions"><button class="entry-icon-action" type="button" data-history-action="report"><span aria-hidden="true">↗</span> Raporu aç</button><button class="entry-icon-action" type="button" data-history-action="critical"><span aria-hidden="true">!</span> Kritik noktalar</button></div></div>
-        <div class="entry-two-col"><div class="entry-section"><div class="entry-section-head"><span class="step-badge">1</span><h3>Araç Bilgileri</h3></div><div class="entry-section-body entry-grid"><div class="field"><label class="required">Plaka</label><input data-entry-target="plate"></div><div class="field"><label class="required">Şasi No</label><input data-entry-target="vin"></div><div class="field"><label class="required">Motor No</label><input data-entry-target="engineNo"></div><div class="field"><label class="required">Marka</label><input data-entry-target="brand"></div><div class="field"><label class="required">Model</label><input data-entry-target="model"></div><div class="field"><label class="required">Alt Paket</label><input data-entry-target="variant"></div><div class="field"><label class="required">Model Yılı</label><input data-entry-target="year"></div></div></div><div class="entry-section"><div class="entry-section-head"><span class="step-badge">1B</span><h3>Araç Özellikleri</h3></div><div class="entry-section-body entry-grid"><div class="field"><label>Giriş KM</label><input data-entry-target="km"></div><div class="field"><label>Yakıt Tipi</label><select data-entry-target="fuel"><option>Benzin</option><option>Dizel</option><option>Hybrid</option><option>Elektrik</option></select></div><div class="field"><label>Vites Tipi</label><select data-entry-target="transmission"><option>Otomatik</option><option>Manuel</option></select></div><div class="field"><label>Yedek Anahtar</label><select data-entry-target="spareKey"><option>Var</option><option>Yok</option></select></div><div class="entry-system-checks"><div class="entry-system-check warn"><b>Tramer Sorgusu</b><span>Sorgulama yapılamadı. Lütfen manuel sorgulama ile veri giriniz.</span></div><div class="entry-system-check warn"><b>KM Sorgusu</b><span>Sorgulama yapılamadı. Lütfen manuel sorgulama ile veri giriniz.</span></div></div></div></div></div>
+        <div class="entry-two-col"><div class="entry-section"><div class="entry-section-head"><span class="step-badge">1</span><h3>Araç Bilgileri</h3></div><div class="entry-section-body entry-grid"><div class="field"><label class="required">Plaka</label><input data-entry-target="plate"></div><div class="field"><label class="required">Şasi No</label><input data-entry-target="vin"></div><div class="field"><label class="required">Motor No</label><input data-entry-target="engineNo"></div><div class="field"><label class="required">Marka</label><input data-entry-target="brand"></div><div class="field"><label class="required">Model</label><input data-entry-target="model"></div><div class="field"><label class="required">Alt Paket</label><input data-entry-target="variant"></div><div class="field"><label class="required">Model Yılı</label><input data-entry-target="year"></div></div></div><div class="entry-section"><div class="entry-section-head"><span class="step-badge">1B</span><h3>Araç Özellikleri</h3></div><div class="entry-section-body entry-grid"><div class="field"><label>Giriş KM</label><input data-entry-target="km"></div><div class="field"><label>Yakıt Tipi</label><select data-entry-target="fuel"><option>Benzin</option><option>Dizel</option><option>Hybrid</option><option>Elektrik</option></select></div><div class="field"><label>Vites Tipi</label><select data-entry-target="transmission"><option>Otomatik</option><option>Manuel</option><option>DSG</option><option>CVT</option></select></div><div class="field"><label>Araç Segmenti</label><select data-entry-target="segment"><option>Binek</option><option>Hafif ticari</option><option>Ticari</option><option>Ağır vasıta</option><option>Motosiklet</option></select></div><div class="field"><label>Yedek Anahtar</label><select data-entry-target="spareKey"><option>Var</option><option>Yok</option></select></div><div class="entry-system-checks"><div class="entry-system-check warn"><b>Tramer Sorgusu</b><span>Sorgulama yapılamadı. Lütfen manuel sorgulama ile veri giriniz.</span></div><div class="entry-system-check warn"><b>KM Sorgusu</b><span>Sorgulama yapılamadı. Lütfen manuel sorgulama ile veri giriniz.</span></div></div></div></div></div>
         <div class="entry-two-col"><div class="entry-section"><div class="entry-section-head"><span class="step-badge">2</span><h3>Müşteri Bilgileri</h3></div><div class="entry-section-body entry-grid"><div class="field"><label>Ad Soyad</label><input data-entry-target="customer" placeholder="Ad soyad"></div><div class="field"><label>Telefon</label><input data-entry-target="phone" placeholder="05xx xxx xx xx"></div><div class="field"><label>Geliş Kanalı</label><select data-entry-target="channel"><option>Walk-in</option><option>Telefon</option><option>Web</option><option>Galeri</option><option>Randevu</option><option>WhatsApp</option><option>Referans</option></select></div><div class="field"><label>Müşteri Tipi</label><select data-entry-target="customerType"><option>Bireysel</option><option>Kurumsal</option><option>Galeri</option></select></div><div class="field"><label>İletişim İzni</label><select data-entry-target="contactPermission"><option>Evet</option><option>Hayır</option></select></div><div class="field"><label>T.C. / Vergi No</label><input data-entry-target="taxNo"></div><div class="field"><label>Rapor Alıcısı</label><input data-entry-target="reportRecipient" placeholder="Müşteri / aracı getiren"></div></div></div>
         <div class="entry-section"><div class="entry-section-head"><span class="step-badge">3</span><h3>Satıcı Bilgileri</h3></div><div class="entry-section-body entry-grid four"><div class="field"><label>Ad Soyad / Unvan</label><input data-entry-target="sellerName" placeholder="Satıcı adı"></div><div class="field"><label>Telefon</label><input data-entry-target="sellerPhone" value="0533 210 47 24"></div><div class="field wide"><label>T.C. / Vergi No</label><input data-entry-target="sellerTaxNo" placeholder="11 haneli T.C. kimlik no"></div><div class="field"><label>Satıcı Tipi</label><select data-entry-target="sellerType"><option>Bireysel</option><option>Kurumsal</option><option>Galeri</option></select></div><div class="field"><label>İletişim İzni</label><select data-entry-target="sellerPermission"><option>Evet</option><option>Hayır</option></select></div><div class="entry-status-bar"><span>Yeni Satıcı</span><span>18 puan · ilk satıcı kaydı · 40 puanda Güvenilir Satıcı</span></div></div></div></div>
         <div class="entry-two-col"><div class="entry-section"><div class="entry-section-head"><span class="step-badge">4</span><h3>Hizmet / Paket Seçimi</h3></div><div class="entry-section-body"><div class="entry-packages" data-package-scope="full"><button class="entry-package-card" type="button" data-package-name="Paket 1" data-package-price="5500"><span class="entry-package-icon">1</span><b>Paket 1</b><small>Temel 3 test + 5664</small><strong>5.500 TL</strong></button><button class="entry-package-card" type="button" data-package-name="Paket 2" data-package-price="6900"><span class="entry-package-icon">2</span><b>Paket 2</b><small>Paket 1 + Motor Kontrol</small><strong>6.900 TL</strong></button><button class="entry-package-card" type="button" data-package-name="Paket 3" data-package-price="7800"><span class="entry-package-icon">3</span><b>Paket 3</b><small>Dyno testi ve sorgular</small><strong>7.800 TL</strong></button><button class="entry-package-card" type="button" data-package-name="Paket 4" data-package-price="9000"><span class="entry-package-icon">4</span><b>Paket 4</b><small>Test hattı + iç/dış</small><strong>9.000 TL</strong></button><button class="entry-package-card" type="button" data-package-name="Paket 5" data-package-price="11000"><span class="entry-package-icon">5</span><b>Paket 5</b><small>Conta + 1 ay garanti</small><strong>11.000 TL</strong></button><button class="entry-package-card" type="button" data-package-name="Paket 6" data-package-price="13000"><span class="entry-package-icon">6</span><b>Paket 6</b><small>Airbag dahil tam kapsam</small><strong>13.000 TL</strong></button><button class="entry-package-card" type="button" data-package-name="Paket 7" data-package-price="16000"><span class="entry-package-icon">7</span><b>Paket 7</b><small>3 ay / 5000 km garanti</small><strong>16.000 TL</strong></button><button class="entry-package-card" type="button" data-package-name="Paket 8" data-package-price="19000"><span class="entry-package-icon">8</span><b>Paket 8</b><small>Tam kapsam</small><strong>19.000 TL</strong></button><button class="entry-package-card" type="button" data-package-name="Paket 9" data-package-price="22000"><span class="entry-package-icon">9</span><b>Paket 9</b><small>3 ay garanti</small><strong>22.000 TL</strong></button></div></div></div>
@@ -1554,7 +1597,7 @@ const packageBuilderTestPriceStorageKey='ototr-package-builder-test-prices-v1';
 const packageBuilderControlPointStorageKey='ototr-package-builder-control-points-v1';
 const packageBuilderManagedTestStorageKey='ototr-package-builder-managed-tests-v1';
 const packageBuilderHiddenSeedPackageStorageKey='ototr-package-builder-hidden-seed-packages-v1';
-const dealerPortalBuildStamp='01.07.2026 13:28';
+const dealerPortalBuildStamp='01.07.2026 14:23';
 function packageBuilderReadHiddenSeedPackages(){
   try{
     const saved=JSON.parse(localStorage.getItem(packageBuilderHiddenSeedPackageStorageKey)||'[]');
@@ -1587,6 +1630,37 @@ function packageBuilderNormalizeVisibility(visibility){
     return map;
   },{});
 }
+function packageBuilderWarrantyTypeFromLegacy(duration,km){
+  const text=`${duration||''} ${km||''}`.toLocaleLowerCase('tr-TR');
+  if(text.includes('3')||text.includes('5000'))return '3 ay / 5000 km';
+  if(text.includes('1')||text.includes('1000'))return '1 ay / 1000 km';
+  return 'Yok';
+}
+function packageBuilderHasWarrantySignal(source={}){
+  const type=String(source.warrantyType||packageBuilderWarrantyTypeFromLegacy(source.warrantyDuration,source.warrantyKm));
+  const extras=Array.isArray(source.extraServices)?source.extraServices.map(String):[];
+  return type!=='Yok' || String(source.category||'').includes('Garantili') || extras.includes('mechanicalWarranty1m') || extras.includes('mechanicalWarranty3m5k');
+}
+function packageBuilderDefaultRuleFields(source={}){
+  const guaranteed=packageBuilderHasWarrantySignal(source);
+  return {
+    warrantyType:source.warrantyType||packageBuilderWarrantyTypeFromLegacy(source.warrantyDuration,source.warrantyKm),
+    buybackGuarantee:source.buybackGuarantee||(guaranteed?'Merkez onayı ile':'Yok'),
+    buybackRule:source.buybackRule||(guaranteed?'Noter satış bedeli üzerinden':'Yok'),
+    warrantyStart:source.warrantyStart||'Rapor tarihi',
+    warrantyEndCondition:source.warrantyEndCondition||'Gün veya KM hangisi önce dolarsa',
+    approvalAuthority:source.approvalAuthority||(guaranteed?'Merkez onayı gerekir':'Her bayi satabilir'),
+    warrantyExclusions:Array.isArray(source.warrantyExclusions)?source.warrantyExclusions:['Ağır hasarlı araç','Ticari kullanım','Pert kayıt','Kilometre şüphesi','Modifiyeli araç','LPG dönüşümü','Yazılım / tuning','Yarış / performans kullanımı'],
+    warrantyDocuments:Array.isArray(source.warrantyDocuments)?source.warrantyDocuments:(guaranteed?['Noter satış belgesi','Ruhsat','Ödeme dekontu']:[]),
+    maxVehicleAge:Number(source.maxVehicleAge ?? (guaranteed?10:0)),
+    maxKm:Number(source.maxKm ?? (guaranteed?180000:0)),
+    fuelEligibility:source.fuelEligibility||'Tüm yakıtlar',
+    transmissionEligibility:source.transmissionEligibility||(guaranteed?'DSG/CVT merkez onayı':'Tümü'),
+    segmentEligibility:source.segmentEligibility||'Binek + Hafif ticari',
+    damageRule:source.damageRule||(guaranteed?'Ağır hasarda merkez onayı':'Risk puanını artır'),
+    brandRiskList:source.brandRiskList||''
+  };
+}
 function packageBuilderSeedPackagesFromTemplates(){
   return packageTemplates.map(template=>({
     id:`seed-${template.id}`,
@@ -1596,6 +1670,7 @@ function packageBuilderSeedPackagesFromTemplates(){
     basePrice:Number(template.price||0),
     warrantyDuration:template.warrantyDuration||'Yok',
     warrantyKm:template.warrantyKm||'Yok',
+    ...packageBuilderDefaultRuleFields(template),
     mainTests:[...template.mainTests],
     extraServices:[...template.extraServices],
     testPrices:{},
@@ -1622,6 +1697,7 @@ function packageBuilderReadPackages(){
       basePrice:Number(item.basePrice ?? item.price ?? 0),
       warrantyDuration:item.warrantyDuration||'Yok',
       warrantyKm:item.warrantyKm||'Yok',
+      ...packageBuilderDefaultRuleFields(item),
       mainTests:Array.isArray(item.mainTests)?item.mainTests:[],
       extraServices:Array.isArray(item.extraServices)?item.extraServices:[],
       testPrices:item.testPrices&&typeof item.testPrices==='object'?item.testPrices:{},
@@ -2531,6 +2607,7 @@ function updateEntrySummary(name,price){
   document.querySelectorAll('[data-entry-summary="total"]').forEach(el=>el.textContent=total);
   updateFullAddonSummary();
   updateQuickAddonSummary();
+  renderDealerPackageRiskPanel(name);
 }
 function formatTL(value){return Number(value||0).toLocaleString('tr-TR')+' TL'}
 function dealerNormalizeText(value){
@@ -2638,6 +2715,134 @@ function dealerPackageByName(name){
 }
 function dealerSelectedPackageName(){
   return document.querySelector('[data-package-name].is-selected')?.dataset.packageName || 'Paket 1';
+}
+function dealerEntryReadValue(key){
+  const activePanel=document.querySelector('.entry-panel.is-active');
+  return activePanel?.querySelector(`[data-entry-target="${key}"]`)?.value
+    || document.querySelector(`[data-entry-target="${key}"]`)?.value
+    || document.querySelector(`[data-entry-field="${key}"]`)?.value
+    || '';
+}
+function dealerParseNumber(value){
+  const digits=String(value||'').replace(/[^\d]/g,'');
+  return digits?Number(digits):0;
+}
+function dealerVehicleSnapshot(){
+  return {
+    brand:dealerEntryReadValue('brand'),
+    model:dealerEntryReadValue('model'),
+    year:dealerParseNumber(dealerEntryReadValue('year')),
+    km:dealerParseNumber(dealerEntryReadValue('km')),
+    fuel:dealerEntryReadValue('fuel') || 'Benzin',
+    transmission:dealerEntryReadValue('transmission') || 'Otomatik',
+    segment:dealerEntryReadValue('segment') || 'Binek'
+  };
+}
+function dealerPackageRules(record){
+  return packageBuilderDefaultRuleFields(record||{});
+}
+function dealerPackageRiskResult(packageName=dealerSelectedPackageName()){
+  const record=dealerPackageByName(packageName);
+  if(!record)return null;
+  const rules=dealerPackageRules(record);
+  const vehicle=dealerVehicleSnapshot();
+  const warrantyActive=packageBuilderHasWarrantySignal({...record,...rules});
+  const issues=[];
+  let score=warrantyActive?24:8;
+  const currentYear=new Date().getFullYear();
+  const vehicleAge=vehicle.year ? Math.max(0,currentYear-vehicle.year) : 0;
+  if(rules.maxVehicleAge>0 && vehicleAge>rules.maxVehicleAge){
+    score+=38;
+    issues.push(`Araç yaşı ${vehicleAge}; paket limiti ${rules.maxVehicleAge}.`);
+  }else if(rules.maxVehicleAge>0 && vehicleAge>=Math.max(1,rules.maxVehicleAge-1)){
+    score+=12;
+    issues.push(`Araç yaşı garanti limitine yakın: ${vehicleAge}/${rules.maxVehicleAge}.`);
+  }
+  if(rules.maxKm>0 && vehicle.km>rules.maxKm){
+    score+=38;
+    issues.push(`Kilometre ${vehicle.km.toLocaleString('tr-TR')}; paket limiti ${Number(rules.maxKm).toLocaleString('tr-TR')}.`);
+  }else if(rules.maxKm>0 && vehicle.km>=Math.round(rules.maxKm*.9)){
+    score+=12;
+    issues.push(`Kilometre garanti limitine yakın: ${vehicle.km.toLocaleString('tr-TR')}/${Number(rules.maxKm).toLocaleString('tr-TR')}.`);
+  }
+  const fuel=dealerNormalizeText(vehicle.fuel);
+  const fuelRule=dealerNormalizeText(rules.fuelEligibility);
+  if(fuelRule.includes('elektrik haric') && fuel.includes('elektrik')){
+    score+=32;
+    issues.push('Elektrikli araç bu paket için uygun değil.');
+  }
+  if(fuelRule.includes('merkez onay')){
+    score+=18;
+    issues.push('Yakıt tipi için merkez onayı gerekir.');
+  }
+  const transmission=dealerNormalizeText(vehicle.transmission);
+  const transmissionRule=dealerNormalizeText(rules.transmissionEligibility);
+  const riskyTransmission=transmission.includes('dsg')||transmission.includes('cvt');
+  if(riskyTransmission && transmissionRule.includes('haric')){
+    score+=34;
+    issues.push(`${vehicle.transmission} şanzıman bu paket için hariç tutulmuş.`);
+  }else if(riskyTransmission && transmissionRule.includes('merkez onay')){
+    score+=18;
+    issues.push(`${vehicle.transmission} şanzıman için merkez onayı gerekir.`);
+  }
+  const segment=dealerNormalizeText(vehicle.segment);
+  const segmentRule=dealerNormalizeText(rules.segmentEligibility);
+  if(segmentRule.includes('sadece binek') && !segment.includes('binek')){
+    score+=30;
+    issues.push(`${vehicle.segment} segmenti bu paket için uygun değil.`);
+  }else if(segmentRule.includes('binek') && segmentRule.includes('hafif') && !(segment.includes('binek')||segment.includes('hafif'))){
+    score+=28;
+    issues.push(`${vehicle.segment} segmenti binek/hafif ticari kapsamı dışında.`);
+  }
+  if((segment.includes('agir')||segment.includes('motosiklet')) && segmentRule.includes('haric')){
+    score+=32;
+    issues.push(`${vehicle.segment} segmenti garanti kapsamı dışında.`);
+  }
+  const riskList=dealerNormalizeText(rules.brandRiskList);
+  const brand=dealerNormalizeText(vehicle.brand);
+  const model=dealerNormalizeText(vehicle.model);
+  if(riskList && ((brand&&riskList.includes(brand))||(model&&riskList.includes(model))||(brand&&model&&riskList.includes(`${brand} ${model}`)))){
+    score+=22;
+    issues.push('Marka/model risk listesine takıldı; merkez kontrolü önerilir.');
+  }
+  const damageRule=dealerNormalizeText(rules.damageRule);
+  if(warrantyActive && damageRule.includes('engelle')){
+    issues.push('Tramerde pert/ağır hasar tespit edilirse garantili paket satışı engellenir.');
+  }else if(warrantyActive && damageRule.includes('merkez')){
+    issues.push('Tramerde pert/ağır hasar tespit edilirse merkez onayı gerekir.');
+  }
+  if(warrantyActive && rules.warrantyDocuments?.length){
+    issues.push(`Evrak zorunlu: ${rules.warrantyDocuments.join(', ')}.`);
+  }
+  score=Math.max(0,Math.min(100,score));
+  const tone=score>=70?'bad':score>=40?'warn':'good';
+  const title=tone==='bad'?'Paket satış riski yüksek':tone==='warn'?'Merkez onayı / ek kontrol gerekebilir':'Paket uygunluk riski düşük';
+  return {record,rules,vehicle,score,tone,title,issues,warrantyActive};
+}
+function dealerEnsurePackageRiskPanels(){
+  document.querySelectorAll('[data-package-scope="drawer"],[data-package-scope="full"]').forEach(container=>{
+    const body=container.parentElement;
+    if(!body||body.querySelector('[data-package-risk-panel]'))return;
+    const panel=document.createElement('div');
+    panel.dataset.packageRiskPanel='';
+    panel.className='entry-risk-panel';
+    container.insertAdjacentElement('afterend',panel);
+  });
+  return [...document.querySelectorAll('[data-package-risk-panel]')];
+}
+function renderDealerPackageRiskPanel(packageName=dealerSelectedPackageName()){
+  const result=dealerPackageRiskResult(packageName);
+  const panels=dealerEnsurePackageRiskPanels();
+  panels.forEach(panel=>{
+    if(!result){
+      panel.hidden=true;
+      return;
+    }
+    panel.hidden=false;
+    panel.className=`entry-risk-panel ${result.tone}`;
+    const issues=result.issues.length?result.issues:['Araç bilgileri mevcut kurallara göre kritik engel üretmedi.'];
+    panel.innerHTML=`<div class="entry-risk-top"><span>${escapeHtml(result.title)}</span><span class="entry-risk-score">Risk ${escapeHtml(String(result.score))}/100</span></div><ul class="entry-risk-list">${issues.slice(0,4).map(issue=>`<li>${escapeHtml(issue)}</li>`).join('')}</ul>`;
+  });
 }
 function dealerSelectedPackageExtraIds(name=dealerSelectedPackageName()){
   const record=dealerPackageByName(name);
@@ -4057,6 +4262,15 @@ function handleReportArchiveClick(event){
     renderReportArchive();
   }
 }
+function packageBuilderReadMulti(key){
+  return [...document.querySelectorAll(`[data-package-multi="${key}"]`)].filter(input=>input.checked).map(input=>input.value);
+}
+function packageBuilderSetMulti(key,values=[]){
+  const selected=new Set((Array.isArray(values)?values:[]).map(String));
+  document.querySelectorAll(`[data-package-multi="${key}"]`).forEach(input=>{
+    input.checked=selected.has(input.value);
+  });
+}
 function packageBuilderInfo(){
   const read=(key)=>document.querySelector(`[data-package-info="${key}"]`)?.value || '';
   return {
@@ -4069,7 +4283,22 @@ function packageBuilderInfo(){
     discount:0,
     status:read('status') || packageBuilderState.status || 'Taslak',
     warrantyDuration:read('warrantyDuration'),
-    warrantyKm:read('warrantyKm')
+    warrantyKm:read('warrantyKm'),
+    warrantyType:read('warrantyType') || packageBuilderWarrantyTypeFromLegacy(read('warrantyDuration'),read('warrantyKm')),
+    buybackGuarantee:read('buybackGuarantee') || 'Yok',
+    buybackRule:read('buybackRule') || 'Yok',
+    warrantyStart:read('warrantyStart') || 'Rapor tarihi',
+    warrantyEndCondition:read('warrantyEndCondition') || 'Gün veya KM hangisi önce dolarsa',
+    approvalAuthority:read('approvalAuthority') || 'Her bayi satabilir',
+    warrantyExclusions:packageBuilderReadMulti('warrantyExclusions'),
+    warrantyDocuments:packageBuilderReadMulti('warrantyDocuments'),
+    maxVehicleAge:Number(read('maxVehicleAge')||0),
+    maxKm:Number(read('maxKm')||0),
+    fuelEligibility:read('fuelEligibility') || 'Tüm yakıtlar',
+    transmissionEligibility:read('transmissionEligibility') || 'Tümü',
+    segmentEligibility:read('segmentEligibility') || 'Binek + Hafif ticari',
+    damageRule:read('damageRule') || 'Risk puanını artır',
+    brandRiskList:read('brandRiskList')
   };
 }
 function packageBuilderSetInfo(next){
@@ -4078,9 +4307,11 @@ function packageBuilderSetInfo(next){
     const input=document.querySelector(`[data-package-info="${key}"]`);
     if(input)input.value=value;
   });
+  if(Object.prototype.hasOwnProperty.call(next,'warrantyExclusions'))packageBuilderSetMulti('warrantyExclusions',next.warrantyExclusions||[]);
+  if(Object.prototype.hasOwnProperty.call(next,'warrantyDocuments'))packageBuilderSetMulti('warrantyDocuments',next.warrantyDocuments||[]);
 }
 function packageBuilderIsGuaranteed(info=packageBuilderInfo()){
-  return String(info.category).includes('Garantili') || packageBuilderState.selectedExtraServices.has('mechanicalWarranty1m') || packageBuilderState.selectedExtraServices.has('mechanicalWarranty3m5k');
+  return packageBuilderHasWarrantySignal({...info,extraServices:[...packageBuilderState.selectedExtraServices]});
 }
 function packageBuilderSelectedMainTests(){
   return packageMainTests.filter(item=>packageBuilderState.selectedMainTests.has(item.id));
@@ -5003,7 +5234,7 @@ function applyPackageTemplate(templateId){
   packageBuilderState.selectedMainTests=new Set(template.mainTests);
   packageBuilderState.selectedExtraServices=new Set(template.extraServices);
   packageBuilderState.activePointTestId=template.mainTests[0]||template.extraServices[0]||null;
-  packageBuilderSetInfo({name:template.name,category:template.category,price:template.price,status:'Taslak',warrantyDuration:template.warrantyDuration||'Yok',warrantyKm:template.warrantyKm||'Yok'});
+  packageBuilderSetInfo({name:template.name,category:template.category,price:template.price,status:'Taslak',warrantyDuration:template.warrantyDuration||'Yok',warrantyKm:template.warrantyKm||'Yok',...packageBuilderDefaultRuleFields(template)});
   packageBuilderRefresh();
   packageBuilderShowToast(`${template.name} uygulandı.`);
 }
@@ -5027,6 +5258,7 @@ function packageBuilderTemplateToRecord(template,copyName){
     basePrice:Number(template.price||0),
     warrantyDuration:template.warrantyDuration||'Yok',
     warrantyKm:template.warrantyKm||'Yok',
+    ...packageBuilderDefaultRuleFields(template),
     mainTests,
     extraServices,
     testPrices,
@@ -5070,7 +5302,7 @@ function packageBuilderEditPackage(packageId){
   packageBuilderState.selectedExtraServices=new Set(Array.isArray(record.extraServices)?record.extraServices:[]);
   Object.entries(record.testPrices||{}).forEach(([id,value])=>packageBuilderSetTestPrice(id,value,false));
   packageBuilderState.activePointTestId=record.mainTests?.[0]||record.extraServices?.[0]||null;
-  packageBuilderSetInfo({name:record.name,category:record.category||'Standart Paket',price:record.basePrice||0,status:record.status||'Taslak',warrantyDuration:record.warrantyDuration||'Yok',warrantyKm:record.warrantyKm||'Yok'});
+  packageBuilderSetInfo({name:record.name,category:record.category||'Standart Paket',price:record.basePrice||0,status:record.status||'Taslak',warrantyDuration:record.warrantyDuration||'Yok',warrantyKm:record.warrantyKm||'Yok',...packageBuilderDefaultRuleFields(record)});
   packageBuilderRefresh();
   packageBuilderShowToast(`${record.name} düzenleme modunda.`);
 }
@@ -5126,7 +5358,7 @@ function packageBuilderSubmit(mode){
   packageBuilderSetInfo({status});
   const totals=packageBuilderTotals();
   const existing=packageBuilderState.createdPackages.find(item=>item.id===packageBuilderState.editingPackageId);
-  const record={id:existing?.id||`package-${Date.now()}-${packageBuilderSlug(totals.info.name)}`,name:totals.info.name,status,category:totals.info.category,mainTests:[...packageBuilderState.selectedMainTests],extraServices:[...packageBuilderState.selectedExtraServices],mainCount:totals.selectedTests.length,extraCount:totals.selectedExtras.length,basePrice:totals.info.price,warrantyDuration:totals.info.warrantyDuration,warrantyKm:totals.info.warrantyKm,testPrices:packageBuilderCurrentTestPrices(),testPriceTotal:totals.testPriceTotal,salesPrice:totals.salesPrice,createdAt:existing?.createdAt||new Date().toLocaleString('tr-TR'),updatedAt:new Date().toLocaleString('tr-TR'),visibility:packageBuilderNormalizeVisibility(existing?.visibility)};
+  const record={id:existing?.id||`package-${Date.now()}-${packageBuilderSlug(totals.info.name)}`,name:totals.info.name,status,category:totals.info.category,mainTests:[...packageBuilderState.selectedMainTests],extraServices:[...packageBuilderState.selectedExtraServices],mainCount:totals.selectedTests.length,extraCount:totals.selectedExtras.length,basePrice:totals.info.price,warrantyDuration:totals.info.warrantyDuration,warrantyKm:totals.info.warrantyKm,...packageBuilderDefaultRuleFields(totals.info),testPrices:packageBuilderCurrentTestPrices(),testPriceTotal:totals.testPriceTotal,salesPrice:totals.salesPrice,createdAt:existing?.createdAt||new Date().toLocaleString('tr-TR'),updatedAt:new Date().toLocaleString('tr-TR'),visibility:packageBuilderNormalizeVisibility(existing?.visibility)};
   packageBuilderState.editingPackageId=record.id;
   packageBuilderState.createdPackages=[record,...packageBuilderState.createdPackages.filter(item=>item.id!==record.id)];
   packageBuilderPersistPackages();
@@ -5937,8 +6169,8 @@ if(quickNavLink)quickNavLink.addEventListener('click',event=>{event.preventDefau
 document.querySelectorAll('[data-entry-field],[data-entry-target]').forEach(input=>{
   configureEntryInput(input);
   input.addEventListener('focus',()=>syncVehicleCatalogOptions(input));
-  input.addEventListener('input',()=>{normalizeEntryInput(input);if(['brand','model'].includes(input.dataset.entryTarget||input.dataset.entryField))syncVehicleCatalogOptions(input);if(['plate','phone','taxNo','vin'].includes(input.dataset.entryTarget||input.dataset.entryField))applyKnownCustomerMatch();updateQuickEntryGate()});
-  input.addEventListener('change',()=>{normalizeEntryInput(input);syncVehicleCatalogOptions(input);updateQuickEntryGate()});
+  input.addEventListener('input',()=>{normalizeEntryInput(input);if(['brand','model'].includes(input.dataset.entryTarget||input.dataset.entryField))syncVehicleCatalogOptions(input);if(['plate','phone','taxNo','vin'].includes(input.dataset.entryTarget||input.dataset.entryField))applyKnownCustomerMatch();updateQuickEntryGate();renderDealerPackageRiskPanel()});
+  input.addEventListener('change',()=>{normalizeEntryInput(input);syncVehicleCatalogOptions(input);updateQuickEntryGate();renderDealerPackageRiskPanel()});
   input.addEventListener('blur',()=>{normalizeEntryInput(input);if(input.dataset.entryField)syncEntryTargets(readDashboardEntry());applyKnownCustomerMatch();updateQuickEntryGate()});
 });
 if(topUserSelect)topUserSelect.addEventListener('change',()=>{
