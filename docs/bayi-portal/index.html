@@ -663,7 +663,7 @@ button,input,select,textarea{font:inherit}.app{min-height:100vh;display:grid;gri
 <body class="module-page-open">
 <div class="app">
   <aside class="sidebar">
-    <button class="brand" id="brandHome" type="button" aria-label="Bayii dashboard'a dön"><div class="brand-mark">OT</div><div class="brand-copy"><strong>OTOTR ERP</strong><small>YÖNETİM PANELİ</small><small id="dealerBuildStamp">v5 · 01.07.2026 13:28</small></div></button>
+    <button class="brand" id="brandHome" type="button" aria-label="Bayii dashboard'a dön"><div class="brand-mark">OT</div><div class="brand-copy"><strong>OTOTR ERP</strong><small>YÖNETİM PANELİ</small><small id="dealerBuildStamp">v5 · 01.07.2026 16:15:27</small></div></button>
     <nav class="nav">
       <div class="nav-group">Yönetim</div>
       <a class="active" href="#" id="navDashboard"><span class="nav-icon">▦</span>Bayii Kokpiti</a>
@@ -1597,7 +1597,7 @@ const packageBuilderTestPriceStorageKey='ototr-package-builder-test-prices-v1';
 const packageBuilderControlPointStorageKey='ototr-package-builder-control-points-v1';
 const packageBuilderManagedTestStorageKey='ototr-package-builder-managed-tests-v1';
 const packageBuilderHiddenSeedPackageStorageKey='ototr-package-builder-hidden-seed-packages-v1';
-const dealerPortalBuildStamp='01.07.2026 14:23';
+const dealerPortalBuildStamp='01.07.2026 16:15:27';
 function packageBuilderReadHiddenSeedPackages(){
   try{
     const saved=JSON.parse(localStorage.getItem(packageBuilderHiddenSeedPackageStorageKey)||'[]');
@@ -2649,7 +2649,7 @@ function dealerCreatedPackagePillMarkup(record){
   return `<button class="package-pill custom-package-pill" type="button" data-package-custom="true" data-package-name="${name}" data-package-price="${price}"><b>${name}</b><small>${escapeHtml(dealerCreatedPackageMeta(record))}</small><strong>${escapeHtml(formatTL(price))}</strong></button>`;
 }
 function updateDealerPackageStamp(packages=packageBuilderReadPackages()){
-  const latest=packages.find(dealerPackageIsVisible)?.updatedAt || dealerPortalBuildStamp;
+  const latest=dealerPortalBuildStamp;
   const stampText=`Son güncelleme: ${latest}`;
   const packageStamp=document.getElementById('packageBuilderUpdateStamp');
   const buildStamp=document.getElementById('dealerBuildStamp');
