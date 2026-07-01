@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta name="ototr-bayi-portal-version" content="v5.2026.07.01-1312" />
+<meta name="ototr-bayi-portal-version" content="v5.2026.07.01-1328" />
 <title>OTOTR Bayii ERP - Operasyon Merkezi V2</title>
 <link rel="icon" href="data:," />
 <style>
@@ -552,6 +552,11 @@ button,input,select,textarea{font:inherit}.app{min-height:100vh;display:grid;gri
 .package-management-head h2{margin:0;color:#101828;font-size:18px}.package-management-head span{color:#667085;font-size:12px;font-weight:800}
 .package-management-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px}
 .package-created-item{min-width:0}.package-created-item b{display:flex;justify-content:space-between;gap:8px;align-items:center}.package-created-item .package-created-meta{display:block;margin-top:3px;color:#667085;font-size:11px;line-height:1.35}
+.nav{scrollbar-width:thin;scrollbar-color:#3f4753 #050505}.nav::-webkit-scrollbar{width:8px}.nav::-webkit-scrollbar-track{background:#050505}.nav::-webkit-scrollbar-thumb{background:#3f4753;border:2px solid #050505;border-radius:999px}.nav::-webkit-scrollbar-thumb:hover{background:#667085}
+.package-visibility-actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;border:1px solid var(--package-line);background:#fbfcff;border-radius:10px;padding:7px 8px}
+.package-visibility-toggle{height:30px;border:1px solid #dbe3ee;border-radius:8px;background:#f8fafc;color:#667085;font-size:10.5px;font-weight:950;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:4px;white-space:nowrap}
+.package-visibility-toggle.is-on{border-color:#bbf7d0;background:#ecfdf3;color:#067647}.package-visibility-toggle.is-off{opacity:.72}.package-visibility-toggle:hover{border-color:#a4b1c4}.package-visibility-toggle.is-on:hover{border-color:#86efac}
+.entry-package-card[hidden],.package-pill[hidden]{display:none!important}
 @media(max-width:1350px){.package-info-grid{grid-template-columns:repeat(3,minmax(160px,1fr))!important}.package-selected-panel .package-panel-body{grid-template-columns:1fr 1fr}.package-selected-list,.package-created-list{grid-column:1/-1}.package-selected-panel .package-price-editor,.package-selected-panel .package-validation{grid-column:1}.package-selected-panel .package-summary,.package-selected-panel .package-actions{grid-column:2}}
 @media(max-width:820px){.package-info-grid{grid-template-columns:1fr!important}.package-info-grid .field.wide{grid-column:1!important}.package-pool-head{display:grid!important}.package-pool-toolbar{justify-content:flex-start!important}.package-pool-toolbar .package-tabs{justify-content:flex-start}.package-card-list,.package-test-section-grid,.package-template-grid{grid-template-columns:1fr!important}.package-test-point-form{grid-template-columns:1fr!important}.package-test-point-form .wide,.package-test-point-actions{grid-column:1!important;grid-row:auto!important}.package-test-point-actions{border-width:1px}.package-selected-panel .package-panel-body{grid-template-columns:1fr}.package-selected-list,.package-selected-panel .package-price-editor,.package-selected-panel .package-summary,.package-selected-panel .package-validation,.package-selected-panel .package-actions,.package-created-list{grid-column:1!important}.package-selected-panel .package-actions{grid-template-columns:1fr!important}}
 .package-point-editor-page{display:none}.package-point-editor-page.active-module{display:block!important}
@@ -657,7 +662,7 @@ button,input,select,textarea{font:inherit}.app{min-height:100vh;display:grid;gri
 <body class="module-page-open">
 <div class="app">
   <aside class="sidebar">
-    <button class="brand" id="brandHome" type="button" aria-label="Bayii dashboard'a dön"><div class="brand-mark">OT</div><div class="brand-copy"><strong>OTOTR ERP</strong><small>YÖNETİM PANELİ</small><small id="dealerBuildStamp">v5 · 01.07.2026 13:12</small></div></button>
+    <button class="brand" id="brandHome" type="button" aria-label="Bayii dashboard'a dön"><div class="brand-mark">OT</div><div class="brand-copy"><strong>OTOTR ERP</strong><small>YÖNETİM PANELİ</small><small id="dealerBuildStamp">v5 · 01.07.2026 13:28</small></div></button>
     <nav class="nav">
       <div class="nav-group">Yönetim</div>
       <a class="active" href="#" id="navDashboard"><span class="nav-icon">▦</span>Bayii Kokpiti</a>
@@ -1549,7 +1554,7 @@ const packageBuilderTestPriceStorageKey='ototr-package-builder-test-prices-v1';
 const packageBuilderControlPointStorageKey='ototr-package-builder-control-points-v1';
 const packageBuilderManagedTestStorageKey='ototr-package-builder-managed-tests-v1';
 const packageBuilderHiddenSeedPackageStorageKey='ototr-package-builder-hidden-seed-packages-v1';
-const dealerPortalBuildStamp='01.07.2026 13:12';
+const dealerPortalBuildStamp='01.07.2026 13:28';
 function packageBuilderReadHiddenSeedPackages(){
   try{
     const saved=JSON.parse(localStorage.getItem(packageBuilderHiddenSeedPackageStorageKey)||'[]');
@@ -1564,6 +1569,23 @@ function packageBuilderHideSeedPackage(id){
   const hidden=packageBuilderReadHiddenSeedPackages();
   hidden.add(String(id));
   packageBuilderSaveHiddenSeedPackages(hidden);
+}
+const packageBuilderVisibilityScopes=[
+  {key:'dashboard',label:'DB',title:'Dashboard hızlı kayıt'},
+  {key:'quickWorkOrder',label:'Hİ',title:'Hızlı iş emri ekranı'},
+  {key:'fullWorkOrder',label:'Tİ',title:'Tam iş emri ekranı'},
+  {key:'website',label:'WEB',title:'Web sitesi'}
+];
+function packageBuilderDefaultVisibility(){
+  return {dashboard:true,quickWorkOrder:true,fullWorkOrder:true,website:true};
+}
+function packageBuilderNormalizeVisibility(visibility){
+  const defaults=packageBuilderDefaultVisibility();
+  if(!visibility||typeof visibility!=='object'||Array.isArray(visibility))return defaults;
+  return packageBuilderVisibilityScopes.reduce((map,scope)=>{
+    map[scope.key]=visibility[scope.key]!==false;
+    return map;
+  },{});
 }
 function packageBuilderSeedPackagesFromTemplates(){
   return packageTemplates.map(template=>({
@@ -1582,7 +1604,8 @@ function packageBuilderSeedPackagesFromTemplates(){
     testPriceTotal:0,
     salesPrice:Number(template.price||0),
     createdAt:dealerPortalBuildStamp,
-    updatedAt:dealerPortalBuildStamp
+    updatedAt:dealerPortalBuildStamp,
+    visibility:packageBuilderDefaultVisibility()
   }));
 }
 function packageBuilderReadPackages(){
@@ -1607,7 +1630,8 @@ function packageBuilderReadPackages(){
       testPriceTotal:Number(item.testPriceTotal||0),
       salesPrice:Number(item.salesPrice||item.price||0),
       createdAt:item.createdAt||'',
-      updatedAt:item.updatedAt||''
+      updatedAt:item.updatedAt||'',
+      visibility:packageBuilderNormalizeVisibility(item.visibility)
     }));
     const hiddenSeeds=packageBuilderReadHiddenSeedPackages();
     const existingIds=new Set(normalized.map(item=>String(item.id)));
@@ -2489,10 +2513,12 @@ function closeDrawer(){
   document.getElementById('navDashboard')?.classList.add('active');
 }
 function selectPackage(name='Paket 1'){
-  document.querySelectorAll('[data-package-name]').forEach(btn=>btn.classList.toggle('is-selected',btn.dataset.packageName===name));
-  const selected=document.querySelector(`[data-package-name="${CSS.escape(name)}"]`);
-  renderDealerAddonChoices(name);
-  updateEntrySummary(name,selected?.dataset.packagePrice||'5500');
+  const visibleButtons=[...document.querySelectorAll('[data-package-name]')].filter(btn=>!btn.hidden);
+  const selected=visibleButtons.find(btn=>btn.dataset.packageName===name) || visibleButtons[0] || null;
+  const selectedName=selected?.dataset.packageName || name;
+  document.querySelectorAll('[data-package-name]').forEach(btn=>btn.classList.toggle('is-selected',!btn.hidden&&btn.dataset.packageName===selectedName));
+  renderDealerAddonChoices(selectedName);
+  updateEntrySummary(selectedName,selected?.dataset.packagePrice||'0');
 }
 function updateEntrySummary(name,price){
   const fmt=Number(price||0).toLocaleString('tr-TR')+' TL';
@@ -2512,6 +2538,18 @@ function dealerNormalizeText(value){
 }
 function dealerPackageIsVisible(record){
   return !dealerNormalizeText(record?.status).includes('arsiv');
+}
+function dealerPackageScopeKey(scope){
+  if(scope==='dashboard')return 'dashboard';
+  if(scope==='full')return 'fullWorkOrder';
+  if(scope==='drawer'||scope==='quick')return 'quickWorkOrder';
+  if(scope==='website')return 'website';
+  return 'quickWorkOrder';
+}
+function dealerPackageVisibleForScope(record,scope){
+  if(!record||!dealerPackageIsVisible(record))return false;
+  const visibility=packageBuilderNormalizeVisibility(record.visibility);
+  return visibility[dealerPackageScopeKey(scope)]!==false;
 }
 function dealerCreatedPackagePrice(record){
   return Number(record?.salesPrice || record?.basePrice || record?.price || 0);
@@ -2541,20 +2579,56 @@ function updateDealerPackageStamp(packages=packageBuilderReadPackages()){
   if(packageStamp)packageStamp.textContent=stampText;
   if(buildStamp)buildStamp.textContent=`v5 · ${latest}`;
 }
+function dealerPackageRecordFromListByName(name,packages){
+  const normalized=dealerNormalizeText(name);
+  return packages.find(record=>dealerNormalizeText(record.name)===normalized)
+    || packageTemplates.find(template=>dealerNormalizeText(template.name)===normalized)
+    || null;
+}
+function dealerUpdateStaticPackageButtons(packages){
+  document.querySelectorAll('[data-package-name]:not([data-package-custom])').forEach(button=>{
+    const scope=button.closest('[data-package-scope]')?.dataset.packageScope || 'quick';
+    const record=dealerPackageRecordFromListByName(button.dataset.packageName,packages);
+    const visible=!record || dealerPackageVisibleForScope(record,scope);
+    button.hidden=!visible;
+    button.classList.toggle('is-selected',button.classList.contains('is-selected')&&visible);
+    if(record){
+      const price=dealerCreatedPackagePrice(record);
+      button.dataset.packagePrice=String(price);
+      const strong=button.querySelector('strong');
+      if(strong)strong.textContent=formatTL(price);
+    }
+  });
+}
+function dealerPackageHasStaticButton(scope,name){
+  const container=document.querySelector(`[data-package-scope="${CSS.escape(scope)}"]`);
+  return !!container?.querySelector(`[data-package-name="${CSS.escape(name)}"]:not([data-package-custom])`);
+}
 function renderDealerCreatedPackagesInEntry(){
   const packages=packageBuilderReadPackages().filter(dealerPackageIsVisible);
   const selectedName=document.querySelector('[data-package-name].is-selected')?.dataset.packageName || '';
   document.querySelectorAll('[data-package-custom="true"]').forEach(node=>node.remove());
-  const entryMarkup=packages.map(dealerCreatedPackageEntryMarkup).join('');
+  dealerUpdateStaticPackageButtons(packages);
   document.querySelectorAll('[data-package-scope="drawer"],[data-package-scope="full"]').forEach(container=>{
-    container.insertAdjacentHTML('beforeend',entryMarkup);
+    const scope=container.dataset.packageScope;
+    const entryMarkup=packages
+      .filter(record=>dealerPackageVisibleForScope(record,scope)&&!dealerPackageHasStaticButton(scope,record.name))
+      .map(dealerCreatedPackageEntryMarkup)
+      .join('');
+    if(entryMarkup)container.insertAdjacentHTML('beforeend',entryMarkup);
   });
   const quickPackageStrip=document.querySelector('.vehicle-package-strip');
-  if(quickPackageStrip)quickPackageStrip.insertAdjacentHTML('beforeend',packages.map(dealerCreatedPackagePillMarkup).join(''));
+  if(quickPackageStrip){
+    const dashboardMarkup=packages
+      .filter(record=>dealerPackageVisibleForScope(record,'dashboard')&&!dealerPackageHasStaticButton('dashboard',record.name))
+      .map(dealerCreatedPackagePillMarkup)
+      .join('');
+    if(dashboardMarkup)quickPackageStrip.insertAdjacentHTML('beforeend',dashboardMarkup);
+  }
   updateDealerPackageStamp(packages);
-  const selectedStillExists=selectedName && [...document.querySelectorAll('[data-package-name]')].some(node=>node.dataset.packageName===selectedName);
+  const selectedStillExists=selectedName && [...document.querySelectorAll('[data-package-name]')].some(node=>node.dataset.packageName===selectedName&&!node.hidden);
   if(selectedStillExists)selectPackage(selectedName);
-  else if(!document.querySelector('[data-package-name].is-selected'))selectPackage('Paket 1');
+  else selectPackage('Paket 1');
 }
 function dealerPackageByName(name){
   const normalized=dealerNormalizeText(name);
@@ -4862,6 +4936,15 @@ function renderPackageValidationPanel(){
 function packageBuilderPackageIsArchived(item){
   return dealerNormalizeText(item?.status).includes('arsiv');
 }
+function packageBuilderPackageVisibilityMarkup(item){
+  const visibility=packageBuilderNormalizeVisibility(item.visibility);
+  return `<div class="package-visibility-actions" aria-label="${escapeHtml(item.name||'Paket')} görünürlük ayarları">
+    ${packageBuilderVisibilityScopes.map(scope=>{
+      const active=visibility[scope.key]!==false;
+      return `<button class="package-visibility-toggle ${active?'is-on':'is-off'}" data-package-visibility="${escapeHtml(item.id)}" data-package-visibility-scope="${escapeHtml(scope.key)}" type="button" title="${escapeHtml(scope.title)}" aria-label="${escapeHtml(scope.title)} ${active?'açık':'kapalı'}">${escapeHtml(scope.label)}</button>`;
+    }).join('')}
+  </div>`;
+}
 function packageBuilderPackageCard(item,archived=false){
   const mainCount=item.mainCount||item.mainTests?.length||0;
   const extraCount=item.extraCount||item.extraServices?.length||0;
@@ -4869,6 +4952,7 @@ function packageBuilderPackageCard(item,archived=false){
   return `<div class="package-created-item ${archived?'is-archived':''}">
     <b><span>${escapeHtml(item.name)}</span><span class="package-chip ${archived?'orange':'green'}">${escapeHtml(item.status||'Taslak')}</span></b>
     <span class="package-created-meta">${escapeHtml(String(mainCount))} ana test · ${escapeHtml(String(extraCount))} ek test · Test fiyatı ${escapeHtml(formatTL(item.testPriceTotal||0))} · Satış ${escapeHtml(formatTL(item.salesPrice))}${updated}</span>
+    ${archived?'':packageBuilderPackageVisibilityMarkup(item)}
     <div class="package-created-actions">
       ${archived?`<button class="package-action-link primary" data-package-restore="${escapeHtml(item.id)}" type="button">Geri Al</button>`:`<button class="package-action-link primary" data-package-edit="${escapeHtml(item.id)}" type="button">Düzenle</button><button class="package-action-link" data-package-copy="${escapeHtml(item.id)}" type="button">Kopyala</button><button class="package-action-link archive" data-package-archive="${escapeHtml(item.id)}" type="button">Arşivle</button>`}
       <button class="package-action-link danger" data-package-delete="${escapeHtml(item.id)}" type="button">Sil</button>
@@ -4951,7 +5035,8 @@ function packageBuilderTemplateToRecord(template,copyName){
     testPriceTotal,
     salesPrice:Number(template.price||0)+testPriceTotal,
     createdAt:new Date().toLocaleString('tr-TR'),
-    updatedAt:new Date().toLocaleString('tr-TR')
+    updatedAt:new Date().toLocaleString('tr-TR'),
+    visibility:packageBuilderDefaultVisibility()
   };
 }
 function copyPackageTemplate(templateId){
@@ -4963,6 +5048,18 @@ function copyPackageTemplate(templateId){
   packageBuilderPersistPackages();
   packageBuilderEditPackage(record.id);
   packageBuilderShowToast(`${template.name} kopyalandı ve düzenlemeye açıldı.`);
+}
+function packageBuilderTogglePackageVisibility(packageId,scope){
+  const record=packageBuilderState.createdPackages.find(item=>item.id===packageId);
+  if(!record||!packageBuilderVisibilityScopes.some(item=>item.key===scope))return;
+  const visibility=packageBuilderNormalizeVisibility(record.visibility);
+  visibility[scope]=!visibility[scope];
+  record.visibility=visibility;
+  record.updatedAt=new Date().toLocaleString('tr-TR');
+  packageBuilderPersistPackages();
+  packageBuilderRefresh();
+  const scopeLabel=packageBuilderVisibilityScopes.find(item=>item.key===scope)?.title||'Görünürlük';
+  packageBuilderShowToast(`${record.name} için ${scopeLabel} ${visibility[scope]?'açıldı':'kapatıldı'}.`);
 }
 function packageBuilderEditPackage(packageId){
   const record=packageBuilderState.createdPackages.find(item=>item.id===packageId);
@@ -5029,7 +5126,7 @@ function packageBuilderSubmit(mode){
   packageBuilderSetInfo({status});
   const totals=packageBuilderTotals();
   const existing=packageBuilderState.createdPackages.find(item=>item.id===packageBuilderState.editingPackageId);
-  const record={id:existing?.id||`package-${Date.now()}-${packageBuilderSlug(totals.info.name)}`,name:totals.info.name,status,category:totals.info.category,mainTests:[...packageBuilderState.selectedMainTests],extraServices:[...packageBuilderState.selectedExtraServices],mainCount:totals.selectedTests.length,extraCount:totals.selectedExtras.length,basePrice:totals.info.price,warrantyDuration:totals.info.warrantyDuration,warrantyKm:totals.info.warrantyKm,testPrices:packageBuilderCurrentTestPrices(),testPriceTotal:totals.testPriceTotal,salesPrice:totals.salesPrice,createdAt:existing?.createdAt||new Date().toLocaleString('tr-TR'),updatedAt:new Date().toLocaleString('tr-TR')};
+  const record={id:existing?.id||`package-${Date.now()}-${packageBuilderSlug(totals.info.name)}`,name:totals.info.name,status,category:totals.info.category,mainTests:[...packageBuilderState.selectedMainTests],extraServices:[...packageBuilderState.selectedExtraServices],mainCount:totals.selectedTests.length,extraCount:totals.selectedExtras.length,basePrice:totals.info.price,warrantyDuration:totals.info.warrantyDuration,warrantyKm:totals.info.warrantyKm,testPrices:packageBuilderCurrentTestPrices(),testPriceTotal:totals.testPriceTotal,salesPrice:totals.salesPrice,createdAt:existing?.createdAt||new Date().toLocaleString('tr-TR'),updatedAt:new Date().toLocaleString('tr-TR'),visibility:packageBuilderNormalizeVisibility(existing?.visibility)};
   packageBuilderState.editingPackageId=record.id;
   packageBuilderState.createdPackages=[record,...packageBuilderState.createdPackages.filter(item=>item.id!==record.id)];
   packageBuilderPersistPackages();
@@ -5189,6 +5286,8 @@ function wirePackageBuilderPage(){
     if(template){event.preventDefault();applyPackageTemplate(template.dataset.packageTemplate);return;}
     const templateCopy=event.target.closest('[data-package-template-copy]');
     if(templateCopy){event.preventDefault();copyPackageTemplate(templateCopy.dataset.packageTemplateCopy);return;}
+    const packageVisibility=event.target.closest('[data-package-visibility]');
+    if(packageVisibility){event.preventDefault();packageBuilderTogglePackageVisibility(packageVisibility.dataset.packageVisibility,packageVisibility.dataset.packageVisibilityScope);return;}
     const packageEdit=event.target.closest('[data-package-edit]');
     if(packageEdit){event.preventDefault();packageBuilderEditPackage(packageEdit.dataset.packageEdit);return;}
     const packageCopy=event.target.closest('[data-package-copy]');
