@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 240">
+ <defs><linearGradient id="silver" x1="0" x2="1"><stop stop-color="#fff"/><stop offset=".45" stop-color="#aeb3b7"/><stop offset=".7" stop-color="#fff"/><stop offset="1" stop-color="#777d82"/></linearGradient><linearGradient id="red" x1="0" x2="1"><stop stop-color="#ff3a32"/><stop offset=".5" stop-color="#d3161e"/><stop offset="1" stop-color="#ff544a"/></linearGradient><filter id="shadow"><feGaussianBlur stdDeviation="4"/></filter></defs>
+ <rect width="900" height="240" rx="12" fill="#090b0d"/><path d="M50 182h800" stroke="#d3161e" stroke-width="3"/><path d="M90 51l34 36-34 36h45l24-25 24 25h45l-34-36 34-36h-45l-24 25-24-25z" fill="#d3161e" opacity=".95"/>
+ <text x="225" y="143" transform="skewX(-8)" font-family="Arial Black,Arial,sans-serif" font-size="108" font-weight="900" letter-spacing="-6" fill="#000" opacity=".8">EXPERYA</text>
+ <text x="219" y="136" transform="skewX(-8)" font-family="Arial Black,Arial,sans-serif" font-size="108" font-weight="900" letter-spacing="-6"><tspan fill="url(#silver)">EXPER</tspan><tspan fill="url(#red)">YA</tspan></text>
+ <text x="225" y="204" font-family="Arial,sans-serif" font-size="17" font-weight="700" letter-spacing="8" fill="#fff">GEBZE OTO EKSPERTİZ</text>
+</svg>

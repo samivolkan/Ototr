@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 190">
+  <rect width="760" height="190" rx="24" fill="#171a1b"/>
+  <path d="M38 30h114l38 38-48 48 48 44h-76l-27-25-27 25H0l49-44L0 68h76l27 25 27-25z" transform="translate(28 0)" fill="#d5302f"/>
+  <path d="M91 55l23 23 23-23 17 17-23 23 23 23-17 17-23-23-23 23-17-17 23-23-23-23z" transform="translate(28 0)" fill="#fff"/>
+  <text x="230" y="107" font-family="Arial,sans-serif" font-size="72" font-weight="800" letter-spacing="2" fill="#fff">EXPERYA</text>
+  <text x="235" y="143" font-family="Arial,sans-serif" font-size="13" font-weight="700" letter-spacing="5" fill="#d5302f">GEBZE OTO EKSPERTİZ</text>
+</svg>
