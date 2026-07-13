@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 420">
+<defs>
+<linearGradient id="metal" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0%" stop-color="#ffffff"/><stop offset="45%" stop-color="#d9d9d9"/><stop offset="100%" stop-color="#6d6d6d"/>
+</linearGradient>
+<linearGradient id="red" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0%" stop-color="#ff4040"/><stop offset="100%" stop-color="#b30000"/>
+</linearGradient>
+</defs>
+<rect width="100%" height="100%" fill="none"/>
+<g font-family="Arial Black, Arial, sans-serif" font-size="170" font-weight="900">
+<text x="160" y="190">
+<tspan fill="url(#metal)">EXPER</tspan><tspan fill="url(#red)">YA</tspan>
+</text>
+</g>
+<line x1="60" y1="255" x2="220" y2="255" stroke="#c00000" stroke-width="8"/>
+<line x1="1380" y1="255" x2="1540" y2="255" stroke="#c00000" stroke-width="8"/>
+<text x="800" y="320" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="52" font-weight="700" letter-spacing="5">
+<tspan fill="#d71c24">GEBZE</tspan><tspan fill="#444"> OTO EKSPERTİZ</tspan>
+</text>
+</svg>

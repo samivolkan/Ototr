@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1536" height="1024" viewBox="0 0 1536 1024" role="img" aria-labelledby="title desc" shape-rendering="geometricPrecision">
+  <title id="title">ExpertYa — Gebze Oto Ekspertiz</title>
+  <desc id="desc">Red and metallic silver ExpertYa logo on a textured black background. All lettering is converted to vector paths.</desc>
+  <defs>
+    <radialGradient id="bg" cx="54%" cy="17%" r="86%">
+      <stop offset="0" stop-color="#1b1b1b"/>
+      <stop offset="0.30" stop-color="#151515"/>
+      <stop offset="0.66" stop-color="#0c0c0c"/>
+      <stop offset="1" stop-color="#050505"/>
+    </radialGradient>
+    <linearGradient id="bgSweep" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#000000" stop-opacity="0.20"/>
+      <stop offset="0.50" stop-color="#ffffff" stop-opacity="0.008"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0.025"/>
+    </linearGradient>
+    <radialGradient id="vignette" cx="50%" cy="44%" r="72%">
+      <stop offset="0.54" stop-color="#000000" stop-opacity="0"/>
+      <stop offset="1" stop-color="#000000" stop-opacity="0.58"/>
+    </radialGradient>
+
+    <linearGradient id="silverEmblem" gradientUnits="userSpaceOnUse" x1="0" y1="270" x2="0" y2="478">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="0.10" stop-color="#eeeeee"/>
+      <stop offset="0.32" stop-color="#d8d8d8"/>
+      <stop offset="0.56" stop-color="#b9b9b9"/>
+      <stop offset="0.80" stop-color="#939393"/>
+      <stop offset="1" stop-color="#777777"/>
+    </linearGradient>
+    <linearGradient id="silverMain" gradientUnits="userSpaceOnUse" x1="0" y1="525" x2="0" y2="650">
+      <stop offset="0" stop-color="#f6f6f6"/>
+      <stop offset="0.10" stop-color="#dedede"/>
+      <stop offset="0.34" stop-color="#c7c7c7"/>
+      <stop offset="0.45" stop-color="#bdbdbd"/>
+      <stop offset="0.63" stop-color="#a7a7a7"/>
+      <stop offset="1" stop-color="#797979"/>
+    </linearGradient>
+    <linearGradient id="silverSmall" gradientUnits="userSpaceOnUse" x1="0" y1="687" x2="0" y2="735">
+      <stop offset="0" stop-color="#f4f4f4"/>
+      <stop offset="0.25" stop-color="#d9d9d9"/>
+      <stop offset="0.60" stop-color="#aaaaaa"/>
+      <stop offset="1" stop-color="#727272"/>
+    </linearGradient>
+    <linearGradient id="silverSide" x1="0" y1="0" x2="0.9" y2="1">
+      <stop offset="0" stop-color="#606060"/>
+      <stop offset="1" stop-color="#171717"/>
+    </linearGradient>
+    <linearGradient id="silverSweep" gradientUnits="userSpaceOnUse" x1="180" y1="0" x2="1360" y2="0">
+      <stop offset="0" stop-color="#000000" stop-opacity="0.10"/>
+      <stop offset="0.18" stop-color="#ffffff" stop-opacity="0.24"/>
+      <stop offset="0.47" stop-color="#ffffff" stop-opacity="0.05"/>
+      <stop offset="0.73" stop-color="#000000" stop-opacity="0.13"/>
+      <stop offset="1" stop-color="#000000" stop-opacity="0.25"/>
+    </linearGradient>
+
+    <linearGradient id="redEmblem" gradientUnits="userSpaceOnUse" x1="0" y1="349" x2="0" y2="477">
+      <stop offset="0" stop-color="#f01a23"/>
+      <stop offset="0.18" stop-color="#d50916"/>
+      <stop offset="0.62" stop-color="#b20810"/>
+      <stop offset="1" stop-color="#850600"/>
+    </linearGradient>
+    <linearGradient id="redMain" gradientUnits="userSpaceOnUse" x1="0" y1="525" x2="0" y2="650">
+      <stop offset="0" stop-color="#e62a30"/>
+      <stop offset="0.14" stop-color="#d41f27"/>
+      <stop offset="0.55" stop-color="#a91216"/>
+      <stop offset="0.72" stop-color="#92100b"/>
+      <stop offset="1" stop-color="#700700"/>
+    </linearGradient>
+    <linearGradient id="redSmall" gradientUnits="userSpaceOnUse" x1="0" y1="696" x2="0" y2="735">
+      <stop offset="0" stop-color="#ef1b24"/>
+      <stop offset="0.38" stop-color="#ca0b14"/>
+      <stop offset="1" stop-color="#7b0500"/>
+    </linearGradient>
+    <linearGradient id="redSide" x1="0" y1="0" x2="0.9" y2="1">
+      <stop offset="0" stop-color="#7b070b"/>
+      <stop offset="1" stop-color="#250000"/>
+    </linearGradient>
+    <linearGradient id="redSweep" gradientUnits="userSpaceOnUse" x1="470" y1="0" x2="1360" y2="0">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.14"/>
+      <stop offset="0.34" stop-color="#ffffff" stop-opacity="0.02"/>
+      <stop offset="0.78" stop-color="#000000" stop-opacity="0.14"/>
+      <stop offset="1" stop-color="#000000" stop-opacity="0.28"/>
+    </linearGradient>
+
+    <linearGradient id="edgeSilver" gradientUnits="userSpaceOnUse" x1="0" y1="260" x2="0" y2="660">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.88"/>
+      <stop offset="0.42" stop-color="#ffffff" stop-opacity="0.28"/>
+      <stop offset="1" stop-color="#0a0a0a" stop-opacity="0.80"/>
+    </linearGradient>
+    <linearGradient id="edgeRed" gradientUnits="userSpaceOnUse" x1="0" y1="340" x2="0" y2="660">
+      <stop offset="0" stop-color="#ff7b7f" stop-opacity="0.72"/>
+      <stop offset="0.40" stop-color="#e62028" stop-opacity="0.28"/>
+      <stop offset="1" stop-color="#230000" stop-opacity="0.90"/>
+    </linearGradient>
+
+    <filter id="grain" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.72" numOctaves="3" seed="23"/>
+      <feColorMatrix type="saturate" values="0"/>
+      <feComponentTransfer>
+        <feFuncR type="linear" slope="0.35" intercept="0"/>
+        <feFuncG type="linear" slope="0.35" intercept="0"/>
+        <feFuncB type="linear" slope="0.35" intercept="0"/>
+        <feFuncA type="table" tableValues="0 0.075"/>
+      </feComponentTransfer>
+    </filter>
+    <filter id="shadowLarge" x="-25%" y="-35%" width="160%" height="190%" color-interpolation-filters="sRGB">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="5.8" result="blur"/>
+      <feOffset in="blur" dx="7" dy="8" result="offset"/>
+      <feColorMatrix in="offset" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.78 0" result="shadow"/>
+      <feMerge><feMergeNode in="shadow"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="shadowSmall" x="-25%" y="-70%" width="160%" height="230%" color-interpolation-filters="sRGB">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2.2" result="blur"/>
+      <feOffset in="blur" dx="3" dy="3" result="offset"/>
+      <feColorMatrix in="offset" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.68 0" result="shadow"/>
+      <feMerge><feMergeNode in="shadow"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+
+    <path id="emblemSilver" d="M 678 270 L 941 270 L 912 306 L 695 306 L 679 325 L 633 325 Z M 625 332 L 672 332 L 625 384 L 706 476 L 660 476 L 579 384 Z"/>
+    <path id="emblemRed" d="M 692 349 L 881 349 L 849 390 L 657 390 Z M 697 435 L 920 435 L 884 477 L 733 477 Z"/>
+    <path id="mainSilver" d="M 224 525 L 380 525 L 361 554 L 248 554 L 242 573 L 343 573 L 328 601 L 233 601 L 227 622 L 347 622 L 329 650 L 180 650 Z M 397 525 L 439 525 L 530 650 L 486 650 Z M 432 592 L 450 613 L 404 650 L 356 650 Z M 586 525 L 695 525 C 712 525 722 536 722 552 C 722 566 716 581 706 591 C 698 600 688 607 679 607 L 595 607 L 582 650 L 547 650 L 569 580 L 673 580 C 681 580 686 574 688 566 C 690 558 686 553 680 553 L 577 553 Z M 752 525 L 893 525 L 881 553 L 776 553 L 772 573 L 866 573 L 852 601 L 765 601 L 760 622 L 865 622 L 852 650 L 715 650 Z M 914 525 L 1023 525 C 1040 525 1050 536 1050 552 C 1050 569 1043 584 1032 594 C 1023 602 1012 605 998 607 L 1029 650 L 991 650 L 961 607 L 925 607 L 912 650 L 878 650 L 898 580 L 1001 580 C 1009 580 1015 573 1016 563 C 1017 557 1013 553 1009 553 L 906 553 Z"/>
+    <path id="mainRed" d="M 518 525 L 566 525 L 490 581 L 475 560 Z M 1064 525 L 1104 525 L 1137 575 L 1191 525 L 1231 525 L 1149 602 L 1136 650 L 1103 650 L 1115 602 Z M 1283 525 L 1321 525 L 1360 650 L 1324 650 L 1316 624 L 1242 624 L 1221 650 L 1186 650 Z M 1296 557 L 1309 600 L 1263 600 Z" fill-rule="evenodd" clip-rule="evenodd"/>
+    <path id="tagRed" d="M 1239.00 720.00 L 1363.00 720.00 L 1364.00 719.00 L 1364.00 715.00 L 1365.00 714.00 L 1364.00 713.00 L 1241.00 713.00 L 1239.00 715.00 Z M 175.00 720.00 L 324.00 720.00 L 324.00 719.00 L 327.00 716.00 L 327.00 714.00 L 326.00 714.00 L 325.00 713.00 L 178.00 713.00 L 175.00 717.00 Z M 565.00 697.00 L 565.00 734.00 L 594.00 734.00 L 595.00 733.00 L 595.00 728.00 L 594.00 727.00 L 574.00 727.00 L 573.00 726.00 L 573.00 720.00 L 574.00 719.00 L 592.00 719.00 L 593.00 718.00 L 593.00 713.00 L 592.00 712.00 L 591.00 712.00 L 590.00 711.00 L 589.00 712.00 L 575.00 712.00 L 573.00 710.00 L 573.00 706.00 L 575.00 704.00 L 578.00 704.00 L 579.00 705.00 L 584.00 705.00 L 585.00 704.00 L 586.00 704.00 L 587.00 705.00 L 588.00 704.00 L 595.00 704.00 L 595.00 698.00 L 594.00 697.00 Z M 514.00 697.00 L 513.00 698.00 L 513.00 704.00 L 529.00 704.00 L 531.00 706.00 L 531.00 707.00 L 529.00 709.00 L 529.00 710.00 L 528.00 711.00 L 527.00 711.00 L 527.00 712.00 L 513.00 727.00 L 513.00 734.00 L 545.00 734.00 L 546.00 733.00 L 546.00 728.00 L 545.00 727.00 L 527.00 727.00 L 526.00 726.00 L 526.00 725.00 L 528.00 723.00 L 528.00 722.00 L 529.00 721.00 L 530.00 721.00 L 530.00 720.00 L 534.00 716.00 L 534.00 715.00 L 538.00 712.00 L 539.00 712.00 L 539.00 711.00 L 542.00 708.00 L 542.00 707.00 L 545.00 704.00 L 546.00 704.00 L 546.00 697.00 Z M 462.00 697.00 L 462.00 699.00 L 461.00 700.00 L 461.00 702.00 L 462.00 703.00 L 462.00 729.00 L 461.00 730.00 L 461.00 733.00 L 462.00 734.00 L 485.00 734.00 L 486.00 733.00 L 489.00 733.00 L 490.00 732.00 L 491.00 732.00 L 494.00 729.00 L 494.00 728.00 L 495.00 727.00 L 495.00 723.00 L 496.00 722.00 L 496.00 720.00 L 491.00 716.00 L 491.00 715.00 L 493.00 712.00 L 493.00 705.00 L 494.00 704.00 L 493.00 701.00 L 490.00 699.00 L 488.00 699.00 L 487.00 698.00 L 484.00 698.00 L 483.00 697.00 Z M 470.00 726.00 L 470.00 722.00 L 472.00 719.00 L 475.00 719.00 L 476.00 718.00 L 482.00 718.00 L 486.00 721.00 L 486.00 724.00 L 482.00 727.00 L 471.00 727.00 Z M 470.00 706.00 L 472.00 704.00 L 481.00 704.00 L 484.00 707.00 L 484.00 709.00 L 480.00 712.00 L 472.00 712.00 L 470.00 710.00 Z M 413.00 697.00 L 412.00 698.00 L 412.00 722.00 L 413.00 723.00 L 413.00 724.00 L 412.00 725.00 L 412.00 733.00 L 413.00 734.00 L 443.00 734.00 L 443.00 732.00 L 444.00 731.00 L 444.00 728.00 L 443.00 727.00 L 422.00 727.00 L 421.00 726.00 L 421.00 720.00 L 422.00 719.00 L 438.00 719.00 L 441.00 717.00 L 441.00 713.00 L 440.00 713.00 L 439.00 712.00 L 422.00 712.00 L 421.00 711.00 L 421.00 705.00 L 422.00 704.00 L 432.00 704.00 L 433.00 705.00 L 434.00 704.00 L 443.00 704.00 L 444.00 703.00 L 444.00 698.00 L 443.00 698.00 L 442.00 697.00 Z M 358.00 705.00 L 358.00 706.00 L 357.00 707.00 L 357.00 709.00 L 356.00 710.00 L 356.00 712.00 L 355.00 713.00 L 355.00 718.00 L 356.00 719.00 L 356.00 723.00 L 357.00 724.00 L 357.00 725.00 L 362.00 731.00 L 363.00 731.00 L 367.00 734.00 L 371.00 734.00 L 372.00 735.00 L 378.00 735.00 L 379.00 734.00 L 383.00 734.00 L 384.00 733.00 L 385.00 733.00 L 386.00 732.00 L 393.00 729.00 L 393.00 723.00 L 394.00 722.00 L 394.00 714.00 L 392.00 714.00 L 391.00 713.00 L 375.00 713.00 L 375.00 719.00 L 376.00 720.00 L 381.00 720.00 L 383.00 722.00 L 383.00 725.00 L 380.00 727.00 L 372.00 727.00 L 371.00 726.00 L 370.00 726.00 L 367.00 723.00 L 367.00 721.00 L 365.00 719.00 L 365.00 711.00 L 366.00 710.00 L 366.00 709.00 L 369.00 706.00 L 370.00 706.00 L 373.00 704.00 L 380.00 704.00 L 381.00 705.00 L 382.00 705.00 L 385.00 708.00 L 386.00 708.00 L 390.00 704.00 L 391.00 704.00 L 392.00 701.00 L 391.00 701.00 L 389.00 699.00 L 387.00 699.00 L 386.00 698.00 L 383.00 698.00 L 382.00 697.00 L 369.00 697.00 L 366.00 699.00 L 364.00 699.00 Z" fill-rule="evenodd" clip-rule="evenodd"/>
+    <path id="tagSilver" d="M 1185.00 698.00 L 1185.00 699.00 L 1186.00 700.00 L 1186.00 704.00 L 1185.00 705.00 L 1187.00 705.00 L 1188.00 704.00 L 1193.00 704.00 L 1194.00 705.00 L 1195.00 704.00 L 1198.00 704.00 L 1199.00 705.00 L 1200.00 704.00 L 1201.00 704.00 L 1203.00 706.00 L 1203.00 708.00 L 1196.00 715.00 L 1196.00 716.00 L 1193.00 719.00 L 1193.00 720.00 L 1186.00 727.00 L 1186.00 732.00 L 1185.00 733.00 L 1186.00 734.00 L 1215.00 734.00 L 1216.00 733.00 L 1215.00 732.00 L 1215.00 729.00 L 1216.00 728.00 L 1215.00 727.00 L 1210.00 727.00 L 1209.00 728.00 L 1197.00 728.00 L 1196.00 727.00 L 1196.00 726.00 L 1200.00 722.00 L 1200.00 721.00 L 1206.00 715.00 L 1206.00 714.00 L 1212.00 708.00 L 1212.00 707.00 L 1215.00 704.00 L 1215.00 698.00 Z M 1161.00 698.00 L 1160.00 699.00 L 1160.00 734.00 L 1167.00 734.00 L 1168.00 733.00 L 1167.00 732.00 L 1167.00 698.00 Z M 1113.00 698.00 L 1113.00 705.00 L 1123.00 705.00 L 1124.00 706.00 L 1124.00 734.00 L 1131.00 734.00 L 1131.00 705.00 L 1132.00 704.00 L 1143.00 704.00 L 1143.00 698.00 Z M 1067.00 698.00 L 1066.00 699.00 L 1066.00 700.00 L 1067.00 701.00 L 1067.00 732.00 L 1066.00 733.00 L 1067.00 734.00 L 1070.00 734.00 L 1071.00 733.00 L 1074.00 734.00 L 1074.00 723.00 L 1075.00 722.00 L 1081.00 722.00 L 1083.00 724.00 L 1083.00 725.00 L 1085.00 727.00 L 1085.00 728.00 L 1087.00 730.00 L 1087.00 731.00 L 1089.00 733.00 L 1089.00 734.00 L 1098.00 734.00 L 1089.00 722.00 L 1089.00 721.00 L 1090.00 720.00 L 1091.00 720.00 L 1095.00 716.00 L 1095.00 715.00 L 1096.00 714.00 L 1096.00 705.00 L 1095.00 704.00 L 1095.00 703.00 L 1092.00 700.00 L 1091.00 700.00 L 1090.00 699.00 L 1088.00 699.00 L 1087.00 698.00 Z M 1074.00 705.00 L 1075.00 704.00 L 1077.00 704.00 L 1078.00 705.00 L 1086.00 705.00 L 1089.00 708.00 L 1089.00 712.00 L 1086.00 715.00 L 1084.00 715.00 L 1083.00 716.00 L 1075.00 716.00 L 1074.00 715.00 Z M 1020.00 698.00 L 1019.00 699.00 L 1020.00 700.00 L 1020.00 732.00 L 1019.00 733.00 L 1020.00 734.00 L 1047.00 734.00 L 1047.00 727.00 L 1028.00 727.00 L 1027.00 726.00 L 1027.00 720.00 L 1028.00 719.00 L 1044.00 719.00 L 1045.00 718.00 L 1045.00 713.00 L 1044.00 712.00 L 1042.00 712.00 L 1041.00 713.00 L 1028.00 713.00 L 1027.00 712.00 L 1027.00 705.00 L 1028.00 704.00 L 1030.00 704.00 L 1031.00 705.00 L 1032.00 704.00 L 1047.00 704.00 L 1047.00 698.00 Z M 995.00 699.00 L 993.00 699.00 L 992.00 698.00 L 973.00 698.00 L 973.00 734.00 L 979.00 734.00 L 980.00 733.00 L 980.00 724.00 L 981.00 723.00 L 983.00 723.00 L 984.00 722.00 L 992.00 722.00 L 993.00 721.00 L 995.00 721.00 L 996.00 720.00 L 997.00 720.00 L 1000.00 717.00 L 1000.00 716.00 L 1001.00 715.00 L 1001.00 705.00 L 999.00 703.00 L 999.00 702.00 Z M 980.00 705.00 L 981.00 704.00 L 987.00 704.00 L 988.00 705.00 L 991.00 705.00 L 994.00 708.00 L 994.00 713.00 L 990.00 716.00 L 987.00 716.00 L 986.00 717.00 L 981.00 717.00 L 980.00 716.00 Z M 929.00 698.00 L 929.00 700.00 L 926.00 704.00 L 926.00 712.00 L 927.00 713.00 L 927.00 714.00 L 929.00 716.00 L 930.00 716.00 L 933.00 718.00 L 935.00 718.00 L 936.00 719.00 L 940.00 719.00 L 941.00 720.00 L 944.00 721.00 L 946.00 723.00 L 946.00 725.00 L 942.00 728.00 L 936.00 728.00 L 935.00 727.00 L 932.00 726.00 L 928.00 723.00 L 927.00 724.00 L 927.00 725.00 L 924.00 728.00 L 924.00 729.00 L 925.00 730.00 L 926.00 730.00 L 931.00 733.00 L 933.00 733.00 L 934.00 734.00 L 945.00 734.00 L 946.00 733.00 L 949.00 732.00 L 952.00 729.00 L 952.00 727.00 L 953.00 726.00 L 953.00 720.00 L 952.00 719.00 L 952.00 718.00 L 947.00 714.00 L 945.00 714.00 L 944.00 713.00 L 941.00 713.00 L 940.00 712.00 L 937.00 712.00 L 936.00 711.00 L 935.00 711.00 L 933.00 709.00 L 933.00 706.00 L 936.00 704.00 L 942.00 704.00 L 943.00 705.00 L 945.00 705.00 L 947.00 707.00 L 949.00 707.00 L 949.00 706.00 L 952.00 703.00 L 952.00 702.00 L 950.00 700.00 L 949.00 700.00 L 948.00 699.00 L 946.00 699.00 L 945.00 698.00 L 933.00 698.00 L 932.00 699.00 L 930.00 699.00 Z M 877.00 698.00 L 877.00 732.00 L 876.00 733.00 L 877.00 734.00 L 883.00 734.00 L 884.00 733.00 L 884.00 723.00 L 888.00 719.00 L 889.00 719.00 L 894.00 725.00 L 894.00 726.00 L 897.00 729.00 L 897.00 730.00 L 900.00 734.00 L 909.00 734.00 L 909.00 733.00 L 907.00 731.00 L 907.00 730.00 L 906.00 730.00 L 904.00 728.00 L 904.00 727.00 L 902.00 725.00 L 902.00 724.00 L 898.00 720.00 L 898.00 719.00 L 895.00 716.00 L 895.00 715.00 L 894.00 714.00 L 894.00 713.00 L 902.00 705.00 L 902.00 704.00 L 905.00 701.00 L 906.00 701.00 L 906.00 700.00 L 907.00 699.00 L 908.00 699.00 L 908.00 698.00 L 899.00 698.00 L 897.00 700.00 L 897.00 701.00 L 896.00 702.00 L 895.00 702.00 L 894.00 703.00 L 894.00 704.00 L 886.00 712.00 L 885.00 712.00 L 884.00 711.00 L 884.00 698.00 Z M 829.00 698.00 L 829.00 733.00 L 830.00 734.00 L 857.00 734.00 L 857.00 727.00 L 837.00 727.00 L 836.00 726.00 L 836.00 720.00 L 837.00 719.00 L 854.00 719.00 L 854.00 713.00 L 853.00 712.00 L 849.00 712.00 L 848.00 713.00 L 837.00 713.00 L 836.00 712.00 L 836.00 705.00 L 837.00 704.00 L 857.00 704.00 L 857.00 698.00 Z M 696.00 698.00 L 696.00 704.00 L 697.00 705.00 L 707.00 705.00 L 708.00 706.00 L 708.00 731.00 L 707.00 732.00 L 707.00 733.00 L 708.00 734.00 L 714.00 734.00 L 715.00 733.00 L 715.00 713.00 L 714.00 712.00 L 714.00 705.00 L 715.00 704.00 L 725.00 704.00 L 726.00 705.00 L 726.00 702.00 L 727.00 701.00 L 727.00 699.00 L 726.00 698.00 Z M 767.00 698.00 L 761.00 698.00 L 760.00 697.00 L 759.00 698.00 L 754.00 698.00 L 753.00 699.00 L 751.00 699.00 L 748.00 702.00 L 747.00 702.00 L 746.00 703.00 L 746.00 704.00 L 744.00 706.00 L 744.00 707.00 L 742.00 710.00 L 742.00 722.00 L 743.00 723.00 L 743.00 725.00 L 746.00 728.00 L 746.00 729.00 L 747.00 729.00 L 750.00 732.00 L 751.00 732.00 L 752.00 733.00 L 754.00 733.00 L 755.00 734.00 L 765.00 734.00 L 766.00 733.00 L 768.00 733.00 L 769.00 732.00 L 772.00 731.00 L 778.00 723.00 L 778.00 721.00 L 779.00 720.00 L 779.00 713.00 L 778.00 712.00 L 778.00 708.00 L 776.00 706.00 L 776.00 705.00 L 771.00 700.00 L 770.00 700.00 Z M 757.00 704.00 L 764.00 704.00 L 765.00 705.00 L 766.00 705.00 L 770.00 709.00 L 770.00 710.00 L 772.00 713.00 L 772.00 718.00 L 771.00 719.00 L 771.00 721.00 L 768.00 725.00 L 767.00 725.00 L 763.00 728.00 L 758.00 728.00 L 757.00 727.00 L 754.00 726.00 L 749.00 720.00 L 749.00 713.00 L 750.00 712.00 L 751.00 709.00 L 755.00 705.00 L 756.00 705.00 Z M 672.00 698.00 L 671.00 699.00 L 669.00 699.00 L 668.00 698.00 L 662.00 698.00 L 661.00 697.00 L 660.00 698.00 L 655.00 698.00 L 654.00 699.00 L 651.00 700.00 L 648.00 703.00 L 647.00 703.00 L 647.00 704.00 L 645.00 706.00 L 645.00 707.00 L 644.00 708.00 L 644.00 710.00 L 643.00 711.00 L 643.00 722.00 L 644.00 723.00 L 646.00 728.00 L 647.00 728.00 L 651.00 732.00 L 652.00 732.00 L 653.00 733.00 L 655.00 733.00 L 656.00 734.00 L 666.00 734.00 L 667.00 733.00 L 669.00 733.00 L 670.00 732.00 L 671.00 732.00 L 677.00 727.00 L 677.00 726.00 L 679.00 723.00 L 679.00 721.00 L 680.00 720.00 L 680.00 718.00 L 681.00 717.00 L 681.00 716.00 L 680.00 715.00 L 680.00 711.00 L 679.00 710.00 L 679.00 708.00 L 676.00 704.00 L 676.00 703.00 L 672.00 700.00 Z M 659.00 704.00 L 664.00 704.00 L 665.00 705.00 L 668.00 706.00 L 671.00 709.00 L 671.00 710.00 L 673.00 713.00 L 673.00 718.00 L 672.00 719.00 L 672.00 721.00 L 669.00 725.00 L 668.00 725.00 L 664.00 728.00 L 660.00 728.00 L 659.00 727.00 L 657.00 727.00 L 656.00 726.00 L 655.00 726.00 L 652.00 723.00 L 652.00 722.00 L 651.00 721.00 L 651.00 719.00 L 650.00 718.00 L 650.00 713.00 L 651.00 712.00 L 652.00 709.00 L 655.00 706.00 L 656.00 706.00 Z M 1161.00 688.00 L 1160.00 689.00 L 1160.00 693.00 L 1161.00 694.00 L 1166.00 694.00 L 1167.00 693.00 L 1167.00 688.00 Z" fill-rule="evenodd" clip-rule="evenodd"/>
+  </defs>
+  <rect width="1536" height="1024" fill="url(#bg)"/>
+  <rect width="1536" height="1024" fill="url(#bgSweep)"/>
+  <rect width="1536" height="1024" filter="url(#grain)" opacity="0.13"/>
+  <rect width="1536" height="1024" fill="url(#vignette)"/>
+  <!-- Top emblem -->
+  <g filter="url(#shadowLarge)" aria-label="ExpertYa emblem">
+    <use href="#emblemSilver" transform="translate(5 6)" fill="url(#silverSide)" stroke="#030303" stroke-width="2.2" stroke-linejoin="round"/>
+    <use href="#emblemRed" transform="translate(5 6)" fill="url(#redSide)" stroke="#100000" stroke-width="2.2" stroke-linejoin="round"/>
+    <use href="#emblemSilver" fill="url(#silverEmblem)" stroke="#8f8f8f" stroke-width="1.6" stroke-linejoin="round"/>
+    <use href="#emblemSilver" fill="url(#silverSweep)" opacity="0.48"/>
+    <use href="#emblemSilver" fill="none" stroke="url(#edgeSilver)" stroke-width="1.25" stroke-linejoin="round"/>
+    <use href="#emblemRed" fill="url(#redEmblem)" stroke="#6b0004" stroke-width="1.55" stroke-linejoin="round"/>
+    <use href="#emblemRed" fill="url(#redSweep)" opacity="0.42"/>
+    <use href="#emblemRed" fill="none" stroke="url(#edgeRed)" stroke-width="1.25" stroke-linejoin="round"/>
+  </g>
+
+  <!-- Main custom wordmark -->
+  <g filter="url(#shadowLarge)" aria-label="EXPERYA">
+    <use href="#mainSilver" transform="translate(5 6)" fill="url(#silverSide)" stroke="#030303" stroke-width="2.5" stroke-linejoin="round"/>
+    <use href="#mainRed" transform="translate(5 6)" fill="url(#redSide)" stroke="#120000" stroke-width="2.5" stroke-linejoin="round" fill-rule="evenodd"/>
+    <use href="#mainSilver" fill="url(#silverMain)" stroke="#8e8e8e" stroke-width="1.7" stroke-linejoin="round"/>
+    <use href="#mainSilver" fill="url(#silverSweep)" opacity="0.52"/>
+    <use href="#mainSilver" fill="none" stroke="url(#edgeSilver)" stroke-width="1.25" stroke-linejoin="round"/>
+    <use href="#mainRed" fill="url(#redMain)" stroke="#650004" stroke-width="1.7" stroke-linejoin="round" fill-rule="evenodd"/>
+    <use href="#mainRed" fill="url(#redSweep)" opacity="0.46" fill-rule="evenodd"/>
+    <use href="#mainRed" fill="none" stroke="url(#edgeRed)" stroke-width="1.25" stroke-linejoin="round" fill-rule="evenodd"/>
+  </g>
+
+  <!-- Bottom descriptor, fully outlined (no fonts) -->
+  <g filter="url(#shadowSmall)" aria-label="GEBZE OTO EKSPERTİZ">
+    <use href="#tagRed" transform="translate(2 2.5)" fill="#320000" opacity="0.74" fill-rule="evenodd"/>
+    <use href="#tagSilver" transform="translate(2 2.5)" fill="#202020" opacity="0.78" fill-rule="evenodd"/>
+    <use href="#tagRed" fill="url(#redSmall)" stroke="#6d0003" stroke-width="0.55" stroke-linejoin="round" fill-rule="evenodd"/>
+    <use href="#tagRed" fill="none" stroke="#ff353a" stroke-opacity="0.28" stroke-width="0.35" stroke-linejoin="round" fill-rule="evenodd"/>
+    <use href="#tagSilver" fill="url(#silverSmall)" stroke="#777777" stroke-width="0.50" stroke-linejoin="round" fill-rule="evenodd"/>
+    <use href="#tagSilver" fill="none" stroke="#ffffff" stroke-opacity="0.25" stroke-width="0.30" stroke-linejoin="round" fill-rule="evenodd"/>
+  </g>
+</svg>
