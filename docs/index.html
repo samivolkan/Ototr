@@ -19,9 +19,10 @@
     (function(){
       try{
         var params = new URLSearchParams(window.location.search);
-        window.__OTOTR_DEALER_STANDALONE__ = params.get('portal') === 'dealer';
-        if(window.__OTOTR_DEALER_STANDALONE__){
-          window.location.replace('bayi-portal/index.html#dealer');
+        window.__OTOTR_DEALER_STANDALONE__ = false;
+        if(params.get('portal') === 'dealer'){
+          params.delete('portal');
+          window.history.replaceState(null,'',window.location.pathname+(params.toString()?`?${params.toString()}`:'')+'#dashboard');
         }
       }catch(err){}
     })();
@@ -2873,8 +2874,11 @@
       ['Ayarlar', [['architecture','Sistem Mimarisi','network'],['settings','Ayarlar','settings'],['legacy','Legacy Room','landmark']]]
     ];
     const titles = {dashboard:'Yönetim Kokpiti',intelligence:'İş Zekası',branches:'Bayiler & Şubeler',dealer:'Bayi Portalı','ototr-web':'OTOTR Web',operations:'Operasyon',franchise:'Franchise Satış',crm:'CRM & Randevu',complaints:'Müşteri Şikayetleri','google-reviews':'Google Haritalar İtibar Merkezi',reputation:'İtibar Radar',finance:'Finans & Royalty',marketing:'Pazarlama',quality:'Kalite & Denetim','report-design':'Ekspertiz Rapor Tasarımı','vehicle-passport':'Dijital Araç Karnesi',academy:'OTOTR Academy',hr:'İnsan Kaynakları',legal:'Hukuk & Risk',crisis:'Kriz Merkezi',actions:'Aksiyon & Görev',ai:'AI Öneri',growth:'Bayii Büyüme',legacy:'Legacy Room',architecture:'Sistem Mimarisi',settings:'Ayarlar',branchProfile:'Şube Profili',franchiseProfile:'Aday Değerlendirme',customerProfile:'Müşteri 360'};
-    function dealerPortalUrl(){ return 'bayi-portal/index.html#dealer'; }
-    function openDealerPortalWindow(){ window.location.assign(dealerPortalUrl()); }
+    function dealerPortalUrl(){
+      const path=decodeURIComponent(location.pathname||'').replace(/\\/g,'/').toLowerCase();
+      return path.includes('/bayi-portal/') ? 'index.html#dealer' : 'bayi-portal/index.html#dealer';
+    }
+    function openDealerPortalWindow(){ window.open(dealerPortalUrl(),'_blank','noopener,noreferrer'); }
     function dealerScrubSensitiveUrlParams(){
       try{
         const params=new URLSearchParams(location.search);
@@ -14921,10 +14925,6 @@
     }
     function route(id,options={}){
       id = id==='expertise-report' ? 'report-design' : id;
-      if(id==='dealer' && !document.body.classList.contains('dealer-standalone')){
-        window.location.assign(dealerPortalUrl());
-        return;
-      }
       if(id!=='dealer' && isDealerStandaloneRoute()){
         const dealerTab = dealerStandaloneRouteTab(id);
         if(dealerTab) saveDealerPortalState({tab:dealerTab});
@@ -15525,8 +15525,14 @@
       if(apiStatus) apiStatus.textContent='Mock API bağlanıyor';
       DB=await Backend.connect();
       if(apiStatus) apiStatus.textContent='Mock API bağlı';
-      const opensDealerPortal = new URLSearchParams(location.search).get('portal')==='dealer';
-      const initial=(location.hash || (opensDealerPortal ? '#dealer' : '#dashboard')).replace('#','');
+      const params=new URLSearchParams(location.search);
+      if(params.get('portal')==='dealer'){
+        params.delete('portal');
+        history.replaceState(null,'',location.pathname+(params.toString()?`?${params.toString()}`:'')+'#dashboard');
+      }else if((location.hash||'').replace('#','')==='dealer'){
+        history.replaceState(null,'',location.pathname+location.search+'#dashboard');
+      }
+      const initial=(location.hash || '#dashboard').replace('#','');
       const initialCanonical=initial==='expertise-report'?'report-design':initial;
       const initialHR=parseHRRoute(initialCanonical);
       const initialAcademy=parseAcademyRoute(initialCanonical);
@@ -15548,11 +15554,12 @@
     })();
     window.addEventListener('hashchange',()=>{
       const id=(location.hash||'#dashboard').replace('#','');
-      const canonical=id==='expertise-report'?'report-design':id;
-      if(canonical==='dealer'){
-        window.location.assign(dealerPortalUrl());
+      if(id==='dealer'){
+        history.replaceState(null,'',location.pathname+location.search+'#dashboard');
+        route('dashboard');
         return;
       }
+      const canonical=id==='expertise-report'?'report-design':id;
       const hr=parseHRRoute(canonical);
       const academy=parseAcademyRoute(canonical);
       if(hr || academy || (titles[canonical] && canonical!==current)) route(canonical);
