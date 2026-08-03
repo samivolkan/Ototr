@@ -393,9 +393,10 @@ button:disabled{cursor:not-allowed;opacity:.48}
   <script>(() => {
   'use strict';
 
-  const SOURCE = JSON.parse(document.getElementById('source-data').textContent);
+  const SOURCE = normalizeStructuredStrings(JSON.parse(document.getElementById('source-data').textContent));
   const EMBEDDED_STATE = parseEmbeddedState();
-  const STORAGE_KEY = 'ototr.test-rule-editor.v1';
+  const STORAGE_KEY = 'ototr.test-rule-editor.v2';
+  const LEGACY_STORAGE_KEYS = [STORAGE_KEY, 'ototr.test-rule-editor.v1'];
   const PROJECT_TYPE = 'OTOTR_TEST_RULE_EDITOR';
   const APP_VERSION = '1.0.0';
 
@@ -689,6 +690,7 @@ button:disabled{cursor:not-allowed;opacity:.48}
     renderMain();
     renderInspector();
     renderStickyNav();
+    repairRenderedText();
   }
 
   function renderHeader() {
@@ -930,15 +932,15 @@ button:disabled{cursor:not-allowed;opacity:.48}
     return `<div class="summary-page">
       <section class="card">
         <div class="card-head summary-page-head">
-          <div><h1 class="item-title">Karar Ozeti</h1><p class="section-sub">Kritik, 1000 km kapsam disi, kusurlu ve uygun kararlari ayri yan sayfada takip edin. Listedeki satira tiklayarak ilgili maddeye gidip duzenleme yapabilirsiniz.</p></div>
-          <div class="summary-nav"><button class="btn btn-soft" data-action="back-to-editor">Duzenlemeye Don</button></div>
+          <div><h1 class="item-title">Karar Özeti</h1><p class="section-sub">Kritik, 1000 km kapsam dışı, kusurlu ve uygun kararları ayrı yan sayfada takip edin. Listedeki satıra tıklayarak ilgili maddeye gidip düzenleme yapabilirsiniz.</p></div>
+          <div class="summary-nav"><button class="btn btn-soft" data-action="back-to-editor">Düzenlemeye Dön</button></div>
         </div>
       </section>
       <section class="card summary-card">
         <div class="card-body">
           <div class="summary-grid">
             ${renderSummaryBox('Kritik Maddeler', 'critical', summary.critical)}
-            ${renderSummaryBox('1000 Km Kapsam D??? Birakanlar', 'scope', summary.outOfScope)}
+            ${renderSummaryBox('1000 Km Kapsam Dışı Bırakanlar', 'scope', summary.outOfScope)}
             ${renderSummaryBox('Kusurlu Maddeler', 'fault', summary.faulty)}
             ${renderSummaryBox('Uygun Maddeler', 'ok', summary.approved)}
           </div>
@@ -1031,18 +1033,18 @@ button:disabled{cursor:not-allowed;opacity:.48}
 
   function renderStickyNav() {
     if (state.currentView === 'summary') {
-      dom.stickyNav.innerHTML = `<button class="btn btn-dark" data-action="back-to-editor">Duzenlemeye Don</button><div class="nav-info"><strong>Karar Ozeti</strong><small>Ozet listesinden madde secerek duzenleme ekranina gecebilirsiniz.</small></div>`;
+      dom.stickyNav.innerHTML = `<button class="btn btn-dark" data-action="back-to-editor">Düzenlemeye Dön</button><div class="nav-info"><strong>Karar Özeti</strong><small>Özet listesinden madde seçerek düzenleme ekranına geçebilirsiniz.</small></div>`;
       return;
     }
     const item = itemById.get(state.selectedItemId);
     if (!item) return;
     const rule = readItemRule(item);
     const validation = validateItem(item, rule);
-    dom.stickyNav.innerHTML = `<button class="btn btn-dark" data-action="previous-item">??? ??nceki</button>
-      <div class="nav-info"><strong>${escapeHTML(item.title)}</strong><small>${validation.errors.length ? `${validation.errors.length} eksik karar` : 'Onaya haz??r'} ?? Otomatik kay??t a????k</small></div>
-      ${rule.reviewStatus === 'approved' ? `<button class="btn btn-soft" data-action="revoke-approval">Onay?? Kald??r</button>` : ''}
-      <button class="btn btn-dark" data-action="next-item">Atla ???</button>
-      <button class="btn btn-primary" data-action="approve-next">Onayla ve Sonraki ???</button>`;
+    dom.stickyNav.innerHTML = `<button class="btn btn-dark" data-action="previous-item">← Önceki</button>
+      <div class="nav-info"><strong>${escapeHTML(item.title)}</strong><small>${validation.errors.length ? `${validation.errors.length} eksik karar` : 'Onaya hazır'} · Otomatik kayıt açık</small></div>
+      ${rule.reviewStatus === 'approved' ? `<button class="btn btn-soft" data-action="revoke-approval">Onayı Kaldır</button>` : ''}
+      <button class="btn btn-dark" data-action="next-item">Atla →</button>
+      <button class="btn btn-primary" data-action="approve-next">Onayla ve Sonraki →</button>`;
   }
 
   function bindGlobalEvents() {
@@ -1650,6 +1652,7 @@ button:disabled{cursor:not-allowed;opacity:.48}
   function openModal({ title, body, actions }) {
     dom.modalRoot.innerHTML = `<div class="modal-backdrop" data-modal-backdrop="true"><div class="modal"><div class="modal-head"><h3>${escapeHTML(title)}</h3><button class="close-btn" data-action="close-modal">×</button></div><div class="modal-body">${body}</div><div class="modal-actions">${actions || ''}</div></div></div>`;
     dom.modalRoot.classList.remove('hidden');
+    repairRenderedText(dom.modalRoot);
   }
 
   function closeModal() {
@@ -1972,11 +1975,15 @@ button:disabled{cursor:not-allowed;opacity:.48}
 
   function loadState() {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      const localState = raw ? JSON.parse(raw) : null;
-      return pickNewestState(localState, EMBEDDED_STATE);
+      const states = LEGACY_STORAGE_KEYS
+        .map(key => {
+          const raw = localStorage.getItem(key);
+          return raw ? normalizeStructuredStrings(JSON.parse(raw)) : null;
+        })
+        .filter(Boolean);
+      return pickBestState(states.concat(EMBEDDED_STATE ? [EMBEDDED_STATE] : []));
     } catch (error) {
-      console.warn('LocalStorage okunamad??:', error);
+      console.warn('LocalStorage okunamadı:', error);
       return EMBEDDED_STATE || null;
     }
   }
@@ -1985,21 +1992,91 @@ button:disabled{cursor:not-allowed;opacity:.48}
     try {
       const node = document.getElementById('embedded-state');
       if (!node) return null;
-      const raw = String(node.textContent || '').trim();
+      const raw = String(node.textContent || '').replace(/^\uFEFF/, '').trim();
       if (!raw || raw === '{}') return null;
-      return JSON.parse(raw);
+      return normalizeStructuredStrings(JSON.parse(raw));
     } catch (error) {
-      console.warn('Gomulu state okunamadi:', error);
+      console.warn('Gömülü state okunamadı:', error);
       return null;
     }
   }
 
-  function pickNewestState(localState, embeddedState) {
-    if (!localState) return embeddedState || null;
-    if (!embeddedState) return localState;
-    const localTime = Date.parse(localState.updatedAt || localState.createdAt || 0) || 0;
-    const embeddedTime = Date.parse(embeddedState.updatedAt || embeddedState.createdAt || 0) || 0;
-    return embeddedTime > localTime ? embeddedState : localState;
+  function pickBestState(candidates) {
+    return candidates.reduce((best, candidate) => compareStateQuality(candidate, best) > 0 ? candidate : best, null);
+  }
+
+  function compareStateQuality(left, right) {
+    if (!left) return right ? -1 : 0;
+    if (!right) return 1;
+    const a = summarizeStateQuality(left);
+    const b = summarizeStateQuality(right);
+    if (a.approved !== b.approved) return a.approved - b.approved;
+    if (a.touched !== b.touched) return a.touched - b.touched;
+    if (a.customOptions !== b.customOptions) return a.customOptions - b.customOptions;
+    return a.updatedAt - b.updatedAt;
+  }
+
+  function summarizeStateQuality(candidate) {
+    const rules = Object.values(candidate?.itemRules || {});
+    return {
+      approved: rules.filter(rule => rule.reviewStatus === 'approved').length,
+      touched: rules.filter(rule => rule.touched).length,
+      customOptions: rules.reduce((total, rule) => total + (rule.customOptions?.length || 0), 0),
+      updatedAt: Date.parse(candidate?.updatedAt || candidate?.createdAt || 0) || 0
+    };
+  }
+
+  function normalizeStructuredStrings(value) {
+    if (Array.isArray(value)) return value.map(normalizeStructuredStrings);
+    if (!value || typeof value !== 'object') return typeof value === 'string' ? fixMojibake(value) : value;
+    const normalized = {};
+    Object.entries(value).forEach(([key, entry]) => {
+      normalized[key] = normalizeStructuredStrings(entry);
+    });
+    return normalized;
+  }
+
+  function fixMojibake(value) {
+    const text = String(value ?? '');
+    if (!looksMojibake(text)) return text;
+    try {
+      const bytes = Uint8Array.from(Array.from(text, ch => ch.charCodeAt(0) & 255));
+      const decoded = new TextDecoder('utf-8').decode(bytes);
+      return looksBetter(decoded, text) ? decoded : text;
+    } catch (error) {
+      return text;
+    }
+  }
+
+  function looksMojibake(value) {
+    return /Ã.|Ä.|Å.|Â.|â.|�/.test(value);
+  }
+
+  function looksBetter(candidate, original) {
+    return mojibakeScore(candidate) < mojibakeScore(original);
+  }
+
+  function mojibakeScore(value) {
+    return (String(value).match(/Ã.|Ä.|Å.|Â.|â.|�/g) || []).length;
+  }
+
+  function repairRenderedText(root = document.body) {
+    if (!root) return;
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    let textNode = walker.nextNode();
+    while (textNode) {
+      const fixed = fixMojibake(textNode.nodeValue);
+      if (fixed !== textNode.nodeValue) textNode.nodeValue = fixed;
+      textNode = walker.nextNode();
+    }
+    root.querySelectorAll('*').forEach(el => {
+      ['title', 'placeholder', 'aria-label', 'value'].forEach(attr => {
+        if (!el.hasAttribute(attr)) return;
+        const current = el.getAttribute(attr);
+        const fixed = fixMojibake(current);
+        if (fixed !== current) el.setAttribute(attr, fixed);
+      });
+    });
   }
 
   function scheduleSave() {
