@@ -162,6 +162,18 @@ button:disabled{cursor:not-allowed;opacity:.48}
 .big-status.error{background:var(--red-soft);color:var(--red-dark)}
 .section-title{font-size:14px;font-weight:900;margin:0 0 4px}
 .section-sub{font-size:11px;color:var(--muted);margin:0}
+.item-rule-card>summary{list-style:none;cursor:pointer}
+.item-rule-card>summary::-webkit-details-marker{display:none}
+.rule-summary{align-items:center;border-bottom:0;padding-top:12px;padding-bottom:12px}
+.item-rule-card[open]>.rule-summary{border-bottom:1px solid var(--line)}
+.rule-summary-main{min-width:0;flex:1}
+.rule-compact-meta{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-top:7px}
+.rule-toggle{flex:none;border:1px solid var(--line-dark);border-radius:8px;background:#f7f7f8;color:#4f5560;padding:7px 10px;font-size:10px;font-weight:850;white-space:nowrap}
+.rule-toggle-open{display:none}
+.item-rule-card[open] .rule-toggle-closed{display:none}
+.item-rule-card[open] .rule-toggle-open{display:inline}
+.item-rule-card>summary:focus-visible{outline:3px solid rgba(215,25,32,.16);outline-offset:-3px}
+.rule-card-actions{display:flex;justify-content:flex-end;margin-bottom:10px}
 .form-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
 .field{display:flex;flex-direction:column;gap:5px;min-width:0}
 .field.span-2{grid-column:span 2}
@@ -494,6 +506,7 @@ button:disabled{cursor:not-allowed;opacity:.48}
 
   let state = loadState() || createInitialState();
   let selectedRows = new Set();
+  let rulePanelState = { itemId: '', open: false };
   let saveTimer = null;
   let lastSavedAt = null;
 
@@ -868,12 +881,26 @@ button:disabled{cursor:not-allowed;opacity:.48}
 
   function renderItemRuleCard(item, rule) {
     const inputChips = item.inputs.length ? `<div class="source-inputs">${item.inputs.map(input => `<span class="source-input-chip">${escapeHTML(input.inputType.toUpperCase())}: ${escapeHTML(input.label || 'Alan')}</span>`).join('')}</div>` : '';
-    return `<section class="card">
-      <div class="card-head">
-        <div><h2 class="section-title">Madde Kuralı ve Kanıt Zorunluluğu</h2><p class="section-sub">Fotoğraf/belge zorunluluğunu ve garanti kapsamını bu madde için belirle.</p></div>
-        <button class="btn btn-sm btn-soft" data-action="open-help">Kodların Açıklaması</button>
-      </div>
+    const isOpen = rulePanelState.itemId === item.itemId && rulePanelState.open;
+    const photoSummary = `${rule.photoPolicy || 'F0'} · ${DEFINITIONS.photoPolicies[rule.photoPolicy] || 'Ek zorunluluk yok'}`;
+    const evidenceSummary = DEFINITIONS.evidenceTypes[rule.evidenceType] || rule.evidenceType || 'Kanıt türü seçilmedi';
+    return `<details class="card item-rule-card" data-rule-item-id="${escapeHTML(item.itemId)}" ${isOpen ? 'open' : ''}>
+      <summary class="card-head rule-summary">
+        <div class="rule-summary-main">
+          <h2 class="section-title">Madde Kuralı ve Kanıt Zorunluluğu</h2>
+          <div class="rule-compact-meta">
+            <span class="tag">${escapeHTML(photoSummary)}</span>
+            <span class="tag">${escapeHTML(evidenceSummary)}</span>
+            <span class="tag">${Number(rule.minEvidenceCount) || 1} kanıt</span>
+            <span class="tag ${rule.guaranteeRelevant ? 'tag-red' : 'tag-green'}">${rule.guaranteeRelevant ? '1000 km kararına dahil' : '1000 km kararına dahil değil'}</span>
+            ${rule.measurementRequired ? '<span class="tag tag-blue">Ölçüm zorunlu</span>' : ''}
+            ${rule.customRuleText ? '<span class="tag tag-amber">Özel kural var</span>' : ''}
+          </div>
+        </div>
+        <span class="rule-toggle"><span class="rule-toggle-closed">Ayarları Göster</span><span class="rule-toggle-open">Ayarları Gizle</span></span>
+      </summary>
       <div class="card-body">
+        <div class="rule-card-actions"><button class="btn btn-sm btn-soft" data-action="open-help">Kodların Açıklaması</button></div>
         <div class="form-grid">
           <div class="field">
             <label>Fotoğraf / Kanıt Kuralı</label>
@@ -921,7 +948,7 @@ button:disabled{cursor:not-allowed;opacity:.48}
         <div class="rule-note"><strong>Otomatik güvenlik kuralı:</strong> Kritik veya G2–G3 olarak işaretlenen bir sonuçta en az ${rule.minEvidenceCount || 1} kanıt ve açıklama zorunlu hale gelir. Madde kuralı bunun üzerine ek zorunluluk getirir.</div>
         ${inputChips}
       </div>
-    </section>`;
+    </details>`;
   }
 
   function renderOptionsCard(item, itemRule, options, validation) {
@@ -1137,6 +1164,7 @@ button:disabled{cursor:not-allowed;opacity:.48}
     document.addEventListener('click', handleClick);
     document.addEventListener('change', handleChange);
     document.addEventListener('input', handleInput);
+    document.addEventListener('toggle', handleRulePanelToggle, true);
     document.addEventListener('keydown', handleKeydown);
 
     dom.searchInput.addEventListener('input', e => {
@@ -1233,6 +1261,12 @@ button:disabled{cursor:not-allowed;opacity:.48}
     if (action === 'remove-custom-option') return removeCustomOption(item, itemRule, target.dataset.optionId);
     if (action === 'remove-source-option') return removeSourceOption(item, itemRule, target.dataset.optionId);
     if (action === 'apply-label-global') return applyLabelGlobally(item, itemRule, target.dataset.optionId);
+  }
+
+  function handleRulePanelToggle(event) {
+    const panel = event.target;
+    if (!panel.matches?.('.item-rule-card')) return;
+    rulePanelState = { itemId: panel.dataset.ruleItemId || '', open: panel.open };
   }
 
   function handleChange(event) {

@@ -2752,7 +2752,7 @@
     const navGroups = [
       ['Genel Merkez', [['dashboard','Yönetim Kokpiti','layout-dashboard'],['intelligence','İş Zekası','chart-no-axes-column'],['actions','Aksiyon & Görev','target'],['crisis','Kriz Merkezi','siren'],['ai','AI Öneri','sparkles']]],
       ['Bayi & Şube Yönetimi', [['branches','Bayiler & Şubeler','building-2'],['dealer','Bayi Portalı','tablet-smartphone'],['ototr-web','OTOTR Web','globe'],['ekspertiz-bursa','Ekspertiz Bursa Web','car-front'],['operations','Operasyon','workflow'],['quality','Kalite & Denetim','shield-check']]],
-      ['Ekspertiz & Rapor', [['report-design','Ekspertiz Rapor Tasarımı','file-check-2']]],
+      ['Ekspertiz & Rapor', [['report-design','Ekspertiz Rapor Tasarımı','file-check-2'],['karar-merkezi','Kural Karar Merkezi','list-checks']]],
       ['Müşteri & Satış', [['crm','CRM & Randevu','users'],['complaints','Müşteri Şikayetleri','message-circle-warning'],['google-reviews','Google Yorumlar','star'],['reputation','Sosyal Medya İtibar Radar','radar'],['marketing','Pazarlama','megaphone']]],
       ['Franchise Yönetimi', [['franchise','Franchise Satış','handshake'],['growth','Bayii Büyüme','map'],['finance','Finans & Royalty','banknote']]],
       ['Kurumsal Yönetim', [['academy','OTOTR Academy','graduation-cap'],['hr','İnsan Kaynakları','badge-check'],['legal','Hukuk & Risk','scale']]],
@@ -3876,6 +3876,10 @@
         }
         if(b.dataset.navRoute==='ekspertiz-bursa'){
           window.open('https://samivolkan.github.io/ekspertiz-bursa-web/','_blank','noopener,noreferrer');
+          return;
+        }
+        if(b.dataset.navRoute==='karar-merkezi'){
+          window.open('karar-merkezi/','_blank','noopener,noreferrer');
           return;
         }
         route(b.dataset.navRoute);
