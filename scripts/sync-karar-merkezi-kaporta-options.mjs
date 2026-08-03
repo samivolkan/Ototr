@@ -6,6 +6,22 @@ const htmlPath = resolve(repoRoot, 'karar-merkezi', 'index.html');
 const catalogPath = resolve(repoRoot, 'data', 'inspection_options.json');
 const bodyGroupId = 'kaporta-boya-ekspertiz-ve-check-up';
 const bodyCatalogPrefix = 'body_paint_checkup_';
+const frontBumperPointId = '11';
+const rearBumperPointId = '23';
+const frontBumperTemplateLabels = [
+  'Orijinal',
+  'Plastik Parça',
+  'Değişim',
+  'Boyalı',
+  'Çizik',
+  'Lokal Boyalı',
+  'Ezik Mevcut',
+  'Göçük Mevcut',
+  'Kırık',
+  'Darbe-Hasar Mevcut',
+  'Metal',
+  'Kaplama',
+];
 
 const html = await readFile(htmlPath, 'utf8');
 const catalog = JSON.parse(await readFile(catalogPath, 'utf8'));
@@ -34,6 +50,8 @@ for (const option of catalog) {
 for (const options of optionsByPoint.values()) {
   options.sort((left, right) => Number(left.sortOrder || 0) - Number(right.sortOrder || 0));
 }
+
+harmonizeRearBumperOptions(optionsByPoint);
 
 const report = {
   items: bodyGroup.items.length,
@@ -119,6 +137,31 @@ function findSourceOption(sourceOptions, usedSourceIds, value, label, index, cat
   }
 
   return null;
+}
+
+function harmonizeRearBumperOptions(optionsByPoint) {
+  const frontOptions = optionsByPoint.get(frontBumperPointId);
+  const rearOptions = optionsByPoint.get(rearBumperPointId);
+  if (!frontOptions?.length || !rearOptions?.length) return;
+
+  const rearByLabel = new Map(
+    rearOptions.map((option) => [normalizeForMatch(option.label || option.legacyLabel || ''), option]),
+  );
+
+  const alignedRearOptions = [];
+  for (const expectedLabel of frontBumperTemplateLabels) {
+    const rearMatch = rearByLabel.get(normalizeForMatch(expectedLabel));
+    if (!rearMatch) continue;
+    alignedRearOptions.push({
+      ...rearMatch,
+      label: expectedLabel,
+      legacyLabel: expectedLabel,
+    });
+  }
+
+  if (alignedRearOptions.length === frontBumperTemplateLabels.length) {
+    optionsByPoint.set(rearBumperPointId, alignedRearOptions);
+  }
 }
 
 function normalizeForMatch(value) {
