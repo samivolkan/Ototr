@@ -869,7 +869,7 @@ button:disabled{cursor:not-allowed;opacity:.48}
   function renderItemRuleCard(item, rule) {
     const inputChips = item.inputs.length ? `<div class="source-inputs">${item.inputs.map(input => `<span class="source-input-chip">${escapeHTML(input.inputType.toUpperCase())}: ${escapeHTML(input.label || 'Alan')}</span>`).join('')}</div>` : '';
     return `<section class="card">
-      <section class="card">
+      <div class="card-head">
         <div><h2 class="section-title">Madde Kuralı ve Kanıt Zorunluluğu</h2><p class="section-sub">Fotoğraf/belge zorunluluğunu ve garanti kapsamını bu madde için belirle.</p></div>
         <button class="btn btn-sm btn-soft" data-action="open-help">Kodların Açıklaması</button>
       </div>
