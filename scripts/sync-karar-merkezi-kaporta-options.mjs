@@ -33,6 +33,9 @@ if (!sourceMatch) {
 
 const source = JSON.parse(sourceMatch[2]);
 const bodyGroup = source.groups?.find((group) => group.groupId === bodyGroupId);
+const catalogByLegacyKey = new Map(
+  catalog.map((option) => [legacyOptionKey(option.legacyNoktaId, option.legacyOptionId), option]),
+);
 
 if (!bodyGroup) {
   throw new Error(`Body/paint group was not found: ${bodyGroupId}`);
@@ -60,6 +63,8 @@ const report = {
   preservedOptionIds: 0,
   generatedOptionIds: 0,
   removedSourceOptions: 0,
+  resolvedUnknownOptions: 0,
+  resolvedUnknownOptionsByGroup: {},
 };
 
 for (const item of bodyGroup.items) {
@@ -106,6 +111,42 @@ for (const item of bodyGroup.items) {
 }
 
 const allItems = source.groups.flatMap((group) => group.items || []);
+const unmatchedUnknownOptions = [];
+
+for (const group of source.groups) {
+  for (const item of group.items || []) {
+    for (const option of item.options || []) {
+      if (!option.unknown && option.label) continue;
+
+      const catalogOption = catalogByLegacyKey.get(legacyOptionKey(item.noktaId, option.value));
+      const label = repairMojibake(String(catalogOption?.label || catalogOption?.legacyLabel || '').trim());
+      if (!catalogOption || !label) {
+        unmatchedUnknownOptions.push({
+          groupId: group.groupId,
+          itemId: item.itemId,
+          itemTitle: item.title,
+          noktaId: item.noktaId,
+          optionValue: option.value,
+        });
+        continue;
+      }
+
+      option.label = label;
+      option.unknown = false;
+      option.sourceText = `ERP option ${option.value}: ${label}`;
+      report.resolvedUnknownOptions += 1;
+      report.resolvedUnknownOptionsByGroup[group.groupId] =
+        (report.resolvedUnknownOptionsByGroup[group.groupId] || 0) + 1;
+    }
+
+    item.unresolvedOptionCount = (item.options || []).filter((option) => option.unknown || !option.label).length;
+  }
+}
+
+if (unmatchedUnknownOptions.length) {
+  throw new Error(`ERP catalog labels are missing for ${unmatchedUnknownOptions.length} options:\n${JSON.stringify(unmatchedUnknownOptions, null, 2)}`);
+}
+
 const allOptions = allItems.flatMap((item) => item.options || []);
 source.stats.optionCount = allOptions.length;
 source.stats.unresolvedOptionCount = allOptions.filter((option) => option.unknown || !option.label).length;
@@ -119,6 +160,10 @@ process.stdout.write(`${JSON.stringify({
   totalOptions: source.stats.optionCount,
   unresolvedOptions: source.stats.unresolvedOptionCount,
 }, null, 2)}\n`);
+
+function legacyOptionKey(noktaId, optionId) {
+  return `${String(noktaId)}:${String(optionId)}`;
+}
 
 function findSourceOption(sourceOptions, usedSourceIds, value, label, index, catalogCount) {
   const available = (option) => option?.optionId && !usedSourceIds.has(option.optionId);
