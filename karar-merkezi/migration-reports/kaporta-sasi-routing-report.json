@@ -1,0 +1,28 @@
+{
+  "legacyTotal": 59,
+  "kaporta": 28,
+  "structuralInspection": 22,
+  "structuralEvidence": 3,
+  "computedSummary": 1,
+  "movedToOtherModules": 5,
+  "lostItems": [],
+  "duplicateItems": [],
+  "modifiedUserDecisionCount": 0,
+  "modifiedUserDecisionItemIds": [],
+  "approvalsBefore": 210,
+  "approvalsAfter": 210,
+  "itemRulesBefore": 265,
+  "itemRulesAfter": 265,
+  "optionRulesBefore": 695,
+  "optionRulesAfter": 695,
+  "legacyAlias": {
+    "itemId": "n997-gosterge-panelinde-airbag-isigi-yaniyor-mu",
+    "canonicalItemId": "n1115-airbag-isigi-yaniyor-mu",
+    "visibleAsSeparateTest": false,
+    "technicalConflict": true
+  },
+  "source": {
+    "groupCount": 13,
+    "itemCount": 265
+  }
+}
