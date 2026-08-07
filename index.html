@@ -2771,16 +2771,25 @@
         history.replaceState(null,'',nextUrl);
       }catch(err){}
     }
+    function hasDealerStandaloneIntent(){
+      try{
+        const params = new URLSearchParams(location.search);
+        const hashRoute = (location.hash || '').replace(/^#\/?/, '').split('/')[0];
+        return params.get('portal') === 'dealer' || hashRoute === 'dealer';
+      }catch(err){
+        return false;
+      }
+    }
     function syncDealerStandaloneMode(resolved){
-      const forced = new URLSearchParams(location.search).get('portal')==='dealer';
-      const on = resolved==='dealer' || forced;
+      const forced = hasDealerStandaloneIntent();
+      const on = forced;
       window.__OTOTR_DEALER_STANDALONE__ = on;
       document.documentElement.classList.toggle('dealer-standalone-root',on);
       document.body.classList.toggle('dealer-standalone',on);
       document.title = on ? 'OTOTR Bayi Portalı' : 'OTOTR Genel Merkez ERP + CRM';
     }
     function isDealerStandaloneRoute(){
-      return new URLSearchParams(location.search).get('portal')==='dealer' || !!window.__OTOTR_DEALER_STANDALONE__ || document.body?.classList.contains('dealer-standalone');
+      return hasDealerStandaloneIntent();
     }
     function dealerStandaloneRouteTab(id){
       return {
