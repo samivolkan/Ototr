@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#071a33">
+  <title>OTOTR · Kaporta Tasarım</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{--navy:#071a33;--navy-2:#12365f;--red:#d71920;--paper:#f3f5f7;--ink:#142033;--muted:#667085;--line:#dce3eb;--white:#fff;--green:#168744;--shadow:0 24px 70px rgba(7,26,51,.13)}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;color:var(--ink);background:var(--paper);font-family:Manrope,sans-serif}
+    body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.45;background-image:linear-gradient(rgba(7,26,51,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(7,26,51,.035) 1px,transparent 1px);background-size:34px 34px;mask-image:linear-gradient(to bottom,#000,transparent 78%)}
+    a{color:inherit}.shell{position:relative;z-index:1;min-height:100vh}.topbar{min-height:72px;padding:12px clamp(16px,4vw,56px);display:flex;align-items:center;gap:18px;background:linear-gradient(115deg,var(--navy),var(--navy-2));color:#fff;border-bottom:4px solid var(--red)}
+    .brand{font-family:"Barlow Condensed",sans-serif;font-size:27px;font-weight:900;letter-spacing:.08em}.brand i{font-style:normal;color:#f02d34}.crumb{font-size:12px;color:#b8c7d8}.topbar nav{margin-left:auto;display:flex;gap:8px}.topbar a{padding:9px 12px;border:1px solid rgba(255,255,255,.18);border-radius:9px;text-decoration:none;font-size:11px;font-weight:800;background:rgba(255,255,255,.07)}
+    .hero{padding:clamp(52px,9vw,110px) clamp(18px,6vw,84px) 44px;overflow:hidden;position:relative}.hero:after{content:"KAPORTA";position:absolute;right:-1vw;top:24px;font-family:"Barlow Condensed",sans-serif;font-size:clamp(100px,19vw,280px);font-weight:900;letter-spacing:-.04em;color:rgba(7,26,51,.035);line-height:.8;pointer-events:none}
+    .eyebrow{display:inline-flex;align-items:center;gap:9px;color:var(--red);font-size:11px;font-weight:900;letter-spacing:.16em;text-transform:uppercase}.eyebrow:before{content:"";width:32px;height:3px;background:var(--red)}
+    h1{max-width:880px;margin:14px 0 14px;font-family:"Barlow Condensed",sans-serif;font-size:clamp(52px,8vw,102px);line-height:.88;letter-spacing:-.035em;text-transform:uppercase}.hero p{max-width:720px;margin:0;color:var(--muted);font-size:clamp(14px,1.7vw,18px);line-height:1.7}.summary{display:flex;gap:10px;flex-wrap:wrap;margin-top:25px}.summary span{padding:8px 11px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.72);font-size:11px;font-weight:800}
+    .modules{padding:0 clamp(18px,6vw,84px) 72px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px}.module{min-height:420px;position:relative;overflow:hidden;display:flex;flex-direction:column;padding:clamp(22px,3vw,38px);border:1px solid var(--line);border-radius:22px;background:rgba(255,255,255,.92);box-shadow:var(--shadow)}
+    .module:before{content:"";position:absolute;right:-75px;top:-75px;width:220px;height:220px;border-radius:50%;border:42px solid rgba(7,26,51,.035)}.module.chassis{background:linear-gradient(145deg,#fff 0%,#edf4fb 100%)}.module.body{background:linear-gradient(145deg,#fff 0%,#fff1f1 100%)}
+    .module-no{font-family:"Barlow Condensed",sans-serif;font-size:13px;font-weight:900;letter-spacing:.18em;color:var(--red)}.module h2{max-width:510px;margin:16px 0 10px;font-family:"Barlow Condensed",sans-serif;font-size:clamp(36px,4.6vw,64px);line-height:.95;text-transform:uppercase}.module p{max-width:580px;margin:0;color:var(--muted);font-size:13px;line-height:1.7}
+    .facts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:24px 0}.fact{padding:12px;border:1px solid rgba(7,26,51,.1);border-radius:12px;background:rgba(255,255,255,.7)}.fact b{display:block;font-family:"Barlow Condensed",sans-serif;font-size:24px}.fact span{font-size:9px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.08em}
+    .actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:auto}.button{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:10px 14px;border-radius:10px;text-decoration:none;font-size:11px;font-weight:900;border:1px solid var(--line);background:#fff}.button.primary{background:var(--navy);border-color:var(--navy);color:#fff}.body .button.primary{background:var(--red);border-color:var(--red)}.button:hover{transform:translateY(-1px);box-shadow:0 10px 22px rgba(7,26,51,.12)}
+    .note{margin:0 clamp(18px,6vw,84px) 60px;padding:18px 20px;border-left:4px solid var(--green);background:#fff;border-radius:0 14px 14px 0;box-shadow:0 12px 30px rgba(7,26,51,.07);font-size:12px;line-height:1.7;color:var(--muted)}.note b{color:var(--ink)}
+    @media(max-width:900px){.topbar{align-items:flex-start;flex-wrap:wrap}.topbar nav{width:100%;margin-left:0}.hero{padding-top:54px}.modules{grid-template-columns:1fr}.module{min-height:390px}}
+    @media(max-width:560px){.topbar nav a{flex:1;text-align:center}.facts{grid-template-columns:1fr}.fact{display:flex;align-items:center;gap:10px}.fact b{min-width:42px}.module{padding:22px;border-radius:17px}.button{width:100%}}
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div class="brand">OTO<i>TR</i></div>
+      <div class="crumb">ERP / CRM · Teknik Tasarım Merkezi</div>
+      <nav aria-label="Üst navigasyon">
+        <a href="index.html">ERP Ana Sayfa</a>
+        <a href="data/ototr_kaporta_polygons_v17.json" download>Poligon JSON</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="eyebrow">Teknik ürün ailesi</div>
+        <h1>Kaporta<br>Tasarım</h1>
+        <p>Şasi yapısal kontrolü ile kaporta parça poligon çalışmalarını aynı merkez altında yönetin. Her iki araç da canlı kullanıma, veri dışa aktarmaya ve ERP entegrasyonuna hazırdır.</p>
+        <div class="summary"><span>2 canlı çalışma</span><span>22 şasi noktası</span><span>22 kaporta parçası</span><span>38 hazır poligon</span></div>
+      </section>
+
+      <section class="modules" aria-label="Kaporta tasarım çalışmaları">
+        <article class="module chassis">
+          <div class="module-no">ÇALIŞMA 01 · YAPISAL KONTROL</div>
+          <h2>Şasi / Yapısal Gövde</h2>
+          <p>22 noktalı interaktif şasi kontrolü; görünüm navigasyonu, kanıt fotoğrafları, müşteri raporu, yerleşim master’ı ve ERP adapter katmanı.</p>
+          <div class="facts">
+            <div class="fact"><b>22</b><span>Kontrol noktası</span></div>
+            <div class="fact"><b>5</b><span>Yapısal görünüm</span></div>
+            <div class="fact"><b>ERP</b><span>Adapter hazır</span></div>
+          </div>
+          <div class="actions">
+            <a class="button primary" href="crm-kaporta-sasi-ekrani-v38.html">Şasi Ekranını Aç</a>
+            <a class="button" href="data/ototr_sasi_yapisal_govde_v3.json" download>Şasi Veri Modeli</a>
+          </div>
+        </article>
+
+        <article class="module body">
+          <div class="module-no">ÇALIŞMA 02 · PARÇA HARİTASI</div>
+          <h2>Kaporta Parça Poligonları</h2>
+          <p>Üst, sol, sağ, ön ve arka görünüşlerde kaporta parçalarının düzenlenebilir poligon sınırları; nokta koordinatları, veri migrasyonu ve tam JSON içe/dışa aktarma.</p>
+          <div class="facts">
+            <div class="fact"><b>22</b><span>Parça tanımı</span></div>
+            <div class="fact"><b>38</b><span>Hazır poligon</span></div>
+            <div class="fact"><b>5</b><span>Araç görünüşü</span></div>
+          </div>
+          <div class="actions">
+            <a class="button primary" href="kaporta-parca-poligon-editoru-v17.html">Poligon Editörünü Aç</a>
+            <a class="button" href="data/ototr_kaporta_polygons_v17.json" download>Başlangıç JSON</a>
+          </div>
+        </article>
+      </section>
+
+      <aside class="note"><b>Veri güvenliği:</b> Editördeki çalışma tarayıcı içinde yerel olarak saklanır. “Tüm Veriyi JSON Dışa Aktar” düğmesi 22 parça ve 38 hazır poligonun tamamını, kullanıcı düzenlemeleri öncelikli olacak şekilde indirir. Canlı backend bağlanana kadar hassas müşteri verisi bu tasarım dosyalarına eklenmemelidir.</aside>
+    </main>
+  </div>
+</body>
+</html>
