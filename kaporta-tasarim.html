@@ -34,7 +34,7 @@
       <div class="crumb">ERP / CRM · Teknik Tasarım Merkezi</div>
       <nav aria-label="Üst navigasyon">
         <a href="index.html">ERP Ana Sayfa</a>
-        <a href="data/ototr_kaporta_giris_nihai_v16.json" download>Kaporta Veri Modeli</a>
+        <a href="data/ototr_kaporta_master_v1.json" download>Kaporta Veri Modeli</a>
       </nav>
     </header>
 
@@ -42,8 +42,8 @@
       <section class="hero">
         <div class="eyebrow">Teknik ürün ailesi</div>
         <h1>Kaporta<br>Tasarım</h1>
-        <p>Şasi yapısal kontrolü ile Kaporta Giriş ekranını aynı merkez altında yönetin. Kaporta ekranında durum girişi, etiket yerleşimi, poligon düzeltme, Usta/Rapor görünümü ve JSON aktarımı birlikte çalışır.</p>
-        <div class="summary"><span>2 canlı çalışma</span><span>22 şasi noktası</span><span>16 kaporta parçası</span><span>48 görünüş poligonu</span></div>
+        <p>Şasi yapısal kontrolü ile Kaporta Giriş ekranını aynı merkez altında yönetin. Kaporta ekranında durum girişi, etiket yerleşimi, poligon düzeltme, Usta/Rapor görünümü, ERP adapter katmanı ve JSON aktarımı birlikte çalışır.</p>
+        <div class="summary"><span>2 canlı çalışma</span><span>22 şasi noktası</span><span>20 kaporta kontrolü</span><span>44 aktif poligon</span></div>
       </section>
 
       <section class="modules" aria-label="Kaporta tasarım çalışmaları">
@@ -65,20 +65,20 @@
         <article class="module body">
           <div class="module-no">ÇALIŞMA 02 · KAPORTA GİRİŞ</div>
           <h2>Kaporta Giriş / Etiket &amp; Poligon</h2>
-          <p>Usta ve Rapor görünümü, parça durum girişi, etiket yerleşimi ve üst, sol, sağ, ön, arka görünüşlerde poligon düzeltme aynı nihai dosyada.</p>
+          <p>Eklenen v16 dosyasındaki 48 kaynak poligon tanımı korunur: 16 dış parçada 44 aktif görünüş poligonu ve veri kaybını önleyen 4 kapı içi kaynak kaydı. Usta/Rapor modu, durum girişi, etiket yerleşimi ve poligon düzeltme aynı MASTER dosyasında çalışır.</p>
           <div class="facts">
-            <div class="fact"><b>16</b><span>Kaporta parçası</span></div>
-            <div class="fact"><b>48</b><span>Görünüş poligonu</span></div>
+            <div class="fact"><b>20</b><span>Kontrol satırı</span></div>
+            <div class="fact"><b>44</b><span>Aktif poligon</span></div>
             <div class="fact"><b>5</b><span>Araç görünüşü</span></div>
           </div>
           <div class="actions">
-            <a class="button primary" href="OTOTR_Kaporta_Giris_NIHAI_v16_Rapor_Orjinal_Nokta_Gizli.html">Kaporta Girişini Aç</a>
-            <a class="button" href="data/ototr_kaporta_giris_nihai_v16.json" download>Başlangıç JSON</a>
+            <a class="button primary" href="OTOTR_Kaporta_Giris_MASTER_v1.html">Kaporta MASTER'ı Aç</a>
+            <a class="button" href="data/ototr_kaporta_master_v1.json" download>MASTER JSON</a>
           </div>
         </article>
       </section>
 
-      <aside class="note"><b>Veri güvenliği:</b> Kaporta girişleri tarayıcı içinde yerel olarak saklanır. “Veriyi Dışa Aktar” düğmesi parça durumlarını, notları, etiket yerleşimlerini ve düzeltilmiş poligonları tek JSON dosyasında indirir. Canlı backend bağlanana kadar hassas müşteri verisi bu tasarım dosyalarına eklenmemelidir.</aside>
+      <aside class="note"><b>Veri güvenliği:</b> Backend bağlı değilken girişler yalnızca demo fallback olarak tarayıcıda saklanır. MASTER JSON; durumları, notları, etiket yerleşimlerini, aktif poligonları ve kaynak tanımlarını birlikte taşır. Üretimde hassas müşteri verisi yalnızca kimlik doğrulamalı ERP adapter bağlantısı üzerinden işlenmelidir.</aside>
     </main>
   </div>
 </body>

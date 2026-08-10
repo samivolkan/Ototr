@@ -1,0 +1,3855 @@
+{
+  "schema": "ototr.kaporta-master.v1",
+  "version": "1.0",
+  "masterFile": "OTOTR_Kaporta_Giris_MASTER_v1.html",
+  "masterSha256": "68d61326b1358565ad10db9ad63151cad647a419ef57e9deb25d9bb583b99f35",
+  "sourceFile": "OTOTR_Kaporta_Giris_NIHAI_v16_Rapor_Orjinal_Nokta_Gizli.html",
+  "sourceSha256": "d4664b9f5e5be3bfb2fcf1a43c1fc4d8a90278eece0e849faf3d14ee62ebb0bf",
+  "sourcePolygonSha256": "b4467f841b959dda949948d925fb3c5ed2f041bbe64129b916123a990ff064c3",
+  "generatedAt": "2026-08-10T01:37:09.638Z",
+  "counts": {
+    "controls": 20,
+    "exteriorParts": 16,
+    "doorInnerControls": 4,
+    "sourcePolygonDefinitions": 48,
+    "activePolygons": 44,
+    "archivedDoorInnerSourcePolygons": 4
+  },
+  "polygonPriority": [
+    "manual",
+    "imported-json",
+    "legacy-storage",
+    "source-v16"
+  ],
+  "viewMeta": {
+    "top": {
+      "label": "Üstten Görünüş",
+      "w": 720,
+      "h": 386
+    },
+    "left": {
+      "label": "Sol Görünüş",
+      "w": 742,
+      "h": 276
+    },
+    "right": {
+      "label": "Sağ Görünüş",
+      "w": 742,
+      "h": 273
+    },
+    "front": {
+      "label": "Ön Görünüş",
+      "w": 434,
+      "h": 292
+    },
+    "rear": {
+      "label": "Arka Görünüş",
+      "w": 386,
+      "h": 225
+    }
+  },
+  "statusOptions": [
+    {
+      "id": "unchecked",
+      "label": "Kontrol Edilmedi"
+    },
+    {
+      "id": "original",
+      "label": "Orjinal"
+    },
+    {
+      "id": "local",
+      "label": "Lokal Boya"
+    },
+    {
+      "id": "painted",
+      "label": "Boyalı"
+    },
+    {
+      "id": "changed",
+      "label": "Değişen"
+    },
+    {
+      "id": "plastic",
+      "label": "Plastik"
+    },
+    {
+      "id": "removefit",
+      "label": "Sök-Tak"
+    },
+    {
+      "id": "processed",
+      "label": "İşlemli"
+    }
+  ],
+  "exteriorParts": [
+    {
+      "id": "roof",
+      "no": 6,
+      "name": "Tavan",
+      "category": "top",
+      "views": [
+        "top",
+        "front",
+        "rear"
+      ],
+      "group": "top"
+    },
+    {
+      "id": "hood",
+      "no": 8,
+      "name": "Ön Kaput",
+      "category": "front",
+      "views": [
+        "top",
+        "front",
+        "left",
+        "right"
+      ],
+      "group": "top"
+    },
+    {
+      "id": "trunk",
+      "no": 38,
+      "name": "Arka Bagaj",
+      "category": "rear",
+      "views": [
+        "top",
+        "rear"
+      ],
+      "group": "top"
+    },
+    {
+      "id": "lf_fender",
+      "no": 20,
+      "name": "Sol Ön Çamurluk",
+      "category": "left",
+      "views": [
+        "top",
+        "left",
+        "front"
+      ],
+      "group": "left"
+    },
+    {
+      "id": "lf_door",
+      "no": 21,
+      "name": "Sol Ön Kapı",
+      "category": "left",
+      "views": [
+        "top",
+        "left"
+      ],
+      "group": "left"
+    },
+    {
+      "id": "lr_door",
+      "no": 25,
+      "name": "Sol Arka Kapı",
+      "category": "left",
+      "views": [
+        "top",
+        "left"
+      ],
+      "group": "left"
+    },
+    {
+      "id": "lr_fender",
+      "no": 26,
+      "name": "Sol Arka Çamurluk",
+      "category": "left",
+      "views": [
+        "top",
+        "left",
+        "rear"
+      ],
+      "group": "left"
+    },
+    {
+      "id": "left_frangart",
+      "no": 59,
+      "name": "Sol Frangart",
+      "category": "left",
+      "views": [
+        "top",
+        "left",
+        "front",
+        "rear"
+      ],
+      "group": "left"
+    },
+    {
+      "id": "rf_fender",
+      "no": 34,
+      "name": "Sağ Ön Çamurluk",
+      "category": "right",
+      "views": [
+        "top",
+        "right",
+        "front"
+      ],
+      "group": "right"
+    },
+    {
+      "id": "rf_door",
+      "no": 33,
+      "name": "Sağ Ön Kapı",
+      "category": "right",
+      "views": [
+        "top",
+        "right"
+      ],
+      "group": "right"
+    },
+    {
+      "id": "rr_door",
+      "no": 30,
+      "name": "Sağ Arka Kapı",
+      "category": "right",
+      "views": [
+        "top",
+        "right"
+      ],
+      "group": "right"
+    },
+    {
+      "id": "rr_fender",
+      "no": 27,
+      "name": "Sağ Arka Çamurluk",
+      "category": "right",
+      "views": [
+        "top",
+        "right",
+        "rear"
+      ],
+      "group": "right"
+    },
+    {
+      "id": "right_frangart",
+      "no": 60,
+      "name": "Sağ Frangart",
+      "category": "right",
+      "views": [
+        "top",
+        "right",
+        "front",
+        "rear"
+      ],
+      "group": "right"
+    },
+    {
+      "id": "front_grille",
+      "no": 1,
+      "name": "Ön Panjur",
+      "category": "front",
+      "views": [
+        "front"
+      ],
+      "group": "front"
+    },
+    {
+      "id": "front_bumper",
+      "no": 4,
+      "name": "Ön Tampon",
+      "category": "front",
+      "views": [
+        "left",
+        "right",
+        "front"
+      ],
+      "group": "front"
+    },
+    {
+      "id": "rear_bumper",
+      "no": 5,
+      "name": "Arka Tampon",
+      "category": "rear",
+      "views": [
+        "left",
+        "right",
+        "rear"
+      ],
+      "group": "rear"
+    }
+  ],
+  "doorInnerParts": [
+    {
+      "id": "lr_door_inner",
+      "no": 24,
+      "name": "Sol Arka Kapı İçi",
+      "group": "doorInner",
+      "views": []
+    },
+    {
+      "id": "rr_door_inner",
+      "no": 31,
+      "name": "Sağ Arka Kapı İçi",
+      "group": "doorInner",
+      "views": []
+    },
+    {
+      "id": "rf_door_inner",
+      "no": 54,
+      "name": "Sağ Ön Kapı İçi",
+      "group": "doorInner",
+      "views": []
+    },
+    {
+      "id": "lf_door_inner",
+      "no": 56,
+      "name": "Sol Ön Kapı İçi",
+      "group": "doorInner",
+      "views": []
+    }
+  ],
+  "polygons": {
+    "front_grille__front": {
+      "partId": "front_grille",
+      "partNo": 1,
+      "partName": "Ön Panjur",
+      "view": "front",
+      "points": [
+        {
+          "x": 130.2,
+          "y": 125.6
+        },
+        {
+          "x": 303.8,
+          "y": 125.6
+        },
+        {
+          "x": 297.3,
+          "y": 175.2
+        },
+        {
+          "x": 136.7,
+          "y": 175.2
+        }
+      ],
+      "source": "source-v16",
+      "sourceRank": 1
+    },
+    "front_bumper__front": {
+      "partId": "front_bumper",
+      "partNo": 4,
+      "partName": "Ön Tampon",
+      "view": "front",
+      "points": [
+        {
+          "x": 7.8,
+          "y": 148.9
+        },
+        {
+          "x": 89,
+          "y": 153.3
+        },
+        {
+          "x": 107.2,
+          "y": 199.4
+        },
+        {
+          "x": 326.8,
+          "y": 199.4
+        },
+        {
+          "x": 345,
+          "y": 153.3
+        },
+        {
+          "x": 426.2,
+          "y": 148.9
+        },
+        {
+          "x": 421.8,
+          "y": 265.7
+        },
+        {
+          "x": 12.2,
+          "y": 265.7
+        }
+      ],
+      "source": "source-v16",
+      "sourceRank": 1
+    },
+    "rear_bumper__rear": {
+      "partId": "rear_bumper",
+      "partNo": 5,
+      "partName": "Arka Tampon",
+      "view": "rear",
+      "points": [
+        {
+          "x": 5.8,
+          "y": 140.2
+        },
+        {
+          "x": 61.8,
+          "y": 140.8
+        },
+        {
+          "x": 71.4,
+          "y": 156.4
+        },
+        {
+          "x": 314.6,
+          "y": 156.4
+        },
+        {
+          "x": 324.2,
+          "y": 140.8
+        },
+        {
+          "x": 380.2,
+          "y": 140.2
+        },
+        {
+          "x": 382.1,
+          "y": 217.8
+        },
+        {
+          "x": 3.9,
+          "y": 217.8
+        }
+      ],
+      "source": "source-v16",
+      "sourceRank": 1
+    },
+    "roof__top": {
+      "partId": "roof",
+      "partNo": 6,
+      "partName": "Tavan",
+      "view": "top",
+      "points": [
+        {
+          "x": 237.6,
+          "y": 30.9
+        },
+        {
+          "x": 482.4,
+          "y": 30.9
+        },
+        {
+          "x": 511.2,
+          "y": 46.3
+        },
+        {
+          "x": 532.8,
+          "y": 108.1
+        },
+        {
+          "x": 540,
+          "y": 277.9
+        },
+        {
+          "x": 511.2,
+          "y": 339.7
+        },
+        {
+          "x": 482.4,
+          "y": 355.1
+        },
+        {
+          "x": 237.6,
+          "y": 355.1
+        },
+        {
+          "x": 208.8,
+          "y": 339.7
+        },
+        {
+          "x": 187.2,
+          "y": 277.9
+        },
+        {
+          "x": 180,
+          "y": 108.1
+        },
+        {
+          "x": 208.8,
+          "y": 46.3
+        }
+      ],
+      "source": "source-v16",
+      "sourceRank": 1
+    },
+    "hood__top": {
+      "partId": "hood",
+      "partNo": 8,
+      "partName": "Ön Kaput",
+      "view": "top",
+      "points": [
+        {
+          "x": 5.8,
+          "y": 73.3
+        },
+        {
+          "x": 57.6,
+          "y": 50.2
+        },
+        {
+          "x": 129.6,
+          "y": 38.6
+        },
+        {
+          "x": 201.6,
+          "y": 42.5
+        },
+        {
+          "x": 223.2,
+          "y": 54
+        },
+        {
+          "x": 241.2,
+          "y": 111.9
+        },
+        {
+          "x": 241.2,
+          "y": 274.1
+        },
+        {
+          "x": 223.2,
+          "y": 332
+        },
+        {
+          "x": 201.6,
+          "y": 343.5
+        },
+        {
+          "x": 129.6,
+          "y": 347.4
+        },
+        {
+          "x": 57.6,
+          "y": 335.8
+        },
+        {
+          "x": 5.8,
+          "y": 312.7
+        }
+      ],
+      "source": "source-v16",
+      "sourceRank": 1
+    },
+    "hood__front": {
+      "partId": "hood",
+      "partNo": 8,
+      "partName": "Ön Kaput",
+      "view": "front",
+      "points": [
+        {
+          "x": 34.7,
+          "y": 84.7
+        },
+        {
+          "x": 78.1,
+          "y": 73.6
+        },
+        {
+          "x": 355.9,
+          "y": 73.6
+        },
+        {
+          "x": 399.3,
+          "y": 84.7
+        },
+        {
+          "x": 385.4,
+          "y": 140.2
+        },
+        {
+          "x": 329.8,
+          "y": 151.3
+        },
+        {
+          "x": 104.2,
+          "y": 151.3
+        },
+        {
+          "x": 48.6,
+          "y": 140.2
+        }
+      ],
+      "source": "source-v16",
+      "sourceRank": 1
+    },
+    "lf_fender__left": {
+      "partId": "lf_fender",
+      "partNo": 20,
+      "partName": "Sol Ön Çamurluk",
+      "view": "left",
+      "points": [
+        {
+          "x": 3.7,
+          "y": 104.9
+        },
+        {
+          "x": 37.1,
+          "y": 93.8
+        },
+        {
+          "x": 89,
+          "y": 87.5
+        },
+        {
+          "x": 141,
+          "y": 84.2
+        },
+        {
+          "x": 189.2,
+          "y": 83.6
+        },
+        {
+          "x": 226.3,
+          "y": 93.3
+        },
+        {
+          "x": 220.4,
+          "y": 215.3
+        },
+        {
+          "x": 185.5,
+          "y": 216.4
+        },
+        {
+          "x": 173.6,
+          "y": 190.4
+        },
+        {
+          "x": 163.2,
+          "y": 162.8
+        },
+        {
+          "x": 148.4,
+          "y": 144.1
+        },
+        {
+          "x": 121.7,
+          "y": 137.4
+        },
+        {
+          "x": 93.5,
+          "y": 138.6
+        },
+        {
+          "x": 71.2,
+          "y": 153.2
+        },
+        {
+          "x": 59.4,
+          "y": 178
+        },
+        {
+          "x": 50.5,
+          "y": 215.3
+        },
+        {
+          "x": 3.7,
+          "y": 215.3
+        }
+      ],
+      "source": "source-v16",
+      "sourceRank": 1
+    },
+    "lf_door__left": {
+      "partId": "lf_door",
+      "partNo": 21,
+      "partName": "Sol Ön Kapı",
+      "view": "left",
+      "points": [
+        {
+          "x": 225.6,
+          "y": 94.9
+        },
+        {
+          "x": 408.8,
+          "y": 94.9
+        },
+        {
+          "x": 408.8,
+          "y": 226.9
+        },
+        {
+          "x": 252.3,
+          "y": 226.9
+        },
+        {
+          "x": 230,
+          "y": 215.3
+        }
+      ],
+      "source": "source-v16",
+      "sourceRank": 1
+    },
+    "lr_door__left": {
+      "partId": "lr_door",
+      "partNo": 25,
+      "partName": "Sol Arka Kapı",
+      "view": "left",
+      "points": [
+        {
+          "x": 408.8,
+          "y": 95.5
+        },
+        {
+          "x": 538.7,
+          "y": 96.6
+        },
+        {
+          "x": 592.1,
+          "y": 118.1
+        },
+        {
+          "x": 592.9,
+          "y": 226.9
+        },
+        {
+          "x": 408.8,
+          "y": 226.9
+        }
+      ],
+      "source": "source-v16",
+      "sourceRank": 1
+    },
+    "lr_fender__left": {
+      "partId": "lr_fender",
+      "partNo": 26,
+      "partName": "Sol Arka Çamurluk",
+      "view": "left",
+      "points": [
+        {
+          "x": 592.1,
+          "y": 118.1
+        },
+        {
+          "x": 660.4,
+          "y": 104.3
+        },
+        {
+          "x": 716,
+          "y": 105.4
+        },
+        {
+          "x": 738.3,
+          "y": 110.4
+        },
+        {
+          "x": 738.3,
+          "y": 228.5
+        },
+        {
+          "x": 618.8,
+          "y": 228.5
+        },
+        {
+          "x": 595.1,
+          "y": 213.1
+        },
+        {
+          "x": 587.7,
+          "y": 171.1
+        }
+      ],
+      "source": "source-v16",
+      "sourceRank": 1
+    },
+    "rr_fender__right": {
+      "partId": "rr_fender",
+      "partNo": 27,
+      "partName": "Sağ Arka Çamurluk",
+      "view": "right",
+      "points": [
+        {
+          "x": 3.7,
+          "y": 108.1
+        },
+        {
+          "x": 26,
+          "y": 103.7
+        },
+        {
+          "x": 81.6,
+          "y": 99.9
+        },
+        {
+          "x": 139.5,
+          "y": 95
+        },
+        {
+          "x": 143.9,
+          "y": 168.7
+        },
+        {
+          "x": 135,
+          "y": 212.9
+        },
+        {
+          "x": 112.8,
+          "y": 225.5
+        },
+        {
+          "x": 3.7,
+          "y": 225.5
+        }
+      ],
+      "source": "source-v16",
+      "sourceRank": 1
+    },
+    "rr_door__right": {
+      "partId": "rr_door",
+      "partNo": 30,
+      "partName": "Sağ Arka Kapı",
+      "view": "right",
+      "points": [
+        {
+          "x": 141.7,
+          "y": 95
+        },
+        {
+          "x": 319.1,
+          "y": 92.8
+        },
+        {
+          "x": 319.1,
+          "y": 224.1
+        },
+        {
+          "x": 165.5,
+          "y": 224.1
+        },
+        {
+          "x": 141.7,
+          "y": 210.2
+        }
+      ],
+      "source": "source-v16",
+      "sourceRank": 1
+    },
+    "rf_door__right": {
+      "partId": "rf_door",
+      "partNo": 33,
+      "partName": "Sağ Ön Kapı",
+      "view": "right",
+      "points": [
+        {
+          "x": 319.1,
+          "y": 92.8
+        },
+        {
+          "x": 513.5,
+          "y": 92.8
+        },
+        {
+          "x": 517.9,
+          "y": 224.1
+        },
+        {
+          "x": 342.8,
+          "y": 224.1
+        },
+        {
+          "x": 319.1,
+          "y": 211.6
+        }
+      ],
+      "source": "source-v16",
+      "sourceRank": 1
+    },
+    "rf_fender__right": {
+      "partId": "rf_fender",
+      "partNo": 34,
+      "partName": "Sağ Ön Çamurluk",
+      "view": "right",
+      "points": [
+        {
+          "x": 513.5,
+          "y": 82.4
+        },
+        {
+          "x": 597.3,
+          "y": 79.2
+        },
+        {
+          "x": 664.1,
+          "y": 81.9
+        },
+        {
+          "x": 712.3,
+          "y": 90.1
+        },
+        {
+          "x": 738.3,
+          "y": 100.5
+        },
+        {
+          "x": 738.3,
+          "y": 212.9
+        },
+        {
+          "x": 694.5,
+          "y": 212.9
+        },
+        {
+          "x": 684.1,
+          "y": 178.8
+        },
+        {
+          "x": 670.8,
+          "y": 152.9
+        },
+        {
+          "x": 645.5,
+          "y": 136.5
+        },
+        {
+          "x": 608.4,
+          "y": 134.6
+        },
+        {
+          "x": 577.3,
+          "y": 146.9
+        },
+        {
+          "x": 559.5,
+          "y": 166.5
+        },
+        {
+          "x": 546.1,
+          "y": 212.9
+        },
+        {
+          "x": 513.5,
+          "y": 212.9
+        }
+      ],
+      "source": "source-v16",
+      "sourceRank": 1
+    },
+    "trunk__top": {
+      "partId": "trunk",
+      "partNo": 38,
+      "partName": "Arka Bagaj",
+      "view": "top",
+      "points": [
+        {
+          "x": 478.8,
+          "y": 30.9
+        },
+        {
+          "x": 511.2,
+          "y": 30.9
+        },
+        {
+          "x": 648,
+          "y": 38.6
+        },
+        {
+          "x": 709.2,
+          "y": 71.4
+        },
+        {
+          "x": 709.2,
+          "y": 314.6
+        },
+        {
+          "x": 648,
+          "y": 347.4
+        },
+        {
+          "x": 511.2,
+          "y": 355.1
+        },
+        {
+          "x": 478.8,
+          "y": 355.1
+        },
+        {
+          "x": 511.2,
+          "y": 277.9
+        },
+        {
+          "x": 511.2,
+          "y": 108.1
+        }
+      ],
+      "source": "source-v16",
+      "sourceRank": 1
+    },
+    "trunk__rear": {
+      "partId": "trunk",
+      "partNo": 38,
+      "partName": "Arka Bagaj",
+      "view": "rear",
+      "points": [
+        {
+          "x": 48.3,
+          "y": 52.9
+        },
+        {
+          "x": 337.8,
+          "y": 52.9
+        },
+        {
+          "x": 322.7,
+          "y": 141.3
+        },
+        {
+          "x": 63.3,
+          "y": 141.3
+        }
+      ],
+      "source": "source-v16",
+      "sourceRank": 1
+    },
+    "front_bumper__left": {
+      "partId": "front_bumper",
+      "partNo": 4,
+      "partName": "Ön Tampon",
+      "view": "left",
+      "points": [
+        {
+          "x": 2.2,
+          "y": 121.4
+        },
+        {
+          "x": 23.7,
+          "y": 113.2
+        },
+        {
+          "x": 60.8,
+          "y": 111.8
+        },
+        {
+          "x": 69.7,
+          "y": 129.7
+        },
+        {
+          "x": 66.8,
+          "y": 165.6
+        },
+        {
+          "x": 53.4,
+          "y": 213.9
+        },
+        {
+          "x": 2.2,
+          "y": 213.9
+        }
+      ],
+      "source": "source-v16",
+      "sourceRank": 1
+    },
+    "rear_bumper__left": {
+      "partId": "rear_bumper",
+      "partNo": 5,
+      "partName": "Arka Tampon",
+      "view": "left",
+      "points": [
+        {
+          "x": 682.6,
+          "y": 115.9
+        },
+        {
+          "x": 719.7,
+          "y": 117.3
+        },
+        {
+          "x": 739.8,
+          "y": 124.2
+        },
+        {
+          "x": 739.8,
+          "y": 227.7
+        },
+        {
+          "x": 704.9,
+          "y": 226.3
+        },
+        {
+          "x": 684.9,
+          "y": 201.5
+        },
+        {
+          "x": 681.2,
+          "y": 157.3
+        }
+      ],
+      "source": "source-v16",
+      "sourceRank": 1
+    },
+    "front_bumper__right": {
+      "partId": "front_bumper",
+      "partNo": 4,
+      "partName": "Ön Tampon",
+      "view": "right",
+      "points": [
+        {
+          "x": 672.3,
+          "y": 110.6
+        },
+        {
+          "x": 718.3,
+          "y": 111.9
+        },
+        {
+          "x": 739.8,
+          "y": 120.1
+        },
+        {
+          "x": 739.8,
+          "y": 211.6
+        },
+        {
+          "x": 688.6,
+          "y": 211.6
+        },
+        {
+          "x": 675.2,
+          "y": 163.8
+        },
+        {
+          "x": 672.3,
+          "y": 128.3
+        }
+      ],
+      "source": "source-v16",
+      "sourceRank": 1
+    },
+    "rear_bumper__right": {
+      "partId": "rear_bumper",
+      "partNo": 5,
+      "partName": "Arka Tampon",
+      "view": "right",
+      "points": [
+        {
+          "x": 2.2,
+          "y": 122.8
+        },
+        {
+          "x": 22.3,
+          "y": 116
+        },
+        {
+          "x": 59.4,
+          "y": 114.7
+        },
+        {
+          "x": 60.8,
+          "y": 155.6
+        },
+        {
+          "x": 57.1,
+          "y": 199.3
+        },
+        {
+          "x": 37.1,
+          "y": 223.9
+        },
+        {
+          "x": 2.2,
+          "y": 225.2
+        }
+      ],
+      "source": "source-v16",
+      "sourceRank": 1
+    },
+    "lf_fender__top": {
+      "partId": "lf_fender",
+      "partNo": 20,
+      "partName": "Sol Ön Çamurluk",
+      "view": "top",
+      "points": [
+        {
+          "x": 14.4,
+          "y": 332
+        },
+        {
+          "x": 61.2,
+          "y": 341.6
+        },
+        {
+          "x": 122.4,
+          "y": 344.3
+        },
+        {
+          "x": 147.6,
+          "y": 343.5
+        },
+        {
+          "x": 165.6,
+          "y": 335.8
+        },
+        {
+          "x": 174.2,
+          "y": 316.5
+        },
+        {
+          "x": 172.8,
+          "y": 289.5
+        },
+        {
+          "x": 145.4,
+          "y": 289.5
+        },
+        {
+          "x": 123.8,
+          "y": 292.6
+        },
+        {
+          "x": 72,
+          "y": 294.1
+        },
+        {
+          "x": 28.8,
+          "y": 291.4
+        },
+        {
+          "x": 14.4,
+          "y": 304.9
+        }
+      ],
+      "source": "source-v16",
+      "sourceRank": 1
+    },
+    "lf_door__top": {
+      "partId": "lf_door",
+      "partNo": 21,
+      "partName": "Sol Ön Kapı",
+      "view": "top",
+      "points": [
+        {
+          "x": 172.8,
+          "y": 343.5
+        },
+        {
+          "x": 288,
+          "y": 346.6
+        },
+        {
+          "x": 345.6,
+          "y": 345.9
+        },
+        {
+          "x": 345.6,
+          "y": 293.4
+        },
+        {
+          "x": 172.8,
+          "y": 293.4
+        }
+      ],
+      "source": "source-v16",
+      "sourceRank": 1
+    },
+    "lr_door__top": {
+      "partId": "lr_door",
+      "partNo": 25,
+      "partName": "Sol Arka Kapı",
+      "view": "top",
+      "points": [
+        {
+          "x": 345.6,
+          "y": 345.9
+        },
+        {
+          "x": 455,
+          "y": 344.3
+        },
+        {
+          "x": 482.4,
+          "y": 339.7
+        },
+        {
+          "x": 483.8,
+          "y": 293.4
+        },
+        {
+          "x": 345.6,
+          "y": 293.4
+        }
+      ],
+      "source": "source-v16",
+      "sourceRank": 1
+    },
+    "lr_fender__top": {
+      "partId": "lr_fender",
+      "partNo": 26,
+      "partName": "Sol Arka Çamurluk",
+      "view": "top",
+      "points": [
+        {
+          "x": 482.4,
+          "y": 339.7
+        },
+        {
+          "x": 532.8,
+          "y": 340.5
+        },
+        {
+          "x": 597.6,
+          "y": 344.3
+        },
+        {
+          "x": 662.4,
+          "y": 337.8
+        },
+        {
+          "x": 694.8,
+          "y": 322.3
+        },
+        {
+          "x": 699.8,
+          "y": 294.1
+        },
+        {
+          "x": 637.2,
+          "y": 293.4
+        },
+        {
+          "x": 568.8,
+          "y": 292.6
+        },
+        {
+          "x": 511.2,
+          "y": 293.4
+        },
+        {
+          "x": 483.8,
+          "y": 293.4
+        }
+      ],
+      "source": "source-v16",
+      "sourceRank": 1
+    },
+    "lf_fender__front": {
+      "partId": "lf_fender",
+      "partNo": 20,
+      "partName": "Sol Ön Çamurluk",
+      "view": "front",
+      "points": [
+        {
+          "x": 430.5,
+          "y": 74.5
+        },
+        {
+          "x": 403.6,
+          "y": 69.5
+        },
+        {
+          "x": 373.2,
+          "y": 72.4
+        },
+        {
+          "x": 355.9,
+          "y": 84.1
+        },
+        {
+          "x": 361.1,
+          "y": 151.8
+        },
+        {
+          "x": 377.6,
+          "y": 192.7
+        },
+        {
+          "x": 397.1,
+          "y": 227.8
+        },
+        {
+          "x": 425.3,
+          "y": 229.2
+        },
+        {
+          "x": 430.5,
+          "y": 181
+        }
+      ],
+      "source": "source-v16",
+      "sourceRank": 1
+    },
+    "lr_fender__rear": {
+      "partId": "lr_fender",
+      "partNo": 26,
+      "partName": "Sol Arka Çamurluk",
+      "view": "rear",
+      "points": [
+        {
+          "x": 382.9,
+          "y": 54
+        },
+        {
+          "x": 359.8,
+          "y": 51.8
+        },
+        {
+          "x": 328.9,
+          "y": 54.5
+        },
+        {
+          "x": 315.7,
+          "y": 63
+        },
+        {
+          "x": 318.1,
+          "y": 141.8
+        },
+        {
+          "x": 333.9,
+          "y": 175.5
+        },
+        {
+          "x": 355.1,
+          "y": 195.8
+        },
+        {
+          "x": 382.1,
+          "y": 196.9
+        },
+        {
+          "x": 382.9,
+          "y": 141.8
+        }
+      ],
+      "source": "source-v16",
+      "sourceRank": 1
+    },
+    "left_frangart__left": {
+      "partId": "left_frangart",
+      "partNo": 59,
+      "partName": "Sol Frangart",
+      "view": "left",
+      "points": [
+        {
+          "x": 196.6,
+          "y": 82.8
+        },
+        {
+          "x": 404.4,
+          "y": 82.2
+        },
+        {
+          "x": 545.4,
+          "y": 82.8
+        },
+        {
+          "x": 589.9,
+          "y": 94.4
+        },
+        {
+          "x": 589.9,
+          "y": 106.5
+        },
+        {
+          "x": 404.4,
+          "y": 104.3
+        },
+        {
+          "x": 230,
+          "y": 103.2
+        },
+        {
+          "x": 201.8,
+          "y": 96
+        }
+      ],
+      "source": "source-v16",
+      "sourceRank": 1
+    },
+    "left_frangart__top": {
+      "partId": "left_frangart",
+      "partNo": 59,
+      "partName": "Sol Frangart",
+      "view": "top",
+      "points": [
+        {
+          "x": 172.8,
+          "y": 98
+        },
+        {
+          "x": 342.7,
+          "y": 96.5
+        },
+        {
+          "x": 384.5,
+          "y": 96.5
+        },
+        {
+          "x": 511.2,
+          "y": 98.4
+        },
+        {
+          "x": 511.2,
+          "y": 122
+        },
+        {
+          "x": 172.8,
+          "y": 122
+        }
+      ],
+      "source": "source-v16",
+      "sourceRank": 1
+    },
+    "left_frangart__front": {
+      "partId": "left_frangart",
+      "partNo": 59,
+      "partName": "Sol Frangart",
+      "view": "front",
+      "points": [
+        {
+          "x": 26,
+          "y": 23.4
+        },
+        {
+          "x": 78.1,
+          "y": 23.4
+        },
+        {
+          "x": 104.2,
+          "y": 81.8
+        },
+        {
+          "x": 112.8,
+          "y": 151.8
+        },
+        {
+          "x": 95.5,
+          "y": 221.9
+        },
+        {
+          "x": 43.4,
+          "y": 221.9
+        },
+        {
+          "x": 17.4,
+          "y": 151.8
+        },
+        {
+          "x": 13,
+          "y": 81.8
+        }
+      ],
+      "source": "source-v16",
+      "sourceRank": 1
+    },
+    "right_frangart__right": {
+      "partId": "right_frangart",
+      "partNo": 60,
+      "partName": "Sağ Frangart",
+      "view": "right",
+      "points": [
+        {
+          "x": 141,
+          "y": 81.9
+        },
+        {
+          "x": 326.5,
+          "y": 81.4
+        },
+        {
+          "x": 512,
+          "y": 81.4
+        },
+        {
+          "x": 541.7,
+          "y": 92.8
+        },
+        {
+          "x": 534.2,
+          "y": 103.2
+        },
+        {
+          "x": 341.3,
+          "y": 103.2
+        },
+        {
+          "x": 152.1,
+          "y": 105.4
+        },
+        {
+          "x": 137.3,
+          "y": 95
+        }
+      ],
+      "source": "source-v16",
+      "sourceRank": 1
+    },
+    "right_frangart__top": {
+      "partId": "right_frangart",
+      "partNo": 60,
+      "partName": "Sağ Frangart",
+      "view": "top",
+      "points": [
+        {
+          "x": 172.8,
+          "y": 264
+        },
+        {
+          "x": 511.2,
+          "y": 264
+        },
+        {
+          "x": 511.2,
+          "y": 288
+        },
+        {
+          "x": 384.5,
+          "y": 289.5
+        },
+        {
+          "x": 342.7,
+          "y": 289.5
+        },
+        {
+          "x": 172.8,
+          "y": 288
+        }
+      ],
+      "source": "source-v16",
+      "sourceRank": 1
+    },
+    "right_frangart__front": {
+      "partId": "right_frangart",
+      "partNo": 60,
+      "partName": "Sağ Frangart",
+      "view": "front",
+      "points": [
+        {
+          "x": 329.8,
+          "y": 23.4
+        },
+        {
+          "x": 381.9,
+          "y": 23.4
+        },
+        {
+          "x": 421,
+          "y": 81.8
+        },
+        {
+          "x": 416.6,
+          "y": 151.8
+        },
+        {
+          "x": 390.6,
+          "y": 221.9
+        },
+        {
+          "x": 338.5,
+          "y": 221.9
+        },
+        {
+          "x": 321.2,
+          "y": 151.8
+        },
+        {
+          "x": 329.8,
+          "y": 81.8
+        }
+      ],
+      "source": "source-v16",
+      "sourceRank": 1
+    },
+    "left_frangart__rear": {
+      "partId": "left_frangart",
+      "partNo": 59,
+      "partName": "Sol Frangart",
+      "view": "rear",
+      "points": [
+        {
+          "x": 61.8,
+          "y": 16.2
+        },
+        {
+          "x": 83,
+          "y": 13.9
+        },
+        {
+          "x": 102.3,
+          "y": 17.6
+        },
+        {
+          "x": 105,
+          "y": 35.1
+        },
+        {
+          "x": 100.4,
+          "y": 55.1
+        },
+        {
+          "x": 88,
+          "y": 76.5
+        },
+        {
+          "x": 70.3,
+          "y": 76.5
+        },
+        {
+          "x": 57.9,
+          "y": 55.1
+        },
+        {
+          "x": 55.6,
+          "y": 35.1
+        }
+      ],
+      "source": "source-v16",
+      "sourceRank": 1
+    },
+    "right_frangart__rear": {
+      "partId": "right_frangart",
+      "partNo": 60,
+      "partName": "Sağ Frangart",
+      "view": "rear",
+      "points": [
+        {
+          "x": 283.7,
+          "y": 17.6
+        },
+        {
+          "x": 303,
+          "y": 13.9
+        },
+        {
+          "x": 324.2,
+          "y": 16.2
+        },
+        {
+          "x": 330.4,
+          "y": 35.1
+        },
+        {
+          "x": 328.1,
+          "y": 55.1
+        },
+        {
+          "x": 315.7,
+          "y": 76.5
+        },
+        {
+          "x": 298,
+          "y": 76.5
+        },
+        {
+          "x": 285.6,
+          "y": 55.1
+        },
+        {
+          "x": 281,
+          "y": 35.1
+        }
+      ],
+      "source": "source-v16",
+      "sourceRank": 1
+    },
+    "rf_fender__top": {
+      "partId": "rf_fender",
+      "partNo": 34,
+      "partName": "Sağ Ön Çamurluk",
+      "view": "top",
+      "points": [
+        {
+          "x": 14.4,
+          "y": 54
+        },
+        {
+          "x": 61.2,
+          "y": 44.4
+        },
+        {
+          "x": 122.4,
+          "y": 41.7
+        },
+        {
+          "x": 147.6,
+          "y": 42.5
+        },
+        {
+          "x": 165.6,
+          "y": 50.2
+        },
+        {
+          "x": 174.2,
+          "y": 69.5
+        },
+        {
+          "x": 172.8,
+          "y": 96.5
+        },
+        {
+          "x": 145.4,
+          "y": 96.5
+        },
+        {
+          "x": 123.8,
+          "y": 93.4
+        },
+        {
+          "x": 72,
+          "y": 91.9
+        },
+        {
+          "x": 28.8,
+          "y": 94.6
+        },
+        {
+          "x": 14.4,
+          "y": 81.1
+        }
+      ],
+      "source": "source-v16",
+      "sourceRank": 1
+    },
+    "rf_door__top": {
+      "partId": "rf_door",
+      "partNo": 33,
+      "partName": "Sağ Ön Kapı",
+      "view": "top",
+      "points": [
+        {
+          "x": 172.8,
+          "y": 42.5
+        },
+        {
+          "x": 288,
+          "y": 39.4
+        },
+        {
+          "x": 345.6,
+          "y": 40.1
+        },
+        {
+          "x": 345.6,
+          "y": 92.6
+        },
+        {
+          "x": 172.8,
+          "y": 92.6
+        }
+      ],
+      "source": "source-v16",
+      "sourceRank": 1
+    },
+    "rr_door__top": {
+      "partId": "rr_door",
+      "partNo": 30,
+      "partName": "Sağ Arka Kapı",
+      "view": "top",
+      "points": [
+        {
+          "x": 345.6,
+          "y": 40.1
+        },
+        {
+          "x": 455,
+          "y": 41.7
+        },
+        {
+          "x": 482.4,
+          "y": 46.3
+        },
+        {
+          "x": 483.8,
+          "y": 92.6
+        },
+        {
+          "x": 345.6,
+          "y": 92.6
+        }
+      ],
+      "source": "source-v16",
+      "sourceRank": 1
+    },
+    "rr_fender__top": {
+      "partId": "rr_fender",
+      "partNo": 27,
+      "partName": "Sağ Arka Çamurluk",
+      "view": "top",
+      "points": [
+        {
+          "x": 482.4,
+          "y": 46.3
+        },
+        {
+          "x": 532.8,
+          "y": 45.5
+        },
+        {
+          "x": 597.6,
+          "y": 41.7
+        },
+        {
+          "x": 662.4,
+          "y": 48.3
+        },
+        {
+          "x": 694.8,
+          "y": 63.7
+        },
+        {
+          "x": 699.8,
+          "y": 91.9
+        },
+        {
+          "x": 637.2,
+          "y": 92.6
+        },
+        {
+          "x": 568.8,
+          "y": 93.4
+        },
+        {
+          "x": 511.2,
+          "y": 92.6
+        },
+        {
+          "x": 483.8,
+          "y": 92.6
+        }
+      ],
+      "source": "source-v16",
+      "sourceRank": 1
+    },
+    "rf_fender__front": {
+      "partId": "rf_fender",
+      "partNo": 34,
+      "partName": "Sağ Ön Çamurluk",
+      "view": "front",
+      "points": [
+        {
+          "x": 3.5,
+          "y": 74.5
+        },
+        {
+          "x": 30.4,
+          "y": 69.5
+        },
+        {
+          "x": 60.8,
+          "y": 72.4
+        },
+        {
+          "x": 78.1,
+          "y": 84.1
+        },
+        {
+          "x": 72.9,
+          "y": 151.8
+        },
+        {
+          "x": 56.4,
+          "y": 192.7
+        },
+        {
+          "x": 36.9,
+          "y": 227.8
+        },
+        {
+          "x": 8.7,
+          "y": 229.2
+        },
+        {
+          "x": 3.5,
+          "y": 181
+        }
+      ],
+      "source": "source-v16",
+      "sourceRank": 1
+    },
+    "rr_fender__rear": {
+      "partId": "rr_fender",
+      "partNo": 27,
+      "partName": "Sağ Arka Çamurluk",
+      "view": "rear",
+      "points": [
+        {
+          "x": 3.1,
+          "y": 54
+        },
+        {
+          "x": 26.2,
+          "y": 51.8
+        },
+        {
+          "x": 57.1,
+          "y": 54.5
+        },
+        {
+          "x": 70.3,
+          "y": 63
+        },
+        {
+          "x": 67.9,
+          "y": 141.8
+        },
+        {
+          "x": 52.1,
+          "y": 175.5
+        },
+        {
+          "x": 30.9,
+          "y": 195.8
+        },
+        {
+          "x": 3.9,
+          "y": 196.9
+        },
+        {
+          "x": 3.1,
+          "y": 141.8
+        }
+      ],
+      "source": "source-v16",
+      "sourceRank": 1
+    },
+    "roof__front": {
+      "partId": "roof",
+      "partNo": 6,
+      "partName": "Tavan",
+      "view": "front",
+      "points": [
+        {
+          "x": 104.2,
+          "y": 2.9
+        },
+        {
+          "x": 134.5,
+          "y": 0.6
+        },
+        {
+          "x": 299.5,
+          "y": 0.6
+        },
+        {
+          "x": 329.8,
+          "y": 2.9
+        },
+        {
+          "x": 319,
+          "y": 19.6
+        },
+        {
+          "x": 115,
+          "y": 19.6
+        }
+      ],
+      "source": "source-v16",
+      "sourceRank": 1
+    },
+    "roof__rear": {
+      "partId": "roof",
+      "partNo": 6,
+      "partName": "Tavan",
+      "view": "rear",
+      "points": [
+        {
+          "x": 77.2,
+          "y": 2.3
+        },
+        {
+          "x": 111.9,
+          "y": 0
+        },
+        {
+          "x": 274.1,
+          "y": 0
+        },
+        {
+          "x": 308.8,
+          "y": 2.3
+        },
+        {
+          "x": 297.2,
+          "y": 18
+        },
+        {
+          "x": 88.8,
+          "y": 18
+        }
+      ],
+      "source": "source-v16",
+      "sourceRank": 1
+    },
+    "hood__left": {
+      "partId": "hood",
+      "partNo": 8,
+      "partName": "Ön Kaput",
+      "view": "left",
+      "points": [
+        {
+          "x": 5.9,
+          "y": 89.7
+        },
+        {
+          "x": 48.2,
+          "y": 82.2
+        },
+        {
+          "x": 107.6,
+          "y": 77.8
+        },
+        {
+          "x": 163.2,
+          "y": 74.5
+        },
+        {
+          "x": 207.8,
+          "y": 75.6
+        },
+        {
+          "x": 241.2,
+          "y": 83.4
+        },
+        {
+          "x": 231.5,
+          "y": 101
+        },
+        {
+          "x": 174.4,
+          "y": 102.7
+        },
+        {
+          "x": 111.3,
+          "y": 104.3
+        },
+        {
+          "x": 51.9,
+          "y": 110.4
+        },
+        {
+          "x": 5.9,
+          "y": 115.4
+        }
+      ],
+      "source": "source-v16",
+      "sourceRank": 1
+    },
+    "hood__right": {
+      "partId": "hood",
+      "partNo": 8,
+      "partName": "Ön Kaput",
+      "view": "right",
+      "points": [
+        {
+          "x": 736.1,
+          "y": 88.7
+        },
+        {
+          "x": 693.8,
+          "y": 81.4
+        },
+        {
+          "x": 634.4,
+          "y": 77
+        },
+        {
+          "x": 578.8,
+          "y": 73.7
+        },
+        {
+          "x": 534.2,
+          "y": 74.8
+        },
+        {
+          "x": 500.9,
+          "y": 82.4
+        },
+        {
+          "x": 510.5,
+          "y": 99.9
+        },
+        {
+          "x": 567.6,
+          "y": 101.6
+        },
+        {
+          "x": 630.7,
+          "y": 103.2
+        },
+        {
+          "x": 690.1,
+          "y": 109.2
+        },
+        {
+          "x": 736.1,
+          "y": 114.1
+        }
+      ],
+      "source": "source-v16",
+      "sourceRank": 1
+    }
+  },
+  "sourcePolygonDefinitions": {
+    "front_grille__front": [
+      [
+        30,
+        43
+      ],
+      [
+        70,
+        43
+      ],
+      [
+        68.5,
+        60
+      ],
+      [
+        31.5,
+        60
+      ]
+    ],
+    "front_bumper__front": [
+      [
+        1.8,
+        51
+      ],
+      [
+        20.5,
+        52.5
+      ],
+      [
+        24.7,
+        68.3
+      ],
+      [
+        75.3,
+        68.3
+      ],
+      [
+        79.5,
+        52.5
+      ],
+      [
+        98.2,
+        51
+      ],
+      [
+        97.2,
+        91
+      ],
+      [
+        2.8,
+        91
+      ]
+    ],
+    "rear_bumper__rear": [
+      [
+        1.5,
+        62.3
+      ],
+      [
+        16,
+        62.6
+      ],
+      [
+        18.5,
+        69.5
+      ],
+      [
+        81.5,
+        69.5
+      ],
+      [
+        84,
+        62.6
+      ],
+      [
+        98.5,
+        62.3
+      ],
+      [
+        99,
+        96.8
+      ],
+      [
+        1,
+        96.8
+      ]
+    ],
+    "roof__top": [
+      [
+        33,
+        8
+      ],
+      [
+        67,
+        8
+      ],
+      [
+        71,
+        12
+      ],
+      [
+        74,
+        28
+      ],
+      [
+        75,
+        72
+      ],
+      [
+        71,
+        88
+      ],
+      [
+        67,
+        92
+      ],
+      [
+        33,
+        92
+      ],
+      [
+        29,
+        88
+      ],
+      [
+        26,
+        72
+      ],
+      [
+        25,
+        28
+      ],
+      [
+        29,
+        12
+      ]
+    ],
+    "hood__top": [
+      [
+        0.8,
+        19
+      ],
+      [
+        8,
+        13
+      ],
+      [
+        18,
+        10
+      ],
+      [
+        28,
+        11
+      ],
+      [
+        31,
+        14
+      ],
+      [
+        33.5,
+        29
+      ],
+      [
+        33.5,
+        71
+      ],
+      [
+        31,
+        86
+      ],
+      [
+        28,
+        89
+      ],
+      [
+        18,
+        90
+      ],
+      [
+        8,
+        87
+      ],
+      [
+        0.8,
+        81
+      ]
+    ],
+    "hood__front": [
+      [
+        8,
+        29
+      ],
+      [
+        18,
+        25.2
+      ],
+      [
+        82,
+        25.2
+      ],
+      [
+        92,
+        29
+      ],
+      [
+        88.8,
+        48
+      ],
+      [
+        76,
+        51.8
+      ],
+      [
+        24,
+        51.8
+      ],
+      [
+        11.2,
+        48
+      ]
+    ],
+    "lf_fender__left": [
+      [
+        0.5,
+        38
+      ],
+      [
+        5,
+        34
+      ],
+      [
+        12,
+        31.7
+      ],
+      [
+        19,
+        30.5
+      ],
+      [
+        25.5,
+        30.3
+      ],
+      [
+        30.5,
+        33.8
+      ],
+      [
+        29.7,
+        78
+      ],
+      [
+        25,
+        78.4
+      ],
+      [
+        23.4,
+        69
+      ],
+      [
+        22,
+        59
+      ],
+      [
+        20,
+        52.2
+      ],
+      [
+        16.4,
+        49.8
+      ],
+      [
+        12.6,
+        50.2
+      ],
+      [
+        9.6,
+        55.5
+      ],
+      [
+        8,
+        64.5
+      ],
+      [
+        6.8,
+        78
+      ],
+      [
+        0.5,
+        78
+      ]
+    ],
+    "lf_door__left": [
+      [
+        30.4,
+        34.4
+      ],
+      [
+        55.1,
+        34.4
+      ],
+      [
+        55.1,
+        82.2
+      ],
+      [
+        34,
+        82.2
+      ],
+      [
+        31,
+        78
+      ]
+    ],
+    "lr_door_inner__left": [
+      [
+        59.8,
+        40.2
+      ],
+      [
+        75.2,
+        40.8
+      ],
+      [
+        75.5,
+        73.2
+      ],
+      [
+        60.4,
+        73.2
+      ]
+    ],
+    "lr_door__left": [
+      [
+        55.1,
+        34.6
+      ],
+      [
+        72.6,
+        35
+      ],
+      [
+        79.8,
+        42.8
+      ],
+      [
+        79.9,
+        82.2
+      ],
+      [
+        55.1,
+        82.2
+      ]
+    ],
+    "lr_fender__left": [
+      [
+        79.8,
+        42.8
+      ],
+      [
+        89,
+        37.8
+      ],
+      [
+        96.5,
+        38.2
+      ],
+      [
+        99.5,
+        40
+      ],
+      [
+        99.5,
+        82.8
+      ],
+      [
+        83.4,
+        82.8
+      ],
+      [
+        80.2,
+        77.2
+      ],
+      [
+        79.2,
+        62
+      ]
+    ],
+    "rr_fender__right": [
+      [
+        0.5,
+        39.6
+      ],
+      [
+        3.5,
+        38
+      ],
+      [
+        11,
+        36.6
+      ],
+      [
+        18.8,
+        34.8
+      ],
+      [
+        19.4,
+        61.8
+      ],
+      [
+        18.2,
+        78
+      ],
+      [
+        15.2,
+        82.6
+      ],
+      [
+        0.5,
+        82.6
+      ]
+    ],
+    "rr_door__right": [
+      [
+        19.1,
+        34.8
+      ],
+      [
+        43,
+        34
+      ],
+      [
+        43,
+        82.1
+      ],
+      [
+        22.3,
+        82.1
+      ],
+      [
+        19.1,
+        77
+      ]
+    ],
+    "rr_door_inner__right": [
+      [
+        23.8,
+        40.2
+      ],
+      [
+        39.8,
+        40.2
+      ],
+      [
+        39.8,
+        73
+      ],
+      [
+        25,
+        73
+      ]
+    ],
+    "rf_door__right": [
+      [
+        43,
+        34
+      ],
+      [
+        69.2,
+        34
+      ],
+      [
+        69.8,
+        82.1
+      ],
+      [
+        46.2,
+        82.1
+      ],
+      [
+        43,
+        77.5
+      ]
+    ],
+    "rf_fender__right": [
+      [
+        69.2,
+        30.2
+      ],
+      [
+        80.5,
+        29
+      ],
+      [
+        89.5,
+        30
+      ],
+      [
+        96,
+        33
+      ],
+      [
+        99.5,
+        36.8
+      ],
+      [
+        99.5,
+        78
+      ],
+      [
+        93.6,
+        78
+      ],
+      [
+        92.2,
+        65.5
+      ],
+      [
+        90.4,
+        56
+      ],
+      [
+        87,
+        50
+      ],
+      [
+        82,
+        49.3
+      ],
+      [
+        77.8,
+        53.8
+      ],
+      [
+        75.4,
+        61
+      ],
+      [
+        73.6,
+        78
+      ],
+      [
+        69.2,
+        78
+      ]
+    ],
+    "trunk__top": [
+      [
+        66.5,
+        8
+      ],
+      [
+        71,
+        8
+      ],
+      [
+        90,
+        10
+      ],
+      [
+        98.5,
+        18.5
+      ],
+      [
+        98.5,
+        81.5
+      ],
+      [
+        90,
+        90
+      ],
+      [
+        71,
+        92
+      ],
+      [
+        66.5,
+        92
+      ],
+      [
+        71,
+        72
+      ],
+      [
+        71,
+        28
+      ]
+    ],
+    "trunk__rear": [
+      [
+        12.5,
+        23.5
+      ],
+      [
+        87.5,
+        23.5
+      ],
+      [
+        83.6,
+        62.8
+      ],
+      [
+        16.4,
+        62.8
+      ]
+    ],
+    "rf_door_inner__right": [
+      [
+        47,
+        40
+      ],
+      [
+        65.6,
+        40
+      ],
+      [
+        65.6,
+        73
+      ],
+      [
+        49,
+        73
+      ]
+    ],
+    "lf_door_inner__left": [
+      [
+        34.6,
+        40
+      ],
+      [
+        52.6,
+        40
+      ],
+      [
+        52.6,
+        73
+      ],
+      [
+        36.8,
+        73
+      ]
+    ],
+    "front_bumper__left": [
+      [
+        0.3,
+        44
+      ],
+      [
+        3.2,
+        41
+      ],
+      [
+        8.2,
+        40.5
+      ],
+      [
+        9.4,
+        47
+      ],
+      [
+        9,
+        60
+      ],
+      [
+        7.2,
+        77.5
+      ],
+      [
+        0.3,
+        77.5
+      ]
+    ],
+    "rear_bumper__left": [
+      [
+        92,
+        42
+      ],
+      [
+        97,
+        42.5
+      ],
+      [
+        99.7,
+        45
+      ],
+      [
+        99.7,
+        82.5
+      ],
+      [
+        95,
+        82
+      ],
+      [
+        92.3,
+        73
+      ],
+      [
+        91.8,
+        57
+      ]
+    ],
+    "front_bumper__right": [
+      [
+        90.6,
+        40.5
+      ],
+      [
+        96.8,
+        41
+      ],
+      [
+        99.7,
+        44
+      ],
+      [
+        99.7,
+        77.5
+      ],
+      [
+        92.8,
+        77.5
+      ],
+      [
+        91,
+        60
+      ],
+      [
+        90.6,
+        47
+      ]
+    ],
+    "rear_bumper__right": [
+      [
+        0.3,
+        45
+      ],
+      [
+        3,
+        42.5
+      ],
+      [
+        8,
+        42
+      ],
+      [
+        8.2,
+        57
+      ],
+      [
+        7.7,
+        73
+      ],
+      [
+        5,
+        82
+      ],
+      [
+        0.3,
+        82.5
+      ]
+    ],
+    "lf_fender__top": [
+      [
+        2,
+        86
+      ],
+      [
+        8.5,
+        88.5
+      ],
+      [
+        17,
+        89.2
+      ],
+      [
+        20.5,
+        89
+      ],
+      [
+        23,
+        87
+      ],
+      [
+        24.2,
+        82
+      ],
+      [
+        24,
+        75
+      ],
+      [
+        20.2,
+        75
+      ],
+      [
+        17.2,
+        75.8
+      ],
+      [
+        10,
+        76.2
+      ],
+      [
+        4,
+        75.5
+      ],
+      [
+        2,
+        79
+      ]
+    ],
+    "lf_door__top": [
+      [
+        24,
+        89
+      ],
+      [
+        40,
+        89.8
+      ],
+      [
+        48,
+        89.6
+      ],
+      [
+        48,
+        76
+      ],
+      [
+        24,
+        76
+      ]
+    ],
+    "lr_door__top": [
+      [
+        48,
+        89.6
+      ],
+      [
+        63.2,
+        89.2
+      ],
+      [
+        67,
+        88
+      ],
+      [
+        67.2,
+        76
+      ],
+      [
+        48,
+        76
+      ]
+    ],
+    "lr_fender__top": [
+      [
+        67,
+        88
+      ],
+      [
+        74,
+        88.2
+      ],
+      [
+        83,
+        89.2
+      ],
+      [
+        92,
+        87.5
+      ],
+      [
+        96.5,
+        83.5
+      ],
+      [
+        97.2,
+        76.2
+      ],
+      [
+        88.5,
+        76
+      ],
+      [
+        79,
+        75.8
+      ],
+      [
+        71,
+        76
+      ],
+      [
+        67.2,
+        76
+      ]
+    ],
+    "lf_fender__front": [
+      [
+        99.2,
+        25.5
+      ],
+      [
+        93,
+        23.8
+      ],
+      [
+        86,
+        24.8
+      ],
+      [
+        82,
+        28.8
+      ],
+      [
+        83.2,
+        52
+      ],
+      [
+        87,
+        66
+      ],
+      [
+        91.5,
+        78
+      ],
+      [
+        98,
+        78.5
+      ],
+      [
+        99.2,
+        62
+      ]
+    ],
+    "lr_fender__rear": [
+      [
+        99.2,
+        24
+      ],
+      [
+        93.2,
+        23
+      ],
+      [
+        85.2,
+        24.2
+      ],
+      [
+        81.8,
+        28
+      ],
+      [
+        82.4,
+        63
+      ],
+      [
+        86.5,
+        78
+      ],
+      [
+        92,
+        87
+      ],
+      [
+        99,
+        87.5
+      ],
+      [
+        99.2,
+        63
+      ]
+    ],
+    "left_frangart__left": [
+      [
+        26.5,
+        30
+      ],
+      [
+        54.5,
+        29.8
+      ],
+      [
+        73.5,
+        30
+      ],
+      [
+        79.5,
+        34.2
+      ],
+      [
+        79.5,
+        38.6
+      ],
+      [
+        54.5,
+        37.8
+      ],
+      [
+        31,
+        37.4
+      ],
+      [
+        27.2,
+        34.8
+      ]
+    ],
+    "left_frangart__top": [
+      [
+        24,
+        25.4
+      ],
+      [
+        47.6,
+        25
+      ],
+      [
+        53.4,
+        25
+      ],
+      [
+        71,
+        25.5
+      ],
+      [
+        71,
+        31.6
+      ],
+      [
+        24,
+        31.6
+      ]
+    ],
+    "left_frangart__front": [
+      [
+        6,
+        8
+      ],
+      [
+        18,
+        8
+      ],
+      [
+        24,
+        28
+      ],
+      [
+        26,
+        52
+      ],
+      [
+        22,
+        76
+      ],
+      [
+        10,
+        76
+      ],
+      [
+        4,
+        52
+      ],
+      [
+        3,
+        28
+      ]
+    ],
+    "right_frangart__right": [
+      [
+        19,
+        30
+      ],
+      [
+        44,
+        29.8
+      ],
+      [
+        69,
+        29.8
+      ],
+      [
+        73,
+        34
+      ],
+      [
+        72,
+        37.8
+      ],
+      [
+        46,
+        37.8
+      ],
+      [
+        20.5,
+        38.6
+      ],
+      [
+        18.5,
+        34.8
+      ]
+    ],
+    "right_frangart__top": [
+      [
+        24,
+        68.4
+      ],
+      [
+        71,
+        68.4
+      ],
+      [
+        71,
+        74.6
+      ],
+      [
+        53.4,
+        75
+      ],
+      [
+        47.6,
+        75
+      ],
+      [
+        24,
+        74.6
+      ]
+    ],
+    "right_frangart__front": [
+      [
+        76,
+        8
+      ],
+      [
+        88,
+        8
+      ],
+      [
+        97,
+        28
+      ],
+      [
+        96,
+        52
+      ],
+      [
+        90,
+        76
+      ],
+      [
+        78,
+        76
+      ],
+      [
+        74,
+        52
+      ],
+      [
+        76,
+        28
+      ]
+    ],
+    "left_frangart__rear": [
+      [
+        16,
+        7.2
+      ],
+      [
+        21.5,
+        6.2
+      ],
+      [
+        26.5,
+        7.8
+      ],
+      [
+        27.2,
+        15.6
+      ],
+      [
+        26,
+        24.5
+      ],
+      [
+        22.8,
+        34
+      ],
+      [
+        18.2,
+        34
+      ],
+      [
+        15,
+        24.5
+      ],
+      [
+        14.4,
+        15.6
+      ]
+    ],
+    "right_frangart__rear": [
+      [
+        73.5,
+        7.8
+      ],
+      [
+        78.5,
+        6.2
+      ],
+      [
+        84,
+        7.2
+      ],
+      [
+        85.6,
+        15.6
+      ],
+      [
+        85,
+        24.5
+      ],
+      [
+        81.8,
+        34
+      ],
+      [
+        77.2,
+        34
+      ],
+      [
+        74,
+        24.5
+      ],
+      [
+        72.8,
+        15.6
+      ]
+    ],
+    "rf_fender__top": [
+      [
+        2,
+        14
+      ],
+      [
+        8.5,
+        11.5
+      ],
+      [
+        17,
+        10.8
+      ],
+      [
+        20.5,
+        11
+      ],
+      [
+        23,
+        13
+      ],
+      [
+        24.2,
+        18
+      ],
+      [
+        24,
+        25
+      ],
+      [
+        20.2,
+        25
+      ],
+      [
+        17.2,
+        24.2
+      ],
+      [
+        10,
+        23.8
+      ],
+      [
+        4,
+        24.5
+      ],
+      [
+        2,
+        21
+      ]
+    ],
+    "rf_door__top": [
+      [
+        24,
+        11
+      ],
+      [
+        40,
+        10.2
+      ],
+      [
+        48,
+        10.4
+      ],
+      [
+        48,
+        24
+      ],
+      [
+        24,
+        24
+      ]
+    ],
+    "rr_door__top": [
+      [
+        48,
+        10.4
+      ],
+      [
+        63.2,
+        10.8
+      ],
+      [
+        67,
+        12
+      ],
+      [
+        67.2,
+        24
+      ],
+      [
+        48,
+        24
+      ]
+    ],
+    "rr_fender__top": [
+      [
+        67,
+        12
+      ],
+      [
+        74,
+        11.8
+      ],
+      [
+        83,
+        10.8
+      ],
+      [
+        92,
+        12.5
+      ],
+      [
+        96.5,
+        16.5
+      ],
+      [
+        97.2,
+        23.8
+      ],
+      [
+        88.5,
+        24
+      ],
+      [
+        79,
+        24.2
+      ],
+      [
+        71,
+        24
+      ],
+      [
+        67.2,
+        24
+      ]
+    ],
+    "rf_fender__front": [
+      [
+        0.8,
+        25.5
+      ],
+      [
+        7,
+        23.8
+      ],
+      [
+        14,
+        24.8
+      ],
+      [
+        18,
+        28.8
+      ],
+      [
+        16.8,
+        52
+      ],
+      [
+        13,
+        66
+      ],
+      [
+        8.5,
+        78
+      ],
+      [
+        2,
+        78.5
+      ],
+      [
+        0.8,
+        62
+      ]
+    ],
+    "rr_fender__rear": [
+      [
+        0.8,
+        24
+      ],
+      [
+        6.8,
+        23
+      ],
+      [
+        14.8,
+        24.2
+      ],
+      [
+        18.2,
+        28
+      ],
+      [
+        17.6,
+        63
+      ],
+      [
+        13.5,
+        78
+      ],
+      [
+        8,
+        87
+      ],
+      [
+        1,
+        87.5
+      ],
+      [
+        0.8,
+        63
+      ]
+    ],
+    "roof__front": [
+      [
+        24,
+        1
+      ],
+      [
+        31,
+        0.2
+      ],
+      [
+        69,
+        0.2
+      ],
+      [
+        76,
+        1
+      ],
+      [
+        73.5,
+        6.7
+      ],
+      [
+        26.5,
+        6.7
+      ]
+    ],
+    "roof__rear": [
+      [
+        20,
+        1
+      ],
+      [
+        29,
+        0
+      ],
+      [
+        71,
+        0
+      ],
+      [
+        80,
+        1
+      ],
+      [
+        77,
+        8
+      ],
+      [
+        23,
+        8
+      ]
+    ],
+    "hood__left": [
+      [
+        0.8,
+        32.5
+      ],
+      [
+        6.5,
+        29.8
+      ],
+      [
+        14.5,
+        28.2
+      ],
+      [
+        22,
+        27
+      ],
+      [
+        28,
+        27.4
+      ],
+      [
+        32.5,
+        30.2
+      ],
+      [
+        31.2,
+        36.6
+      ],
+      [
+        23.5,
+        37.2
+      ],
+      [
+        15,
+        37.8
+      ],
+      [
+        7,
+        40
+      ],
+      [
+        0.8,
+        41.8
+      ]
+    ],
+    "hood__right": [
+      [
+        99.2,
+        32.5
+      ],
+      [
+        93.5,
+        29.8
+      ],
+      [
+        85.5,
+        28.2
+      ],
+      [
+        78,
+        27
+      ],
+      [
+        72,
+        27.4
+      ],
+      [
+        67.5,
+        30.2
+      ],
+      [
+        68.8,
+        36.6
+      ],
+      [
+        76.5,
+        37.2
+      ],
+      [
+        85,
+        37.8
+      ],
+      [
+        93,
+        40
+      ],
+      [
+        99.2,
+        41.8
+      ]
+    ]
+  },
+  "archivedDoorInnerSourcePolygons": {
+    "lr_door_inner__left": [
+      [
+        59.8,
+        40.2
+      ],
+      [
+        75.2,
+        40.8
+      ],
+      [
+        75.5,
+        73.2
+      ],
+      [
+        60.4,
+        73.2
+      ]
+    ],
+    "rr_door_inner__right": [
+      [
+        23.8,
+        40.2
+      ],
+      [
+        39.8,
+        40.2
+      ],
+      [
+        39.8,
+        73
+      ],
+      [
+        25,
+        73
+      ]
+    ],
+    "rf_door_inner__right": [
+      [
+        47,
+        40
+      ],
+      [
+        65.6,
+        40
+      ],
+      [
+        65.6,
+        73
+      ],
+      [
+        49,
+        73
+      ]
+    ],
+    "lf_door_inner__left": [
+      [
+        34.6,
+        40
+      ],
+      [
+        52.6,
+        40
+      ],
+      [
+        52.6,
+        73
+      ],
+      [
+        36.8,
+        73
+      ]
+    ]
+  },
+  "erpContract": {
+    "adapter": "window.OTOTR_ERP_ADAPTER",
+    "methods": [
+      "loadInspection(inspectionId)",
+      "saveInspection(payload)"
+    ],
+    "defaultPersistence": "localStorage:ototr_kaporta_master_v1"
+  }
+}

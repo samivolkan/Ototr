@@ -1580,7 +1580,36 @@ function focusView(view){
   target.scrollIntoView({behavior:'smooth',block:'start',inline:'nearest'});
   setTimeout(()=>target.classList.remove('view-focus'),900);
 }
-function printReport(){closePointModal(false);mode='report';render();setTimeout(()=>window.print(),100)}
+function setChassisMode(nextMode){
+  closePointModal(false);
+  if(nextMode==='report'){
+    const incomplete=POINTS.filter(point=>!complete(point.no));
+    if(incomplete.length){
+      mode='entry';
+      filter='pending';
+      selected=String(incomplete[0].no);
+      document.querySelectorAll('[data-filter]').forEach(x=>x.classList.toggle('active',x.dataset.filter===filter));
+      render();
+      toast(`Müşteri raporu için ${incomplete.length} nokta tamamlanmalı. İlk eksik noktaya gidildi.`,'warn');
+      return false;
+    }
+    if(layoutEditMode)setLayoutEditMode(false);
+    filter='all';
+  }
+  mode=nextMode;
+  document.querySelectorAll('[data-filter]').forEach(x=>x.classList.toggle('active',x.dataset.filter===filter));
+  render();
+  return true;
+}
+function printReport(){
+  const previousMode=mode;
+  const previousFilter=filter;
+  if(!setChassisMode('report'))return false;
+  const restoreMode=()=>{mode=previousMode;filter=previousFilter;render()};
+  window.addEventListener('afterprint',restoreMode,{once:true});
+  setTimeout(()=>window.print(),100);
+  return true;
+}
 function toast(msg,type='ok'){const t=document.getElementById('toast');t.textContent=msg;t.className='toast show '+(type==='warn'?'warn':type==='error'?'error':'');clearTimeout(window.__toast);window.__toast=setTimeout(()=>t.classList.remove('show'),2400)}
 
 
@@ -1791,7 +1820,7 @@ window.addEventListener('resize',()=>{
 
 window.addEventListener('resize',()=>{enhanceMobileMap();if(!isMobileAppViewport())v30SetMobileSurface('map')});
 
-document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{closePointModal(false);if(b.dataset.mode==='report'&&layoutEditMode)setLayoutEditMode(false);mode=b.dataset.mode;if(mode==='report')filter='all';document.querySelectorAll('[data-filter]').forEach(x=>x.classList.toggle('active',x.dataset.filter===filter));render()});document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{filter=b.dataset.filter;document.querySelectorAll('[data-filter]').forEach(x=>x.classList.toggle('active',x.dataset.filter===filter));const first=POINTS.find(p=>matches(p.no));if(first&&!matches(selected))selected=String(first.no);render()});document.querySelectorAll('[data-view-target]').forEach(b=>b.onclick=()=>focusView(b.dataset.viewTarget));document.querySelectorAll('[data-joy-view]').forEach(b=>b.onclick=()=>focusView(b.dataset.joyView));document.getElementById('fastFlow').onchange=e=>{state.settings.fastFlow=e.target.checked;save()};document.getElementById('btnAllOriginal').onclick=()=>markAllOriginal();document.getElementById('btnNextMissing').onclick=()=>{nextMissing();openPointModal()};document.getElementById('btnExport').onclick=exportJson;document.getElementById('btnPrint').onclick=printReport;document.getElementById('btnImport').onclick=()=>{const f=document.getElementById('importFile');f.value='';f.click()};document.getElementById('importFile').onchange=e=>e.target.files?.[0]&&importJson(e.target.files[0]);document.getElementById('footerSample').onclick=()=>confirm('Örnek veri mevcut kayıtların üzerine yazılsın mı?')&&sample();document.getElementById('footerExport').onclick=exportJson;document.getElementById('footerPdf').onclick=printReport;document.getElementById('footerPrint').onclick=printReport;
+document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>setChassisMode(b.dataset.mode));document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{filter=b.dataset.filter;document.querySelectorAll('[data-filter]').forEach(x=>x.classList.toggle('active',x.dataset.filter===filter));const first=POINTS.find(p=>matches(p.no));if(first&&!matches(selected))selected=String(first.no);render()});document.querySelectorAll('[data-view-target]').forEach(b=>b.onclick=()=>focusView(b.dataset.viewTarget));document.querySelectorAll('[data-joy-view]').forEach(b=>b.onclick=()=>focusView(b.dataset.joyView));document.getElementById('fastFlow').onchange=e=>{state.settings.fastFlow=e.target.checked;save()};document.getElementById('btnAllOriginal').onclick=()=>markAllOriginal();document.getElementById('btnNextMissing').onclick=()=>{nextMissing();openPointModal()};document.getElementById('btnExport').onclick=exportJson;document.getElementById('btnPrint').onclick=printReport;document.getElementById('btnImport').onclick=()=>{const f=document.getElementById('importFile');f.value='';f.click()};document.getElementById('importFile').onchange=e=>e.target.files?.[0]&&importJson(e.target.files[0]);document.getElementById('footerSample').onclick=()=>confirm('Örnek veri mevcut kayıtların üzerine yazılsın mı?')&&sample();document.getElementById('footerExport').onclick=exportJson;document.getElementById('footerPdf').onclick=printReport;document.getElementById('footerPrint').onclick=printReport;
 document.getElementById('btnClosePointModal').onclick=()=>closePointModal();document.querySelector('[data-modal-dismiss]').onclick=()=>closePointModal();document.getElementById('selectedBadge').onclick=()=>{if(mode==='entry')openPointModal()};
 document.addEventListener('keydown',e=>{if(mode!=='entry')return;const modalOpen=!document.getElementById('pointModal').classList.contains('hidden');if(e.key==='Escape'&&modalOpen){e.preventDefault();closePointModal();return}const tag=document.activeElement?.tagName;if(['INPUT','TEXTAREA','SELECT'].includes(tag))return;const k=e.key.toLocaleLowerCase('tr-TR');if(k==='arrowleft'){e.preventDefault();navigate(-1);if(modalOpen)openPointModal()}else if(k==='arrowright'){e.preventDefault();navigate(1);if(modalOpen)openPointModal()}else if(k==='enter'&&modalOpen){e.preventDefault();saveAndClose()}else if(['o','l','b','s','u','i','ı','d','h'].includes(k)){if(!modalOpen)openPointModal();if(k==='o')applyQuick('original');else if(k==='l')applyQuick('localPaint',false);else if(k==='b')applyQuick('painted',false);else if(k==='s')applyQuick('refit',false);else if(k==='u')applyQuick('tipDent',false);else if(k==='i'||k==='ı')applyQuick('processed',false);else if(k==='d')applyQuick('replaced',false);else if(k==='h')applyQuick('damaged',false)}});
 
@@ -2181,6 +2210,14 @@ const qs=new URLSearchParams(location.search);if(qs.get('mode')==='report')mode=
     return POINTS.every(point=>complete(point.no));
   }
   async function erpCompleteCurrentChassis(reason='complete'){
+    const incomplete=POINTS.filter(point=>!complete(point.no)).map(point=>String(point.no));
+    if(incomplete.length){
+      const error=new Error(`Şasi tamamlanamaz: ${incomplete.length} nokta eksik.`);
+      error.code='CHASSIS_INCOMPLETE';
+      error.incompletePointNos=incomplete;
+      erpWarnOnce(error.message,'warn');
+      throw error;
+    }
     if(!erpIsEnabled())return{demo:true};
     await erpFlushSync(reason);
     const result=await erpCompleteChassis(erpBuildCompletePayload(reason));
@@ -2254,6 +2291,8 @@ const qs=new URLSearchParams(location.search);if(qs.get('mode')==='report')mode=
     putChassisPoint:(pointNo,reason='manual')=>erpPutChassisPoint(erpBuildPointPayload(pointNo,reason)),
     postEvidence:(pointNo,index,reason='manual')=>erpPostEvidence(erpBuildEvidencePayload(pointNo,index,reason)),
     completeChassis:(reason='manual')=>erpCompleteCurrentChassis(reason),
+    isComplete:erpIsChassisComplete,
+    getIncompletePointNos:()=>POINTS.filter(point=>!complete(point.no)).map(point=>String(point.no)),
     buildPointPayload:erpBuildPointPayload,
     buildEvidencePayload:erpBuildEvidencePayload,
     buildCompletePayload:erpBuildCompletePayload,
@@ -2263,6 +2302,21 @@ const qs=new URLSearchParams(location.search);if(qs.get('mode')==='report')mode=
 
   erpRefreshBaseline();
   if(erpIsEnabled())erpHydrateFromBackend();
+
+  window.runChassisSelfTest=function(){
+    const pointNos=POINTS.map(point=>String(point.no));
+    const checks={
+      pointCount:POINTS.length===22,
+      uniquePointNos:new Set(pointNos).size===POINTS.length,
+      adapterContract:['getChassis','putChassisPoint','postEvidence','completeChassis'].every(name=>typeof window.OTOTRERPChassisAdapter[name]==='function'),
+      completionGuard:typeof window.OTOTRERPChassisAdapter.getIncompletePointNos==='function',
+      imageAssets:Object.values(ASSETS).every(Boolean)
+    };
+    const result={ok:Object.values(checks).every(Boolean),checks,pointCount:POINTS.length};
+    console.info('[OTOTR Şasi Self Test]',result.ok?'PASS':'FAIL',result);
+    return result;
+  };
+  window.runChassisSelfTest();
 })();
 </script>
 </body></html>
