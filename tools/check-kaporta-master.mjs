@@ -60,6 +60,7 @@ const requiredTokens = [
   'window.runKaportaSelfTest',
   'window.OTOTR_KAPORTA_MASTER_V1',
   "version:'OTOTR_KAPORTA_MASTER_V1'",
+  'stroke-opacity:.82!important',
   'Raporu Yazdir / PDF'.replace('Yazdir', 'Yazdır'),
 ];
 requiredTokens.forEach((token) => {

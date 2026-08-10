@@ -42,6 +42,7 @@ Kaporta kontrolü; JavaScript sözdizimi, tekrar eden DOM kimliği, 48 kaynak ta
 ## Tarayıcı Senaryoları
 
 - Beş kaporta görseli yüklendi; 44 SVG poligonu çizildi.
+- Temiz başlangıç durumunda 44 poligonun tamamı görünür mavi kesik sınırla çizildi; hesaplanan stil `stroke-opacity: 0.82`, `stroke-width: 1.25px` ve `opacity: 1` olarak doğrulandı.
 - Dış parça poligonuna tıklama doğru kontrolü seçti; poligon editörü 12 köşe ile açıldı.
 - Kapı içi kontrolüne durum ve not girildi; completion sayacı `2/20` oldu.
 - Tamamlama ekranı 18 eksik kontrolü listeledi ve `Eksiklere Git` ilk eksik parçayı seçti.
@@ -65,7 +66,7 @@ Tüm boyutlarda yatay sayfa taşması oluşmadı; görseller ve 44 poligon yükl
 
 ## Görsel Kanıtlar
 
-- [Usta masaüstü](docs/qa/kaporta-master-v1/01-usta-desktop.png)
+- [Usta masaüstü ve görünür v16 poligonları](docs/qa/kaporta-master-v1/01-usta-desktop.png)
 - [Tamamlama kapısı](docs/qa/kaporta-master-v1/02-completion-gate.png)
 - [Müşteri raporu](docs/qa/kaporta-master-v1/03-customer-report.png)
 - [Rapor bulguları](docs/qa/kaporta-master-v1/04-report-findings.png)

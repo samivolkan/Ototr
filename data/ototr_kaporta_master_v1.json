@@ -2,11 +2,11 @@
   "schema": "ototr.kaporta-master.v1",
   "version": "1.0",
   "masterFile": "OTOTR_Kaporta_Giris_MASTER_v1.html",
-  "masterSha256": "68d61326b1358565ad10db9ad63151cad647a419ef57e9deb25d9bb583b99f35",
+  "masterSha256": "fb0c44bec4424319439462e53a176b9e7d9483839acd58d389ae063f3c38aa5d",
   "sourceFile": "OTOTR_Kaporta_Giris_NIHAI_v16_Rapor_Orjinal_Nokta_Gizli.html",
   "sourceSha256": "d4664b9f5e5be3bfb2fcf1a43c1fc4d8a90278eece0e849faf3d14ee62ebb0bf",
   "sourcePolygonSha256": "b4467f841b959dda949948d925fb3c5ed2f041bbe64129b916123a990ff064c3",
-  "generatedAt": "2026-08-10T01:37:09.638Z",
+  "generatedAt": "2026-08-10T06:56:38.445Z",
   "counts": {
     "controls": 20,
     "exteriorParts": 16,
