@@ -1584,17 +1584,13 @@ function setChassisMode(nextMode){
   closePointModal(false);
   if(nextMode==='report'){
     const incomplete=POINTS.filter(point=>!complete(point.no));
-    if(incomplete.length){
-      mode='entry';
-      filter='pending';
-      selected=String(incomplete[0].no);
-      document.querySelectorAll('[data-filter]').forEach(x=>x.classList.toggle('active',x.dataset.filter===filter));
-      render();
-      toast(`Müşteri raporu için ${incomplete.length} nokta tamamlanmalı. İlk eksik noktaya gidildi.`,'warn');
-      return false;
-    }
     if(layoutEditMode)setLayoutEditMode(false);
     filter='all';
+    mode=nextMode;
+    document.querySelectorAll('[data-filter]').forEach(x=>x.classList.toggle('active',x.dataset.filter===filter));
+    render();
+    if(incomplete.length)toast(`Müşteri raporu açıldı; ${incomplete.length} noktanın zorunlu alan/kanıtı eksik.`,'warn');
+    return true;
   }
   mode=nextMode;
   document.querySelectorAll('[data-filter]').forEach(x=>x.classList.toggle('active',x.dataset.filter===filter));
