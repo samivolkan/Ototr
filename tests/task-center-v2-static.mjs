@@ -1,6 +1,9 @@
 import fs from'node:fs';import vm from'node:vm';
 const sql=fs.readFileSync(new URL('../supabase/migrations/20260817132935_task_center_v2_foundation.sql',import.meta.url),'utf8');
 const legacy=fs.readFileSync(new URL('../task-merkezi/index.html',import.meta.url),'utf8');
+const v2Html=fs.readFileSync(new URL('../task-merkezi-v2/index.html',import.meta.url),'utf8');
+const v2Config=fs.readFileSync(new URL('../task-merkezi-v2/js/runtime-config.js',import.meta.url),'utf8');
+const v2Auth=fs.readFileSync(new URL('../task-merkezi-v2/js/auth.js',import.meta.url),'utf8');
 const modelMatch=legacy.match(/const DEFAULT_CATS=(\[[\s\S]*?\]);\s*const RAW=(\[[\s\S]*?\]);/),ctx={};
 vm.runInNewContext(`categories=${modelMatch[1]};groups=${modelMatch[2]}`,ctx);
 const seedBlock=sql.match(/with seed\(category_id,titles\) as \(values([\s\S]*?)\n\), expanded as/)[1];
@@ -23,5 +26,8 @@ check('PUBLIC RPC execute kaldırılıyor',/revoke all on function public\.creat
 check('Security definer search_path sabit',![...sql.matchAll(/security definer/gi)].some(m=>!sql.slice(m.index,m.index+120).includes('set search_path')));
 check('DROP TABLE yok',!/^\s*drop\s+table/im.test(sql));
 check('Service role secret yok',!/service[_-]?role/i.test(sql));
+check('Runtime config uygulamadan önce yükleniyor',v2Html.indexOf('./js/runtime-config.js')<v2Html.indexOf('./js/app.js'));
+check('Yalnızca publishable key kullanılıyor',/publishableKey:'sb_publishable_/.test(v2Config)&&!/service[_-]?role|secret/i.test(v2Config));
+check('Portal oturumu V2 ile uyumlu',v2Auth.includes("ototr-dealer-supabase-session-v1")&&/signInWithPassword/.test(v2Auth));
 for(const[name,pass]of checks)console.log(`${pass?'PASS':'FAIL'} — ${name}`);
 console.log(`SUMMARY ${checks.filter(x=>x[1]).length}/${checks.length}`);
