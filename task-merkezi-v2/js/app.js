@@ -1,4 +1,4 @@
-import {createClient} from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.3/+esm';
+import {createClient} from './vendor/supabase.js';
 import {getConfig} from './config.js';
 import {requireSession,signIn,signOut} from './auth.js';
 import {createTaskApi} from './task-api.js';
@@ -23,6 +23,18 @@ let client;
 let api;
 let refreshTimer;
 let toastTimer;
+
+function markBootReady(){
+  window.dispatchEvent(new Event('ototr-task-v2-ready'));
+}
+
+function withTimeout(promise,milliseconds=15000){
+  let timer;
+  const timeout=new Promise((_,reject)=>{
+    timer=setTimeout(()=>reject(new Error('İstek zaman aşımına uğradı.')),milliseconds);
+  });
+  return Promise.race([promise,timeout]).finally(()=>clearTimeout(timer));
+}
 
 function escapeHtml(value){
   return String(value??'').replace(/[&<>"']/g,character=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[character]));
@@ -85,6 +97,7 @@ function renderLoading(message='Çalışma alanınız hazırlanıyor…'){
 }
 
 function renderLogin(message=''){
+  markBootReady();
   document.body.classList.remove('workspace-open');
   root.innerHTML=`
     <div class="auth-layout">
@@ -125,7 +138,7 @@ async function handleLogin(event){
   errorNode.textContent='';
   let result;
   try{
-    result=await signIn(client,values.get('email'),values.get('password'));
+    result=await withTimeout(signIn(client,values.get('email'),values.get('password')));
   }catch{
     result={error:true};
   }
@@ -163,6 +176,7 @@ async function startWorkspace(session){
 }
 
 function renderSetupPending(){
+  markBootReady();
   root.innerHTML=`
     <div class="empty-state">
       <span class="empty-icon" aria-hidden="true">⚙</span>
@@ -175,6 +189,7 @@ function renderSetupPending(){
 }
 
 function renderNoProjects(){
+  markBootReady();
   const name=state.user?.full_name||state.session?.user?.email||'OTOTR kullanıcısı';
   root.innerHTML=`
     <div class="empty-state">
@@ -232,6 +247,7 @@ function projectProgress(){
 }
 
 function renderWorkspace(){
+  markBootReady();
   document.body.classList.add('workspace-open');
   const userName=state.user?.full_name||state.user?.email||'OTOTR kullanıcısı';
   const mine=state.tasks.filter(task=>taskAssigneeIds(task).includes(state.user?.app_user_id)).length;
@@ -484,6 +500,7 @@ async function handleSignOut(){
 }
 
 function renderFatal(error){
+  markBootReady();
   console.error(error);
   root.innerHTML=`<div class="empty-state error-state"><span class="empty-icon" aria-hidden="true">!</span><h2>Task Merkezi açılamadı</h2><p class="muted">Bağlantınızı kontrol edip tekrar deneyin.</p><button id="retry" class="btn primary" type="button">Tekrar dene</button></div>`;
   root.querySelector('#retry').addEventListener('click',()=>boot());
@@ -494,7 +511,7 @@ async function boot(){
   client=createClient(config.url,config.publishableKey);
   api=createTaskApi(client);
   if('serviceWorker' in navigator)navigator.serviceWorker.register('./service-worker.js').catch(()=>{});
-  const session=await requireSession(client);
+  const session=await withTimeout(requireSession(client));
   if(!session){renderLogin();return;}
   await startWorkspace(session);
 }

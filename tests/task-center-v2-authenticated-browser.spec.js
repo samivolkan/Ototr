@@ -78,7 +78,7 @@ const assert=(value,message)=>{if(!value)throw new Error(message)};
       removeChannel:async()=>({error:null})
     };
   });
-  await page.route('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.3/+esm',route=>route.fulfill({
+  await page.route('**/task-merkezi-v2/js/vendor/supabase.js',route=>route.fulfill({
     status:200,
     contentType:'text/javascript; charset=utf-8',
     body:'export function createClient(){return window.__fakeClient}'

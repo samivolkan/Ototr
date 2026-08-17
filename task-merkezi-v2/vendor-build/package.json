@@ -1,0 +1,14 @@
+{
+  "name": "ototr-task-center-v2-vendor-build",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "esbuild supabase-entry.js --bundle --format=esm --platform=browser --target=es2020 --minify --legal-comments=none --outfile=../js/vendor/supabase.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "2.112.3"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2"
+  }
+}

@@ -9,6 +9,9 @@ const v2Html=fs.readFileSync(new URL('../task-merkezi-v2/index.html',import.meta
 const v2Config=fs.readFileSync(new URL('../task-merkezi-v2/js/runtime-config.js',import.meta.url),'utf8');
 const v2Auth=fs.readFileSync(new URL('../task-merkezi-v2/js/auth.js',import.meta.url),'utf8');
 const v2App=fs.readFileSync(new URL('../task-merkezi-v2/js/app.js',import.meta.url),'utf8');
+const v2BootGuard=fs.readFileSync(new URL('../task-merkezi-v2/js/boot-guard.js',import.meta.url),'utf8');
+const v2ServiceWorker=fs.readFileSync(new URL('../task-merkezi-v2/service-worker.js',import.meta.url),'utf8');
+const vendorLock=fs.readFileSync(new URL('../task-merkezi-v2/vendor-build/package-lock.json',import.meta.url),'utf8');
 const modelMatch=legacy.match(/const DEFAULT_CATS=(\[[\s\S]*?\]);\s*const RAW=(\[[\s\S]*?\]);/),ctx={};
 vm.runInNewContext(`categories=${modelMatch[1]};groups=${modelMatch[2]}`,ctx);
 const seedBlock=sql.match(/with seed\(category_id,titles\) as \(values([\s\S]*?)\n\), expanded as/)[1];
@@ -44,5 +47,8 @@ check('Personel yalnızca kendine task atayabiliyor',/Staff may only assign a ne
 check('Kişisel akış RPC anon erişimine kapalı',(personalWorkflowSql.match(/revoke all on function public\./gi)||[]).length===3&&/from public, anon/.test(personalWorkflowSql));
 check('V2 arayüzünde task oluşturma var',/createTaskForProject/.test(v2App)&&/Yeni task oluştur/.test(v2App));
 check('V2 kişi ve Tasklarım filtreleri var',/assigneeFilter/.test(v2App)&&/Tasklarım/.test(v2App));
+check('Supabase istemcisi yerel ve sürümü sabit',/\.\/vendor\/supabase\.js/.test(v2App)&&!/cdn\.jsdelivr\.net/.test(v2App)&&/"@supabase\/supabase-js": "2\.112\.3"/.test(vendorLock));
+check('Oturum kontrolü zaman aşımı ekranı var',/Oturum kontrolü tamamlanamadı/.test(v2BootGuard)&&/withTimeout\(requireSession/.test(v2App));
+check('Yerel Supabase bundle çevrimdışı cache içinde',/shell-v4/.test(v2ServiceWorker)&&/\.\/js\/vendor\/supabase\.js/.test(v2ServiceWorker));
 for(const[name,pass]of checks)console.log(`${pass?'PASS':'FAIL'} — ${name}`);
 console.log(`SUMMARY ${checks.filter(x=>x[1]).length}/${checks.length}`);

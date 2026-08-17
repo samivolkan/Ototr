@@ -29,3 +29,6 @@ artifacts/
 *.rar
 downloads/
 docs/ototr-quality-gate-latest.json
+
+# Task Center V2 frontend vendor build dependencies
+task-merkezi-v2/vendor-build/node_modules/
