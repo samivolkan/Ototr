@@ -49,6 +49,7 @@ check('V2 arayüzünde task oluşturma var',/createTaskForProject/.test(v2App)&&
 check('V2 kişi ve Tasklarım filtreleri var',/assigneeFilter/.test(v2App)&&/Tasklarım/.test(v2App));
 check('Supabase istemcisi yerel ve sürümü sabit',/\.\/vendor\/supabase\.js/.test(v2App)&&!/cdn\.jsdelivr\.net/.test(v2App)&&/"@supabase\/supabase-js": "2\.112\.3"/.test(vendorLock));
 check('Oturum kontrolü zaman aşımı ekranı var',/Oturum kontrolü tamamlanamadı/.test(v2BootGuard)&&/withTimeout\(requireSession/.test(v2App));
-check('Yerel Supabase bundle çevrimdışı cache içinde',/shell-v4/.test(v2ServiceWorker)&&/\.\/js\/vendor\/supabase\.js/.test(v2ServiceWorker));
+check('Yerel Supabase bundle çevrimdışı cache içinde',/shell-v5/.test(v2ServiceWorker)&&/\.\/js\/vendor\/supabase\.js/.test(v2ServiceWorker));
+check('Mobil önbellek için script sürümü sabit',/boot-guard\.js\?v=5/.test(v2Html)&&/app\.js\?v=5/.test(v2Html));
 for(const[name,pass]of checks)console.log(`${pass?'PASS':'FAIL'} — ${name}`);
 console.log(`SUMMARY ${checks.filter(x=>x[1]).length}/${checks.length}`);
