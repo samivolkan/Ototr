@@ -3,10 +3,12 @@ const sql=fs.readFileSync(new URL('../supabase/migrations/20260817142152_task_ce
 const grantsSql=fs.readFileSync(new URL('../supabase/migrations/20260817142433_task_center_v2_api_grants_hardening.sql',import.meta.url),'utf8');
 const advisorSql=fs.readFileSync(new URL('../supabase/migrations/20260817142730_task_center_v2_advisor_hardening.sql',import.meta.url),'utf8');
 const triggerFixSql=fs.readFileSync(new URL('../supabase/migrations/20260817142954_fix_task_center_v2_child_activity_trigger.sql',import.meta.url),'utf8');
+const personalWorkflowSql=fs.readFileSync(new URL('../supabase/migrations/20260817150805_task_center_v2_personal_task_workflow.sql',import.meta.url),'utf8');
 const legacy=fs.readFileSync(new URL('../task-merkezi/index.html',import.meta.url),'utf8');
 const v2Html=fs.readFileSync(new URL('../task-merkezi-v2/index.html',import.meta.url),'utf8');
 const v2Config=fs.readFileSync(new URL('../task-merkezi-v2/js/runtime-config.js',import.meta.url),'utf8');
 const v2Auth=fs.readFileSync(new URL('../task-merkezi-v2/js/auth.js',import.meta.url),'utf8');
+const v2App=fs.readFileSync(new URL('../task-merkezi-v2/js/app.js',import.meta.url),'utf8');
 const modelMatch=legacy.match(/const DEFAULT_CATS=(\[[\s\S]*?\]);\s*const RAW=(\[[\s\S]*?\]);/),ctx={};
 vm.runInNewContext(`categories=${modelMatch[1]};groups=${modelMatch[2]}`,ctx);
 const seedBlock=sql.match(/with seed\(category_id,titles\) as \(values([\s\S]*?)\n\), expanded as/)[1];
@@ -37,5 +39,10 @@ check('Sorumlu kaldırma yetkisi authenticated ile sınırlı',/grant select, in
 check('Eksik foreign key indexleri tamamlanıyor',(advisorSql.match(/create index if not exists idx_task_/gi)||[]).length===15);
 check('Çakışan FOR ALL policyler action-specific yapılıyor',(advisorSql.match(/drop policy if exists task_/gi)||[]).length===7&&/create policy task_assignees_delete/.test(advisorSql));
 check('Child activity trigger tablo bağımsız alan okuyor',/new_row->>'status'/.test(triggerFixSql)&&/new_row->>'is_completed'/.test(triggerFixSql));
+for(const fn of ['task_current_user_context','list_task_project_members','create_task_for_project'])check(`Kişisel akış RPC tanımı: ${fn}`,new RegExp(`function public\\.${fn}\\b`,'i').test(personalWorkflowSql));
+check('Personel yalnızca kendine task atayabiliyor',/Staff may only assign a new task to themselves/.test(personalWorkflowSql));
+check('Kişisel akış RPC anon erişimine kapalı',(personalWorkflowSql.match(/revoke all on function public\./gi)||[]).length===3&&/from public, anon/.test(personalWorkflowSql));
+check('V2 arayüzünde task oluşturma var',/createTaskForProject/.test(v2App)&&/Yeni task oluştur/.test(v2App));
+check('V2 kişi ve Tasklarım filtreleri var',/assigneeFilter/.test(v2App)&&/Tasklarım/.test(v2App));
 for(const[name,pass]of checks)console.log(`${pass?'PASS':'FAIL'} — ${name}`);
 console.log(`SUMMARY ${checks.filter(x=>x[1]).length}/${checks.length}`);
