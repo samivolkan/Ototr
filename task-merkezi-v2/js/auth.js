@@ -1,0 +1,1 @@
+export async function requireSession(client){const {data,error}=await client.auth.getSession();if(error)throw error;return data.session||null}export async function signOut(client){return client.auth.signOut()}
