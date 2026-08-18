@@ -4,7 +4,7 @@ export function createTaskApi(client){
   return {
     currentUser:()=>client.rpc('task_current_user_context'),
     listProjects:()=>table('task_projects')
-      .select('id,name,description,status,target_date,progress_percent,created_at')
+      .select('id,branch_id,name,description,status,target_date,progress_percent,created_at')
       .is('archived_at',null)
       .order('created_at',{ascending:true}),
     getProject:id=>table('task_projects').select('*').eq('id',id).single(),
@@ -15,8 +15,9 @@ export function createTaskApi(client){
       .is('archived_at',null)
       .order('sort_order',{ascending:true}),
     listMembers:projectId=>client.rpc('list_task_project_members',{target_project_id:projectId}),
+    listManagedUsers:projectId=>client.rpc('list_task_project_users',{target_project_id:projectId}),
     listTasks:projectId=>table('task_tasks')
-      .select('id,project_id,category_id,title,description,status,priority,due_at,requires_approval,requires_evidence,sort_order,created_at,updated_at,task_assignees(user_id)')
+      .select('id,project_id,category_id,title,description,status,priority,due_at,requires_approval,requires_evidence,sort_order,created_by,created_at,updated_at,task_assignees(user_id)')
       .eq('project_id',projectId)
       .is('archived_at',null)
       .order('sort_order',{ascending:true})
@@ -26,15 +27,26 @@ export function createTaskApi(client){
       .eq('id',id)
       .single(),
     createTaskForProject:args=>client.rpc('create_task_for_project',args),
+    updateTaskForProject:args=>client.rpc('update_task_for_project',args),
+    updateProjectUser:args=>client.rpc('update_task_project_user',args),
+    createProjectUser:async payload=>{
+      const result=await client.functions.invoke('task-user-admin',{body:{action:'create',...payload}});
+      if(!result.error)return result;
+      let message=result.error.message||'Kullanıcı oluşturulamadı.';
+      try{
+        const body=await result.error.context?.json();
+        if(body?.error)message=body.error;
+      }catch{/* Keep the safe fallback message. */}
+      return {data:null,error:{...result.error,message}};
+    },
     updateTask:(id,expectedUpdatedAt,patch)=>client.rpc('update_task_with_version',{
       target_task_id:id,
       expected_updated_at:expectedUpdatedAt,
       patch
     }),
-    archiveTask:(id,expectedUpdatedAt)=>client.rpc('update_task_with_version',{
+    archiveTask:(id,expectedUpdatedAt)=>client.rpc('archive_task_for_project',{
       target_task_id:id,
-      expected_updated_at:expectedUpdatedAt,
-      patch:{archived_at:new Date().toISOString()}
+      expected_updated_at:expectedUpdatedAt
     }),
     assignUser:(taskId,userId)=>table('task_assignees').insert({task_id:taskId,user_id:userId}).select().single(),
     removeAssignee:(taskId,userId)=>table('task_assignees').delete().eq('task_id',taskId).eq('user_id',userId),

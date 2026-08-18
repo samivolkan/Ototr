@@ -38,6 +38,8 @@ h2{margin:5px 0 9px;font-size:23px;letter-spacing:-.02em}
 .btn.primary{background:var(--blue);color:#fff;box-shadow:0 6px 16px rgba(8,127,232,.18)}
 .btn.primary:hover:not(:disabled){background:var(--blue-dark)}
 .btn.secondary{background:#edf3f8;color:#18324d}
+.btn.danger{background:#fff0f2;color:#b42338}
+.btn.danger:hover:not(:disabled){background:#ffe3e7}
 .btn.wide{width:100%}
 .icon-button,.modal-close{display:grid;place-items:center;border:0;background:#edf3f8;color:#29435f}
 
@@ -84,6 +86,9 @@ h2{margin:5px 0 9px;font-size:23px;letter-spacing:-.02em}
 .project-picker>span{color:var(--muted);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em}
 .project-picker select{font-weight:750;font-size:15px}
 .project-bar>.btn{white-space:nowrap}
+.project-actions{display:flex;align-items:center;gap:9px}
+.project-actions .btn{white-space:nowrap}
+.project-actions .btn span{display:inline-grid;place-items:center;min-width:22px;height:20px;margin-left:5px;padding:0 6px;border-radius:999px;background:#dbe7f1;color:#29435f;font-size:11px}
 
 .progress-card{padding:22px;border:1px solid #d5e4f3;border-radius:16px;background:linear-gradient(135deg,#f7fbff,#eef7ff)}
 .progress-copy{display:flex;align-items:center;justify-content:space-between;gap:20px}
@@ -136,6 +141,10 @@ h2{margin:5px 0 9px;font-size:23px;letter-spacing:-.02em}
 .task-card h3{margin:0;color:#10233a;font-size:16px;line-height:1.35}
 .task-card p{display:-webkit-box;overflow:hidden;margin:6px 0 0;color:#66758a;font-size:13px;line-height:1.45;-webkit-box-orient:vertical;-webkit-line-clamp:2}
 .task-meta{display:flex;flex-wrap:wrap;align-items:center;gap:10px 15px;margin-top:14px;color:#68788d;font-size:11px}
+.task-actions{display:flex;align-items:center;gap:12px;margin-top:13px}
+.task-action{border:0;background:transparent;color:#0872ce;padding:2px 0;font-size:12px;font-weight:800}
+.task-action:hover{text-decoration:underline}
+.task-action.danger{color:#b42338}
 .assignees{display:flex;align-items:center;min-width:0}
 .assignees i{display:grid;place-items:center;width:26px;height:26px;margin-right:-5px;border:2px solid #fff;border-radius:50%;background:#dff0ff;color:#0872ce;font-size:8px;font-style:normal;font-weight:900}
 .assignees i.unassigned{background:#edf1f5;color:#6f8094}
@@ -175,7 +184,38 @@ h2{margin:5px 0 9px;font-size:23px;letter-spacing:-.02em}
 .member-options strong,.self-assignment strong{overflow:hidden;color:#233a55;font-size:12px;text-overflow:ellipsis;white-space:nowrap}
 .member-options small,.self-assignment small{margin-top:2px;color:#6d7d90;font-size:10px;line-height:1.35}
 .self-assignment{background:#f2f8fd}
+.field-hint{display:block;margin-top:8px;color:#6d7d90;font-size:11px;font-weight:500;line-height:1.45}
+.task-form input[readonly]{background:#f3f6f9;color:#68788d;cursor:not-allowed}
 .modal-actions{display:flex;justify-content:flex-end;gap:9px;padding-top:2px}
+
+.confirm-modal{width:min(440px,100%);padding:30px;text-align:center}
+.confirm-modal h2{margin:14px 0 8px}
+.confirm-modal>p{margin:0;color:#65748a;line-height:1.55}
+.confirm-modal .form-error{margin-top:10px}
+.confirm-modal .modal-actions{justify-content:center;margin-top:22px}
+.confirm-icon{display:grid;place-items:center;width:48px;height:48px;margin:auto;border-radius:16px;background:#fff0f2;color:#b42338;font-size:22px;font-weight:900}
+.confirm-icon.positive{background:#eaf8f3;color:#13775d}
+
+.team-modal{width:min(860px,100%)}
+.team-content{padding:22px 25px 25px}
+.team-toolbar{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:16px}
+.team-toolbar p{display:grid;gap:3px;margin:0}
+.team-toolbar p span{color:#65748a;font-size:12px;font-weight:500}
+.team-list{display:grid;gap:8px}
+.team-user{display:grid;grid-template-columns:42px minmax(0,1fr) auto auto;align-items:center;gap:13px;padding:13px;border:1px solid var(--line);border-radius:13px;background:#fff}
+.team-user.inactive{background:#f8fafc;opacity:.76}
+.team-user-copy{display:grid;min-width:0}
+.team-user-copy strong,.team-user-copy span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.team-user-copy strong{font-size:13px}
+.team-user-copy span{margin-top:2px;color:#65748a;font-size:11px}
+.team-user-copy small{margin-top:4px;color:#3f5872;font-size:10px;font-weight:750}
+.team-user-state{display:grid;justify-items:end;gap:4px}
+.access-badge{padding:5px 8px;border-radius:999px;background:#eaf8f3;color:#13775d;font-size:10px;font-weight:850}
+.access-badge.inactive{background:#eef1f4;color:#65748a}
+.login-missing{color:#9a6200;font-size:10px;font-weight:750}
+.team-user-actions{display:flex;align-items:center;justify-content:flex-end;gap:11px;min-width:175px}
+.back-button{margin:0 0 6px;padding:0;border:0;background:transparent;color:#0872ce;font-size:11px;font-weight:800}
+.user-modal{width:min(560px,100%)}
 
 .toast{position:fixed;z-index:50;right:22px;bottom:22px;max-width:min(380px,calc(100vw - 32px));padding:13px 16px;border-radius:11px;background:#13304e;color:#fff;box-shadow:0 14px 38px rgba(0,20,45,.25);font-size:13px;font-weight:700;opacity:0;transform:translateY(18px);pointer-events:none;transition:.2s}
 .toast.is-visible{opacity:1;transform:translateY(0)}
@@ -205,7 +245,8 @@ h2{margin:5px 0 9px;font-size:23px;letter-spacing:-.02em}
   .workspace-open .panel{padding:14px}
   .workspace-head{padding-bottom:13px}
   .project-bar{display:grid;gap:10px;padding:16px 0}
-  .project-bar>.btn{width:100%}
+  .project-actions{display:grid;grid-template-columns:1fr 1.35fr;width:100%}
+  .project-actions .btn{width:100%;padding-right:10px;padding-left:10px}
   .progress-card{padding:17px}
   .progress-copy{align-items:flex-start}
   .progress-copy h2{font-size:17px}
@@ -229,7 +270,15 @@ h2{margin:5px 0 9px;font-size:23px;letter-spacing:-.02em}
   .task-form{grid-template-columns:1fr;padding:18px;gap:14px}
   .task-form .full{grid-column:auto}
   .member-options{grid-template-columns:1fr}
+  .team-content{padding:16px}
+  .team-toolbar{align-items:stretch;display:grid}
+  .team-toolbar .btn{width:100%}
+  .team-user{grid-template-columns:40px minmax(0,1fr) auto;gap:10px;padding:12px}
+  .team-user-state{grid-column:2/-1;grid-row:2;justify-items:start;display:flex;align-items:center;gap:7px}
+  .team-user-actions{grid-column:1/-1;justify-content:flex-end;min-width:0;padding-top:10px;border-top:1px solid #edf1f5}
+  .confirm-modal{padding:27px 20px 20px}
   .modal-actions{position:sticky;bottom:-18px;margin:2px -18px -18px;padding:14px 18px;background:#fff;border-top:1px solid #edf1f5}
+  .confirm-modal .modal-actions{position:static;margin:22px 0 0;padding:0;border:0}
   .modal-actions .btn{flex:1}
   .toast{right:16px;bottom:16px;left:16px;max-width:none;text-align:center}
 }

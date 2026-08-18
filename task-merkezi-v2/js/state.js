@@ -5,6 +5,7 @@ export const state={
   selectedProject:null,
   categories:[],
   members:[],
+  managedUsers:[],
   tasks:[],
   filters:{scope:'all',search:'',status:'',category:'',assignee:''},
   visibleLimit:40,
@@ -19,6 +20,7 @@ export function resetState(){
   state.selectedProject=null;
   state.categories=[];
   state.members=[];
+  state.managedUsers=[];
   state.tasks=[];
   state.filters={scope:'all',search:'',status:'',category:'',assignee:''};
   state.visibleLimit=40;

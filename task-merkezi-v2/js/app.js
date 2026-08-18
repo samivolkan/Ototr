@@ -1,9 +1,9 @@
 import {createClient} from './vendor/supabase.js';
-import {getConfig} from './config.js';
-import {requireSession,signIn,signOut} from './auth.js';
-import {createTaskApi} from './task-api.js';
-import {state,resetState} from './state.js';
-import {subscribeToProject} from './realtime.js';
+import {getConfig} from './config.js?v=6';
+import {requireSession,signIn,signOut} from './auth.js?v=6';
+import {createTaskApi} from './task-api.js?v=6';
+import {state,resetState} from './state.js?v=6';
+import {subscribeToProject} from './realtime.js?v=6';
 
 const root=document.getElementById('app');
 const modalRoot=document.getElementById('modalRoot');
@@ -16,8 +16,12 @@ const roleLabels={
   CEO:'CEO',GENERAL_MANAGER:'Genel Müdür',OPERATIONS:'Operasyon',QUALITY_AUDITOR:'Kalite Denetçisi',
   FINANCE:'Finans',LEGAL:'Hukuk',CRM_AGENT:'CRM',FRANCHISE_SALES:'Franchise Satış',MARKETING:'Pazarlama',
   HR:'İnsan Kaynakları',ACADEMY_MANAGER:'Akademi Yöneticisi',SUPPORT_AGENT:'Destek',
-  BRANCH_MANAGER:'Şube Yöneticisi',INSPECTION_TECHNICIAN:'Ekspertiz Uzmanı',SALES_REP:'Satış Temsilcisi'
+  REGIONAL_MANAGER:'Bölge Yöneticisi',BRANCH_MANAGER:'Şube Yöneticisi',RECEPTION_STAFF:'Karşılama Personeli',
+  INSPECTION_TECHNICIAN:'Ekspertiz Uzmanı',TECHNICAL_SUPERVISOR:'Teknik Sorumlu',DEALER_OWNER:'Bayi Sahibi',
+  DEALER_STAFF:'Bayi Personeli',SALES_REP:'Satış Temsilcisi'
 };
+const branchRoles=['BRANCH_MANAGER','RECEPTION_STAFF','INSPECTION_TECHNICIAN','TECHNICAL_SUPERVISOR','DEALER_OWNER','DEALER_STAFF'];
+const hqRoles=['CEO','GENERAL_MANAGER','REGIONAL_MANAGER','OPERATIONS','QUALITY_AUDITOR','FINANCE','LEGAL','CRM_AGENT','FRANCHISE_SALES','MARKETING','HR','ACADEMY_MANAGER','SUPPORT_AGENT'];
 
 let client;
 let api;
@@ -64,11 +68,32 @@ function canEditTask(task){
   return Boolean(state.user?.can_manage_projects||taskAssigneeIds(task).includes(state.user?.app_user_id));
 }
 
+function canEditTaskDetails(task){
+  return Boolean(state.user?.can_manage_projects||task.created_by===state.user?.app_user_id);
+}
+
+function assignableUsers(){
+  if(!state.user?.can_manage_projects)return [];
+  return state.managedUsers.filter(user=>user.is_active);
+}
+
+function roleOptions(selectedRole=''){
+  const roles=state.selectedProject?.branch_id?branchRoles:hqRoles;
+  return roles.map(role=>`<option value="${role}" ${role===selectedRole?'selected':''}>${escapeHtml(roleLabels[role]||role)}</option>`).join('');
+}
+
 function formatDate(value){
   if(!value)return '';
   const date=new Date(value);
   if(Number.isNaN(date.getTime()))return '';
   return new Intl.DateTimeFormat('tr-TR',{day:'2-digit',month:'short',year:'numeric'}).format(date);
+}
+
+function dateInputValue(value){
+  if(!value)return '';
+  const date=new Date(value);
+  if(Number.isNaN(date.getTime()))return '';
+  return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
 }
 
 function initials(name){
@@ -85,6 +110,8 @@ function showToast(message,type='success'){
 function friendlyError(error,fallback='İşlem tamamlanamadı.'){
   const message=lower(error?.message);
   if(error?.code==='42501'||message.includes('denied')||message.includes('permission'))return 'Bu işlem için yetkiniz bulunmuyor.';
+  if((message.includes('e-posta')||message.includes('email'))&&(message.includes('zaten')||message.includes('already')||message.includes('registered')))return 'Bu e-posta adresiyle bir giriş hesabı zaten bulunuyor.';
+  if(message.includes('şifre')||message.includes('password'))return 'Geçici şifre en az 8 karakter olmalıdır.';
   if(message.includes('evidence'))return 'Görevi tamamlamak için önce kanıt dosyası eklenmeli.';
   if(message.includes('approval'))return 'Bu görev tamamlanmadan önce onay sürecinden geçmeli.';
   if(message.includes('updated')||message.includes('stale')||message.includes('concurrent'))return 'Görev başka biri tarafından güncellendi. Liste yenilendi.';
@@ -217,14 +244,18 @@ async function selectProject(projectId){
 
 async function refreshProjectData(){
   const projectId=state.selectedProject.id;
-  const [categoriesResult,membersResult,tasksResult]=await Promise.all([
-    api.listCategories(projectId),api.listMembers(projectId),api.listTasks(projectId)
+  const [categoriesResult,membersResult,tasksResult,usersResult]=await Promise.all([
+    api.listCategories(projectId),
+    api.listMembers(projectId),
+    api.listTasks(projectId),
+    state.user?.can_manage_projects?api.listManagedUsers(projectId):Promise.resolve({data:[],error:null})
   ]);
-  const error=categoriesResult.error||membersResult.error||tasksResult.error;
+  const error=categoriesResult.error||membersResult.error||tasksResult.error||usersResult.error;
   if(error)throw error;
   state.categories=categoriesResult.data||[];
   state.members=membersResult.data||[];
   state.tasks=tasksResult.data||[];
+  state.managedUsers=usersResult.data||[];
 }
 
 function queueProjectRefresh(){
@@ -264,7 +295,10 @@ function renderWorkspace(){
     </div>
     <div class="project-bar">
       <label class="project-picker"><span>Aktif proje</span><select id="projectSelect">${state.projects.map(project=>`<option value="${escapeHtml(project.id)}" ${project.id===state.selectedProject.id?'selected':''}>${escapeHtml(project.name)}</option>`).join('')}</select></label>
-      <button id="newTask" class="btn primary" type="button">+ Yeni task</button>
+      <div class="project-actions">
+        ${state.user?.can_manage_projects?`<button id="manageUsers" class="btn secondary" type="button">Ekip <span>${state.managedUsers.filter(user=>user.is_active).length}</span></button>`:''}
+        <button id="newTask" class="btn primary" type="button">+ Yeni task</button>
+      </div>
     </div>
     <section class="progress-card" aria-label="Proje özeti">
       <div class="progress-copy"><div><span class="eyebrow">Proje ilerlemesi</span><h2>${escapeHtml(state.selectedProject.name)}</h2></div><strong>%${progress}</strong></div>
@@ -334,6 +368,7 @@ function renderTaskCard(task){
   const members=memberMap();
   const assignees=taskAssigneeIds(task).map(id=>members.get(id)).filter(Boolean);
   const editable=canEditTask(task);
+  const detailsEditable=canEditTaskDetails(task);
   const due=formatDate(task.due_at);
   const overdue=task.due_at&&task.status!=='done'&&task.status!=='cancelled'&&new Date(task.due_at)<new Date();
   return `
@@ -348,6 +383,7 @@ function renderTaskCard(task){
           ${task.requires_evidence?'<span>▣ Kanıt gerekli</span>':''}
           ${task.requires_approval?'<span>◇ Onay gerekli</span>':''}
         </div>
+        ${detailsEditable?`<div class="task-actions"><button class="task-action" data-edit-task="${escapeHtml(task.id)}" type="button">Düzenle</button><button class="task-action danger" data-delete-task="${escapeHtml(task.id)}" type="button">Sil</button></div>`:''}
       </div>
       <div class="task-status">
         <label><span>Durum</span>${editable?`<select class="status-select" data-task-id="${escapeHtml(task.id)}" data-updated-at="${escapeHtml(task.updated_at)}">${Object.entries(statusLabels).map(([value,label])=>`<option value="${value}" ${task.status===value?'selected':''}>${label}</option>`).join('')}</select>`:`<strong class="status-badge status-${escapeHtml(task.status)}">${escapeHtml(statusLabels[task.status]||task.status)}</strong>`}</label>
@@ -359,6 +395,7 @@ function bindWorkspaceEvents(){
   root.querySelector('#signOut').addEventListener('click',handleSignOut);
   root.querySelector('#projectSelect').addEventListener('change',event=>selectProject(event.target.value).catch(renderFatal));
   root.querySelector('#newTask').addEventListener('click',openTaskModal);
+  root.querySelector('#manageUsers')?.addEventListener('click',openTeamModal);
   root.querySelectorAll('[data-scope]').forEach(button=>button.addEventListener('click',()=>{
     state.filters.scope=button.dataset.scope;
     state.visibleLimit=40;
@@ -381,6 +418,16 @@ function bindWorkspaceEvents(){
 }
 
 function handleTaskResultClick(event){
+  const editButton=event.target.closest('[data-edit-task]');
+  if(editButton){
+    openEditTaskModal(editButton.dataset.editTask);
+    return;
+  }
+  const deleteButton=event.target.closest('[data-delete-task]');
+  if(deleteButton){
+    openDeleteTaskModal(deleteButton.dataset.deleteTask);
+    return;
+  }
   if(event.target.closest('#clearFilters')){
     state.filters={scope:state.filters.scope,search:'',status:'',category:'',assignee:''};
     state.visibleLimit=40;
@@ -416,6 +463,270 @@ async function handleTaskStatusChange(event){
   }
 }
 
+function bindModalDismiss(){
+  const backdrop=modalRoot.querySelector('.modal-backdrop');
+  backdrop?.addEventListener('click',event=>{
+    if(event.target.hasAttribute('data-close-modal'))closeTaskModal();
+  });
+  modalRoot.querySelectorAll('.modal [data-close-modal]').forEach(button=>button.addEventListener('click',closeTaskModal));
+  document.addEventListener('keydown',handleModalKey);
+}
+
+function openEditTaskModal(taskId){
+  const task=state.tasks.find(item=>item.id===taskId);
+  if(!task||!canEditTaskDetails(task)){
+    showToast('Bu taskı düzenleme yetkiniz bulunmuyor.','error');
+    return;
+  }
+  const manager=Boolean(state.user?.can_manage_projects);
+  const assignedIds=new Set(taskAssigneeIds(task));
+  const removedInactive=manager&&state.managedUsers.some(user=>!user.is_active&&assignedIds.has(user.user_id));
+  modalRoot.innerHTML=`
+    <div class="modal-backdrop" data-close-modal>
+      <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="modal-head"><div><span class="eyebrow">Task yönetimi</span><h2 id="modalTitle">Taskı düzenle</h2></div><button class="modal-close" data-close-modal type="button" aria-label="Pencereyi kapat">×</button></div>
+        <form id="editTaskForm" class="task-form">
+          <label class="full">Task başlığı<input name="title" type="text" maxlength="180" value="${escapeHtml(task.title)}" required></label>
+          <label class="full">Açıklama<textarea name="description" rows="3" maxlength="2000">${escapeHtml(task.description||'')}</textarea></label>
+          <label>Kategori<select name="category" required>${state.categories.map(category=>`<option value="${escapeHtml(category.id)}" ${category.id===task.category_id?'selected':''}>${escapeHtml(category.name)}</option>`).join('')}</select></label>
+          <label>Öncelik<select name="priority">${Object.entries(priorityLabels).map(([value,label])=>`<option value="${value}" ${value===task.priority?'selected':''}>${label}</option>`).join('')}</select></label>
+          <label>Termin<input name="dueDate" type="date" value="${escapeHtml(dateInputValue(task.due_at))}"></label>
+          <fieldset class="full assignee-picker"><legend>Sorumlu kişi</legend>
+            ${manager?`<div class="member-options">${assignableUsers().map(member=>`<label><input name="assignees" type="checkbox" value="${escapeHtml(member.user_id)}" ${assignedIds.has(member.user_id)?'checked':''}><span class="mini-avatar">${escapeHtml(initials(member.full_name))}</span><span><strong>${escapeHtml(member.full_name)}</strong><small>${escapeHtml(roleLabels[member.role]||member.role)}</small></span></label>`).join('')}</div><small class="field-hint">${removedInactive?'Pasif sorumlular kaydedildiğinde tasktan kaldırılır. ':''}Tüm seçimleri kaldırarak taskı sorumlusuz bırakabilirsiniz.</small>`:`<div class="self-assignment"><span class="mini-avatar">${escapeHtml(initials(state.user?.full_name))}</span><span><strong>${escapeHtml(state.user?.full_name||'Siz')}</strong><small>Kendi oluşturduğunuz taskı düzenliyorsunuz.</small></span></div>`}
+          </fieldset>
+          <p id="editTaskError" class="form-error full" role="alert"></p>
+          <div class="modal-actions full"><button class="btn secondary" data-close-modal type="button">Vazgeç</button><button class="btn primary" type="submit">Değişiklikleri kaydet</button></div>
+        </form>
+      </section>
+    </div>`;
+  bindModalDismiss();
+  modalRoot.querySelector('#editTaskForm').addEventListener('submit',event=>handleEditTask(event,task.id));
+  requestAnimationFrame(()=>modalRoot.querySelector('[name="title"]')?.focus());
+}
+
+async function handleEditTask(event,taskId){
+  event.preventDefault();
+  const task=state.tasks.find(item=>item.id===taskId);
+  if(!task)return;
+  const form=event.currentTarget;
+  const values=new FormData(form);
+  const submit=form.querySelector('[type="submit"]');
+  const errorNode=form.querySelector('#editTaskError');
+  const dueDate=values.get('dueDate');
+  const assigneeIds=state.user?.can_manage_projects?values.getAll('assignees'):[state.user.app_user_id];
+  submit.disabled=true;
+  submit.textContent='Kaydediliyor…';
+  errorNode.textContent='';
+  const result=await api.updateTaskForProject({
+    target_task_id:task.id,
+    expected_updated_at:task.updated_at,
+    target_category_id:values.get('category'),
+    task_title:values.get('title'),
+    task_description:values.get('description')||null,
+    task_priority:values.get('priority'),
+    task_due_at:dueDate?new Date(`${dueDate}T17:00:00`).toISOString():null,
+    assignee_user_ids:assigneeIds
+  }).catch(error=>({error}));
+  if(result.error){
+    errorNode.textContent=friendlyError(result.error,'Task değişiklikleri kaydedilemedi.');
+    submit.disabled=false;
+    submit.textContent='Değişiklikleri kaydet';
+    return;
+  }
+  closeTaskModal();
+  await refreshProjectData();
+  renderWorkspace();
+  showToast('Task güncellendi.');
+}
+
+function openDeleteTaskModal(taskId){
+  const task=state.tasks.find(item=>item.id===taskId);
+  if(!task||!canEditTaskDetails(task)){
+    showToast('Bu taskı silme yetkiniz bulunmuyor.','error');
+    return;
+  }
+  modalRoot.innerHTML=`
+    <div class="modal-backdrop" data-close-modal>
+      <section class="modal confirm-modal" role="alertdialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="confirm-icon" aria-hidden="true">!</div>
+        <h2 id="modalTitle">Task silinsin mi?</h2>
+        <p><strong>${escapeHtml(task.title)}</strong> listeden kaldırılacak. İşlem geçmişi güvenlik için korunur.</p>
+        <p id="deleteTaskError" class="form-error" role="alert"></p>
+        <div class="modal-actions"><button class="btn secondary" data-close-modal type="button">Vazgeç</button><button id="confirmDeleteTask" class="btn danger" type="button">Taskı sil</button></div>
+      </section>
+    </div>`;
+  bindModalDismiss();
+  modalRoot.querySelector('#confirmDeleteTask').addEventListener('click',()=>handleDeleteTask(task));
+}
+
+async function handleDeleteTask(task){
+  const button=modalRoot.querySelector('#confirmDeleteTask');
+  const errorNode=modalRoot.querySelector('#deleteTaskError');
+  button.disabled=true;
+  button.textContent='Siliniyor…';
+  const result=await api.archiveTask(task.id,task.updated_at).catch(error=>({error}));
+  if(result.error){
+    errorNode.textContent=friendlyError(result.error,'Task silinemedi.');
+    button.disabled=false;
+    button.textContent='Taskı sil';
+    return;
+  }
+  closeTaskModal();
+  await refreshProjectData();
+  renderWorkspace();
+  showToast('Task silindi.');
+}
+
+function openTeamModal(){
+  if(!state.user?.can_manage_projects){
+    showToast('Ekip yönetimi için yönetici yetkisi gerekir.','error');
+    return;
+  }
+  const activeCount=state.managedUsers.filter(user=>user.is_active).length;
+  modalRoot.innerHTML=`
+    <div class="modal-backdrop" data-close-modal>
+      <section class="modal team-modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="modal-head"><div><span class="eyebrow">${escapeHtml(state.selectedProject.name)}</span><h2 id="modalTitle">Ekip yönetimi</h2></div><button class="modal-close" data-close-modal type="button" aria-label="Pencereyi kapat">×</button></div>
+        <div class="team-content">
+          <div class="team-toolbar"><p><strong>${activeCount} aktif kullanıcı</strong><span>Görev sorumlularını ve giriş erişimini yönetin.</span></p><button id="addProjectUser" class="btn primary" type="button">+ Kullanıcı ekle</button></div>
+          <div class="team-list">${state.managedUsers.map(renderTeamUser).join('')}</div>
+        </div>
+      </section>
+    </div>`;
+  bindModalDismiss();
+  modalRoot.querySelector('#addProjectUser').addEventListener('click',()=>openUserForm());
+  modalRoot.querySelectorAll('[data-edit-user]').forEach(button=>button.addEventListener('click',()=>openUserForm(state.managedUsers.find(user=>user.user_id===button.dataset.editUser))));
+  modalRoot.querySelectorAll('[data-create-login]').forEach(button=>button.addEventListener('click',()=>openUserForm(state.managedUsers.find(user=>user.user_id===button.dataset.createLogin),true)));
+  modalRoot.querySelectorAll('[data-toggle-user]').forEach(button=>button.addEventListener('click',()=>openUserAccessConfirm(state.managedUsers.find(user=>user.user_id===button.dataset.toggleUser))));
+}
+
+function renderTeamUser(user){
+  const isSelf=user.user_id===state.user?.app_user_id;
+  return `
+    <article class="team-user ${user.is_active?'':'inactive'}">
+      <div class="avatar">${escapeHtml(initials(user.full_name))}</div>
+      <div class="team-user-copy"><strong>${escapeHtml(user.full_name)}</strong><span>${escapeHtml(user.email||'E-posta yok')}</span><small>${escapeHtml(roleLabels[user.role]||user.role)}</small></div>
+      <div class="team-user-state"><span class="access-badge ${user.is_active?'active':'inactive'}">${user.is_active?'Aktif':'Pasif'}</span>${user.auth_user_id?'':'<span class="login-missing">Giriş hesabı yok</span>'}</div>
+      <div class="team-user-actions">
+        ${user.auth_user_id?'':`<button class="task-action" data-create-login="${escapeHtml(user.user_id)}" type="button">Giriş oluştur</button>`}
+        <button class="task-action" data-edit-user="${escapeHtml(user.user_id)}" type="button">Düzenle</button>
+        ${isSelf?'':`<button class="task-action ${user.is_active?'danger':''}" data-toggle-user="${escapeHtml(user.user_id)}" type="button">${user.is_active?'Kaldır':'Aktifleştir'}</button>`}
+      </div>
+    </article>`;
+}
+
+function openUserForm(user=null,createLogin=false){
+  const editing=Boolean(user&&!createLogin);
+  const title=editing?'Kullanıcıyı düzenle':createLogin?'Giriş hesabı oluştur':'Yeni kullanıcı ekle';
+  const isSelf=editing&&user.user_id===state.user?.app_user_id;
+  modalRoot.innerHTML=`
+    <div class="modal-backdrop" data-close-modal>
+      <section class="modal user-modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="modal-head"><div><button class="back-button" id="backToTeam" type="button">← Ekibe dön</button><h2 id="modalTitle">${title}</h2></div><button class="modal-close" data-close-modal type="button" aria-label="Pencereyi kapat">×</button></div>
+        <form id="userForm" class="task-form">
+          <label class="full">Ad soyad<input name="fullName" type="text" maxlength="160" value="${escapeHtml(user?.full_name||'')}" required></label>
+          <label class="full">E-posta<input name="email" type="email" inputmode="email" maxlength="254" value="${escapeHtml(user?.email||'')}" ${editing||createLogin?'readonly':''} required></label>
+          <label class="full">Rol<select name="role" ${isSelf?'disabled':''}>${roleOptions(user?.role||'INSPECTION_TECHNICIAN')}</select>${isSelf?`<input type="hidden" name="role" value="${escapeHtml(user.role)}"><small class="field-hint">Kendi yönetici rolünüzü değiştiremezsiniz.</small>`:''}</label>
+          ${editing?'':`<label class="full">Geçici şifre<span class="password-field"><input id="newUserPassword" name="password" type="password" minlength="8" maxlength="128" autocomplete="new-password" required><button id="toggleNewUserPassword" type="button">Göster</button></span><small class="field-hint">En az 8 karakter. Şifreyi kullanıcıya güvenli bir kanaldan iletin.</small></label>`}
+          <p id="userFormError" class="form-error full" role="alert"></p>
+          <div class="modal-actions full"><button class="btn secondary" id="cancelUserForm" type="button">Vazgeç</button><button class="btn primary" type="submit">${editing?'Kaydet':'Kullanıcı oluştur'}</button></div>
+        </form>
+      </section>
+    </div>`;
+  bindModalDismiss();
+  modalRoot.querySelector('#backToTeam').addEventListener('click',openTeamModal);
+  modalRoot.querySelector('#cancelUserForm').addEventListener('click',openTeamModal);
+  modalRoot.querySelector('#toggleNewUserPassword')?.addEventListener('click',event=>{
+    const input=modalRoot.querySelector('#newUserPassword');
+    const visible=input.type==='text';
+    input.type=visible?'password':'text';
+    event.currentTarget.textContent=visible?'Göster':'Gizle';
+  });
+  modalRoot.querySelector('#userForm').addEventListener('submit',event=>handleUserForm(event,user,editing));
+  requestAnimationFrame(()=>modalRoot.querySelector('[name="fullName"]')?.focus());
+}
+
+async function handleUserForm(event,user,editing){
+  event.preventDefault();
+  const form=event.currentTarget;
+  const values=new FormData(form);
+  const submit=form.querySelector('[type="submit"]');
+  const errorNode=form.querySelector('#userFormError');
+  submit.disabled=true;
+  submit.textContent=editing?'Kaydediliyor…':'Oluşturuluyor…';
+  errorNode.textContent='';
+  let result;
+  if(editing){
+    result=await api.updateProjectUser({
+      target_project_id:state.selectedProject.id,
+      target_user_id:user.user_id,
+      target_full_name:values.get('fullName'),
+      target_role:values.get('role'),
+      target_is_active:user.is_active
+    }).catch(error=>({error}));
+  }else{
+    result=await api.createProjectUser({
+      projectId:state.selectedProject.id,
+      fullName:values.get('fullName'),
+      email:values.get('email'),
+      password:values.get('password'),
+      role:values.get('role')
+    }).catch(error=>({error}));
+  }
+  if(result.error){
+    errorNode.textContent=friendlyError(result.error,editing?'Kullanıcı güncellenemedi.':'Kullanıcı oluşturulamadı.');
+    submit.disabled=false;
+    submit.textContent=editing?'Kaydet':'Kullanıcı oluştur';
+    return;
+  }
+  await refreshProjectData();
+  renderWorkspace();
+  openTeamModal();
+  showToast(editing?'Kullanıcı güncellendi.':'Kullanıcı oluşturuldu ve girişe hazır.');
+}
+
+function openUserAccessConfirm(user){
+  if(!user)return;
+  const activating=!user.is_active;
+  modalRoot.innerHTML=`
+    <div class="modal-backdrop" data-close-modal>
+      <section class="modal confirm-modal" role="alertdialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="confirm-icon ${activating?'positive':''}" aria-hidden="true">${activating?'✓':'!'}</div>
+        <h2 id="modalTitle">${activating?'Kullanıcı aktifleştirilsin mi?':'Kullanıcı kaldırılsın mı?'}</h2>
+        <p><strong>${escapeHtml(user.full_name)}</strong> ${activating?'yeniden tasklara atanabilecek ve Task Merkezi’ne erişebilecek.':'yeni tasklara atanamayacak ve Task Merkezi erişimi kapanacak. Geçmiş task kayıtları korunur.'}</p>
+        <p id="userAccessError" class="form-error" role="alert"></p>
+        <div class="modal-actions"><button class="btn secondary" id="backToTeam" type="button">Vazgeç</button><button id="confirmUserAccess" class="btn ${activating?'primary':'danger'}" type="button">${activating?'Aktifleştir':'Kullanıcıyı kaldır'}</button></div>
+      </section>
+    </div>`;
+  bindModalDismiss();
+  modalRoot.querySelector('#backToTeam').addEventListener('click',openTeamModal);
+  modalRoot.querySelector('#confirmUserAccess').addEventListener('click',()=>handleUserAccess(user,activating));
+}
+
+async function handleUserAccess(user,active){
+  const button=modalRoot.querySelector('#confirmUserAccess');
+  const errorNode=modalRoot.querySelector('#userAccessError');
+  button.disabled=true;
+  button.textContent='Kaydediliyor…';
+  const result=await api.updateProjectUser({
+    target_project_id:state.selectedProject.id,
+    target_user_id:user.user_id,
+    target_full_name:user.full_name,
+    target_role:user.role,
+    target_is_active:active
+  }).catch(error=>({error}));
+  if(result.error){
+    errorNode.textContent=friendlyError(result.error,'Kullanıcı erişimi güncellenemedi.');
+    button.disabled=false;
+    button.textContent=active?'Aktifleştir':'Kullanıcıyı kaldır';
+    return;
+  }
+  await refreshProjectData();
+  renderWorkspace();
+  openTeamModal();
+  showToast(active?'Kullanıcı aktifleştirildi.':'Kullanıcı Task Merkezi’nden kaldırıldı.');
+}
+
 function openTaskModal(){
   const manager=Boolean(state.user?.can_manage_projects);
   const currentId=state.user?.app_user_id;
@@ -430,7 +741,7 @@ function openTaskModal(){
           <label>Öncelik<select name="priority"><option value="low">Düşük</option><option value="medium" selected>Orta</option><option value="high">Yüksek</option><option value="critical">Kritik</option></select></label>
           <label>Termin<input name="dueDate" type="date"></label>
           <fieldset class="full assignee-picker"><legend>Sorumlu kişi</legend>
-            ${manager?`<div class="member-options">${state.members.map(member=>`<label><input name="assignees" type="checkbox" value="${escapeHtml(member.user_id)}" ${member.user_id===currentId?'checked':''}><span class="mini-avatar">${escapeHtml(initials(member.full_name))}</span><span><strong>${escapeHtml(member.full_name)}</strong><small>${escapeHtml(roleLabels[member.role]||member.role)}</small></span></label>`).join('')}</div>`:`<div class="self-assignment"><span class="mini-avatar">${escapeHtml(initials(state.user?.full_name))}</span><span><strong>${escapeHtml(state.user?.full_name||'Siz')}</strong><small>Oluşturduğunuz task otomatik olarak size atanır.</small></span></div>`}
+            ${manager?`<div class="member-options">${assignableUsers().map(member=>`<label><input name="assignees" type="checkbox" value="${escapeHtml(member.user_id)}" ${member.user_id===currentId?'checked':''}><span class="mini-avatar">${escapeHtml(initials(member.full_name))}</span><span><strong>${escapeHtml(member.full_name)}</strong><small>${escapeHtml(roleLabels[member.role]||member.role)}</small></span></label>`).join('')}</div><small class="field-hint">Seçimi kaldırarak taskı sorumlusuz bırakabilirsiniz.</small>`:`<div class="self-assignment"><span class="mini-avatar">${escapeHtml(initials(state.user?.full_name))}</span><span><strong>${escapeHtml(state.user?.full_name||'Siz')}</strong><small>Oluşturduğunuz task otomatik olarak size atanır.</small></span></div>`}
           </fieldset>
           <p id="taskFormError" class="form-error full" role="alert"></p>
           <div class="modal-actions full"><button class="btn secondary" data-close-modal type="button">Vazgeç</button><button class="btn primary" type="submit">Task oluştur</button></div>
@@ -463,7 +774,6 @@ async function handleCreateTask(event){
   const values=new FormData(form);
   const dueDate=values.get('dueDate');
   let assigneeIds=state.user?.can_manage_projects?values.getAll('assignees'):[state.user.app_user_id];
-  if(!assigneeIds.length&&state.user?.can_manage_projects)assigneeIds=[state.user.app_user_id];
   submit.disabled=true;
   submit.textContent='Oluşturuluyor…';
   errorNode.textContent='';
