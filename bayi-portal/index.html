@@ -8,19 +8,34 @@
   <style>
     html,body{margin:0;width:100%;height:100%;background:#eef1f5;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}
     body{display:grid;place-items:center;color:#111827}
-    p{max-width:460px;margin:0;padding:24px;text-align:center;line-height:1.5}
+    p{max-width:520px;margin:0;padding:24px;text-align:center;line-height:1.5}
     a{color:#d71920;font-weight:800}
   </style>
 </head>
 <body>
-  <p>OTOTR Bayi Portali aciliyor. Acilmazsa <a id="dealerLink" href="../index.html?portal=dealer#dealer">buradan devam edin</a>.</p>
+  <p id="message">OTOTR Bayi Portali açılıyor. Açılmazsa <a id="dealerLink" href="../index.html?portal=dealer#dealer">buradan devam edin</a>.</p>
   <script>
     (function(){
       const params = new URLSearchParams(window.location.search);
-      params.set('portal','dealer');
-      ['email','password','passwd','token','access_token','refresh_token'].forEach(function(key){ params.delete(key); });
       const hash = window.location.hash || '#dealer';
-      const target = '../index.html?' + params.toString() + hash;
+      const wantsReportWeb = params.get('report') === 'web' || params.get('screen') === 'report-web' || hash === '#rapor-web';
+
+      ['email','password','passwd','token','access_token','refresh_token'].forEach(function(key){ params.delete(key); });
+
+      let target;
+      if (wantsReportWeb) {
+        params.delete('report');
+        params.delete('screen');
+        params.delete('portal');
+        const query = params.toString();
+        target = '../docs/rapor-web/index.html' + (query ? '?' + query : '');
+        document.getElementById('message').firstChild.nodeValue = 'OTOTR Web Rapor Editörü açılıyor. Açılmazsa ';
+        document.getElementById('dealerLink').textContent = 'web raporu açın';
+      } else {
+        params.set('portal','dealer');
+        target = '../index.html?' + params.toString() + hash;
+      }
+
       document.getElementById('dealerLink').href = target;
       window.location.replace(target);
     })();
