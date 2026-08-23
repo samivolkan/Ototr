@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>OTOTR — Web Ekspertiz Raporu</title>
+  <link rel="icon" type="image/svg+xml" href="../ototr-favicon.svg">
+  <link rel="stylesheet" href="./app.css">
+</head>
+<body>
+<div class="app" id="app">
+  <header class="toolbar no-print">
+    <div class="brand-mini"><span class="oto">OTO</span><span class="tr">TR</span><span>Rapor Web</span></div>
+    <div class="toolbar-meta"><b id="toolbarReportNo">OTR-2026-000154</b><span id="toolbarWorkOrder">CRM Web Rapor Editörü</span></div>
+    <div class="toolbar-actions">
+      <button class="btn ghost" id="btnCrm">CRM'e Dön</button>
+      <button class="btn ghost" id="btnValidate">Tutarlılık Kontrolü</button>
+      <button class="btn ghost" id="btnAll">Tüm Rapor</button>
+      <button class="btn ghost" id="btnImport">JSON İçe Aktar</button>
+      <button class="btn ghost" id="btnExport">JSON Dışa Aktar</button>
+      <button class="btn" id="btnPrint">PDF / Yazdır</button>
+      <button class="btn primary" id="btnSave">CRM'e Kaydet</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar no-print">
+      <div class="sidebar-head">
+        <strong>19 Sayfa</strong><small>Bir sayfaya geçmek için seçin</small>
+      </div>
+      <nav id="pageNav" class="page-nav"></nav>
+      <div class="sidebar-card">
+        <b>Otomatik Taslak</b>
+        <span id="saveStatus">Henüz kaydedilmedi</span>
+      </div>
+      <div class="sidebar-card warning-card" id="warningSummary">
+        <b>Tutarlılık</b><span>Kontrol edilmedi</span>
+      </div>
+    </aside>
+
+    <main class="workspace">
+      <div id="pagesHost" class="pages-host"></div>
+    </main>
+
+    <aside class="inspector no-print" id="inspector">
+      <div class="inspector-head">
+        <strong>Alan Düzenleyici</strong>
+        <small>Rapordaki herhangi bir yazıya tıklayın.</small>
+      </div>
+      <label>Alan yolu<input id="fieldPath" readonly></label>
+      <label>Metin<textarea id="fieldEditor" rows="7" placeholder="Düzenlemek istediğiniz alana tıklayın"></textarea></label>
+      <div class="inspector-row">
+        <button class="btn ghost" id="btnUndoField">Geri Al</button>
+        <button class="btn primary" id="btnApplyField">Uygula</button>
+      </div>
+      <div class="inspector-card">
+        <b>Web rapor mantığı</b>
+        <p>Metinler HTML içinde canlıdır. PDF görseli değildir; her alan CRM verisine bağlanabilir.</p>
+      </div>
+      <div class="validation-panel" id="validationPanel" hidden>
+        <h3>Tutarlılık Uyarıları</h3><div id="validationList"></div>
+      </div>
+    </aside>
+  </div>
+</div>
+<input type="file" id="jsonFile" accept="application/json" hidden>
+<input type="file" id="imageFile" accept="image/*" hidden>
+<script src="./data.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>
