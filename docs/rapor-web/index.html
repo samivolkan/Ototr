@@ -7,11 +7,12 @@
   <title>OTOTR — Web Ekspertiz Raporu</title>
   <link rel="icon" type="image/svg+xml" href="../ototr-favicon.svg">
   <link rel="stylesheet" href="./app.css">
+  <link rel="stylesheet" href="./final-layout.css">
 </head>
 <body>
 <div class="app" id="app">
   <header class="toolbar no-print">
-    <div class="brand-mini"><span class="oto">OTO</span><span class="tr">TR</span><span>Rapor Web · 22 Ağustos Antet</span></div>
+    <div class="brand-mini"><span class="oto">OTO</span><span class="tr">TR</span><span>Rapor Web · FINAL TASARIM / 22 Ağustos Antet</span></div>
     <div class="toolbar-meta"><b id="toolbarReportNo">OTR-2026-000154</b><span id="toolbarWorkOrder">CRM Web Rapor Editörü</span></div>
     <div class="toolbar-actions">
       <button class="btn ghost" id="btnCrm">CRM'e Dön</button>
@@ -56,7 +57,7 @@
       </div>
       <div class="inspector-card">
         <b>Web rapor mantığı</b>
-        <p>Metinler HTML içinde canlıdır. PDF görseli değildir; her alan CRM verisine bağlanabilir.</p>
+        <p>Antet kilitli arka plan olarak korunur. Son rapor yerleşimi HTML/CSS olarak taşınmıştır; tüm metin alanları CRM verisine bağlanabilir ve tek tek düzenlenebilir.</p>
       </div>
       <div class="validation-panel" id="validationPanel" hidden>
         <h3>Tutarlılık Uyarıları</h3><div id="validationList"></div>
@@ -68,5 +69,6 @@
 <input type="file" id="imageFile" accept="image/*" hidden>
 <script src="./data.js"></script>
 <script src="./app.js"></script>
+<script src="./renderers-final.js"></script>
 </body>
 </html>
