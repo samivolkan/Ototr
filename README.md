@@ -40,6 +40,25 @@ $env:NODE_PATH='C:\Users\Samivolkannnn\.cache\codex-runtimes\codex-primary-runti
 & 'C:\Users\Samivolkannnn\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe' tools/test-index.mjs
 ```
 
+## Ekspertiz Test Masteri
+
+CRM'deki `#test-master` rotasi, 24.08.2026 tarihli kilitli ekspertiz
+masterini yonetmek icin kullanilir.
+
+- Tum test bolumleri, kategoriler ve alt maddeler tek agacta goruntulenir.
+- Bolum, kategori ve madde eklenebilir; duzenlenebilir, silinebilir ve
+  surukle-birak veya yukari/asagi tuslariyla tasinabilir.
+- Degisiklikler tarayicida otomatik kaydedilir; geri al/ileri al desteklenir.
+- Master JSON olarak disa aktarilabilir, panoya kopyalanabilir ve tekrar ice
+  aktarilabilir.
+- Kilitli baslangic verisi `data/ototr_test_master_final_v1.json` dosyasindadir.
+
+Master veri testi:
+
+```powershell
+& 'C:\Users\Samivolkannnn\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe' tools/test-test-master.mjs
+```
+
 ## Hedef
 
 Bu prototipi asama asama gercek bir ERP/CRM'e cevirmek:

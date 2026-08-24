@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="ototr-version" content="SVK v1.0.233-cancel-first" />
+  <meta name="ototr-version" content="SVK v1.0.234-test-master" />
   <title>OTOTR Genel Merkez ERP + CRM</title>
   <link rel="icon" type="image/svg+xml" href="docs/ototr-favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,6 +14,9 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
   <script src="data/inspection_schema_web.js"></script>
+  <script src="data/ototr_test_master_final_v1.js"></script>
+  <script src="src/test-master-admin.js"></script>
+  <link rel="stylesheet" href="src/test-master-admin.css">
   <script>
     (function(){
       try{
@@ -1299,7 +1302,7 @@
   </script>
   <div class="app">
     <aside class="side">
-      <div class="brand-row"><a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.233</small><small class="update-tag" title="Son güncelleme: İş emri iptal canlı silme ve aktif listeden düşme akışı düzeltildi.">01.06 · İş emri iptal düzeltmesi</small></div></a><div class="brand-actions"><button class="theme-toggle" type="button" data-theme-toggle title="Koyu temaya geç" aria-label="Tema değiştir"><i data-lucide="sun-moon"></i><span id="themeToggleText">Açık</span></button><div class="online-pill" title="Online kullanıcı sayısı"><span class="online-dot"></span><b data-online-count>42</b><small>kişi</small></div></div></div>
+      <div class="brand-row"><a class="brand" href="#dashboard" data-route="dashboard"><div class="mark">OT</div><div><b>OTOTR</b><span>ERP Yönetim Paneli</span><small class="version-tag">SVK v1.0.234</small><small class="update-tag" title="Son güncelleme: Kilitli ekspertiz test masterı yönetim ekranı eklendi.">24.08 · Test masterı</small></div></a><div class="brand-actions"><button class="theme-toggle" type="button" data-theme-toggle title="Koyu temaya geç" aria-label="Tema değiştir"><i data-lucide="sun-moon"></i><span id="themeToggleText">Açık</span></button><div class="online-pill" title="Online kullanıcı sayısı"><span class="online-dot"></span><b data-online-count>42</b><small>kişi</small></div></div></div>
       <div class="nav" id="nav"></div>
     </aside>
 
@@ -2869,13 +2872,13 @@
     const navGroups = [
       ['Genel Merkez', [['dashboard','Yönetim Kokpiti','layout-dashboard'],['intelligence','İş Zekası','chart-no-axes-column'],['actions','Aksiyon & Görev','target'],['crisis','Kriz Merkezi','siren'],['ai','AI Öneri','sparkles']]],
       ['Bayi & Şube Yönetimi', [['branches','Bayiler & Şubeler','building-2'],['dealer','Bayi Portalı','tablet-smartphone'],['ototr-web','OTOTR Web','globe'],['operations','Operasyon','workflow'],['quality','Kalite & Denetim','shield-check']]],
-      ['Ekspertiz & Rapor', [['report-design','Ekspertiz Rapor Tasarımı','file-check-2']]],
+      ['Ekspertiz & Rapor', [['test-master','Ekspertiz Test Masterı','list-tree'],['report-design','Ekspertiz Rapor Tasarımı','file-check-2']]],
       ['Müşteri & Satış', [['crm','CRM & Randevu','users'],['complaints','Müşteri Şikayetleri','message-circle-warning'],['google-reviews','Google Yorumlar','star'],['reputation','Sosyal Medya İtibar Radar','radar'],['marketing','Pazarlama','megaphone']]],
       ['Franchise Yönetimi', [['franchise','Franchise Satış','handshake'],['growth','Bayii Büyüme','map'],['finance','Finans & Royalty','banknote']]],
       ['Kurumsal Yönetim', [['academy','OTOTR Academy','graduation-cap'],['hr','İnsan Kaynakları','badge-check'],['legal','Hukuk & Risk','scale']]],
       ['Ayarlar', [['architecture','Sistem Mimarisi','network'],['settings','Ayarlar','settings'],['legacy','Legacy Room','landmark']]]
     ];
-    const titles = {dashboard:'Yönetim Kokpiti',intelligence:'İş Zekası',branches:'Bayiler & Şubeler',dealer:'Bayi Portalı','ototr-web':'OTOTR Web',operations:'Operasyon',franchise:'Franchise Satış',crm:'CRM & Randevu',complaints:'Müşteri Şikayetleri','google-reviews':'Google Haritalar İtibar Merkezi',reputation:'İtibar Radar',finance:'Finans & Royalty',marketing:'Pazarlama',quality:'Kalite & Denetim','report-design':'Ekspertiz Rapor Tasarımı','vehicle-passport':'Dijital Araç Karnesi',academy:'OTOTR Academy',hr:'İnsan Kaynakları',legal:'Hukuk & Risk',crisis:'Kriz Merkezi',actions:'Aksiyon & Görev',ai:'AI Öneri',growth:'Bayii Büyüme',legacy:'Legacy Room',architecture:'Sistem Mimarisi',settings:'Ayarlar',branchProfile:'Şube Profili',franchiseProfile:'Aday Değerlendirme',customerProfile:'Müşteri 360'};
+    const titles = {dashboard:'Yönetim Kokpiti',intelligence:'İş Zekası',branches:'Bayiler & Şubeler',dealer:'Bayi Portalı','ototr-web':'OTOTR Web',operations:'Operasyon',franchise:'Franchise Satış',crm:'CRM & Randevu',complaints:'Müşteri Şikayetleri','google-reviews':'Google Haritalar İtibar Merkezi',reputation:'İtibar Radar',finance:'Finans & Royalty',marketing:'Pazarlama',quality:'Kalite & Denetim','test-master':'Ekspertiz Test Masterı','report-design':'Ekspertiz Rapor Tasarımı','vehicle-passport':'Dijital Araç Karnesi',academy:'OTOTR Academy',hr:'İnsan Kaynakları',legal:'Hukuk & Risk',crisis:'Kriz Merkezi',actions:'Aksiyon & Görev',ai:'AI Öneri',growth:'Bayii Büyüme',legacy:'Legacy Room',architecture:'Sistem Mimarisi',settings:'Ayarlar',branchProfile:'Şube Profili',franchiseProfile:'Aday Değerlendirme',customerProfile:'Müşteri 360'};
     function dealerPortalUrl(){ return 'bayi-portal/index.html?portal=dealer&version=v4'; }
     function openDealerPortalWindow(){ window.open(dealerPortalUrl(),'_blank','noopener,noreferrer'); }
     function dealerScrubSensitiveUrlParams(){
@@ -4028,6 +4031,7 @@
       finance:['Gelir · Finans & Royalty','Finans & Royalty Sağlık Merkezi','Sağlıklı bayi › sağlıklı genel merkez › güçlü marka. Bayi kârlılığı, royalty uygunluğu, destek bütçeleri ve genel merkez gelir kalitesini birlikte yönetin.'],
       marketing:['Pazarlama · Growth','Pazarlama / Lead Üretim Room','Google, Meta, WhatsApp, SEO, CPL, ROAS ve şehir/şube bazlı kampanya katkısını izleyin; leadleri CRM veya Franchise Satışa aktarın.'],
       quality:['Kontrol · Kalite Güvence','Kalite & Müşteri Deneyimi Merkezi','Şube denetimi, rapor kalitesi, gizli müşteri, şikayet, ISO 10002 ve düzeltici faaliyetleri kalite sistemi altında yönetin.'],
+      'test-master':['Kontrol · Ekspertiz Masterı','Ekspertiz Test Masterı','Tüm testleri, kategorileri, alt maddeleri, kanıt ve nihai kanaat kurallarını tek ağaçta düzenleyin; sıralayın ve JSON olarak dışa aktarın.'],
       'report-design':['Kontrol · Ekspertiz Raporu','OTOTR Ekspertiz Rapor Tasarımı','Premium kurumsal A4 rapor prototipi; müşteri karar özeti, teknik detay, kanıt arşivi, QR doğrulama ve hukuki onayları tek rapor standardında gösterir.'],
       'vehicle-passport':['Kontrol · Dijital Araç Karnesi','Dijital Araç Karnesi','Plaka/şasi bazlı OTOTR geçmiş hafızası; önceki ekspertizlerle güncel bulguları, kilometreyi, kaporta-boya değişimini ve kanıt arşivini karşılaştırır.'],
       academy:['Kontrol · Academy','OTOTR Academy / Eğitim Room','Kişi, şube, bölge ve genel merkez seviyesinde eğitim ataması, deadline, başarı oranı ve sertifika skorlarını yönetin.'],
@@ -4046,6 +4050,7 @@
       if(id==='legal') return `<button class="btn primary" data-open-action-modal="Hukuk & Risk aksiyonu">${icon('clipboard-plus')}Aksiyon Oluştur</button><button class="btn" data-route="actions">${icon('target')}Görev motoru</button><button class="btn" data-route="crisis">${icon('siren')}Kriz merkezi</button>`;
       if(id==='hr') return `<button class="btn primary" data-hr-quick="action">${icon('clipboard-plus')}Aksiyon Oluştur</button><button class="btn" data-hr-room="employee360">${icon('users')}Personel 360</button><button class="btn" data-hr-room="recruitment">${icon('user-plus')}Talep Aç</button>`;
       if(id==='quality') return `<button class="btn primary" data-quality-open-audit>${icon('plus')}Yeni Denetim Oluştur</button><button class="btn" data-action="Kritik kalite bulguları filtrelendi.">${icon('siren')}Kritik Bulgular</button><button class="btn" data-route="academy">${icon('graduation-cap')}Academy Açıkları</button>`;
+      if(id==='test-master') return `<button class="btn primary" data-route="report-design">${icon('file-check-2')}Rapor Tasarımına Git</button><button class="btn" data-route="architecture">${icon('network')}Sistem Mimarisi</button>`;
       if(id==='report-design') return `<button class="btn primary" onclick="window.print()">${icon('printer')}Yazdır</button><button class="btn" data-report-scroll="report-page-1">${icon('file-text')}PDF Önizleme</button><button class="btn" data-report-scroll="report-page-13">${icon('badge-check')}Araç Karnesi</button><button class="btn" data-report-scroll="report-page-14">${icon('image')}Kanıt Arşivi</button>`;
       if(id==='vehicle-passport') return `<button class="btn primary" onclick="window.print()">${icon('printer')}Yazdır</button><button class="btn" data-route="report-design">${icon('file-check-2')}Tam Rapor</button><button class="btn" data-route="dealer">${icon('tablet-smartphone')}Bayi Portalı</button>`;
       if(id==='operations') return `<button class="btn primary" data-operation-action="SLA-001:delayed-report">${icon('clipboard-plus')}Geciken Rapor Aksiyonu</button><button class="btn" data-operation-action="CAP-001:capacity-warning">${icon('alert-triangle')}Kapasite Uyarısı</button><button class="btn" data-operation-scroll>${icon('list-checks')}Gün Sonu Özeti</button>`;
@@ -4370,6 +4375,7 @@
         pageShell('branches', Branches360Page())+
         pageShell('dealer', DealerTabletReportPage())+
         pageShell('ototr-web', OtotrWebManagementPage())+
+        pageShell('test-master', TestMasterAdminPage())+
         pageShell('report-design', ExpertiseReportDesignPage())+
         pageShell('vehicle-passport', VehiclePassportStandalonePage())+
         pageShell('branchProfile', BranchProfilePage())+
@@ -15143,6 +15149,7 @@
     function initTheme(){ applyTheme(localStorage.getItem('ototr-theme')==='dark'?'dark':'light'); }
     function wirePageEvents(){
       bindPlanRoomEvents();
+      if(typeof bindTestMasterAdmin==='function') bindTestMasterAdmin();
       document.querySelectorAll('[data-route]').forEach(el=>el.addEventListener('click',e=>{
         e.preventDefault();
         e.stopPropagation();
