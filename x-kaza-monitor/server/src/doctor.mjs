@@ -139,7 +139,6 @@ async function run() {
   const envPath = path.join(serverRoot, '.env');
   const envExamplePath = path.join(serverRoot, '.env.example');
   const envState = readEnvKeyState(envPath);
-  const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
   const nodeMajor = Number.parseInt(process.versions.node.split('.')[0], 10);
   const healthHost = ['0.0.0.0', '::'].includes(config.host) ? '127.0.0.1' : config.host;
   const baseUrl = `http://${healthHost}:${config.port}`;
@@ -151,7 +150,11 @@ async function run() {
     true,
   );
 
-  const npmVersion = commandVersion(npmCommand);
+  const npmVersion = process.env.npm_execpath
+    ? commandVersion(process.execPath, [process.env.npm_execpath, '--version'])
+    : process.platform === 'win32'
+      ? commandVersion('cmd.exe', ['/d', '/s', '/c', 'npm.cmd --version'])
+      : commandVersion('npm');
   addResult(
     npmVersion ? 'OK' : 'HATA',
     'npm',
