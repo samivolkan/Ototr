@@ -1,0 +1,140 @@
+name: X Kaza Monitor Windows Local
+
+on:
+  push:
+    branches:
+      - codex/x-kaza-plaka-mvp
+    paths:
+      - x-kaza-monitor/**
+      - .github/workflows/x-kaza-monitor-windows.yml
+  pull_request:
+    paths:
+      - x-kaza-monitor/**
+      - .github/workflows/x-kaza-monitor-windows.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows-local:
+    name: Windows 10/11 uyumlu yerel başlatma
+    runs-on: windows-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Depoyu al
+        uses: actions/checkout@v4
+
+      - name: Node.js 20 kur
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Bağımlılıkları kur
+        working-directory: x-kaza-monitor/server
+        run: npm install --no-audit --no-fund
+
+      - name: Sözdizimi ve testler
+        working-directory: x-kaza-monitor/server
+        run: |
+          npm run check
+          npm test
+          npm run doctor
+
+      - name: Tek tık BAT başlatıcısını gerçek Windows terminalinde doğrula
+        shell: pwsh
+        working-directory: x-kaza-monitor
+        env:
+          OTOTR_NO_PAUSE: '1'
+        run: |
+          cmd.exe /d /c "OTOTR_DEMO_BASLAT.bat -NoBrowser -ExitAfterHealth -SkipInstall"
+          if ($LASTEXITCODE -ne 0) {
+            throw "BAT başlatıcısı başarısız oldu: $LASTEXITCODE"
+          }
+
+      - name: İkinci başlatmanın mevcut süreci kullandığını doğrula
+        shell: pwsh
+        working-directory: x-kaza-monitor
+        env:
+          OTOTR_NO_PAUSE: '1'
+        run: |
+          $serverRoot = (Resolve-Path .\server).Path
+          $logRoot = Join-Path $serverRoot 'logs'
+          New-Item -ItemType Directory -Path $logRoot -Force | Out-Null
+          $stdout = Join-Path $logRoot 'ci-existing-server-out.log'
+          $stderr = Join-Path $logRoot 'ci-existing-server-error.log'
+
+          $env:OTOTR_LOCAL_DEMO = '1'
+          $env:HOST = '127.0.0.1'
+          $env:PORT = '8787'
+          $env:PUBLIC_BASE_URL = 'http://127.0.0.1:8787'
+          $env:DEMO_MODE = 'true'
+
+          $arguments = @{
+            FilePath = (Get-Command node.exe).Source
+            ArgumentList = @('src/server.mjs')
+            WorkingDirectory = $serverRoot
+            PassThru = $true
+            NoNewWindow = $true
+            RedirectStandardOutput = $stdout
+            RedirectStandardError = $stderr
+          }
+          $server = Start-Process @arguments
+
+          try {
+            $healthy = $false
+            for ($attempt = 0; $attempt -lt 60; $attempt++) {
+              if ($server.HasExited) {
+                throw "Test sunucusu erken kapandı: $($server.ExitCode)"
+              }
+              try {
+                $health = Invoke-RestMethod -Uri 'http://127.0.0.1:8787/api/health' -TimeoutSec 2
+                if ($health.ok -eq $true -and $health.data.status -eq 'ok') {
+                  $healthy = $true
+                  break
+                }
+              }
+              catch { }
+              Start-Sleep -Milliseconds 500
+            }
+            if (-not $healthy) {
+              throw 'Test sunucusu /api/health yanıtı vermedi.'
+            }
+            if ($health.data.mode -ne 'demo') {
+              throw "X anahtarsız demo modu bekleniyordu; gelen: $($health.data.mode)"
+            }
+
+            cmd.exe /d /c "OTOTR_DEMO_BASLAT.bat -NoBrowser -ExitAfterHealth -SkipInstall"
+            if ($LASTEXITCODE -ne 0) {
+              throw "İkinci başlatma başarısız oldu: $LASTEXITCODE"
+            }
+            if ($server.HasExited) {
+              throw 'İkinci başlatma mevcut sunucuyu kapattı.'
+            }
+
+            $listener = Get-NetTCPConnection -LocalPort 8787 -State Listen | Select-Object -First 1
+            if (-not $listener -or $listener.OwningProcess -ne $server.Id) {
+              throw 'İkinci başlatma mevcut PID yerine başka bir süreç açtı.'
+            }
+
+            $healthResponse = Invoke-WebRequest -Uri 'http://127.0.0.1:8787/api/health' -UseBasicParsing -TimeoutSec 5
+            $mainResponse = Invoke-WebRequest -Uri 'http://127.0.0.1:8787/' -UseBasicParsing -TimeoutSec 5
+            if ($healthResponse.StatusCode -ne 200 -or $mainResponse.StatusCode -ne 200) {
+              throw 'Health veya ana HTML HTTP 200 dönmedi.'
+            }
+          }
+          finally {
+            if ($server -and -not $server.HasExited) {
+              Stop-Process -Id $server.Id -Force -ErrorAction SilentlyContinue
+            }
+          }
+
+      - name: Hata loglarını yükle
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: x-kaza-monitor-windows-logs
+          path: x-kaza-monitor/server/logs/*.log
+          if-no-files-found: ignore
+          retention-days: 5

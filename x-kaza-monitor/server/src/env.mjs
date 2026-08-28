@@ -35,13 +35,22 @@ function asInteger(value, fallback, minimum, maximum) {
 
 export function getConfig() {
   loadEnvFile();
+
+  // Tek tık Windows başlatıcısı bu bayrağı yalnız çocuk sunucu sürecine verir.
+  // Böylece mevcut .env içindeki gerçek anahtarlar silinmeden ve loglanmadan demo
+  // modu, loopback dinlemesi ve parolasız yerel panel kesin olarak uygulanır.
+  const localDemo = asBoolean(process.env.OTOTR_LOCAL_DEMO, false);
+  const demoMode = localDemo || asBoolean(process.env.DEMO_MODE, true);
+  const host = localDemo ? '127.0.0.1' : (process.env.HOST || '127.0.0.1');
+  const port = asInteger(process.env.PORT, 8787, 1, 65535);
+
   return Object.freeze({
-    host: process.env.HOST || '127.0.0.1',
-    port: asInteger(process.env.PORT, 8787, 1, 65535),
-    publicBaseUrl: process.env.PUBLIC_BASE_URL || 'http://127.0.0.1:8787',
-    adminApiToken: process.env.ADMIN_API_TOKEN || '',
-    allowInsecureRemote: asBoolean(process.env.ALLOW_INSECURE_REMOTE, false),
-    xBearerToken: process.env.X_BEARER_TOKEN || '',
+    host,
+    port,
+    publicBaseUrl: process.env.PUBLIC_BASE_URL || `http://${host}:${port}`,
+    adminApiToken: localDemo ? '' : (process.env.ADMIN_API_TOKEN || ''),
+    allowInsecureRemote: localDemo ? false : asBoolean(process.env.ALLOW_INSECURE_REMOTE, false),
+    xBearerToken: demoMode ? '' : (process.env.X_BEARER_TOKEN || ''),
     xRecentSearchUrl: process.env.X_RECENT_SEARCH_URL || 'https://api.x.com/2/tweets/search/recent',
     xAllSearchUrl: process.env.X_ALL_SEARCH_URL || 'https://api.x.com/2/tweets/search/all',
     xPostLookupUrl: process.env.X_POST_LOOKUP_URL || 'https://api.x.com/2/tweets',
@@ -50,13 +59,14 @@ export function getConfig() {
     maxPostsPerScan: asInteger(process.env.MAX_POSTS_PER_SCAN, 100, 10, 1000),
     maxImageBytes: asInteger(process.env.MAX_IMAGE_BYTES, 12 * 1024 * 1024, 1024, 50 * 1024 * 1024),
     ocrMinConfidence: asInteger(process.env.OCR_MIN_CONFIDENCE, 35, 0, 100),
-    demoMode: asBoolean(process.env.DEMO_MODE, true),
+    demoMode,
+    localDemo,
     dataFile: process.env.DATA_FILE || path.join(serverRoot, 'data', 'store.json'),
     staticRoot: path.resolve(serverRoot, '..'),
     mediaHostAllowlist: new Set(
       (process.env.MEDIA_HOST_ALLOWLIST || 'pbs.twimg.com,video.twimg.com,abs.twimg.com,ton.twimg.com')
         .split(',')
-        .map((host) => host.trim().toLowerCase())
+        .map((hostName) => hostName.trim().toLowerCase())
         .filter(Boolean),
     ),
   });

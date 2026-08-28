@@ -19,6 +19,45 @@ Bu modül, X üzerindeki fotoğraflı trafik kazası paylaşımlarını resmî X
 - Kaynağı X üzerinde yeniden kontrol etme; silinen kaydı otomatik olarak kullanımdan düşürme
 - Demo veriyle anahtarsız çalışma
 
+## Windows'ta en kolay çalıştırma
+
+Gereksinim: Windows 10/11 ve **Node.js 20 veya üzeri**.
+
+1. Depoyu veya ZIP klasörünü Windows bilgisayara alın.
+2. `x-kaza-monitor` klasörünü açın.
+3. **`OTOTR_DEMO_BASLAT.bat` dosyasına çift tıklayın.**
+4. İlk çalıştırmada bağımlılıkların kurulması tamamlanınca tarayıcı otomatik açılır.
+
+Başlatıcı teknik bilgisi sınırlı kullanıcı için şu işlemleri otomatik yapar:
+
+- Node.js 20+ ve npm denetimi
+- `server/.env` yoksa `.env.example` üzerinden oluşturma
+- güvenli yerel demo için `HOST=127.0.0.1`, `DEMO_MODE=true` ve varsayılan `PORT=8787` kullanma
+- `node_modules` veya `tesseract.js` eksikse `npm install` çalıştırma
+- port kullanımını ve mümkünse PID/proses adını gösterme
+- `8787` başka bir uygulama tarafından kullanılıyorsa güvenli bir sonraki yerel portu seçme
+- `/api/health` ve ana HTML HTTP 200 verene kadar sınırlı süre bekleme
+- başarılı olunca doğru adresi varsayılan tarayıcıda açma
+- başarısız olunca pencereyi açık tutma ve `server/logs` altındaki log konumlarını gösterme
+
+Aynı başlatıcıya ikinci kez çift tıklanırsa çalışan OtoTR sürecini sağlık kontrolüyle tanır; ikinci bir sunucu açmak yerine mevcut adresi tarayıcıda açar.
+
+> **Önemli:** `127.0.0.1` internet adresi değildir. Yalnız uygulamanın çalıştığı **aynı bilgisayarı** ifade eder. OtoTR sunucusu Windows bilgisayarınızda başlamadıysa o bilgisayardaki `http://127.0.0.1:8787` adresi açılmaz.
+
+### Aynı bilgisayar ile başka cihaz erişimi arasındaki fark
+
+- **Aynı Windows bilgisayarı:** Tek tık başlatıcıyı kullanın. Sunucu yalnız `127.0.0.1` üzerinde dinler; telefon veya başka bilgisayar bu adrese erişemez.
+- **Aynı ağdaki telefon/başka bilgisayar:** Tek tık başlatıcı güvenlik nedeniyle bunun için kullanılmaz. Manuel yapılandırmada `HOST=0.0.0.0`, bilgisayarın yerel IPv4 adresine göre `PUBLIC_BASE_URL=http://BILGISAYAR_IP:8787` ve güçlü bir `ADMIN_API_TOKEN` tanımlanmalıdır. Windows Güvenlik Duvarı kuralı da yalnız güvenilen yerel ağ için düzenlenmelidir. Yönetim anahtarı olmadan uzak ağ dinlemesi sunucu tarafından reddedilir.
+
+Tanı raporu için:
+
+```powershell
+cd x-kaza-monitor\server
+npm run doctor
+```
+
+Komut; işletim sistemi, Node/npm sürümü, çalışma dizini, gizli değerleri göstermeden ortam durumu, host/port, port kullanımı, bağımlılıklar, yazma izni, statik dosyalar ve çalışan sunucunun health sonucunu raporlar.
+
 ## Yerel çalıştırma
 
 Gereksinimler: Node.js 20 veya üzeri.
@@ -31,9 +70,9 @@ npm test
 npm start
 ```
 
-Ardından tarayıcıda `http://127.0.0.1:8787` adresini açın.
+Ardından tarayıcıda `http://127.0.0.1:8787` adresini açın. Bu adres yalnız `npm start` süreci aynı bilgisayarda çalışırken erişilebilir.
 
-`X_BEARER_TOKEN` boş bırakılırsa panel demo modunda çalışır. Gerçek tarama için `.env` içinde yalnız sunucuda tanımlayın:
+`DEMO_MODE=true` olduğunda X anahtarı tanımlı olsa bile canlı X çağrıları devre dışıdır. Gerçek tarama için `.env` içinde yalnız sunucuda şu ayarları kullanın:
 
 ```dotenv
 X_BEARER_TOKEN=BURAYA_X_BEARER_TOKEN
@@ -54,6 +93,7 @@ docker run --rm -p 8787:8787 \
   -e HOST=0.0.0.0 \
   -e X_BEARER_TOKEN='...' \
   -e ADMIN_API_TOKEN='uzun-rastgele-yonetim-anahtari' \
+  -e DEMO_MODE=false \
   -v ototr-x-data:/app/server/data \
   ototr-x-kaza-monitor
 ```
@@ -122,6 +162,7 @@ MVP'nin JSON deposu geliştirme içindir. Üretimde `docs/migrations/2026-08-28-
 - Görsel boyutu sınırlandırılır.
 - Statik sunucu `.env` ve `server/` içeriğini yayınlamaz.
 - X anahtarı hiçbir API yanıtında yer almaz.
+- `DEMO_MODE=true` olduğunda X anahtarı çalışma zamanında devre dışı bırakılır.
 - `ADMIN_API_TOKEN` tanımlandığında sağlık kontrolü dışındaki bütün API yolları Bearer doğrulaması ister.
 - Sunucu loopback dışındaki bir adreste dinleyecekse yönetim anahtarı olmadan başlamayı reddeder; yalnız bilinçli `ALLOW_INSECURE_REMOTE=true` istisnası vardır.
 - Alıcı sorgusu, yalnız `approved_customer` durumundaki kaydı döndürür.
@@ -147,9 +188,12 @@ Bu nedenle otomatik sonuç tek başına “araç kazalıdır” hükmü üretmez
 cd x-kaza-monitor/server
 npm run check
 npm test
+npm run doctor
 ```
 
-Testler plaka normalizasyonunu, format doğrulamasını, OCR aday çıkarımını, X sorgu üretimini, moderasyon kapısını, kalıcı veri deposunu ve statik panelin zorunlu ekranlarını kapsar.
+Testler plaka normalizasyonunu, format doğrulamasını, OCR aday çıkarımını, X sorgu üretimini, moderasyon kapısını, kalıcı veri deposunu, statik panelin zorunlu ekranlarını, Windows yol davranışını, anahtarsız demo modunu ve tek tık başlatıcının güvenlik sözleşmesini kapsar.
+
+`.github/workflows/x-kaza-monitor-windows.yml` ayrıca gerçek bir Windows terminalinde başlatıcıyı tarayıcı açmadan çalıştırır; `/api/health`, ana HTML ve ikinci başlatma davranışını doğrular.
 
 ## Resmî kaynaklar
 
