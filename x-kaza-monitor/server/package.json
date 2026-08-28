@@ -12,7 +12,7 @@
     "dev": "node --watch src/server.mjs",
     "doctor": "node src/doctor.mjs",
     "test": "node --test",
-    "check": "node --check src/server.mjs && node --check src/x-api.mjs && node --check src/ocr.mjs && node --check src/store.mjs && node --check src/env.mjs && node --check src/doctor.mjs && node --check src/sources/rss-news-source.mjs && node --check src/sources/trt-haber-source.mjs && node --check src/sources/source-registry.mjs"
+    "check": "node --check src/server.mjs && node --check src/x-api.mjs && node --check src/ocr.mjs && node --check src/store.mjs && node --check src/env.mjs && node --check src/doctor.mjs && node --check src/news-pipeline.mjs && node --check src/sources/rss-news-source.mjs && node --check src/sources/trt-haber-source.mjs && node --check src/sources/source-registry.mjs"
   },
   "dependencies": {
     "tesseract.js": "7.0.0"
