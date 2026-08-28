@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="OtoTR açık kaynak haber ve sosyal kaynak yönetimi">
+  <title>OtoTR | Kaynaklar</title>
+  <link rel="stylesheet" href="/styles.css">
+  <style>
+    .source-page{padding:28px 34px 60px}.source-hero{display:flex;justify-content:space-between;gap:24px;align-items:flex-start;margin-bottom:24px}.source-hero h2{margin:.35rem 0 .5rem;font-size:1.65rem}.source-hero p{max-width:760px;color:var(--muted,#68707a);line-height:1.55}.source-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:18px}.source-card{background:#fff;border:1px solid #e4e6e9;border-radius:18px;padding:22px;box-shadow:0 8px 28px rgba(18,22,27,.05)}.source-card.is-disabled{opacity:.68}.source-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.source-brand{display:flex;gap:12px;align-items:center}.source-logo{width:44px;height:44px;border-radius:12px;background:#c51924;color:white;display:grid;place-items:center;font-weight:800}.source-brand h3{margin:0;font-size:1.05rem}.source-brand small{display:block;margin-top:4px;color:#707780}.source-status{font-size:.72rem;font-weight:800;border-radius:999px;padding:6px 10px;background:#eef6ef;color:#22713b}.source-card.is-disabled .source-status{background:#f2f2f2;color:#737373}.source-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:18px 0}.source-stat{background:#f7f8fa;border-radius:12px;padding:12px}.source-stat small{display:block;color:#747b84;margin-bottom:4px}.source-stat strong{font-size:1.25rem}.source-meta{font-size:.82rem;color:#606873;line-height:1.7;border-top:1px solid #eceef1;padding-top:14px}.source-meta code{word-break:break-all;font-size:.75rem}.source-actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}.source-message{margin-top:14px;border-radius:10px;padding:10px 12px;font-size:.82rem;background:#f6f7f8;color:#525b65}.source-message.error{background:#fff0f0;color:#9c1d25}.source-message.success{background:#eef8f0;color:#286b3b}.article-panel{margin-top:22px}.article-table{width:100%;border-collapse:collapse}.article-table th,.article-table td{text-align:left;padding:12px 10px;border-bottom:1px solid #eceef1;font-size:.84rem;vertical-align:top}.article-table th{color:#6c737c;font-size:.72rem;text-transform:uppercase;letter-spacing:.05em}.article-table a{color:#b3131c;text-decoration:none;font-weight:700}.source-note{background:#fff7e5;border:1px solid #f0d996;border-radius:12px;padding:13px 15px;color:#6e5720;font-size:.84rem;max-width:480px}.source-loading{display:none}.source-loading.is-active{display:inline}.nav-item-link{text-decoration:none;color:inherit}.back-link{display:inline-flex;align-items:center;gap:7px;text-decoration:none;color:#555f69;font-weight:700;font-size:.85rem;margin-bottom:14px}
+    @media(max-width:800px){.source-page{padding:20px 16px 50px}.source-hero{display:block}.source-note{margin-top:14px}.article-table th:nth-child(3),.article-table td:nth-child(3){display:none}}
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Ana menü">
+      <div class="brand-block"><div class="brand-word" aria-label="OtoTR">Oto<span>TR</span></div><p>Açık Kaynak Araç Olay Merkezi</p></div>
+      <nav class="nav-list">
+        <a class="nav-item nav-item-link" href="/"><span class="nav-icon">⌂</span><span>Genel Bakış</span></a>
+        <a class="nav-item is-active nav-item-link" href="/sources"><span class="nav-icon">◎</span><span>Kaynaklar</span></a>
+        <a class="nav-item nav-item-link" href="/#review"><span class="nav-icon">✓</span><span>Onay Kuyruğu</span></a>
+        <a class="nav-item nav-item-link" href="/#lookup"><span class="nav-icon">▣</span><span>Plaka Sorgulama</span></a>
+      </nav>
+      <div class="sidebar-footer"><div class="mode-card"><span class="status-dot demo"></span><div><strong>Çok kaynaklı mod</strong><small>X + Haber Siteleri</small></div></div><p>Sürüm 0.3.0 • MVP</p></div>
+    </aside>
+    <main class="main-content">
+      <header class="topbar">
+        <div><p class="eyebrow">KAYNAK YÖNETİMİ</p><h1>Kaynaklar</h1></div>
+        <div class="topbar-actions"><span class="connection-pill demo" id="source-connection"><span></span>Bağlanıyor</span><button class="icon-button" id="source-refresh" type="button" title="Yenile">↻</button></div>
+      </header>
+      <div class="source-page">
+        <a class="back-link" href="/">← Genel panele dön</a>
+        <div class="source-hero">
+          <div><span class="section-kicker">AÇIK KAYNAK TOPLAMA</span><h2>Haber ve sosyal kaynaklarını tek merkezden yönetin.</h2><p>Kaynak taraması önce kaza haberlerini filtreler, sonra haber görsellerinde OCR ile Türkiye plakası arar. Haber metninde plaka geçmesi tek başına eşleşme oluşturmaz.</p></div>
+          <div class="source-note"><strong>RSS sınırı</strong><br>TRT Haber kaynağı güncel RSS akışının sunduğu kayıtlarla sınırlıdır. Eski içerik için bu fazda site içi scraping yapılmaz.</div>
+        </div>
+        <div class="source-grid" id="source-grid"><div class="empty-state"><span>◎</span><h3>Kaynaklar yükleniyor</h3><p>Sunucu bağlantısı kuruluyor.</p></div></div>
+        <section class="panel article-panel">
+          <div class="panel-header"><div><span class="section-kicker">SON HABERLER</span><h3>İşlenen haber kayıtları</h3></div><span class="header-count" id="article-count">0 haber</span></div>
+          <div style="overflow:auto"><table class="article-table"><thead><tr><th>Tarih</th><th>Haber</th><th>Kaynak</th><th>Görsel</th><th>Durum</th></tr></thead><tbody id="article-body"><tr><td colspan="5">Henüz kayıt yok.</td></tr></tbody></table></div>
+        </section>
+      </div>
+    </main>
+  </div>
+  <div class="toast-region" id="toast-region" aria-live="polite"></div>
+  <script type="module" src="/sources.js"></script>
+</body>
+</html>
