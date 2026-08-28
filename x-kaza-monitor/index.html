@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="OtoTR açık kaynak kaza görseli ve plaka eşleştirme yönetim paneli">
+  <title>OtoTR | Açık Kaynak Araç Olay Merkezi</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Ana menü">
+      <div class="brand-block">
+        <div class="brand-word" aria-label="OtoTR">Oto<span>TR</span></div>
+        <p>Açık Kaynak Araç Olay Merkezi</p>
+      </div>
+
+      <nav class="nav-list">
+        <button class="nav-item is-active" type="button" data-view="dashboard" aria-current="page">
+          <span class="nav-icon" aria-hidden="true">⌂</span><span>Genel Bakış</span>
+        </button>
+        <button class="nav-item" type="button" data-view="rules">
+          <span class="nav-icon" aria-hidden="true">⌕</span><span>Tarama Kuralları</span>
+        </button>
+        <button class="nav-item" type="button" data-view="review">
+          <span class="nav-icon" aria-hidden="true">✓</span><span>Onay Kuyruğu</span>
+          <span class="nav-count" id="review-nav-count">0</span>
+        </button>
+        <button class="nav-item" type="button" data-view="lookup">
+          <span class="nav-icon" aria-hidden="true">▣</span><span>Plaka Sorgulama</span>
+        </button>
+        <button class="nav-item" type="button" data-view="system">
+          <span class="nav-icon" aria-hidden="true">⚙</span><span>Sistem ve OCR</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="mode-card">
+          <span class="status-dot" id="sidebar-status-dot"></span>
+          <div><strong id="sidebar-mode">Bağlanıyor</strong><small id="sidebar-mode-detail">Sunucu kontrol ediliyor</small></div>
+        </div>
+        <p>Sürüm 0.1.0 • MVP</p>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <button class="mobile-menu" id="mobile-menu" type="button" aria-label="Menüyü aç">☰</button>
+        <div>
+          <p class="eyebrow" id="page-eyebrow">OPERASYON PANELİ</p>
+          <h1 id="page-title">Genel Bakış</h1>
+        </div>
+        <div class="topbar-actions">
+          <span class="connection-pill" id="connection-pill"><span></span>Bağlanıyor</span>
+          <button class="icon-button" id="refresh-button" type="button" title="Verileri yenile" aria-label="Verileri yenile">↻</button>
+        </div>
+      </header>
+
+      <section class="view is-active" id="view-dashboard" data-view-panel="dashboard">
+        <div class="hero-panel">
+          <div>
+            <span class="hero-label">KESİN PLAKA EŞLEŞMESİ</span>
+            <h2>Ekspertize giren araç için doğrulanmış açık kaynak olay kaydını bulun.</h2>
+            <p>Sistem yalnızca tam plaka eşleşmesi ve insan onayı bulunan kayıtları usta veya alıcı ekranına geçirir.</p>
+          </div>
+          <form class="hero-search" id="dashboard-lookup-form">
+            <label for="dashboard-plate">Araç plakası</label>
+            <div class="search-row">
+              <input id="dashboard-plate" name="plate" autocomplete="off" placeholder="16 ABC 123" maxlength="12" required>
+              <button class="button button-primary" type="submit">Plakayı sorgula</button>
+            </div>
+            <small>Benzer plaka aranmaz; yalnız normalize edilmiş tam eşleşme kullanılır.</small>
+          </form>
+        </div>
+
+        <div class="metric-grid" aria-label="Sistem metrikleri">
+          <article class="metric-card"><span class="metric-icon">⌕</span><div><small>Tarama kuralı</small><strong id="metric-rules">—</strong><em id="metric-active-rules">— aktif</em></div></article>
+          <article class="metric-card"><span class="metric-icon">◫</span><div><small>Plakalı aday</small><strong id="metric-candidates">—</strong><em>Fotoğrafta plaka bulundu</em></div></article>
+          <article class="metric-card metric-warning"><span class="metric-icon">!</span><div><small>Onay bekliyor</small><strong id="metric-pending">—</strong><em>İnsan kontrolü gerekli</em></div></article>
+          <article class="metric-card metric-success"><span class="metric-icon">✓</span><div><small>Usta kullanımına açık</small><strong id="metric-approved">—</strong><em>Kaynağı erişilebilir</em></div></article>
+        </div>
+
+        <div class="two-column-layout">
+          <section class="panel">
+            <div class="panel-header"><div><span class="section-kicker">SON BULGULAR</span><h3>Yeni plaka adayları</h3></div><button class="text-button" type="button" data-go-view="review">Tümünü incele →</button></div>
+            <div class="compact-candidate-list" id="dashboard-candidates"></div>
+          </section>
+          <section class="panel">
+            <div class="panel-header"><div><span class="section-kicker">İŞLEM HATTI</span><h3>Kalite kapıları</h3></div></div>
+            <ol class="pipeline-list">
+              <li><span>1</span><div><strong>X API taraması</strong><small>Kelime, konum ve tarih aralığı</small></div></li>
+              <li><span>2</span><div><strong>Fotoğraf + OCR</strong><small>Geçerli Türkiye plakası zorunlu</small></div></li>
+              <li><span>3</span><div><strong>İnsan doğrulaması</strong><small>Plaka kazalı araca ait olmalı</small></div></li>
+              <li><span>4</span><div><strong>OtoTR eşleştirmesi</strong><small>İş emrindeki plakayla tam eşleşme</small></div></li>
+            </ol>
+            <div class="last-scan" id="last-scan-card"><span>Son tarama</span><strong>Henüz tarama yok</strong><small>—</small></div>
+          </section>
+        </div>
+      </section>
+
+      <section class="view" id="view-rules" data-view-panel="rules">
+        <div class="content-grid rules-layout">
+          <section class="panel sticky-panel">
+            <div class="panel-header"><div><span class="section-kicker">YENİ KURAL</span><h3>Tarama kapsamını tanımla</h3></div></div>
+            <form id="rule-form" class="stack-form">
+              <label>Kural adı<input name="name" placeholder="Bursa trafik kazaları" maxlength="120" required></label>
+              <label>Anahtar kelimeler<textarea name="terms" rows="4" placeholder="kaza, kazalı, trafik kazası, çarpıştı" required></textarea><small>Virgül veya yeni satırla ayırın.</small></label>
+              <label>Konum kelimeleri<textarea name="locations" rows="3" placeholder="Bursa, Nilüfer, Osmangazi"></textarea></label>
+              <label>Hariç tutulacak kelimeler<textarea name="excludedTerms" rows="2" placeholder="oyun, film, reklam"></textarea></label>
+              <div class="form-row">
+                <label>Arama türü<select name="mode"><option value="recent">Son paylaşımlar</option><option value="full_archive">Tam arşiv</option></select></label>
+                <label>Medya<select name="mediaType"><option value="image">Fotoğraf</option></select></label>
+              </div>
+              <div class="form-row">
+                <label>Başlangıç<input name="startTime" type="datetime-local"></label>
+                <label>Bitiş<input name="endTime" type="datetime-local"></label>
+              </div>
+              <div class="form-row">
+                <label>Tekrar (dakika)<input name="intervalMinutes" type="number" min="15" max="1440" value="60"></label>
+                <label>Azami paylaşım<input name="maxPosts" type="number" min="10" max="1000" value="100"></label>
+              </div>
+              <label class="check-line"><input name="active" type="checkbox"><span>Kaydedildiğinde otomatik taramayı etkinleştir</span></label>
+              <div class="query-preview"><span>Oluşacak X sorgusu</span><code id="query-preview">Anahtar kelimeleri girin…</code></div>
+              <button class="button button-primary button-full" type="submit">Tarama kuralını kaydet</button>
+            </form>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header"><div><span class="section-kicker">KURAL LİSTESİ</span><h3>Kayıtlı taramalar</h3></div><span class="header-count" id="rules-count">0 kural</span></div>
+            <div class="rules-list" id="rules-list"></div>
+          </section>
+        </div>
+      </section>
+
+      <section class="view" id="view-review" data-view-panel="review">
+        <section class="panel">
+          <div class="panel-header responsive-header">
+            <div><span class="section-kicker">MODERASYON</span><h3>Plaka doğrulama kuyruğu</h3><p>Plaka görünürlüğü ve kazalı araca aidiyet onaylanmadan kayıt kullanıma açılamaz.</p></div>
+            <div class="filter-row">
+              <select id="review-status-filter" aria-label="Durum filtresi">
+                <option value="review_pending">Onay bekleyenler</option>
+                <option value="approved_internal">Ustaya onaylı</option>
+                <option value="approved_customer">Alıcıya onaylı</option>
+                <option value="rejected">Reddedilenler</option>
+                <option value="source_removed">Kaynağı kaldırılanlar</option>
+                <option value="all">Tüm kayıtlar</option>
+              </select>
+              <input id="review-plate-filter" placeholder="Plaka filtrele" aria-label="Plaka filtrele">
+            </div>
+          </div>
+          <div class="candidate-grid" id="review-grid"></div>
+        </section>
+      </section>
+
+      <section class="view" id="view-lookup" data-view-panel="lookup">
+        <div class="lookup-shell">
+          <section class="lookup-intro">
+            <span class="section-kicker">İŞ EMRİ EŞLEŞTİRMESİ</span>
+            <h2>Plakaya göre doğrulanmış olay kaydı</h2>
+            <p>Usta ekranı, iç onaylı ve alıcı onaylı kayıtları görür. Alıcı ekranı yalnız ayrıca gösterim yetkisi verilmiş kayıtları görür.</p>
+            <div class="audience-switch" role="group" aria-label="Gösterim hedefi">
+              <button type="button" class="is-active" data-audience="technician">Usta görünümü</button>
+              <button type="button" data-audience="customer">Alıcı görünümü</button>
+            </div>
+          </section>
+          <form class="lookup-card" id="lookup-form">
+            <label for="lookup-plate">Ekspertize giren araç plakası</label>
+            <div class="plate-input-wrap"><span>TR</span><input id="lookup-plate" name="plate" placeholder="34 ABC 123" maxlength="12" autocomplete="off" required></div>
+            <button class="button button-primary button-full" type="submit">Doğrulanmış kaydı ara</button>
+            <small class="lookup-hint">Örnek demo plakaları: 34 DEM 123 (usta), 06 KAZ 26 (usta ve alıcı)</small>
+          </form>
+        </div>
+        <div class="lookup-results" id="lookup-results">
+          <div class="empty-state"><span>▣</span><h3>Henüz plaka sorgulanmadı</h3><p>İş emrindeki plakayı girerek kesin eşleşmeyi başlatın.</p></div>
+        </div>
+      </section>
+
+      <section class="view" id="view-system" data-view-panel="system">
+        <div class="system-grid">
+          <section class="panel">
+            <div class="panel-header"><div><span class="section-kicker">BAĞLANTI</span><h3>X API durumu</h3></div><span class="connection-pill compact" id="system-connection"><span></span>Kontrol ediliyor</span></div>
+            <dl class="definition-list">
+              <div><dt>Çalışma modu</dt><dd id="system-mode">—</dd></div>
+              <div><dt>Bearer Token</dt><dd id="system-token">—</dd></div>
+              <div><dt>Medya saklama</dt><dd id="system-media-store">Kapalı</dd></div>
+              <div><dt>Kaynak stratejisi</dt><dd>Post ID + yeniden doğrulama</dd></div>
+            </dl>
+            <div class="notice notice-info"><strong>Anahtar güvenliği</strong><p>X Bearer Token yalnız sunucudaki <code>.env</code> dosyasında bulunur; tarayıcıya gönderilmez.</p></div>
+            <form class="api-token-box" id="api-token-form">
+              <label for="admin-api-token">Yönetim API erişimi</label>
+              <div><input id="admin-api-token" type="password" autocomplete="off" placeholder="Bu oturum için API anahtarı"><button class="button button-secondary" type="submit">Bağlan</button></div>
+              <small id="api-auth-state">Sunucuda yönetim anahtarı tanımlı değilse bu alan boş bırakılır. Değer yalnız sekme oturumunda tutulur.</small>
+            </form>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header"><div><span class="section-kicker">OCR TESTİ</span><h3>Yerel fotoğrafta plaka ara</h3></div></div>
+            <form id="ocr-form" class="upload-box">
+              <input id="ocr-file" type="file" accept="image/png,image/jpeg,image/webp" required>
+              <label for="ocr-file"><span>＋</span><strong>Fotoğraf seçin</strong><small>PNG, JPEG veya WEBP • en fazla 12 MB</small></label>
+              <img id="ocr-preview" alt="OCR önizlemesi" hidden>
+              <button class="button button-secondary" type="submit">OCR analizini çalıştır</button>
+            </form>
+            <div class="ocr-result" id="ocr-result"><p>Sonuç burada gösterilecek.</p></div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header"><div><span class="section-kicker">UYUMLULUK</span><h3>Kaynak erişim denetimi</h3></div></div>
+            <p class="panel-copy">Onaylı ve bekleyen kayıtların X üzerinde hâlâ erişilebilir olup olmadığını yeniden kontrol eder. Silinen kaynaklar usta ve alıcı sorgusundan otomatik düşer.</p>
+            <button class="button button-secondary button-full" id="compliance-button" type="button">Kaynakları yeniden kontrol et</button>
+            <div class="compliance-result" id="compliance-result">Henüz denetim çalıştırılmadı.</div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header"><div><span class="section-kicker">ZORUNLU KURALLAR</span><h3>Yayın kapıları</h3></div></div>
+            <ul class="requirement-list">
+              <li><span>✓</span>Tam ve geçerli Türkiye plakası</li>
+              <li><span>✓</span>Plaka kazalı aracın sınırları içinde</li>
+              <li><span>✓</span>Gerçek trafik kazası bağlamı</li>
+              <li><span>✓</span>Yetkili moderatör onayı</li>
+              <li><span>✓</span>Alıcı için ayrıca gösterim yetkisi</li>
+              <li><span>✓</span>Kaynak paylaşım hâlen erişilebilir</li>
+            </ul>
+          </section>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <dialog class="review-dialog" id="review-dialog">
+    <form method="dialog" class="dialog-frame" id="review-form">
+      <header><div><span class="section-kicker">ADAY DOĞRULAMA</span><h2 id="review-dialog-title">Plaka adayı</h2></div><button class="dialog-close" value="cancel" aria-label="Pencereyi kapat">×</button></header>
+      <div class="dialog-content">
+        <div class="review-media"><img id="review-image" alt="İncelenecek kaynak görsel"><div class="ocr-badge" id="review-confidence">OCR —</div></div>
+        <div class="review-fields">
+          <input type="hidden" name="candidateId">
+          <label>Onaylanacak plaka<input name="selectedPlate" maxlength="12" required></label>
+          <label class="check-card"><input name="plateFullyVisible" type="checkbox"><span><strong>Plaka tam ve okunabilir</strong><small>Karakterler tahmine dayanmıyor.</small></span></label>
+          <label class="check-card"><input name="belongsToDamagedVehicle" type="checkbox"><span><strong>Plaka kazalı araca ait</strong><small>Polis, çekici veya üçüncü araç plakası değil.</small></span></label>
+          <label class="check-card"><input name="accidentContextConfirmed" type="checkbox"><span><strong>Kaza bağlamı doğrulandı</strong><small>Görsel gerçek bir trafik olayını gösteriyor.</small></span></label>
+          <label class="check-card"><input name="manualPlateOverride" type="checkbox"><span><strong>OCR plakasını manuel düzelttim</strong><small>Yalnız OCR adayı dışına çıkıldıysa işaretleyin.</small></span></label>
+          <label class="check-card customer-auth"><input name="customerDisplayAuthorized" type="checkbox"><span><strong>Alıcıya gösterim yetkisi doğrulandı</strong><small>Aktarım ve gösterim prosedürü tamamlandı.</small></span></label>
+          <div class="form-row"><label>Moderatör<input name="reviewer" value="OtoTR Yetkilisi" maxlength="120"></label><label>Not<input name="note" maxlength="1000" placeholder="Gerekli açıklama"></label></div>
+        </div>
+      </div>
+      <footer>
+        <button class="button button-danger" type="button" data-review-action="reject">Eşleşmeyi reddet</button>
+        <div><button class="button button-secondary" type="button" data-review-action="approve_internal">Ustaya onayla</button><button class="button button-primary" type="button" data-review-action="approve_customer">Alıcıya da onayla</button></div>
+      </footer>
+    </form>
+  </dialog>
+
+  <div class="toast-region" id="toast-region" aria-live="polite" aria-atomic="true"></div>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
