@@ -1,0 +1,42 @@
+name: Expand OtoTR X Kaza MVP source
+
+on:
+  push:
+    branches:
+      - codex/x-kaza-plaka-mvp
+
+permissions:
+  contents: write
+
+jobs:
+  expand-source:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify and expand source archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .codex-source/remaining.part-* > /tmp/ototr-x-kaza-source.tar.xz
+          echo "e1288b3531d581ace148f88065d8f422f1aabf56ecffc0d21463cd8f65f6b44d  /tmp/ototr-x-kaza-source.tar.xz" | sha256sum --check
+          tar -xJf /tmp/ototr-x-kaza-source.tar.xz
+          rm -rf .codex-source
+          rm -f .github/workflows/expand-x-kaza-mvp.yml
+
+      - name: Commit expanded source
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "OtoTR Build Bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No source expansion changes detected."
+            exit 0
+          fi
+          git commit -m "feat: expand X accident photo plate matching MVP"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
