@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-
-import '../lib/incident_app_main.dart';
+import 'package:ototr_branch_app/incident_app_main.dart';
 
 void main() {
   testWidgets('incident center opens in demo mode and shows core controls', (tester) async {
