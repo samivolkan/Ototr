@@ -68,7 +68,7 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
-      - name: Install and launch exact release APK on Android emulator
+      - name: Install, launch and exercise exact release APK
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 35
@@ -76,17 +76,63 @@ jobs:
           profile: pixel_6
           disable-animations: true
           script: |
+            set -euo pipefail
+            mkdir -p tested-apk/evidence
+
             adb install -r tested-apk/OtoTR-Olay-Merkezi-v0.1.3.apk
             adb shell monkey -p com.example.ototr_branch_app -c android.intent.category.LAUNCHER 1
             sleep 5
             adb shell pidof com.example.ototr_branch_app
             adb shell dumpsys activity activities | grep -q 'com.example.ototr_branch_app'
-            adb exec-out screencap -p > tested-apk/emulator-home.png
+            adb shell wm size | tee tested-apk/evidence/wm-size.txt
+            adb exec-out screencap -p > tested-apk/evidence/01-home.png
+            adb shell uiautomator dump /sdcard/home.xml >/dev/null 2>&1 || true
+            adb pull /sdcard/home.xml tested-apk/evidence/01-home.xml >/dev/null 2>&1 || true
 
-      - name: Upload emulator screenshot
+            # Demo plaka sorgusu: ekranda varsayılan 06 KAZ 26 değeri hazırdır.
+            adb shell input tap 540 1440
+            sleep 2
+            adb exec-out screencap -p > tested-apk/evidence/02-after-plate-lookup.png
+            adb shell uiautomator dump /sdcard/lookup.xml >/dev/null 2>&1 || true
+            adb pull /sdcard/lookup.xml tested-apk/evidence/02-after-plate-lookup.xml >/dev/null 2>&1 || true
+            adb shell pidof com.example.ototr_branch_app
+
+            # Sonuç ve TRT kaynak kartını görünür alana taşı.
+            adb shell input swipe 540 1900 540 850 500
+            sleep 1
+            adb exec-out screencap -p > tested-apk/evidence/03-lookup-result-and-source.png
+
+            # TRT Haber demo taramasını tetikle.
+            adb shell input tap 540 1030
+            sleep 2
+            adb exec-out screencap -p > tested-apk/evidence/04-after-trt-scan.png
+            adb shell uiautomator dump /sdcard/trt.xml >/dev/null 2>&1 || true
+            adb pull /sdcard/trt.xml tested-apk/evidence/04-after-trt-scan.xml >/dev/null 2>&1 || true
+            adb shell pidof com.example.ototr_branch_app
+
+            # Bağlantı kartına dön ve emülatör-host sunucu bağlantısı hata/fallback akışını çalıştır.
+            adb shell input swipe 540 700 540 1950 500
+            adb shell input swipe 540 700 540 1950 500
+            sleep 1
+            adb shell input tap 540 720
+            sleep 10
+            adb exec-out screencap -p > tested-apk/evidence/05-after-server-connect-test.png
+            adb shell uiautomator dump /sdcard/connect.xml >/dev/null 2>&1 || true
+            adb pull /sdcard/connect.xml tested-apk/evidence/05-after-server-connect-test.xml >/dev/null 2>&1 || true
+
+            # Test boyunca release APK ayakta kalmalı ve ana activity foreground/visible olmalı.
+            adb shell pidof com.example.ototr_branch_app
+            adb shell dumpsys activity activities | grep -q 'com.example.ototr_branch_app'
+            test -s tested-apk/evidence/01-home.png
+            test -s tested-apk/evidence/02-after-plate-lookup.png
+            test -s tested-apk/evidence/03-lookup-result-and-source.png
+            test -s tested-apk/evidence/04-after-trt-scan.png
+            test -s tested-apk/evidence/05-after-server-connect-test.png
+
+      - name: Upload emulator interaction evidence
         uses: actions/upload-artifact@v4
         with:
-          name: OtoTR-Olay-Merkezi-Emulator-Screenshot
-          path: tested-apk/emulator-home.png
+          name: OtoTR-Olay-Merkezi-Emulator-Interaction-Evidence
+          path: tested-apk/evidence/
           if-no-files-found: error
           retention-days: 30
