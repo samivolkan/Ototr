@@ -60,19 +60,16 @@ jobs:
             sleep 1
             adb exec-out screencap -p > evidence/03-lookup-result-and-source.png
 
-            # 2) TRT butonu bu görünümde yaklaşık y=850 merkezindedir.
+            # 2) TRT Haber demo taraması.
             adb shell input tap 540 850
             sleep 2
             adb exec-out screencap -p > evidence/04-trt-button-after-tap.png
-            adb shell input swipe 540 700 540 1950 500
-            adb shell input swipe 540 700 540 1950 500
-            sleep 1
-            adb exec-out screencap -p > evidence/05-after-trt-scan-status.png
 
-            # 3) Emülatör hostunda sunucu yokken bağlantı/fallback akışını tetikle.
-            adb shell input tap 540 720
-            sleep 10
-            adb exec-out screencap -p > evidence/06-after-server-connect-test.png
+            # Status kartını görünür kılacak kadar geri kaydır; listenin tepesine
+            # taşmadığımız için RefreshIndicator/_connect tetiklenmez.
+            adb shell input swipe 540 1050 540 1450 350
+            sleep 1
+            adb exec-out screencap -p > evidence/05-trt-status-visible.png
 
             adb shell pidof com.example.ototr_branch_app
             adb shell dumpsys activity activities | grep -q 'com.example.ototr_branch_app'
