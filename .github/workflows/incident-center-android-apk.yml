@@ -1,0 +1,92 @@
+name: Build and test OtoTR Incident Center APK
+
+on:
+  push:
+    branches:
+      - codex/olay-merkezi-android-apk
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Flutter environment
+        run: flutter --version
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Analyze incident app
+        run: flutter analyze lib/incident_app_main.dart test/incident_app_test.dart
+
+      - name: Run incident app widget tests
+        run: flutter test test/incident_app_test.dart
+
+      - name: Build release APK
+        run: flutter build apk --release --target lib/incident_app_main.dart
+
+      - name: Verify APK exists
+        run: |
+          test -s build/app/outputs/flutter-apk/app-release.apk
+          mkdir -p dist
+          cp build/app/outputs/flutter-apk/app-release.apk dist/OtoTR-Olay-Merkezi-v0.1.3.apk
+          sha256sum dist/OtoTR-Olay-Merkezi-v0.1.3.apk | tee dist/SHA256.txt
+
+      - name: Upload tested APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: OtoTR-Olay-Merkezi-APK
+          path: |
+            dist/OtoTR-Olay-Merkezi-v0.1.3.apk
+            dist/SHA256.txt
+          if-no-files-found: error
+          retention-days: 30
+
+  emulator-smoke:
+    needs: build-apk
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Build debug APK for emulator smoke
+        run: flutter build apk --debug --target lib/incident_app_main.dart
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Install and launch APK on Android emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          arch: x86_64
+          profile: pixel_6
+          disable-animations: true
+          script: |
+            adb install -r build/app/outputs/flutter-apk/app-debug.apk
+            adb shell monkey -p com.example.ototr_branch_app -c android.intent.category.LAUNCHER 1
+            sleep 5
+            adb shell pidof com.example.ototr_branch_app
+            adb shell dumpsys activity activities | grep -q 'com.example.ototr_branch_app'
