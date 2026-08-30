@@ -60,8 +60,9 @@ jobs:
             sleep 1
             adb exec-out screencap -p > evidence/03-lookup-result-and-source.png
 
-            # 2) TRT Haber demo taraması.
-            adb shell input tap 540 850
+            # 2) TRT Haber demo taraması. Ekran görüntüsü fiziksel olarak 1080x2400;
+            # buton merkezi bu görünümde yaklaşık x=540, y=1070 piksel.
+            adb shell input tap 540 1070
             sleep 2
             adb exec-out screencap -p > evidence/04-trt-button-after-tap.png
 
