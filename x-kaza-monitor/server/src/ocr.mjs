@@ -1,5 +1,6 @@
 import sharp from 'sharp';
 import { extractPlateCandidates } from '../../core.mjs';
+import { createVehicleOcrPasses } from './vehicle-detector.mjs';
 
 let workerPromise = null;
 let recognitionQueue = Promise.resolve();
@@ -15,13 +16,14 @@ function clampConfidence(value) {
   return Math.max(0, Math.min(100, Math.round(Number(value) || 0)));
 }
 
-function mergeCandidates(target, candidates, passName) {
+function mergeCandidates(target, candidates, passName, vehicle = null) {
   for (const candidate of candidates ?? []) {
     const existing = target.get(candidate.normalized);
     const next = {
       ...candidate,
       confidence: clampConfidence(candidate.confidence),
       detectedIn: passName,
+      ...(vehicle ? { vehicle } : {}),
     };
     if (!existing || next.confidence > existing.confidence) target.set(candidate.normalized, next);
   }
@@ -71,7 +73,7 @@ async function createPreprocessedPasses(imageBuffer) {
   return passes;
 }
 
-async function recognizePass(worker, buffer, name) {
+async function recognizePass(worker, buffer, name, vehicle = null) {
   const result = await worker.recognize(buffer);
   const text = String(result.data?.text ?? '');
   const confidence = clampConfidence(result.data?.confidence);
@@ -79,7 +81,17 @@ async function recognizePass(worker, buffer, name) {
     name,
     text,
     confidence,
+    vehicle,
     plateCandidates: extractPlateCandidates(text, confidence),
+  };
+}
+
+function summarizePass(pass) {
+  return {
+    name: pass.name,
+    confidence: pass.confidence,
+    plateCount: pass.plateCandidates.length,
+    ...(pass.vehicle ? { vehicle: pass.vehicle } : {}),
   };
 }
 
@@ -89,10 +101,12 @@ export async function recognizePlateCandidates(imageBuffer, options = {}) {
   }
 
   const strongMatchConfidence = Math.max(50, Math.min(95, Number(options.strongMatchConfidence ?? 72)));
+  const enableVehicleDetection = options.enableVehicleDetection !== false;
   const task = recognitionQueue.then(async () => {
     const worker = await getWorker();
     const passes = [];
     const candidates = new Map();
+    let vehicleDetectorError = null;
 
     const original = await recognizePass(worker, imageBuffer, 'original');
     passes.push(original);
@@ -106,21 +120,39 @@ export async function recognizePlateCandidates(imageBuffer, options = {}) {
         plateCandidates: [...candidates.values()],
         ocrPassCount: 1,
         bestPass: 'original',
-        passes: passes.map(({ name, confidence, plateCandidates }) => ({
-          name,
-          confidence,
-          plateCount: plateCandidates.length,
-        })),
+        vehicleDetectionUsed: false,
+        passes: passes.map(summarizePass),
       };
     }
 
-    const enhancedPasses = await createPreprocessedPasses(imageBuffer);
-    for (const enhanced of enhancedPasses) {
-      const result = await recognizePass(worker, enhanced.buffer, enhanced.name);
-      passes.push(result);
-      mergeCandidates(candidates, result.plateCandidates, result.name);
-      const best = Math.max(0, ...result.plateCandidates.map((item) => Number(item.confidence || 0)));
-      if (result.plateCandidates.length && best >= strongMatchConfidence) break;
+    if (enableVehicleDetection) {
+      try {
+        const vehiclePasses = await createVehicleOcrPasses(imageBuffer, {
+          minimumScore: options.vehicleMinimumScore ?? 0.42,
+          maximumVehicles: options.maximumVehicles ?? 6,
+        });
+        for (const vehiclePass of vehiclePasses) {
+          const result = await recognizePass(worker, vehiclePass.buffer, vehiclePass.name, vehiclePass.vehicle);
+          passes.push(result);
+          mergeCandidates(candidates, result.plateCandidates, result.name, vehiclePass.vehicle);
+          const best = Math.max(0, ...result.plateCandidates.map((item) => Number(item.confidence || 0)));
+          if (result.plateCandidates.length && best >= strongMatchConfidence) break;
+        }
+      } catch (error) {
+        vehicleDetectorError = String(error?.message ?? error).slice(0, 300);
+      }
+    }
+
+    const bestVehicleCandidate = Math.max(0, ...[...candidates.values()].map((item) => Number(item.confidence || 0)));
+    if (!candidates.size || bestVehicleCandidate < strongMatchConfidence) {
+      const enhancedPasses = await createPreprocessedPasses(imageBuffer);
+      for (const enhanced of enhancedPasses) {
+        const result = await recognizePass(worker, enhanced.buffer, enhanced.name);
+        passes.push(result);
+        mergeCandidates(candidates, result.plateCandidates, result.name);
+        const best = Math.max(0, ...result.plateCandidates.map((item) => Number(item.confidence || 0)));
+        if (result.plateCandidates.length && best >= strongMatchConfidence) break;
+      }
     }
 
     const ranked = [...candidates.values()].sort((a, b) => b.confidence - a.confidence);
@@ -134,11 +166,9 @@ export async function recognizePlateCandidates(imageBuffer, options = {}) {
       plateCandidates: ranked,
       ocrPassCount: passes.length,
       bestPass: passWithBestPlate?.name ?? 'original',
-      passes: passes.map(({ name, confidence, plateCandidates }) => ({
-        name,
-        confidence,
-        plateCount: plateCandidates.length,
-      })),
+      vehicleDetectionUsed: passes.some((pass) => pass.vehicle),
+      vehicleDetectorError,
+      passes: passes.map(summarizePass),
     };
   });
 
