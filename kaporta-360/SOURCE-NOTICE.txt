@@ -1,0 +1,7 @@
+OTOTR Kaporta 360 — demonstration
+Photography: SpinFrame / WebRotate 360
+Source: https://www.webrotate360.com/examples/browse-all-examples/360-car-photography.aspx
+24 real photographs; all inspection findings and measurements are fictional examples.
+Commercial reuse permission has not been verified. Use owned or explicitly licensed photos for production inspection reports.
+This viewer is independently implemented; no reconstructed 3D geometry or automated damage detection.
+Fonts: DM Sans and Manrope, SIL Open Font License; license files included.

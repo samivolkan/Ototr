@@ -1,0 +1,207 @@
+{
+  "vehicle": "Opel ADAM",
+  "kind": "photographic-spin",
+  "count": 24,
+  "sourcePage": "https://www.webrotate360.com/examples/browse-all-examples/360-car-photography.aspx",
+  "manifestURL": "https://www.webrotate360.com/images/webrotate360/views/sfcar/sfcar.xml",
+  "photographyCredit": "SpinFrame",
+  "showcaseCredit": "WebRotate 360",
+  "sourceStatement": "Photographed as a single row of 24 JPG images.",
+  "commercialReusePermissionVerified": false,
+  "usageNote": "Third-party photographic reference in an OTOTR Kaporta 360 demonstration. Not an Ototr inspection, not an assertion of damage, and not an Ototr-owned/licensed production asset. Commercial reuse permission has not been verified.",
+  "downloadedAt": "2026-09-05T21:56:02.350Z",
+  "frames": [
+    {
+      "index": 1,
+      "file": "frame-01.jpg",
+      "sourceURL": "https://cdn.webrotate360.com/sites/webrotate360/images/webrotate360/views/sfcar/images/1.jpg",
+      "width": 1072,
+      "height": 586,
+      "sha256": "cae6e721a6b6143b270725d93a69ba8c46db088440caae4f48ee2c407d9ad7b8"
+    },
+    {
+      "index": 2,
+      "file": "frame-02.jpg",
+      "sourceURL": "https://cdn.webrotate360.com/sites/webrotate360/images/webrotate360/views/sfcar/images/2.jpg",
+      "width": 1072,
+      "height": 586,
+      "sha256": "644bbca1aaf3ae7c45542c80c2dfc5ccb1e0bc58a02de08475df36bbf71adc14"
+    },
+    {
+      "index": 3,
+      "file": "frame-03.jpg",
+      "sourceURL": "https://cdn.webrotate360.com/sites/webrotate360/images/webrotate360/views/sfcar/images/3.jpg",
+      "width": 1072,
+      "height": 586,
+      "sha256": "fce57f2597dd2df2913399b872faf94aac6d9652c0766dd512185e087ab5477b"
+    },
+    {
+      "index": 4,
+      "file": "frame-04.jpg",
+      "sourceURL": "https://cdn.webrotate360.com/sites/webrotate360/images/webrotate360/views/sfcar/images/4.jpg",
+      "width": 1072,
+      "height": 586,
+      "sha256": "c2b5f190d07c4c76fdf7cae237a77195074039ab069c18355139e44c96177705"
+    },
+    {
+      "index": 5,
+      "file": "frame-05.jpg",
+      "sourceURL": "https://cdn.webrotate360.com/sites/webrotate360/images/webrotate360/views/sfcar/images/5.jpg",
+      "width": 1072,
+      "height": 586,
+      "sha256": "def2e55382c66883070ae820cc7ef7a709f9b1f64be983b08acf04561c68dd16"
+    },
+    {
+      "index": 6,
+      "file": "frame-06.jpg",
+      "sourceURL": "https://cdn.webrotate360.com/sites/webrotate360/images/webrotate360/views/sfcar/images/6.jpg",
+      "width": 1072,
+      "height": 586,
+      "sha256": "20f9493e2cb54d0f4d642d5dfc11319f2fc0d4d06375047fc346378003157cea"
+    },
+    {
+      "index": 7,
+      "file": "frame-07.jpg",
+      "sourceURL": "https://cdn.webrotate360.com/sites/webrotate360/images/webrotate360/views/sfcar/images/7.jpg",
+      "width": 1072,
+      "height": 586,
+      "sha256": "725f0b1428dd399eae6e8c565ed2f2834f07856d51f48bd8d62469008d4fc4f0"
+    },
+    {
+      "index": 8,
+      "file": "frame-08.jpg",
+      "sourceURL": "https://cdn.webrotate360.com/sites/webrotate360/images/webrotate360/views/sfcar/images/8.jpg",
+      "width": 1072,
+      "height": 586,
+      "sha256": "e44a0c0ebac4b319e69bf0f6f70fe943a1caa360ade45c44ad06a0d82e0f618a"
+    },
+    {
+      "index": 9,
+      "file": "frame-09.jpg",
+      "sourceURL": "https://cdn.webrotate360.com/sites/webrotate360/images/webrotate360/views/sfcar/images/9.jpg",
+      "width": 1072,
+      "height": 586,
+      "sha256": "3394d99c378c61d0cfafd76421299add42e284143d5c835ad3ef5f931ac8c070"
+    },
+    {
+      "index": 10,
+      "file": "frame-10.jpg",
+      "sourceURL": "https://cdn.webrotate360.com/sites/webrotate360/images/webrotate360/views/sfcar/images/10.jpg",
+      "width": 1072,
+      "height": 586,
+      "sha256": "91eb99eaba7dab0d70f445e49c92113ca3e1703306b7dd5387d0f68d3362a8e1"
+    },
+    {
+      "index": 11,
+      "file": "frame-11.jpg",
+      "sourceURL": "https://cdn.webrotate360.com/sites/webrotate360/images/webrotate360/views/sfcar/images/11.jpg",
+      "width": 1072,
+      "height": 586,
+      "sha256": "1714f915ab3d5592f843a644bf240b96e88d44321ad217dd2b4bad244e1aeacf"
+    },
+    {
+      "index": 12,
+      "file": "frame-12.jpg",
+      "sourceURL": "https://cdn.webrotate360.com/sites/webrotate360/images/webrotate360/views/sfcar/images/12.jpg",
+      "width": 1072,
+      "height": 586,
+      "sha256": "af97e3d15f7b4095a41d9a626105d4906fdcfac7ee4facfd71708551c50f6f97"
+    },
+    {
+      "index": 13,
+      "file": "frame-13.jpg",
+      "sourceURL": "https://cdn.webrotate360.com/sites/webrotate360/images/webrotate360/views/sfcar/images/13.jpg",
+      "width": 1072,
+      "height": 586,
+      "sha256": "04d1791dbf218645b38a808016cd925501c608e7e37f78120e384ba0afeca2d6"
+    },
+    {
+      "index": 14,
+      "file": "frame-14.jpg",
+      "sourceURL": "https://cdn.webrotate360.com/sites/webrotate360/images/webrotate360/views/sfcar/images/14.jpg",
+      "width": 1072,
+      "height": 586,
+      "sha256": "c01e47ec998913e269edb698628c1f8e96802362b4194b554585a4ab70cb696d"
+    },
+    {
+      "index": 15,
+      "file": "frame-15.jpg",
+      "sourceURL": "https://cdn.webrotate360.com/sites/webrotate360/images/webrotate360/views/sfcar/images/15.jpg",
+      "width": 1072,
+      "height": 586,
+      "sha256": "3836433c3a0d8ae6e9aafd458db64f8c5f2991a37367ec8b62e7d2904862744e"
+    },
+    {
+      "index": 16,
+      "file": "frame-16.jpg",
+      "sourceURL": "https://cdn.webrotate360.com/sites/webrotate360/images/webrotate360/views/sfcar/images/16.jpg",
+      "width": 1072,
+      "height": 586,
+      "sha256": "0ce266fd392c2de9506c9e53814574dcff48b6faccd4c932eb64ff36026ce58e"
+    },
+    {
+      "index": 17,
+      "file": "frame-17.jpg",
+      "sourceURL": "https://cdn.webrotate360.com/sites/webrotate360/images/webrotate360/views/sfcar/images/17.jpg",
+      "width": 1072,
+      "height": 586,
+      "sha256": "f760a1ff0af3244da1540dc9571699a693da8efdbe20364cd66367dde54befd7"
+    },
+    {
+      "index": 18,
+      "file": "frame-18.jpg",
+      "sourceURL": "https://cdn.webrotate360.com/sites/webrotate360/images/webrotate360/views/sfcar/images/18.jpg",
+      "width": 1072,
+      "height": 586,
+      "sha256": "a1aeeff5b4789a51dd8f29920ceeb858cb4daa4ba0613129d43a098d2fcda250"
+    },
+    {
+      "index": 19,
+      "file": "frame-19.jpg",
+      "sourceURL": "https://cdn.webrotate360.com/sites/webrotate360/images/webrotate360/views/sfcar/images/19.jpg",
+      "width": 1072,
+      "height": 586,
+      "sha256": "0fbdd5f56c1385bd5db9c69d2d0c00b472f56a641ef3631383aae5ea04cf7de2"
+    },
+    {
+      "index": 20,
+      "file": "frame-20.jpg",
+      "sourceURL": "https://cdn.webrotate360.com/sites/webrotate360/images/webrotate360/views/sfcar/images/20.jpg",
+      "width": 1072,
+      "height": 586,
+      "sha256": "4c24530998433472a83486503e199dcc7157aee2f7acf7cb1728924a4db127fb"
+    },
+    {
+      "index": 21,
+      "file": "frame-21.jpg",
+      "sourceURL": "https://cdn.webrotate360.com/sites/webrotate360/images/webrotate360/views/sfcar/images/21.jpg",
+      "width": 1072,
+      "height": 586,
+      "sha256": "635643806d28a44de1a02b36baabfdb1295997abc9df51d548397a1fccb0e09e"
+    },
+    {
+      "index": 22,
+      "file": "frame-22.jpg",
+      "sourceURL": "https://cdn.webrotate360.com/sites/webrotate360/images/webrotate360/views/sfcar/images/22.jpg",
+      "width": 1072,
+      "height": 586,
+      "sha256": "1bbab7bfc5d0474bad29e96bd0a6d8ae84fce490a7d59953093dc6bc8d9330d1"
+    },
+    {
+      "index": 23,
+      "file": "frame-23.jpg",
+      "sourceURL": "https://cdn.webrotate360.com/sites/webrotate360/images/webrotate360/views/sfcar/images/23.jpg",
+      "width": 1072,
+      "height": 586,
+      "sha256": "c12e4bf082f46ea7d5b3e5ae87dae429334d331c92ae8ab2a15e9437bb33b486"
+    },
+    {
+      "index": 24,
+      "file": "frame-24.jpg",
+      "sourceURL": "https://cdn.webrotate360.com/sites/webrotate360/images/webrotate360/views/sfcar/images/24.jpg",
+      "width": 1072,
+      "height": 586,
+      "sha256": "ac11f3c222e4f6c2aa334bf052a00704c2a00c3fb0e5c95de6bc68f731c08ca2"
+    }
+  ]
+}
