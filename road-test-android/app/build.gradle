@@ -1,0 +1,30 @@
+plugins {
+    id 'com.android.application' version '8.7.3'
+}
+
+android {
+    namespace 'com.ototr.roadtest'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'com.ototr.roadtest'
+        minSdk 26
+        targetSdk 35
+        versionCode 1
+        versionName '1.0.0-mvp'
+    }
+
+    buildTypes {
+        debug {
+            minifyEnabled false
+        }
+        release {
+            minifyEnabled false
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
