@@ -1,9 +1,15 @@
 {
   "module": "kaporta-360",
-  "buildTime": "2026-09-06T11:10:53.130Z",
+  "buildTime": "2026-09-07T22:23:02.366Z",
   "frames": 24,
   "parts": 23,
-  "mode": "demo-and-authenticated-pilot",
+  "mode": "demo-pilot-and-presentation",
+  "presentation": {
+    "entry": "sunum.html",
+    "explodedPanels": true,
+    "approvedReportSupported": true,
+    "geometryReconstructed": false
+  },
   "demo": {
     "entry": "index.html",
     "inspectionDataIsFictional": true
