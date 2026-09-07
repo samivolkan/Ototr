@@ -1,11 +1,24 @@
 {
   "module": "kaporta-360",
-  "buildTime": "2026-09-07T22:23:02.366Z",
+  "buildTime": "2026-09-07T23:34:50.706Z",
   "frames": 24,
   "parts": 23,
   "mode": "demo-pilot-and-presentation",
   "presentation": {
     "entry": "sunum.html",
+    "defaultView": "photographic-panels",
+    "photoLayerFrames": [
+      1,
+      4,
+      7,
+      10,
+      13,
+      16,
+      19,
+      22
+    ],
+    "photoLayerRegionCount": 59,
+    "photoLayersScope": "reference-set-only",
     "explodedPanels": true,
     "approvedReportSupported": true,
     "geometryReconstructed": false
