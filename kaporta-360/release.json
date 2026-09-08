@@ -1,12 +1,29 @@
 {
   "module": "kaporta-360",
-  "buildTime": "2026-09-07T23:34:50.706Z",
+  "buildTime": "2026-09-08T00:04:37.644Z",
   "frames": 24,
   "parts": 23,
   "mode": "demo-pilot-and-presentation",
   "presentation": {
     "entry": "sunum.html",
-    "defaultView": "photographic-panels",
+    "defaultView": "photographic-3d",
+    "defaultMode": "assembled",
+    "photoBody": {
+      "referenceId": "ototr-adam-reference-v1",
+      "sourceFrames": [
+        1,
+        7,
+        13,
+        19
+      ],
+      "geometrySource": "authored-photo-aligned-shell",
+      "scope": "reference-set-only",
+      "uncapturedSurfaces": [
+        "roof-top",
+        "panel-backs",
+        "tyre-tread"
+      ]
+    },
     "photoLayerFrames": [
       1,
       4,
