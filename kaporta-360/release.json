@@ -1,9 +1,17 @@
 {
   "module": "kaporta-360",
-  "buildTime": "2026-09-08T00:04:37.644Z",
+  "buildTime": "2026-09-08T11:14:17.976Z",
   "frames": 24,
   "parts": 23,
-  "mode": "demo-pilot-and-presentation",
+  "mode": "demo-pilot-and-presentation-studio",
+  "studio": {
+    "entry": "studio.html",
+    "captureChecks": "advisory-and-manual",
+    "contours": "photo-sha256-bound",
+    "measurementPins": true,
+    "authoredTour": true,
+    "technicalGate": true
+  },
   "presentation": {
     "entry": "sunum.html",
     "defaultView": "photographic-3d",
