@@ -1,0 +1,1487 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>OTOTR · Paket Motoru</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+<style>
+  html, body { margin: 0; padding: 0; background: #101317; }
+  #root { min-height: 100vh; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" data-presets="react">
+const { useState, useMemo, useRef, useEffect, useCallback } = React;
+
+const appStorage = (() => {
+  const external = window.storage;
+  if (external && typeof external.get === "function" && typeof external.set === "function") {
+    return {
+      available: true,
+      get: external.get.bind(external),
+      set: external.set.bind(external),
+    };
+  }
+  let available = true;
+  try {
+    const testKey = "ototr-paket-matrisi:storage-test";
+    localStorage.setItem(testKey, "1");
+    localStorage.removeItem(testKey);
+  } catch (e) {
+    available = false;
+  }
+  return {
+    available,
+    async get(key) {
+      if (!available) return null;
+      return { value: localStorage.getItem(key) };
+    },
+    async set(key, value) {
+      if (!available) throw new Error("Kalıcı depolama kullanılamıyor");
+      localStorage.setItem(key, value);
+      return { ok: true };
+    },
+  };
+})();
+
+// ---- Minimal lucide-style icon set (inline SVG, no external icon package) ----
+function Icon({ name, size = 14, color, strokeWidth = 2, style }) {
+  const common = {
+    width: size, height: size, viewBox: "0 0 24 24", fill: "none",
+    stroke: color || "currentColor", strokeWidth, strokeLinecap: "round",
+    strokeLinejoin: "round", style,
+  };
+  switch (name) {
+    case "check": return <svg {...common}><polyline points="20 6 9 17 4 12" /></svg>;
+    case "plus": return <svg {...common}><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>;
+    case "x": return <svg {...common}><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>;
+    case "trash": return <svg {...common}><polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" /><path d="M10 11v6" /><path d="M14 11v6" /><path d="M8.5 6V4a1 1 0 0 1 1-1h5a1 1 0 0 1 1 1v2" /></svg>;
+    case "save": return <svg {...common}><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" /><polyline points="17 21 17 13 7 13 7 21" /><polyline points="7 3 7 8 15 8" /></svg>;
+    case "folder": return <svg {...common}><path d="m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5c0-1.1.9-2 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2" /></svg>;
+    case "download": return <svg {...common}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>;
+    case "sheet": return <svg {...common}><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" /><polyline points="14 2 14 8 20 8" /><path d="M8 13h2" /><path d="M14 13h2" /><path d="M8 17h2" /><path d="M14 17h2" /></svg>;
+    case "doc": return <svg {...common}><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /><line x1="10" y1="9" x2="8" y2="9" /></svg>;
+    case "chart": return <svg {...common}><path d="M3 3v18h18" /><path d="M18 17V9" /><path d="M13 17V5" /><path d="M8 17v-3" /></svg>;
+    case "grid": return <svg {...common}><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 9h18" /><path d="M3 15h18" /><path d="M9 3v18" /><path d="M15 3v18" /></svg>;
+    case "grip": return <svg {...common}><circle cx="9" cy="5" r="1" /><circle cx="9" cy="12" r="1" /><circle cx="9" cy="19" r="1" /><circle cx="15" cy="5" r="1" /><circle cx="15" cy="12" r="1" /><circle cx="15" cy="19" r="1" /></svg>;
+    case "trend": return <svg {...common}><polyline points="22 7 13.5 15.5 8.5 10.5 2 17" /><polyline points="16 7 22 7 22 13" /></svg>;
+    case "alert": return <svg {...common}><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>;
+    case "chevronDown": return <svg {...common}><polyline points="6 9 12 15 18 9" /></svg>;
+    case "copy": return <svg {...common}><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>;
+    case "clock": return <svg {...common}><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>;
+    case "link": return <svg {...common}><path d="M9 17H7A5 5 0 0 1 7 7h2" /><path d="M15 7h2a5 5 0 1 1 0 10h-2" /><line x1="8" y1="12" x2="16" y2="12" /></svg>;
+    default: return null;
+  }
+}
+
+// ---- Tier color ramp: steel → OTOTR red, one stop per package rank ----
+const TIER_RAMP = ["#576273", "#8B4B44", "#C43A2A", "#E8281A"];
+const tierColor = (rank, total) => {
+  if (total <= 1) return TIER_RAMP[TIER_RAMP.length - 1];
+  const t = rank / (total - 1);
+  const stops = TIER_RAMP;
+  const seg = t * (stops.length - 1);
+  const i = Math.min(Math.floor(seg), stops.length - 2);
+  const f = seg - i;
+  const hex = (h) => [1, 3, 5].map((s) => parseInt(h.slice(s, s + 2), 16));
+  const [a, b] = [hex(stops[i]), hex(stops[i + 1])];
+  const mix = a.map((v, idx) => Math.round(v + (b[idx] - v) * f));
+  return `rgb(${mix.join(",")})`;
+};
+
+const initialPackages = [
+  { id: "p1", name: "Temel", price: 6000, cost: 2200 },
+  { id: "p2", name: "Uzman", price: 7500, cost: 3100 },
+  { id: "p3", name: "Dolu Dolu", price: 9500, cost: 4400 },
+  { id: "p4", name: "Her Şey Dahil", price: 14000, cost: 6800 },
+];
+
+const initialCategories = [
+  {
+    id: "c1",
+    name: "Mekanik ve Yol Testleri",
+    items: [
+      "Kaporta-boya kontrolü",
+      "Motor-mekanik kontrolü",
+      "Yol testi / dinamometre",
+      "Alt mekanik kontrolü",
+      "Şanzıman kontrolü",
+      "OBD arıza taraması",
+      "Yanal kayma testi",
+      "Fren testi",
+      "Süspansiyon testi",
+    ],
+  },
+  {
+    id: "c2",
+    name: "Ekspertiz ve Teknik Kontrol",
+    items: [
+      "İç ekspertiz",
+      "Dış ekspertiz",
+      "KM kontrolü (3 aşamalı)",
+      "Airbag kontrolü",
+      "Conta kaçak testi",
+    ],
+  },
+  {
+    id: "c3",
+    name: "Sorgulama Hizmetleri",
+    items: [
+      "Hasar sorgulama",
+      "Borç sorgulama",
+      "Tüm değişenler sorgulama",
+      "Araç detay sorgulama",
+      "Kaskolu/kaskosuz dönem sorgulama",
+    ],
+  },
+];
+
+let uid = 1000;
+const nextId = (p) => `${p}-${uid++}`;
+
+function buildInitialItems() {
+  const rows = [];
+  initialCategories.forEach((cat) => {
+    cat.items.forEach((label) => {
+      rows.push({ id: nextId("item"), categoryId: cat.id, label });
+    });
+  });
+  return rows;
+}
+
+function buildInitialCategoryList() {
+  return initialCategories.map((c) => ({ id: c.id, name: c.name }));
+}
+
+function buildInitialMatrix(items, packages) {
+  const cumulative = {
+    "Kaporta-boya kontrolü": 0,
+    "Motor-mekanik kontrolü": 0,
+    "Yol testi / dinamometre": 0,
+    "Alt mekanik kontrolü": 0,
+    "Şanzıman kontrolü": 0,
+    "OBD arıza taraması": 1,
+    "Yanal kayma testi": 1,
+    "Fren testi": 1,
+    "Süspansiyon testi": 1,
+    "İç ekspertiz": 2,
+    "Dış ekspertiz": 2,
+    "KM kontrolü (3 aşamalı)": 2,
+    "Airbag kontrolü": 2,
+    "Conta kaçak testi": 2,
+    "Hasar sorgulama": 2,
+    "Borç sorgulama": 2,
+    "Tüm değişenler sorgulama": 3,
+    "Araç detay sorgulama": 3,
+    "Kaskolu/kaskosuz dönem sorgulama": 3,
+  };
+  const m = {};
+  items.forEach((row) => {
+    const minRank = cumulative[row.label] ?? 0;
+    packages.forEach((pkg, i) => {
+      m[`${row.id}:${pkg.id}`] = i >= minRank;
+    });
+  });
+  return m;
+}
+
+const STORAGE_KEY = "ototr-paket-matrisi:senaryolar";
+const AUTOSAVE_KEY = "ototr-paket-matrisi:autosave";
+
+function buildDefaultState() {
+  const items = buildInitialItems();
+  return {
+    packages: initialPackages,
+    categoryList: buildInitialCategoryList(),
+    items,
+    matrix: buildInitialMatrix(items, initialPackages),
+    garanti: Object.fromEntries(
+      initialPackages.map((p, i) => [p.id, i === initialPackages.length - 1])
+    ),
+  };
+}
+
+function snapshotOf(state) {
+  return {
+    packages: state.packages,
+    categoryList: state.categoryList,
+    items: state.items,
+    matrix: state.matrix,
+    garanti: state.garanti,
+  };
+}
+
+// ---------------------------------------------------------------------------
+
+function PaketMatrisi() {
+  const initial = useMemo(buildDefaultState, []);
+  const [packages, setPackages] = useState(initial.packages);
+  const [categoryList, setCategoryList] = useState(initial.categoryList);
+  const [items, setItems] = useState(initial.items);
+  const [matrix, setMatrix] = useState(initial.matrix);
+  const [garanti, setGaranti] = useState(initial.garanti);
+  const [editingCell, setEditingCell] = useState(null);
+  const [editingCategory, setEditingCategory] = useState(null);
+  const [view, setView] = useState("matrix"); // matrix | analytics
+  const [scenarios, setScenarios] = useState([]);
+  const [scenarioName, setScenarioName] = useState("");
+  const [showLoadMenu, setShowLoadMenu] = useState(false);
+  const [showExportMenu, setShowExportMenu] = useState(false);
+  const [toast, setToast] = useState(null);
+  const [lastSavedAt, setLastSavedAt] = useState(null);
+  const [storageAvailable, setStorageAvailable] = useState(appStorage.available);
+
+  const dragCategory = useRef(null);
+  const dragItem = useRef(null);
+  const toastTimer = useRef(null);
+  const autosaveTimer = useRef(null);
+
+  const showToast = useCallback((msg) => {
+    setToast(msg);
+    clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setToast(null), 2400);
+  }, []);
+
+  // ---- Persistence: load autosave + scenario list on mount ----------------
+  useEffect(() => {
+    (async () => {
+      try {
+        const auto = await appStorage.get(AUTOSAVE_KEY);
+        if (auto?.value) {
+          const s = JSON.parse(auto.value);
+          if (s.packages) setPackages(s.packages);
+          if (s.categoryList) setCategoryList(s.categoryList);
+          if (s.items) setItems(s.items);
+          if (s.matrix) setMatrix(s.matrix);
+          if (s.garanti) setGaranti(s.garanti);
+          setLastSavedAt(s.savedAt || null);
+        }
+      } catch (e) {
+        // no autosave yet, or storage unavailable in this environment
+      }
+      try {
+        const list = await appStorage.get(STORAGE_KEY);
+        if (list?.value) setScenarios(JSON.parse(list.value));
+      } catch (e) {
+        // no scenarios yet
+      }
+      try {
+        setStorageAvailable(appStorage.available);
+      } catch (e) {
+        setStorageAvailable(false);
+      }
+    })();
+  }, []);
+
+  // ---- Autosave (debounced) ------------------------------------------------
+  useEffect(() => {
+    clearTimeout(autosaveTimer.current);
+    autosaveTimer.current = setTimeout(async () => {
+      const payload = { ...snapshotOf({ packages, categoryList, items, matrix, garanti }), savedAt: Date.now() };
+      try {
+        await appStorage.set(AUTOSAVE_KEY, JSON.stringify(payload));
+        setLastSavedAt(payload.savedAt);
+      } catch (e) {
+        // ignore autosave failures silently
+      }
+    }, 900);
+    return () => clearTimeout(autosaveTimer.current);
+  }, [packages, categoryList, items, matrix, garanti]);
+
+  const saveScenario = async () => {
+    const name = scenarioName.trim() || `Senaryo ${scenarios.length + 1}`;
+    const entry = {
+      id: nextId("scn"),
+      name,
+      savedAt: Date.now(),
+      data: snapshotOf({ packages, categoryList, items, matrix, garanti }),
+    };
+    const next = [entry, ...scenarios].slice(0, 20);
+    setScenarios(next);
+    setScenarioName("");
+    try {
+      await appStorage.set(STORAGE_KEY, JSON.stringify(next));
+      showToast(`"${name}" kaydedildi`);
+    } catch (e) {
+      showToast("Kaydetme başarısız oldu");
+    }
+  };
+
+  const loadScenario = (entry) => {
+    setPackages(entry.data.packages);
+    setCategoryList(entry.data.categoryList);
+    setItems(entry.data.items);
+    setMatrix(entry.data.matrix);
+    setGaranti(entry.data.garanti);
+    setShowLoadMenu(false);
+    showToast(`"${entry.name}" yüklendi`);
+  };
+
+  const deleteScenario = async (id, e) => {
+    e.stopPropagation();
+    const next = scenarios.filter((s) => s.id !== id);
+    setScenarios(next);
+    try {
+      await appStorage.set(STORAGE_KEY, JSON.stringify(next));
+    } catch (err) {
+      // ignore
+    }
+  };
+
+  // ---- Matrix mutations -----------------------------------------------------
+  const toggleCell = (itemId, pkgId) => {
+    setMatrix((m) => ({ ...m, [`${itemId}:${pkgId}`]: !m[`${itemId}:${pkgId}`] }));
+  };
+
+  const toggleGaranti = (pkgId) => {
+    setGaranti((g) => ({ ...g, [pkgId]: !g[pkgId] }));
+  };
+
+  const addPackage = () => {
+    const id = nextId("pkg");
+    const last = packages[packages.length - 1];
+    setPackages((p) => [
+      ...p,
+      { id, name: "Yeni Paket", price: (last?.price ?? 6000) + 1500, cost: last?.cost ?? 2000 },
+    ]);
+    setMatrix((m) => {
+      const copy = { ...m };
+      items.forEach((row) => (copy[`${row.id}:${id}`] = false));
+      return copy;
+    });
+    setGaranti((g) => ({ ...g, [id]: false }));
+  };
+
+  const removePackage = (pkgId) => {
+    if (packages.length <= 1) return;
+    setPackages((p) => p.filter((x) => x.id !== pkgId));
+  };
+
+  const renamePackage = (pkgId, name) =>
+    setPackages((p) => p.map((x) => (x.id === pkgId ? { ...x, name } : x)));
+
+  const repricePackage = (pkgId, price) =>
+    setPackages((p) => p.map((x) => (x.id === pkgId ? { ...x, price: Number(price) || 0 } : x)));
+
+  const recostPackage = (pkgId, cost) =>
+    setPackages((p) => p.map((x) => (x.id === pkgId ? { ...x, cost: Number(cost) || 0 } : x)));
+
+  const duplicatePackage = (pkgId) => {
+    const src = packages.find((p) => p.id === pkgId);
+    if (!src) return;
+    const id = nextId("pkg");
+    const idx = packages.findIndex((p) => p.id === pkgId);
+    const copy = { ...src, id, name: `${src.name} (kopya)` };
+    setPackages((p) => [...p.slice(0, idx + 1), copy, ...p.slice(idx + 1)]);
+    setMatrix((m) => {
+      const next = { ...m };
+      items.forEach((row) => (next[`${row.id}:${id}`] = !!m[`${row.id}:${pkgId}`]));
+      return next;
+    });
+    setGaranti((g) => ({ ...g, [id]: !!g[pkgId] }));
+  };
+
+  // ---- Category mutations -----------------------------------------------------
+  const addCategory = () => {
+    const id = nextId("cat");
+    setCategoryList((c) => [...c, { id, name: "Yeni kategori" }]);
+  };
+
+  const renameCategory = (catId, name) =>
+    setCategoryList((c) => c.map((x) => (x.id === catId ? { ...x, name } : x)));
+
+  const removeCategory = (catId) => {
+    setCategoryList((c) => c.filter((x) => x.id !== catId));
+    setItems((it) => it.filter((row) => row.categoryId !== catId));
+  };
+
+  const reorderCategory = (fromId, toId) => {
+    if (fromId === toId) return;
+    setCategoryList((c) => {
+      const arr = [...c];
+      const fromIdx = arr.findIndex((x) => x.id === fromId);
+      const toIdx = arr.findIndex((x) => x.id === toId);
+      if (fromIdx < 0 || toIdx < 0) return c;
+      const [moved] = arr.splice(fromIdx, 1);
+      arr.splice(toIdx, 0, moved);
+      return arr;
+    });
+  };
+
+  // ---- Item mutations -----------------------------------------------------
+  const addItem = (categoryId) => {
+    const id = nextId("item");
+    setItems((it) => [...it, { id, categoryId, label: "Yeni hizmet kalemi" }]);
+    setMatrix((m) => {
+      const copy = { ...m };
+      packages.forEach((pkg) => (copy[`${id}:${pkg.id}`] = false));
+      return copy;
+    });
+  };
+
+  const renameItem = (itemId, label) =>
+    setItems((it) => it.map((row) => (row.id === itemId ? { ...row, label } : row)));
+
+  const removeItem = (itemId) => setItems((it) => it.filter((row) => row.id !== itemId));
+
+  const reorderItem = (fromId, toId) => {
+    if (fromId === toId) return;
+    setItems((it) => {
+      const arr = [...it];
+      const fromIdx = arr.findIndex((x) => x.id === fromId);
+      const toIdx = arr.findIndex((x) => x.id === toId);
+      if (fromIdx < 0 || toIdx < 0) return it;
+      if (arr[fromIdx].categoryId !== arr[toIdx].categoryId) return it; // keep within category
+      const [moved] = arr.splice(fromIdx, 1);
+      arr.splice(toIdx, 0, moved);
+      return arr;
+    });
+  };
+
+  // ---- Derived data -----------------------------------------------------
+  const counts = useMemo(() => {
+    const perPackage = {};
+    packages.forEach((pkg) => {
+      perPackage[pkg.id] = items.filter((row) => matrix[`${row.id}:${pkg.id}`]).length;
+    });
+    const perItem = {};
+    items.forEach((row) => {
+      perItem[row.id] = packages.filter((pkg) => matrix[`${row.id}:${pkg.id}`]).length;
+    });
+    return { perPackage, perItem };
+  }, [items, packages, matrix]);
+
+  const maxPrice = Math.max(...packages.map((p) => p.price), 1);
+
+  const analytics = useMemo(() => {
+    const perPackage = packages.map((pkg, i) => {
+      const n = counts.perPackage[pkg.id] || 0;
+      const margin = pkg.price - (pkg.cost || 0);
+      const marginPct = pkg.price > 0 ? (margin / pkg.price) * 100 : 0;
+      return {
+        ...pkg,
+        rank: i,
+        itemCount: n,
+        perItemPrice: n > 0 ? pkg.price / n : 0,
+        margin,
+        marginPct,
+      };
+    });
+
+    const total = packages.length;
+    const differentiators = items.filter((row) => (counts.perItem[row.id] || 0) === 1);
+    const baseline = items.filter((row) => (counts.perItem[row.id] || 0) === total);
+    const gaps = items.filter((row) => {
+      const n = counts.perItem[row.id] || 0;
+      return n > 0 && n < total;
+    });
+
+    const jumps = [];
+    for (let i = 1; i < packages.length; i++) {
+      const prev = packages[i - 1];
+      const cur = packages[i];
+      const priceDelta = cur.price - prev.price;
+      const itemDelta = (counts.perPackage[cur.id] || 0) - (counts.perPackage[prev.id] || 0);
+      jumps.push({
+        from: prev.name,
+        to: cur.name,
+        priceDelta,
+        itemDelta,
+        perExtraItem: itemDelta > 0 ? priceDelta / itemDelta : null,
+      });
+    }
+
+    return { perPackage, differentiators, baseline, gaps, jumps, total };
+  }, [packages, items, counts]);
+
+  // ---- Export: CSV / Excel-friendly ----------------------------------------
+  const exportCSV = () => {
+    const header = ["Kategori", "Hizmet Kalemi", ...packages.map((p) => p.name)];
+    const rows = [header];
+    categoryList.forEach((cat) => {
+      items
+        .filter((row) => row.categoryId === cat.id)
+        .forEach((row) => {
+          rows.push([
+            cat.name,
+            row.label,
+            ...packages.map((pkg) => (matrix[`${row.id}:${pkg.id}`] ? "Evet" : "")),
+          ]);
+        });
+    });
+    rows.push(["", "7 gün / 1.000 km geri alım garantisi", ...packages.map((pkg) => (garanti[pkg.id] ? "Evet" : ""))]);
+    rows.push([]);
+    rows.push(["", "Fiyat (TL)", ...packages.map((p) => p.price)]);
+    rows.push(["", "Kalem sayısı", ...packages.map((p) => counts.perPackage[p.id])]);
+
+    const csv = rows
+      .map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(","))
+      .join("\r\n");
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "ototr-paket-matrisi.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+    setShowExportMenu(false);
+    showToast("CSV indirildi");
+  };
+
+  const exportPrintPDF = () => {
+    setShowExportMenu(false);
+    window.print();
+  };
+
+  const copyShareSummary = async () => {
+    const lines = [];
+    lines.push("OTOTR · Paket Karşılaştırma");
+    lines.push("");
+    packages.forEach((pkg) => {
+      lines.push(`${pkg.name} — ${pkg.price.toLocaleString("tr-TR")} TL (${counts.perPackage[pkg.id]} kalem)`);
+    });
+    lines.push("");
+    categoryList.forEach((cat) => {
+      lines.push(`# ${cat.name}`);
+      items
+        .filter((row) => row.categoryId === cat.id)
+        .forEach((row) => {
+          const included = packages.filter((pkg) => matrix[`${row.id}:${pkg.id}`]).map((p) => p.name);
+          lines.push(`- ${row.label}: ${included.length ? included.join(", ") : "—"}`);
+        });
+      lines.push("");
+    });
+    const text = lines.join("\n");
+    try {
+      await navigator.clipboard.writeText(text);
+      showToast("Özet panoya kopyalandı");
+    } catch (e) {
+      showToast("Kopyalama desteklenmiyor");
+    }
+    setShowExportMenu(false);
+  };
+
+  const fmtTime = (ts) => {
+    if (!ts) return "";
+    const d = new Date(ts);
+    return d.toLocaleString("tr-TR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+  };
+
+  return (
+    <div style={styles.page}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');
+        * { box-sizing: border-box; font-family: 'DM Sans', -apple-system, 'Segoe UI', sans-serif; }
+        ::selection { background: rgba(232,40,26,0.35); }
+        .cell-btn {
+          width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+          background: transparent; border: none; cursor: pointer; padding: 0;
+        }
+        .row-hover:hover { background: #1B2027 !important; }
+        .pkg-input {
+          background: transparent; border: none; color: inherit; font: inherit;
+          text-align: center; width: 100%; outline: none;
+        }
+        .pkg-input:focus { border-bottom: 1px solid #E8281A; }
+        .item-input {
+          background: transparent; border: none; color: inherit; font: inherit; outline: none; width: 100%;
+        }
+        .item-input:focus { border-bottom: 1px solid #576273; }
+        .cat-input {
+          background: transparent; border: none; color: inherit; font: inherit; outline: none;
+        }
+        .cat-input:focus { border-bottom: 1px solid #576273; }
+        .del-btn { opacity: 0; transition: opacity .12s ease; }
+        .row-hover:hover .del-btn, .pkg-head:hover .del-btn, .cat-hover:hover .del-btn { opacity: 1; }
+        .drag-handle { opacity: 0; transition: opacity .12s ease; cursor: grab; }
+        .row-hover:hover .drag-handle, .cat-hover:hover .drag-handle { opacity: 1; }
+        .matrix-scroll::-webkit-scrollbar { height: 10px; }
+        .matrix-scroll::-webkit-scrollbar-thumb { background: #2A2F37; border-radius: 6px; }
+        .add-row-btn:hover { color: #EDEFF2 !important; border-color: #576273 !important; }
+        .add-pkg-btn:hover { background: #1D2229 !important; }
+        .toolbar-btn:hover { background: #1D2229 !important; border-color: #3A414C !important; }
+        .tab-btn { transition: color .12s ease, border-color .12s ease; }
+        .menu-item:hover { background: #1D2229 !important; }
+        .toast {
+          position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%);
+          background: #171B20; border: 1px solid #2A2F37; color: #EDEFF2;
+          padding: 10px 18px; border-radius: 8px; font-size: 13px; z-index: 50;
+          animation: toastIn .18s ease;
+        }
+        @keyframes toastIn { from { opacity: 0; transform: translate(-50%, 6px); } to { opacity: 1; transform: translate(-50%, 0); } }
+        @media print {
+          .no-print { display: none !important; }
+          body, .page-root { background: white !important; color: black !important; }
+        }
+      `}</style>
+
+      <header style={styles.header}>
+        <div>
+          <div style={styles.eyebrow}>OTOTR · Paket Motoru</div>
+          <h1 style={styles.h1}>Hizmet matrisi</h1>
+          <p style={styles.sub}>
+            Her hücreye tıklayarak kalemi pakete ekle ya da çıkar. Paket adı ve fiyatını
+            başlıktan düzenleyebilirsin.
+          </p>
+        </div>
+
+        <div className="no-print" style={styles.toolbar}>
+          <div style={styles.tabs}>
+            <button
+              className="tab-btn"
+              style={{ ...styles.tabBtn, ...(view === "matrix" ? styles.tabBtnActive : {}) }}
+              onClick={() => setView("matrix")}
+            >
+              <Icon name="grid" size={14} /> Matris
+            </button>
+            <button
+              className="tab-btn"
+              style={{ ...styles.tabBtn, ...(view === "analytics" ? styles.tabBtnActive : {}) }}
+              onClick={() => setView("analytics")}
+            >
+              <Icon name="chart" size={14} /> Analitik
+            </button>
+          </div>
+
+          <div style={{ position: "relative" }}>
+            <button
+              className="toolbar-btn"
+              style={styles.toolbarBtn}
+              onClick={() => {
+                setShowLoadMenu((v) => !v);
+                setShowExportMenu(false);
+              }}
+            >
+              <Icon name="folder" size={14} /> Senaryolar <Icon name="chevronDown" size={13} />
+            </button>
+            {showLoadMenu && (
+              <div style={styles.menu}>
+                <div style={styles.menuSection}>
+                  <input
+                    style={styles.menuInput}
+                    placeholder="Senaryo adı…"
+                    value={scenarioName}
+                    onChange={(e) => setScenarioName(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && saveScenario()}
+                  />
+                  <button className="menu-item" style={styles.menuSaveBtn} onClick={saveScenario}>
+                    <Icon name="save" size={13} /> Kaydet
+                  </button>
+                </div>
+                <div style={styles.menuDivider} />
+                {!storageAvailable && (
+                  <div style={{ ...styles.menuEmpty, color: "#8B4B44" }}>
+                    Bu ortamda kalıcı depolama yok — senaryolar sadece bu oturumda geçerli.
+                  </div>
+                )}
+                {scenarios.length === 0 ? (
+                  <div style={styles.menuEmpty}>Henüz kayıtlı senaryo yok</div>
+                ) : (
+                  scenarios.map((s) => (
+                    <div
+                      key={s.id}
+                      className="menu-item"
+                      style={styles.menuItem}
+                      onClick={() => loadScenario(s)}
+                    >
+                      <div>
+                        <div style={{ fontSize: 13, fontWeight: 600 }}>{s.name}</div>
+                        <div style={{ fontSize: 10.5, color: "#6B7280" }}>{fmtTime(s.savedAt)}</div>
+                      </div>
+                      <button
+                        style={styles.menuDelBtn}
+                        onClick={(e) => deleteScenario(s.id, e)}
+                        aria-label="Senaryoyu sil"
+                      >
+                        <Icon name="trash" size={12} />
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+          </div>
+
+          <div style={{ position: "relative" }}>
+            <button
+              className="toolbar-btn"
+              style={styles.toolbarBtn}
+              onClick={() => {
+                setShowExportMenu((v) => !v);
+                setShowLoadMenu(false);
+              }}
+            >
+              <Icon name="download" size={14} /> Dışa aktar <Icon name="chevronDown" size={13} />
+            </button>
+            {showExportMenu && (
+              <div style={{ ...styles.menu, minWidth: 200 }}>
+                <div className="menu-item" style={styles.menuAction} onClick={exportCSV}>
+                  <Icon name="sheet" size={14} /> Excel / CSV indir
+                </div>
+                <div className="menu-item" style={styles.menuAction} onClick={exportPrintPDF}>
+                  <Icon name="doc" size={14} /> PDF olarak yazdır
+                </div>
+                <div className="menu-item" style={styles.menuAction} onClick={copyShareSummary}>
+                  <Icon name="link" size={14} /> Özeti panoya kopyala
+                </div>
+              </div>
+            )}
+          </div>
+
+          <button className="add-pkg-btn" style={styles.addPkgBtn} onClick={addPackage}>
+            <Icon name="plus" size={16} strokeWidth={2.5} />
+            Paket ekle
+          </button>
+        </div>
+      </header>
+
+      {lastSavedAt && (
+        <div className="no-print" style={styles.autosaveNote}>
+          <Icon name="clock" size={11} /> Otomatik kaydedildi · {fmtTime(lastSavedAt)}
+        </div>
+      )}
+
+      {view === "matrix" ? (
+        <div className="matrix-scroll" style={styles.scrollArea}>
+          <div style={{ minWidth: 560 + packages.length * 168 }}>
+            {/* Column headers */}
+            <div style={{ ...styles.gridRow, position: "sticky", top: 0, zIndex: 3 }}>
+              <div style={styles.cornerCell}>
+                <span style={styles.cornerLabel}>Hizmet kalemi</span>
+              </div>
+              {packages.map((pkg, i) => {
+                const color = tierColor(i, packages.length);
+                const barPct = Math.round((pkg.price / maxPrice) * 100);
+                return (
+                  <div key={pkg.id} className="pkg-head" style={{ ...styles.pkgHead, borderTopColor: color }}>
+                    <div className="no-print" style={styles.pkgHeadActions}>
+                      <button
+                        className="del-btn"
+                        style={styles.pkgIconBtn}
+                        onClick={() => duplicatePackage(pkg.id)}
+                        aria-label="Paketi çoğalt"
+                        title="Çoğalt"
+                      >
+                        <Icon name="copy" size={11} />
+                      </button>
+                      <button
+                        className="del-btn"
+                        style={styles.pkgIconBtn}
+                        onClick={() => removePackage(pkg.id)}
+                        aria-label="Paketi sil"
+                        title="Sil"
+                      >
+                        <Icon name="x" size={12} />
+                      </button>
+                    </div>
+                    <input
+                      className="pkg-input"
+                      style={{ fontWeight: 700, fontSize: 14, color: "#EDEFF2" }}
+                      value={pkg.name}
+                      onChange={(e) => renamePackage(pkg.id, e.target.value)}
+                    />
+                    <div style={styles.priceRow}>
+                      <input
+                        className="pkg-input"
+                        style={{ fontSize: 13, color: "#9AA3AF", textAlign: "right", width: 62 }}
+                        value={pkg.price}
+                        onChange={(e) => repricePackage(pkg.id, e.target.value.replace(/[^0-9]/g, ""))}
+                      />
+                      <span style={{ fontSize: 12, color: "#6B7280" }}>TL</span>
+                    </div>
+                    <div style={styles.barTrack}>
+                      <div style={{ ...styles.barFill, width: `${barPct}%`, background: color }} />
+                    </div>
+                    <div style={{ fontSize: 11, color: "#6B7280", marginTop: 6 }}>
+                      {counts.perPackage[pkg.id]} kalem ·{" "}
+                      {counts.perPackage[pkg.id] > 0
+                        ? Math.round(pkg.price / counts.perPackage[pkg.id]).toLocaleString("tr-TR")
+                        : "—"}{" "}
+                      TL/kalem
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Category groups */}
+            {categoryList.map((cat) => (
+              <div
+                key={cat.id}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={() => {
+                  if (dragCategory.current) reorderCategory(dragCategory.current, cat.id);
+                  dragCategory.current = null;
+                }}
+              >
+                <div
+                  className="cat-hover"
+                  style={{ ...styles.gridRow }}
+                  draggable
+                  onDragStart={() => (dragCategory.current = cat.id)}
+                >
+                  <div style={styles.categoryCell}>
+                    <span className="no-print drag-handle" style={{ display: "inline-flex" }}>
+                      <Icon name="grip" size={12} />
+                    </span>
+                    {editingCategory === cat.id ? (
+                      <input
+                        className="cat-input"
+                        autoFocus
+                        value={cat.name}
+                        onChange={(e) => renameCategory(cat.id, e.target.value)}
+                        onBlur={() => setEditingCategory(null)}
+                        onKeyDown={(e) => e.key === "Enter" && setEditingCategory(null)}
+                        style={{ fontSize: 11.5, fontWeight: 700, color: "#6B7280" }}
+                      />
+                    ) : (
+                      <span onClick={() => setEditingCategory(cat.id)} style={{ cursor: "text" }}>
+                        {cat.name}
+                      </span>
+                    )}
+                    <button
+                      className="no-print del-btn"
+                      style={styles.catDelBtn}
+                      onClick={() => removeCategory(cat.id)}
+                      aria-label="Kategoriyi sil"
+                      title="Kategoriyi sil"
+                    >
+                      <Icon name="trash" size={11} />
+                    </button>
+                  </div>
+                  {packages.map((pkg) => (
+                    <div key={pkg.id} style={styles.categorySpacer} />
+                  ))}
+                </div>
+
+                {items
+                  .filter((row) => row.categoryId === cat.id)
+                  .map((row) => (
+                    <div
+                      key={row.id}
+                      className="row-hover"
+                      style={styles.gridRow}
+                      draggable
+                      onDragStart={() => (dragItem.current = row.id)}
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={() => {
+                        if (dragItem.current) reorderItem(dragItem.current, row.id);
+                        dragItem.current = null;
+                      }}
+                    >
+                      <div style={styles.itemCell}>
+                        <span className="no-print drag-handle" style={{ display: "inline-flex", color: "#576273" }}>
+                          <Icon name="grip" size={13} />
+                        </span>
+                        {editingCell === row.id ? (
+                          <input
+                            className="item-input"
+                            autoFocus
+                            value={row.label}
+                            onChange={(e) => renameItem(row.id, e.target.value)}
+                            onBlur={() => setEditingCell(null)}
+                            onKeyDown={(e) => e.key === "Enter" && setEditingCell(null)}
+                            style={{ fontSize: 14, color: "#EDEFF2" }}
+                          />
+                        ) : (
+                          <span
+                            onClick={() => setEditingCell(row.id)}
+                            style={{ fontSize: 14, color: "#DADEE3", cursor: "text" }}
+                          >
+                            {row.label}
+                          </span>
+                        )}
+                        <span style={styles.itemBadge}>
+                          {counts.perItem[row.id]}/{packages.length}
+                        </span>
+                        <button
+                          className="no-print del-btn"
+                          style={styles.itemDel}
+                          onClick={() => removeItem(row.id)}
+                          aria-label="Kalemi sil"
+                        >
+                          <Icon name="trash" size={13} />
+                        </button>
+                      </div>
+                      {packages.map((pkg, i) => {
+                        const on = !!matrix[`${row.id}:${pkg.id}`];
+                        const color = tierColor(i, packages.length);
+                        return (
+                          <div key={pkg.id} style={styles.cell}>
+                            <button
+                              className="cell-btn"
+                              onClick={() => toggleCell(row.id, pkg.id)}
+                              aria-pressed={on}
+                              aria-label={`${row.label} — ${pkg.name}`}
+                            >
+                              {on ? (
+                                <span
+                                  style={{
+                                    ...styles.checkDot,
+                                    background: `${color}22`,
+                                    borderColor: color,
+                                  }}
+                                >
+                                  <Icon name="check" size={13} strokeWidth={3} color={color} />
+                                </span>
+                              ) : (
+                                <span style={styles.dashDot} />
+                              )}
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ))}
+
+                <div className="no-print" style={styles.gridRow}>
+                  <div style={styles.addRowCell}>
+                    <button className="add-row-btn" style={styles.addRowBtn} onClick={() => addItem(cat.id)}>
+                      <Icon name="plus" size={13} />
+                      Hizmet kalemi ekle
+                    </button>
+                  </div>
+                  {packages.map((pkg) => (
+                    <div key={pkg.id} style={styles.categorySpacer} />
+                  ))}
+                </div>
+              </div>
+            ))}
+
+            <div className="no-print" style={{ ...styles.gridRow, marginTop: 4, marginBottom: 8 }}>
+              <div style={{ padding: "4px 8px 8px 4px" }}>
+                <button className="add-row-btn" style={styles.addRowBtn} onClick={addCategory}>
+                  <Icon name="plus" size={13} />
+                  Kategori ekle
+                </button>
+              </div>
+            </div>
+
+            {/* Garanti — bonus row, not counted as a hizmet kalemi */}
+            <div style={{ ...styles.gridRow, marginTop: 4 }}>
+              <div style={styles.garantiCell}>
+                7 gün / 1.000 km geri alım garantisi
+                <span style={styles.garantiTag}>hizmet kalemi sayılmaz</span>
+              </div>
+              {packages.map((pkg, i) => {
+                const on = !!garanti[pkg.id];
+                const color = tierColor(i, packages.length);
+                return (
+                  <div key={pkg.id} style={{ ...styles.cell, background: "rgba(232,40,26,0.05)" }}>
+                    <button
+                      className="cell-btn"
+                      onClick={() => toggleGaranti(pkg.id)}
+                      aria-pressed={on}
+                      aria-label={`Garanti — ${pkg.name}`}
+                    >
+                      {on ? (
+                        <span style={{ ...styles.checkDot, background: `${color}22`, borderColor: color }}>
+                          <Icon name="check" size={13} strokeWidth={3} color={color} />
+                        </span>
+                      ) : (
+                        <span style={styles.dashDot} />
+                      )}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      ) : (
+        <AnalyticsView packages={packages} analytics={analytics} recostPackage={recostPackage} maxPrice={maxPrice} />
+      )}
+
+      <footer style={styles.footer}>
+        <span style={{ color: "#6B7280" }}>
+          Sayı, satırdaki hizmetin kaç pakette dahil olduğunu gösterir — 1/{packages.length} olan
+          kalemler farklılaştırıcı, {packages.length}/{packages.length} olanlar temel standarttır.
+        </span>
+      </footer>
+
+      {toast && <div className="toast no-print">{toast}</div>}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Analytics view
+// ---------------------------------------------------------------------------
+
+function AnalyticsView({ packages, analytics, recostPackage, maxPrice }) {
+  const maxMargin = Math.max(...analytics.perPackage.map((p) => p.margin), 1);
+
+  return (
+    <div style={styles.analyticsWrap}>
+      {/* Margin table */}
+      <section style={styles.analyticsCard}>
+        <h3 style={styles.analyticsTitle}>Kâr marjı</h3>
+        <p style={styles.analyticsHint}>
+          Maliyet alanına tahmini iş gücü + parça + üçüncü taraf maliyetini girin; marj otomatik hesaplanır.
+        </p>
+        <div style={styles.marginTable}>
+          <div style={{ ...styles.marginRow, ...styles.marginHeaderRow }}>
+            <div>Paket</div>
+            <div style={{ textAlign: "right" }}>Fiyat</div>
+            <div style={{ textAlign: "right" }}>Maliyet</div>
+            <div style={{ textAlign: "right" }}>Marj</div>
+            <div style={{ textAlign: "right" }}>Marj %</div>
+          </div>
+          {analytics.perPackage.map((pkg) => {
+            const color = tierColor(pkg.rank, packages.length);
+            return (
+              <div key={pkg.id} style={styles.marginRow}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ width: 8, height: 8, borderRadius: "50%", background: color, flexShrink: 0 }} />
+                  {pkg.name}
+                </div>
+                <div style={{ textAlign: "right" }}>{pkg.price.toLocaleString("tr-TR")} TL</div>
+                <div style={{ textAlign: "right" }}>
+                  <input
+                    value={pkg.cost}
+                    onChange={(e) => recostPackage(pkg.id, e.target.value.replace(/[^0-9]/g, ""))}
+                    style={styles.costInput}
+                  />
+                </div>
+                <div style={{ textAlign: "right", color: pkg.margin >= 0 ? "#7FBF6A" : "#E8281A" }}>
+                  {pkg.margin.toLocaleString("tr-TR")} TL
+                </div>
+                <div style={{ textAlign: "right", fontWeight: 700 }}>{pkg.marginPct.toFixed(0)}%</div>
+              </div>
+            );
+          })}
+        </div>
+        <div style={styles.marginBars}>
+          {analytics.perPackage.map((pkg) => {
+            const color = tierColor(pkg.rank, packages.length);
+            const pct = Math.max(0, Math.round((pkg.margin / maxMargin) * 100));
+            return (
+              <div key={pkg.id} style={styles.marginBarItem}>
+                <div style={styles.marginBarTrack}>
+                  <div style={{ ...styles.marginBarFill, height: `${pct}%`, background: color }} />
+                </div>
+                <div style={styles.marginBarLabel}>{pkg.name}</div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* Tier jump analysis */}
+      <section style={styles.analyticsCard}>
+        <h3 style={styles.analyticsTitle}>Kademe geçiş analizi</h3>
+        <p style={styles.analyticsHint}>Bir üst pakete geçişte fiyat artışının kalem başına karşılığı.</p>
+        {analytics.jumps.length === 0 ? (
+          <div style={styles.emptyNote}>Karşılaştırma için en az iki paket gerekir.</div>
+        ) : (
+          <div style={styles.jumpList}>
+            {analytics.jumps.map((j, idx) => (
+              <div key={idx} style={styles.jumpRow}>
+                <div style={{ fontSize: 13 }}>
+                  <strong>{j.from}</strong> → <strong>{j.to}</strong>
+                </div>
+                <div style={{ display: "flex", gap: 18, fontSize: 12.5, color: "#9AA3AF" }}>
+                  <span>+{j.priceDelta.toLocaleString("tr-TR")} TL</span>
+                  <span>+{j.itemDelta} kalem</span>
+                  <span style={{ color: "#DADEE3", fontWeight: 600 }}>
+                    {j.perExtraItem != null
+                      ? `${Math.round(j.perExtraItem).toLocaleString("tr-TR")} TL/kalem`
+                      : "kalem farkı yok"}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* Gap / coverage analysis */}
+      <section style={styles.analyticsCard}>
+        <h3 style={styles.analyticsTitle}>Boşluk analizi</h3>
+        <p style={styles.analyticsHint}>
+          Farklılaştırıcı kalemler (sadece 1 pakette) yükseltme için satış argümanı; temel kalemler
+          (tüm paketlerde) müşteri beklentisinin tabanıdır.
+        </p>
+        <div style={styles.gapGrid}>
+          <div style={styles.gapCol}>
+            <div style={styles.gapColHeader}>
+              <Icon name="alert" size={13} color="#E8281A" />
+              Farklılaştırıcılar ({analytics.differentiators.length})
+            </div>
+            {analytics.differentiators.length === 0 ? (
+              <div style={styles.emptyNote}>Yok — hiçbir kalem tek bir pakete özel değil.</div>
+            ) : (
+              analytics.differentiators.map((row) => (
+                <div key={row.id} style={styles.gapItem}>
+                  {row.label}
+                </div>
+              ))
+            )}
+          </div>
+          <div style={styles.gapCol}>
+            <div style={styles.gapColHeader}>
+              <Icon name="trend" size={13} color="#576273" />
+              Temel standart ({analytics.baseline.length})
+            </div>
+            {analytics.baseline.length === 0 ? (
+              <div style={styles.emptyNote}>Yok — tüm paketlerde ortak kalem bulunmuyor.</div>
+            ) : (
+              analytics.baseline.map((row) => (
+                <div key={row.id} style={styles.gapItem}>
+                  {row.label}
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Side-by-side comparison */}
+      <section style={styles.analyticsCard}>
+        <h3 style={styles.analyticsTitle}>Paket karşılaştırma</h3>
+        <div style={styles.compareGrid}>
+          {analytics.perPackage.map((pkg) => {
+            const color = tierColor(pkg.rank, packages.length);
+            const barPct = Math.round((pkg.price / maxPrice) * 100);
+            return (
+              <div key={pkg.id} style={{ ...styles.compareCard, borderTopColor: color }}>
+                <div style={{ fontWeight: 700, fontSize: 14 }}>{pkg.name}</div>
+                <div style={{ fontSize: 20, fontWeight: 800, marginTop: 4 }}>
+                  {pkg.price.toLocaleString("tr-TR")} <span style={{ fontSize: 12, color: "#6B7280" }}>TL</span>
+                </div>
+                <div style={styles.barTrack}>
+                  <div style={{ ...styles.barFill, width: `${barPct}%`, background: color }} />
+                </div>
+                <div style={{ fontSize: 12, color: "#9AA3AF", marginTop: 10, lineHeight: 1.7 }}>
+                  <div>{pkg.itemCount} hizmet kalemi</div>
+                  <div>{Math.round(pkg.perItemPrice).toLocaleString("tr-TR")} TL/kalem</div>
+                  <div style={{ color: pkg.margin >= 0 ? "#7FBF6A" : "#E8281A" }}>
+                    %{pkg.marginPct.toFixed(0)} marj
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+    </div>
+  );
+}
+
+const styles = {
+  page: {
+    background: "#101317",
+    color: "#EDEFF2",
+    minHeight: "100vh",
+    padding: "28px 20px 20px",
+  },
+  header: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "flex-end",
+    gap: 16,
+    flexWrap: "wrap",
+    marginBottom: 22,
+  },
+  eyebrow: { fontSize: 12, color: "#8B4B44", fontWeight: 600, letterSpacing: 0.2, marginBottom: 6 },
+  h1: { fontSize: 26, fontWeight: 800, margin: 0, letterSpacing: -0.3 },
+  sub: { fontSize: 13.5, color: "#9AA3AF", maxWidth: 460, marginTop: 6, lineHeight: 1.5 },
+  toolbar: { display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" },
+  tabs: {
+    display: "flex",
+    background: "#14171C",
+    border: "1px solid #20252C",
+    borderRadius: 8,
+    padding: 3,
+    gap: 2,
+  },
+  tabBtn: {
+    display: "flex",
+    alignItems: "center",
+    gap: 6,
+    background: "transparent",
+    border: "none",
+    color: "#6B7280",
+    fontSize: 12.5,
+    fontWeight: 600,
+    padding: "6px 12px",
+    borderRadius: 6,
+    cursor: "pointer",
+  },
+  tabBtnActive: { background: "#20252C", color: "#EDEFF2" },
+  toolbarBtn: {
+    display: "flex",
+    alignItems: "center",
+    gap: 6,
+    background: "#171B20",
+    border: "1px solid #2A2F37",
+    color: "#DADEE3",
+    fontSize: 12.5,
+    fontWeight: 600,
+    padding: "8px 12px",
+    borderRadius: 8,
+    cursor: "pointer",
+    whiteSpace: "nowrap",
+  },
+  addPkgBtn: {
+    display: "flex",
+    alignItems: "center",
+    gap: 6,
+    background: "#171B20",
+    border: "1px solid #2A2F37",
+    color: "#EDEFF2",
+    fontSize: 13.5,
+    fontWeight: 600,
+    padding: "9px 14px",
+    borderRadius: 8,
+    cursor: "pointer",
+    whiteSpace: "nowrap",
+  },
+  menu: {
+    position: "absolute",
+    top: "calc(100% + 6px)",
+    right: 0,
+    background: "#14171C",
+    border: "1px solid #2A2F37",
+    borderRadius: 10,
+    padding: 6,
+    minWidth: 240,
+    zIndex: 20,
+    boxShadow: "0 12px 28px rgba(0,0,0,0.45)",
+  },
+  menuSection: { display: "flex", gap: 6, padding: 4 },
+  menuInput: {
+    flex: 1,
+    background: "#0F1216",
+    border: "1px solid #2A2F37",
+    borderRadius: 6,
+    color: "#EDEFF2",
+    fontSize: 12.5,
+    padding: "6px 8px",
+    outline: "none",
+  },
+  menuSaveBtn: {
+    display: "flex",
+    alignItems: "center",
+    gap: 4,
+    background: "#E8281A",
+    border: "none",
+    color: "#fff",
+    fontSize: 12,
+    fontWeight: 700,
+    padding: "6px 10px",
+    borderRadius: 6,
+    cursor: "pointer",
+    whiteSpace: "nowrap",
+  },
+  menuDivider: { height: 1, background: "#20252C", margin: "6px 2px" },
+  menuEmpty: { fontSize: 12, color: "#6B7280", padding: "10px 8px" },
+  menuItem: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: "8px",
+    borderRadius: 6,
+    cursor: "pointer",
+  },
+  menuDelBtn: { background: "transparent", border: "none", color: "#6B7280", cursor: "pointer", padding: 2 },
+  menuAction: {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    padding: "9px 10px",
+    borderRadius: 6,
+    cursor: "pointer",
+    fontSize: 13,
+    color: "#DADEE3",
+  },
+  autosaveNote: {
+    display: "flex",
+    alignItems: "center",
+    gap: 5,
+    fontSize: 11,
+    color: "#576273",
+    marginTop: -14,
+    marginBottom: 14,
+  },
+  scrollArea: { overflowX: "auto", paddingBottom: 6 },
+  gridRow: {
+    display: "grid",
+    gridTemplateColumns: "260px repeat(auto-fit, minmax(150px, 1fr))",
+  },
+  cornerCell: {
+    display: "flex",
+    alignItems: "flex-end",
+    paddingBottom: 10,
+    background: "#101317",
+  },
+  cornerLabel: { fontSize: 11, color: "#6B7280", fontWeight: 600 },
+  pkgHead: {
+    background: "#171B20",
+    borderTop: "3px solid",
+    borderRadius: "8px 8px 0 0",
+    padding: "12px 12px 10px",
+    textAlign: "center",
+    position: "relative",
+    marginLeft: 4,
+  },
+  pkgHeadActions: { position: "absolute", top: 6, right: 6, display: "flex", gap: 2 },
+  pkgIconBtn: {
+    background: "transparent",
+    border: "none",
+    color: "#6B7280",
+    cursor: "pointer",
+    padding: 2,
+  },
+  priceRow: { display: "flex", justifyContent: "center", alignItems: "baseline", gap: 4, marginTop: 2 },
+  barTrack: { height: 4, background: "#20252C", borderRadius: 2, marginTop: 8, overflow: "hidden" },
+  barFill: { height: "100%", borderRadius: 2 },
+  categoryCell: {
+    display: "flex",
+    alignItems: "center",
+    gap: 6,
+    fontSize: 11.5,
+    fontWeight: 700,
+    color: "#6B7280",
+    padding: "18px 8px 8px 4px",
+    borderBottom: "1px solid #20252C",
+    textTransform: "none",
+  },
+  catDelBtn: { marginLeft: "auto", background: "transparent", border: "none", color: "#6B7280", cursor: "pointer", padding: 2 },
+  categorySpacer: { borderBottom: "1px solid #20252C" },
+  itemCell: {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    padding: "10px 8px 10px 4px",
+    borderBottom: "1px solid #1A1E24",
+  },
+  itemBadge: {
+    marginLeft: "auto",
+    fontSize: 10.5,
+    color: "#576273",
+    background: "#171B20",
+    border: "1px solid #20252C",
+    borderRadius: 20,
+    padding: "1px 7px",
+    flexShrink: 0,
+  },
+  itemDel: {
+    background: "transparent",
+    border: "none",
+    color: "#6B7280",
+    cursor: "pointer",
+    padding: 2,
+    flexShrink: 0,
+  },
+  cell: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    borderBottom: "1px solid #1A1E24",
+    marginLeft: 4,
+    height: 42,
+  },
+  checkDot: {
+    width: 26,
+    height: 26,
+    borderRadius: "50%",
+    border: "1px solid",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  dashDot: { width: 5, height: 5, borderRadius: "50%", background: "#2A2F37" },
+  addRowCell: { padding: "8px 8px 16px 4px" },
+  addRowBtn: {
+    display: "flex",
+    alignItems: "center",
+    gap: 6,
+    background: "transparent",
+    border: "1px dashed #2A2F37",
+    color: "#6B7280",
+    fontSize: 12.5,
+    padding: "6px 10px",
+    borderRadius: 7,
+    cursor: "pointer",
+  },
+  garantiCell: {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    padding: "12px 8px",
+    fontSize: 14,
+    fontWeight: 600,
+    color: "#E8281A",
+  },
+  garantiTag: { fontSize: 10, fontWeight: 500, color: "#6B7280", whiteSpace: "nowrap" },
+  footer: { marginTop: 16, fontSize: 12, lineHeight: 1.5, borderTop: "1px solid #20252C", paddingTop: 14 },
+
+  // Analytics
+  analyticsWrap: { display: "flex", flexDirection: "column", gap: 16 },
+  analyticsCard: {
+    background: "#14171C",
+    border: "1px solid #20252C",
+    borderRadius: 12,
+    padding: "18px 20px",
+  },
+  analyticsTitle: { fontSize: 15, fontWeight: 700, margin: 0 },
+  analyticsHint: { fontSize: 12.5, color: "#6B7280", marginTop: 4, marginBottom: 14, lineHeight: 1.5, maxWidth: 620 },
+  marginTable: { display: "flex", flexDirection: "column" },
+  marginRow: {
+    display: "grid",
+    gridTemplateColumns: "1.4fr 1fr 1fr 1fr 0.7fr",
+    gap: 10,
+    padding: "8px 4px",
+    borderBottom: "1px solid #1A1E24",
+    fontSize: 13,
+    alignItems: "center",
+  },
+  marginHeaderRow: { fontSize: 11, color: "#6B7280", fontWeight: 700, borderBottom: "1px solid #20252C" },
+  costInput: {
+    width: 84,
+    textAlign: "right",
+    background: "#0F1216",
+    border: "1px solid #2A2F37",
+    borderRadius: 6,
+    color: "#EDEFF2",
+    fontSize: 13,
+    padding: "4px 8px",
+    outline: "none",
+  },
+  marginBars: { display: "flex", gap: 18, marginTop: 20, height: 120, alignItems: "flex-end" },
+  marginBarItem: { display: "flex", flexDirection: "column", alignItems: "center", gap: 8, flex: 1, height: "100%", justifyContent: "flex-end" },
+  marginBarTrack: { width: "100%", height: 90, display: "flex", alignItems: "flex-end", background: "#0F1216", borderRadius: 6, overflow: "hidden" },
+  marginBarFill: { width: "100%", borderRadius: "4px 4px 0 0" },
+  marginBarLabel: { fontSize: 11, color: "#9AA3AF", textAlign: "center" },
+  jumpList: { display: "flex", flexDirection: "column", gap: 10 },
+  jumpRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    flexWrap: "wrap",
+    gap: 8,
+    padding: "10px 12px",
+    background: "#0F1216",
+    border: "1px solid #1A1E24",
+    borderRadius: 8,
+  },
+  gapGrid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 },
+  gapCol: { display: "flex", flexDirection: "column", gap: 6 },
+  gapColHeader: { display: "flex", alignItems: "center", gap: 6, fontSize: 12.5, fontWeight: 700, color: "#9AA3AF", marginBottom: 4 },
+  gapItem: { fontSize: 13, color: "#DADEE3", padding: "6px 10px", background: "#0F1216", borderRadius: 6, border: "1px solid #1A1E24" },
+  emptyNote: { fontSize: 12.5, color: "#576273", fontStyle: "italic" },
+  compareGrid: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 14 },
+  compareCard: { background: "#0F1216", border: "1px solid #1A1E24", borderTop: "3px solid", borderRadius: 10, padding: 14 },
+};
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<PaketMatrisi />);
+</script>
+</body>
+</html>

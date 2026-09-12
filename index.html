@@ -4759,6 +4759,13 @@
       if(label.includes('Lead')) return 'franchise';
       return 'operations';
     }
+    function openPackageMatrix(){
+      const link=document.createElement('a');
+      link.href='paket-matrisi.html';
+      link.target='_blank';
+      link.rel='noopener';
+      link.click();
+    }
     function QuickCommandPanel(){
       const jumps=[
         {label:'CEO Karar ve İcra Akışı',hint:'Karar kuyruğu ve icra önceliği',icon:'workflow',tone:'blue',target:'dashboardDecisionFlow'},
@@ -4771,7 +4778,7 @@
         {label:'Hukuk & Risk CEO Özeti',hint:'Hukuki risk ve karar özeti',icon:'shield-alert',tone:'amber',target:'dashboardLegalRisk'},
         {label:'Aksiyon Motoru & Görev Takibi',hint:'Sorumlu, deadline ve kapanış takibi',icon:'target',tone:'blue',target:'dashboardActionTasks'}
       ];
-      return `<div class="rail-card"><div class="rail-title">${icon('zap')}Dashboard Hızlı Gezin</div><div class="quick-stack">${jumps.map(a=>{
+      return `<div class="rail-card"><div class="rail-title">${icon('zap')}Dashboard Hızlı Gezin</div><div class="quick-stack"><button class="quick-command green" data-dashboard-package-matrix><span class="quick-icon">${icon('save')}</span><span><strong>Paket Seçim Matrisi</strong><span>Girilen paket senaryolarını kaydet</span></span>${icon('external-link')}</button>${jumps.map(a=>{
         return `<button class="quick-command ${a.tone||''}" data-dashboard-jump="${a.target}"><span class="quick-icon">${icon(a.icon)}</span><span><strong>${a.label}</strong><span>${a.hint}</span></span>${icon('chevron-right')}</button>`;
       }).join('')}</div></div>`;
     }
@@ -15947,6 +15954,16 @@
           e.preventDefault();
           e.stopPropagation();
           scrollDashboardSection(el.dataset.dashboardJump);
+          toggleCommandDock(false);
+        });
+      });
+      document.querySelectorAll('[data-dashboard-package-matrix]').forEach(el=>{
+        if(el.dataset.boundDashboardPackageMatrix==='1') return;
+        el.dataset.boundDashboardPackageMatrix='1';
+        el.addEventListener('click',e=>{
+          e.preventDefault();
+          e.stopPropagation();
+          openPackageMatrix();
           toggleCommandDock(false);
         });
       });
