@@ -96,9 +96,9 @@ const tierColor = (rank, total) => {
 
 const initialPackages = [
   { id: "p1", name: "Temel", price: 6000, cost: 2200 },
-  { id: "p2", name: "Uzman", price: 7500, cost: 3100 },
-  { id: "p3", name: "Dolu Dolu", price: 9500, cost: 4400 },
-  { id: "p4", name: "Her Şey Dahil", price: 14000, cost: 6800 },
+  { id: "p2", name: "Uzman", price: 9500, cost: 3900 },
+  { id: "p3", name: "Dolu Dolu", price: 12500, cost: 5400 },
+  { id: "p4", name: "Her Şey Dahil", price: 15500, cost: 7200 },
 ];
 
 const initialCategories = [
@@ -113,8 +113,7 @@ const initialCategories = [
       "Şanzıman kontrolü",
       "OBD arıza taraması",
       "Yanal kayma testi",
-      "Fren testi",
-      "Süspansiyon testi",
+      "Fren testi Süspansiyon",
     ],
   },
   {
@@ -123,26 +122,35 @@ const initialCategories = [
     items: [
       "İç ekspertiz",
       "Dış ekspertiz",
-      "KM kontrolü (3 aşamalı)",
-      "Airbag kontrolü",
       "Conta kaçak testi",
+      "Airbag kontrolü",
     ],
   },
   {
     id: "c3",
     name: "Sorgulama Hizmetleri",
     items: [
-      "Hasar sorgulama",
       "Borç sorgulama",
+      "Hasar sorgulama",
+      "Km Sorgu",
+      "Km Sorgu 3 lü Kontrol",
+      "Kaskolu/kaskosuz dönem sorgulama",
       "Tüm değişenler sorgulama",
       "Araç detay sorgulama",
-      "Kaskolu/kaskosuz dönem sorgulama",
     ],
   },
 ];
 
 let uid = 1000;
 const nextId = (p) => `${p}-${uid++}`;
+const uniqueId = (prefix, usedIds = []) => {
+  const used = usedIds instanceof Set ? usedIds : new Set(usedIds.map(String));
+  let id = "";
+  do {
+    id = `${prefix}-${Date.now().toString(36)}-${(uid++).toString(36)}`;
+  } while (used.has(id));
+  return id;
+};
 
 function buildInitialItems() {
   const rows = [];
@@ -159,39 +167,40 @@ function buildInitialCategoryList() {
 }
 
 function buildInitialMatrix(items, packages) {
-  const cumulative = {
-    "Kaporta-boya kontrolü": 0,
-    "Motor-mekanik kontrolü": 0,
-    "Yol testi / dinamometre": 0,
-    "Alt mekanik kontrolü": 0,
-    "Şanzıman kontrolü": 0,
-    "OBD arıza taraması": 1,
-    "Yanal kayma testi": 1,
-    "Fren testi": 1,
-    "Süspansiyon testi": 1,
-    "İç ekspertiz": 2,
-    "Dış ekspertiz": 2,
-    "KM kontrolü (3 aşamalı)": 2,
-    "Airbag kontrolü": 2,
-    "Conta kaçak testi": 2,
-    "Hasar sorgulama": 2,
-    "Borç sorgulama": 2,
-    "Tüm değişenler sorgulama": 3,
-    "Araç detay sorgulama": 3,
-    "Kaskolu/kaskosuz dönem sorgulama": 3,
+  const includedByItem = {
+    "Kaporta-boya kontrolü": ["p1", "p2", "p3", "p4"],
+    "Motor-mekanik kontrolü": ["p1", "p2", "p3", "p4"],
+    "Yol testi / dinamometre": ["p1", "p2", "p3", "p4"],
+    "Alt mekanik kontrolü": ["p1", "p2", "p3", "p4"],
+    "Şanzıman kontrolü": ["p1", "p2", "p3", "p4"],
+    "OBD arıza taraması": ["p2", "p3", "p4"],
+    "Yanal kayma testi": ["p2", "p3", "p4"],
+    "Fren testi Süspansiyon": ["p2", "p3", "p4"],
+    "İç ekspertiz": ["p2", "p3", "p4"],
+    "Dış ekspertiz": ["p2", "p3", "p4"],
+    "Conta kaçak testi": ["p2", "p3", "p4"],
+    "Airbag kontrolü": ["p3", "p4"],
+    "Borç sorgulama": ["p1", "p2", "p3", "p4"],
+    "Hasar sorgulama": ["p1", "p2", "p3", "p4"],
+    "Km Sorgu": ["p2", "p3", "p4"],
+    "Km Sorgu 3 lü Kontrol": ["p3"],
+    "Kaskolu/kaskosuz dönem sorgulama": ["p3", "p4"],
+    "Tüm değişenler sorgulama": ["p3", "p4"],
+    "Araç detay sorgulama": ["p3", "p4"],
   };
   const m = {};
   items.forEach((row) => {
-    const minRank = cumulative[row.label] ?? 0;
-    packages.forEach((pkg, i) => {
-      m[`${row.id}:${pkg.id}`] = i >= minRank;
+    const included = new Set(includedByItem[row.label] || []);
+    packages.forEach((pkg) => {
+      m[`${row.id}:${pkg.id}`] = included.has(pkg.id);
     });
   });
   return m;
 }
 
-const STORAGE_KEY = "ototr-paket-matrisi:senaryolar";
-const AUTOSAVE_KEY = "ototr-paket-matrisi:autosave";
+const MATRIX_SCHEMA_VERSION = "2026-09-13-reference";
+const STORAGE_KEY = `ototr-paket-matrisi:${MATRIX_SCHEMA_VERSION}:senaryolar`;
+const AUTOSAVE_KEY = `ototr-paket-matrisi:${MATRIX_SCHEMA_VERSION}:autosave`;
 
 function buildDefaultState() {
   const items = buildInitialItems();
@@ -208,12 +217,36 @@ function buildDefaultState() {
 
 function snapshotOf(state) {
   return {
+    version: MATRIX_SCHEMA_VERSION,
     packages: state.packages,
     categoryList: state.categoryList,
     items: state.items,
     matrix: state.matrix,
     garanti: state.garanti,
   };
+}
+
+function normalizeSavedState(state) {
+  const fallback = buildDefaultState();
+  const packages = Array.isArray(state?.packages) ? state.packages : fallback.packages;
+  const categoryList = Array.isArray(state?.categoryList) ? state.categoryList : fallback.categoryList;
+  const matrix = state?.matrix && typeof state.matrix === "object" ? { ...state.matrix } : fallback.matrix;
+  const garanti = state?.garanti && typeof state.garanti === "object" ? state.garanti : fallback.garanti;
+  const sourceItems = Array.isArray(state?.items) ? state.items : fallback.items;
+  const usedItemIds = new Set();
+  const items = sourceItems.map((row) => {
+    const originalId = row?.id ? String(row.id) : "";
+    let id = originalId;
+    if (!id || usedItemIds.has(id)) {
+      id = uniqueId("item", usedItemIds);
+      packages.forEach((pkg) => {
+        matrix[`${id}:${pkg.id}`] = originalId ? !!matrix[`${originalId}:${pkg.id}`] : false;
+      });
+    }
+    usedItemIds.add(id);
+    return { ...row, id };
+  });
+  return { packages, categoryList, items, matrix, garanti, savedAt: state?.savedAt || null };
 }
 
 function useMediaQuery(query) {
@@ -300,7 +333,7 @@ function PaketMatrisi() {
       try {
         const auto = await appStorage.get(AUTOSAVE_KEY);
         if (auto?.value) {
-          const s = JSON.parse(auto.value);
+          const s = normalizeSavedState(JSON.parse(auto.value));
           if (s.packages) setPackages(s.packages);
           if (s.categoryList) setCategoryList(s.categoryList);
           if (s.items) setItems(s.items);
@@ -343,7 +376,7 @@ function PaketMatrisi() {
   const saveScenario = async () => {
     const name = scenarioName.trim() || `Senaryo ${scenarios.length + 1}`;
     const entry = {
-      id: nextId("scn"),
+      id: uniqueId("scn", scenarios.map((s) => s.id)),
       name,
       savedAt: Date.now(),
       data: snapshotOf({ packages, categoryList, items, matrix, garanti }),
@@ -360,11 +393,12 @@ function PaketMatrisi() {
   };
 
   const loadScenario = (entry) => {
-    setPackages(entry.data.packages);
-    setCategoryList(entry.data.categoryList);
-    setItems(entry.data.items);
-    setMatrix(entry.data.matrix);
-    setGaranti(entry.data.garanti);
+    const data = normalizeSavedState(entry.data);
+    setPackages(data.packages);
+    setCategoryList(data.categoryList);
+    setItems(data.items);
+    setMatrix(data.matrix);
+    setGaranti(data.garanti);
     setShowLoadMenu(false);
     showToast(`"${entry.name}" yüklendi`);
   };
@@ -390,7 +424,7 @@ function PaketMatrisi() {
   };
 
   const addPackage = () => {
-    const id = nextId("pkg");
+    const id = uniqueId("pkg", packages.map((pkg) => pkg.id));
     const last = packages[packages.length - 1];
     setPackages((p) => [
       ...p,
@@ -421,7 +455,7 @@ function PaketMatrisi() {
   const duplicatePackage = (pkgId) => {
     const src = packages.find((p) => p.id === pkgId);
     if (!src) return;
-    const id = nextId("pkg");
+    const id = uniqueId("pkg", packages.map((pkg) => pkg.id));
     const idx = packages.findIndex((p) => p.id === pkgId);
     const copy = { ...src, id, name: `${src.name} (kopya)` };
     setPackages((p) => [...p.slice(0, idx + 1), copy, ...p.slice(idx + 1)]);
@@ -435,7 +469,7 @@ function PaketMatrisi() {
 
   // ---- Category mutations -----------------------------------------------------
   const addCategory = () => {
-    const id = nextId("cat");
+    const id = uniqueId("cat", categoryList.map((cat) => cat.id));
     setCategoryList((c) => [...c, { id, name: "Yeni kategori" }]);
   };
 
@@ -462,7 +496,7 @@ function PaketMatrisi() {
 
   // ---- Item mutations -----------------------------------------------------
   const addItem = (categoryId) => {
-    const id = nextId("item");
+    const id = uniqueId("item", items.map((row) => row.id));
     setItems((it) => [...it, { id, categoryId, label: "Yeni hizmet kalemi" }]);
     setMatrix((m) => {
       const copy = { ...m };
