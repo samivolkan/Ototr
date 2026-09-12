@@ -216,6 +216,27 @@ function snapshotOf(state) {
   };
 }
 
+function useMediaQuery(query) {
+  const getMatch = () =>
+    typeof window !== "undefined" && typeof window.matchMedia === "function"
+      ? window.matchMedia(query).matches
+      : false;
+  const [matches, setMatches] = useState(getMatch);
+  useEffect(() => {
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") return;
+    const media = window.matchMedia(query);
+    const update = () => setMatches(media.matches);
+    update();
+    if (typeof media.addEventListener === "function") media.addEventListener("change", update);
+    else media.addListener(update);
+    return () => {
+      if (typeof media.removeEventListener === "function") media.removeEventListener("change", update);
+      else media.removeListener(update);
+    };
+  }, [query]);
+  return matches;
+}
+
 // ---------------------------------------------------------------------------
 
 function PaketMatrisi() {
@@ -240,6 +261,32 @@ function PaketMatrisi() {
   const dragItem = useRef(null);
   const toastTimer = useRef(null);
   const autosaveTimer = useRef(null);
+  const isMobile = useMediaQuery("(max-width: 700px)");
+  const isTablet = useMediaQuery("(max-width: 980px)");
+  const labelColWidth = isMobile ? 188 : isTablet ? 220 : 260;
+  const packageColMin = isMobile ? 112 : isTablet ? 132 : 150;
+  const packageColWidth = isMobile ? 118 : isTablet ? 144 : 168;
+  const matrixMinWidth = labelColWidth + packages.length * packageColWidth;
+  const rowStyle = useMemo(
+    () => ({
+      ...styles.gridRow,
+      gridTemplateColumns: `${labelColWidth}px repeat(${packages.length}, minmax(${packageColMin}px, 1fr))`,
+    }),
+    [labelColWidth, packageColMin, packages.length]
+  );
+  const stickyCellStyle = isMobile
+    ? {
+        position: "sticky",
+        left: 0,
+        zIndex: 2,
+        background: "#101317",
+        boxShadow: "10px 0 18px rgba(16,19,23,0.72)",
+      }
+    : null;
+  const stickyHeaderCellStyle = isMobile ? { ...stickyCellStyle, zIndex: 5 } : null;
+  const pageStyle = isMobile ? { ...styles.page, ...styles.pageMobile } : styles.page;
+  const headerStyle = isMobile ? { ...styles.header, ...styles.headerMobile } : styles.header;
+  const toolbarStyle = isMobile ? { ...styles.toolbar, ...styles.toolbarMobile } : styles.toolbar;
 
   const showToast = useCallback((msg) => {
     setToast(msg);
@@ -573,7 +620,7 @@ function PaketMatrisi() {
   };
 
   return (
-    <div style={styles.page}>
+    <div className="page-root" style={pageStyle}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');
         * { box-sizing: border-box; font-family: 'DM Sans', -apple-system, 'Segoe UI', sans-serif; }
@@ -614,13 +661,63 @@ function PaketMatrisi() {
           animation: toastIn .18s ease;
         }
         @keyframes toastIn { from { opacity: 0; transform: translate(-50%, 6px); } to { opacity: 1; transform: translate(-50%, 0); } }
+        @media (max-width: 700px) {
+          .page-root { overflow-x: hidden; }
+          .matrix-header { width: 100%; }
+          .matrix-header > div:first-child { min-width: 0; width: 100%; }
+          .matrix-header h1 { font-size: 23px !important; line-height: 1.08 !important; }
+          .matrix-header p { max-width: none !important; font-size: 12.5px !important; }
+          .matrix-toolbar { display: grid !important; grid-template-columns: 1fr 1fr; width: 100%; align-items: stretch !important; }
+          .matrix-tabs { grid-column: 1 / -1; width: 100%; }
+          .matrix-tabs .tab-btn { flex: 1; justify-content: center; min-height: 42px; }
+          .matrix-menu-anchor { min-width: 0; width: 100%; }
+          .toolbar-btn, .add-pkg-btn { width: 100%; min-height: 42px; justify-content: center; padding: 9px 10px !important; }
+          .add-pkg-btn { grid-column: 1 / -1; }
+          .matrix-menu {
+            position: fixed !important;
+            left: 12px !important;
+            right: 12px !important;
+            bottom: 16px !important;
+            top: auto !important;
+            min-width: 0 !important;
+            max-height: min(70vh, 520px);
+            overflow: auto;
+          }
+          .matrix-menu-section { display: grid !important; grid-template-columns: 1fr auto; }
+          .matrix-scroll {
+            margin-left: -12px;
+            margin-right: -12px;
+            padding: 0 12px 12px !important;
+            -webkit-overflow-scrolling: touch;
+            scroll-snap-type: x proximity;
+          }
+          .matrix-scroll:after {
+            content: "";
+            display: block;
+            height: 1px;
+          }
+          .pkg-head { padding: 13px 8px 10px !important; margin-left: 3px !important; }
+          .pkg-input { font-size: 12.5px !important; overflow-wrap: anywhere; }
+          .cell-btn { min-height: 42px; }
+          .del-btn, .drag-handle { opacity: 1 !important; }
+          .matrix-guarantee-cell { display: grid !important; gap: 4px !important; align-content: center; font-size: 12.5px !important; line-height: 1.2; }
+          .matrix-guarantee-tag { white-space: normal !important; line-height: 1.25; }
+          .matrix-footer { font-size: 11.5px !important; }
+          .analytics-card { padding: 14px !important; }
+          .analytics-margin-table { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+          .analytics-margin-table > div { min-width: 560px; }
+          .analytics-gap-grid { grid-template-columns: 1fr !important; gap: 14px !important; }
+          .analytics-jump-row { align-items: flex-start !important; }
+          .analytics-jump-row > div:last-child { display: grid !important; grid-template-columns: 1fr; gap: 6px !important; }
+          .toast { left: 12px !important; right: 12px !important; bottom: 14px !important; transform: none !important; text-align: center; }
+        }
         @media print {
           .no-print { display: none !important; }
           body, .page-root { background: white !important; color: black !important; }
         }
       `}</style>
 
-      <header style={styles.header}>
+      <header className="matrix-header" style={headerStyle}>
         <div>
           <div style={styles.eyebrow}>OTOTR · Paket Motoru</div>
           <h1 style={styles.h1}>Hizmet matrisi</h1>
@@ -630,8 +727,8 @@ function PaketMatrisi() {
           </p>
         </div>
 
-        <div className="no-print" style={styles.toolbar}>
-          <div style={styles.tabs}>
+        <div className="no-print matrix-toolbar" style={toolbarStyle}>
+          <div className="matrix-tabs" style={styles.tabs}>
             <button
               className="tab-btn"
               style={{ ...styles.tabBtn, ...(view === "matrix" ? styles.tabBtnActive : {}) }}
@@ -648,7 +745,7 @@ function PaketMatrisi() {
             </button>
           </div>
 
-          <div style={{ position: "relative" }}>
+          <div className="matrix-menu-anchor" style={{ position: "relative" }}>
             <button
               className="toolbar-btn"
               style={styles.toolbarBtn}
@@ -660,8 +757,8 @@ function PaketMatrisi() {
               <Icon name="folder" size={14} /> Senaryolar <Icon name="chevronDown" size={13} />
             </button>
             {showLoadMenu && (
-              <div style={styles.menu}>
-                <div style={styles.menuSection}>
+              <div className="matrix-menu" style={styles.menu}>
+                <div className="matrix-menu-section" style={styles.menuSection}>
                   <input
                     style={styles.menuInput}
                     placeholder="Senaryo adı…"
@@ -707,7 +804,7 @@ function PaketMatrisi() {
             )}
           </div>
 
-          <div style={{ position: "relative" }}>
+          <div className="matrix-menu-anchor" style={{ position: "relative" }}>
             <button
               className="toolbar-btn"
               style={styles.toolbarBtn}
@@ -719,7 +816,7 @@ function PaketMatrisi() {
               <Icon name="download" size={14} /> Dışa aktar <Icon name="chevronDown" size={13} />
             </button>
             {showExportMenu && (
-              <div style={{ ...styles.menu, minWidth: 200 }}>
+              <div className="matrix-menu" style={{ ...styles.menu, minWidth: 200 }}>
                 <div className="menu-item" style={styles.menuAction} onClick={exportCSV}>
                   <Icon name="sheet" size={14} /> Excel / CSV indir
                 </div>
@@ -748,10 +845,10 @@ function PaketMatrisi() {
 
       {view === "matrix" ? (
         <div className="matrix-scroll" style={styles.scrollArea}>
-          <div style={{ minWidth: 560 + packages.length * 168 }}>
+          <div className="matrix-table" style={{ minWidth: matrixMinWidth }}>
             {/* Column headers */}
-            <div style={{ ...styles.gridRow, position: "sticky", top: 0, zIndex: 3 }}>
-              <div style={styles.cornerCell}>
+            <div className="matrix-row" style={{ ...rowStyle, position: "sticky", top: 0, zIndex: 3 }}>
+              <div style={{ ...styles.cornerCell, ...(stickyHeaderCellStyle || {}) }}>
                 <span style={styles.cornerLabel}>Hizmet kalemi</span>
               </div>
               {packages.map((pkg, i) => {
@@ -820,12 +917,12 @@ function PaketMatrisi() {
                 }}
               >
                 <div
-                  className="cat-hover"
-                  style={{ ...styles.gridRow }}
+                  className="cat-hover matrix-row"
+                  style={rowStyle}
                   draggable
                   onDragStart={() => (dragCategory.current = cat.id)}
                 >
-                  <div style={styles.categoryCell}>
+                  <div style={{ ...styles.categoryCell, ...(stickyCellStyle || {}) }}>
                     <span className="no-print drag-handle" style={{ display: "inline-flex" }}>
                       <Icon name="grip" size={12} />
                     </span>
@@ -865,7 +962,8 @@ function PaketMatrisi() {
                     <div
                       key={row.id}
                       className="row-hover"
-                      style={styles.gridRow}
+                      className="matrix-row"
+                      style={rowStyle}
                       draggable
                       onDragStart={() => (dragItem.current = row.id)}
                       onDragOver={(e) => e.preventDefault()}
@@ -874,7 +972,7 @@ function PaketMatrisi() {
                         dragItem.current = null;
                       }}
                     >
-                      <div style={styles.itemCell}>
+                      <div style={{ ...styles.itemCell, ...(stickyCellStyle || {}) }}>
                         <span className="no-print drag-handle" style={{ display: "inline-flex", color: "#576273" }}>
                           <Icon name="grip" size={13} />
                         </span>
@@ -939,8 +1037,8 @@ function PaketMatrisi() {
                     </div>
                   ))}
 
-                <div className="no-print" style={styles.gridRow}>
-                  <div style={styles.addRowCell}>
+                <div className="no-print matrix-row" style={rowStyle}>
+                  <div style={{ ...styles.addRowCell, ...(stickyCellStyle || {}) }}>
                     <button className="add-row-btn" style={styles.addRowBtn} onClick={() => addItem(cat.id)}>
                       <Icon name="plus" size={13} />
                       Hizmet kalemi ekle
@@ -953,7 +1051,7 @@ function PaketMatrisi() {
               </div>
             ))}
 
-            <div className="no-print" style={{ ...styles.gridRow, marginTop: 4, marginBottom: 8 }}>
+            <div className="no-print matrix-row" style={{ ...rowStyle, marginTop: 4, marginBottom: 8 }}>
               <div style={{ padding: "4px 8px 8px 4px" }}>
                 <button className="add-row-btn" style={styles.addRowBtn} onClick={addCategory}>
                   <Icon name="plus" size={13} />
@@ -963,10 +1061,10 @@ function PaketMatrisi() {
             </div>
 
             {/* Garanti — bonus row, not counted as a hizmet kalemi */}
-            <div style={{ ...styles.gridRow, marginTop: 4 }}>
-              <div style={styles.garantiCell}>
+            <div className="matrix-row" style={{ ...rowStyle, marginTop: 4 }}>
+              <div className="matrix-guarantee-cell" style={{ ...styles.garantiCell, ...(stickyCellStyle || {}) }}>
                 7 gün / 1.000 km geri alım garantisi
-                <span style={styles.garantiTag}>hizmet kalemi sayılmaz</span>
+                <span className="matrix-guarantee-tag" style={styles.garantiTag}>hizmet kalemi sayılmaz</span>
               </div>
               {packages.map((pkg, i) => {
                 const on = !!garanti[pkg.id];
@@ -997,7 +1095,7 @@ function PaketMatrisi() {
         <AnalyticsView packages={packages} analytics={analytics} recostPackage={recostPackage} maxPrice={maxPrice} />
       )}
 
-      <footer style={styles.footer}>
+      <footer className="matrix-footer" style={styles.footer}>
         <span style={{ color: "#6B7280" }}>
           Sayı, satırdaki hizmetin kaç pakette dahil olduğunu gösterir — 1/{packages.length} olan
           kalemler farklılaştırıcı, {packages.length}/{packages.length} olanlar temel standarttır.
@@ -1019,12 +1117,12 @@ function AnalyticsView({ packages, analytics, recostPackage, maxPrice }) {
   return (
     <div style={styles.analyticsWrap}>
       {/* Margin table */}
-      <section style={styles.analyticsCard}>
+      <section className="analytics-card" style={styles.analyticsCard}>
         <h3 style={styles.analyticsTitle}>Kâr marjı</h3>
         <p style={styles.analyticsHint}>
           Maliyet alanına tahmini iş gücü + parça + üçüncü taraf maliyetini girin; marj otomatik hesaplanır.
         </p>
-        <div style={styles.marginTable}>
+        <div className="analytics-margin-table" style={styles.marginTable}>
           <div style={{ ...styles.marginRow, ...styles.marginHeaderRow }}>
             <div>Paket</div>
             <div style={{ textAlign: "right" }}>Fiyat</div>
@@ -1073,7 +1171,7 @@ function AnalyticsView({ packages, analytics, recostPackage, maxPrice }) {
       </section>
 
       {/* Tier jump analysis */}
-      <section style={styles.analyticsCard}>
+      <section className="analytics-card" style={styles.analyticsCard}>
         <h3 style={styles.analyticsTitle}>Kademe geçiş analizi</h3>
         <p style={styles.analyticsHint}>Bir üst pakete geçişte fiyat artışının kalem başına karşılığı.</p>
         {analytics.jumps.length === 0 ? (
@@ -1081,7 +1179,7 @@ function AnalyticsView({ packages, analytics, recostPackage, maxPrice }) {
         ) : (
           <div style={styles.jumpList}>
             {analytics.jumps.map((j, idx) => (
-              <div key={idx} style={styles.jumpRow}>
+              <div key={idx} className="analytics-jump-row" style={styles.jumpRow}>
                 <div style={{ fontSize: 13 }}>
                   <strong>{j.from}</strong> → <strong>{j.to}</strong>
                 </div>
@@ -1101,13 +1199,13 @@ function AnalyticsView({ packages, analytics, recostPackage, maxPrice }) {
       </section>
 
       {/* Gap / coverage analysis */}
-      <section style={styles.analyticsCard}>
+      <section className="analytics-card" style={styles.analyticsCard}>
         <h3 style={styles.analyticsTitle}>Boşluk analizi</h3>
         <p style={styles.analyticsHint}>
           Farklılaştırıcı kalemler (sadece 1 pakette) yükseltme için satış argümanı; temel kalemler
           (tüm paketlerde) müşteri beklentisinin tabanıdır.
         </p>
-        <div style={styles.gapGrid}>
+        <div className="analytics-gap-grid" style={styles.gapGrid}>
           <div style={styles.gapCol}>
             <div style={styles.gapColHeader}>
               <Icon name="alert" size={13} color="#E8281A" />
@@ -1142,7 +1240,7 @@ function AnalyticsView({ packages, analytics, recostPackage, maxPrice }) {
       </section>
 
       {/* Side-by-side comparison */}
-      <section style={styles.analyticsCard}>
+      <section className="analytics-card" style={styles.analyticsCard}>
         <h3 style={styles.analyticsTitle}>Paket karşılaştırma</h3>
         <div style={styles.compareGrid}>
           {analytics.perPackage.map((pkg) => {
@@ -1180,6 +1278,9 @@ const styles = {
     minHeight: "100vh",
     padding: "28px 20px 20px",
   },
+  pageMobile: {
+    padding: "16px 12px 18px",
+  },
   header: {
     display: "flex",
     justifyContent: "space-between",
@@ -1188,10 +1289,17 @@ const styles = {
     flexWrap: "wrap",
     marginBottom: 22,
   },
+  headerMobile: {
+    display: "grid",
+    gap: 12,
+    alignItems: "start",
+    marginBottom: 16,
+  },
   eyebrow: { fontSize: 12, color: "#8B4B44", fontWeight: 600, letterSpacing: 0.2, marginBottom: 6 },
   h1: { fontSize: 26, fontWeight: 800, margin: 0, letterSpacing: -0.3 },
   sub: { fontSize: 13.5, color: "#9AA3AF", maxWidth: 460, marginTop: 6, lineHeight: 1.5 },
   toolbar: { display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" },
+  toolbarMobile: { display: "grid", gridTemplateColumns: "1fr 1fr", width: "100%", gap: 8 },
   tabs: {
     display: "flex",
     background: "#14171C",
