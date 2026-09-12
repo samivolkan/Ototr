@@ -1,0 +1,41 @@
+OTOTR — Volkswagen Passat B8 pilot 3D model teslim şartnamesi
+13 Eylül 2026 · Taslak · Sedan gövde kullanıcı teyidi bekliyor
+
+Amaç: müşteriye web tarayıcısında parça seçimi, parçaların ayrılması ve kendi aracının fotoğraf/ölçüm kanıtını gösteren ekspertiz sunumu.
+
+Araç: Volkswagen Passat B8. Sedan / 4 kapı çalışma varsayımı. Model yılı, makyaj, donanım, R-Line/GTE farkı ve tavan tipi kesinleşmeden geometrik kabul yapılmaz.
+
+Teslim: GLB/glTF 2.0, metre birimi, belgelenmiş eksen ve pivotlar, ayrı seçilebilir dış yüzeyler, UV ve PBR malzemeler, kaynak dosyalar, sürüm ve dosya özeti. Aşağıdaki kimliklere mesh eşleme tablosu verilmeli. Sütunlar/marşpiyeller inceleme bölgesidir; animasyonda ayrılmaları gerçek söküm prosedürü anlamına gelmez.
+
+Bölgeler:
+hood — Motor kaputu
+roof — Tavan
+trunk — Bagaj kapağı
+left_front_fender — Sol ön çamurluk
+left_front_door — Sol ön kapı
+left_rear_door — Sol arka kapı
+left_rear_fender — Sol arka çamurluk
+left_sill — Sol marşpiyel
+left_a_pillar — Sol A sütunu
+left_b_pillar — Sol B sütunu
+left_c_pillar — Sol C sütunu
+left_mirror — Sol ayna
+right_front_fender — Sağ ön çamurluk
+right_front_door — Sağ ön kapı
+right_rear_door — Sağ arka kapı
+right_rear_fender — Sağ arka çamurluk
+right_sill — Sağ marşpiyel
+right_a_pillar — Sağ A sütunu
+right_b_pillar — Sağ B sütunu
+right_c_pillar — Sağ C sütunu
+right_mirror — Sağ ayna
+front_bumper — Ön tampon
+rear_bumper — Arka tampon
+windshield — Ön cam
+rear_glass — Arka cam
+
+Haklar: OTOTR markalı ticari, etkileşimli web sunumu, istemciye model aktarımı, optimizasyon, parçalara ayırma ve türev üretim kapsamını belirten yazılı izin/lisans; üçüncü taraf marka ve tasarım kısıtlarını açıklayan belge. Yalnız render görseline izin yeterli kabul edilmez. Model dosyasını indiren tarayıcıdan bütünüyle gizlemek garanti edilemez; sunucu tarafında render alternatifi ayrıca değerlendirilebilir.
+
+Kabul: doğru kasa/yıl, dört kapı, dört ana açı ve üst açılarda gövde sınırları, her bölgede doğru tıklama, doğru ayrılma yönü, bağlı orijinal fotoğraf ve mobil cihaz testi. Üretici referansı ve gerçek araçla ölçü kontrolü. Dosya boyutu ve düşük ayrıntılı sürüm ölçülerek kabul edilir.
+
+Durum: satıcıya gönderilmedi; model satın alınmadı veya indirilmedi; bütçe ve lisans teyidi bekliyor.

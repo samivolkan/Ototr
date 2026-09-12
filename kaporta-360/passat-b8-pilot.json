@@ -1,0 +1,536 @@
+{
+  "format": "ototr-vehicle-pilot-plan-v1",
+  "purpose": "planning-only",
+  "createdDate": "2026-09-13",
+  "vehicle": {
+    "brand": "Volkswagen",
+    "model": "Passat",
+    "generation": "B8",
+    "body": "sedan",
+    "doors": 4,
+    "bodySelection": "provisional-awaiting-user",
+    "modelYear": null,
+    "facelift": null,
+    "trim": null,
+    "roof": null,
+    "profile": "sedan4"
+  },
+  "sources": [
+    {
+      "type": "manufacturer-reference",
+      "url": "https://www.volkswagen.ie/en/owners-and-services/previous-models/mid-size-class/passat-b8.html"
+    },
+    {
+      "type": "candidate-not-approved",
+      "url": "https://www.turbosquid.com/3d-models/volkswagen-passat-sedan-3d-model/917105"
+    }
+  ],
+  "asset": {
+    "status": "not-acquired",
+    "assetId": null,
+    "url": null,
+    "licenseDocument": null,
+    "commercialInteractiveWebPermission": "unverified",
+    "geometryAccepted": false,
+    "photographsAccepted": false,
+    "customerPublishable": false
+  },
+  "capture": {
+    "requiredAngles": 28,
+    "ringAngles": 24,
+    "upperAngles": 4,
+    "details": "one or more linked close-ups for each recorded finding",
+    "shots": [
+      {
+        "id": "ring-01",
+        "name": "Ön · 0°",
+        "angle": 0,
+        "kind": "ring",
+        "tip": "Araç sabit, kapılar kapalı. Aynı yükseklik ve mesafede tüm aracı kadraja alın.",
+        "suggestedFilename": "passat-b8_ring-01.jpg",
+        "photoId": null
+      },
+      {
+        "id": "ring-02",
+        "name": "Ön · 15°",
+        "angle": 15,
+        "kind": "ring",
+        "tip": "Araç sabit, kapılar kapalı. Aynı yükseklik ve mesafede tüm aracı kadraja alın.",
+        "suggestedFilename": "passat-b8_ring-02.jpg",
+        "photoId": null
+      },
+      {
+        "id": "ring-03",
+        "name": "Ön · 30°",
+        "angle": 30,
+        "kind": "ring",
+        "tip": "Araç sabit, kapılar kapalı. Aynı yükseklik ve mesafede tüm aracı kadraja alın.",
+        "suggestedFilename": "passat-b8_ring-03.jpg",
+        "photoId": null
+      },
+      {
+        "id": "ring-04",
+        "name": "Sağ ön · 45°",
+        "angle": 45,
+        "kind": "ring",
+        "tip": "Araç sabit, kapılar kapalı. Aynı yükseklik ve mesafede tüm aracı kadraja alın.",
+        "suggestedFilename": "passat-b8_ring-04.jpg",
+        "photoId": null
+      },
+      {
+        "id": "ring-05",
+        "name": "Sağ ön · 60°",
+        "angle": 60,
+        "kind": "ring",
+        "tip": "Araç sabit, kapılar kapalı. Aynı yükseklik ve mesafede tüm aracı kadraja alın.",
+        "suggestedFilename": "passat-b8_ring-05.jpg",
+        "photoId": null
+      },
+      {
+        "id": "ring-06",
+        "name": "Sağ ön · 75°",
+        "angle": 75,
+        "kind": "ring",
+        "tip": "Araç sabit, kapılar kapalı. Aynı yükseklik ve mesafede tüm aracı kadraja alın.",
+        "suggestedFilename": "passat-b8_ring-06.jpg",
+        "photoId": null
+      },
+      {
+        "id": "ring-07",
+        "name": "Sağ yan · 90°",
+        "angle": 90,
+        "kind": "ring",
+        "tip": "Araç sabit, kapılar kapalı. Aynı yükseklik ve mesafede tüm aracı kadraja alın.",
+        "suggestedFilename": "passat-b8_ring-07.jpg",
+        "photoId": null
+      },
+      {
+        "id": "ring-08",
+        "name": "Sağ yan · 105°",
+        "angle": 105,
+        "kind": "ring",
+        "tip": "Araç sabit, kapılar kapalı. Aynı yükseklik ve mesafede tüm aracı kadraja alın.",
+        "suggestedFilename": "passat-b8_ring-08.jpg",
+        "photoId": null
+      },
+      {
+        "id": "ring-09",
+        "name": "Sağ yan · 120°",
+        "angle": 120,
+        "kind": "ring",
+        "tip": "Araç sabit, kapılar kapalı. Aynı yükseklik ve mesafede tüm aracı kadraja alın.",
+        "suggestedFilename": "passat-b8_ring-09.jpg",
+        "photoId": null
+      },
+      {
+        "id": "ring-10",
+        "name": "Sağ arka · 135°",
+        "angle": 135,
+        "kind": "ring",
+        "tip": "Araç sabit, kapılar kapalı. Aynı yükseklik ve mesafede tüm aracı kadraja alın.",
+        "suggestedFilename": "passat-b8_ring-10.jpg",
+        "photoId": null
+      },
+      {
+        "id": "ring-11",
+        "name": "Sağ arka · 150°",
+        "angle": 150,
+        "kind": "ring",
+        "tip": "Araç sabit, kapılar kapalı. Aynı yükseklik ve mesafede tüm aracı kadraja alın.",
+        "suggestedFilename": "passat-b8_ring-11.jpg",
+        "photoId": null
+      },
+      {
+        "id": "ring-12",
+        "name": "Sağ arka · 165°",
+        "angle": 165,
+        "kind": "ring",
+        "tip": "Araç sabit, kapılar kapalı. Aynı yükseklik ve mesafede tüm aracı kadraja alın.",
+        "suggestedFilename": "passat-b8_ring-12.jpg",
+        "photoId": null
+      },
+      {
+        "id": "ring-13",
+        "name": "Arka · 180°",
+        "angle": 180,
+        "kind": "ring",
+        "tip": "Araç sabit, kapılar kapalı. Aynı yükseklik ve mesafede tüm aracı kadraja alın.",
+        "suggestedFilename": "passat-b8_ring-13.jpg",
+        "photoId": null
+      },
+      {
+        "id": "ring-14",
+        "name": "Arka · 195°",
+        "angle": 195,
+        "kind": "ring",
+        "tip": "Araç sabit, kapılar kapalı. Aynı yükseklik ve mesafede tüm aracı kadraja alın.",
+        "suggestedFilename": "passat-b8_ring-14.jpg",
+        "photoId": null
+      },
+      {
+        "id": "ring-15",
+        "name": "Arka · 210°",
+        "angle": 210,
+        "kind": "ring",
+        "tip": "Araç sabit, kapılar kapalı. Aynı yükseklik ve mesafede tüm aracı kadraja alın.",
+        "suggestedFilename": "passat-b8_ring-15.jpg",
+        "photoId": null
+      },
+      {
+        "id": "ring-16",
+        "name": "Sol arka · 225°",
+        "angle": 225,
+        "kind": "ring",
+        "tip": "Araç sabit, kapılar kapalı. Aynı yükseklik ve mesafede tüm aracı kadraja alın.",
+        "suggestedFilename": "passat-b8_ring-16.jpg",
+        "photoId": null
+      },
+      {
+        "id": "ring-17",
+        "name": "Sol arka · 240°",
+        "angle": 240,
+        "kind": "ring",
+        "tip": "Araç sabit, kapılar kapalı. Aynı yükseklik ve mesafede tüm aracı kadraja alın.",
+        "suggestedFilename": "passat-b8_ring-17.jpg",
+        "photoId": null
+      },
+      {
+        "id": "ring-18",
+        "name": "Sol arka · 255°",
+        "angle": 255,
+        "kind": "ring",
+        "tip": "Araç sabit, kapılar kapalı. Aynı yükseklik ve mesafede tüm aracı kadraja alın.",
+        "suggestedFilename": "passat-b8_ring-18.jpg",
+        "photoId": null
+      },
+      {
+        "id": "ring-19",
+        "name": "Sol yan · 270°",
+        "angle": 270,
+        "kind": "ring",
+        "tip": "Araç sabit, kapılar kapalı. Aynı yükseklik ve mesafede tüm aracı kadraja alın.",
+        "suggestedFilename": "passat-b8_ring-19.jpg",
+        "photoId": null
+      },
+      {
+        "id": "ring-20",
+        "name": "Sol yan · 285°",
+        "angle": 285,
+        "kind": "ring",
+        "tip": "Araç sabit, kapılar kapalı. Aynı yükseklik ve mesafede tüm aracı kadraja alın.",
+        "suggestedFilename": "passat-b8_ring-20.jpg",
+        "photoId": null
+      },
+      {
+        "id": "ring-21",
+        "name": "Sol yan · 300°",
+        "angle": 300,
+        "kind": "ring",
+        "tip": "Araç sabit, kapılar kapalı. Aynı yükseklik ve mesafede tüm aracı kadraja alın.",
+        "suggestedFilename": "passat-b8_ring-21.jpg",
+        "photoId": null
+      },
+      {
+        "id": "ring-22",
+        "name": "Sol ön · 315°",
+        "angle": 315,
+        "kind": "ring",
+        "tip": "Araç sabit, kapılar kapalı. Aynı yükseklik ve mesafede tüm aracı kadraja alın.",
+        "suggestedFilename": "passat-b8_ring-22.jpg",
+        "photoId": null
+      },
+      {
+        "id": "ring-23",
+        "name": "Sol ön · 330°",
+        "angle": 330,
+        "kind": "ring",
+        "tip": "Araç sabit, kapılar kapalı. Aynı yükseklik ve mesafede tüm aracı kadraja alın.",
+        "suggestedFilename": "passat-b8_ring-23.jpg",
+        "photoId": null
+      },
+      {
+        "id": "ring-24",
+        "name": "Sol ön · 345°",
+        "angle": 345,
+        "kind": "ring",
+        "tip": "Araç sabit, kapılar kapalı. Aynı yükseklik ve mesafede tüm aracı kadraja alın.",
+        "suggestedFilename": "passat-b8_ring-24.jpg",
+        "photoId": null
+      },
+      {
+        "id": "upper-1",
+        "name": "Ön sağ üst",
+        "kind": "upper",
+        "angle": 45,
+        "tip": "Tavan yüzeyini ve üst kenarları gösterin. Güvenli çekim konumunu koruyun.",
+        "suggestedFilename": "passat-b8_upper-1.jpg",
+        "photoId": null
+      },
+      {
+        "id": "upper-2",
+        "name": "Arka sağ üst",
+        "kind": "upper",
+        "angle": 135,
+        "tip": "Tavan yüzeyini ve üst kenarları gösterin. Güvenli çekim konumunu koruyun.",
+        "suggestedFilename": "passat-b8_upper-2.jpg",
+        "photoId": null
+      },
+      {
+        "id": "upper-3",
+        "name": "Arka sol üst",
+        "kind": "upper",
+        "angle": 225,
+        "tip": "Tavan yüzeyini ve üst kenarları gösterin. Güvenli çekim konumunu koruyun.",
+        "suggestedFilename": "passat-b8_upper-3.jpg",
+        "photoId": null
+      },
+      {
+        "id": "upper-4",
+        "name": "Ön sol üst",
+        "kind": "upper",
+        "angle": 315,
+        "tip": "Tavan yüzeyini ve üst kenarları gösterin. Güvenli çekim konumunu koruyun.",
+        "suggestedFilename": "passat-b8_upper-4.jpg",
+        "photoId": null
+      }
+    ]
+  },
+  "regions": [
+    {
+      "id": "hood",
+      "name": "Motor kaputu",
+      "regionType": "Dış kaporta",
+      "materialClass": "metal",
+      "meshMapping": null,
+      "photoIds": [],
+      "inspectionStatus": "unchecked"
+    },
+    {
+      "id": "roof",
+      "name": "Tavan",
+      "regionType": "Dış kaporta",
+      "materialClass": "metal",
+      "meshMapping": null,
+      "photoIds": [],
+      "inspectionStatus": "unchecked"
+    },
+    {
+      "id": "trunk",
+      "name": "Bagaj kapağı",
+      "regionType": "Dış kaporta",
+      "materialClass": "metal",
+      "meshMapping": null,
+      "photoIds": [],
+      "inspectionStatus": "unchecked"
+    },
+    {
+      "id": "left_front_fender",
+      "name": "Sol ön çamurluk",
+      "regionType": "Dış kaporta",
+      "materialClass": "metal",
+      "meshMapping": null,
+      "photoIds": [],
+      "inspectionStatus": "unchecked"
+    },
+    {
+      "id": "left_front_door",
+      "name": "Sol ön kapı",
+      "regionType": "Dış kaporta",
+      "materialClass": "metal",
+      "meshMapping": null,
+      "photoIds": [],
+      "inspectionStatus": "unchecked"
+    },
+    {
+      "id": "left_rear_door",
+      "name": "Sol arka kapı",
+      "regionType": "Dış kaporta",
+      "materialClass": "metal",
+      "meshMapping": null,
+      "photoIds": [],
+      "inspectionStatus": "unchecked"
+    },
+    {
+      "id": "left_rear_fender",
+      "name": "Sol arka çamurluk",
+      "regionType": "Dış kaporta",
+      "materialClass": "metal",
+      "meshMapping": null,
+      "photoIds": [],
+      "inspectionStatus": "unchecked"
+    },
+    {
+      "id": "left_sill",
+      "name": "Sol marşpiyel",
+      "regionType": "Yapısal dış yüzey",
+      "materialClass": "metal",
+      "meshMapping": null,
+      "photoIds": [],
+      "inspectionStatus": "unchecked"
+    },
+    {
+      "id": "left_a_pillar",
+      "name": "Sol A sütunu",
+      "regionType": "Yapısal dış yüzey",
+      "materialClass": "metal",
+      "meshMapping": null,
+      "photoIds": [],
+      "inspectionStatus": "unchecked"
+    },
+    {
+      "id": "left_b_pillar",
+      "name": "Sol B sütunu",
+      "regionType": "Yapısal dış yüzey",
+      "materialClass": "metal",
+      "meshMapping": null,
+      "photoIds": [],
+      "inspectionStatus": "unchecked"
+    },
+    {
+      "id": "left_c_pillar",
+      "name": "Sol C sütunu",
+      "regionType": "Yapısal dış yüzey",
+      "materialClass": "metal",
+      "meshMapping": null,
+      "photoIds": [],
+      "inspectionStatus": "unchecked"
+    },
+    {
+      "id": "left_mirror",
+      "name": "Sol ayna",
+      "regionType": "Diğer dış parçalar",
+      "materialClass": "plastic",
+      "meshMapping": null,
+      "photoIds": [],
+      "inspectionStatus": "unchecked"
+    },
+    {
+      "id": "right_front_fender",
+      "name": "Sağ ön çamurluk",
+      "regionType": "Dış kaporta",
+      "materialClass": "metal",
+      "meshMapping": null,
+      "photoIds": [],
+      "inspectionStatus": "unchecked"
+    },
+    {
+      "id": "right_front_door",
+      "name": "Sağ ön kapı",
+      "regionType": "Dış kaporta",
+      "materialClass": "metal",
+      "meshMapping": null,
+      "photoIds": [],
+      "inspectionStatus": "unchecked"
+    },
+    {
+      "id": "right_rear_door",
+      "name": "Sağ arka kapı",
+      "regionType": "Dış kaporta",
+      "materialClass": "metal",
+      "meshMapping": null,
+      "photoIds": [],
+      "inspectionStatus": "unchecked"
+    },
+    {
+      "id": "right_rear_fender",
+      "name": "Sağ arka çamurluk",
+      "regionType": "Dış kaporta",
+      "materialClass": "metal",
+      "meshMapping": null,
+      "photoIds": [],
+      "inspectionStatus": "unchecked"
+    },
+    {
+      "id": "right_sill",
+      "name": "Sağ marşpiyel",
+      "regionType": "Yapısal dış yüzey",
+      "materialClass": "metal",
+      "meshMapping": null,
+      "photoIds": [],
+      "inspectionStatus": "unchecked"
+    },
+    {
+      "id": "right_a_pillar",
+      "name": "Sağ A sütunu",
+      "regionType": "Yapısal dış yüzey",
+      "materialClass": "metal",
+      "meshMapping": null,
+      "photoIds": [],
+      "inspectionStatus": "unchecked"
+    },
+    {
+      "id": "right_b_pillar",
+      "name": "Sağ B sütunu",
+      "regionType": "Yapısal dış yüzey",
+      "materialClass": "metal",
+      "meshMapping": null,
+      "photoIds": [],
+      "inspectionStatus": "unchecked"
+    },
+    {
+      "id": "right_c_pillar",
+      "name": "Sağ C sütunu",
+      "regionType": "Yapısal dış yüzey",
+      "materialClass": "metal",
+      "meshMapping": null,
+      "photoIds": [],
+      "inspectionStatus": "unchecked"
+    },
+    {
+      "id": "right_mirror",
+      "name": "Sağ ayna",
+      "regionType": "Diğer dış parçalar",
+      "materialClass": "plastic",
+      "meshMapping": null,
+      "photoIds": [],
+      "inspectionStatus": "unchecked"
+    },
+    {
+      "id": "front_bumper",
+      "name": "Ön tampon",
+      "regionType": "Diğer dış parçalar",
+      "materialClass": "plastic",
+      "meshMapping": null,
+      "photoIds": [],
+      "inspectionStatus": "unchecked"
+    },
+    {
+      "id": "rear_bumper",
+      "name": "Arka tampon",
+      "regionType": "Diğer dış parçalar",
+      "materialClass": "plastic",
+      "meshMapping": null,
+      "photoIds": [],
+      "inspectionStatus": "unchecked"
+    },
+    {
+      "id": "windshield",
+      "name": "Ön cam",
+      "regionType": "Diğer dış parçalar",
+      "materialClass": "glass",
+      "meshMapping": null,
+      "photoIds": [],
+      "inspectionStatus": "unchecked"
+    },
+    {
+      "id": "rear_glass",
+      "name": "Arka cam",
+      "regionType": "Diğer dış parçalar",
+      "materialClass": "glass",
+      "meshMapping": null,
+      "photoIds": [],
+      "inspectionStatus": "unchecked"
+    }
+  ],
+  "acceptance": {
+    "vehicleIdentity": false,
+    "bodyAndYear": false,
+    "photoRights": false,
+    "modelRights": false,
+    "partMeshes": false,
+    "photoPartMapping": false,
+    "mobilePerformance": false,
+    "independentTechnicalReview": false
+  },
+  "note": "Sedan planning assumption only. This file is not a saved inspection, approved model or importable ERP report. Variant requires separate body/profile validation. No reference photographs or fictional inspection findings are included."
+}
