@@ -4,11 +4,12 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>OTOTR · Paket Motoru</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23ec111f'/%3E%3Cpath d='M8 9h18l-4 14H4z' fill='%23fff'/%3E%3C/svg%3E" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
 <style>
-  html, body { margin: 0; padding: 0; background: #101317; }
+  html, body { margin: 0; padding: 0; background: #efefed; }
   #root { min-height: 100vh; }
 </style>
 </head>
@@ -79,8 +80,8 @@ function Icon({ name, size = 14, color, strokeWidth = 2, style }) {
   }
 }
 
-// ---- Tier color ramp: steel → OTOTR red, one stop per package rank ----
-const TIER_RAMP = ["#576273", "#8B4B44", "#C43A2A", "#E8281A"];
+// ---- Tier color ramp: graphite → OTOTR red, one stop per package rank ----
+const TIER_RAMP = ["#585858", "#A71D26", "#CF1722", "#EC111F"];
 const tierColor = (rank, total) => {
   if (total <= 1) return TIER_RAMP[TIER_RAMP.length - 1];
   const t = rank / (total - 1);
@@ -139,6 +140,15 @@ const initialCategories = [
       "Araç detay sorgulama",
     ],
   },
+];
+
+const extraServices = [
+  { name: "OBD arıza taraması", price: 1350 },
+  { name: "Km Sorgu", price: 300 },
+  { name: "Hasar sorgu", price: 350 },
+  { name: "Conta kaçak testi", price: 1250 },
+  { name: "Airbag kontrolü", price: 4000 },
+  { name: "Araç detay sorgu", price: 350 },
 ];
 
 let uid = 1000;
@@ -296,9 +306,9 @@ function PaketMatrisi() {
   const autosaveTimer = useRef(null);
   const isMobile = useMediaQuery("(max-width: 700px)");
   const isTablet = useMediaQuery("(max-width: 980px)");
-  const labelColWidth = isMobile ? 188 : isTablet ? 220 : 260;
-  const packageColMin = isMobile ? 112 : isTablet ? 132 : 150;
-  const packageColWidth = isMobile ? 118 : isTablet ? 144 : 168;
+  const labelColWidth = isMobile ? 190 : isTablet ? 248 : 330;
+  const packageColMin = isMobile ? 118 : isTablet ? 136 : 152;
+  const packageColWidth = isMobile ? 126 : isTablet ? 154 : 178;
   const matrixMinWidth = labelColWidth + packages.length * packageColWidth;
   const rowStyle = useMemo(
     () => ({
@@ -312,8 +322,8 @@ function PaketMatrisi() {
         position: "sticky",
         left: 0,
         zIndex: 2,
-        background: "#101317",
-        boxShadow: "10px 0 18px rgba(16,19,23,0.72)",
+        background: "#444444",
+        boxShadow: "10px 0 18px rgba(0,0,0,0.24)",
       }
     : null;
   const stickyHeaderCellStyle = isMobile ? { ...stickyCellStyle, zIndex: 5 } : null;
@@ -656,41 +666,47 @@ function PaketMatrisi() {
   return (
     <div className="page-root" style={pageStyle}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Oswald:wght@500;600;700&display=swap');
         * { box-sizing: border-box; font-family: 'DM Sans', -apple-system, 'Segoe UI', sans-serif; }
-        ::selection { background: rgba(232,40,26,0.35); }
+        ::selection { background: rgba(236,17,31,0.25); }
         .cell-btn {
           width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
           background: transparent; border: none; cursor: pointer; padding: 0;
         }
-        .row-hover:hover { background: #1B2027 !important; }
+        .row-hover:hover .service-name-cell { background: #3D3D3D !important; }
+        .row-hover:hover .matrix-data-cell { filter: brightness(0.97); }
         .pkg-input {
           background: transparent; border: none; color: inherit; font: inherit;
           text-align: center; width: 100%; outline: none;
         }
-        .pkg-input:focus { border-bottom: 1px solid #E8281A; }
+        .pkg-input:focus { border-bottom: 2px solid #EC111F; }
         .item-input {
           background: transparent; border: none; color: inherit; font: inherit; outline: none; width: 100%;
         }
-        .item-input:focus { border-bottom: 1px solid #576273; }
+        .item-input:focus { border-bottom: 2px solid #fff; }
         .cat-input {
           background: transparent; border: none; color: inherit; font: inherit; outline: none;
         }
-        .cat-input:focus { border-bottom: 1px solid #576273; }
+        .cat-input:focus { border-bottom: 2px solid #fff; }
         .del-btn { opacity: 0; transition: opacity .12s ease; }
         .row-hover:hover .del-btn, .pkg-head:hover .del-btn, .cat-hover:hover .del-btn { opacity: 1; }
         .drag-handle { opacity: 0; transition: opacity .12s ease; cursor: grab; }
         .row-hover:hover .drag-handle, .cat-hover:hover .drag-handle { opacity: 1; }
-        .matrix-scroll::-webkit-scrollbar { height: 10px; }
-        .matrix-scroll::-webkit-scrollbar-thumb { background: #2A2F37; border-radius: 6px; }
-        .add-row-btn:hover { color: #EDEFF2 !important; border-color: #576273 !important; }
-        .add-pkg-btn:hover { background: #1D2229 !important; }
-        .toolbar-btn:hover { background: #1D2229 !important; border-color: #3A414C !important; }
+        .matrix-scroll::-webkit-scrollbar { height: 11px; }
+        .matrix-scroll::-webkit-scrollbar-thumb { background: #B7B7B7; border-radius: 0; }
+        .add-row-btn:hover { color: #EC111F !important; border-color: #EC111F !important; background: #fff !important; }
+        .add-pkg-btn:hover { background: #B80F1B !important; }
+        .toolbar-btn:hover { background: #fff !important; border-color: #EC111F !important; color: #EC111F !important; }
         .tab-btn { transition: color .12s ease, border-color .12s ease; }
-        .menu-item:hover { background: #1D2229 !important; }
+        .menu-item:hover { background: #F1F1F1 !important; }
+        .brand-word { font-family: 'Oswald', 'Arial Narrow', sans-serif; }
+        .price-list-title { font-family: 'Oswald', 'Arial Narrow', sans-serif; }
+        .featured-pkg-head { transform: translateY(-8px); z-index: 4; box-shadow: 0 10px 22px rgba(100,0,0,0.22); }
+        .featured-col-cell { position: relative; z-index: 2; box-shadow: inset 3px 0 0 rgba(255,255,255,0.18), inset -3px 0 0 rgba(255,255,255,0.18); }
+        .featured-total-cell { transform: translateY(-2px); box-shadow: 0 8px 18px rgba(100,0,0,0.18); }
         .toast {
           position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%);
-          background: #171B20; border: 1px solid #2A2F37; color: #EDEFF2;
+          background: #3A3A3A; border: 2px solid #EC111F; color: #fff;
           padding: 10px 18px; border-radius: 8px; font-size: 13px; z-index: 50;
           animation: toastIn .18s ease;
         }
@@ -699,8 +715,11 @@ function PaketMatrisi() {
           .page-root { overflow-x: hidden; }
           .matrix-header { width: 100%; }
           .matrix-header > div:first-child { min-width: 0; width: 100%; }
-          .matrix-header h1 { font-size: 23px !important; line-height: 1.08 !important; }
-          .matrix-header p { max-width: none !important; font-size: 12.5px !important; }
+          .matrix-header h1 { font-size: 22px !important; line-height: 1.08 !important; }
+          .matrix-header p { max-width: none !important; font-size: 12px !important; }
+          .brand-strip { grid-template-columns: 1fr !important; gap: 8px !important; }
+          .price-flag { justify-content: center !important; min-height: 54px !important; }
+          .control-row { grid-template-columns: 1fr !important; gap: 12px !important; }
           .matrix-toolbar { display: grid !important; grid-template-columns: 1fr 1fr; width: 100%; align-items: stretch !important; }
           .matrix-tabs { grid-column: 1 / -1; width: 100%; }
           .matrix-tabs .tab-btn { flex: 1; justify-content: center; min-height: 42px; }
@@ -719,9 +738,9 @@ function PaketMatrisi() {
           }
           .matrix-menu-section { display: grid !important; grid-template-columns: 1fr auto; }
           .matrix-scroll {
-            margin-left: -12px;
-            margin-right: -12px;
-            padding: 0 12px 12px !important;
+            margin-left: -6px;
+            margin-right: -6px;
+            padding: 0 6px 12px !important;
             -webkit-overflow-scrolling: touch;
             scroll-snap-type: x proximity;
           }
@@ -730,13 +749,17 @@ function PaketMatrisi() {
             display: block;
             height: 1px;
           }
-          .pkg-head { padding: 13px 8px 10px !important; margin-left: 3px !important; }
+          .pkg-head { padding: 0 !important; margin-left: 0 !important; transform: none !important; }
           .pkg-input { font-size: 12.5px !important; overflow-wrap: anywhere; }
+          .pkg-name-input { font-size: 15px !important; }
+          .pkg-price-input { font-size: 21px !important; width: 76px !important; }
           .cell-btn { min-height: 42px; }
           .del-btn, .drag-handle { opacity: 1 !important; }
           .matrix-guarantee-cell { display: grid !important; gap: 4px !important; align-content: center; font-size: 12.5px !important; line-height: 1.2; }
           .matrix-guarantee-tag { white-space: normal !important; line-height: 1.25; }
           .matrix-footer { font-size: 11.5px !important; }
+          .extra-strip { grid-template-columns: 130px 1fr !important; }
+          .extra-items { grid-template-columns: repeat(6, 130px) !important; }
           .analytics-card { padding: 14px !important; }
           .analytics-margin-table { overflow-x: auto; -webkit-overflow-scrolling: touch; }
           .analytics-margin-table > div { min-width: 560px; }
@@ -752,122 +775,133 @@ function PaketMatrisi() {
       `}</style>
 
       <header className="matrix-header" style={headerStyle}>
-        <div>
-          <div style={styles.eyebrow}>OTOTR · Paket Motoru</div>
-          <h1 style={styles.h1}>Hizmet matrisi</h1>
-          <p style={styles.sub}>
-            Her hücreye tıklayarak kalemi pakete ekle ya da çıkar. Paket adı ve fiyatını
-            başlıktan düzenleyebilirsin.
-          </p>
+        <div className="brand-strip" style={styles.brandStrip}>
+          <div style={styles.brandLead}>
+            <span style={styles.brandWing} />
+            <div style={styles.brandText}>
+              <span className="brand-word" style={styles.brandRed}>OTO</span>
+              <span className="brand-word" style={styles.brandDark}>TR</span>
+              <span className="price-list-title" style={styles.brandSuffix}>Oto Ekspertiz</span>
+            </div>
+          </div>
+          <div className="price-flag price-list-title" style={styles.priceFlag}>Fiyat Listesi</div>
         </div>
 
-        <div className="no-print matrix-toolbar" style={toolbarStyle}>
-          <div className="matrix-tabs" style={styles.tabs}>
-            <button
-              className="tab-btn"
-              style={{ ...styles.tabBtn, ...(view === "matrix" ? styles.tabBtnActive : {}) }}
-              onClick={() => setView("matrix")}
-            >
-              <Icon name="grid" size={14} /> Matris
-            </button>
-            <button
-              className="tab-btn"
-              style={{ ...styles.tabBtn, ...(view === "analytics" ? styles.tabBtnActive : {}) }}
-              onClick={() => setView("analytics")}
-            >
-              <Icon name="chart" size={14} /> Analitik
-            </button>
+        <div className="control-row" style={styles.controlRow}>
+          <div style={styles.titlePlate}>
+            <div style={styles.eyebrow}>OTOTR Oto Ekspertiz</div>
+            <h1 style={styles.h1}>Paket Seçim Matrisi</h1>
+            <p style={styles.sub}>2026 avantajlı paket fiyatları</p>
           </div>
 
-          <div className="matrix-menu-anchor" style={{ position: "relative" }}>
-            <button
-              className="toolbar-btn"
-              style={styles.toolbarBtn}
-              onClick={() => {
-                setShowLoadMenu((v) => !v);
-                setShowExportMenu(false);
-              }}
-            >
-              <Icon name="folder" size={14} /> Senaryolar <Icon name="chevronDown" size={13} />
-            </button>
-            {showLoadMenu && (
-              <div className="matrix-menu" style={styles.menu}>
-                <div className="matrix-menu-section" style={styles.menuSection}>
-                  <input
-                    style={styles.menuInput}
-                    placeholder="Senaryo adı…"
-                    value={scenarioName}
-                    onChange={(e) => setScenarioName(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && saveScenario()}
-                  />
-                  <button className="menu-item" style={styles.menuSaveBtn} onClick={saveScenario}>
-                    <Icon name="save" size={13} /> Kaydet
-                  </button>
-                </div>
-                <div style={styles.menuDivider} />
-                {!storageAvailable && (
-                  <div style={{ ...styles.menuEmpty, color: "#8B4B44" }}>
-                    Bu ortamda kalıcı depolama yok — senaryolar sadece bu oturumda geçerli.
+          <div className="no-print matrix-toolbar" style={toolbarStyle}>
+            <div className="matrix-tabs" style={styles.tabs}>
+              <button
+                className="tab-btn"
+                style={{ ...styles.tabBtn, ...(view === "matrix" ? styles.tabBtnActive : {}) }}
+                onClick={() => setView("matrix")}
+              >
+                <Icon name="grid" size={14} /> Matris
+              </button>
+              <button
+                className="tab-btn"
+                style={{ ...styles.tabBtn, ...(view === "analytics" ? styles.tabBtnActive : {}) }}
+                onClick={() => setView("analytics")}
+              >
+                <Icon name="chart" size={14} /> Analitik
+              </button>
+            </div>
+
+            <div className="matrix-menu-anchor" style={{ position: "relative" }}>
+              <button
+                className="toolbar-btn"
+                style={styles.toolbarBtn}
+                onClick={() => {
+                  setShowLoadMenu((v) => !v);
+                  setShowExportMenu(false);
+                }}
+              >
+                <Icon name="folder" size={14} /> Senaryolar <Icon name="chevronDown" size={13} />
+              </button>
+              {showLoadMenu && (
+                <div className="matrix-menu" style={styles.menu}>
+                  <div className="matrix-menu-section" style={styles.menuSection}>
+                    <input
+                      style={styles.menuInput}
+                      placeholder="Senaryo adı…"
+                      value={scenarioName}
+                      onChange={(e) => setScenarioName(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && saveScenario()}
+                    />
+                    <button className="menu-item" style={styles.menuSaveBtn} onClick={saveScenario}>
+                      <Icon name="save" size={13} /> Kaydet
+                    </button>
                   </div>
-                )}
-                {scenarios.length === 0 ? (
-                  <div style={styles.menuEmpty}>Henüz kayıtlı senaryo yok</div>
-                ) : (
-                  scenarios.map((s) => (
-                    <div
-                      key={s.id}
-                      className="menu-item"
-                      style={styles.menuItem}
-                      onClick={() => loadScenario(s)}
-                    >
-                      <div>
-                        <div style={{ fontSize: 13, fontWeight: 600 }}>{s.name}</div>
-                        <div style={{ fontSize: 10.5, color: "#6B7280" }}>{fmtTime(s.savedAt)}</div>
-                      </div>
-                      <button
-                        style={styles.menuDelBtn}
-                        onClick={(e) => deleteScenario(s.id, e)}
-                        aria-label="Senaryoyu sil"
-                      >
-                        <Icon name="trash" size={12} />
-                      </button>
+                  <div style={styles.menuDivider} />
+                  {!storageAvailable && (
+                    <div style={{ ...styles.menuEmpty, color: "#9B111A" }}>
+                      Bu ortamda kalıcı depolama yok — senaryolar sadece bu oturumda geçerli.
                     </div>
-                  ))
-                )}
-              </div>
-            )}
-          </div>
+                  )}
+                  {scenarios.length === 0 ? (
+                    <div style={styles.menuEmpty}>Henüz kayıtlı senaryo yok</div>
+                  ) : (
+                    scenarios.map((s) => (
+                      <div
+                        key={s.id}
+                        className="menu-item"
+                        style={styles.menuItem}
+                        onClick={() => loadScenario(s)}
+                      >
+                        <div>
+                          <div style={{ fontSize: 13, fontWeight: 700 }}>{s.name}</div>
+                          <div style={{ fontSize: 10.5, color: "#777" }}>{fmtTime(s.savedAt)}</div>
+                        </div>
+                        <button
+                          style={styles.menuDelBtn}
+                          onClick={(e) => deleteScenario(s.id, e)}
+                          aria-label="Senaryoyu sil"
+                        >
+                          <Icon name="trash" size={12} />
+                        </button>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
 
-          <div className="matrix-menu-anchor" style={{ position: "relative" }}>
-            <button
-              className="toolbar-btn"
-              style={styles.toolbarBtn}
-              onClick={() => {
-                setShowExportMenu((v) => !v);
-                setShowLoadMenu(false);
-              }}
-            >
-              <Icon name="download" size={14} /> Dışa aktar <Icon name="chevronDown" size={13} />
+            <div className="matrix-menu-anchor" style={{ position: "relative" }}>
+              <button
+                className="toolbar-btn"
+                style={styles.toolbarBtn}
+                onClick={() => {
+                  setShowExportMenu((v) => !v);
+                  setShowLoadMenu(false);
+                }}
+              >
+                <Icon name="download" size={14} /> Dışa aktar <Icon name="chevronDown" size={13} />
+              </button>
+              {showExportMenu && (
+                <div className="matrix-menu" style={{ ...styles.menu, minWidth: 200 }}>
+                  <div className="menu-item" style={styles.menuAction} onClick={exportCSV}>
+                    <Icon name="sheet" size={14} /> Excel / CSV indir
+                  </div>
+                  <div className="menu-item" style={styles.menuAction} onClick={exportPrintPDF}>
+                    <Icon name="doc" size={14} /> PDF olarak yazdır
+                  </div>
+                  <div className="menu-item" style={styles.menuAction} onClick={copyShareSummary}>
+                    <Icon name="link" size={14} /> Özeti panoya kopyala
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <button className="add-pkg-btn" style={styles.addPkgBtn} onClick={addPackage}>
+              <Icon name="plus" size={16} strokeWidth={2.5} />
+              Paket ekle
             </button>
-            {showExportMenu && (
-              <div className="matrix-menu" style={{ ...styles.menu, minWidth: 200 }}>
-                <div className="menu-item" style={styles.menuAction} onClick={exportCSV}>
-                  <Icon name="sheet" size={14} /> Excel / CSV indir
-                </div>
-                <div className="menu-item" style={styles.menuAction} onClick={exportPrintPDF}>
-                  <Icon name="doc" size={14} /> PDF olarak yazdır
-                </div>
-                <div className="menu-item" style={styles.menuAction} onClick={copyShareSummary}>
-                  <Icon name="link" size={14} /> Özeti panoya kopyala
-                </div>
-              </div>
-            )}
           </div>
-
-          <button className="add-pkg-btn" style={styles.addPkgBtn} onClick={addPackage}>
-            <Icon name="plus" size={16} strokeWidth={2.5} />
-            Paket ekle
-          </button>
         </div>
       </header>
 
@@ -879,17 +913,23 @@ function PaketMatrisi() {
 
       {view === "matrix" ? (
         <div className="matrix-scroll" style={styles.scrollArea}>
-          <div className="matrix-table" style={{ minWidth: matrixMinWidth }}>
+          <div className="matrix-table" style={{ ...styles.matrixTable, minWidth: matrixMinWidth }}>
             {/* Column headers */}
             <div className="matrix-row" style={{ ...rowStyle, position: "sticky", top: 0, zIndex: 3 }}>
               <div style={{ ...styles.cornerCell, ...(stickyHeaderCellStyle || {}) }}>
-                <span style={styles.cornerLabel}>Hizmet kalemi</span>
+                <span className="price-list-title" style={styles.cornerTitle}>OTOTR Oto Ekspertiz</span>
+                <span style={styles.cornerLabel}>Paket seçim matrisi</span>
               </div>
               {packages.map((pkg, i) => {
                 const color = tierColor(i, packages.length);
                 const barPct = Math.round((pkg.price / maxPrice) * 100);
+                const featured = i === packages.length - 1;
                 return (
-                  <div key={pkg.id} className="pkg-head" style={{ ...styles.pkgHead, borderTopColor: color }}>
+                  <div
+                    key={pkg.id}
+                    className={`pkg-head${featured ? " featured-pkg-head" : ""}`}
+                    style={{ ...styles.pkgHead, ...(featured ? styles.pkgHeadFeatured : {}) }}
+                  >
                     <div className="no-print" style={styles.pkgHeadActions}>
                       <button
                         className="del-btn"
@@ -910,30 +950,35 @@ function PaketMatrisi() {
                         <Icon name="x" size={12} />
                       </button>
                     </div>
-                    <input
-                      className="pkg-input"
-                      style={{ fontWeight: 700, fontSize: 14, color: "#EDEFF2" }}
-                      value={pkg.name}
-                      onChange={(e) => renamePackage(pkg.id, e.target.value)}
-                    />
-                    <div style={styles.priceRow}>
+                    <div style={{ ...styles.pkgNameBand, background: featured ? "#EC111F" : "#535353" }}>
                       <input
-                        className="pkg-input"
-                        style={{ fontSize: 13, color: "#9AA3AF", textAlign: "right", width: 62 }}
-                        value={pkg.price}
-                        onChange={(e) => repricePackage(pkg.id, e.target.value.replace(/[^0-9]/g, ""))}
+                        className="pkg-input pkg-name-input"
+                        style={styles.pkgNameInput}
+                        value={pkg.name}
+                        onChange={(e) => renamePackage(pkg.id, e.target.value)}
                       />
-                      <span style={{ fontSize: 12, color: "#6B7280" }}>TL</span>
                     </div>
-                    <div style={styles.barTrack}>
-                      <div style={{ ...styles.barFill, width: `${barPct}%`, background: color }} />
-                    </div>
-                    <div style={{ fontSize: 11, color: "#6B7280", marginTop: 6 }}>
-                      {counts.perPackage[pkg.id]} kalem ·{" "}
-                      {counts.perPackage[pkg.id] > 0
-                        ? Math.round(pkg.price / counts.perPackage[pkg.id]).toLocaleString("tr-TR")
-                        : "—"}{" "}
-                      TL/kalem
+                    <div style={styles.pkgChevron} />
+                    <div style={styles.pkgPricePanel}>
+                      <div style={styles.priceRow}>
+                        <input
+                          className="pkg-input pkg-price-input"
+                          style={styles.pkgPriceInput}
+                          value={pkg.price}
+                          onChange={(e) => repricePackage(pkg.id, e.target.value.replace(/[^0-9]/g, ""))}
+                        />
+                        <span style={styles.priceCurrency}>TL</span>
+                      </div>
+                      <div style={styles.barTrack}>
+                        <div style={{ ...styles.barFill, width: `${barPct}%`, background: color }} />
+                      </div>
+                      <div style={styles.pkgCountLine}>
+                        {counts.perPackage[pkg.id]} kalem ·{" "}
+                        {counts.perPackage[pkg.id] > 0
+                          ? Math.round(pkg.price / counts.perPackage[pkg.id]).toLocaleString("tr-TR")
+                          : "—"}{" "}
+                        TL/kalem
+                      </div>
                     </div>
                   </div>
                 );
@@ -956,7 +1001,7 @@ function PaketMatrisi() {
                   draggable
                   onDragStart={() => (dragCategory.current = cat.id)}
                 >
-                  <div style={{ ...styles.categoryCell, ...(stickyCellStyle || {}) }}>
+                  <div className="service-name-cell" style={{ ...styles.categoryCell, ...(stickyCellStyle || {}) }}>
                     <span className="no-print drag-handle" style={{ display: "inline-flex" }}>
                       <Icon name="grip" size={12} />
                     </span>
@@ -968,7 +1013,7 @@ function PaketMatrisi() {
                         onChange={(e) => renameCategory(cat.id, e.target.value)}
                         onBlur={() => setEditingCategory(null)}
                         onKeyDown={(e) => e.key === "Enter" && setEditingCategory(null)}
-                        style={{ fontSize: 11.5, fontWeight: 700, color: "#6B7280" }}
+                        style={{ fontSize: 12, fontWeight: 800, color: "#fff" }}
                       />
                     ) : (
                       <span onClick={() => setEditingCategory(cat.id)} style={{ cursor: "text" }}>
@@ -995,8 +1040,7 @@ function PaketMatrisi() {
                   .map((row) => (
                     <div
                       key={row.id}
-                      className="row-hover"
-                      className="matrix-row"
+                      className="row-hover matrix-row"
                       style={rowStyle}
                       draggable
                       onDragStart={() => (dragItem.current = row.id)}
@@ -1006,8 +1050,8 @@ function PaketMatrisi() {
                         dragItem.current = null;
                       }}
                     >
-                      <div style={{ ...styles.itemCell, ...(stickyCellStyle || {}) }}>
-                        <span className="no-print drag-handle" style={{ display: "inline-flex", color: "#576273" }}>
+                      <div className="service-name-cell" style={{ ...styles.itemCell, ...(stickyCellStyle || {}) }}>
+                        <span className="no-print drag-handle" style={{ display: "inline-flex", color: "#CFCFCF" }}>
                           <Icon name="grip" size={13} />
                         </span>
                         {editingCell === row.id ? (
@@ -1018,12 +1062,12 @@ function PaketMatrisi() {
                             onChange={(e) => renameItem(row.id, e.target.value)}
                             onBlur={() => setEditingCell(null)}
                             onKeyDown={(e) => e.key === "Enter" && setEditingCell(null)}
-                            style={{ fontSize: 14, color: "#EDEFF2" }}
+                            style={{ fontSize: 15, color: "#fff" }}
                           />
                         ) : (
                           <span
                             onClick={() => setEditingCell(row.id)}
-                            style={{ fontSize: 14, color: "#DADEE3", cursor: "text" }}
+                            style={styles.itemLabel}
                           >
                             {row.label}
                           </span>
@@ -1042,9 +1086,17 @@ function PaketMatrisi() {
                       </div>
                       {packages.map((pkg, i) => {
                         const on = !!matrix[`${row.id}:${pkg.id}`];
-                        const color = tierColor(i, packages.length);
+                        const featured = i === packages.length - 1;
                         return (
-                          <div key={pkg.id} style={styles.cell}>
+                          <div
+                            key={pkg.id}
+                            className={`matrix-data-cell${featured ? " featured-col-cell" : ""}`}
+                            style={{
+                              ...styles.cell,
+                              ...(on ? styles.cellIncluded : styles.cellEmpty),
+                              ...(featured && on ? styles.cellFeaturedIncluded : {}),
+                            }}
+                          >
                             <button
                               className="cell-btn"
                               onClick={() => toggleCell(row.id, pkg.id)}
@@ -1052,14 +1104,8 @@ function PaketMatrisi() {
                               aria-label={`${row.label} — ${pkg.name}`}
                             >
                               {on ? (
-                                <span
-                                  style={{
-                                    ...styles.checkDot,
-                                    background: `${color}22`,
-                                    borderColor: color,
-                                  }}
-                                >
-                                  <Icon name="check" size={13} strokeWidth={3} color={color} />
+                                <span style={styles.checkDot}>
+                                  <Icon name="check" size={18} strokeWidth={3.2} color="#fff" />
                                 </span>
                               ) : (
                                 <span style={styles.dashDot} />
@@ -1096,15 +1142,23 @@ function PaketMatrisi() {
 
             {/* Garanti — bonus row, not counted as a hizmet kalemi */}
             <div className="matrix-row" style={{ ...rowStyle, marginTop: 4 }}>
-              <div className="matrix-guarantee-cell" style={{ ...styles.garantiCell, ...(stickyCellStyle || {}) }}>
+              <div className="matrix-guarantee-cell service-name-cell" style={{ ...styles.garantiCell, ...(stickyCellStyle || {}) }}>
                 7 gün / 1.000 km geri alım garantisi
                 <span className="matrix-guarantee-tag" style={styles.garantiTag}>hizmet kalemi sayılmaz</span>
               </div>
               {packages.map((pkg, i) => {
                 const on = !!garanti[pkg.id];
-                const color = tierColor(i, packages.length);
+                const featured = i === packages.length - 1;
                 return (
-                  <div key={pkg.id} style={{ ...styles.cell, background: "rgba(232,40,26,0.05)" }}>
+                  <div
+                    key={pkg.id}
+                    className={`matrix-data-cell${featured ? " featured-col-cell" : ""}`}
+                    style={{
+                      ...styles.cell,
+                      ...(on ? styles.cellIncluded : styles.cellEmpty),
+                      ...(featured && on ? styles.cellFeaturedIncluded : {}),
+                    }}
+                  >
                     <button
                       className="cell-btn"
                       onClick={() => toggleGaranti(pkg.id)}
@@ -1112,8 +1166,8 @@ function PaketMatrisi() {
                       aria-label={`Garanti — ${pkg.name}`}
                     >
                       {on ? (
-                        <span style={{ ...styles.checkDot, background: `${color}22`, borderColor: color }}>
-                          <Icon name="check" size={13} strokeWidth={3} color={color} />
+                        <span style={styles.checkDot}>
+                          <Icon name="check" size={18} strokeWidth={3.2} color="#fff" />
                         </span>
                       ) : (
                         <span style={styles.dashDot} />
@@ -1123,6 +1177,41 @@ function PaketMatrisi() {
                 );
               })}
             </div>
+
+            <div className="matrix-row" style={rowStyle}>
+              <div style={{ ...styles.totalLabelCell, ...(isMobile ? { position: "sticky", left: 0, zIndex: 3 } : {}) }}>
+                Avantajlı Paket Fiyatları
+              </div>
+              {packages.map((pkg, i) => {
+                const featured = i === packages.length - 1;
+                return (
+                  <div
+                    key={pkg.id}
+                    className={featured ? "featured-total-cell" : ""}
+                    style={{ ...styles.totalPriceCell, ...(featured ? styles.totalPriceFeatured : {}) }}
+                  >
+                    {pkg.price.toLocaleString("tr-TR")} <span style={styles.totalCurrency}>TL</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="extra-strip" style={{ ...styles.extraStrip, minWidth: matrixMinWidth }}>
+            <div style={styles.extraLabel}>Ek Hizmetler</div>
+            <div className="extra-items" style={styles.extraItems}>
+              {extraServices.map((service) => (
+                <div key={service.name} style={styles.extraItem}>
+                  <span style={styles.extraItemName}>{service.name}</span>
+                  <strong style={styles.extraItemPrice}>
+                    {service.price.toLocaleString("tr-TR")} <span>TL</span>
+                  </strong>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div style={{ ...styles.extraNote, minWidth: matrixMinWidth }}>
+            * 4x4 araçlarda ekspertiz kontrolü için fiyat farkı uygulanabilir.
           </div>
         </div>
       ) : (
@@ -1130,7 +1219,7 @@ function PaketMatrisi() {
       )}
 
       <footer className="matrix-footer" style={styles.footer}>
-        <span style={{ color: "#6B7280" }}>
+        <span style={{ color: "#555" }}>
           Sayı, satırdaki hizmetin kaç pakette dahil olduğunu gösterir — 1/{packages.length} olan
           kalemler farklılaştırıcı, {packages.length}/{packages.length} olanlar temel standarttır.
         </span>
@@ -1217,10 +1306,10 @@ function AnalyticsView({ packages, analytics, recostPackage, maxPrice }) {
                 <div style={{ fontSize: 13 }}>
                   <strong>{j.from}</strong> → <strong>{j.to}</strong>
                 </div>
-                <div style={{ display: "flex", gap: 18, fontSize: 12.5, color: "#9AA3AF" }}>
+                <div style={{ display: "flex", gap: 18, fontSize: 12.5, color: "#555" }}>
                   <span>+{j.priceDelta.toLocaleString("tr-TR")} TL</span>
                   <span>+{j.itemDelta} kalem</span>
-                  <span style={{ color: "#DADEE3", fontWeight: 600 }}>
+                  <span style={{ color: "#222", fontWeight: 700 }}>
                     {j.perExtraItem != null
                       ? `${Math.round(j.perExtraItem).toLocaleString("tr-TR")} TL/kalem`
                       : "kalem farkı yok"}
@@ -1257,7 +1346,7 @@ function AnalyticsView({ packages, analytics, recostPackage, maxPrice }) {
           </div>
           <div style={styles.gapCol}>
             <div style={styles.gapColHeader}>
-              <Icon name="trend" size={13} color="#576273" />
+              <Icon name="trend" size={13} color="#555" />
               Temel standart ({analytics.baseline.length})
             </div>
             {analytics.baseline.length === 0 ? (
@@ -1284,12 +1373,12 @@ function AnalyticsView({ packages, analytics, recostPackage, maxPrice }) {
               <div key={pkg.id} style={{ ...styles.compareCard, borderTopColor: color }}>
                 <div style={{ fontWeight: 700, fontSize: 14 }}>{pkg.name}</div>
                 <div style={{ fontSize: 20, fontWeight: 800, marginTop: 4 }}>
-                  {pkg.price.toLocaleString("tr-TR")} <span style={{ fontSize: 12, color: "#6B7280" }}>TL</span>
+                  {pkg.price.toLocaleString("tr-TR")} <span style={{ fontSize: 12, color: "#555" }}>TL</span>
                 </div>
                 <div style={styles.barTrack}>
                   <div style={{ ...styles.barFill, width: `${barPct}%`, background: color }} />
                 </div>
-                <div style={{ fontSize: 12, color: "#9AA3AF", marginTop: 10, lineHeight: 1.7 }}>
+                <div style={{ fontSize: 12, color: "#555", marginTop: 10, lineHeight: 1.7 }}>
                   <div>{pkg.itemCount} hizmet kalemi</div>
                   <div>{Math.round(pkg.perItemPrice).toLocaleString("tr-TR")} TL/kalem</div>
                   <div style={{ color: pkg.margin >= 0 ? "#7FBF6A" : "#E8281A" }}>
@@ -1307,38 +1396,98 @@ function AnalyticsView({ packages, analytics, recostPackage, maxPrice }) {
 
 const styles = {
   page: {
-    background: "#101317",
-    color: "#EDEFF2",
+    background: "#EFEFED",
+    color: "#222",
     minHeight: "100vh",
-    padding: "28px 20px 20px",
+    padding: "14px 16px 24px",
   },
   pageMobile: {
-    padding: "16px 12px 18px",
+    padding: "10px 10px 18px",
   },
   header: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "flex-end",
-    gap: 16,
-    flexWrap: "wrap",
-    marginBottom: 22,
+    display: "grid",
+    gap: 10,
+    marginBottom: 12,
   },
   headerMobile: {
     display: "grid",
-    gap: 12,
+    gap: 10,
     alignItems: "start",
-    marginBottom: 16,
+    marginBottom: 12,
   },
-  eyebrow: { fontSize: 12, color: "#8B4B44", fontWeight: 600, letterSpacing: 0.2, marginBottom: 6 },
-  h1: { fontSize: 26, fontWeight: 800, margin: 0, letterSpacing: -0.3 },
-  sub: { fontSize: 13.5, color: "#9AA3AF", maxWidth: 460, marginTop: 6, lineHeight: 1.5 },
+  brandStrip: {
+    display: "grid",
+    gridTemplateColumns: "1fr minmax(260px, 36%)",
+    gap: 14,
+    alignItems: "stretch",
+  },
+  brandLead: {
+    display: "flex",
+    alignItems: "center",
+    gap: 14,
+    background: "#F8F8F7",
+    borderTop: "5px solid #4D4D4D",
+    borderBottom: "5px solid #D1D1D1",
+    minHeight: 78,
+    padding: "10px 22px",
+    boxShadow: "0 8px 18px rgba(0,0,0,0.10)",
+  },
+  brandWing: {
+    display: "block",
+    width: "22%",
+    minWidth: 92,
+    maxWidth: 210,
+    height: 52,
+    background: "linear-gradient(135deg, #B90D18, #EC111F)",
+    borderTop: "4px solid #4D4D4D",
+    borderRight: "8px solid #F8F8F7",
+    transform: "skewX(-18deg)",
+    flexShrink: 0,
+  },
+  brandText: { display: "flex", alignItems: "baseline", gap: 6, minWidth: 0, flexWrap: "wrap" },
+  brandRed: { color: "#EC111F", fontSize: 58, fontWeight: 700, lineHeight: 0.92, letterSpacing: 0 },
+  brandDark: { color: "#555", fontSize: 58, fontWeight: 700, lineHeight: 0.92, letterSpacing: 0 },
+  brandSuffix: { color: "#5E5E5E", fontSize: 34, fontWeight: 600, fontStyle: "italic", lineHeight: 1, letterSpacing: 0 },
+  priceFlag: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    background: "linear-gradient(135deg, #B90D18, #EC111F)",
+    color: "#fff",
+    minHeight: 78,
+    padding: "10px 24px",
+    fontSize: 42,
+    fontWeight: 700,
+    fontStyle: "italic",
+    textShadow: "0 2px 0 rgba(0,0,0,0.18)",
+    borderTop: "5px solid #4D4D4D",
+    borderBottom: "5px solid #FFC400",
+    boxShadow: "0 8px 18px rgba(0,0,0,0.14)",
+  },
+  controlRow: {
+    display: "grid",
+    gridTemplateColumns: "minmax(260px, 420px) 1fr",
+    gap: 12,
+    alignItems: "end",
+  },
+  titlePlate: {
+    background: "#4C4C4C",
+    color: "#fff",
+    padding: "16px 18px",
+    minHeight: 84,
+    borderBottom: "6px solid #EC111F",
+    boxShadow: "inset 0 -5px 0 #BEBEBE",
+  },
+  eyebrow: { fontSize: 12, color: "#F1F1F1", fontWeight: 800, letterSpacing: 0, marginBottom: 4 },
+  h1: { fontSize: 29, fontWeight: 800, margin: 0, letterSpacing: 0, fontFamily: "'Oswald', 'Arial Narrow', sans-serif" },
+  sub: { fontSize: 13, color: "#F2F2F2", maxWidth: 460, marginTop: 5, lineHeight: 1.3, fontWeight: 700 },
   toolbar: { display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" },
   toolbarMobile: { display: "grid", gridTemplateColumns: "1fr 1fr", width: "100%", gap: 8 },
   tabs: {
     display: "flex",
-    background: "#14171C",
-    border: "1px solid #20252C",
-    borderRadius: 8,
+    background: "#fff",
+    border: "1px solid #CFCFCF",
+    borderRadius: 3,
     padding: 3,
     gap: 2,
   },
@@ -1348,25 +1497,25 @@ const styles = {
     gap: 6,
     background: "transparent",
     border: "none",
-    color: "#6B7280",
+    color: "#555",
     fontSize: 12.5,
-    fontWeight: 600,
+    fontWeight: 800,
     padding: "6px 12px",
-    borderRadius: 6,
+    borderRadius: 2,
     cursor: "pointer",
   },
-  tabBtnActive: { background: "#20252C", color: "#EDEFF2" },
+  tabBtnActive: { background: "#EC111F", color: "#fff" },
   toolbarBtn: {
     display: "flex",
     alignItems: "center",
     gap: 6,
-    background: "#171B20",
-    border: "1px solid #2A2F37",
-    color: "#DADEE3",
+    background: "#F8F8F7",
+    border: "1px solid #CFCFCF",
+    color: "#444",
     fontSize: 12.5,
-    fontWeight: 600,
+    fontWeight: 800,
     padding: "8px 12px",
-    borderRadius: 8,
+    borderRadius: 3,
     cursor: "pointer",
     whiteSpace: "nowrap",
   },
@@ -1374,13 +1523,13 @@ const styles = {
     display: "flex",
     alignItems: "center",
     gap: 6,
-    background: "#171B20",
-    border: "1px solid #2A2F37",
-    color: "#EDEFF2",
+    background: "#EC111F",
+    border: "1px solid #B90D18",
+    color: "#fff",
     fontSize: 13.5,
-    fontWeight: 600,
+    fontWeight: 800,
     padding: "9px 14px",
-    borderRadius: 8,
+    borderRadius: 3,
     cursor: "pointer",
     whiteSpace: "nowrap",
   },
@@ -1388,21 +1537,21 @@ const styles = {
     position: "absolute",
     top: "calc(100% + 6px)",
     right: 0,
-    background: "#14171C",
-    border: "1px solid #2A2F37",
-    borderRadius: 10,
+    background: "#fff",
+    border: "1px solid #CFCFCF",
+    borderRadius: 4,
     padding: 6,
     minWidth: 240,
     zIndex: 20,
-    boxShadow: "0 12px 28px rgba(0,0,0,0.45)",
+    boxShadow: "0 12px 28px rgba(0,0,0,0.18)",
   },
   menuSection: { display: "flex", gap: 6, padding: 4 },
   menuInput: {
     flex: 1,
-    background: "#0F1216",
-    border: "1px solid #2A2F37",
-    borderRadius: 6,
-    color: "#EDEFF2",
+    background: "#F5F5F5",
+    border: "1px solid #CFCFCF",
+    borderRadius: 3,
+    color: "#222",
     fontSize: 12.5,
     padding: "6px 8px",
     outline: "none",
@@ -1417,106 +1566,180 @@ const styles = {
     fontSize: 12,
     fontWeight: 700,
     padding: "6px 10px",
-    borderRadius: 6,
+    borderRadius: 3,
     cursor: "pointer",
     whiteSpace: "nowrap",
   },
-  menuDivider: { height: 1, background: "#20252C", margin: "6px 2px" },
-  menuEmpty: { fontSize: 12, color: "#6B7280", padding: "10px 8px" },
+  menuDivider: { height: 1, background: "#E1E1E1", margin: "6px 2px" },
+  menuEmpty: { fontSize: 12, color: "#777", padding: "10px 8px" },
   menuItem: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
     padding: "8px",
-    borderRadius: 6,
+    borderRadius: 3,
     cursor: "pointer",
+    color: "#222",
   },
-  menuDelBtn: { background: "transparent", border: "none", color: "#6B7280", cursor: "pointer", padding: 2 },
+  menuDelBtn: { background: "transparent", border: "none", color: "#777", cursor: "pointer", padding: 2 },
   menuAction: {
     display: "flex",
     alignItems: "center",
     gap: 8,
     padding: "9px 10px",
-    borderRadius: 6,
+    borderRadius: 3,
     cursor: "pointer",
     fontSize: 13,
-    color: "#DADEE3",
+    color: "#222",
   },
   autosaveNote: {
     display: "flex",
     alignItems: "center",
     gap: 5,
     fontSize: 11,
-    color: "#576273",
-    marginTop: -14,
-    marginBottom: 14,
+    color: "#666",
+    margin: "0 0 8px",
   },
-  scrollArea: { overflowX: "auto", paddingBottom: 6 },
+  scrollArea: {
+    overflowX: "auto",
+    paddingBottom: 8,
+    border: "2px solid #5B5B5B",
+    background: "#D9D9D7",
+    boxShadow: "0 14px 30px rgba(0,0,0,0.12)",
+  },
+  matrixTable: {
+    background: "#CFCFCD",
+    borderCollapse: "collapse",
+  },
   gridRow: {
     display: "grid",
     gridTemplateColumns: "260px repeat(auto-fit, minmax(150px, 1fr))",
   },
   cornerCell: {
     display: "flex",
-    alignItems: "flex-end",
-    paddingBottom: 10,
-    background: "#101317",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 4,
+    minHeight: 128,
+    padding: "18px 16px",
+    background: "#4D4D4D",
+    color: "#fff",
+    textAlign: "center",
+    borderRight: "2px solid #EFEFED",
+    borderBottom: "2px solid #EFEFED",
+    boxShadow: "inset 0 -7px 0 #BFBFBF, inset 0 -13px 0 #EC111F",
   },
-  cornerLabel: { fontSize: 11, color: "#6B7280", fontWeight: 600 },
+  cornerTitle: { fontSize: 28, fontWeight: 700, lineHeight: 1.05, textShadow: "0 2px 0 rgba(0,0,0,0.2)" },
+  cornerLabel: { fontSize: 13, color: "#F1F1F1", fontWeight: 800, textTransform: "uppercase" },
   pkgHead: {
-    background: "#171B20",
-    borderTop: "3px solid",
-    borderRadius: "8px 8px 0 0",
-    padding: "12px 12px 10px",
+    background: "#F7F7F6",
+    borderRadius: 0,
+    padding: 0,
     textAlign: "center",
     position: "relative",
-    marginLeft: 4,
+    marginLeft: 0,
+    minHeight: 128,
+    borderRight: "2px solid #737373",
+    borderBottom: "2px solid #BFBFBF",
   },
-  pkgHeadActions: { position: "absolute", top: 6, right: 6, display: "flex", gap: 2 },
+  pkgHeadFeatured: {
+    background: "#fff",
+    borderLeft: "3px solid #EC111F",
+    borderRight: "3px solid #EC111F",
+  },
+  pkgNameBand: {
+    minHeight: 54,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "8px 10px",
+    color: "#fff",
+  },
+  pkgChevron: {
+    height: 14,
+    background: "linear-gradient(135deg, transparent 49%, #BEBEBE 50%) left/50% 100% no-repeat, linear-gradient(225deg, transparent 49%, #BEBEBE 50%) right/50% 100% no-repeat",
+  },
+  pkgPricePanel: {
+    padding: "6px 10px 9px",
+    background: "#F7F7F6",
+  },
+  pkgNameInput: {
+    fontWeight: 800,
+    fontSize: 18,
+    color: "#fff",
+    fontFamily: "'Oswald', 'Arial Narrow', sans-serif",
+    lineHeight: 1.05,
+  },
+  pkgPriceInput: {
+    fontSize: 28,
+    color: "#EC111F",
+    textAlign: "right",
+    width: 96,
+    fontWeight: 800,
+    fontFamily: "'Oswald', 'Arial Narrow', sans-serif",
+    lineHeight: 1,
+  },
+  priceCurrency: { fontSize: 13, color: "#EC111F", fontWeight: 800 },
+  pkgCountLine: { fontSize: 11, color: "#555", marginTop: 5, fontWeight: 700 },
+  pkgHeadActions: { position: "absolute", top: 5, right: 5, display: "flex", gap: 2, zIndex: 5 },
   pkgIconBtn: {
-    background: "transparent",
+    background: "rgba(255,255,255,0.86)",
     border: "none",
-    color: "#6B7280",
+    color: "#444",
     cursor: "pointer",
     padding: 2,
   },
   priceRow: { display: "flex", justifyContent: "center", alignItems: "baseline", gap: 4, marginTop: 2 },
-  barTrack: { height: 4, background: "#20252C", borderRadius: 2, marginTop: 8, overflow: "hidden" },
-  barFill: { height: "100%", borderRadius: 2 },
+  barTrack: { height: 4, background: "#D7D7D7", borderRadius: 0, marginTop: 7, overflow: "hidden" },
+  barFill: { height: "100%", borderRadius: 0 },
   categoryCell: {
     display: "flex",
     alignItems: "center",
     gap: 6,
-    fontSize: 11.5,
-    fontWeight: 700,
-    color: "#6B7280",
-    padding: "18px 8px 8px 4px",
-    borderBottom: "1px solid #20252C",
-    textTransform: "none",
+    fontSize: 12,
+    fontWeight: 800,
+    color: "#fff",
+    padding: "9px 12px",
+    borderRight: "2px solid #EFEFED",
+    borderBottom: "2px solid #EFEFED",
+    background: "#EC111F",
+    textTransform: "uppercase",
   },
-  catDelBtn: { marginLeft: "auto", background: "transparent", border: "none", color: "#6B7280", cursor: "pointer", padding: 2 },
-  categorySpacer: { borderBottom: "1px solid #20252C" },
+  catDelBtn: { marginLeft: "auto", background: "transparent", border: "none", color: "#fff", cursor: "pointer", padding: 2 },
+  categorySpacer: { borderRight: "2px solid #737373", borderBottom: "2px solid #EFEFED", background: "#BDBDBB" },
   itemCell: {
     display: "flex",
     alignItems: "center",
     gap: 8,
-    padding: "10px 8px 10px 4px",
-    borderBottom: "1px solid #1A1E24",
+    padding: "8px 12px",
+    borderRight: "2px solid #EFEFED",
+    borderBottom: "2px solid #9C9C9C",
+    background: "#444444",
+    minHeight: 38,
+  },
+  itemLabel: {
+    fontSize: 15,
+    color: "#fff",
+    cursor: "text",
+    fontWeight: 800,
+    lineHeight: 1.18,
+    textShadow: "0 1px 0 rgba(0,0,0,0.28)",
   },
   itemBadge: {
     marginLeft: "auto",
     fontSize: 10.5,
-    color: "#576273",
-    background: "#171B20",
-    border: "1px solid #20252C",
-    borderRadius: 20,
+    color: "#fff",
+    background: "#EC111F",
+    border: "1px solid rgba(255,255,255,0.42)",
+    borderRadius: 3,
     padding: "1px 7px",
     flexShrink: 0,
   },
   itemDel: {
     background: "transparent",
     border: "none",
-    color: "#6B7280",
+    color: "#fff",
     cursor: "pointer",
     padding: 2,
     flexShrink: 0,
@@ -1525,82 +1748,167 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    borderBottom: "1px solid #1A1E24",
-    marginLeft: 4,
-    height: 42,
+    borderRight: "2px solid #737373",
+    borderBottom: "2px solid #9C9C9C",
+    marginLeft: 0,
+    minHeight: 38,
+    alignSelf: "stretch",
   },
+  cellIncluded: { background: "linear-gradient(180deg, #EC111F, #C9111D)" },
+  cellFeaturedIncluded: { background: "linear-gradient(180deg, #F41A28, #D4111D)" },
+  cellEmpty: { background: "linear-gradient(180deg, #F2F2F1, #DDDDDB)" },
   checkDot: {
-    width: 26,
-    height: 26,
+    width: 30,
+    height: 30,
     borderRadius: "50%",
-    border: "1px solid",
+    border: "2px solid #fff",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
+    background: "rgba(255,255,255,0.08)",
   },
-  dashDot: { width: 5, height: 5, borderRadius: "50%", background: "#2A2F37" },
-  addRowCell: { padding: "8px 8px 16px 4px" },
+  dashDot: { width: 28, height: 2, background: "#333", borderRadius: 1 },
+  addRowCell: { padding: "8px 12px 12px", background: "#444", borderRight: "2px solid #EFEFED" },
   addRowBtn: {
     display: "flex",
     alignItems: "center",
     gap: 6,
-    background: "transparent",
-    border: "1px dashed #2A2F37",
-    color: "#6B7280",
+    background: "rgba(255,255,255,0.08)",
+    border: "1px dashed rgba(255,255,255,0.55)",
+    color: "#fff",
     fontSize: 12.5,
     padding: "6px 10px",
-    borderRadius: 7,
+    borderRadius: 3,
     cursor: "pointer",
   },
   garantiCell: {
     display: "flex",
     alignItems: "center",
     gap: 8,
-    padding: "12px 8px",
+    padding: "10px 12px",
     fontSize: 14,
-    fontWeight: 600,
-    color: "#E8281A",
+    fontWeight: 800,
+    color: "#fff",
+    background: "#EC111F",
+    borderRight: "2px solid #EFEFED",
+    borderBottom: "2px solid #9C9C9C",
   },
-  garantiTag: { fontSize: 10, fontWeight: 500, color: "#6B7280", whiteSpace: "nowrap" },
-  footer: { marginTop: 16, fontSize: 12, lineHeight: 1.5, borderTop: "1px solid #20252C", paddingTop: 14 },
+  garantiTag: { fontSize: 10, fontWeight: 700, color: "#FFE3E3", whiteSpace: "nowrap" },
+  totalLabelCell: {
+    background: "#EC111F",
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: 800,
+    padding: "12px",
+    borderRight: "2px solid #EFEFED",
+    borderTop: "2px solid #EFEFED",
+    fontFamily: "'Oswald', 'Arial Narrow', sans-serif",
+  },
+  totalPriceCell: {
+    background: "linear-gradient(180deg, #EC111F, #B90D18)",
+    color: "#fff",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 4,
+    minHeight: 56,
+    fontSize: 27,
+    fontWeight: 800,
+    borderRight: "2px solid #EFEFED",
+    borderTop: "2px solid #EFEFED",
+    fontFamily: "'Oswald', 'Arial Narrow', sans-serif",
+    textShadow: "0 2px 0 rgba(0,0,0,0.2)",
+  },
+  totalPriceFeatured: {
+    background: "linear-gradient(180deg, #F41A28, #C80F1B)",
+  },
+  totalCurrency: { fontSize: 15, fontWeight: 800 },
+  extraStrip: {
+    display: "grid",
+    gridTemplateColumns: "160px 1fr",
+    alignItems: "stretch",
+    background: "#EFEFED",
+    borderTop: "12px solid #EFEFED",
+    padding: "0 8px 8px",
+  },
+  extraLabel: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    background: "#fff",
+    color: "#555",
+    fontSize: 20,
+    fontWeight: 800,
+    border: "2px solid #fff",
+    fontFamily: "'Oswald', 'Arial Narrow', sans-serif",
+  },
+  extraItems: {
+    display: "grid",
+    gridTemplateColumns: "repeat(6, minmax(120px, 1fr))",
+    gap: 6,
+    paddingLeft: 6,
+  },
+  extraItem: {
+    display: "grid",
+    placeItems: "center",
+    gap: 2,
+    minHeight: 62,
+    background: "linear-gradient(180deg, #5A5A5A, #3F3F3F)",
+    color: "#fff",
+    border: "2px solid #fff",
+    textAlign: "center",
+    padding: "6px 8px",
+  },
+  extraItemName: { fontSize: 11, fontWeight: 800, lineHeight: 1.12 },
+  extraItemPrice: { fontSize: 22, lineHeight: 1, fontFamily: "'Oswald', 'Arial Narrow', sans-serif" },
+  extraNote: {
+    color: "#fff",
+    background: "#5B5B5B",
+    fontSize: 12,
+    fontWeight: 700,
+    padding: "8px 12px",
+  },
+  footer: { marginTop: 14, fontSize: 12, lineHeight: 1.5, borderTop: "1px solid #CACACA", paddingTop: 12, color: "#555" },
 
   // Analytics
   analyticsWrap: { display: "flex", flexDirection: "column", gap: 16 },
   analyticsCard: {
-    background: "#14171C",
-    border: "1px solid #20252C",
-    borderRadius: 12,
+    background: "#fff",
+    border: "1px solid #CFCFCF",
+    borderTop: "5px solid #EC111F",
+    borderRadius: 4,
     padding: "18px 20px",
+    boxShadow: "0 10px 22px rgba(0,0,0,0.08)",
   },
   analyticsTitle: { fontSize: 15, fontWeight: 700, margin: 0 },
-  analyticsHint: { fontSize: 12.5, color: "#6B7280", marginTop: 4, marginBottom: 14, lineHeight: 1.5, maxWidth: 620 },
+  analyticsHint: { fontSize: 12.5, color: "#666", marginTop: 4, marginBottom: 14, lineHeight: 1.5, maxWidth: 620 },
   marginTable: { display: "flex", flexDirection: "column" },
   marginRow: {
     display: "grid",
     gridTemplateColumns: "1.4fr 1fr 1fr 1fr 0.7fr",
     gap: 10,
     padding: "8px 4px",
-    borderBottom: "1px solid #1A1E24",
+    borderBottom: "1px solid #E1E1E1",
     fontSize: 13,
     alignItems: "center",
   },
-  marginHeaderRow: { fontSize: 11, color: "#6B7280", fontWeight: 700, borderBottom: "1px solid #20252C" },
+  marginHeaderRow: { fontSize: 11, color: "#555", fontWeight: 800, borderBottom: "2px solid #CFCFCF" },
   costInput: {
     width: 84,
     textAlign: "right",
-    background: "#0F1216",
-    border: "1px solid #2A2F37",
-    borderRadius: 6,
-    color: "#EDEFF2",
+    background: "#F4F4F4",
+    border: "1px solid #CFCFCF",
+    borderRadius: 3,
+    color: "#222",
     fontSize: 13,
     padding: "4px 8px",
     outline: "none",
   },
   marginBars: { display: "flex", gap: 18, marginTop: 20, height: 120, alignItems: "flex-end" },
   marginBarItem: { display: "flex", flexDirection: "column", alignItems: "center", gap: 8, flex: 1, height: "100%", justifyContent: "flex-end" },
-  marginBarTrack: { width: "100%", height: 90, display: "flex", alignItems: "flex-end", background: "#0F1216", borderRadius: 6, overflow: "hidden" },
-  marginBarFill: { width: "100%", borderRadius: "4px 4px 0 0" },
-  marginBarLabel: { fontSize: 11, color: "#9AA3AF", textAlign: "center" },
+  marginBarTrack: { width: "100%", height: 90, display: "flex", alignItems: "flex-end", background: "#E8E8E7", borderRadius: 3, overflow: "hidden" },
+  marginBarFill: { width: "100%", borderRadius: "3px 3px 0 0" },
+  marginBarLabel: { fontSize: 11, color: "#555", textAlign: "center", fontWeight: 700 },
   jumpList: { display: "flex", flexDirection: "column", gap: 10 },
   jumpRow: {
     display: "flex",
@@ -1609,17 +1917,17 @@ const styles = {
     flexWrap: "wrap",
     gap: 8,
     padding: "10px 12px",
-    background: "#0F1216",
-    border: "1px solid #1A1E24",
-    borderRadius: 8,
+    background: "#F4F4F4",
+    border: "1px solid #D4D4D4",
+    borderRadius: 3,
   },
   gapGrid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 },
   gapCol: { display: "flex", flexDirection: "column", gap: 6 },
-  gapColHeader: { display: "flex", alignItems: "center", gap: 6, fontSize: 12.5, fontWeight: 700, color: "#9AA3AF", marginBottom: 4 },
-  gapItem: { fontSize: 13, color: "#DADEE3", padding: "6px 10px", background: "#0F1216", borderRadius: 6, border: "1px solid #1A1E24" },
-  emptyNote: { fontSize: 12.5, color: "#576273", fontStyle: "italic" },
+  gapColHeader: { display: "flex", alignItems: "center", gap: 6, fontSize: 12.5, fontWeight: 800, color: "#444", marginBottom: 4 },
+  gapItem: { fontSize: 13, color: "#222", padding: "6px 10px", background: "#F4F4F4", borderRadius: 3, border: "1px solid #D4D4D4" },
+  emptyNote: { fontSize: 12.5, color: "#777", fontStyle: "italic" },
   compareGrid: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 14 },
-  compareCard: { background: "#0F1216", border: "1px solid #1A1E24", borderTop: "3px solid", borderRadius: 10, padding: 14 },
+  compareCard: { background: "#F8F8F7", border: "1px solid #CFCFCF", borderTop: "5px solid", borderRadius: 4, padding: 14 },
 };
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
