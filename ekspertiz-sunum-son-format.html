@@ -1312,8 +1312,9 @@
     .system-stage img {
       display: block;
       width: 100%;
+      height: 420px;
       max-height: 420px;
-      object-fit: contain;
+      object-fit: cover;
       filter: saturate(1.03) contrast(1.02);
     }
 
@@ -1425,9 +1426,8 @@
       display: block;
       width: 100%;
       height: 135px;
-      object-fit: contain;
+      object-fit: cover;
       background: #f8fafc;
-      padding: 10px;
       border-bottom: 1px solid var(--line-2);
     }
 
@@ -2230,6 +2230,15 @@
   </div>
 
   <script>
+    const STOCK = {
+      road: "https://images.unsplash.com/photo-1629682676515-4242f7587c20?auto=format&fit=crop&fm=jpg&q=80&w=1600",
+      engine: "https://images.unsplash.com/photo-1771340012378-3c86cb649193?auto=format&fit=crop&fm=jpg&q=80&w=1600",
+      workshop: "https://images.unsplash.com/photo-1786198984387-b63cdf520602?auto=format&fit=crop&fm=jpg&q=80&w=1600",
+      brake: "https://images.unsplash.com/photo-1787509146322-bfe7a69a869d?auto=format&fit=crop&fm=jpg&q=80&w=1600",
+      obd: "https://images.unsplash.com/photo-1727893380169-4dda123e19f7?auto=format&fit=crop&fm=jpg&q=80&w=1600",
+      interior: "https://images.unsplash.com/photo-1653408934534-89646022edeb?auto=format&fit=crop&fm=jpg&q=80&w=1600"
+    };
+
     const defaultReportData = {
       meta: {
         reportNo: "OTOTR-1601-20260913-0003",
@@ -2272,7 +2281,7 @@
             title: "Sürüş Dinamiği Görsel Okuması",
             subtitle: "Yol testi görseli; stabilite, fren tepkisi, sürüş sesi ve konfor okumalarını müşteriye tek panelde anlatmak için kullanılır.",
             badge: "18 / 20 kontrol",
-            hero: { title: "Yol Tutuş ve Stabilite", src: "assets/report-tests/road-test.svg", alt: "Yol testi sürüş dinamiği görseli", note: "Sürüş çizgisi stabil" },
+            hero: { title: "Yol Tutuş ve Stabilite", src: STOCK.road, alt: "Unsplash yol testi sürüş fotoğrafı", note: "Sürüş çizgisi stabil" },
             hotspots: [
               { x: "24%", y: "62%", label: "Ön takım tepkisi" },
               { x: "48%", y: "35%", label: "Kabin ses/titreşim" },
@@ -2285,9 +2294,9 @@
             ],
             proofs: ["Yol testi", "Sürüş hissi", "Stabilite"],
             views: [
-              { title: "Sürüş Stabilitesi", src: "assets/report-tests/road-test.svg", alt: "Sürüş stabilitesi", note: "Düz gidiş" },
-              { title: "Fren Tepkisi", src: "assets/report-tests/brake-suspension.svg", alt: "Fren tepkisi", note: "Yol testi desteği" },
-              { title: "OBD Destek", src: "assets/report-tests/obd-electronics.svg", alt: "Elektronik destek", note: "ABS/ESP ilişkisi" }
+              { title: "Sürüş Stabilitesi", src: STOCK.road, alt: "Sürüş stabilitesi fotoğrafı", note: "Düz gidiş" },
+              { title: "Fren Tepkisi", src: STOCK.brake, alt: "Fren sistemi fotoğrafı", note: "Yol testi desteği" },
+              { title: "OBD Destek", src: STOCK.obd, alt: "Elektronik teşhis fotoğrafı", note: "ABS/ESP ilişkisi" }
             ]
           },
           groups: [
@@ -2323,7 +2332,7 @@
             title: "Motor Bölgesi Görsel Kontrol Haritası",
             subtitle: "Motor teknik görseliyle üst bölge, soğutma, yağlama ve hava/yakıt hattı müşteriye tek bakışta anlatılır.",
             badge: "Sorunsuz",
-            hero: { title: "Motor Ön Bölge", src: "assets/report-tests/engine-check.svg", alt: "Motor ekspertiz kontrol görseli", note: "Motor kontrol bölgesi" },
+            hero: { title: "Motor Ön Bölge", src: STOCK.engine, alt: "Unsplash motor kontrol fotoğrafı", note: "Motor kontrol bölgesi" },
             hotspots: [
               { x: "50%", y: "38%", label: "Motor üst bölge" },
               { x: "35%", y: "71%", label: "Soğutma hattı" },
@@ -2336,9 +2345,9 @@
             ],
             proofs: ["Motor üst bölge", "Yağlama", "Soğutma", "Egzoz/Yakıt"],
             views: [
-              { title: "Yağlama", src: "assets/report-tests/engine-check.svg", alt: "Yağlama ve sızdırmazlık", note: "Sızdırmazlık" },
-              { title: "Soğutma", src: "assets/report-tests/gasket-leak.svg", alt: "Soğutma ve basınç hattı", note: "Radyatör/antifriz" },
-              { title: "OBD Destek", src: "assets/report-tests/obd-electronics.svg", alt: "OBD elektronik destek", note: "ECU ilişkisi" }
+              { title: "Yağlama", src: STOCK.engine, alt: "Yağlama ve sızdırmazlık fotoğrafı", note: "Sızdırmazlık" },
+              { title: "Soğutma", src: STOCK.workshop, alt: "Servis liftinde motor kontrolü", note: "Radyatör/antifriz" },
+              { title: "OBD Destek", src: STOCK.obd, alt: "OBD elektronik teşhis fotoğrafı", note: "ECU ilişkisi" }
             ]
           },
           groups: [
@@ -2361,7 +2370,7 @@
             title: "Alt Mekanik ve Aktarma Görseli",
             subtitle: "Mekanik teknik görseli, motor altı, şanzıman, diferansiyel, aks ve şaft hattını müşteriye konumlu gösterir.",
             badge: "1 takip",
-            hero: { title: "Alt Mekanik / Aktarma Hattı", src: "assets/report-tests/mechanical-check.svg", alt: "Mekanik ve aktarma kontrol görseli", note: "Alt mekanik uygun" },
+            hero: { title: "Alt Mekanik / Aktarma Hattı", src: STOCK.workshop, alt: "Servis liftinde mekanik kontrol fotoğrafı", note: "Alt mekanik uygun" },
             hotspots: [
               { x: "20%", y: "50%", label: "Motor altı" },
               { x: "43%", y: "50%", label: "Şanzıman/kavrama" },
@@ -2375,9 +2384,9 @@
             ],
             proofs: ["Alt bölge", "Şanzıman", "Diferansiyel", "Aks/Şaft"],
             views: [
-              { title: "Şanzıman", src: "assets/report-tests/mechanical-check.svg", alt: "Şanzıman ve kavrama", note: "Aktarma odağı" },
-              { title: "Fren Bağı", src: "assets/report-tests/brake-suspension.svg", alt: "Fren ve süspansiyon bağlantısı", note: "Yürüyen destek" },
-              { title: "Sızdırmazlık", src: "assets/report-tests/engine-check.svg", alt: "Motor mekanik sızdırmazlık", note: "Alt kontrol" }
+              { title: "Şanzıman", src: STOCK.workshop, alt: "Şanzıman ve aktarma kontrolü", note: "Aktarma odağı" },
+              { title: "Fren Bağı", src: STOCK.brake, alt: "Fren sistemi bağlantısı", note: "Yürüyen destek" },
+              { title: "Sızdırmazlık", src: STOCK.engine, alt: "Motor mekanik sızdırmazlık fotoğrafı", note: "Alt kontrol" }
             ]
           },
           groups: [
@@ -2411,12 +2420,12 @@
           description: "Araçtaki elektronik kontrol üniteleri taranır ve hata kayıtları özetlenir.",
           note: "Elektronik modül taramasında kritik arıza kaydına rastlanmamıştır. Bir modülde ham değer etiketleme kontrolü önerilir.",
           stats: { critical: 0, follow: 1, info: 0, proof: 1, total: "8 / 8" },
-          image: "assets/report-tests/obd-electronics.svg",
+          image: STOCK.obd,
           visualDeck: {
             title: "Elektronik Modül Haritası",
             subtitle: "OBD çıktısı, motor/aktarma, güvenlik ve konfor beyinlerini müşteriye görsel sistem haritası üzerinden anlatır.",
             badge: "8 / 8 modül",
-            hero: { title: "OBD / Beyin Tarama", src: "assets/report-tests/obd-electronics.svg", alt: "OBD elektronik modül tarama görseli", note: "Kritik arıza yok" },
+            hero: { title: "OBD / Beyin Tarama", src: STOCK.obd, alt: "Unsplash elektronik teşhis fotoğrafı", note: "Kritik arıza yok" },
             hotspots: [
               { x: "42%", y: "32%", label: "Motor ECU" },
               { x: "60%", y: "52%", label: "ABS / ESP" },
@@ -2429,9 +2438,9 @@
             ],
             proofs: ["OBD çıktı", "ECU", "ABS/ESP", "SRS"],
             views: [
-              { title: "Sistem Haritası", src: "assets/report-tests/obd-electronics.svg", alt: "OBD sistem haritası", note: "Modül tarama" },
-              { title: "Motor ECU", src: "assets/report-tests/engine-check.svg", alt: "Motor ECU bağlantısı", note: "Motor elektroniği" },
-              { title: "SRS Bağı", src: "assets/report-tests/airbag-srs.svg", alt: "SRS modül bağlantısı", note: "Güvenlik modülü" }
+              { title: "Sistem Haritası", src: STOCK.obd, alt: "OBD teşhis ekranı", note: "Modül tarama" },
+              { title: "Motor ECU", src: STOCK.engine, alt: "Motor ECU bağlantısı", note: "Motor elektroniği" },
+              { title: "SRS Bağı", src: STOCK.interior, alt: "Kabin güvenlik modülü bağlantısı", note: "Güvenlik modülü" }
             ]
           },
           groups: [
@@ -2453,7 +2462,7 @@
             title: "Fren / Süspansiyon Görsel Kontrol Hattı",
             subtitle: "Fren ve süspansiyon teknik görseli, fren kuvveti ile amortisör, salıncak, direksiyon bağlantı noktalarını anlaşılır şekilde konumlandırır.",
             badge: "Tamamen uygun",
-            hero: { title: "Aks ve Süspansiyon Hattı", src: "assets/report-tests/brake-suspension.svg", alt: "Fren ve süspansiyon test görseli", note: "Fren/süspansiyon uygun" },
+            hero: { title: "Aks ve Süspansiyon Hattı", src: STOCK.brake, alt: "Unsplash fren sistemi fotoğrafı", note: "Fren/süspansiyon uygun" },
             hotspots: [
               { x: "20%", y: "60%", label: "Ön fren diski/balata" },
               { x: "28%", y: "32%", label: "Ön amortisör kuleleri" },
@@ -2467,9 +2476,9 @@
             ],
             proofs: ["Fren ölçümü", "Süspansiyon", "Direksiyon", "Lastik/Jant"],
             views: [
-              { title: "Fren Disk/Balata", src: "assets/report-tests/brake-suspension.svg", alt: "Fren disk balata", note: "Fren odağı" },
-              { title: "Yol Bağı", src: "assets/report-tests/road-test.svg", alt: "Yol testi desteği", note: "Sürüş karşılığı" },
-              { title: "Elektronik Bağ", src: "assets/report-tests/obd-electronics.svg", alt: "ABS ESP elektronik bağ", note: "ABS/ESP modülü" }
+              { title: "Fren Disk/Balata", src: STOCK.brake, alt: "Fren disk balata fotoğrafı", note: "Fren odağı" },
+              { title: "Yol Bağı", src: STOCK.road, alt: "Yol testi fotoğrafı", note: "Sürüş karşılığı" },
+              { title: "Elektronik Bağ", src: STOCK.obd, alt: "ABS ESP elektronik teşhis", note: "ABS/ESP modülü" }
             ]
           },
           groups: [
@@ -2490,7 +2499,7 @@
             title: "Dış Donanım Görsel Turu",
             subtitle: "Dış ekspertiz teknik görseli, aydınlatma, cam, ayna, kapı ve dış donanım fonksiyonlarını müşteriye görsel tur olarak sunar.",
             badge: "1 takip",
-            hero: { title: "Dış Fonksiyon Kontrolü", src: "assets/report-tests/exterior-check.svg", alt: "Dış ekspertiz kontrol görseli", note: "Genel kullanım uygun" },
+            hero: { title: "Dış Fonksiyon Kontrolü", src: STOCK.road, alt: "Profesyonel araç dış görünüm fotoğrafı", note: "Genel kullanım uygun" },
             hotspots: [
               { x: "18%", y: "45%", label: "Ön far/sinyal" },
               { x: "42%", y: "30%", label: "Ayna ve kapılar" },
@@ -2503,9 +2512,9 @@
             ],
             proofs: ["Ön aydınlatma", "Arka aydınlatma", "Ayna/Kapı"],
             views: [
-              { title: "Far/Sinyal", src: "assets/report-tests/exterior-check.svg", alt: "Ön aydınlatma kontrolü", note: "Ön grup" },
-              { title: "Stop/Geri Vites", src: "assets/report-tests/exterior-check.svg", alt: "Arka aydınlatma kontrolü", note: "Arka grup" },
-              { title: "Ayna/Kapı", src: "assets/report-tests/interior-check.svg", alt: "Kapı ve konfor bağlantısı", note: "Dış fonksiyon" }
+              { title: "Far/Sinyal", src: STOCK.road, alt: "Dış aydınlatma kontrol fotoğrafı", note: "Ön grup" },
+              { title: "Stop/Geri Vites", src: STOCK.road, alt: "Arka dış fonksiyon kontrolü", note: "Arka grup" },
+              { title: "Ayna/Kapı", src: STOCK.interior, alt: "Kapı ve konfor bağlantısı", note: "Dış fonksiyon" }
             ]
           },
           groups: [
@@ -2527,7 +2536,7 @@
             title: "Kabin ve Konfor Kontrol Görseli",
             subtitle: "Kabin teknik görseli; gösterge, klima, ses sistemi, koltuk ve emniyet ekipmanlarını aynı panelde özetler.",
             badge: "Kullanıma uygun",
-            hero: { title: "Kabin Kullanım Alanı", src: "assets/report-tests/interior-check.svg", alt: "İç ekspertiz ve kabin kontrol görseli", note: "İç donanım uygun" },
+            hero: { title: "Kabin Kullanım Alanı", src: STOCK.interior, alt: "Unsplash araç kabin fotoğrafı", note: "İç donanım uygun" },
             hotspots: [
               { x: "34%", y: "45%", label: "Sürücü alanı" },
               { x: "50%", y: "54%", label: "Koltuk/döşeme" },
@@ -2540,9 +2549,9 @@
             ],
             proofs: ["Gösterge", "Klima", "Koltuk", "Emniyet"],
             views: [
-              { title: "Gösterge/Ekran", src: "assets/report-tests/interior-check.svg", alt: "Gösterge ve ekran kontrolü", note: "Kabin yerleşimi" },
-              { title: "Koltuk/Döşeme", src: "assets/report-tests/interior-check.svg", alt: "Koltuk ve döşeme kontrolü", note: "Konfor odağı" },
-              { title: "SRS Destek", src: "assets/report-tests/airbag-srs.svg", alt: "Airbag SRS kontrol", note: "Pasif güvenlik" }
+              { title: "Gösterge/Ekran", src: STOCK.interior, alt: "Gösterge ve ekran kontrolü", note: "Kabin yerleşimi" },
+              { title: "Koltuk/Döşeme", src: STOCK.interior, alt: "Koltuk ve döşeme kontrolü", note: "Konfor odağı" },
+              { title: "SRS Destek", src: STOCK.obd, alt: "SRS elektronik destek", note: "Pasif güvenlik" }
             ]
           },
           groups: [
@@ -2562,12 +2571,12 @@
           description: "Airbag sistemi, emniyet kemeri gergileri ve pasif güvenlik bileşenleri incelenir.",
           note: "Airbag ve SRS sistemi mevcut kontroller kapsamında uygun durumdadır.",
           stats: { critical: 0, follow: 0, info: 0, proof: 2, total: "14 / 14" },
-          image: "assets/report-tests/airbag-srs.svg",
+          image: STOCK.interior,
           visualDeck: {
             title: "Airbag / SRS Görsel Kanıt Paneli",
             subtitle: "Pasif güvenlik testi artık sadece satır sonucu değil; SRS teknik görseliyle hangi güvenlik bölgelerinin okunduğunu gösterir.",
             badge: "14 / 14 uygun",
-            hero: { title: "SRS Kontrol Haritası", src: "assets/report-tests/airbag-srs.svg", alt: "Airbag ve SRS pasif güvenlik görseli", note: "Pasif güvenlik uygun" },
+            hero: { title: "SRS Kontrol Haritası", src: STOCK.interior, alt: "Araç kabin ve SRS kontrol fotoğrafı", note: "Pasif güvenlik uygun" },
             hotspots: [
               { x: "38%", y: "34%", label: "Sürücü / yolcu airbag" },
               { x: "52%", y: "50%", label: "Yan ve perde airbag" },
@@ -2580,9 +2589,9 @@
             ],
             proofs: ["Airbag görseli", "SRS modül", "Kemer gergi", "OBD destek"],
             views: [
-              { title: "SRS Haritası", src: "assets/report-tests/airbag-srs.svg", alt: "Airbag SRS", note: "Ana kanıt" },
-              { title: "Kabin Bağı", src: "assets/report-tests/interior-check.svg", alt: "Kabin güvenlik bağlantısı", note: "Kabin bölgeleri" },
-              { title: "OBD Modül", src: "assets/report-tests/obd-electronics.svg", alt: "SRS OBD modül kontrolü", note: "Elektronik doğrulama" }
+              { title: "SRS Haritası", src: STOCK.interior, alt: "Airbag SRS kabin kontrolü", note: "Ana kanıt" },
+              { title: "Kabin Bağı", src: STOCK.interior, alt: "Kabin güvenlik bağlantısı", note: "Kabin bölgeleri" },
+              { title: "OBD Modül", src: STOCK.obd, alt: "SRS OBD modül kontrolü", note: "Elektronik doğrulama" }
             ]
           },
           groups: [
@@ -2603,7 +2612,7 @@
             title: "Conta Kaçak Testi Görsel Akışı",
             subtitle: "Conta kaçak teknik görseliyle testin nereden okunduğu; basınç, motor sıcaklığı ve antifriz gözlemiyle birlikte sunulur.",
             badge: "Kaçak yok",
-            hero: { title: "Motor / Soğutma Hattı", src: "assets/report-tests/gasket-leak.svg", alt: "Conta kaçak testi görseli", note: "Conta kaçak tespit edilmedi" },
+            hero: { title: "Motor / Soğutma Hattı", src: STOCK.engine, alt: "Motor soğutma hattı kontrol fotoğrafı", note: "Conta kaçak tespit edilmedi" },
             hotspots: [
               { x: "50%", y: "40%", label: "Motor sıcaklığı" },
               { x: "35%", y: "71%", label: "Soğutma sıvısı" },
@@ -2616,9 +2625,9 @@
             ],
             proofs: ["Basınç", "Antifriz", "Motor sıcaklığı", "Nihai sonuç"],
             views: [
-              { title: "Basınç Testi", src: "assets/report-tests/gasket-leak.svg", alt: "Basınç testi", note: "Test bölgesi" },
-              { title: "Soğutma", src: "assets/report-tests/engine-check.svg", alt: "Motor soğutma desteği", note: "Radyatör/ön hat" },
-              { title: "Kimyasal Gözlem", src: "assets/report-tests/gasket-leak.svg", alt: "Kimyasal gözlem", note: "Kaçak sinyali" }
+              { title: "Basınç Testi", src: STOCK.engine, alt: "Basınç testi destek fotoğrafı", note: "Test bölgesi" },
+              { title: "Soğutma", src: STOCK.workshop, alt: "Motor soğutma desteği", note: "Radyatör/ön hat" },
+              { title: "Kimyasal Gözlem", src: STOCK.engine, alt: "Kimyasal gözlem destek fotoğrafı", note: "Kaçak sinyali" }
             ]
           },
           groups: [
