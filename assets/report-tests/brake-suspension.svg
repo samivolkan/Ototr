@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" role="img" aria-labelledby="title desc">
+  <title id="title">Fren ve süspansiyon test görseli</title>
+  <desc id="desc">Fren diski, amortisör, salıncak ve direksiyon bağlantı kontrol noktaları.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#f8fafc"/><stop offset="1" stop-color="#fff7ed"/></linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="18" stdDeviation="16" flood-color="#0f172a" flood-opacity=".18"/></filter>
+  </defs>
+  <rect width="960" height="540" rx="36" fill="url(#bg)"/>
+  <g filter="url(#shadow)" transform="translate(236 88)">
+    <circle cx="244" cy="232" r="150" fill="#1f2937"/>
+    <circle cx="244" cy="232" r="105" fill="#e5e7eb"/>
+    <circle cx="244" cy="232" r="58" fill="#94a3b8"/>
+    <circle cx="244" cy="232" r="18" fill="#111827"/>
+    <path d="M244 78 V-6" stroke="#334155" stroke-width="24" stroke-linecap="round"/>
+    <path d="M185 72 L148 7 M303 72 L340 7" stroke="#64748b" stroke-width="18" stroke-linecap="round"/>
+    <path d="M94 299 L2 351 M394 299 L486 351" stroke="#475569" stroke-width="22" stroke-linecap="round"/>
+    <rect x="322" y="153" width="65" height="142" rx="24" fill="#ef4444"/>
+  </g>
+  <text x="62" y="78" font-family="Inter, Arial, sans-serif" font-size="26" font-weight="800" fill="#111827">Fren / Süspansiyon Testi</text>
+  <g font-family="Inter, Arial, sans-serif" font-size="20" font-weight="700" fill="#1f2937">
+    <g transform="translate(104 151)"><circle r="12" fill="#ef4444"/><text x="24" y="7">Disk / balata</text></g>
+    <g transform="translate(650 145)"><circle r="12" fill="#2563eb"/><text x="24" y="7">Amortisör</text></g>
+    <g transform="translate(661 332)"><circle r="12" fill="#16a34a"/><text x="24" y="7">Salıncak / burç</text></g>
+    <g transform="translate(110 395)"><circle r="12" fill="#f59e0b"/><text x="24" y="7">Direksiyon bağlantısı</text></g>
+  </g>
+</svg>
