@@ -1,0 +1,3349 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OTOTR - Profesyonel Ekspertiz Sunumu</title>
+  <link rel="stylesheet" href="kaporta-360/fonts/fonts.css">
+  <style>
+    :root {
+      --navy: #101f3d;
+      --navy-2: #0b1427;
+      --red: #d71920;
+      --red-soft: #fff1f2;
+      --green: #159447;
+      --green-soft: #eefaf3;
+      --amber: #f59e0b;
+      --amber-soft: #fff8eb;
+      --blue: #2563eb;
+      --blue-soft: #eff6ff;
+      --ink: #101828;
+      --muted: #667085;
+      --line: #dfe5ec;
+      --line-2: #edf1f5;
+      --bg: #f3f5f8;
+      --panel: #ffffff;
+      --shadow: 0 18px 44px rgba(16, 31, 61, .10);
+      --radius: 12px;
+      --radius-sm: 8px;
+      --max: 100%;
+      --nav-width: 308px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html {
+      scroll-behavior: smooth;
+      background: var(--bg);
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, Manrope, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+      color: var(--ink);
+      background:
+        linear-gradient(180deg, rgba(16,31,61,.04), rgba(16,31,61,0) 260px),
+        var(--bg);
+      letter-spacing: 0;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .app-shell {
+      min-height: 100vh;
+      padding-top: 74px;
+    }
+
+    .topbar {
+      position: fixed;
+      inset: 0 0 auto 0;
+      z-index: 50;
+      min-height: 74px;
+      background: linear-gradient(90deg, var(--navy), #14294e);
+      color: #fff;
+      border-bottom: 4px solid var(--red);
+      box-shadow: 0 12px 28px rgba(16,31,61,.24);
+    }
+
+    .topbar-inner {
+      max-width: var(--max);
+      width: 100%;
+      margin: 0 auto;
+      min-height: 70px;
+      display: grid;
+      grid-template-columns: minmax(240px, 1fr) auto auto;
+      align-items: center;
+      gap: 22px;
+      padding: 12px 28px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      display: grid;
+      grid-template-columns: 58px 44px;
+      align-items: stretch;
+      height: 36px;
+      transform: skewX(-8deg);
+      filter: drop-shadow(0 8px 18px rgba(0,0,0,.20));
+    }
+
+    .brand-mark span {
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+      letter-spacing: .02em;
+      transform: skewX(8deg);
+    }
+
+    .brand-mark span:first-child {
+      color: var(--navy-2);
+      background: #fff;
+    }
+
+    .brand-mark span:last-child {
+      color: #fff;
+      background: var(--red);
+    }
+
+    .brand-copy {
+      min-width: 0;
+    }
+
+    .brand-copy strong {
+      display: block;
+      font-size: 18px;
+      line-height: 1.1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .brand-copy small {
+      display: block;
+      margin-top: 4px;
+      color: rgba(255,255,255,.72);
+      font-size: 12px;
+      line-height: 1.2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .top-metas {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 24px;
+    }
+
+    .top-meta {
+      min-width: 94px;
+      text-align: right;
+    }
+
+    .top-meta span {
+      display: block;
+      color: rgba(255,255,255,.58);
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      line-height: 1;
+    }
+
+    .top-meta b {
+      display: block;
+      margin-top: 5px;
+      font-size: 14px;
+      line-height: 1.1;
+      white-space: nowrap;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .tool-button {
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: var(--radius-sm);
+      background: rgba(255,255,255,.10);
+      color: #fff;
+      min-height: 38px;
+      padding: 0 12px;
+      font-size: 12px;
+      font-weight: 850;
+      cursor: pointer;
+      transition: transform .16s ease, background .16s ease;
+    }
+
+    .tool-button:hover {
+      transform: translateY(-1px);
+      background: rgba(255,255,255,.16);
+    }
+
+    .tool-button.primary {
+      border-color: var(--red);
+      background: var(--red);
+    }
+
+    .layout {
+      max-width: none;
+      width: 100%;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) var(--nav-width);
+      gap: 18px;
+      padding: 18px 20px 46px 28px;
+    }
+
+    .sidebar {
+      order: 2;
+      position: sticky;
+      top: 92px;
+      align-self: start;
+      display: grid;
+      gap: 10px;
+      max-height: calc(100vh - 110px);
+      overflow: auto;
+      padding: 2px 0 2px 4px;
+      scrollbar-width: thin;
+    }
+
+    .nav-card {
+      display: grid;
+      grid-template-columns: 34px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 10px;
+      min-height: 58px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+      box-shadow: 0 8px 18px rgba(16,31,61,.05);
+      color: #344054;
+      cursor: pointer;
+      text-align: left;
+      transition: border-color .16s ease, background .16s ease, transform .16s ease;
+    }
+
+    .nav-card:hover {
+      transform: translateY(-1px);
+      border-color: rgba(215,25,32,.35);
+    }
+
+    .nav-card.is-active {
+      background: var(--red-soft);
+      border-color: var(--red);
+      color: var(--red);
+    }
+
+    .nav-index {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: #f1f4f8;
+      color: #7b8794;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .nav-card.is-active .nav-index {
+      background: var(--red);
+      color: #fff;
+    }
+
+    .nav-title {
+      min-width: 0;
+      font-size: 12px;
+      font-weight: 900;
+      line-height: 1.18;
+      text-transform: uppercase;
+    }
+
+    .nav-state {
+      border-radius: 999px;
+      padding: 5px 8px;
+      background: var(--green-soft);
+      color: var(--green);
+      font-size: 10px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .content {
+      order: 1;
+      display: grid;
+      gap: 18px;
+      min-width: 0;
+      width: 100%;
+    }
+
+    .slide {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background:
+        linear-gradient(135deg, rgba(16,31,61,.035) 0 1px, transparent 1px 20px),
+        var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .test-slide {
+      scroll-margin-top: 96px;
+    }
+
+    .test-slide .slide-inner {
+      min-height: calc(100vh - 136px);
+      display: grid;
+      align-content: start;
+    }
+
+    .slide::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto 0;
+      height: 5px;
+      background: linear-gradient(90deg, var(--red), #2f65f5, #18a558);
+    }
+
+    .slide-inner {
+      position: relative;
+      padding: 30px 34px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 380px;
+      gap: 22px;
+      min-height: 430px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 10px;
+      color: var(--red);
+      font-size: 12px;
+      font-weight: 950;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--red);
+      box-shadow: 0 0 0 5px rgba(215,25,32,.12);
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin: 0;
+    }
+
+    h1 {
+      max-width: 880px;
+      font-size: clamp(34px, 5vw, 68px);
+      line-height: .98;
+      letter-spacing: 0;
+      color: var(--navy-2);
+    }
+
+    .lead {
+      max-width: 760px;
+      margin-top: 16px;
+      color: #475467;
+      font-size: 18px;
+      line-height: 1.62;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 24px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 34px;
+      padding: 0 12px;
+      border-radius: 999px;
+      background: #fff;
+      border: 1px solid var(--line);
+      color: #344054;
+      font-size: 12px;
+      font-weight: 850;
+      white-space: nowrap;
+    }
+
+    .pill.good {
+      background: var(--green-soft);
+      border-color: rgba(21,148,71,.25);
+      color: #087236;
+    }
+
+    .pill.warn {
+      background: var(--amber-soft);
+      border-color: rgba(245,158,11,.30);
+      color: #9a5b00;
+    }
+
+    .hero-panel {
+      display: grid;
+      gap: 14px;
+      align-content: start;
+      padding: 18px;
+      border-radius: 14px;
+      background: linear-gradient(180deg, #fff, #f8fafc);
+      border: 1px solid var(--line);
+      box-shadow: 0 14px 30px rgba(16,31,61,.08);
+    }
+
+    .plate {
+      display: grid;
+      grid-template-columns: 70px 1fr;
+      min-height: 74px;
+      overflow: hidden;
+      border: 3px solid #263449;
+      border-radius: 9px;
+      background: #fff;
+      color: var(--navy-2);
+      box-shadow: inset 0 0 0 1px rgba(16,31,61,.06);
+    }
+
+    .plate span {
+      display: grid;
+      place-items: center;
+      background: #1d4ed8;
+      color: #fff;
+      font-weight: 950;
+      font-size: 22px;
+    }
+
+    .plate b {
+      display: grid;
+      place-items: center;
+      font-size: 34px;
+      line-height: 1;
+      letter-spacing: .02em;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .metric {
+      border: 1px solid var(--line-2);
+      border-radius: 10px;
+      background: #fff;
+      padding: 12px;
+      min-height: 86px;
+    }
+
+    .metric span {
+      display: block;
+      color: #7b8794;
+      font-size: 10px;
+      font-weight: 900;
+      text-transform: uppercase;
+      line-height: 1.2;
+    }
+
+    .metric b {
+      display: block;
+      margin-top: 8px;
+      color: var(--navy-2);
+      font-size: 18px;
+      line-height: 1.15;
+      overflow-wrap: anywhere;
+    }
+
+    .section-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 16px;
+      align-items: start;
+      margin-bottom: 18px;
+    }
+
+    .section-head h2 {
+      color: var(--navy-2);
+      font-size: clamp(24px, 2.6vw, 36px);
+      line-height: 1.05;
+      letter-spacing: 0;
+    }
+
+    .section-head p {
+      max-width: 780px;
+      margin-top: 8px;
+      color: #667085;
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .slide-no {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 72px;
+      min-height: 40px;
+      padding: 0 12px;
+      border-radius: 999px;
+      background: var(--navy);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 950;
+    }
+
+    .summary-grid,
+    .cards-3,
+    .cards-4 {
+      display: grid;
+      gap: 14px;
+    }
+
+    .summary-grid {
+      grid-template-columns: 1.1fr .9fr;
+    }
+
+    .cards-3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .cards-4 {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .overview-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .selection-grid {
+      display: grid;
+      grid-template-columns: 1.15fr .95fr .9fr;
+      gap: 14px;
+      margin: 16px 0 4px;
+    }
+
+    .overview-item {
+      min-height: 118px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+      padding: 14px;
+      display: grid;
+      align-content: space-between;
+      gap: 12px;
+    }
+
+    .overview-item b {
+      color: var(--navy-2);
+      font-size: 13px;
+      line-height: 1.25;
+      text-transform: uppercase;
+    }
+
+    .overview-item span {
+      color: #667085;
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+      padding: 16px;
+      min-width: 0;
+    }
+
+    .card.soft {
+      background: linear-gradient(180deg, #fff, #f9fbfd);
+    }
+
+    .card h3 {
+      margin-bottom: 10px;
+      color: var(--navy-2);
+      font-size: 15px;
+      line-height: 1.2;
+      text-transform: uppercase;
+    }
+
+    .card p {
+      color: #667085;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .decision {
+      display: grid;
+      grid-template-columns: 62px minmax(0, 1fr);
+      gap: 14px;
+      align-items: center;
+      border-color: rgba(21,148,71,.22);
+      background: linear-gradient(180deg, #fff, var(--green-soft));
+    }
+
+    .decision-icon {
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: var(--green);
+      color: #fff;
+      font-size: 26px;
+      font-weight: 950;
+      box-shadow: 0 0 0 8px rgba(21,148,71,.10);
+    }
+
+    .decision strong {
+      display: block;
+      color: #087236;
+      font-size: 22px;
+      line-height: 1.1;
+    }
+
+    .decision span {
+      display: block;
+      margin-top: 6px;
+      color: #44604f;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .stat-row {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .stat {
+      min-height: 86px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+      padding: 12px;
+    }
+
+    .stat span {
+      display: block;
+      color: #7b8794;
+      font-size: 10px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .stat b {
+      display: block;
+      margin-top: 8px;
+      color: var(--navy-2);
+      font-size: 28px;
+      line-height: 1;
+    }
+
+    .alert-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .alert {
+      display: grid;
+      grid-template-columns: 10px minmax(0, 1fr);
+      gap: 12px;
+      padding: 13px 14px;
+      border: 1px solid rgba(245,158,11,.28);
+      border-radius: 10px;
+      background: var(--amber-soft);
+    }
+
+    .alert::before {
+      content: "";
+      width: 10px;
+      height: 10px;
+      margin-top: 4px;
+      border-radius: 50%;
+      background: var(--amber);
+    }
+
+    .alert strong {
+      display: block;
+      color: #8a5300;
+      font-size: 13px;
+      line-height: 1.25;
+    }
+
+    .alert span {
+      display: block;
+      margin-top: 4px;
+      color: #7a5a18;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .module {
+      border-top: 1px solid var(--line-2);
+      padding-top: 18px;
+      margin-top: 16px;
+    }
+
+    .module-page {
+      border-top: 0;
+      padding-top: 0;
+      margin-top: 0;
+    }
+
+    .module:first-of-type {
+      border-top: 0;
+      padding-top: 0;
+      margin-top: 0;
+    }
+
+    .module-top {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 14px;
+      align-items: start;
+      margin-bottom: 14px;
+    }
+
+    .module-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .module-title .number {
+      flex: 0 0 auto;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: var(--red);
+      color: #fff;
+      font-weight: 950;
+      font-size: 13px;
+    }
+
+    .module-title h3 {
+      color: var(--navy-2);
+      font-size: 20px;
+      line-height: 1.1;
+      text-transform: uppercase;
+    }
+
+    .module-desc {
+      margin: 7px 0 0 44px;
+      max-width: 860px;
+      color: #667085;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 30px;
+      padding: 0 10px;
+      border-radius: 999px;
+      background: var(--green-soft);
+      color: #087236;
+      font-size: 11px;
+      font-weight: 950;
+      white-space: nowrap;
+    }
+
+    .status-badge.warn {
+      background: var(--amber-soft);
+      color: #9a5b00;
+    }
+
+    .status-badge.neutral {
+      background: #eef2f7;
+      color: #475467;
+    }
+
+    .module-body {
+      display: grid;
+      grid-template-columns: 360px minmax(0, 1fr);
+      gap: 14px;
+    }
+
+    .test-story-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.12fr) minmax(260px, .78fr) 340px;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    .story-card {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, #fff, #f9fbfd);
+      padding: 16px;
+      min-width: 0;
+    }
+
+    .story-card.highlight {
+      border-color: rgba(37,99,235,.25);
+      background: linear-gradient(180deg, #fff, var(--blue-soft));
+    }
+
+    .story-card.accent {
+      border-color: rgba(215,25,32,.20);
+      background: linear-gradient(180deg, #fff, #fff5f5);
+    }
+
+    .story-card h3 {
+      margin-bottom: 10px;
+      color: var(--navy-2);
+      font-size: 14px;
+      line-height: 1.2;
+      text-transform: uppercase;
+    }
+
+    .story-card p {
+      color: #667085;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .story-card p + p {
+      margin-top: 10px;
+    }
+
+    .story-list {
+      display: grid;
+      gap: 8px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .story-list li {
+      position: relative;
+      padding-left: 18px;
+      color: #475467;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .story-list li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: .55em;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--red);
+    }
+
+    .scope-list {
+      display: grid;
+      gap: 8px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .scope-list li {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      min-height: 38px;
+      padding: 9px 10px;
+      border-radius: 9px;
+      background: #fff;
+      border: 1px solid var(--line-2);
+      color: #344054;
+      font-size: 12px;
+      line-height: 1.25;
+    }
+
+    .scope-list b {
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .scope-list span {
+      border-radius: 999px;
+      background: #eef2f7;
+      color: #475467;
+      padding: 4px 7px;
+      font-size: 10px;
+      font-weight: 950;
+      white-space: nowrap;
+    }
+
+    .test-detail-area {
+      display: grid;
+      gap: 14px;
+      align-items: start;
+    }
+
+    .test-detail-area.has-image {
+      grid-template-columns: 360px minmax(0, 1fr);
+    }
+
+    .result-card {
+      display: grid;
+      gap: 12px;
+      align-content: start;
+      border: 1px solid rgba(21,148,71,.22);
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, #fff, #f8fffb);
+      padding: 16px;
+    }
+
+    .result-card.warn {
+      border-color: rgba(245,158,11,.32);
+      background: linear-gradient(180deg, #fff, var(--amber-soft));
+    }
+
+    .result-card strong {
+      color: var(--navy-2);
+      font-size: 18px;
+      line-height: 1.15;
+    }
+
+    .result-card p {
+      color: #667085;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .mini-stats {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .mini {
+      border: 1px solid var(--line-2);
+      border-radius: 9px;
+      background: #fff;
+      padding: 10px;
+    }
+
+    .mini span {
+      display: block;
+      color: #7b8794;
+      font-size: 9px;
+      font-weight: 950;
+      text-transform: uppercase;
+      line-height: 1.1;
+    }
+
+    .mini b {
+      display: block;
+      margin-top: 6px;
+      color: var(--navy-2);
+      font-size: 18px;
+      line-height: 1.1;
+    }
+
+    .detail-grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    .detail-section {
+      border: 1px solid var(--line-2);
+      border-radius: 10px;
+      background: #fff;
+      overflow: hidden;
+    }
+
+    .detail-section summary {
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 13px 14px;
+      color: var(--navy-2);
+      font-size: 13px;
+      font-weight: 950;
+      text-transform: uppercase;
+      list-style: none;
+    }
+
+    .detail-section summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .detail-section summary span {
+      flex: 0 0 auto;
+      border-radius: 999px;
+      background: #eef2f7;
+      color: #475467;
+      padding: 4px 8px;
+      font-size: 10px;
+      font-weight: 950;
+      text-transform: none;
+    }
+
+    .kv-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      border-top: 1px solid var(--line-2);
+    }
+
+    .kv-table th,
+    .kv-table td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--line-2);
+      text-align: left;
+      vertical-align: top;
+      font-size: 12px;
+      line-height: 1.35;
+      overflow-wrap: anywhere;
+    }
+
+    .kv-table th {
+      width: 42%;
+      color: #667085;
+      font-weight: 800;
+    }
+
+    .kv-table td {
+      color: var(--navy-2);
+      font-weight: 800;
+    }
+
+    .value-ok {
+      display: inline-flex;
+      align-items: center;
+      min-height: 23px;
+      padding: 0 8px;
+      border-radius: 999px;
+      background: var(--green-soft);
+      color: #087236;
+      font-size: 11px;
+      font-weight: 950;
+    }
+
+    .value-warn {
+      display: inline-flex;
+      align-items: center;
+      min-height: 23px;
+      padding: 0 8px;
+      border-radius: 999px;
+      background: var(--amber-soft);
+      color: #9a5b00;
+      font-size: 11px;
+      font-weight: 950;
+    }
+
+    .visual-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.25fr) minmax(280px, .75fr);
+      gap: 14px;
+    }
+
+    .vehicle-map {
+      display: grid;
+      gap: 12px;
+    }
+
+    .map-card {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+      overflow: hidden;
+      min-height: 220px;
+    }
+
+    .map-card.wide {
+      min-height: 260px;
+    }
+
+    .map-title {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line-2);
+      color: var(--navy-2);
+      font-size: 13px;
+      font-weight: 950;
+    }
+
+    .map-image {
+      position: relative;
+      min-height: 210px;
+      display: grid;
+      place-items: center;
+      background: #f8fafc;
+      overflow: hidden;
+    }
+
+    .map-image img {
+      max-width: 100%;
+      width: 100%;
+      height: 100%;
+      max-height: 320px;
+      object-fit: contain;
+      opacity: .94;
+      filter: saturate(1.04);
+    }
+
+    .map-image::after {
+      content: "";
+      position: absolute;
+      inset: 12px;
+      border-radius: 12px;
+      background: rgba(21,148,71,.26);
+      mix-blend-mode: multiply;
+      pointer-events: none;
+    }
+
+    .map-note {
+      position: absolute;
+      left: 16px;
+      bottom: 16px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      background: rgba(21,148,71,.94);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 950;
+      box-shadow: 0 8px 20px rgba(16,31,61,.16);
+    }
+
+    .legend {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 34px;
+      border: 1px solid var(--line-2);
+      border-radius: 999px;
+      background: #fff;
+      padding: 0 10px;
+      color: #475467;
+      font-size: 11px;
+      font-weight: 850;
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #98a2b3;
+      flex: 0 0 auto;
+    }
+
+    .dot.green { background: #45c965; }
+    .dot.orange { background: #f97316; }
+    .dot.red { background: #e11d48; }
+    .dot.blue { background: #2563eb; }
+    .dot.purple { background: #7c3aed; }
+    .dot.gray { background: #98a2b3; }
+
+    .proof-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .proof {
+      min-height: 120px;
+      border: 1px dashed #cad3df;
+      border-radius: 10px;
+      background: linear-gradient(180deg, #fff, #f9fbfd);
+      padding: 14px;
+    }
+
+    .proof b {
+      display: block;
+      color: var(--navy-2);
+      font-size: 13px;
+      line-height: 1.25;
+    }
+
+    .proof span {
+      display: block;
+      margin-top: 7px;
+      color: #667085;
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .system-visual-deck {
+      display: grid;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .system-visual-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: end;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: linear-gradient(135deg, #fff, #f7fbff);
+      padding: 16px;
+    }
+
+    .system-visual-head span {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      border-radius: 999px;
+      background: var(--green-soft);
+      color: #087236;
+      padding: 0 10px;
+      font-size: 11px;
+      font-weight: 950;
+      white-space: nowrap;
+    }
+
+    .system-visual-head h3 {
+      margin: 0;
+      color: var(--navy-2);
+      font-size: 22px;
+      line-height: 1.08;
+    }
+
+    .system-visual-head p {
+      margin: 6px 0 0;
+      max-width: 760px;
+      color: #667085;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .system-visual-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.45fr) minmax(300px, .55fr);
+      gap: 14px;
+      align-items: stretch;
+    }
+
+    .system-stage-card,
+    .system-side-panel,
+    .system-mini-card {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+      box-shadow: 0 14px 34px rgba(16,31,61,.08);
+      overflow: hidden;
+    }
+
+    .system-stage-head,
+    .system-side-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line-2);
+      color: var(--navy-2);
+      font-size: 13px;
+      font-weight: 950;
+    }
+
+    .system-stage-head span,
+    .system-side-head span {
+      border-radius: 999px;
+      background: #eef2f7;
+      color: #475467;
+      padding: 4px 8px;
+      font-size: 10px;
+      white-space: nowrap;
+    }
+
+    .system-stage {
+      position: relative;
+      min-height: 360px;
+      display: grid;
+      place-items: center;
+      background:
+        radial-gradient(circle at 20% 10%, rgba(32,112,210,.10), transparent 34%),
+        linear-gradient(180deg, #fbfdff, #f1f5f9);
+      overflow: hidden;
+    }
+
+    .system-stage img {
+      display: block;
+      width: 100%;
+      max-height: 420px;
+      object-fit: contain;
+      filter: saturate(1.03) contrast(1.02);
+    }
+
+    .system-stage::after {
+      content: "";
+      position: absolute;
+      inset: 16px;
+      border: 1px solid rgba(16,31,61,.08);
+      border-radius: 14px;
+      pointer-events: none;
+    }
+
+    .visual-hotspot {
+      position: absolute;
+      left: var(--x);
+      top: var(--y);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      max-width: min(240px, 42%);
+      transform: translate(-50%, -50%);
+      border: 1px solid rgba(16,31,61,.12);
+      border-radius: 999px;
+      background: rgba(255,255,255,.94);
+      padding: 6px 9px 6px 7px;
+      color: var(--navy-2);
+      font-size: 11px;
+      font-weight: 950;
+      line-height: 1.15;
+      box-shadow: 0 12px 24px rgba(16,31,61,.16);
+      backdrop-filter: blur(8px);
+      z-index: 2;
+    }
+
+    .visual-hotspot i {
+      width: 10px;
+      height: 10px;
+      flex: 0 0 auto;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 0 5px rgba(21,148,71,.12);
+    }
+
+    .visual-hotspot.warn i {
+      background: var(--amber);
+      box-shadow: 0 0 0 5px rgba(245,158,11,.16);
+    }
+
+    .system-side-panel {
+      display: grid;
+      align-content: start;
+    }
+
+    .system-check-list {
+      display: grid;
+      gap: 9px;
+      padding: 14px;
+    }
+
+    .system-check {
+      border: 1px solid var(--line-2);
+      border-radius: 9px;
+      background: #fbfcfe;
+      padding: 10px;
+    }
+
+    .system-check b {
+      display: block;
+      color: var(--navy-2);
+      font-size: 13px;
+      line-height: 1.2;
+    }
+
+    .system-check span {
+      display: block;
+      margin-top: 4px;
+      color: #667085;
+      font-size: 11px;
+      line-height: 1.35;
+    }
+
+    .system-proof-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      padding: 0 14px 14px;
+    }
+
+    .system-proof-strip span {
+      border-radius: 999px;
+      background: #eef2f7;
+      color: #344054;
+      padding: 6px 9px;
+      font-size: 10px;
+      font-weight: 950;
+    }
+
+    .system-mini-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .system-mini-card {
+      min-height: 190px;
+    }
+
+    .system-mini-card img {
+      display: block;
+      width: 100%;
+      height: 135px;
+      object-fit: contain;
+      background: #f8fafc;
+      padding: 10px;
+      border-bottom: 1px solid var(--line-2);
+    }
+
+    .system-mini-card div {
+      padding: 10px 12px 12px;
+    }
+
+    .system-mini-card b {
+      display: block;
+      color: var(--navy-2);
+      font-size: 12px;
+      line-height: 1.2;
+    }
+
+    .system-mini-card span {
+      display: block;
+      margin-top: 4px;
+      color: #667085;
+      font-size: 11px;
+      line-height: 1.35;
+    }
+
+    .tramer-premium {
+      display: grid;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .tramer-hero {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 370px;
+      gap: 22px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 10px;
+      background:
+        linear-gradient(135deg, rgba(7,15,31,.98), rgba(17,38,74,.96) 52%, rgba(87,17,25,.93)),
+        #101f3d;
+      color: #fff;
+      box-shadow: 0 22px 48px rgba(16,31,61,.24);
+    }
+
+    .tramer-hero-main {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      align-content: space-between;
+      gap: 26px;
+      padding: 30px;
+      min-height: 430px;
+    }
+
+    .tramer-kicker {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      color: rgba(255,255,255,.76);
+      font-size: 11px;
+      font-weight: 950;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+
+    .tramer-live-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #45c965;
+      box-shadow: 0 0 0 6px rgba(69,201,101,.16);
+    }
+
+    .tramer-headline {
+      max-width: 780px;
+      margin: 16px 0 0;
+      color: #fff;
+      font-size: clamp(34px, 4.2vw, 68px);
+      line-height: .95;
+      font-weight: 950;
+    }
+
+    .tramer-subcopy {
+      max-width: 760px;
+      margin-top: 16px;
+      color: rgba(255,255,255,.72);
+      font-size: 15px;
+      line-height: 1.65;
+    }
+
+    .tramer-verdict-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .tramer-verdict {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 40px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.18);
+      padding: 0 14px;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 950;
+      backdrop-filter: blur(12px);
+    }
+
+    .tramer-verdict.good {
+      background: rgba(21,148,71,.18);
+      border-color: rgba(69,201,101,.38);
+    }
+
+    .tramer-verdict.warn {
+      background: rgba(245,158,11,.18);
+      border-color: rgba(245,158,11,.38);
+    }
+
+    .tramer-metric-board {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .tramer-metric-card {
+      min-height: 106px;
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 10px;
+      background: rgba(255,255,255,.08);
+      padding: 14px;
+      backdrop-filter: blur(14px);
+    }
+
+    .tramer-metric-card span {
+      display: block;
+      color: rgba(255,255,255,.58);
+      font-size: 10px;
+      font-weight: 950;
+      text-transform: uppercase;
+    }
+
+    .tramer-metric-card b {
+      display: block;
+      margin-top: 10px;
+      color: #fff;
+      font-size: 24px;
+      line-height: 1.05;
+    }
+
+    .tramer-metric-card small {
+      display: block;
+      margin-top: 7px;
+      color: rgba(255,255,255,.58);
+      font-size: 11px;
+      line-height: 1.35;
+    }
+
+    .tramer-doc-stack {
+      position: relative;
+      min-height: 430px;
+      padding: 22px 22px 22px 0;
+      display: grid;
+      align-items: center;
+    }
+
+    .tramer-doc-card {
+      position: relative;
+      z-index: 1;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.24);
+      border-radius: 10px;
+      background: rgba(255,255,255,.12);
+      box-shadow: 0 22px 44px rgba(0,0,0,.22);
+      transform: rotate(1deg);
+    }
+
+    .tramer-doc-card img {
+      display: block;
+      width: 100%;
+      height: 360px;
+      object-fit: cover;
+      object-position: top center;
+      filter: saturate(1.04) contrast(1.02);
+    }
+
+    .tramer-doc-caption {
+      position: absolute;
+      left: 14px;
+      right: 14px;
+      bottom: 14px;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      border-radius: 8px;
+      background: rgba(7,15,31,.84);
+      color: #fff;
+      padding: 10px 12px;
+      font-size: 11px;
+      font-weight: 900;
+      backdrop-filter: blur(10px);
+    }
+
+    .tramer-showcase {
+      display: grid;
+      grid-template-columns: minmax(0, 1.3fr) 390px;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .damage-stage {
+      display: grid;
+      gap: 14px;
+    }
+
+    .premium-panel {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+      box-shadow: 0 16px 36px rgba(16,31,61,.08);
+      overflow: hidden;
+    }
+
+    .premium-panel-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: center;
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--line-2);
+      background: linear-gradient(180deg, #fff, #f8fafc);
+    }
+
+    .premium-panel-head h3 {
+      color: var(--navy-2);
+      font-size: 15px;
+      line-height: 1.2;
+      text-transform: uppercase;
+    }
+
+    .premium-panel-head p {
+      margin-top: 4px;
+      color: #667085;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .damage-timeline {
+      position: relative;
+      display: grid;
+      gap: 12px;
+      padding: 16px;
+    }
+
+    .damage-card {
+      position: relative;
+      display: grid;
+      grid-template-columns: 118px minmax(0, 1fr) 190px;
+      gap: 14px;
+      align-items: stretch;
+      min-height: 154px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: linear-gradient(180deg, #fff, #fbfcff);
+      padding: 14px;
+    }
+
+    .damage-card.primary {
+      border-color: rgba(215,25,32,.28);
+      background:
+        linear-gradient(90deg, rgba(215,25,32,.08), rgba(255,255,255,0) 42%),
+        #fff;
+    }
+
+    .damage-year {
+      display: grid;
+      align-content: center;
+      justify-items: start;
+      border-right: 1px solid var(--line-2);
+      padding-right: 14px;
+    }
+
+    .damage-year b {
+      color: var(--navy-2);
+      font-size: 34px;
+      line-height: 1;
+      font-weight: 950;
+    }
+
+    .damage-year span {
+      margin-top: 8px;
+      color: #667085;
+      font-size: 12px;
+      font-weight: 850;
+    }
+
+    .damage-main {
+      display: grid;
+      align-content: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .damage-main h4 {
+      color: var(--navy-2);
+      font-size: 19px;
+      line-height: 1.2;
+    }
+
+    .damage-main p {
+      color: #667085;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .damage-tags,
+    .part-cloud {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .damage-tags span,
+    .part-cloud span {
+      border-radius: 999px;
+      border: 1px solid var(--line-2);
+      background: #fff;
+      color: #475467;
+      padding: 6px 9px;
+      font-size: 11px;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .damage-amount {
+      display: grid;
+      align-content: center;
+      justify-items: end;
+      text-align: right;
+      border-left: 1px solid var(--line-2);
+      padding-left: 14px;
+    }
+
+    .damage-amount span {
+      color: #667085;
+      font-size: 10px;
+      font-weight: 950;
+      text-transform: uppercase;
+    }
+
+    .damage-amount b {
+      margin-top: 8px;
+      color: var(--red);
+      font-size: 30px;
+      line-height: 1;
+      font-weight: 950;
+    }
+
+    .damage-amount small {
+      margin-top: 8px;
+      color: #667085;
+      font-size: 11px;
+      line-height: 1.35;
+    }
+
+    .tramer-insight-rail {
+      display: grid;
+      gap: 14px;
+    }
+
+    .risk-list {
+      display: grid;
+      gap: 10px;
+      padding: 16px;
+    }
+
+    .risk-item {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 92px;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .risk-item b {
+      display: block;
+      color: var(--navy-2);
+      font-size: 12px;
+      line-height: 1.2;
+    }
+
+    .risk-item span {
+      display: block;
+      margin-top: 4px;
+      color: #667085;
+      font-size: 11px;
+      line-height: 1.35;
+    }
+
+    .risk-meter {
+      height: 9px;
+      border-radius: 999px;
+      background: #edf1f5;
+      overflow: hidden;
+    }
+
+    .risk-meter i {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+      background: var(--green);
+    }
+
+    .risk-meter.warn i {
+      background: var(--amber);
+    }
+
+    .risk-meter.hot i {
+      background: var(--red);
+    }
+
+    .history-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      padding: 16px;
+    }
+
+    .history-tile {
+      min-height: 92px;
+      border: 1px solid var(--line-2);
+      border-radius: 10px;
+      background: linear-gradient(180deg, #fff, #f9fbfd);
+      padding: 12px;
+    }
+
+    .history-tile span {
+      display: block;
+      color: #667085;
+      font-size: 10px;
+      font-weight: 950;
+      text-transform: uppercase;
+    }
+
+    .history-tile b {
+      display: block;
+      margin-top: 8px;
+      color: var(--navy-2);
+      font-size: 17px;
+      line-height: 1.15;
+    }
+
+    .source-preview-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      padding: 16px;
+    }
+
+    .source-thumb {
+      position: relative;
+      overflow: hidden;
+      min-height: 180px;
+      border: 1px solid var(--line-2);
+      border-radius: 10px;
+      background: #f8fafc;
+    }
+
+    .source-thumb img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      object-position: top center;
+      display: block;
+    }
+
+    .source-thumb span {
+      position: absolute;
+      left: 10px;
+      bottom: 10px;
+      border-radius: 999px;
+      background: rgba(16,31,61,.86);
+      color: #fff;
+      padding: 6px 9px;
+      font-size: 10px;
+      font-weight: 950;
+    }
+
+    .tramer-technical-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: center;
+      margin: 4px 0 12px;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+      color: #475467;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .customer-mode .technical-only {
+      display: none !important;
+    }
+
+    .footer {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 12px;
+      color: #667085;
+      font-size: 12px;
+      line-height: 1.5;
+      padding: 8px 2px 0;
+    }
+
+    @media (max-width: 1180px) {
+      .test-slide {
+        scroll-margin-top: 236px;
+      }
+
+      .topbar-inner {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+
+      .top-metas,
+      .toolbar {
+        justify-content: flex-start;
+      }
+
+      .app-shell {
+        padding-top: 154px;
+      }
+
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        order: 0;
+        position: sticky;
+        top: 154px;
+        z-index: 30;
+        display: flex;
+        overflow-x: auto;
+        max-height: none;
+        padding: 4px 2px 10px;
+      }
+
+      .nav-card {
+        min-width: 230px;
+      }
+
+      .content {
+        order: 0;
+      }
+
+      .hero,
+      .summary-grid,
+      .module-body,
+      .visual-grid,
+      .selection-grid,
+      .test-story-grid,
+      .test-detail-area.has-image,
+      .system-visual-layout,
+      .tramer-hero,
+      .tramer-showcase {
+        grid-template-columns: 1fr;
+      }
+
+      .system-mini-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .tramer-doc-stack {
+        min-height: auto;
+        padding: 0 22px 22px;
+      }
+
+      .tramer-doc-card {
+        transform: none;
+      }
+
+      .tramer-metric-board {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .damage-card {
+        grid-template-columns: 92px minmax(0, 1fr);
+      }
+
+      .damage-amount {
+        grid-column: 1 / -1;
+        justify-items: start;
+        text-align: left;
+        border-left: 0;
+        border-top: 1px solid var(--line-2);
+        padding: 12px 0 0;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .topbar-inner,
+      .layout {
+        padding-left: 14px;
+        padding-right: 14px;
+      }
+
+      .app-shell {
+        padding-top: 190px;
+      }
+
+      .top-metas {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+        width: 100%;
+      }
+
+      .top-meta {
+        text-align: left;
+        min-width: 0;
+      }
+
+      .sidebar {
+        top: 190px;
+      }
+
+      .test-slide {
+        scroll-margin-top: 276px;
+      }
+
+      .slide-inner {
+        padding: 18px;
+      }
+
+      h1 {
+        font-size: 38px;
+      }
+
+      .lead {
+        font-size: 15px;
+      }
+
+      .section-head,
+      .module-top {
+        grid-template-columns: 1fr;
+      }
+
+      .cards-3,
+      .cards-4,
+      .overview-grid,
+      .stat-row,
+      .metric-grid,
+      .mini-stats,
+      .proof-grid,
+      .legend,
+      .system-mini-grid,
+      .tramer-metric-board,
+      .history-grid,
+      .source-preview-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .system-visual-head {
+        align-items: start;
+        flex-direction: column;
+      }
+
+      .system-stage {
+        min-height: 280px;
+      }
+
+      .visual-hotspot {
+        max-width: 66%;
+        font-size: 10px;
+      }
+
+      .tramer-hero-main {
+        padding: 22px;
+        min-height: auto;
+      }
+
+      .tramer-headline {
+        font-size: 34px;
+      }
+
+      .tramer-metric-card b {
+        overflow-wrap: anywhere;
+      }
+
+      .tramer-doc-card img {
+        height: 300px;
+      }
+
+      .damage-card {
+        grid-template-columns: 1fr;
+      }
+
+      .damage-year,
+      .damage-amount {
+        border: 0;
+        padding: 0;
+      }
+
+      .module-desc {
+        margin-left: 0;
+      }
+
+      .plate {
+        grid-template-columns: 58px 1fr;
+      }
+
+      .plate b {
+        font-size: 26px;
+      }
+    }
+
+    @media print {
+      @page {
+        size: A4;
+        margin: 10mm;
+      }
+
+      body {
+        background: #fff;
+      }
+
+      .topbar,
+      .sidebar,
+      .footer .screen-only,
+      .tool-button {
+        display: none !important;
+      }
+
+      .app-shell {
+        padding-top: 0;
+      }
+
+      .layout {
+        display: block;
+        padding: 0;
+      }
+
+      .content {
+        gap: 0;
+      }
+
+      .slide {
+        break-inside: avoid;
+        page-break-inside: avoid;
+        box-shadow: none;
+        border-color: #ccd4df;
+        margin-bottom: 10mm;
+      }
+
+      .slide-inner {
+        padding: 14mm;
+      }
+
+      .detail-section {
+        break-inside: avoid;
+      }
+
+      details:not([open]) > *:not(summary) {
+        display: block;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell" id="app">
+    <header class="topbar" aria-label="OTOTR rapor başlığı">
+      <div class="topbar-inner">
+        <a class="brand" href="#kapak" aria-label="Kapak sayfasına git">
+          <span class="brand-mark" aria-hidden="true"><span>OTO</span><span>TR</span></span>
+          <span class="brand-copy">
+            <strong>OTOTR - Ekspertiz Sunumu</strong>
+            <small id="top-report-line">Rapor hazırlanıyor</small>
+          </span>
+        </a>
+        <div class="top-metas" id="top-metas"></div>
+        <div class="toolbar">
+          <button class="tool-button" id="modeToggle" type="button">Müşteri Modu</button>
+          <button class="tool-button primary" type="button" onclick="window.print()">PDF / Yazdır</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="layout">
+      <aside class="sidebar" id="sidebar" aria-label="Sunum bölümleri"></aside>
+      <section class="content" id="content"></section>
+    </main>
+  </div>
+
+  <script>
+    const defaultReportData = {
+      meta: {
+        reportNo: "OTOTR-1601-20260913-0003",
+        dateTime: "13.09.2026 12:05",
+        plate: "34ARF34",
+        vehicle: "Porsche Taycan GTS",
+        package: "OTOTR 360 GÜVENCE",
+        source: "Canlı sunum sayfasından okunmuştur",
+        presentationDecision: "Müşteri sunumuna hazır, veri uyarıları kontrol edilmeli"
+      },
+      warnings: [
+        {
+          title: "Borç kayıtları çapraz doğrulama istiyor",
+          text: "Araç dosya bölümünde OGS-HGS-KGS ceza borcu 'Var' görünüyor; Borç Sorguları bölümünde ise genel borç durumu 'Borç yok'. Sunumdan önce entegrasyon yanıtı doğrulanmalı."
+        },
+        {
+          title: "Dış ekspertizde müşteri notu gerektiren madde var",
+          text: "Dış ekspertiz detayında geri vites lambaları 'Yanmıyor' olarak görünüyor. Genel karar 'Kullanıma Uygun' kalsa bile teslim notuna eklenmeli."
+        },
+        {
+          title: "Ham değer görünen alanlar etiketlenmeli",
+          text: "Mekanik ve OBD detaylarında bazı alanlar '1' veya '3' gibi ham enum değeri döndürüyor. Canlı sisteme alınırken kullanıcı dostu etiket eşleştirmesi yapılmalı."
+        },
+        {
+          title: "Tramer 360 kaynak eşleşmesi kontrol edilmeli",
+          text: "Tramer 360 alanı eklenen PDF örneğine göre dolduruldu. Canlı sisteme alınırken plaka/şasi ile ana rapor aracı eşleşmeden müşteriye nihai veri olarak sunulmamalı."
+        }
+      ],
+      modules: [
+        {
+          id: "yol",
+          title: "Yol Testi / Sürüş",
+          status: "Hazır",
+          result: "Kullanıma Uygun",
+          tone: "good",
+          description: "Araç farklı yol ve hız koşullarında test edilerek sürüş dinamikleri, fren performansı ve yol tutuş özellikleri değerlendirilmiştir.",
+          note: "Araç yol testinden başarıyla geçmiştir. Sürüş dinamikleri, fren performansı ve yol tutuş özellikleri normal seviyededir.",
+          stats: { critical: 0, follow: 0, info: 0, proof: 0, total: "18 / 20" },
+          visualDeck: {
+            title: "Sürüş Dinamiği Görsel Okuması",
+            subtitle: "Kaporta giriş ekranındaki çoklu araç görünüşleri, yol testinde müşteriye aracın yolda hangi bölgelerden okunduğunu anlatmak için kullanılır.",
+            badge: "18 / 20 kontrol",
+            hero: { title: "Yol Tutuş ve Stabilite", src: "assets/body-design/v17/right.png", alt: "Sağ yandan araç görünümü", note: "Sürüş çizgisi stabil" },
+            hotspots: [
+              { x: "24%", y: "62%", label: "Ön takım tepkisi" },
+              { x: "48%", y: "35%", label: "Kabin ses/titreşim" },
+              { x: "70%", y: "62%", label: "Arka aks dengesi" }
+            ],
+            checks: [
+              ["Aktarma Davranışı", "Kalkış, gaz tepkisi ve vites geçişleri birlikte okunur."],
+              ["Direksiyon ve Stabilite", "Düz gidiş, viraj ve yol tutuş hissi müşteri diliyle anlatılır."],
+              ["Konfor Notu", "Ses/titreşim başlıkları takip gerektiren alanları görünür kılar."]
+            ],
+            proofs: ["Yol testi", "Sürüş hissi", "Stabilite"],
+            views: [
+              { title: "Yan Görünüm", src: "assets/body-design/v17/right.png", alt: "Sağ görünüş", note: "Sürüş profili" },
+              { title: "Üst Görünüm", src: "assets/body-design/v17/top.png", alt: "Üstten görünüş", note: "Gövde dengesi" },
+              { title: "Ön Görünüm", src: "assets/body-design/v17/front.png", alt: "Ön görünüş", note: "Direksiyon/fren odağı" }
+            ]
+          },
+          groups: [
+            { title: "Test Şartları", score: "3 / 3", rows: [["Test Mesafesi", "4-5 Km, 1-3 Km, 6-10 Km"], ["Hava Durumu", "Rüzgarlı, Güneşli (Açık), Sisli, Karlı, Parçalı ve Az Bulutlu, Yağmurlu"], ["Yol Durumu", "Tali Yol, Asfalt Yol"]] },
+            { title: "Motor / Şanzıman & Aktarma Davranışı", score: "5 / 5", rows: [["Kalkış Davranışı", "Sorunsuz / Dengeli Kalkış"], ["Gaz Tepkisi", "Sorunsuz"], ["İvmelenme / Hızlanma", "Sorunsuz"], ["Vites Geçişleri", "Uygun / Sorunsuz"], ["Debriyaj / Kavrama Davranışı", "Normal"]] },
+            { title: "Direksiyon / Stabilite & Sürüş Dinamiği", score: "7 / 7", rows: [["Direksiyon Tepkileri", "Normal"], ["Düz Gitme / Yön Kararlılığı", "Normal"], ["Yol Tutuş / Stabilite", "Stabil"], ["Viraj Davranışı", "Normal"], ["ABS / ESP Fonksiyonel Davranışı", "Devreye Girdi"], ["Cruise Control Fonksiyon Kontrolü", "Aktif Çalışıyor"]] },
+            { title: "Ses / Titreşim & Sürüş Konforu", score: "3 / 5", rows: [["Olağan Dışı Mekanik Ses", "Yok"], ["Süspansiyon Sürüş Konforu", "Uygun"], ["Direksiyon / Ön Takım Sesi", "Bekliyor"], ["Yol / Rulman Kaynaklı Ses", "Sorun Görülmedi"], ["Titreşim", "Bekliyor"]] }
+          ]
+        },
+        {
+          id: "dosya",
+          title: "Araç Dosya Ekspertiz Raporu",
+          status: "Hazır",
+          result: "Dosya kayıtları okunuyor",
+          tone: "warn",
+          description: "Ekspertiz dosyasında hasar, kilometre, muayene ve borç kalemleri birlikte özetlenir.",
+          note: "Bu bölüm müşteri sunumunda karar özeti ile birlikte, eksik veya çelişkili alanlar vurgulanarak gösterilmelidir.",
+          stats: { critical: 0, follow: 2, info: 1, proof: 0, total: "7 kayıt" },
+          groups: [
+            { title: "Dosya Sorguları", score: "Canlı Veri", rows: [["Vergi Borcu", "Yok"], ["Tramer Kaza Raporu", "Yok"], ["Ağır Hasar Kaydı", "Yok"], ["Kilometre Bilgisi Sorgulama", "Yok"], ["Araç Muayene Bitiş", "Tarih Giriniz."], ["OGS-HGS-KGS Ceza Borcu", "Var"], ["Notlar / Diğer Borçlar", "Varsa Ekleyiniz."]] }
+          ]
+        },
+        {
+          id: "motor",
+          title: "Motor Ekspertiz ve Check-up",
+          status: "Hazır",
+          result: "Sorun Tespit Edilmedi",
+          tone: "good",
+          description: "Motor üst bölge, iç sağlık, yağlama, soğutma ve yardımcı sistem kontrolleri.",
+          note: "Motor kontrollerinde öne çıkan bir bulguya rastlanmamıştır.",
+          stats: { critical: 0, follow: 0, info: 0, proof: 0, total: "Tamamlandı" },
+          visualDeck: {
+            title: "Motor Bölgesi Görsel Kontrol Haritası",
+            subtitle: "Kaput ve ön yapı görselleriyle motor üst bölge, soğutma, yağlama ve hava/yakıt hattı müşteriye tek bakışta anlatılır.",
+            badge: "Sorunsuz",
+            hero: { title: "Motor Ön Bölge", src: "assets/body-design/v17/front.png", alt: "Önden kaporta görünümü", note: "Motor kontrol bölgesi" },
+            hotspots: [
+              { x: "50%", y: "38%", label: "Motor üst bölge" },
+              { x: "35%", y: "71%", label: "Soğutma hattı" },
+              { x: "66%", y: "71%", label: "Yağ/sızdırmazlık" }
+            ],
+            checks: [
+              ["Motor Üst Bölge", "Kapak, izolasyon ve genel motor bölgesi görünümü okunur."],
+              ["Yağlama", "Yağ seviyesi ve görünen sızdırmazlık izleri kontrol edilir."],
+              ["Soğutma", "Antifriz, radyatör ve fan hattı beraber değerlendirilir."]
+            ],
+            proofs: ["Motor üst bölge", "Yağlama", "Soğutma", "Egzoz/Yakıt"],
+            views: [
+              { title: "Kaput Hattı", src: "assets/body-design/v17/top.png", alt: "Üstten kaput görünümü", note: "Kaput ve ön bölge" },
+              { title: "Ön Taşıyıcı", src: "assets/chassis/v56/front.png", alt: "Ön şasi görünümü", note: "Ön yapı referansı" },
+              { title: "OBD Destek", src: "docs/obd-module-map.png", alt: "OBD modül haritası", note: "Elektronik destek" }
+            ]
+          },
+          groups: [
+            { title: "Motor Üst Bölge & Genel Durum", score: "Uygun", rows: [["Koruyucu Kapak / Hava Filtre Boruları", "İyi, Motor Koruyucu Kapağı Yok"], ["Isı ve Ses İzolasyonu", "Yok, Orta, İyi"], ["Motor - Mekanik İşlem Mevcut mu?", "Hayır"]] },
+            { title: "Yağlama & Sızdırmazlık", score: "Uygun", rows: [["Motor Yağ Seviyesi", "İyi Düzeyde"], ["Motor Üst Bölge Yağ Sızdırmazlığı", "İyi"]] },
+            { title: "Soğutma Sistemi", score: "Uygun", rows: [["Antifriz", "İyi, Orta"], ["Radyatör Genel Durumu", "Orta, İyi"], ["Soğutma Fanları", "İyi"], ["Motor suyunda yağ var mı?", "Yok"], ["Motor yağında soğutma suyu var mı?", "Hayır"]] },
+            { title: "Turbo / Yakıt / Hava & Egzoz", score: "Uygun", rows: [["Yakıt Sistemi ve Sızdırmazlık", "İyi"], ["Intercooler Genel Durumu", "İyi"], ["Turbo Yağ Sızdırmazlığı", "İyi, Orta"], ["Egzoz manifoltunda gaz kaçağı var mı?", "Hayır"]] }
+          ]
+        },
+        {
+          id: "mekanik",
+          title: "Mekanik Ekspertiz ve Check-up",
+          status: "Hazır",
+          result: "Kullanıma Uygun",
+          tone: "good",
+          description: "Alt bölge, aktarma, şanzıman, diferansiyel ve yardımcı mekanik kontrolleri.",
+          note: "Alt mekanik, aktarma ve şanzıman kontrollerinde kritik bulguya rastlanmamıştır.",
+          stats: { critical: 0, follow: 1, info: 0, proof: 0, total: "Tamamlandı" },
+          visualDeck: {
+            title: "Alt Mekanik ve Aktarma Görseli",
+            subtitle: "Şasi ekranındaki alt gövde görseli, mekanik testte motor altı, şanzıman, diferansiyel ve aks hatlarını müşteriye konumlu gösterir.",
+            badge: "1 takip",
+            hero: { title: "Alt Gövde / Aktarma Hattı", src: "assets/chassis/v56/top.png", alt: "Şasi üst/alt yapı görünümü", note: "Alt mekanik uygun" },
+            hotspots: [
+              { x: "20%", y: "50%", label: "Motor altı" },
+              { x: "43%", y: "50%", label: "Şanzıman/kavrama" },
+              { x: "70%", y: "50%", label: "Arka aktarma" },
+              { x: "54%", y: "78%", label: "Aks ve şaft hattı", tone: "warn" }
+            ],
+            checks: [
+              ["Sızdırmazlık", "Motor altı ve şanzıman çevresindeki yağ izi kontrol edilir."],
+              ["Aktarma", "Aks, şaft ve diferansiyel hattı görsel harita üzerinde okunur."],
+              ["Takip Alanı", "Ham değer görünen transfer kutusu alanı teknik modda ayrıca açılır."]
+            ],
+            proofs: ["Alt bölge", "Şanzıman", "Diferansiyel", "Aks/Şaft"],
+            views: [
+              { title: "Yan Taşıyıcı", src: "assets/chassis/v56/side.png", alt: "Şasi yan görünüm", note: "Taşıyıcı hat" },
+              { title: "Ön Mekanik", src: "assets/chassis/v56/front.png", alt: "Ön yapı", note: "Ön aks bölgesi" },
+              { title: "Arka Mekanik", src: "assets/chassis/v56/rear.png", alt: "Arka yapı", note: "Arka aks bölgesi" }
+            ]
+          },
+          groups: [
+            { title: "Alt Bölge & Koruma", score: "Uygun", rows: [["Taban Plastik Bakalitleri", "İyi, Yok, Orta"]] },
+            { title: "Motor Altı Yağ & Sızdırmazlık", score: "Uygun", rows: [["Motor Karteri Yağ Sızdırmazlığı", "İyi"], ["Ön Krank Keçesi", "İyi"], ["Yağ Soğutucusu", "Yok, İyi"], ["Arka Krank Keçesi", "İyi"]] },
+            { title: "Şanzıman / Kavrama & Diferansiyel", score: "Uygun", rows: [["Şanzıman Yağ Sızdırmazlığı", "İyi"], ["Ön Diferansiyel", "İyi, Yok"], ["Debriyaj Balatası ve Kavrama", "İyi"], ["Arka Diferansiyel", "Yok, İyi"]] },
+            { title: "Aktarma / Şaft & Transfer Sistemi", score: "Kontrol", rows: [["Ön Aks ve Aks Körükleri", "Yok, İyi"], ["Kardan / Transmisyon Şaftı", "İyi"], ["Transfer Kutusu / Arazi Şanzımanı", "Ham değer: 1"], ["Arka Aks ve Aks Körükleri", "İyi"]] }
+          ]
+        },
+        {
+          id: "kaporta",
+          title: "Kaporta - Boya ve Şasi",
+          status: "Hazır",
+          result: "Gövde ve şasi görünümü sunuma hazır",
+          tone: "good",
+          description: "Kaporta boya kat planı, diğer kaporta maddeleri ve 20 noktalı şasi/yapısal gövde kontrolü.",
+          note: "Kaporta/Boya: 5 görünüm ve 16/16 kat planı. Şasi: 20/20 yapısal nokta, görünen sonuçlar orijinal.",
+          stats: { critical: 0, follow: 0, info: 0, proof: "Görsel", total: "31 Orijinal" },
+          visual: true,
+          groups: [
+            { title: "Kaporta / Boya Özet", score: "31 Orijinal", rows: [["Kat Planı", "5 görünüm, 16/16"], ["Diğer Kaporta Maddeleri", "11/11"], ["Durum Özeti", "ORIJINAL"], ["Girilmedi", "0"]] },
+            { title: "Şasi / Yapısal Gövde", score: "20 / 20", rows: [["Ön Yapı", "Ön panel, şasi uçları, podye ve amortisör kuleleri orijinal"], ["Yan Yapı", "Sol/Sağ frangart ve iç direkler orijinal"], ["Arka Yapı", "Arka şasi, havuz içi ve iç panel orijinal"]] }
+          ]
+        },
+        {
+          id: "obd",
+          title: "Beyin / OBD / Elektronik",
+          status: "Hazır",
+          result: "İyi",
+          tone: "good",
+          description: "Araçtaki elektronik kontrol üniteleri taranır ve hata kayıtları özetlenir.",
+          note: "Elektronik modül taramasında kritik arıza kaydına rastlanmamıştır. Bir modülde ham değer etiketleme kontrolü önerilir.",
+          stats: { critical: 0, follow: 1, info: 0, proof: 1, total: "8 / 8" },
+          image: "docs/obd-module-map.png",
+          visualDeck: {
+            title: "Elektronik Modül Haritası",
+            subtitle: "OBD çıktısı, motor/aktarma, güvenlik ve konfor beyinlerini müşteriye görsel sistem haritası üzerinden anlatır.",
+            badge: "8 / 8 modül",
+            hero: { title: "OBD / Beyin Tarama", src: "docs/obd-module-map.png", alt: "OBD modül haritası", note: "Kritik arıza yok" },
+            hotspots: [
+              { x: "42%", y: "32%", label: "Motor ECU" },
+              { x: "60%", y: "52%", label: "ABS / ESP" },
+              { x: "51%", y: "70%", label: "Gövde modülü", tone: "warn" }
+            ],
+            checks: [
+              ["Motor & Aktarma", "ECU ve şanzıman modülü arıza kaydı açısından okunur."],
+              ["Güvenlik", "ABS, ESP, EPS ve SRS hattı müşteri kararına bağlanır."],
+              ["Konfor Modülleri", "Ham değer dönen alanlar canlı sistemde etikete çevrilmelidir."]
+            ],
+            proofs: ["OBD çıktı", "ECU", "ABS/ESP", "SRS"],
+            views: [
+              { title: "Sistem Haritası", src: "docs/obd-module-map.png", alt: "OBD modül haritası", note: "Modül tarama" },
+              { title: "Ön Yapı", src: "assets/chassis/v56/front.png", alt: "Ön şasi", note: "Elektronik destek" },
+              { title: "Kabin Hattı", src: "assets/body-design/v17/top.png", alt: "Üstten görünüş", note: "Gövde/konfor" }
+            ]
+          },
+          groups: [
+            { title: "Motor & Aktarma Modülleri", score: "2 / 2", rows: [["Motor ECU", "Arıza Kaydı Yok"], ["Şanzıman Kontrol Modülü", "Arıza Kaydı Yok"]] },
+            { title: "Fren / Şasi & Güvenlik Modülleri", score: "3 / 3", rows: [["ABS / ESP Modülü", "Arıza Kaydı Yok"], ["Direksiyon / EPS Modülü", "Arıza Kaydı Yok"], ["Airbag / SRS Modülü", "Arıza Kaydı Yok"]] },
+            { title: "Gövde / Konfor & Yardımcı Modüller", score: "3 / 3", rows: [["BCM / Gövde Kontrol Modülü", "Arıza Kaydı Yok"], ["Klima Modülü", "Arıza Kaydı Yok"], ["Multimedya / Gateway", "Ham değer: 3"]] }
+          ]
+        },
+        {
+          id: "fren",
+          title: "Fren / Süspansiyon Testi",
+          status: "Hazır",
+          result: "Tamamen Uygun",
+          tone: "good",
+          description: "Fren, süspansiyon, direksiyon ve lastik sistemleri gözlemsel ve test hattı ölçümleriyle incelenir.",
+          note: "Fren, süspansiyon, direksiyon ve lastik kontrollerinde kritik bulguya rastlanmamıştır.",
+          stats: { critical: 0, follow: 0, info: 0, proof: 1, total: "Tamamlandı" },
+          visualDeck: {
+            title: "Fren / Süspansiyon Görsel Kontrol Hattı",
+            subtitle: "Şasi ekranındaki taşıyıcı ve aks görselleri, fren kuvveti ile süspansiyon/direksiyon noktalarını müşterinin anlayacağı şekilde konumlandırır.",
+            badge: "Tamamen uygun",
+            hero: { title: "Aks ve Süspansiyon Hattı", src: "assets/chassis/v56/side.png", alt: "Şasi yan taşıyıcı görünümü", note: "Fren/süspansiyon uygun" },
+            hotspots: [
+              { x: "20%", y: "60%", label: "Ön fren diski/balata" },
+              { x: "28%", y: "32%", label: "Ön amortisör kuleleri" },
+              { x: "72%", y: "60%", label: "Arka fren hattı" },
+              { x: "55%", y: "76%", label: "Direksiyon/alt takım" }
+            ],
+            checks: [
+              ["Fren Kuvveti", "Ön ve arka fren dengesi test hattı verisiyle anlatılır."],
+              ["Süspansiyon", "Kule bilyası, amortisör yatağı ve salıncak burçları işaretlenir."],
+              ["Direksiyon", "Ön takım sesi ve yön kararlılığı yol testiyle birlikte okunur."]
+            ],
+            proofs: ["Fren ölçümü", "Süspansiyon", "Direksiyon", "Lastik/Jant"],
+            views: [
+              { title: "Ön Aks", src: "assets/chassis/v56/front.png", alt: "Ön yapı", note: "Ön fren/süspansiyon" },
+              { title: "Arka Aks", src: "assets/chassis/v56/rear.png", alt: "Arka yapı", note: "Arka fren hattı" },
+              { title: "Yan Taşıyıcı", src: "assets/chassis/v56/side-left.png", alt: "Sol yan taşıyıcı", note: "Süspansiyon referansı" }
+            ]
+          },
+          groups: [
+            { title: "Fren Sistemi Kontrolleri", score: "Uygun", rows: [["El / Park Freni Verimliliği", "İyi"], ["Ön Sağ - Sol Fren Değerleri", "Uygun"], ["Arka Sağ - Sol Fren Değerleri", "Uygun"], ["Fren Hidroliği Ölçüm Durumu", "Uygun / Test Sonucu Normal"], ["Ön Fren Balata ve Diskleri", "İyi Durumda"], ["Arka Fren Balata / Disk-Kampana", "İyi Durumda"]] },
+            { title: "Süspansiyon ve Direksiyon", score: "Uygun", rows: [["Sol Kule Bilyası / Üst Amortisör Yatağı", "Uygun"], ["Sağ Kule Bilyası / Üst Amortisör Yatağı", "Uygun"], ["Sol Ön Salıncak Fişeği / Burcu", "Uygun"], ["Sağ Ön Salıncak Fişeği / Burcu", "Uygun"]] }
+          ]
+        },
+        {
+          id: "dis",
+          title: "Dış Ekspertiz ve Check-up",
+          status: "Hazır",
+          result: "Kullanıma Uygun",
+          tone: "warn",
+          description: "Araç dış donanım, konfor, aydınlatma ve güvenlik ekipmanları incelenir.",
+          note: "Genel dış donanım kullanıma uygun; geri vites lambaları için takip notu bulunuyor.",
+          stats: { critical: 0, follow: 1, info: 0, proof: 0, total: "Çoklu Kontrol" },
+          visualDeck: {
+            title: "Dış Donanım Görsel Turu",
+            subtitle: "Kaporta giriş sayfasındaki beş görünüş mantığı, dış ekspertizde aydınlatma, cam, ayna ve kapı fonksiyonlarını müşteriye görsel tur olarak sunar.",
+            badge: "1 takip",
+            hero: { title: "Dış Fonksiyon Kontrolü", src: "assets/body-design/v17/right.png", alt: "Sağ dış görünüş", note: "Genel kullanım uygun" },
+            hotspots: [
+              { x: "18%", y: "45%", label: "Ön far/sinyal" },
+              { x: "42%", y: "30%", label: "Ayna ve kapılar" },
+              { x: "80%", y: "46%", label: "Arka stop/geri vites", tone: "warn" }
+            ],
+            checks: [
+              ["Aydınlatma", "Ön ve arka ışık grupları görünüşler üzerinden okunur."],
+              ["Ayna/Kapı", "Kapı kolları, merkezi kilit ve aynalar dış kullanım kalitesini gösterir."],
+              ["Takip Notu", "Geri vites lambası çalışmama notu müşteriye küçük teslim maddesi olarak gösterilir."]
+            ],
+            proofs: ["Ön aydınlatma", "Arka aydınlatma", "Ayna/Kapı"],
+            views: [
+              { title: "Ön Görünüş", src: "assets/body-design/v17/front.png", alt: "Ön görünüş", note: "Far/sinyal" },
+              { title: "Arka Görünüş", src: "assets/body-design/v17/rear.png", alt: "Arka görünüş", note: "Stop/geri vites" },
+              { title: "Sol Görünüş", src: "assets/body-design/v17/left.png", alt: "Sol görünüş", note: "Kapı/ayna" }
+            ]
+          },
+          groups: [
+            { title: "Ayna & Kapı Donanımları", score: "5 / 5", rows: [["Sol Ayna", "Çalışıyor"], ["Sol Kapı Kolları", "Çalışıyor"], ["Sağ Kapı Kolları", "Çalışıyor"], ["Sağ Ayna", "Çalışıyor"], ["Merkezi Kilit Uzaktan Kumanda", "Yok, Çalışıyor"]] },
+            { title: "Ön Aydınlatma & Görüş", score: "8 / 8", rows: [["Ön Sol Far", "Çalışıyor"], ["Ön Sol Sinyal", "Çalışıyor"], ["Ön Sağ Far", "Çalışıyor"], ["Dörtlü Flaşör", "Çalışıyor"], ["Ön Sağ / Sol Sis", "Çalışıyor"], ["Ön Silecekler", "İyi"]] },
+            { title: "Arka Aydınlatma & Görüş", score: "8 / 8", rows: [["Arka Sol Stop", "Çalışıyor, Tamirli"], ["Arka Silecekler", "İyi"], ["Arka 3. Stop", "Çalışıyor"], ["Arka Sağ Stop", "Çalışıyor"], ["Plaka Aydınlatma", "Çalışıyor"], ["Geri Vites Lambaları", "Yanmıyor"]] }
+          ]
+        },
+        {
+          id: "ic",
+          title: "İç Ekspertiz ve Check-up",
+          status: "Hazır",
+          result: "Kullanıma Uygun",
+          tone: "good",
+          description: "Araç iç donanım, konfor, gösterge ve güvenlik ekipmanları incelenir.",
+          note: "İç donanım kontrollerinde öne çıkan kritik bulguya rastlanmamıştır.",
+          stats: { critical: 0, follow: 0, info: 0, proof: 0, total: "Çoklu Kontrol" },
+          visualDeck: {
+            title: "Kabin ve Konfor Kontrol Görseli",
+            subtitle: "Üst görünüş araç kabinini ve kullanım alanını temsil eder; gösterge, klima, ses sistemi, koltuk ve emniyet ekipmanları aynı panelde özetlenir.",
+            badge: "Kullanıma uygun",
+            hero: { title: "Kabin Kullanım Alanı", src: "assets/body-design/v17/top.png", alt: "Üstten araç görünümü", note: "İç donanım uygun" },
+            hotspots: [
+              { x: "34%", y: "45%", label: "Sürücü alanı" },
+              { x: "50%", y: "54%", label: "Koltuk/döşeme" },
+              { x: "61%", y: "48%", label: "Emniyet ekipmanı" }
+            ],
+            checks: [
+              ["Gösterge", "Uyarı ışığı bulunup bulunmadığı ilk karar sinyalidir."],
+              ["Konfor", "Klima, ses sistemi ve ekranlar günlük kullanım için okunur."],
+              ["Emniyet", "Kemerler ve iç airbag döşemeleri pasif güvenlik ile ilişkilendirilir."]
+            ],
+            proofs: ["Gösterge", "Klima", "Koltuk", "Emniyet"],
+            views: [
+              { title: "Üst Kabin", src: "assets/body-design/v17/top.png", alt: "Üst görünüş", note: "Kabin yerleşimi" },
+              { title: "Yan Kabin", src: "assets/body-design/v17/left.png", alt: "Sol görünüş", note: "Kapı ve koltuk hattı" },
+              { title: "SRS Destek", src: "docs/airbag-srs-kontrol.png", alt: "Airbag SRS kontrol", note: "Pasif güvenlik" }
+            ]
+          },
+          groups: [
+            { title: "Gösterge & Uyarı Sistemleri", score: "1 / 1", rows: [["Arıza ışık veya uyarısı mevcut mu?", "Hayır"]] },
+            { title: "Klima & Havalandırma", score: "1 / 1", rows: [["Klima ve Izgaralar", "İyi"]] },
+            { title: "Ses & Görüntü Sistemleri", score: "2 / 2", rows: [["Radyo ve Ses Sistemi", "Çalışıyor"], ["Arka Koltuk Ekranlar Kontrol", "Çalışıyor"]] },
+            { title: "Koltuklar & Döşemeler", score: "2 / 2", rows: [["Tavan Döşemesi", "İyi"], ["Ön ve Arka Koltuklar", "İyi"]] },
+            { title: "Emniyet Ekipmanları", score: "5 / 5", rows: [["Sol Ön Emniyet Kemeri", "Çalışıyor"], ["Sol Ön Yan Airbag Döşemeleri", "İyi"], ["Arka Emniyet Kemerleri", "İyi"], ["Sağ Ön Yan Airbag Döşemesi", "İyi"], ["Sağ Ön Emniyet Kemeri", "Çalışıyor"]] }
+          ]
+        },
+        {
+          id: "airbag",
+          title: "Airbag & Pasif Güvenlik Kontrol Testi",
+          status: "Hazır",
+          result: "Pasif Güvenlik Sistemleri Uygun",
+          tone: "good",
+          description: "Airbag sistemi, emniyet kemeri gergileri ve pasif güvenlik bileşenleri incelenir.",
+          note: "Airbag ve SRS sistemi mevcut kontroller kapsamında uygun durumdadır.",
+          stats: { critical: 0, follow: 0, info: 0, proof: 2, total: "14 / 14" },
+          image: "docs/airbag-srs-kontrol.png",
+          visualDeck: {
+            title: "Airbag / SRS Görsel Kanıt Paneli",
+            subtitle: "Pasif güvenlik testi artık sadece satır sonucu değil; SRS kontrol haritası ve gövde görünüşleriyle hangi güvenlik bölgelerinin okunduğunu gösterir.",
+            badge: "14 / 14 uygun",
+            hero: { title: "SRS Kontrol Haritası", src: "docs/airbag-srs-kontrol.png", alt: "Airbag SRS kontrol görseli", note: "Pasif güvenlik uygun" },
+            hotspots: [
+              { x: "38%", y: "34%", label: "Sürücü / yolcu airbag" },
+              { x: "52%", y: "50%", label: "Yan ve perde airbag" },
+              { x: "61%", y: "70%", label: "Emniyet kemeri gergileri" }
+            ],
+            checks: [
+              ["Fiziksel Airbag", "Sürücü, yolcu, yan, perde ve diz airbag noktaları birlikte okunur."],
+              ["Kemer / Pretensioner", "Ön ve arka kemerler ile gergi sistemi müşteriye ayrı gösterilir."],
+              ["OBD Bağı", "SRS modülünde kritik arıza kaydı görünmemesi kararı güçlendirir."]
+            ],
+            proofs: ["Airbag görseli", "SRS modül", "Kemer gergi", "OBD destek"],
+            views: [
+              { title: "SRS Haritası", src: "docs/airbag-srs-kontrol.png", alt: "Airbag SRS", note: "Ana kanıt" },
+              { title: "Kabin Hattı", src: "assets/body-design/v17/top.png", alt: "Üstten görünüş", note: "Kabin bölgeleri" },
+              { title: "Yan Güvenlik", src: "assets/body-design/v17/left.png", alt: "Sol görünüş", note: "Perde/yan airbag" }
+            ]
+          },
+          groups: [
+            { title: "Airbag Fiziksel Kontrolleri", score: "9 / 9", rows: [["Sürücü Airbag", "Sorunsuz"], ["Yolcu Airbag", "Sorunsuz"], ["Sol Ön Yan Airbag", "Sorunsuz"], ["Sağ Ön Yan Airbag", "Sorunsuz"], ["Sol Perde Airbag", "Sorunsuz"], ["Sağ Perde Airbag", "Sorunsuz"], ["Diz Airbag", "Sorunsuz"], ["Sürücü Koltuğu", "Sorunsuz"], ["Yolcu Koltuk Airbagi", "Sorunsuz"]] },
+            { title: "Emniyet Kemeri & Pretensioner", score: "5 / 5", rows: [["Ön Emniyet Kemerleri", "Sorunsuz"], ["Arka Emniyet Kemerleri", "Sorunsuz"], ["Gergi Sistemleri", "Sorunsuz"]] }
+          ]
+        },
+        {
+          id: "conta",
+          title: "Conta Kaçak Testi",
+          status: "Hazır",
+          result: "Kaçak Tespit Edilmedi",
+          tone: "good",
+          description: "Motor conta kaçak testi sistem basınç ve kimyasal sıvı değişimi yöntemi ile kontrol edilmiştir.",
+          note: "Silindir kapak contasında veya motor bloğunda kaçak tespit edilmemiştir.",
+          stats: { critical: 0, follow: 0, info: 0, proof: 2, total: "6 / 6" },
+          visualDeck: {
+            title: "Conta Kaçak Testi Görsel Akışı",
+            subtitle: "Motor ön bölge ve soğutma hattı görselleriyle testin nereden okunduğu; basınç, motor sıcaklığı ve antifriz gözlemiyle birlikte sunulur.",
+            badge: "Kaçak yok",
+            hero: { title: "Motor / Soğutma Hattı", src: "assets/body-design/v17/front.png", alt: "Ön motor bölgesi görünümü", note: "Conta kaçak tespit edilmedi" },
+            hotspots: [
+              { x: "50%", y: "40%", label: "Motor sıcaklığı" },
+              { x: "35%", y: "71%", label: "Soğutma sıvısı" },
+              { x: "66%", y: "71%", label: "Basınç testi" }
+            ],
+            checks: [
+              ["Basınç Testi", "Sistem basıncı normal seviyede okunur."],
+              ["Kimyasal Gözlem", "Kaçak belirtisi doğuracak renk değişimi veya emare aranır."],
+              ["Nihai Sonuç", "Silindir kapak contası veya blok kaçağına dair sinyal yoktur."]
+            ],
+            proofs: ["Basınç", "Antifriz", "Motor sıcaklığı", "Nihai sonuç"],
+            views: [
+              { title: "Ön Motor Bölgesi", src: "assets/body-design/v17/front.png", alt: "Ön görünüş", note: "Test bölgesi" },
+              { title: "Ön Taşıyıcı", src: "assets/chassis/v56/front.png", alt: "Ön şasi", note: "Radyatör/ön hat" },
+              { title: "Kaput Hattı", src: "assets/body-design/v17/top.png", alt: "Üst görünüş", note: "Motor erişimi" }
+            ]
+          },
+          groups: [
+            { title: "Test Bilgileri", score: "2 / 2", rows: [["Test Tarihi", "13.09.2026"], ["Test Yöntemi", "Sistem basınç + kimyasal sıvı değişimi"], ["Test Cihazı", "OTO TR Conta Kaçak Test Cihazı"], ["Testi Yapan", "Yetkili ekspertiz uzmanı"], ["Motor Sıcaklığı", "Motor sıcakken test yapıldı"], ["Sistem Basıncı", "Normal"]] },
+            { title: "Test Gözlemleri & Ölçümler", score: "1 / 1", rows: [["Antifriz Sıvı Seviyesi", "İyi"]] },
+            { title: "Test Sonucu", score: "1 / 1", rows: [["Conta Kaçak Testi Nihai Sonucu", "Sorunsuz"]] }
+          ]
+        },
+        {
+          id: "borc",
+          title: "Borç Sorguları",
+          status: "Hazır",
+          result: "Kayıt Yok",
+          tone: "warn",
+          description: "Araç borç durumu, rehin/haciz ve sorgu belgesi durumu.",
+          note: "Bu bölümde genel borç durumu temiz görünür; araç dosya bölümündeki OGS/HGS/KGS uyarısı ayrıca doğrulanmalıdır.",
+          stats: { critical: 0, follow: 1, info: 0, proof: 1, total: "3 kayıt" },
+          groups: [
+            { title: "Borç ve Kısıt Kontrolü", score: "Canlı Veri", rows: [["Araç borç durumu", "Borç yok"], ["Rehin / haciz kontrolü", "Kayıt yok"], ["Sorgu belgesi", "E-devlet çıktısı alındı"]] }
+          ]
+        },
+        {
+          id: "tramer",
+          title: "Tramer 360",
+          status: "Hazır",
+          result: "2 hasar kaydı, ağır hasar yok",
+          tone: "warn",
+          description: "Tramer360 sorgusu ile hasar, kasko, sahiplik, plaka/araç değişim ve kilometre geçmişi müşteri sunumuna uygun şekilde özetlenir.",
+          note: "PDF örneğinde daha fazla hasar kaydı bulunuyor; sunum formatında hasar adedi 2 kayıtla sınırlandırıldı. En yüksek tutarlı parça değişimli kayıt ve düşük tutarlı ikinci kayıt gösterilir.",
+          stats: { critical: 0, follow: 2, info: 4, proof: 1, total: "2 hasar / Ağır yok" },
+          groups: [
+            { title: "Tramer 360 Hasar Özeti", score: "2 Kayıt", rows: [["Kaynak Rapor Tarihi", "26.05.2025 16:14:08"], ["Plaka / Şasi No", "NLAFD66707W912354"], ["Araç Bilgisi", "HONDA CIVIC SEDAN 1.6 ELEGANCE OV (Y)"], ["Trafiğe Çıkış Tarihi", "23.05.2007"], ["Sunumda Gösterilen Hasar Adedi", "2 kayıt"], ["Ağır Hasar Bilgisi", "Yok"], ["Sunum Notu", "PDF'de daha fazla kayıt var; müşteri sunumunda 1-2 hasar özeti gösterilir."]] },
+            { title: "1. Hasar Bilgisi", score: "108.000,00 TL", rows: [["Hasar Nedeni", "ERP-Çarpma"], ["Kaza Tarihi", "23.07.2023"], ["Ağır Hasar Bilgisi", "Yok"], ["Parça Değişim", "Var"], ["Toplam Parça Tutarı", "71.000,00 TL"], ["Toplam İşçilik Tutarı", "37.000,00 TL"], ["Kilometre", "257.432"], ["Öne Çıkan Parçalar", "Arka kapak, sağ far, ön tampon, bagaj kapağı, arka tampon"]] },
+            { title: "2. Hasar Bilgisi", score: "678,50 TL", rows: [["Hasar Nedeni", "Çarpışma"], ["Kaza Tarihi", "14.02.2017"], ["Ağır Hasar Bilgisi", "Yok"], ["Parça Değişim", "Yok"], ["Toplam Parça Tutarı", "-"], ["Toplam İşçilik Tutarı", "-"], ["Kilometre", "-"], ["Değişen Parça Listesi", "-"]] },
+            { title: "Kasko ve Sahiplik Bilgileri", score: "Geçmiş Var", rows: [["Yürürlükteki Kasko", "Yok"], ["Kaskolu Süre", "3927 gün"], ["Kaskosuzluk Süresi", "2650 gün"], ["Kaskosuz Dönem 1", "06.04.2021 - 26.05.2025"], ["Kaskosuz Dönem 2", "25.07.2017 - 07.09.2020"], ["Sahiplik Kayıt Adedi", "10 şahıs kaydı"]] },
+            { title: "Plaka ve Araç Değişim Bilgileri", score: "Değişim Yok", rows: [["Plaka Değişim", "Yok"], ["Plaka İl Bilgisi", "İzmir / 035"], ["Araç Tür Değişim", "Yok"], ["Araç Türü", "Otomobil"]] }
+          ]
+        }
+      ],
+      proofs: [
+        ["OBD Test Çıktısı", "Elektronik tarama kanıtı: 1"],
+        ["Fren / Süspansiyon", "Test veya fotoğraf kanıtı: 1"],
+        ["Airbag / SRS", "Pasif güvenlik kanıtı: 2"],
+        ["Conta Kaçak", "Test kanıtı: 2"],
+        ["Tramer 360 PDF", "Hasar sorgu kaynağı: 1 PDF, sunumda 2 hasar kaydı"],
+        ["Kaporta / Şasi", "Görsel harita ve 20 nokta sonucu"]
+      ]
+    };
+
+    const reportData = window.OTOTR_SON_RAPOR_DATA || defaultReportData;
+    const content = document.getElementById("content");
+    const sidebar = document.getElementById("sidebar");
+    const topMetas = document.getElementById("top-metas");
+    const topReportLine = document.getElementById("top-report-line");
+    if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+    const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#039;"
+    }[char]));
+
+    const normalizeTone = (tone) => tone === "warn" ? "warn" : tone === "neutral" ? "neutral" : "good";
+
+    const valueClass = (value) => {
+      const text = String(value ?? "").toLocaleLowerCase("tr-TR");
+      if (text.includes("var") || text.includes("yanmıyor") || text.includes("bekliyor") || text.includes("ham değer") || text.includes("girilmedi") || text.includes("onay")) return "value-warn";
+      if (text.includes("yok") || text.includes("iyi") || text.includes("uygun") || text.includes("normal") || text.includes("sorunsuz") || text.includes("çalışıyor") || text.includes("orijinal") || text.includes("kayıt yok")) return "value-ok";
+      return "";
+    };
+
+    const tableRows = (rows) => rows.map(([key, value]) => {
+      const cls = valueClass(value);
+      const valueHtml = cls ? `<span class="${cls}">${escapeHtml(value)}</span>` : escapeHtml(value);
+      return `<tr><th>${escapeHtml(key)}</th><td>${valueHtml}</td></tr>`;
+    }).join("");
+
+    const detailGroup = (group, open = false) => `
+      <details class="detail-section technical-only" ${open ? "open" : ""}>
+        <summary>${escapeHtml(group.title)} <span>${escapeHtml(group.score || "")}</span></summary>
+        <table class="kv-table"><tbody>${tableRows(group.rows || [])}</tbody></table>
+      </details>
+    `;
+
+    const vehicleStory = {
+      yol: {
+        meaning: "Yol testi aracın liftten bağımsız, gerçek kullanımda verdiği sürüş hissini gösterir. Motor tepkisi, direksiyon kararlılığı, konfor ve ses kontrolü aynı anda okunur.",
+        customer: "Bu sayfada aracı müşteriye 'yolda nasıl hissettiriyor' sorusunun cevabıyla anlatıyoruz.",
+        focus: ["Test şartları ve sürüş ortamı", "Aktarma ve hızlanma tepkileri", "Direksiyon, stabilite ve konfor", "Sürüşte fark edilen ses veya titreşim"]
+      },
+      dosya: {
+        meaning: "Araç dosyası, teknik kontrol kadar satış güvenini de belirler. Ruhsat, servis, ekspertiz notu ve yasal sorgular alıcının karar riskini azaltır.",
+        customer: "Bu bölüm müşteriye aracın evrak ve geçmiş güvenliği açısından nerede durduğunu açıklar.",
+        focus: ["Araç kimlik bilgisi ve rapor eşleşmesi", "Servis ve bakım geçmişi", "Yasal sorgu ve borç riski", "Veri tutarlılığı kontrolü"]
+      },
+      motor: {
+        meaning: "Motor testi aracın kalbini okur: çalışma sesi, sıvılar, soğutma, yağ kaçağı ve genel performans birlikte değerlendirilir.",
+        customer: "Müşteriye motorun çalışması, bakım sinyalleri ve yakın dönem takip ihtiyacı sade dille aktarılır.",
+        focus: ["Yağ, su ve kaçak kontrolleri", "Çalışma sesi ve rölanti dengesi", "Soğutma sistemi gözlemi", "Motor bölümü görsel kanıtları"]
+      },
+      mekanik: {
+        meaning: "Mekanik test aracın alt takım, aktarma, şanzıman, diferansiyel ve yürüyen aksam güvenini gösterir.",
+        customer: "Bu sayfa aracın sürüş güvenliği ve bakım maliyeti açısından mekanik durumunu anlatır.",
+        focus: ["Şanzıman ve aktarma elemanları", "Alt takım bağlantıları", "Direksiyon ve yürüyen aksam", "Ham/veri eşleşmesi gereken alanlar"]
+      },
+      kaporta: {
+        meaning: "Kaporta ve şasi testi, aracın gövde geçmişini ve yapısal güvenlik izlerini müşteriye görsel olarak anlatır.",
+        customer: "Müşteri en hızlı bu sayfada aracın boya/değişen/şasi açısından temizliğini görür.",
+        focus: ["Parça bazlı boya ve değişen durumu", "Şasi ve yapısal kontrol", "Görsel gövde haritası", "Fotoğrafla desteklenen bulgular"]
+      },
+      obd: {
+        meaning: "OBD testi elektronik beyinlerin hafızasını okur. Ekranda görünmeyen arıza kayıtları bu bölümde görünür hale gelir.",
+        customer: "Bu bölüm aracın elektronik sistemlerinde aktif veya geçmiş uyarı olup olmadığını açıklar.",
+        focus: ["Motor ve şanzıman beyinleri", "Konfor ve multimedya modülleri", "Güvenlik sistemleri", "Kod/ham değer yorum ihtiyacı"]
+      },
+      fren: {
+        meaning: "Fren ve süspansiyon testi, aracın durma kabiliyeti ve yol tutuş dengesi için en kritik güvenlik kontrolüdür.",
+        customer: "Müşteriye araç frenlemede ve süspansiyon dengesinde güven veriyor mu sorusu cevaplanır.",
+        focus: ["Fren kuvvet dengesi", "Süspansiyon sağ-sol farkları", "Ön/arka aks performansı", "Test cihazı ölçüm sonucu"]
+      },
+      dis: {
+        meaning: "Dış ekspertiz günlük kullanımda müşterinin ilk fark edeceği aydınlatma, cam, lastik, kilit ve dış donanımları kapsar.",
+        customer: "Bu bölüm aracın dış kullanım konforu ve teslim öncesi görünen eksiklerini anlatır.",
+        focus: ["Aydınlatma ve sinyal sistemi", "Cam, ayna, kilit ve kapılar", "Lastik/jant görsel durumu", "Teslim öncesi küçük takip maddeleri"]
+      },
+      ic: {
+        meaning: "İç ekspertiz, sürücü ve yolcu alanındaki konfor, kumanda, döşeme, ekran ve fonksiyonların kullanım durumunu gösterir.",
+        customer: "Müşteriye aracın kabininde günlük kullanımda karşılaşacağı durum sade biçimde aktarılır.",
+        focus: ["Koltuk, döşeme ve trim durumu", "Klima, ekran ve kumandalar", "Elektrikli donanım fonksiyonları", "Kabin kullanım izleri"]
+      },
+      airbag: {
+        meaning: "Airbag ve pasif güvenlik testi; emniyet kemeri, hava yastığı ve güvenlik modüllerinin risk göstergelerini kontrol eder.",
+        customer: "Bu sayfa aracın kaza güvenliği tarafında müşteriye güven veren veya takip isteyen noktaları açıklar.",
+        focus: ["Airbag uyarı ve modül kontrolü", "Emniyet kemeri ekipmanları", "Pasif güvenlik işaretleri", "Elektronik kayıt tutarlılığı"]
+      },
+      conta: {
+        meaning: "Conta kaçak testi motor iç basıncı ve soğutma sistemi sağlığı hakkında erken uyarı verir.",
+        customer: "Müşteriye motorun conta tarafında masraf riski doğuracak bir sinyal verip vermediği anlatılır.",
+        focus: ["Soğutma suyu basınç/kaçak belirtisi", "Egzoz gazı reaksiyon kontrolü", "Hararet ve sıvı takibi", "Motor sağlığı risk okuması"]
+      },
+      borc: {
+        meaning: "Borç sorgulama satış devri öncesi finansal ve yasal engel ihtimalini netleştirir.",
+        customer: "Bu bölüm araç devrinde sürpriz borç veya cezayla karşılaşmamak için müşteriye okunur.",
+        focus: ["MTV ve trafik cezası", "HGS/OGS/KGS borç riski", "Sorgu sonucu tutarlılığı", "Devir öncesi doğrulama ihtiyacı"]
+      },
+      tramer: {
+        meaning: "Tramer ve kilometre sorgusu, aracın geçmiş hasar kaydı, parça değişim bilgisi, sahiplik, kasko ve plaka geçmişini karar destek verisine dönüştürür.",
+        customer: "Müşteriye tüm geçmiş listeyi yığmak yerine, satın alma kararını etkileyen 1-2 hasar kaydı ve ağır hasar durumu net biçimde anlatılır.",
+        focus: ["Hasar adedi 1-2 kayıtla özetlenir", "Yüksek tutarlı parça değişimli kayıt ayrıca okunur", "Ağır hasar, kilometre ve parça değişim birlikte değerlendirilir", "Kasko, sahiplik ve plaka değişimi satış riskine bağlanır"]
+      }
+    };
+
+    const listItems = (items) => items.map((item) => `<li>${escapeHtml(item)}</li>`).join("");
+
+    const storyFor = (module) => vehicleStory[module.id] || {
+      meaning: "Bu test, aracın satın alma kararını etkileyen teknik durumunu müşteri diline çevirir.",
+      customer: "Sayfa; kapsam, sonuç, takip ihtiyacı ve kanıt ilişkisini birlikte gösterir.",
+      focus: ["Canlı rapordaki ana kontrol grupları", "Müşteri kararını etkileyen sonuçlar", "Takip gerektiren değerler", "Kanıt ve fotoğraf bağlantısı"]
+    };
+
+    const selectionCriteria = (module) => {
+      const stats = module.stats || {};
+      const groupCount = (module.groups || []).length;
+      const hasFollow = Number(stats.follow || 0) > 0 || normalizeTone(module.tone) === "warn";
+      const hasProof = Number(stats.proof || 0) > 0;
+      return [
+        `Canlı rapordaki ${groupCount || "ilgili"} ana kontrol grubu bu sayfaya taşındı.`,
+        hasFollow ? "Takip, uyarı veya veri doğrulama isteyen değerler özellikle görünür bırakıldı." : "Kritik/takip sinyali olmadığı için karar özeti ve kapsam başlıkları öne alındı.",
+        hasProof ? "Fotoğraf veya kanıt bağlantısı olan alanlar sunumda destekleyici veri olarak işlendi." : "Kanıt yoksa teknik tablo sonucu ve test kapsamı üzerinden anlatım kuruldu.",
+        "İlk iki teknik grup sunumda açık gelir; kalan maddeler aynı sayfada teknik detay olarak saklanır."
+      ];
+    };
+
+    const moduleScope = (module) => {
+      const groups = (module.groups || []).slice(0, 5);
+      if (!groups.length) {
+        return `<li><b>Kontrol kapsamı</b><span>${escapeHtml(module.stats.total || "Hazır")}</span></li>`;
+      }
+      return groups.map((group) => `<li><b>${escapeHtml(group.title)}</b><span>${escapeHtml(group.score || "Kontrol")}</span></li>`).join("");
+    };
+
+    const groupByTitle = (module, title) => (module.groups || []).find((group) => group.title === title) || { rows: [] };
+
+    const rowValue = (group, label, fallback = "-") => {
+      const row = (group.rows || []).find(([key]) => key === label);
+      return row ? row[1] : fallback;
+    };
+
+    const splitParts = (value) => String(value || "")
+      .split(",")
+      .map((part) => part.trim())
+      .filter(Boolean);
+
+    const resultCard = (module, tone) => `
+      <div class="result-card ${tone === "warn" ? "warn" : ""}">
+        <span class="pill ${tone === "warn" ? "warn" : "good"}">${tone === "warn" ? "Kontrol Gerekiyor" : "Genel Değerlendirme"}</span>
+        <strong>${escapeHtml(module.result)}</strong>
+        <p>${escapeHtml(module.note)}</p>
+        <div class="mini-stats">
+          <div class="mini"><span>Kritik</span><b>${escapeHtml(module.stats.critical)}</b></div>
+          <div class="mini"><span>Takip</span><b>${escapeHtml(module.stats.follow)}</b></div>
+          <div class="mini"><span>Bilgi</span><b>${escapeHtml(module.stats.info)}</b></div>
+          <div class="mini"><span>Kanıt</span><b>${escapeHtml(module.stats.proof)}</b></div>
+        </div>
+        <div class="pill">${escapeHtml(module.stats.total)}</div>
+      </div>
+    `;
+
+    const tramerPremiumPanel = (module) => {
+      const summary = groupByTitle(module, "Tramer 360 Hasar Özeti");
+      const damageOne = groupByTitle(module, "1. Hasar Bilgisi");
+      const damageTwo = groupByTitle(module, "2. Hasar Bilgisi");
+      const history = groupByTitle(module, "Kasko ve Sahiplik Bilgileri");
+      const changes = groupByTitle(module, "Plaka ve Araç Değişim Bilgileri");
+      const parts = splitParts(rowValue(damageOne, "Öne Çıkan Parçalar"));
+      const dateOne = rowValue(damageOne, "Kaza Tarihi");
+      const dateTwo = rowValue(damageTwo, "Kaza Tarihi");
+      const yearOne = dateOne.split(".").pop() || "2023";
+      const yearTwo = dateTwo.split(".").pop() || "2017";
+      return `
+        <div class="tramer-premium">
+          <div class="tramer-hero">
+            <div class="tramer-hero-main">
+              <div>
+                <div class="tramer-kicker"><span class="tramer-live-dot"></span>Tramer 360 Hasar Geçmişi · Müşteri Sunumu</div>
+                <h3 class="tramer-headline">Geçmiş hasar kaydı net, ağır hasar görünmüyor.</h3>
+                <p class="tramer-subcopy">Bu ekran müşteriye tüm teknik listeyi yığmak yerine karar etkisi yüksek bilgileri gösterir: 2 hasar kaydı, 1 yüksek tutarlı parça değişimli işlem ve ağır hasar bilgisinin temiz görünmesi.</p>
+                <div class="tramer-verdict-row">
+                  <span class="tramer-verdict warn">2 hasar kaydı</span>
+                  <span class="tramer-verdict good">Ağır hasar yok</span>
+                  <span class="tramer-verdict">PDF kanıtı bağlı</span>
+                </div>
+              </div>
+              <div class="tramer-metric-board">
+                <div class="tramer-metric-card"><span>Hasar Adedi</span><b>${escapeHtml(rowValue(summary, "Sunumda Gösterilen Hasar Adedi"))}</b><small>Sunumda kontrollü özet</small></div>
+                <div class="tramer-metric-card"><span>En Yüksek Kayıt</span><b>${escapeHtml(damageOne.score)}</b><small>${escapeHtml(dateOne)}</small></div>
+                <div class="tramer-metric-card"><span>Parça Değişim</span><b>${escapeHtml(rowValue(damageOne, "Parça Değişim"))}</b><small>1. hasar kaydında</small></div>
+                <div class="tramer-metric-card"><span>Ağır Hasar</span><b>${escapeHtml(rowValue(summary, "Ağır Hasar Bilgisi"))}</b><small>Kaynak rapor okuması</small></div>
+              </div>
+            </div>
+            <div class="tramer-doc-stack">
+              <div class="tramer-doc-card">
+                <img src="docs/tramer360-report-page-1.png" alt="Tramer 360 kaynak rapor önizleme">
+                <div class="tramer-doc-caption"><span>Kaynak Belge</span><b>${escapeHtml(rowValue(summary, "Kaynak Rapor Tarihi"))}</b></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="tramer-showcase">
+            <div class="damage-stage">
+              <div class="premium-panel">
+                <div class="premium-panel-head">
+                  <div>
+                    <h3>Hasar Zaman Çizelgesi</h3>
+                    <p>En önemli iki kayıt müşterinin hızlı karar vereceği görsel sırayla sunulur.</p>
+                  </div>
+                  <span class="pill warn">2 kayıt</span>
+                </div>
+                <div class="damage-timeline">
+                  <article class="damage-card primary">
+                    <div class="damage-year"><b>${escapeHtml(yearOne)}</b><span>${escapeHtml(dateOne)}</span></div>
+                    <div class="damage-main">
+                      <h4>Yüksek tutarlı parça değişimli kayıt</h4>
+                      <p>${escapeHtml(rowValue(damageOne, "Hasar Nedeni"))} kaydı. Parça ve işçilik toplamı ayrıştırılmış, kilometre bilgisi kaynak raporda mevcut.</p>
+                      <div class="damage-tags">
+                        <span>Parça: ${escapeHtml(rowValue(damageOne, "Toplam Parça Tutarı"))}</span>
+                        <span>İşçilik: ${escapeHtml(rowValue(damageOne, "Toplam İşçilik Tutarı"))}</span>
+                        <span>KM: ${escapeHtml(rowValue(damageOne, "Kilometre"))}</span>
+                      </div>
+                      <div class="part-cloud">
+                        ${parts.map((part) => `<span>${escapeHtml(part)}</span>`).join("")}
+                      </div>
+                    </div>
+                    <div class="damage-amount"><span>Hasar Tutarı</span><b>${escapeHtml(damageOne.score)}</b><small>Ağır hasar: ${escapeHtml(rowValue(damageOne, "Ağır Hasar Bilgisi"))}</small></div>
+                  </article>
+                  <article class="damage-card">
+                    <div class="damage-year"><b>${escapeHtml(yearTwo)}</b><span>${escapeHtml(dateTwo)}</span></div>
+                    <div class="damage-main">
+                      <h4>Düşük tutarlı geçmiş kayıt</h4>
+                      <p>${escapeHtml(rowValue(damageTwo, "Hasar Nedeni"))} kaydı. Parça değişimi ve kilometre bilgisi görünmüyor; geçmiş bilgisi olarak okunur.</p>
+                      <div class="damage-tags">
+                        <span>Parça değişim: ${escapeHtml(rowValue(damageTwo, "Parça Değişim"))}</span>
+                        <span>Parça tutarı: ${escapeHtml(rowValue(damageTwo, "Toplam Parça Tutarı"))}</span>
+                        <span>KM: ${escapeHtml(rowValue(damageTwo, "Kilometre"))}</span>
+                      </div>
+                    </div>
+                    <div class="damage-amount"><span>Hasar Tutarı</span><b>${escapeHtml(damageTwo.score)}</b><small>Ağır hasar: ${escapeHtml(rowValue(damageTwo, "Ağır Hasar Bilgisi"))}</small></div>
+                  </article>
+                </div>
+              </div>
+
+              <div class="premium-panel">
+                <div class="premium-panel-head">
+                  <div>
+                    <h3>Kaynak Belge Görselleri</h3>
+                    <p>Tramer PDF çıktısı raporun görsel kanıt katmanı olarak saklanır.</p>
+                  </div>
+                </div>
+                <div class="source-preview-grid">
+                  <div class="source-thumb"><img src="docs/tramer360-report-page-1.png" alt="Tramer 360 rapor sayfa 1"><span>Özet ve 1. hasar</span></div>
+                  <div class="source-thumb"><img src="docs/tramer360-report-page-2.png" alt="Tramer 360 rapor sayfa 2"><span>Parça listesi ve 2. hasar</span></div>
+                </div>
+              </div>
+            </div>
+
+            <aside class="tramer-insight-rail">
+              <div class="premium-panel">
+                <div class="premium-panel-head">
+                  <div>
+                    <h3>Karar Göstergeleri</h3>
+                    <p>Müşteriye risk seviyesini hızlı okutan özet.</p>
+                  </div>
+                </div>
+                <div class="risk-list">
+                  <div class="risk-item"><div><b>Ağır Hasar</b><span>${escapeHtml(rowValue(summary, "Ağır Hasar Bilgisi"))}</span></div><div class="risk-meter"><i style="width:18%"></i></div></div>
+                  <div class="risk-item"><div><b>Hasar Tutarı</b><span>${escapeHtml(damageOne.score)} ana kayıt</span></div><div class="risk-meter hot"><i style="width:76%"></i></div></div>
+                  <div class="risk-item"><div><b>Parça Değişim</b><span>${escapeHtml(rowValue(damageOne, "Parça Değişim"))}</span></div><div class="risk-meter warn"><i style="width:62%"></i></div></div>
+                  <div class="risk-item"><div><b>Plaka Değişim</b><span>${escapeHtml(rowValue(changes, "Plaka Değişim"))}</span></div><div class="risk-meter"><i style="width:22%"></i></div></div>
+                </div>
+              </div>
+
+              <div class="premium-panel">
+                <div class="premium-panel-head">
+                  <div>
+                    <h3>Geçmiş Sinyalleri</h3>
+                    <p>Kasko, sahiplik ve plaka bilgisi satış riskine bağlanır.</p>
+                  </div>
+                </div>
+                <div class="history-grid">
+                  <div class="history-tile"><span>Yürürlükteki Kasko</span><b>${escapeHtml(rowValue(history, "Yürürlükteki Kasko"))}</b></div>
+                  <div class="history-tile"><span>Kaskosuzluk</span><b>${escapeHtml(rowValue(history, "Kaskosuzluk Süresi"))}</b></div>
+                  <div class="history-tile"><span>Sahiplik</span><b>${escapeHtml(rowValue(history, "Sahiplik Kayıt Adedi"))}</b></div>
+                  <div class="history-tile"><span>Plaka İl</span><b>${escapeHtml(rowValue(changes, "Plaka İl Bilgisi"))}</b></div>
+                </div>
+              </div>
+
+              <div class="story-card accent">
+                <h3>Müşteri Okuması</h3>
+                <p>Ağır hasar görünmemesi olumlu; ancak ${escapeHtml(dateOne)} tarihli yüksek tutarlı, parça değişimli kayıt satın alma kararında açıkça anlatılmalı.</p>
+                <p>Bu ekranda hasar sayısı özellikle 2 kayıtla sınırlı tutuldu; PDF'deki fazla kayıtlar teknik doğrulama alanında saklı kalır.</p>
+              </div>
+            </aside>
+          </div>
+        </div>
+      `;
+    };
+
+    const moduleStory = (module, tone) => `
+      <div class="test-story-grid">
+        <div class="story-card highlight">
+          <h3>Araç Üzerindeki Anlamı</h3>
+          <p>${escapeHtml(storyFor(module).meaning)}</p>
+          <p>${escapeHtml(storyFor(module).customer)}</p>
+        </div>
+        <div class="story-card">
+          <h3>Gösterilen Maddeler</h3>
+          <ul class="scope-list">${moduleScope(module)}</ul>
+        </div>
+        ${resultCard(module, tone)}
+      </div>
+      <div class="selection-grid">
+        <div class="story-card">
+          <h3>Sunumda Nasıl Anlatılır?</h3>
+          <ul class="story-list">${listItems(storyFor(module).focus)}</ul>
+        </div>
+        <div class="story-card accent">
+          <h3>Madde Seçimi</h3>
+          <ul class="story-list">${listItems(selectionCriteria(module).slice(0, 3))}</ul>
+        </div>
+        <div class="story-card">
+          <h3>Teknik Detay Açılımı</h3>
+          <p>${escapeHtml(selectionCriteria(module)[3])}</p>
+          <p>Bu sayede müşteri akışı sade kalır, ekspertiz uzmanı gerektiğinde ham teknik tabloya aynı sayfadan iner.</p>
+        </div>
+      </div>
+    `;
+
+    const moduleVisualDeck = (module, tone) => {
+      const deck = module.visualDeck;
+      if (!deck) return "";
+      const hero = deck.hero || {};
+      const hotspots = (deck.hotspots || []).map((pin) => `
+        <span class="visual-hotspot ${pin.tone === "warn" ? "warn" : ""}" style="--x:${escapeHtml(pin.x || "50%")};--y:${escapeHtml(pin.y || "50%")};">
+          <i></i>${escapeHtml(pin.label || "")}
+        </span>
+      `).join("");
+      const checks = (deck.checks || []).map(([title, text]) => `
+        <div class="system-check">
+          <b>${escapeHtml(title)}</b>
+          <span>${escapeHtml(text)}</span>
+        </div>
+      `).join("");
+      const proofs = (deck.proofs || []).map((item) => `<span>${escapeHtml(item)}</span>`).join("");
+      const views = (deck.views || []).map((view) => `
+        <div class="system-mini-card">
+          <img src="${escapeHtml(view.src)}" alt="${escapeHtml(view.alt || view.title || module.title)}">
+          <div>
+            <b>${escapeHtml(view.title || "")}</b>
+            <span>${escapeHtml(view.note || "")}</span>
+          </div>
+        </div>
+      `).join("");
+
+      return `
+        <div class="system-visual-deck visual-deck-${tone}">
+          <div class="system-visual-head">
+            <div>
+              <h3>${escapeHtml(deck.title || `${module.title} Görsel Özeti`)}</h3>
+              <p>${escapeHtml(deck.subtitle || module.note || "")}</p>
+            </div>
+            <span>${escapeHtml(deck.badge || module.result)}</span>
+          </div>
+          <div class="system-visual-layout">
+            <div class="system-stage-card">
+              <div class="system-stage-head">
+                <b>${escapeHtml(hero.title || "Görsel Referans")}</b>
+                <span>${escapeHtml(hero.note || module.result)}</span>
+              </div>
+              <div class="system-stage">
+                <img src="${escapeHtml(hero.src || module.image || "assets/body-design/v17/top.png")}" alt="${escapeHtml(hero.alt || module.title)}">
+                ${hotspots}
+              </div>
+            </div>
+            <div class="system-side-panel">
+              <div class="system-side-head">
+                <b>Kontrol Okuması</b>
+                <span>${escapeHtml(module.stats?.total ?? "Tamamlandı")}</span>
+              </div>
+              <div class="system-check-list">${checks}</div>
+              <div class="system-proof-strip">${proofs}</div>
+            </div>
+          </div>
+          ${views ? `<div class="system-mini-grid">${views}</div>` : ""}
+        </div>
+      `;
+    };
+
+    const moduleCard = (module, index) => {
+      if (module.visual) return visualModule(module, index);
+      const tone = normalizeTone(module.tone);
+      const image = module.image && !module.visualDeck ? `<div class="map-card technical-only"><div class="map-title">Görsel Referans</div><div class="map-image"><img src="${escapeHtml(module.image)}" alt="${escapeHtml(module.title)}"><span class="map-note">${escapeHtml(module.result)}</span></div></div>` : "";
+      return `
+        <section class="slide test-slide" id="${escapeHtml(module.id)}">
+          <div class="slide-inner">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">Test Sayfası ${String(index + 1).padStart(2, "0")}</p>
+                <h2>${escapeHtml(module.title)}</h2>
+                <p>${escapeHtml(module.description)}</p>
+              </div>
+              <span class="slide-no">${String(index + 1).padStart(2, "0")} / ${reportData.modules.length}</span>
+            </div>
+            <article class="module module-page">
+              ${module.id === "tramer" ? tramerPremiumPanel(module) : `${moduleVisualDeck(module, tone)}${moduleStory(module, tone)}`}
+              <div class="test-detail-area ${image ? "has-image" : ""} ${module.id === "tramer" ? "technical-only tramer-detail-area" : ""}">
+                ${image}
+                ${module.id === "tramer" ? `<div class="tramer-technical-head"><b>Kaynak Veri Dökümü</b><span>Uzman gerektiğinde Tramer PDF'inden gelen ham satırları buradan açar. Müşteri modunda bu teknik döküm gizlenir.</span></div>` : ""}
+                <div class="detail-grid">
+                  ${(module.groups || []).map((group, groupIndex) => detailGroup(group, groupIndex < (module.id === "tramer" ? 3 : 2))).join("")}
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+      `;
+    };
+
+    const visualModule = (module, index) => {
+      const tone = normalizeTone(module.tone);
+      return `
+        <section class="slide test-slide" id="${escapeHtml(module.id)}">
+          <div class="slide-inner">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">Test Sayfası ${String(index + 1).padStart(2, "0")}</p>
+                <h2>${escapeHtml(module.title)}</h2>
+                <p>${escapeHtml(module.description)}</p>
+              </div>
+              <span class="slide-no">${String(index + 1).padStart(2, "0")} / ${reportData.modules.length}</span>
+            </div>
+            <article class="module module-page">
+              <div class="visual-grid">
+                <div class="vehicle-map">
+                  <div class="map-card wide">
+                    <div class="map-title">Kaporta / Boya Kat Planı</div>
+                    <div class="map-image"><img src="assets/body-design/v17/top.png" alt="Üstten kaporta görünümü"><span class="map-note">31 Orijinal</span></div>
+                  </div>
+                  <div class="system-mini-grid">
+                    ${[
+                      ["Sol Görünüş", "assets/body-design/v17/left.png", "Sol gövde parçaları"],
+                      ["Ön Görünüş", "assets/body-design/v17/front.png", "Kaput, panjur ve ön tampon"],
+                      ["Sağ Görünüş", "assets/body-design/v17/right.png", "Sağ gövde parçaları"],
+                      ["Arka Görünüş", "assets/body-design/v17/rear.png", "Bagaj ve arka tampon"],
+                      ["Şasi Üst/Alt", "assets/chassis/v56/top.png", "22 nokta yapısal kontrol"],
+                      ["Yan Taşıyıcı", "assets/chassis/v56/side.png", "Marşpiyel ve direk hattı"]
+                    ].map(([title, src, note]) => `
+                      <div class="system-mini-card">
+                        <img src="${src}" alt="${title}">
+                        <div>
+                          <b>${title}</b>
+                          <span>${note}</span>
+                        </div>
+                      </div>
+                    `).join("")}
+                  </div>
+                </div>
+                <div class="detail-grid">
+                  <div class="map-card">
+                    <div class="map-title">Şasi / Yapısal Gövde 22 Nokta</div>
+                    <div class="map-image"><img src="assets/chassis/v56/top.png" alt="Şasi yapısal gövde üst görünüm"><span class="map-note">20 / 20 Uygun</span></div>
+                  </div>
+                  <div class="card technical-only">
+                    <h3>Durum Legend'i</h3>
+                    <div class="legend">
+                      <span class="legend-item"><i class="dot green"></i>Orijinal / Sorunsuz</span>
+                      <span class="legend-item"><i class="dot orange"></i>Lokal Boyalı</span>
+                      <span class="legend-item"><i class="dot red"></i>Değişen / Hasarlı</span>
+                      <span class="legend-item"><i class="dot purple"></i>Ağır İşlem</span>
+                      <span class="legend-item"><i class="dot blue"></i>Değişim</span>
+                      <span class="legend-item"><i class="dot gray"></i>Girilmedi</span>
+                    </div>
+                  </div>
+                  ${(module.groups || []).map((group, groupIndex) => detailGroup(group, groupIndex < (module.id === "tramer" ? 3 : 2))).join("")}
+                </div>
+              </div>
+              ${moduleStory(module, tone)}
+            </article>
+          </div>
+        </section>
+      `;
+    };
+
+    function renderTopbar() {
+      const { meta } = reportData;
+      topReportLine.textContent = `${meta.reportNo} · ${meta.dateTime}`;
+      topMetas.innerHTML = [
+        ["Plaka", meta.plate],
+        ["Araç", meta.vehicle],
+        ["Paket", meta.package]
+      ].map(([label, value]) => `<div class="top-meta"><span>${escapeHtml(label)}</span><b>${escapeHtml(value)}</b></div>`).join("");
+    }
+
+    function renderSidebar() {
+      const navItems = [
+        { id: "kapak", title: "Karar Özeti", status: "Sunum" },
+        ...reportData.modules.map((module, index) => ({ id: module.id, title: module.title, status: module.status, index: index + 1 })),
+        { id: "kanit", title: "Kanıtlar / Notlar", status: "Arşiv" }
+      ];
+      sidebar.innerHTML = navItems.map((item, i) => `
+        <a class="nav-card ${i === 0 ? "is-active" : ""}" href="#${escapeHtml(item.id)}">
+          <span class="nav-index">${String(item.index || 0).padStart(2, "0")}</span>
+          <span class="nav-title">${escapeHtml(item.title)}</span>
+          <span class="nav-state">${escapeHtml(item.status)}</span>
+        </a>
+      `).join("");
+    }
+
+    function renderContent() {
+      const { meta, warnings, modules, proofs } = reportData;
+      content.innerHTML = `
+        <section class="slide" id="kapak">
+          <div class="slide-inner hero">
+            <div>
+              <p class="eyebrow">Tarafsız Araç Ekspertiz Sunumu</p>
+              <h1>${escapeHtml(meta.vehicle)} için müşteri sunum raporu</h1>
+              <p class="lead">${escapeHtml(meta.presentationDecision)}. Bu görünüm, canlı rapordaki teknik modül listesini müşteri önünde okunabilir bir karar akışına dönüştürür.</p>
+              <div class="hero-actions">
+                <span class="pill good">Kritik bulgu: 0</span>
+                <span class="pill warn">Doğrulanacak veri: ${warnings.length}</span>
+                <span class="pill">Kaynak: ${escapeHtml(meta.source)}</span>
+              </div>
+            </div>
+            <aside class="hero-panel">
+              <div class="plate"><span>TR</span><b>${escapeHtml(meta.plate)}</b></div>
+              <div class="metric-grid">
+                <div class="metric"><span>Rapor No</span><b>${escapeHtml(meta.reportNo)}</b></div>
+                <div class="metric"><span>Tarih / Saat</span><b>${escapeHtml(meta.dateTime)}</b></div>
+                <div class="metric"><span>Araç</span><b>${escapeHtml(meta.vehicle)}</b></div>
+                <div class="metric"><span>Paket</span><b>${escapeHtml(meta.package)}</b></div>
+              </div>
+              <img src="docs/1000km-garanti.png" alt="OTOTR 1000 KM Güvence" style="width:100%;max-height:118px;object-fit:contain;">
+            </aside>
+          </div>
+        </section>
+
+        <section class="slide" id="ozet">
+          <div class="slide-inner">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">Yönetici Özeti</p>
+                <h2>Rapor önce karar, sonra kanıt anlatır</h2>
+                <p>Canlı sayfadaki teknik tablo yapısı korunur; müşteri sunumunda önce genel karar, sonra takip gerektiren alanlar ve ardından detay modülleri gösterilir.</p>
+              </div>
+              <span class="slide-no">00 / ${modules.length}</span>
+            </div>
+            <div class="summary-grid">
+              <div class="card decision">
+                <div class="decision-icon">✓</div>
+                <div>
+                  <strong>Genel teknik görünüm olumlu</strong>
+                  <span>Motor, mekanik, fren/süspansiyon, iç donanım, airbag, OBD ve conta testlerinde kritik bulgu görünmüyor. Sunum öncesi veri eşleştirme ve borç/tramer sorgu kontrolü yapılmalı.</span>
+                </div>
+              </div>
+              <div class="card">
+                <h3>Sunum Öncesi Kontrol</h3>
+                <div class="alert-list">
+                  ${warnings.map((warning) => `<div class="alert"><div><strong>${escapeHtml(warning.title)}</strong><span>${escapeHtml(warning.text)}</span></div></div>`).join("")}
+                </div>
+              </div>
+            </div>
+            <div class="stat-row">
+              <div class="stat"><span>Modül</span><b>${modules.length}</b></div>
+              <div class="stat"><span>Kritik</span><b>0</b></div>
+              <div class="stat"><span>Takip</span><b>${modules.reduce((sum, module) => sum + Number(module.stats.follow || 0), 0)}</b></div>
+              <div class="stat"><span>Kanıt</span><b>${modules.reduce((sum, module) => sum + (Number(module.stats.proof) || 0), 0)}</b></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="slide" id="sunum-plani">
+          <div class="slide-inner">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">Sunum Planı</p>
+                <h2>Her test ayrı sayfada anlatılır</h2>
+                <p>Bu akışta müşteri önce genel kararı görür, sonra her test için ayrı sayfada kapsam, sonuç ve kanıt detayına iner.</p>
+              </div>
+              <span class="slide-no">01-${modules.length}</span>
+            </div>
+            <div class="selection-grid">
+              <div class="story-card highlight">
+                <h3>Madde Seçimi Neye Göre?</h3>
+                <p>Gösterilen maddeler eski/local kayıttan değil, canlı raporda görünen test modülleri, ana kontrol grupları, takip değerleri, kanıt sayaçları ve veri tutarlılığı işaretlerinden seçilir.</p>
+              </div>
+              <div class="story-card">
+                <h3>Sunum Önceliği</h3>
+                <ul class="story-list">
+                  <li>Kritik veya takip gerektiren değerler önce görünür.</li>
+                  <li>Müşteri kararını etkileyen kapsam başlıkları sadeleştirilir.</li>
+                  <li>Fotoğraf/kanıt olan alanlar destekleyici veri olarak ayrılır.</li>
+                </ul>
+              </div>
+              <div class="story-card accent">
+                <h3>Teknik Liste Kuralı</h3>
+                <p>Her testte ilk iki teknik grup açık gelir. Diğer tablolar kapalı detay olarak kalır; uzman sunum sırasında ihtiyaç duyduğu başlığı aynı sayfadan açar.</p>
+              </div>
+            </div>
+            <div class="overview-grid">
+              ${modules.map((module, index) => `
+                <a class="overview-item" href="#${escapeHtml(module.id)}">
+                  <b>${String(index + 1).padStart(2, "0")} · ${escapeHtml(module.title)}</b>
+                  <span>${escapeHtml(module.result)} · ${escapeHtml(module.status)}</span>
+                </a>
+              `).join("")}
+            </div>
+          </div>
+        </section>
+
+        ${modules.map((module, index) => moduleCard(module, index)).join("")}
+
+        <section class="slide" id="kanit">
+          <div class="slide-inner">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">Kanıtlar / Fotoğraflar</p>
+                <h2>Kanıt arşivi müşteriye ayrı okunur</h2>
+                <p>Canlı raporda görünen kanıt sayaçları bu alanda sade bir arşiv indeksine dönüşür. Gerçek fotoğraf URL'leri backend'den geldiğinde kartlar otomatik çoğaltılabilir.</p>
+              </div>
+              <span class="slide-no">Ek</span>
+            </div>
+            <div class="proof-grid">
+              ${proofs.map(([title, text]) => `<div class="proof"><b>${escapeHtml(title)}</b><span>${escapeHtml(text)}</span></div>`).join("")}
+            </div>
+          </div>
+        </section>
+        <div class="footer">
+          <span>OTOTR profesyonel ekspertiz sunumu - müşteri gösterimi için hazırlanmış HTML şablonu.</span>
+          <span class="screen-only">Teknik detayları gizlemek için üstteki Müşteri Modu düğmesini kullanın.</span>
+        </div>
+      `;
+    }
+
+    function bindInteractions() {
+      const modeToggle = document.getElementById("modeToggle");
+      modeToggle.addEventListener("click", () => {
+        document.body.classList.toggle("customer-mode");
+        modeToggle.textContent = document.body.classList.contains("customer-mode") ? "Teknik Mod" : "Müşteri Modu";
+      });
+
+      const links = Array.from(document.querySelectorAll(".nav-card"));
+      const sections = links.map((link) => document.querySelector(link.getAttribute("href"))).filter(Boolean);
+      const observer = new IntersectionObserver((entries) => {
+        const visible = entries.filter((entry) => entry.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+        if (!visible) return;
+        links.forEach((link) => link.classList.toggle("is-active", link.getAttribute("href") === `#${visible.target.id}`));
+      }, { rootMargin: "-35% 0px -55% 0px", threshold: [0, .25, .5, .75] });
+      sections.forEach((section) => observer.observe(section));
+    }
+
+    function scrollToCurrentHash() {
+      if (!window.location.hash) return;
+      const targetId = decodeURIComponent(window.location.hash.slice(1));
+      const target = document.getElementById(targetId);
+      if (!target) return;
+      const scroll = () => {
+        const headerOffset = window.innerWidth <= 760 ? 88 : 96;
+        const top = Math.max(0, target.getBoundingClientRect().top + window.scrollY - headerOffset);
+        window.scrollTo({ top, behavior: "auto" });
+      };
+      requestAnimationFrame(scroll);
+      window.setTimeout(scroll, 80);
+      window.setTimeout(scroll, 350);
+    }
+
+    renderTopbar();
+    renderSidebar();
+    renderContent();
+    bindInteractions();
+    window.addEventListener("hashchange", scrollToCurrentHash);
+    window.addEventListener("load", scrollToCurrentHash);
+    window.scrollToCurrentHash = scrollToCurrentHash;
+    scrollToCurrentHash();
+    window.setTimeout(scrollToCurrentHash, 900);
+    window.setTimeout(scrollToCurrentHash, 1400);
+  </script>
+</body>
+</html>
