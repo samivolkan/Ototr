@@ -1,5 +1,6 @@
 plugins {
     id("com.android.application")
+    id("org.jetbrains.kotlin.android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
@@ -42,4 +43,9 @@ kotlin {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    implementation("com.google.android.gms:play-services-mlkit-document-scanner:16.0.0")
+    implementation("com.google.android.gms:play-services-mlkit-text-recognition:19.0.1")
 }

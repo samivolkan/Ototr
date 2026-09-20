@@ -6,6 +6,8 @@ class AppRoutes {
   static const String dashboard = '/dashboard';
   static const String workOrders = '/work-orders';
   static const String newWorkOrder = '/work-orders/new';
+  static const String registrationQuickWorkOrder =
+      '/work-orders/registration-quick';
   static const String vehicleIntake = '/vehicle-intake';
   static const String customerInfo = '/customer-info';
   static const String packageSelection = '/package-selection';

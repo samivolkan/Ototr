@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/audit_log_model.dart';
 import '../models/customer_model.dart';
 import '../models/package_plan_model.dart';
+import '../models/registration_scan_model.dart';
 import '../models/vehicle_model.dart';
 import '../models/work_order_model.dart';
 import 'branch_work_order_repository.dart';
@@ -77,6 +78,30 @@ class SupabaseBranchWorkOrderRepository extends BranchWorkOrderRepository {
   }
 
   @override
+  Future<WorkOrder> createQuickFromRegistration(
+    QuickRegistrationWorkOrderInput input,
+  ) async {
+    final createdId = await _client.rpc(
+      'create_quick_work_order_from_registration',
+      params: {
+        'registration_scan_id': input.registrationScanId,
+        'idempotency_key': input.idempotencyKey,
+        'vehicle_plate': input.vehicle.plate,
+        'vehicle_vin': input.vehicle.vin,
+        'vehicle_engine_number': input.vehicle.engineNumber,
+        'vehicle_brand': input.vehicle.brand,
+        'vehicle_model': input.vehicle.model,
+        'vehicle_year': input.vehicle.year,
+        'vehicle_fuel_type': input.vehicle.fuelType,
+        'package_type': input.packageType.code,
+        'notes': input.notes,
+      },
+    );
+
+    return _fetchWorkOrder(createdId.toString());
+  }
+
+  @override
   Future<WorkOrder> updateTaskStatus(
     String workOrderId,
     String taskId,
@@ -121,6 +146,7 @@ class SupabaseBranchWorkOrderRepository extends BranchWorkOrderRepository {
           vehicles (
             plate,
             vin,
+            engine_number,
             brand,
             model,
             model_year,
@@ -168,6 +194,7 @@ class SupabaseBranchWorkOrderRepository extends BranchWorkOrderRepository {
       vehicle: Vehicle(
         plate: vehicleRow['plate']?.toString() ?? '',
         vin: vehicleRow['vin']?.toString() ?? '',
+        engineNumber: vehicleRow['engine_number']?.toString() ?? '',
         brand: vehicleRow['brand']?.toString() ?? '',
         model: vehicleRow['model']?.toString() ?? '',
         year: _readInt(vehicleRow['model_year']),

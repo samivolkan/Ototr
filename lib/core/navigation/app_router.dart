@@ -13,6 +13,7 @@ import '../../features/photo_evidence/photo_evidence_screen.dart';
 import '../../features/profile/profile_screen.dart';
 import '../../features/reports/final_report_preview_screen.dart';
 import '../../features/reports/report_preview_screen.dart';
+import '../../features/registration_ai/registration_quick_work_order_screen.dart';
 import '../../features/technician/report_entry/report_entry_screen.dart';
 import '../../features/splash/splash_screen.dart';
 import '../../features/technician/start_evidence_screen.dart';
@@ -40,6 +41,8 @@ class AppRouter {
       AppRoutes.dashboard => const TechnicianJobsScreen(),
       AppRoutes.workOrders => const WorkOrdersListScreen(),
       AppRoutes.newWorkOrder => const NewWorkOrderScreen(),
+      AppRoutes.registrationQuickWorkOrder =>
+        const RegistrationQuickWorkOrderScreen(),
       AppRoutes.vehicleIntake => const VehicleIntakeScreen(),
       AppRoutes.customerInfo => const CustomerInfoScreen(),
       AppRoutes.packageSelection => const PackageSelectionScreen(),

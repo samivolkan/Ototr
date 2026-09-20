@@ -1,5 +1,6 @@
 import '../models/customer_model.dart';
 import '../models/package_plan_model.dart';
+import '../models/registration_scan_model.dart';
 import '../models/vehicle_model.dart';
 import '../models/work_order_model.dart';
 import '../services/work_order_task_factory.dart';
@@ -22,6 +23,10 @@ abstract class BranchWorkOrderRepository {
     required PackageType packageType,
     required String notes,
   });
+
+  Future<WorkOrder> createQuickFromRegistration(
+    QuickRegistrationWorkOrderInput input,
+  );
 
   Future<WorkOrder> updateTaskStatus(
     String workOrderId,
@@ -87,6 +92,26 @@ class LocalBranchWorkOrderRepository extends BranchWorkOrderRepository {
       vehicle: vehicle,
       packageType: packageType,
       notes: notes,
+    );
+  }
+
+  @override
+  Future<WorkOrder> createQuickFromRegistration(
+    QuickRegistrationWorkOrderInput input,
+  ) async {
+    return _localRepository.create(
+      customer: const Customer(
+        fullName: '',
+        phone: '',
+        identityNumber: '',
+        email: '',
+        role: 'Musteri',
+        kvkkConsent: false,
+        serviceConsent: false,
+      ),
+      vehicle: input.vehicle,
+      packageType: input.packageType,
+      notes: input.notes,
     );
   }
 

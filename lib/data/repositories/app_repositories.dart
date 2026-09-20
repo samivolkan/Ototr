@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/config/supabase_config.dart';
 import '../models/customer_model.dart';
 import '../models/package_plan_model.dart';
+import '../models/registration_scan_model.dart';
 import '../models/report_template_model.dart';
 import '../models/technician_operation_model.dart';
 import '../models/user_profile_model.dart';
@@ -265,6 +266,12 @@ class _UnavailableBranchWorkOrderRepository extends BranchWorkOrderRepository {
     required PackageType packageType,
     required String notes,
   }) async =>
+      _fail();
+
+  @override
+  Future<WorkOrder> createQuickFromRegistration(
+    QuickRegistrationWorkOrderInput input,
+  ) async =>
       _fail();
 
   @override

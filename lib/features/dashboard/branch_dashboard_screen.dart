@@ -23,6 +23,11 @@ class BranchDashboardScreen extends StatelessWidget {
     const user = DummyData.user;
     final workOrderRepository = AppRepositories.instance.branchWorkOrders;
     final quickActions = [
+      (
+        'Ruhsat ile Hizli Is Emri',
+        Icons.document_scanner_outlined,
+        AppRoutes.registrationQuickWorkOrder
+      ),
       ('Yeni Is Emri', Icons.add_circle_outline, AppRoutes.newWorkOrder),
       ('Is Emirleri', Icons.assignment_outlined, AppRoutes.workOrders),
       ('Raporlar', Icons.description_outlined, AppRoutes.reportPreview),

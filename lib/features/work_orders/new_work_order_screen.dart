@@ -61,6 +61,28 @@ class _NewWorkOrderScreenState extends State<NewWorkOrderScreen> {
         child: ListView(
           padding: const EdgeInsets.all(AppSizes.lg),
           children: [
+            const OtotrSectionTitle(title: 'Is emri akisi'),
+            OtotrCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  OtotrPrimaryButton(
+                    label: 'Ruhsat ile Hizli Is Emri',
+                    icon: Icons.document_scanner_outlined,
+                    backgroundColor: AppColors.success,
+                    onPressed: () => Navigator.pushNamed(
+                      context,
+                      AppRoutes.registrationQuickWorkOrder,
+                    ),
+                  ),
+                  const SizedBox(height: AppSizes.sm),
+                  const Text(
+                    'Manuel Is Emri',
+                    style: TextStyle(fontWeight: FontWeight.w800),
+                  ),
+                ],
+              ),
+            ),
             const OtotrSectionTitle(
               title: 'Musteri ve arac',
               subtitle:
