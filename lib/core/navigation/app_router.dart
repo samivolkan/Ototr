@@ -39,6 +39,7 @@ class AppRouter {
       AppRoutes.splash => const SplashScreen(),
       AppRoutes.login => const LoginScreen(),
       AppRoutes.dashboard => const TechnicianJobsScreen(),
+      AppRoutes.branchDashboard => const BranchDashboardScreen(),
       AppRoutes.workOrders => const WorkOrdersListScreen(),
       AppRoutes.newWorkOrder => const NewWorkOrderScreen(),
       AppRoutes.registrationQuickWorkOrder =>

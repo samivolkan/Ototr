@@ -4,6 +4,7 @@ class AppRoutes {
   static const String splash = '/';
   static const String login = '/login';
   static const String dashboard = '/dashboard';
+  static const String branchDashboard = '/branch-dashboard';
   static const String workOrders = '/work-orders';
   static const String newWorkOrder = '/work-orders/new';
   static const String registrationQuickWorkOrder =

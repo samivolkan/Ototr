@@ -77,6 +77,15 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: AppSizes.sm),
                     OtotrSecondaryButton(
+                      label: 'Sekreter Paneli',
+                      icon: Icons.admin_panel_settings_outlined,
+                      onPressed: () => Navigator.pushReplacementNamed(
+                        context,
+                        AppRoutes.branchDashboard,
+                      ),
+                    ),
+                    const SizedBox(height: AppSizes.sm),
+                    OtotrSecondaryButton(
                       label: 'Şifremi Unuttum',
                       icon: Icons.lock_reset,
                       onPressed: () =>
