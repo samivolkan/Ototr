@@ -7,6 +7,7 @@ import vm from 'node:vm';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+const presentation = fs.readFileSync(path.join(root, 'docs', 'rapor-arsiv-tasarim.html'), 'utf8');
 const begin = html.indexOf('    function dealerArchivePointStats(');
 const end = html.indexOf('    function dealerOpenReportDetail(', begin);
 assert.ok(begin >= 0 && end > begin);
@@ -47,6 +48,17 @@ test('inline application scripts parse', () => {
     .filter(([, attributes]) => !/\bsrc\s*=|type\s*=\s*["'](?:module|text\/plain|application\/json)/i.test(attributes));
   assert.ok(scripts.length > 0);
   for (const [, , source] of scripts) new vm.Script(source);
+});
+
+test('archive links to the published standalone demo presentation', () => {
+  assert.match(html, /href="\.\/docs\/rapor-arsiv-tasarim\.html" target="_blank" rel="noopener noreferrer"/);
+  assert.match(html, /Tasarım Sunumu \(Demo\)/);
+  assert.match(presentation, /<title>OtoTR · Ekspertiz Arşivi Tasarım Sunumu<\/title>/);
+  assert.match(presentation, /demo:true/);
+  assert.doesNotMatch(presentation, /<script\b[^>]*\bsrc=/i);
+  const scripts = [...presentation.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)];
+  assert.ok(scripts.length > 0);
+  for (const [, source] of scripts) new vm.Script(source);
 });
 
 test('archive counters use stored point answers, not task completion', () => {
