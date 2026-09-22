@@ -61,6 +61,22 @@ test('archive links to the published standalone demo presentation', () => {
   for (const [, source] of scripts) new vm.Script(source);
 });
 
+test('dealer review prototype covers evidence, revisions, sharing and operational states', () => {
+  assert.match(presentation, /İnceleme Öncelikleri/);
+  assert.match(presentation, /rapor-arsiv-arac-ana-acilar\.webp/);
+  assert.match(presentation, /rapor-arsiv-arac-ek-acilar\.webp/);
+  assert.match(presentation, /rapor-arsiv-bulgu-kanitlari\.webp/);
+  assert.match(presentation, /const versionChanges=/);
+  assert.match(presentation, /const shareStages=/);
+  for (const scenario of ['pending', 'missing-evidence', 'empty', 'unauthorized', 'service-error']) {
+    assert.match(presentation, new RegExp(`id:'${scenario}'`));
+  }
+  for (const asset of ['rapor-arsiv-arac-ana-acilar.webp', 'rapor-arsiv-arac-ek-acilar.webp', 'rapor-arsiv-bulgu-kanitlari.webp']) {
+    const file = path.join(root, 'docs', 'assets', asset);
+    assert.ok(fs.statSync(file).size > 100_000, `${asset} should contain a production-quality demo image`);
+  }
+});
+
 test('archive counters use stored point answers, not task completion', () => {
   assert.equal(sandbox.dealerArchivePointStats(workOrder).total, 12);
   assert.equal(sandbox.dealerArchivePointStats(workOrder).done, 11);
