@@ -62,7 +62,7 @@ test('archive links to the published standalone demo presentation', () => {
 });
 
 test('dealer review prototype covers evidence, revisions, sharing and operational states', () => {
-  assert.match(presentation, /İnceleme Öncelikleri/);
+  assert.doesNotMatch(presentation, /İnceleme Öncelikleri/);
   assert.match(presentation, /rapor-arsiv-arac-ana-acilar\.webp/);
   assert.match(presentation, /rapor-arsiv-arac-ek-acilar\.webp/);
   assert.match(presentation, /rapor-arsiv-bulgu-kanitlari\.webp/);
