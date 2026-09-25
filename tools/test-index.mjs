@@ -112,6 +112,7 @@ const dashboardComplaintPanelReady = await page.evaluate(() => {
 });
 const navRoutes = await page.$$eval("#nav [data-nav-route]", (buttons) =>
   buttons.map((button) => button.getAttribute("data-nav-route"))
+    .filter((route) => !["erpver2", "dealer", "ototr-web"].includes(route))
 );
 
 for (const route of navRoutes) {

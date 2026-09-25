@@ -2870,6 +2870,7 @@
     }
 
     const navGroups = [
+      ['ERPVER2', [['erpver2','ERPVER2 · Yeni Nesil Sistem','panels-top-left']]],
       ['Genel Merkez', [['dashboard','Yönetim Kokpiti','layout-dashboard'],['intelligence','İş Zekası','chart-no-axes-column'],['actions','Aksiyon & Görev','target'],['crisis','Kriz Merkezi','siren'],['ai','AI Öneri','sparkles']]],
       ['Bayi & Şube Yönetimi', [['branches','Bayiler & Şubeler','building-2'],['dealer','Bayi Portalı','tablet-smartphone'],['ototr-web','OTOTR Web','globe'],['operations','Operasyon','workflow'],['quality','Kalite & Denetim','shield-check']]],
       ['Ekspertiz & Rapor', [['test-master','Ekspertiz Test Masterı','list-tree'],['report-design','Ekspertiz Rapor Tasarımı','file-check-2']]],
@@ -3986,6 +3987,10 @@
       };
       nav.innerHTML = navGroups.map(([g,items]) => `<div class="nav-title">${g}</div>` + items.map(navButton).join('')).join('');
       nav.querySelectorAll('[data-nav-route]').forEach(b=>b.addEventListener('click',()=>{
+        if(b.dataset.navRoute==='erpver2'){
+          window.open('erpver2/index.html','_blank','noopener,noreferrer');
+          return;
+        }
         if(b.dataset.navRoute==='dealer'){
           openDealerPortalWindow();
           return;
