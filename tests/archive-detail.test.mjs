@@ -50,8 +50,8 @@ test('inline application scripts parse', () => {
   for (const [, , source] of scripts) new vm.Script(source);
 });
 
-test('archive links to the published standalone demo presentation', () => {
-  assert.match(html, /href="\.\/docs\/rapor-arsiv-tasarim\.html" target="_blank" rel="noopener noreferrer"/);
+test('archive links to the stable standalone demo entry', () => {
+  assert.match(html, /href="\.\/rapor-arsiv-tasarim\.html" target="_blank" rel="noopener noreferrer"/);
   assert.match(html, /Tasarım Sunumu \(Demo\)/);
   assert.match(presentation, /<title>OtoTR · Ekspertiz Arşivi Tasarım Sunumu<\/title>/);
   assert.match(presentation, /demo:true/);
