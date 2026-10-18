@@ -68,3 +68,5 @@ Ilk gercek surum icin odak:
 Detayli plan icin: `docs/erp-crm-roadmap.md`
 
 Sprint 1 is listesi icin: `docs/sprint-1-backlog.md`
+
+İşler v24 ortak görev panosu: [kurulum, güvenlik ve geri alma](isler/README.md).
