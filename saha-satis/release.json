@@ -1,8 +1,10 @@
 {
-  "sourceRepository": "samivolkan/ototr-saha-satis",
-  "sourceCommit": "4871f91cb9befaf3baa362e00da21e54e30ab103",
-  "releaseDate": "2026-10-18",
-  "privateCatalogIncluded": false,
-  "storage": "browser-localStorage",
-  "basePath": "/Ototr/saha-satis/"
+  "sourceRepo": "samivolkan/ototr-saha-satis",
+  "releaseDate": "2026-10-19",
+  "sourceCommit": "415b9eaa941756664f9ab9d2ecab5fcde8a265d4",
+  "access": "public-profile-selection",
+  "app": "responsive-web",
+  "storage": "shared-supabase",
+  "importedGalleryCount": 468,
+  "catalogEmbedded": false
 }

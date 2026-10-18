@@ -1,34 +1,32 @@
-# Saha Satış kontrol sürümü
+# Saha Satış · ortak web uygulaması
 
-18 Ekim 2026
+19 Ekim 2026
 
-- Menü: Müşteri & Satış → Saha Satış. Aynı sekmede açılır; uygulamadaki “ERP’ye dön” bağlantısı ana menüye döner.
-- Adres: https://samivolkan.github.io/Ototr/saha-satis/
-- Kaynak: `samivolkan/ototr-saha-satis`, `4871f91cb9befaf3baa362e00da21e54e30ab103`.
-- Galeri kaydı, üç günlük ziyaret takvimi, erteleme/iptal, ziyaret sonucu, referans takibi ve galeriye dönüşüm içerir. Örnek kayıt üretilmez.
+- Canlı adres: https://samivolkan.github.io/Ototr/saha-satis/
+- Menü: Müşteri & Satış → Saha Satış. ERP’ye dön ana menüyü açar.
+- Kaynak: samivolkan/ototr-saha-satis, web/ klasörü. Kaynak commit'i saha-satis/release.json içindedir.
+- Masaüstünde sol menü/tablo; telefonda kartlar, alt menü ve uyarlanan formlar.
+- 468 gerçek galeri, 488 iletişim kaydı, 478 kaynak satırı ortak veritabanına aktarıldı. 213 mahalleli / 255 teyit bekleyen. Örnek kayıt yoktur.
+- Üç günlük takvim, erteleme/iptal geçmişi, ziyaret sonucu ve takip planı, referans durumu ve galeriye dönüşüm.
 
-## Veri sınırı
+## Erişim ve veriler
 
-Bu yayın arayüz kontrolü içindir. Gerçek 468 galerilik özel katalog, telefonlar, kaynak Excel dosyaları ve araştırma raporu pakete dahil değildir. Yeni tarayıcıda liste boş açılır. Deneme kayıtları yalnızca o tarayıcının `localStorage` alanında saklanır; ERP veritabanına veya ekip hesaplarına bağlanmaz. Yerel bilgisayardaki katalog ve ziyaretler bu adrese otomatik taşınmaz.
+Kullanıcı herkese açık canlı bağlantı ve yalnızca ad seçimini onayladı. Şifre/e-posta girişi veya SMTP yoktur. Volkan, Nezire Erten, İlyada Alıcı aynı kayıtları görür. Personel seçimi kimlik doğrulamaz: bağlantıyı bilen herkes kayıtları okuyabilir ve profil seçerek değiştirebilir. E-postalar özel şemadadır ve API'den dönmez.
 
-## Paketleme
+İş kayıtları tarayıcıya bağlı değildir. Eşzamanlı düzenlemeler sürüm koşuluyla korunur. Sonuç/referans/takip işlemleri atomiktir. Silme ve işlem geçmişini düzenleme istemciye kapalıdır. Aktörler doğrulanmamış, seçilmiş profil olarak işaretlenir.
 
-Kaynak repo commit’inin yalnızca Git’teki `app/` klasörü `git archive` ile temiz dizine çıkarıldı; böylece `src/private/`, mevcut `dist/`, ortam dosyaları ve tarayıcı kayıtları dışarıda kaldı.
+Statik pakette gerçek katalog, kaynak Excel, özel e-postalar, ortam dosyası veya yönetici anahtarı bulunmaz. Kayıtlar herkese açık API'den alınır. Önceki yerel denemeler ortak kayıtlara otomatik alınmaz.
 
-1. Temiz kaynakta `npm ci`, `npm run check:runtime`, `npx tsc`.
-2. `node --experimental-strip-types --test tests/catalog.test.ts tests/visits.test.ts tests/referrals.test.ts`.
-3. `npx vite build --base=/Ototr/saha-satis/`.
-4. `dist/client` içeriği `saha-satis/` dizinine alındı. Yalnızca üretilmiş dosyalardaki `/assets/iphone/`, `/assets/android/`, `/assets/status/` ve `/brand/` URL’leri bu alt yolun başına göre uyarlandı; mobil kaynak dosyaları değişmedi. Üretilen JS adı yeni içeriğin SHA-256 özetine göre yenilendi.
-5. HTML’e ERP dönüş bağlantısı ve noindex eklendi. `release.json` kaynak sürümünü ve özel katalog bulunmadığını kaydeder.
+## Kontroller ve paketleme
 
-## Kontroller
-
-- 20 veri/ziyaret/referans testi geçti; TypeScript ve Vite derlemesi geçti.
-- 28 korunan mobil çalışma zamanı dosyasının kontrolü geçti.
-- Yayın dosyaları özel katalogdaki 468 kimlik ve kaynak dosya adlarıyla karşılaştırıldı; eşleşme yok. Kaynakta özel katalog klasörü yok.
-- ERP alt yolunda logo, iPhone/Pixel görselleri, gezinme, üç günlük takvim ve boş liste için galeri ekleme yönlendirmesi tarayıcıda kontrol edilir.
-- GitHub Pages’in mevcut `Deploy GitHub Pages` akışı main push’u ile yayınlar. Başka modüllerin dosyaları veya verileri bu çalışma kapsamında güncellenmez.
+- web/: üç test, TypeScript ve Vite üretim derlemesi geçti.
+- Veritabanı kabul testi: erişim sözleşmesi, özel e-posta, sürüm çakışması, atomik kayıtlar, tekrar dönüşüm, iptal/erteleme geçmişi geçti. Geçici işlemler rollback yapıldı.
+- İki personelle arayüzde galeri/ziyaret/referans ve ortak görünürlük doğrulandı. Test kayıtları temizlenerek 468 gerçek galeri bırakıldı.
+- Masaüstü ve 390 px telefon yerleşimi kontrol edildi. Telefon testi geçici iframe ile yapıldı; kontrol dosyası pakete alınmadı.
+- Önceki mobil prototipin 28 korunan dosyası ve 20 testi geçti.
+- web/dist saha-satis/ dizinine kopyalandı. Önbellekteki eski sayfalar için eski statik varlıklar korunur; index yeni web paketini yükler. 468 katalog kimliği ve test verileriyle yeni paket tarandı; eşleşme yok.
+- Mevcut GitHub Pages akışı main push sonrası yayınlar. Diğer ERP modüllerinin kodu ve iş verileri değiştirilmedi.
 
 ## Geri alma
 
-Bu yayının commit’ini `git revert` ile geri alın. Bu işlem Saha Satış menü eklemesini ve eklenen statik paketi geri alır; tarayıcıdaki kayıtları silmez.
+Statik yayın commit'ini git revert ile geri almak arayüzü eski sürüme döndürür; veritabanı kayıtlarını silmez veya geri almaz. Açık API erişimini kapatmak ayrı bir Supabase politika değişikliği gerektirir. Yalnızca arayüzü geri almak erişim modelini değiştirmez.

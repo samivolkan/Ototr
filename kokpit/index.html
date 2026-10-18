@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kokpit – İşler</title>
+<style>
+:root{--bg:#f4f5f8;--sf:#fff;--sf2:#eceef3;--ln:#dcdfe7;--tx:#1b1c22;--mu:#6b6e7c;--ac:#4f7cff;--ok:#22a06b;--wa:#d98a14;--er:#e5484d;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17171c;--sf:#1f1f26;--sf2:#27272f;--ln:#32323c;--tx:#ececf1;--mu:#8e8e9d;--ac:#6a93ff;--ok:#3fbf88;--wa:#f0a93a;--er:#ff6b70}}
+:root[data-theme="dark"]{--bg:#17171c;--sf:#1f1f26;--sf2:#27272f;--ln:#32323c;--tx:#ececf1;--mu:#8e8e9d;--ac:#6a93ff;--ok:#3fbf88;--wa:#f0a93a;--er:#ff6b70}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:1px solid var(--ln);background:var(--sf);border-radius:8px;padding:7px 12px}
+button:hover{background:var(--sf2)}
+:focus-visible{outline:2px solid var(--ac);outline-offset:1px}
+.pri{background:var(--ac);border-color:var(--ac);color:#fff}.pri:hover{filter:brightness(1.1);background:var(--ac)}
+.dng{color:var(--er)}
+header{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:14px 20px;border-bottom:1px solid var(--ln);background:var(--sf)}
+h1{font-size:18px;margin:0 auto 0 0}
+main{max-width:1240px;margin:0 auto;padding:16px 20px 60px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:14px}
+.st{background:var(--sf);border:1px solid var(--ln);border-radius:10px;padding:8px 14px;text-align:left}
+.st b{display:block;font-size:21px}.st span{color:var(--mu);font-size:12px}
+.bar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;align-items:center}
+input,select,textarea{background:var(--sf);border:1px solid var(--ln);border-radius:8px;padding:7px 10px;width:100%}
+.bar input[type=search]{flex:1 1 200px;width:auto}.bar select{width:auto}
+.bar label{display:flex;gap:5px;align-items:center;color:var(--mu);font-size:12px}.bar label input{width:auto}
+.seg{display:flex;border:1px solid var(--ln);border-radius:8px;overflow:hidden}
+.seg button{border:0;border-radius:0}.seg button.on{background:var(--ac);color:#fff}
+.board{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+@media(max-width:800px){.board{grid-template-columns:1fr}}
+.col{background:var(--sf2);border-radius:12px;padding:10px;min-height:140px}.col.over{outline:2px dashed var(--ac)}
+.col h2{font-size:13px;margin:2px 4px 10px;display:flex;justify-content:space-between;color:var(--mu)}
+.p-yuksek{--c:var(--er)}.p-orta{--c:var(--wa)}.p-dusuk{--c:var(--ok)}
+.card{background:var(--sf);border:1px solid var(--ln);border-left:4px solid var(--c,var(--mu));border-radius:10px;padding:10px 12px;margin-bottom:8px;cursor:grab}
+.card.done .t{text-decoration:line-through;color:var(--mu)}
+.t{font-weight:600;margin-bottom:3px}.d{color:var(--mu);font-size:13px;margin-bottom:6px}
+.meta{display:flex;flex-wrap:wrap;gap:6px;font-size:12px;color:var(--mu);align-items:center}
+.tag{background:var(--sf2);border-radius:6px;padding:1px 7px;cursor:pointer}.late{color:var(--er);font-weight:600}
+.prog{height:4px;background:var(--sf2);border-radius:4px;margin:8px 0 4px}.prog i{display:block;height:100%;background:var(--ok);border-radius:4px}
+.sb{display:flex;gap:6px;align-items:center;font-size:13px}.sb input{width:auto}
+.sa{margin-top:4px;padding:4px 8px;font-size:12px}
+.act{display:flex;gap:4px;margin-top:8px;flex-wrap:wrap}.act button{padding:3px 9px;font-size:12px}.act .sp{margin-left:auto}
+table{width:100%;border-collapse:collapse;background:var(--sf);border:1px solid var(--ln);display:block;overflow-x:auto}
+th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--ln);white-space:nowrap}th{color:var(--mu);font-weight:500;font-size:12px}
+.empty{text-align:center;color:var(--mu);padding:26px 10px}
+.cn{display:flex;gap:12px;align-items:center;justify-content:center;margin-bottom:10px}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;overflow-x:auto}
+.ch{text-align:center;color:var(--mu);font-size:12px}
+.cd{background:var(--sf);border:1px solid var(--ln);border-radius:8px;min-height:84px;padding:4px;min-width:80px}.cd.o{background:none;border:0}.cd.td{border-color:var(--ac)}
+.cd i{font-size:11px;color:var(--mu);font-style:normal}
+.chip{font-size:11px;border-left:3px solid var(--c);background:var(--sf2);border-radius:4px;padding:1px 5px;margin-top:3px;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gt{background:var(--sf);border:1px solid var(--ln);border-radius:10px;padding:6px;overflow-x:auto}
+.gr{display:grid;grid-template-columns:170px 1fr;gap:8px;align-items:center;padding:4px 0;border-bottom:1px solid var(--ln);min-width:520px}
+.gl{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}
+.gb{position:relative;height:18px;background:var(--sf2);border-radius:4px}
+.bar2{position:absolute;top:2px;bottom:2px;border-radius:4px;background:var(--c);cursor:pointer}.bar2.dn{opacity:.35}
+dialog{background:var(--sf);color:var(--tx);border:1px solid var(--ln);border-radius:14px;padding:0;width:min(520px,94vw);max-height:92vh}
+dialog::backdrop{background:rgba(0,0,0,.5)}
+form{padding:18px;display:grid;gap:10px}form h3{margin:0}label.f{display:grid;gap:4px;font-size:12px;color:var(--mu)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fb{display:flex;gap:8px;justify-content:flex-end}
+#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--tx);color:var(--bg);padding:9px 16px;border-radius:8px;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90vw}
+#toast.show{opacity:1}
+[hidden]{display:none!important}button:disabled,input:disabled,select:disabled{opacity:.55;cursor:not-allowed}header a{color:var(--mu);text-decoration:none;margin-right:6px}
+</style>
+</head>
+<body>
+<header hidden id="workspace-header">
+  <a href="../index.html" aria-label="ERP’ye dön">← ERP</a><h1>Kokpit · İşler</h1>
+  <button id="me" title="Giriş yapan ERP kullanıcısı"></button>
+  <button id="refresh">Yenile</button><button id="logout">Çıkış</button><button id="theme">Tema</button><button id="export">Dışa aktar</button><button id="import">İçe aktar</button>
+  <button id="clearDone">Tamamlananları temizle</button><button class="pri" id="new">Yeni iş</button>
+  <input type="file" id="file" accept=".json" hidden>
+</header>
+<main hidden id="workspace">
+  <div class="stats" id="stats"></div>
+  <div class="bar">
+    <input type="search" id="q" placeholder="İş, etiket veya kişi ara...">
+    <select id="role"><option value="">Tüm işler</option><option value="me">Bana atananlar</option><option value="help">Yardımcı olduklarım</option><option value="mine">Oluşturduklarım</option></select>
+    <select id="fproj"></select>
+    <select id="fp"><option value="">Tüm öncelikler</option><option value="yuksek">Yüksek</option><option value="orta">Orta</option><option value="dusuk">Düşük</option></select>
+    <select id="sort"><option value="due">Bitiş tarihi</option><option value="pri">Öncelik</option><option value="new">En yeni</option></select>
+    <div class="seg"><button id="v-board" class="on">Pano</button><button id="v-list">Liste</button><button id="v-cal">Takvim</button><button id="v-gantt">Gantt</button></div>
+  </div>
+  <div class="bar">
+    <label><input type="checkbox" id="a-late"> Otomasyon: geciken işi "Yüksek" yap</label>
+    <label><input type="checkbox" id="a-done"> Otomasyon: bitince oluşturana bildir</label><small id="mail-status" style="color:var(--mu)"></small>
+  </div>
+  <div id="view"></div>
+</main>
+
+<section id="login" style="max-width:420px;margin:8vh auto;padding:20px"><h1>Kokpit · İşler</h1><p>ERP hesabınızla giriş yapın.</p><form id="login-form"><label class="f">Kullanıcı adı (ERP e-posta adresi)<input id="username" type="email" autocomplete="username" required></label><label class="f">Parola<input id="password" type="password" autocomplete="current-password" required></label><button class="pri" type="submit">Giriş yap</button><p id="login-error" role="alert"></p></form></section>
+<dialog id="dlg"><form id="f" method="dialog">
+  <h3 id="dt">Yeni iş</h3>
+  <label class="f">Başlık<input id="ft" required maxlength="120"></label>
+  <label class="f">Açıklama<textarea id="fd" rows="2"></textarea></label>
+  <div class="row"><label class="f">Sorumlu<input id="fw" list="people"><datalist id="people"></datalist></label><label class="f">Yardımcılar (virgülle)<input id="fh"></label></div>
+  <div class="row"><label class="f">Başlangıç<input type="date" id="fst"></label><label class="f">Bitiş<input type="date" id="fdue"></label></div>
+  <div class="row"><label class="f">Öncelik<select id="fpri"><option value="yuksek">Yüksek</option><option value="orta" selected>Orta</option><option value="dusuk">Düşük</option></select></label>
+  <label class="f">Durum<select id="fs"><option value="yapilacak">Yapılacak</option><option value="devam">Devam ediyor</option><option value="bitti">Tamamlandı</option></select></label></div>
+  <div class="row"><label class="f">Proje<input id="fpr"></label><label class="f">Etiketler (virgülle)<input id="ftg"></label></div>
+  <label class="f">Tekrar<select id="frec"><option value="">Tekrarlamaz</option><option value="gun">Her gün</option><option value="hafta">Her hafta</option><option value="ay">Her ay</option></select></label>
+  <div class="fb"><button type="button" id="cancel">Vazgeç</button><button class="pri" type="submit">Kaydet</button></div>
+</form></dialog>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script src="../task-merkezi-v2/js/runtime-config.js"></script>
+<script type="module" src="./app.js"></script>
+</body>
+</html>
