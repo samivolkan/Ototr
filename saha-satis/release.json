@@ -1,12 +1,13 @@
 {
   "sourceRepo": "samivolkan/ototr-saha-satis",
   "releaseDate": "2026-10-19",
-  "sourceCommit": "af2de33b55d9f409079b20efee346ec96dd96471",
+  "sourceCommit": "20c25a89fe370d34f0a072444c09be351353e4f5",
   "access": "public-profile-selection",
   "app": "responsive-web",
   "storage": "shared-supabase",
   "importedGalleryCount": 468,
   "catalogEmbedded": false,
   "sourceMonitor": true,
-  "defaultCheckIntervalDays": 3
+  "defaultCheckIntervalDays": 3,
+  "visitGalleryFilters": "district-neighborhood"
 }
