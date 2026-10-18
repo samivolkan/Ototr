@@ -1,7 +1,7 @@
 {
   "sourceRepo": "samivolkan/ototr-saha-satis",
   "releaseDate": "2026-10-19",
-  "sourceCommit": "b28f50811056c9ba766797a20e3df7c9dd7c1861",
+  "sourceCommit": "a7d71a3b34a79f58085e2359a4f729a220fd0f58",
   "access": "public-profile-selection",
   "app": "responsive-web",
   "storage": "shared-supabase",
@@ -11,5 +11,13 @@
   "defaultCheckIntervalDays": 3,
   "visitGalleryFilters": "district-neighborhood",
   "referralNeighborhoodSelect": true,
-  "gallerySearchSuggestions": true
+  "gallerySearchSuggestions": true,
+  "visitReports": [
+    "daily",
+    "weekly"
+  ],
+  "pdfReports": "browser-local-embedded-turkish-fonts",
+  "reportSharing": "native-file-share-with-whatsapp-manual-fallback",
+  "referrerContactSuggestions": true,
+  "advisorLabel": "Müşteri Danışmanı"
 }
