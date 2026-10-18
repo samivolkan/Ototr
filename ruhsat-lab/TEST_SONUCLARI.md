@@ -10,7 +10,13 @@ Son kontrol: `python -m pytest -q`: **44 test geçti**; Node dışa aktarım/ala
 
 GitHub Pages `main` yayını yeniden etkinleştirildi ve ERP dashboard tarayıcıda açıldı. E-posta kapısının API sağlık isteğini tekrar girişe yönlendirdiği gözlendi; motor yerelde hazır olduğu halde arayüz okuma düğmesini bu nedenle kapatıyordu. Kullanıcının isteğiyle girişsiz test modu eklendi. Dış HTTPS adresinde sağlık sorgusu ve ERP origin CORS preflight 200 döndü; kurgusal belge gerçek modellerle 18.11 saniyede okunup beklenen plaka/şasiyi verdi. Sahip alanları araç verisine girmedi.
 
-İstek origin'i zorunlu, yabancı origin reddediliyor, 10 istek/dakika sınırı test edildi. ERP mesajı ayrı izin listesiyle süzülüyor; sahip, fotoğraf ve ham metin kabul edilmiyor. Bunlar üretim kimlik doğrulaması değildir. Tarayıcıda ERP içi son kullanıcı akışı ayrıca kontrol edilir.
+İstek origin'i zorunlu, yabancı origin reddediliyor, 10 istek/dakika sınırı test edildi. ERP mesajı ayrı izin listesiyle süzülüyor; sahip, fotoğraf ve ham metin kabul edilmiyor. Bunlar üretim kimlik doğrulaması değildir.
+
+Canlı GitHub Pages ERP içinde kurgusal belge ayrıntılı modda 26.22 saniyede 17/17 araç alanıyla okundu. Fotoğraf seçince okuma düğmesi etkinleşti. İlk iş emri geçişindeki şema yüklemesinin taslağı silmesi giderildi; şema önce bekleniyor. Yakıt adı ERP seçeneğine dönüştürülüyor. Bu iki durum için regresyon testleri eklendi.
+
+Temiz tarayıcı sayfasında son doğrulama: hızlı mod 18.44 saniye, 17/17 alan doğru. Alanlar tek tek onaylandıktan sonra plaka, şasi, motor no, Renault, Megane, 2021 ve Benzin mevcut iş emri taslağında doğrulandı. Alıcı/satıcı kimlik ve iletişim alanları boş kaldı. İş emri kaydedilmedi. Yeni iş emri ile kurgusal taslak temizlendi; “Ruhsattan doldur” düğmesi boş ruhsat ekranına döndü ve motor hazırdı. Yerel ekran kanıtı: `test-results/erp-ruhsat-live.png`; Git kapsamı dışında.
+
+ERP'nin dar görünümünde mevcut bayi yan menüsü forma taşabildiği için aktarım son kontrolü 1440 px masaüstü görünümünde yapıldı. OCR modülü dar görünümde de çalıştı. Bayi ekranındaki mevcut Supabase yapılandırma uyarısı nedeniyle veritabanına kayıt testi yapılmadı; bu doğrulama OCR ve iş emri taslağı aktarımını kapsar.
 
 ## Korumalı web önizlemesi
 
