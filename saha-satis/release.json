@@ -1,7 +1,7 @@
 {
   "sourceRepo": "samivolkan/ototr-saha-satis",
   "releaseDate": "2026-10-19",
-  "sourceCommit": "a91441f7723bc030aec1ef5c3d2904281f116e04",
+  "sourceCommit": "8db6cb5282e4bc74ba747d1802295699b8e11c02",
   "access": "public-profile-selection",
   "app": "responsive-web",
   "storage": "shared-supabase",
@@ -33,5 +33,16 @@
   "gallerySourceEvidence": [
     "Excel",
     "Sahibinden.com"
-  ]
+  ],
+  "galleryArchive": "recoverable-soft-archive",
+  "visitSections": [
+    "planned",
+    "visited",
+    "referred-galleries"
+  ],
+  "weeklyTargets": [
+    "visits",
+    "referrals"
+  ],
+  "goalScope": "per-member-weekly-shared"
 }

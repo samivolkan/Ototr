@@ -19,7 +19,7 @@
 
 Kullanıcı herkese açık canlı bağlantı ve yalnızca ad seçimini onayladı. Şifre/e-posta girişi veya SMTP yoktur. Volkan, Nezire Erten, İlyada Alıcı aynı kayıtları görür. Personel seçimi kimlik doğrulamaz: bağlantıyı bilen herkes kayıtları okuyabilir ve profil seçerek değiştirebilir. E-postalar özel şemadadır ve API'den dönmez.
 
-İş kayıtları tarayıcıya bağlı değildir. Eşzamanlı düzenlemeler sürüm koşuluyla korunur. Sonuç/referans/takip işlemleri atomiktir. Silme ve işlem geçmişini düzenleme istemciye kapalıdır. Aktörler doğrulanmamış, seçilmiş profil olarak işaretlenir.
+İş kayıtları tarayıcıya bağlı değildir. Eşzamanlı düzenlemeler sürüm koşuluyla korunur. Sonuç/referans/takip işlemleri atomiktir. Doğrudan silme istemciye kapalıdır. Galeriler, planlanmış ziyaret yoksa geri alınabilir biçimde arşivlenir; geçmiş ziyaret/referans kayıtları korunur ve arşivlenen galeri yeni ziyaret ya da referans seçimlerinde sunulmaz. Arşivleme ve hedef değişiklikleri de sürüm kontrolü ve değiştirilemez işlem geçmişiyle kaydedilir. Aktörler doğrulanmamış, seçilmiş profil olarak işaretlenir.
 
 Statik pakette gerçek katalog, kaynak Excel, özel e-postalar, ortam dosyası veya yönetici anahtarı bulunmaz. Kayıtlar herkese açık API'den alınır. Önceki yerel denemeler ortak kayıtlara otomatik alınmaz.
 
@@ -55,3 +55,12 @@ Statik yayın commit'ini git revert ile geri almak arayüzü eski sürüme dönd
 - Excel dosyasındaki 671 satırın 382 farklı telefonu var; galeri adıyla 397 canlı galeri eşleşmesine karşın yalnız 2 telefon mevcut kayıtla birebir eşleşti. Kalan numaralar farklı olduğundan canlı iletişim kayıtları otomatik değiştirilmedi. Dosyada sokak adresi alanı yok ve kişi adı rolü galeri sahibi olarak doğrulanmıyor; kayıtlar mevcut kaynak kanıtıyla görünür bırakılır.
 - Sahibinden aramasında mağaza profilleri bulundu; arama görünümünde telefonlar “Telefonu Göster” arkasında ve mağaza hesabı adı yetkili/işletme sahibi kimliğini tek başına kanıtlamıyor. Kaynak teyidi tamamlanmamış adaylar otomatik olarak sahip veya telefon diye yazılmadı.
 - Galeri tablosu ve referans/ziyaret formları, PDF önizlemesi ve canlı veritabanı alanları tarayıcıda kontrol edildi. Başlangıç portföyü 468’di; kontrol sırasında ortak veritabanında 469 galeri vardı. Mevcut iş kayıtlarına test verisi eklenmedi.
+
+
+## Galeri arşivi, ziyaret menüsü ve hedefler · 19 Ekim 2026
+
+- Galeri düzenleme formunda “Galeriyi arşivle” ve arşiv kaydında “Arşivden çıkar” vardır. Açık planlanmış ziyareti olan galeri arşivlenemez; önce ziyaret ertelenmeli veya iptal edilmelidir. Arşiv sekmesi yalnızca arşivli kayıtları gösterir. Geçmiş notlar ve referanslar korunur.
+- Sol menüde Ziyaretler altında Planlanan Ziyaretler, Ziyaret Edilenler, Referans Alınan Galeriler ve Hedefler bulunur. Ziyaret edilenler sayfası görüşüldü/ziyaret edilemedi sonuçları, galeri araması ve Müşteri Danışmanı filtresi sunar.
+- Haftalık hedefler kişi başına ziyaret ve alınan referans sayısı olarak belirlenir. Başlangıçta hedef atanmaz; ekip kendi hedeflerini girer. Gerçekleşen ziyaret ve referanslar aynı haftada canlı ilerleme çubuğunda karşılaştırılır. Veriler ekipçe paylaşılır.
+- Veritabanı değişikliği canlı Supabase’e uygulandı; arşiv işareti, hedef tablosu, RLS, işlem geçmişi ve arşivli galeriye yeni plan engeli doğrulandı.
+- Kontroller: 10 otomatik test, TypeScript/Vite üretim derlemesi, yerel tarayıcıda canlı verilerle menü, hedef sayfası, ziyaret filtresi, aktif/arşiv görünümü ve galeri düzenleme formu. Mevcut galerileri arşivlemedim ve hedef kaydı oluşturmadım.
