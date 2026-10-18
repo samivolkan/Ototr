@@ -1,0 +1,8 @@
+# For a separate OCR host or an approved NEW vhost in the existing proxy.
+# Do not replace an existing web server's configuration with this example.
+ocr.example.com {
+    request_body {
+        max_size 21MB
+    }
+    reverse_proxy 127.0.0.1:18765
+}

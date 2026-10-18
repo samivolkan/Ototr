@@ -6,6 +6,17 @@ Cloudflare's --allowed-mail gate and keep uvicorn bound to loopback.
 from urllib.parse import urlsplit
 
 
+def server_origin(value: str) -> str:
+    value = value.strip().rstrip("/")
+    if not value:
+        return ""
+    parsed = urlsplit(value)
+    if (parsed.scheme != "https" or not parsed.hostname or parsed.username or parsed.password
+            or parsed.port or parsed.path or parsed.query or parsed.fragment):
+        raise ValueError("Sunucu adresi yalnız HTTPS origin olmalı.")
+    return value
+
+
 def preview_origin(value: str) -> str:
     value = value.strip().rstrip("/")
     if not value:

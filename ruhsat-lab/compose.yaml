@@ -1,0 +1,31 @@
+# Loopback only. This does not take over the ERP's public ports or database.
+name: ototr-ocr
+services:
+  ocr:
+    build: .
+    image: ototr-ocr:${OCR_RELEASE:-local}
+    restart: unless-stopped
+    init: true
+    ports:
+      - "127.0.0.1:18765:8000"
+    environment:
+      OTOTR_SERVER_ORIGIN: ${OTOTR_SERVER_ORIGIN:?Set the dedicated HTTPS OCR origin}
+      OTOTR_API_TOKEN: ${OTOTR_API_TOKEN:?Set a strong OCR access token}
+      OTOTR_ADMIN_TOKEN: ${OTOTR_ADMIN_TOKEN:?Set a different strong admin token}
+    volumes:
+      - feedback:/app/runtime
+    read_only: true
+    tmpfs:
+      - /tmp:size=128m,mode=1777
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    cpus: 2
+    mem_limit: 4g
+    pids_limit: 128
+    logging:
+      driver: local
+      options:
+        max-size: "5m"
+        max-file: "2"
+volumes:
+  feedback:

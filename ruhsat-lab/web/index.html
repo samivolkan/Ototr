@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="color-scheme" content="light"><title>OTOTR · Ruhsat Lab</title>
-  <link rel="stylesheet" href="/assets/style.css"><script src="/assets/data-policy.js" defer></script><script src="/assets/field-settings.js" defer></script><script src="/assets/app.js" defer></script><script src="/assets/erp-bridge.js" defer></script>
+  <link rel="stylesheet" href="/assets/style.css"><script src="/assets/data-policy.js" defer></script><script src="/assets/field-settings.js" defer></script><script src="/assets/quality-policy.js" defer></script><script src="/assets/app.js" defer></script><script src="/assets/learning.js" defer></script><script src="/assets/erp-bridge.js" defer></script>
 </head>
 <body>
   <header class="topbar"><a href="/" class="brand" aria-label="Ototr Ruhsat Lab"><span class="brand-mark">ototr<span class="brand-dot">.</span></span><span class="brand-divider"></span><span class="brand-product">RUHSAT LAB <small>YEREL PROTOTİP</small></span></a><div class="top-right"><span class="private-label"><span class="lock-icon">▣</span> Bu bilgisayarda işlenir</span><span class="status-pill" id="engineStatus" role="status"><i></i> Motor hazırlanıyor</span></div></header>
@@ -16,6 +16,26 @@
         <div class="settings-presets" role="group" aria-label="Hazır alan seçimleri"><button type="button" data-preset="default">Kokpit seçimi</button><button type="button" data-preset="all">Tüm alanları seç</button><button type="button" data-preset="minimal">Yalnız plaka ve şasi</button></div>
         <div id="settingsGroups" class="settings-grid"></div>
         <div class="settings-footer"><p>Yalnız alan tercihleri bu tarayıcıda saklanır. Ruhsat ve sahip bilgileri ayarlara kaydedilmez.</p><span id="settingsStatus" role="status">Seçimler bu tarayıcıda hatırlanır.</span></div>
+      </div>
+    </details>
+    <details class="panel field-settings" id="qualityPanel">
+      <summary><span class="settings-symbol" aria-hidden="true">◎</span><span class="settings-title"><strong>Okuma kalitesi ve geri bildirim</strong><small>Hassasiyet ayarları, kontrol sonuçları ve eğitim hazırlığı.</small></span><span class="settings-chevron" aria-hidden="true">⌄</span></summary>
+      <div class="settings-body">
+        <p class="settings-intro">Güven eşikleri kontrol uyarılarını belirler; modelin doğruluğunu artırmaz. Görüntü iyileştirme ve okuma yöntemi sonuçları etkileyebilir. Değişiklikleri aynı belgeleri kullanarak karşılaştırın.</p>
+        <p id="qualityCompatibility" class="warnings" hidden>Bu OCR sunucusu kalite panelini henüz desteklemiyor. Güncel servisle yeniden okuma gerekiyor.</p>
+        <div class="quality-grid">
+          <label>Genel güven eşiği<input id="qualityGeneral" type="number" min="0.5" max="1" step="0.01" value="0.90"></label>
+          <label>Şasi güven eşiği<input id="qualityVin" type="number" min="0.5" max="1" step="0.01" value="0.95"></label>
+          <label>Görüntü iyileştirme<select id="qualityPreprocessing"><option value="standard">Standart</option><option value="contrast">Kontrastı dengele</option></select></label>
+        </div>
+        <p class="settings-group-note">Ayarlar sonraki okumada uygulanır. Biçim hataları, model uyuşmazlıkları ve görüntü uyarıları eşik düşürülse de kontrol gerektirir.</p>
+        <fieldset id="qualityAccess" class="quality-access" hidden><legend>Sunucu erişimi</legend><p>E-posta girişi gerekmez. Kodlar yalnız bu sayfanın belleğinde tutulur; sayfa kapanınca silinir.</p><div class="quality-grid"><label>OCR erişim kodu<input id="qualityApiToken" type="password" autocomplete="off" spellcheck="false"></label><label>Yönetim erişim kodu<input id="qualityAdminToken" type="password" autocomplete="off" spellcheck="false"></label></div></fieldset>
+        <div class="quality-feedback"><h3>Kontrol sonuçlarını ölçelim</h3><p>Yanlış alanı düzeltin ve “Kontrol ettim” seçeneğini işaretleyin. Aşağıdaki düğme yalnız alan adını, düzeltildi/düzeltilmedi bilgisini ve okuma puanını kaydeder. Plaka, şasi, sahip bilgileri ve fotoğraf kaydedilmez. Aynı okuma için yeniden gönderim önceki geri bildirimin yerini alır.</p><button type="button" class="dark-button" id="qualitySave" disabled>Kontrol sonuçlarını anonim kaydet</button><p id="qualityMessage" role="status">Otomatik eğitim kapalı. Toplanan istatistikler hatalı alanları belirlemek içindir.</p></div>
+        <div class="quality-stats-toolbar"><h3>Alan bazında kontrol sonuçları</h3><label><input id="qualitySynthetic" type="checkbox"> Kurgusal testleri göster</label><button type="button" class="secondary-button" id="qualityRefresh">Sonuçları getir</button></div>
+        <p id="qualityStatsSummary" role="status">Henüz sonuçlar getirilmedi.</p>
+        <div class="quality-table" id="qualityStats" hidden><table><thead><tr><th>Alan</th><th>Yöntem</th><th>Görüntü</th><th>Kontrol</th><th>Düzeltilen</th><th>İlk okumada boş</th><th>Değiştirilmeden onay</th></tr></thead><tbody id="qualityStatsBody"></tbody></table></div>
+        <p class="settings-group-note">Bu oran yalnız kontrol edilmiş alanları kapsar; genel doğruluk veya kalibre edilmiş güven değildir. Kurgusal testler gerçek belge istatistiğine karışmaz.</p>
+        <div class="quality-roadmap"><strong>Eğitim için sıradaki adım</strong><p>Bu panel fotoğraf veya doğru metin biriktirmez ve modeli eğitmez. Eğitim için ayrıca onaylanmış, kişisel bilgilerden arındırılmış etiketli örnekler ve ayrı test belgeleri gerekir. Eğitilen model, mevcut modelle karşılaştırılıp başarılı bulununca devreye alınır.</p></div>
       </div>
     </details>
     <div class="workspace-bar"><div class="workspace-name"><span class="live-dot"></span> Belge çalışma alanı <span id="fileLabel">Yeni inceleme</span></div><button id="clearBtn" class="text-button" disabled>↺ Yeni inceleme</button></div>

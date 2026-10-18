@@ -1,0 +1,12 @@
+**
+!Dockerfile
+!requirements-lock.txt
+!setup_models.py
+!app.py
+!ruhsat/
+!ruhsat/*.py
+!web/
+!web/*.html
+!web/*.js
+!web/*.css
+!web/sample.png

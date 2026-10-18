@@ -19,9 +19,10 @@ from rapidocr.utils.process_img import get_rotate_crop_image
 
 from .parser import extract, reconcile
 from .privacy import partition_fields
+from .quality import prepare_image
 
 ROOT = Path(__file__).resolve().parent.parent
-MODELS = ROOT / "models"
+MODELS = Path(os.environ.get("OTOTR_MODEL_DIR", str(ROOT / "models")))
 MAX_PIXELS = 32_000_000
 Image.MAX_IMAGE_PIXELS = MAX_PIXELS
 register_heif_opener()
@@ -188,13 +189,15 @@ class OCRService:
         best=max(votes,key=votes.get)
         return best if total >= 2.5 and votes[best]/total >= .7 else 0
 
-    def analyze(self, data: bytes, mode: str, rotation: int, rectify: bool, auto_rotate: bool) -> dict:
+    def analyze(self, data: bytes, mode: str, rotation: int, rectify: bool, auto_rotate: bool,
+                preprocessing: str = "standard") -> dict:
         started = time.perf_counter()
         image, original = decode_image(data, rotation)
         quality = image_quality(image)
         rectified = False
         if rectify:
             image, rectified = perspective(image)
+        image = prepare_image(image, preprocessing)
         lines = self.read(image, "v5", "a")
         auto_angle = 0
         orientation_hint = self.orientation(image, lines)
@@ -238,7 +241,8 @@ class OCRService:
         output = io.BytesIO()
         image.save(output, format="JPEG", quality=90)
         fields, seller_suggestion = partition_fields(extracted["fields"])
-        return {"schema_version": "1.1", "mode": mode, "elapsed_seconds": round(time.perf_counter() - started, 2),
+        return {"schema_version": "1.1", "mode": mode, "preprocessing": preprocessing,
+                "elapsed_seconds": round(time.perf_counter() - started, 2),
                 "models": ["PP-OCRv5 Latin"] + (["PP-OCRv6 Turkish"] if mode == "detailed" else []),
                 "document_recognized": extracted["document_recognized"], "anchor_count": extracted["anchor_count"],
                 "image": {"width": image.width, "height": image.height, "original": original,
