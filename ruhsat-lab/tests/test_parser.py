@@ -1,0 +1,140 @@
+from ruhsat.parser import BY_KEY, extract, find_labels, reconcile, validate
+
+
+def line(text, x=10, y=10, w=220, h=20, idx=0, score=.98):
+    return {"id": str(idx), "text": text, "score": score, "box": [[x,y],[x+w,y],[x+w,y+h],[x,y+h]]}
+
+
+def field(lines,key):
+    return next(f for f in extract(lines,1000,1000)["fields"] if f["key"]==key)
+
+
+def test_long_labels_take_priority():
+    assert [m[2] for m in find_labels("(B) İLK TESCİL TARİHİ")] == ["first_registration_date"]
+    assert [m[2] for m in find_labels("(D.3) TİCARİ ADI")] == ["kind"]
+    assert [m[2] for m in find_labels("(C.1.1) SOYADI / TİCARİ UNVANI")] == ["owner_surname"]
+
+
+def test_turkish_character_label_matching():
+    assert find_labels("ŞASİ NO")[0][2] == "vin"
+    assert find_labels("SASE NO")[0][2] == "vin"
+
+
+def test_adjacent_columns_do_not_mix():
+    lines=[line("PLAKA",x=10,y=10,w=100,idx=0),line("16 TST 123",x=10,y=38,idx=1),
+           line("MARKASI",x=600,y=10,w=100,idx=2),line("RENAULT",x=600,y=38,idx=3)]
+    assert field(lines,"plate")["value"]=="16TST123"
+    assert field(lines,"brand")["value"]=="RENAULT"
+
+
+def test_next_label_blocks_missing_value():
+    lines=[line("PLAKA",idx=0),line("MARKASI",y=35,idx=1),line("RENAULT",y=62,idx=2)]
+    assert field(lines,"plate")["value"] is None
+
+
+def test_never_repairs_vin_character_silently():
+    bad="TEST123456789O123"
+    value,issues=validate(BY_KEY["vin"],bad)
+    assert value==bad and issues
+
+
+def test_unique_unlabelled_vin_is_review_only():
+    result=field([line("TEST1234567890123")],"vin")
+    assert result["value"]=="TEST1234567890123" and result["needs_review"]
+
+
+def test_conflicting_vins_require_review():
+    lines=[line("ŞASİ NO: TEST1234567890123",idx=0),line("ŞASİ NO: TEST1234567890124",y=100,idx=1)]
+    result=field(lines,"vin")
+    assert result["needs_review"] and len(result["alternatives"])==1
+
+
+def test_invalid_date_and_future_year():
+    assert validate(BY_KEY["registration_date"],"31.02.2024")[1]
+    assert validate(BY_KEY["model_year"],"9999")[1]
+    assert validate(BY_KEY["registration_date"],"15/06/2021")[0]=="2021-06-15"
+
+
+def test_zero_passengers_is_a_value():
+    assert field([line("AYAKTA YOLCU SAYISI: 0")],"standing_passenger_count")["value"]=="0"
+
+
+def test_no_address_field_and_address_does_not_become_name():
+    lines=[line("ADI",idx=0),line("ADRESİ",y=35,idx=1),line("TEST MAHALLESİ",y=60,idx=2)]
+    assert "address" not in BY_KEY
+    assert field(lines,"owner_name")["value"] is None
+
+
+def test_two_models_disagree():
+    one=extract([line("PLAKA: 16 TST 123")],1000,1000)
+    two=extract([line("PLAKA: 16 TST 124")],1000,1000)
+    output=reconcile(one,two)
+    plate=next(f for f in output["fields"] if f["key"]=="plate")
+    assert plate["value"]=="16TST123" and plate["needs_review"] and plate["agreement"] is False
+
+
+def test_empty_document_does_not_invent_fields():
+    result=extract([],1000,1000)
+    assert not result["document_recognized"]
+    assert all(f["value"] is None for f in result["fields"])
+
+
+def test_overlapping_ocr_boxes_still_pair_below_values():
+    lines=[line("(D.1) MARKASI",x=58,y=447,w=174,h=38,idx=0),
+           line("RENAULT",x=62,y=480,w=168,h=36,idx=1)]
+    assert field(lines,"brand")["value"]=="RENAULT"
+
+
+def test_corrupted_caption_with_explicit_code_is_not_value():
+    assert find_labels("(F.1) AZAMi YÜKLÜ AČIRLIğI")[0][2]=="max_loaded_weight"
+    lines=[line("(F.1) AZAMi YÜKLÜ AČIRLIğI",idx=0),line("1840",y=35,idx=1)]
+    assert field(lines,"max_loaded_weight")["value"]=="1840"
+    assert find_labels("(D.3) TÍCARi ADI")[0][2]=="kind"
+
+
+def test_first_registration_is_not_stolen_by_shorter_caption():
+    assert find_labels("(B) lLK TESCIL TARIHI")[0][2]=="first_registration_date"
+
+
+def test_name_diacritics_are_not_falsely_called_agreement():
+    one=extract([line("SOYADI: ÖRNEK")],1000,1000)
+    two=extract([line("SOYADI: ORNEK")],1000,1000)
+    surname=next(f for f in reconcile(one,two)["fields"] if f["key"]=="owner_surname")
+    assert surname["agreement"] is False and surname["alternatives"][0]["value"]=="ORNEK"
+
+
+def test_address_cannot_become_vehicle_field_or_alternative():
+    import json
+    fake_address = "KURGUSAL MAH. DENEME SK. NO:99"
+    for spec in BY_KEY.values():
+        assert validate(spec, fake_address)[0] is None
+    rows = [line("ARAC SINIFI", x=300, y=100, w=110, idx=0),
+            line(fake_address, x=440, y=100, w=350, idx=1),
+            line("M1", x=300, y=125, w=40, idx=2)]
+    result = extract(rows, 1000, 1000)
+    assert fake_address not in json.dumps(result, ensure_ascii=False)
+    assert next(f for f in result["fields"] if f["key"] == "vehicle_class")["value"] == "M1"
+
+
+def test_address_continuation_without_address_keywords_is_excluded():
+    rows = [line("MARKASI", x=300, y=135, w=100, idx=0),
+            line("(C.1.3) ADRESI", x=450, y=100, w=180, idx=1),
+            line("KURGUSAL SEHIR", x=450, y=135, w=170, idx=2),
+            line("(Z.1) DIGER BILGILER", x=450, y=210, w=220, idx=3)]
+    assert field(rows, "brand")["value"] is None
+
+
+def test_unrelated_captions_are_not_vehicle_values():
+    for key, text in [("fuel_type", "(Q) GUC AGIRLIK ORANI"),
+                      ("usage_purpose", "e1*2018/858*99999*01"),
+                      ("engine_no", "VE MENFAAT BULUNANLAR"),
+                      ("engine_capacity", "CM2")]:
+        value, issues = validate(BY_KEY[key], text)
+        assert value is None and issues
+    assert validate(BY_KEY["usage_purpose"], "YOLCU NAKLI - HUSUSI")[0]
+    assert validate(BY_KEY["fuel_type"], "BENZINLI")[0] == "BENZİNLİ"
+
+
+def test_truncated_category_is_flagged_for_review():
+    value, issues = validate(BY_KEY["vehicle_category"], "OTOMOBIL (AF")
+    assert value == "OTOMOBIL (AF" and issues
