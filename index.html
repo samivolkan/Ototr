@@ -7827,14 +7827,16 @@
         const tasks=ids.length?await dealerSupabaseRequest('/rest/v1/inspection_tasks?select=id,expertise_case_id,task_key,title,assigned_role,status,report_field_key,estimated_minutes,customer_friendly_note,risky_findings,owner_user_id,assigned_user_id&expertise_case_id=in.('+ids.join(',')+')&order=created_at.asc'):[];
         const answers=ids.length?await dealerSupabaseRequest('/rest/v1/inspection_item_values?select=id,expertise_case_id,task_id,item_key,title,result,note,updated_at&expertise_case_id=in.('+ids.join(',')+')&order=updated_at.asc'):[];
         const evidence=ids.length?await dealerSupabaseRequest('/rest/v1/inspection_evidence_assets?select=id,expertise_case_id,task_id,field_key,report_field_key,title,remote_url,local_path,sync_status,is_required,quality_status&expertise_case_id=in.('+ids.join(',')+')&order=created_at.asc'):[];
-        const workOrders=visibleCases.map(row=>dealerLiveWorkOrderFromCase(row,tasks,evidence,answers));
+        let workOrders=visibleCases.map(row=>dealerLiveWorkOrderFromCase(row,tasks,evidence,answers));
         await dealerSyncSupabaseReportAnswers(workOrders).catch(err=>saveDealerSupabaseSyncState({lastError:err.message||String(err)}));
         const current=ensureDealerLiveData(DB.branches.find(b=>b.id===selectedBranchId)||DB.branches[0],DB.appointments);
+        const liveCount=workOrders.length;
+        workOrders=dealerMergeSyncedWorkOrders(workOrders,current.workOrders);
         const selected=options.selectSupabaseId?workOrders.find(w=>w.supabaseId===options.selectSupabaseId):null;
         const activeId=selected?.id || (current.activeId&&workOrders.some(w=>w.id===current.activeId)?current.activeId:workOrders[0]?.id||'');
         saveDealerLiveData({activeId,workOrders,lastNo:current.lastNo||842,source:'supabase',liveSyncedAt:new Date().toISOString()});
-        saveDealerSupabaseSyncState({lastSyncAt:new Date().toLocaleString('tr-TR',{dateStyle:'short',timeStyle:'short'}),lastCount:workOrders.length,lastError:''});
-        if(!options.silent) toast(workOrders.length+' canlı iş emri senkronize edildi.');
+        saveDealerSupabaseSyncState({lastSyncAt:new Date().toLocaleString('tr-TR',{dateStyle:'short',timeStyle:'short'}),lastCount:liveCount,lastError:''});
+        if(!options.silent) toast(liveCount+' canlı iş emri senkronize edildi.');
         if(!options.noRender){renderAll();route('dealer');}
       }catch(err){
         saveDealerSupabaseSyncState({lastError:err.message||String(err)});
@@ -8118,12 +8120,19 @@
       }catch(err){}
       return true;
     }
+    function dealerPersistedWorkOrders(rows){
+      return (rows||[]).filter(wo=>wo?.supabaseId||wo?.source==='Supabase canlı'||wo?.storageScope==='browser-local');
+    }
+    function dealerMergeSyncedWorkOrders(remoteRows,currentRows){
+      const ids=new Set(remoteRows.map(wo=>wo.id));
+      return [...(currentRows||[]).filter(wo=>wo?.storageScope==='browser-local'&&!wo.supabaseId&&!ids.has(wo.id)),...remoteRows];
+    }
     function ensureDealerLiveData(branch,appointments){
       let data=null;
       try{data=JSON.parse(localStorage.getItem(DEALER_LIVE_KEY)||'null')}catch(err){}
       if(!data||!Array.isArray(data.workOrders)) data={activeId:'',workOrders:[],lastNo:842,source:'live-only'};
       let normalized=false;
-      const liveOnly=(data.workOrders||[]).filter(wo=>wo?.supabaseId||wo?.source==='Supabase canlı');
+      const liveOnly=dealerPersistedWorkOrders(data.workOrders);
       if(liveOnly.length!==(data.workOrders||[]).length){
         data.workOrders=liveOnly;
         normalized=true;
@@ -11254,6 +11263,7 @@
       const receptionModel=dealerBuildReceptionWorkOrderModel(f);
       const wo={id:'IE-2026-'+String(no).padStart(6,'0'),reportNo:'OTR-2026-'+String(no+300).padStart(6,'0'),branchId:selectedBranchId,branchName:data.branchName||'OTOTR Bursa Nilüfer',status:'İş emri açıldı',customer:data.customer||'Alıcı bilgisi bekliyor',phone:data.phone||'',taxNo:data.taxNo||'',customerType:data.customerType||'Bireysel',contactPermission:data.contactPermission||'Evet',buyer:data.buyer||data.customer||'Alıcı bilgisi bekliyor',seller:data.seller||'Satıcı bilgisi bekliyor',sellerPhone:data.sellerPhone||'',sellerTaxNo:data.sellerTaxNo||'',sellerType:data.sellerType||'Bireysel',sellerContactPermission:data.sellerContactPermission||'Evet',vehicle:data.vehicle||dealerVehicleFromParts(data.vehicleMake,data.vehicleModel,data.vehicleVariant),vehicleMake:data.vehicleMake||'',vehicleModel:data.vehicleModel||'',vehicleVariant:data.vehicleVariant||'',fuel:data.fuel||'',transmission:data.transmission||'',year:data.year||'2023',plate:data.plate,vin:data.vin||'VIN bekliyor',engineNo:data.engineNo||'',mileage:dealerStoredMileage(data.mileage)||'KM bekliyor',packageName,additionalServices:addonNames,giftedAdditionalServices:giftedAddonNames,spareKey:data.spareKey||'Var',price:loyaltyCalc.net,paidAmount:dealerMoneyAmount(data.paidAmount)||loyaltyCalc.net,grossPrice:loyaltyCalc.gross,packageGrossPrice:loyaltyCalc.packageGross,addonTotal:loyaltyCalc.addonTotal,loyalty:loyaltyCalc.loyalty,loyaltyDiscountRate:loyaltyCalc.loyalty.discount,loyaltyDiscountAmount:loyaltyCalc.discountAmount,source:data.source||'Bayi ekranı',createdAt:entryAt,entryAt,deliveryAt:data.deliveryAt||'Bugün 14:30',payment:data.payment||'Tahsil edildi',paymentMethod:data.paymentMethod||'POS / Kredi Kartı',consent:data.consent||'İmzalandı',managerApproved:false,secretaryPrinted:false,revisionNo:1,reprintCount:0,tasks:dealerTaskSeed(packageName),entryMode:createdAsFull?'full':'fast',workOrderMode:createdAsFull?'full':'fast',quickWorkOrder:!createdAsFull,fullWorkOrderCompletedAt:createdAsFull?entryAt:''};
       Object.assign(wo,dealerReceptionPersistenceFromForm(f,receptionModel));
+      wo.storageScope='browser-local';
       wo.sellerLoyalty=sellerLoyalty;
       wo.sellerLoyaltyPoints=sellerLoyalty.points;
       wo.sellerLoyaltyTier=sellerLoyalty.tier;
@@ -11261,7 +11271,7 @@
       dealerAuditWorkOrder(wo,'İş emri oluşturuldu',dealerPortalState().role,packageName+' paket görevleri otomatik atandı. Sadakat: '+loyaltyCalc.loyalty.tier+' %'+loyaltyCalc.loyalty.discount+' indirim önerisi.');
       wo.campaignCode=data.campaignCode||'';
       dealerClearStoredWorkOrderDraft();
-      store.lastNo=no; store.activeId=wo.id; store.workOrders.unshift(wo); saveDealerLiveData(store); syncDealerReportData(wo); saveDealerPortalState({tab:'aktif-is-emirleri',editingWorkOrderId:'',viewingWorkOrderId:''}); renderDealerPageOnly(); route('dealer'); toast(wo.id+' açıldı; Aktif İş Emirleri ekranına taşındınız.');
+      store.lastNo=no; store.activeId=wo.id; store.workOrders.unshift(wo); saveDealerLiveData(store); syncDealerReportData(wo); saveDealerPortalState({tab:'aktif-is-emirleri',editingWorkOrderId:'',viewingWorkOrderId:''}); renderDealerPageOnly(); route('dealer'); toast(wo.id+' bu tarayıcıda kaydedildi. Buluta veya mobile gönderilmedi.');
     }
     async function dealerUpdateActiveWorkOrder(){
       const f=document.getElementById('dealerWorkOrderForm');
@@ -11355,10 +11365,11 @@
     }
     function dealerWorkOrderTimeCell(wo){
       const entry=rpEsc(wo?.entryAt||wo?.createdAt||'-');
+      const storageNote=wo?.storageScope==='browser-local'?'<br><span class="card-sub">Bu tarayıcıda kayıtlı · buluta gönderilmedi</span>':'';
       const exit=wo?.exitAt||wo?.deliveredAt||'';
       const duration=dealerWorkOrderDurationLabel(wo?.reportDurationMinutes||dealerWorkOrderDurationMinutes(wo));
-      if(exit) return `<b>${entry}</b><br><span class="card-sub">Çıkış: ${rpEsc(exit)}${duration?' · Süre: '+rpEsc(duration):''}</span>`;
-      return `<b>${entry}</b><br><span class="card-sub">Rapor süresi iş çıkışında ölçülür</span>`;
+      if(exit) return `<b>${entry}</b><br><span class="card-sub">Çıkış: ${rpEsc(exit)}${duration?' · Süre: '+rpEsc(duration):''}</span>${storageNote}`;
+      return `<b>${entry}</b><br><span class="card-sub">Rapor süresi iş çıkışında ölçülür</span>${storageNote}`;
     }
     function dealerWorkOrderNeedsFullCompletion(w){
       if(!dealerWorkOrderStillOpen(w)) return false;

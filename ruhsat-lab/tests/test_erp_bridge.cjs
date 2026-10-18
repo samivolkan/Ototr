@@ -82,3 +82,21 @@ test('reviewed draft survives form refresh delay and explicit New Order clears i
   context.dealerClearStoredWorkOrderDraft();assert.equal(context.dealerStoredWorkOrderDraft(),null);
   assert.equal(storage.size,0);
 });
+
+test('saved browser work order survives normalization and a later cloud refresh',()=>{
+  const vm=require('node:vm'),fs=require('node:fs');
+  const source=fs.readFileSync(require.resolve('../../index.html'),'utf8');
+  const start=source.indexOf('    function dealerPersistedWorkOrders(');
+  const end=source.indexOf('    function ensureDealerLiveData(',start);
+  const context={};vm.createContext(context);vm.runInContext(source.slice(start,end),context);
+  const local={id:'LOCAL',storageScope:'browser-local',ruhsatVehicle:{color:'BEYAZ'}};
+  const remote={id:'CLOUD',supabaseId:'uuid'};
+  const demo={id:'OLD-DEMO'};
+  let rows=context.dealerPersistedWorkOrders([local,remote,demo]);
+  assert.deepEqual(Array.from(rows,wo=>wo.id),['LOCAL','CLOUD']);
+  rows=context.dealerMergeSyncedWorkOrders([{...remote,status:'updated'}],rows);
+  assert.equal(rows.find(wo=>wo.id==='LOCAL').ruhsatVehicle.color,'BEYAZ');
+  assert.equal(rows.find(wo=>wo.id==='CLOUD').status,'updated');
+  assert.equal(rows.length,2);
+  assert.equal(context.dealerMergeSyncedWorkOrders([{id:'LOCAL',supabaseId:'migrated'}],[local]).length,1);
+});
