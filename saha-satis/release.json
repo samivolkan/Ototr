@@ -1,7 +1,7 @@
 {
   "sourceRepo": "samivolkan/ototr-saha-satis",
   "releaseDate": "2026-10-19",
-  "sourceCommit": "8db6cb5282e4bc74ba747d1802295699b8e11c02",
+  "sourceCommit": "4b1c2c5",
   "access": "public-profile-selection",
   "app": "responsive-web",
   "storage": "shared-supabase",
@@ -44,5 +44,21 @@
     "visits",
     "referrals"
   ],
-  "goalScope": "per-member-weekly-shared"
+  "goalScope": "per-member-weekly-shared",
+  "mobilePwa": "installable-web-app",
+  "visitReminders": "30-minutes-before",
+  "dailyPlanReminder": "09:00-Istanbul; complete-by-10:00",
+  "performanceTargets": [
+    "headquarters",
+    "branch",
+    "person"
+  ],
+  "performanceKpis": [
+    "visits",
+    "referred-customers",
+    "bulk-package-sales"
+  ],
+  "performanceBonus": "draft-threshold-simulation",
+  "performanceHrReport": "print-to-pdf",
+  "performanceAccess": "public-warning-shown"
 }
