@@ -17,7 +17,7 @@
   }
   function extraMarkup(source={}) {
     const values=formValues(source), count=Object.values(values).filter(Boolean).length;
-    return `<details class="dealer-ruhsat-details" style="grid-column:1/-1;border:1px solid #dbe2ed;border-radius:10px;padding:12px;margin-top:8px" ${count?'open':''}><summary style="cursor:pointer;font-weight:700">Ruhsatın diğer araç bilgileri${count?' · '+count+' alan':''}</summary><p class="card-sub">Bu araç alanları iş emriyle kaydedilir. Ruhsat sahibinin kimliği, adı ve adresi dahil edilmez.</p><div class="dealer-wo-form-grid">${Object.entries(extras).map(([key,label])=>`<label class="field"><span>${esc(label)}</span><input name="ruhsat_${key}" aria-label="${esc(label)}" value="${esc(values['ruhsat_'+key])}" autocomplete="off" maxlength="120"></label>`).join('')}</div></details>`;
+    return `<details class="dealer-ruhsat-details" style="grid-column:1/-1;border:1px solid #dbe2ed;border-radius:10px;padding:12px;margin-top:8px" ${count?'open':''}><summary style="cursor:pointer;font-weight:700">Ruhsatın diğer araç bilgileri${count?' · '+count+' alan':''}</summary><p class="card-sub">Bu araç alanları iş emriyle kaydedilir. Ruhsat sahibinin kimliği, adı ve adresi dahil edilmez.</p><div class="dealer-ruhsat-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px">${Object.entries(extras).map(([key,label])=>`<label class="dealer-wo-field"><span>${esc(label)}</span><input name="ruhsat_${key}" aria-label="${esc(label)}" value="${esc(values['ruhsat_'+key])}" autocomplete="off" maxlength="120"></label>`).join('')}</div></details>`;
   }
   function mergeDraft(previous={},incoming={}) {
     const draft={...previous};
