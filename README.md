@@ -1,5 +1,7 @@
 # OTOTR ERP + CRM
 
+Kokpit · İşler canlı entegrasyonu: [kurulum, test, yedek ve geri alma adımları](kokpit/README.md). Türkçe prototip, mevcut ERP hesapları ve Supabase/PostgreSQL ile çalışır.
+
 Bu proje, OTOTR icin genel merkez ERP/CRM sisteminin yeniden baslangicidir.
 
 Mevcut calisir prototip: `index.html`

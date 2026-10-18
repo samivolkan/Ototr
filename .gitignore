@@ -32,3 +32,12 @@ docs/ototr-quality-gate-latest.json
 
 # Task Center V2 frontend vendor build dependencies
 task-merkezi-v2/vendor-build/node_modules/
+
+# Runtime secrets, local database backups and test dependencies
+.env
+.env.*
+!.env*.example
+**/node_modules/
+**/.temp/
+backups/
+test-results/
