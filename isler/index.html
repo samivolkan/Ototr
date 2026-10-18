@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#405cf5"><link rel="apple-touch-icon" href="icon-192.png"><meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://bsjkohwbtrfwrqcyhsfz.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta charset="utf-8"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Kokpit"><meta name="theme-color" content="#17171c">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kokpit – İşler</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap">
+<style>
+:root{--bg:#f4f5f8;--sf:#fff;--sf2:#eceef3;--ln:#dcdfe7;--tx:#1b1c22;--mu:#6b6e7c;--ac:#4f7cff;--ok:#22a06b;--wa:#d98a14;--er:#e5484d;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17171c;--sf:#1f1f26;--sf2:#27272f;--ln:#32323c;--tx:#ececf1;--mu:#8e8e9d;--ac:#6a93ff;--ok:#3fbf88;--wa:#f0a93a;--er:#ff6b70}}
+:root[data-theme="dark"]{--bg:#17171c;--sf:#1f1f26;--sf2:#27272f;--ln:#32323c;--tx:#ececf1;--mu:#8e8e9d;--ac:#6a93ff;--ok:#3fbf88;--wa:#f0a93a;--er:#ff6b70}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:1px solid var(--ln);background:var(--sf);border-radius:8px;padding:7px 12px}
+button:hover{background:var(--sf2)}
+:focus-visible{outline:2px solid var(--ac);outline-offset:1px}
+.pri{background:var(--ac);border-color:var(--ac);color:#fff}.pri:hover{filter:brightness(1.1);background:var(--ac)}
+.dng{color:var(--er)}
+header{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:14px 20px;border-bottom:1px solid var(--ln);background:var(--sf)}
+h1{font-size:18px;margin:0 auto 0 0}
+main{max-width:1240px;margin:0 auto;padding:16px 20px 60px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:14px}
+.st{background:var(--sf);border:1px solid var(--ln);border-radius:10px;padding:8px 14px;text-align:left}
+.st b{display:block;font-size:21px}.st span{color:var(--mu);font-size:12px}
+.bar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;align-items:center}
+input,select,textarea{background:var(--sf);border:1px solid var(--ln);border-radius:8px;padding:7px 10px;width:100%}
+.bar input[type=search]{flex:1 1 200px;width:auto}.bar select{width:auto}
+.bar label{display:flex;gap:5px;align-items:center;color:var(--mu);font-size:12px}.bar label input{width:auto}
+.seg{display:flex;border:1px solid var(--ln);border-radius:8px;overflow:hidden}
+.seg button{border:0;border-radius:0}.seg button.on{background:var(--ac);color:#fff}
+.board{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+@media(max-width:800px){.board{grid-template-columns:1fr}}
+.col{background:var(--sf2);border-radius:12px;padding:10px;min-height:140px}.col.over{outline:2px dashed var(--ac)}
+.col h2{font-size:13px;margin:2px 4px 10px;display:flex;justify-content:space-between;color:var(--mu)}
+.p-yuksek{--c:var(--er)}.p-orta{--c:var(--wa)}.p-dusuk{--c:var(--ok)}
+.card{background:var(--sf);border:1px solid var(--ln);border-left:4px solid var(--c,var(--mu));border-radius:10px;padding:10px 12px;margin-bottom:8px;cursor:grab}
+.card.done .t{text-decoration:line-through;color:var(--mu)}
+.t{font-weight:600;margin-bottom:3px}.d{color:var(--mu);font-size:13px;margin-bottom:6px}
+.meta{display:flex;flex-wrap:wrap;gap:6px;font-size:12px;color:var(--mu);align-items:center}
+.tag{background:var(--sf2);border-radius:6px;padding:1px 7px;cursor:pointer}.late{color:var(--er);font-weight:600}
+.prog{height:4px;background:var(--sf2);border-radius:4px;margin:8px 0 4px}.prog i{display:block;height:100%;background:var(--ok);border-radius:4px}
+.sb{display:flex;gap:6px;align-items:center;font-size:13px}.sb input{width:auto}
+.sa{margin-top:4px;padding:4px 8px;font-size:12px}
+.act{display:flex;gap:4px;margin-top:8px;flex-wrap:wrap}.act button{padding:3px 9px;font-size:12px}.act .sp{margin-left:auto}
+table{width:100%;border-collapse:collapse;background:var(--sf);border:1px solid var(--ln);display:block;overflow-x:auto}
+th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--ln);white-space:nowrap}th{color:var(--mu);font-weight:500;font-size:12px}
+.empty{text-align:center;color:var(--mu);padding:26px 10px}
+.cn{display:flex;gap:12px;align-items:center;justify-content:center;margin-bottom:10px}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;overflow-x:auto}
+.ch{text-align:center;color:var(--mu);font-size:12px}
+.cd{background:var(--sf);border:1px solid var(--ln);border-radius:8px;min-height:84px;padding:4px;min-width:80px}.cd.o{background:none;border:0}.cd.td{border-color:var(--ac)}
+.cd i{font-size:11px;color:var(--mu);font-style:normal}
+.chip{font-size:11px;border-left:3px solid var(--c);background:var(--sf2);border-radius:4px;padding:1px 5px;margin-top:3px;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gt{background:var(--sf);border:1px solid var(--ln);border-radius:10px;padding:6px;overflow-x:auto}
+.gr{display:grid;grid-template-columns:170px 1fr;gap:8px;align-items:center;padding:4px 0;border-bottom:1px solid var(--ln);min-width:520px}
+.gl{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}
+.gb{position:relative;height:18px;background:var(--sf2);border-radius:4px}
+.bar2{position:absolute;top:2px;bottom:2px;border-radius:4px;background:var(--c);cursor:pointer}.bar2.dn{opacity:.35}
+dialog{background:var(--sf);color:var(--tx);border:1px solid var(--ln);border-radius:14px;padding:0;width:min(520px,94vw);max-height:92vh}
+dialog::backdrop{background:rgba(0,0,0,.5)}
+form{padding:18px;display:grid;gap:10px}form h3{margin:0}label.f{display:grid;gap:4px;font-size:12px;color:var(--mu)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fb{display:flex;gap:8px;justify-content:flex-end}
+#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--tx);color:var(--bg);padding:9px 16px;border-radius:8px;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90vw}
+#toast.show{opacity:1}
+/* ===== Tasarım v3 ===== */
+:root{--bg:#f1f2f6;--sf:#fff;--sf2:#eceef4;--ln:#e0e3ec;--tx:#15161c;--mu:#6c7080;--ac:#4a5bff;--ok:#16a571;--wa:#d98410;--er:#e23d4f;--sh:0 1px 2px rgba(20,22,40,.06),0 8px 24px -12px rgba(20,22,40,.18)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1014;--sf:#17181e;--sf2:#1e2027;--ln:#272a33;--tx:#e9eaf0;--mu:#8a8e9d;--ac:#8b9bff;--ok:#4ad6a0;--wa:#ffb454;--er:#ff6b7a;--sh:0 1px 0 rgba(255,255,255,.03) inset,0 10px 30px -14px rgba(0,0,0,.7)}}
+:root[data-theme="dark"]{--bg:#0f1014;--sf:#17181e;--sf2:#1e2027;--ln:#272a33;--tx:#e9eaf0;--mu:#8a8e9d;--ac:#8b9bff;--ok:#4ad6a0;--wa:#ffb454;--er:#ff6b7a;--sh:0 1px 0 rgba(255,255,255,.03) inset,0 10px 30px -14px rgba(0,0,0,.7)}
+body{font-family:Manrope,system-ui,-apple-system,"Segoe UI",sans-serif;font-size:14px;letter-spacing:-.005em;font-feature-settings:"tnum"}
+button{border-color:transparent;background:var(--sf2);border-radius:10px;font-weight:600;font-size:13px;transition:background .15s,transform .1s}
+button:hover{background:var(--ln)}button:active{transform:scale(.97)}
+.pri{background:var(--ac);color:#fff;box-shadow:0 6px 18px -6px var(--ac)}.pri:hover{background:var(--ac);filter:brightness(1.12)}
+input,select,textarea{border-radius:10px;background:var(--sf);border:1px solid var(--ln)}
+input:focus,select:focus,textarea:focus{border-color:var(--ac)}
+header{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);padding:12px 24px}
+h1{display:flex;align-items:center;gap:10px;font-size:19px;font-weight:800;letter-spacing:-.03em}
+h1 small{font-size:13px;font-weight:600;color:var(--mu);padding-left:10px;border-left:1px solid var(--ln)}
+.logo{width:22px;height:22px;border-radius:7px;background:conic-gradient(from 200deg,var(--ac),var(--ok),var(--wa),var(--ac));position:relative}
+.logo::after{content:"";position:absolute;inset:5px;border-radius:50%;background:var(--bg)}
+main{padding-top:22px}
+.stats{gap:12px;margin-bottom:18px}
+.st{background:var(--sf);border:0;box-shadow:var(--sh);border-radius:16px;padding:14px 16px;transition:transform .15s}
+button.st:hover{transform:translateY(-2px);background:var(--sf)}
+.st b{font-size:28px;font-weight:800;letter-spacing:-.03em}.st span{font-size:12px;font-weight:600}
+.ringc{display:flex;align-items:center;gap:12px}
+.ring{position:relative;width:62px;height:62px;flex:none;border-radius:50%;background:conic-gradient(var(--ok) calc(var(--p)*1%),var(--sf2) 0);display:grid;place-items:center}
+.ring::after{content:"";position:absolute;inset:7px;border-radius:50%;background:var(--sf)}
+.ring b{position:relative;z-index:1;font-size:13px}
+.bar{gap:10px}.bar label{font-weight:500}
+.seg{background:var(--sf2);border:0;border-radius:12px;padding:3px;gap:2px}
+.seg button{border-radius:9px;background:none;padding:6px 14px}.seg button.on{background:var(--sf);color:var(--tx);box-shadow:var(--sh)}
+.col{background:none;padding:0;min-height:160px}
+.col h2{font-size:13px;font-weight:700;color:var(--tx);padding:0 2px 10px;margin:0 0 10px;border-bottom:2px solid var(--sc,var(--ln))}
+.col h2 span:last-child{background:var(--sf2);border-radius:20px;padding:0 9px;color:var(--mu)}
+.col[data-col=yapilacak]{--sc:var(--mu)}.col[data-col=devam]{--sc:var(--ac)}.col[data-col=bitti]{--sc:var(--ok)}
+.col.over{outline:0;background:color-mix(in srgb,var(--ac) 8%,transparent);border-radius:16px}
+.card{border:0;border-radius:16px;box-shadow:var(--sh);padding:14px;border-left:0;position:relative;transition:transform .15s}
+.card::before{content:"";position:absolute;left:0;top:16px;bottom:16px;width:3px;border-radius:0 3px 3px 0;background:var(--c,var(--mu))}
+.card:hover{transform:translateY(-2px)}
+.t{font-size:14.5px;font-weight:700;letter-spacing:-.01em}
+.tag{background:var(--sf2);color:var(--mu);font-weight:600;border-radius:20px;padding:1px 9px}.tag:hover{color:var(--ac)}
+.prog{height:6px;border-radius:6px}.prog i{background:linear-gradient(90deg,var(--ac),var(--ok))}
+.sa{background:transparent;border-style:dashed}
+.act{opacity:.55;transition:opacity .15s}.card:hover .act,.card:focus-within .act{opacity:1}
+.act button{background:none;padding:3px 8px}.act button:hover{background:var(--sf2)}
+table{border:0;border-radius:16px;box-shadow:var(--sh)}th{font-weight:700}tr:hover td{background:var(--sf2)}
+.cd{border:0;border-radius:12px;box-shadow:var(--sh)}.cd.td{box-shadow:0 0 0 2px var(--ac)}
+.chip{background:var(--sf2);border-radius:6px;font-weight:600}
+.gt{border:0;border-radius:16px;box-shadow:var(--sh);padding:10px}.gb{background:var(--sf2);border-radius:8px}.bar2{border-radius:8px}
+dialog{border:0;border-radius:20px;box-shadow:0 30px 80px -20px rgba(0,0,0,.6)}
+dialog::backdrop{background:rgba(8,9,14,.6);backdrop-filter:blur(4px)}
+form h3{font-size:18px;font-weight:800;letter-spacing:-.02em}
+#toast{border-radius:12px;font-weight:600;box-shadow:var(--sh)}
+.empty{border:1.5px dashed var(--ln);border-radius:14px;color:var(--mu)}
+@media (prefers-reduced-motion:no-preference){.ring{transition:background .6s}.card,.st{will-change:transform}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media(max-width:600px){header{padding:10px 14px}main{padding:16px 14px 60px}.act{opacity:1}}
+/* ===== Kenar menü + detay paneli ===== */
+.app{display:grid;grid-template-columns:236px minmax(0,1fr);min-height:100vh}.wrap{min-width:0}
+#side{position:sticky;top:0;height:100vh;overflow-y:auto;padding:20px 12px;display:flex;flex-direction:column;gap:3px;background:var(--sf);border-right:1px solid var(--ln)}
+.brand{display:flex;gap:10px;align-items:center;font-weight:800;font-size:19px;letter-spacing:-.03em;padding:0 8px 14px}
+#side h5{margin:18px 8px 4px;font-size:12px;color:var(--mu);font-weight:700}
+.nv{display:flex;justify-content:space-between;align-items:center;width:100%;text-align:left;background:none;padding:8px 10px;color:var(--mu);border-radius:10px}
+.nv:hover{background:var(--sf2);color:var(--tx)}.nv.on{background:color-mix(in srgb,var(--ac) 15%,transparent);color:var(--ac)}
+.nv i{font-style:normal;font-size:11px;background:var(--sf2);border-radius:20px;padding:0 8px;color:var(--mu)}
+#panel{position:fixed;top:0;right:0;bottom:0;width:min(430px,100vw);background:var(--sf);box-shadow:-24px 0 60px -24px rgba(0,0,0,.55);transform:translateX(105%);transition:transform .25s ease,visibility 0s .25s;z-index:40;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px);visibility:hidden}
+#panel.open{transform:none;visibility:visible;transition-delay:0s}
+#scrim{position:fixed;inset:0;background:rgba(8,9,14,.45);opacity:0;pointer-events:none;transition:opacity .2s;z-index:35}#scrim.open{opacity:1;pointer-events:auto}
+.ph{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;padding:18px 20px;border-bottom:1px solid var(--ln)}.ph b{font-size:18px;font-weight:800;letter-spacing:-.02em}
+#pb{padding:16px 20px 30px;overflow-y:auto;flex:1}
+#pb dl{display:grid;grid-template-columns:110px 1fr;gap:8px 10px;margin:14px 0}#pb dt{color:var(--mu)}#pb dd{margin:0;font-weight:600}
+#pb h4{margin:20px 0 8px;font-size:13px}
+.cm{background:var(--sf2);border-radius:12px;padding:8px 12px;margin-bottom:6px}.cm small{display:block;color:var(--mu)}
+.lg{font-size:12px;color:var(--mu);padding:2px 0}
+.card{cursor:pointer}
+@media(min-width:861px){.app h1{display:none}header{justify-content:flex-end}}
+@media(max-width:860px){.app{display:block}#side{position:static;height:auto;flex-direction:row;overflow-x:auto;padding:8px 10px;border-right:0;border-bottom:1px solid var(--ln)}#side h5,.brand,#projs{display:none}.nv{width:auto;white-space:nowrap}}
+@media (prefers-reduced-motion:reduce){#panel,#scrim{transition:none}}
+/* ===== v4 ===== */
+.sel{width:auto;margin-right:7px;vertical-align:-2px}
+.chip.ghost{opacity:.5;border-left-style:dashed}
+#bulk{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translate(-50%,160%);display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--sf);border-radius:16px;padding:10px 14px;box-shadow:0 20px 50px -12px rgba(0,0,0,.55);z-index:30;max-width:96vw;transition:transform .25s ease}
+#bulk.show{transform:translate(-50%,0)}#bulk select{width:auto}
+#toast.u{pointer-events:auto}#toast{z-index:50}#toast button{margin-left:8px;padding:2px 10px}
+.pw{padding:14px;display:grid;gap:10px}#pl{max-height:50vh;overflow:auto;display:grid;gap:2px}
+#pal,#ask{width:min(520px,94vw);margin-top:12vh}
+#quick{flex:1 1 280px}
+@media (prefers-reduced-motion:reduce){#bulk{transition:none}}
+[hidden]{display:none!important}#login{max-width:420px;margin:10vh auto;padding:24px}#login label{display:grid;gap:8px;margin:18px 0}#login input{width:100%}#login-error{color:var(--red)}button:disabled,input:disabled,select:disabled{opacity:.5;cursor:not-allowed}#identity{font-size:12px}#fh{min-height:80px}header{flex-wrap:wrap}#toast{z-index:9999}
+#bulk{visibility:hidden;opacity:0;pointer-events:none}#bulk.show{visibility:visible;opacity:1;pointer-events:auto}
+</style>
+</head>
+<body>
+<section id="login"><h1>Kokpit · İşler</h1><p>ERP hesabınızla giriş yapın.</p><form id="login-form"><label>Kullanıcı adı (ERP e-postası)<input id="email" type="email" autocomplete="username" required></label><label>Parola<input id="password" type="password" autocomplete="current-password" required></label><button class="pri" id="signin">Giriş yap</button><p id="login-error" role="alert"></p></form><a href="../">ERP’ye dön</a></section><div class="app" hidden><aside id="side"><div class="brand"><span class="logo"></span>Kokpit</div>
+<h5>Görünüm</h5><button class="nv on" id="v-board">Pano</button><button class="nv" id="v-list">Liste</button><button class="nv" id="v-cal">Takvim</button><button class="nv" id="v-gantt">Gantt</button>
+<h5>İşlerim</h5><button class="nv on" data-role="">Tüm işler</button><button class="nv" data-role="me">Bana atananlar</button><button class="nv" data-role="help">Yardımcı olduklarım</button><button class="nv" data-role="mine">Oluşturduklarım</button>
+<h5>Kayıtlı filtreler</h5><div id="savedf"></div><button class="nv" id="savef">＋ Filtreyi kaydet</button>
+<h5>Projeler</h5><div id="projs"></div></aside><div class="wrap">
+<header>
+  <h1><span class="logo"></span>Kokpit<small>İşler</small></h1>
+  <span id="identity"></span><a href="../">ERP</a><button id="refresh">Yenile</button><button id="logout">Çıkış</button>
+  <button id="theme">Tema</button><button id="export">JSON indir</button><button id="csv">Excel (CSV)</button><button id="import">İçe aktar</button>
+  <button id="clearDone">Tamamlananları temizle</button><button class="pri" id="new">Yeni iş</button>
+  <input type="file" id="file" accept=".json" hidden>
+</header>
+<main>
+  <div class="stats" id="stats"></div>
+  <div class="bar"><input id="quick" placeholder="Hızlı ekle: Teklif hazırla @ayşe #satış !y yarın  (Enter)"><small class="lg">N yeni iş · / ara · 1-4 görünüm · Ctrl+K komutlar</small></div>
+  <div class="bar">
+    <input type="search" id="q" placeholder="İş, etiket veya kişi ara...">
+    <select id="role"><option value="">Tüm işler</option><option value="me">Bana atananlar</option><option value="help">Yardımcı olduklarım</option><option value="mine">Oluşturduklarım</option></select>
+    <select id="fproj"></select>
+    <select id="fp"><option value="">Tüm öncelikler</option><option value="yuksek">Yüksek</option><option value="orta">Orta</option><option value="dusuk">Düşük</option></select>
+    <select id="sort"><option value="due">Bitiş tarihi</option><option value="pri">Öncelik</option><option value="new">En yeni</option><option value="man">Manuel sıra</option></select>
+
+  </div>
+  <div class="bar">
+    <label><input type="checkbox" id="a-late"> Otomasyon: geciken işi "Yüksek" yap</label>
+    <label><input type="checkbox" id="a-done"> Otomasyon: bitince oluşturana bildir</label>
+  </div>
+  <div id="view"></div>
+</main></div></div>
+<aside id="panel" aria-label="İş detayı"><div class="ph"><b id="pt"></b><button id="pclose" aria-label="Kapat">✕</button></div><div id="pb"></div></aside><div id="scrim"></div>
+
+<dialog id="dlg"><form id="f" method="dialog">
+  <h3 id="dt">Yeni iş</h3>
+  <label class="f">Başlık<input id="ft" required maxlength="120"></label>
+  <label class="f">Açıklama<textarea id="fd" rows="2"></textarea></label>
+  <div class="row"><label class="f">Sorumlu<select id="fw"></select></label><label class="f">Yardımcılar<select id="fh" multiple size="3"></select></label></div>
+  <div class="row"><label class="f">Başlangıç<input type="date" id="fst"></label><label class="f">Bitiş<input type="date" id="fdue"></label></div>
+  <div class="row"><label class="f">Öncelik<select id="fpri"><option value="yuksek">Yüksek</option><option value="orta" selected>Orta</option><option value="dusuk">Düşük</option></select></label>
+  <label class="f">Durum<select id="fs"><option value="yapilacak">Yapılacak</option><option value="devam">Devam ediyor</option><option value="bitti">Tamamlandı</option></select></label></div>
+  <div class="row"><label class="f">Proje<input id="fpr"></label><label class="f">Etiketler (virgülle)<input id="ftg"></label></div>
+  <label class="f">Tekrar<select id="frec"><option value="">Tekrarlamaz</option><option value="gun">Her gün</option><option value="hafta">Her hafta</option><option value="ay">Her ay</option></select></label>
+  <div class="fb"><button type="button" id="cancel">Vazgeç</button><button class="pri" type="submit">Kaydet</button></div>
+</form></dialog>
+<div id="bulk"><b id="bn"></b><select id="bst"><option value="">Duruma taşı…</option><option value="yapilacak">Yapılacak</option><option value="devam">Devam ediyor</option><option value="bitti">Tamamlandı</option></select><select id="bpr"><option value="">Öncelik…</option><option value="yuksek">Yüksek</option><option value="orta">Orta</option><option value="dusuk">Düşük</option></select><select id="bwho"><option value="">Sorumlu ata…</option></select><button id="bdel" class="dng">Sil</button><button id="bclr">Seçimi kaldır</button></div>
+<dialog id="pal"><div class="pw"><input id="pi" placeholder="Komut veya iş ara…" autocomplete="off"><div id="pl"></div></div></dialog>
+<dialog id="ask"><div class="pw"><b id="al"></b><input id="ai"><div class="fb"><button id="acn">Vazgeç</button><button class="pri" id="aok">Tamam</button></div></div></dialog>
+<div id="toast"></div>
+
+<script src="../task-merkezi-v2/js/runtime-config.js"></script><script type="module" src="app.js"></script></body></html>
