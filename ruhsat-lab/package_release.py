@@ -26,7 +26,8 @@ def main():
         if path.suffix.lower() in {'.jpg','.jpeg','.png','.webp','.heic','.heif','.pdf','.sqlite3','.db','.onnx','.zip'} and name!='ruhsat-lab/web/sample.png':
             raise SystemExit('Unexpected binary document in Git; packaging refused.')
         files[name]=(ROOT/path).read_bytes()
-    manifest={'release':'0.3.0','git_commit':revision,'files':{k:hashlib.sha256(v).hexdigest() for k,v in files.items()},
+    release=json.loads(files['ruhsat-lab/deploy/openapi.json'])['info']['version']
+    manifest={'release':release,'git_commit':revision,'files':{k:hashlib.sha256(v).hexdigest() for k,v in files.items()},
               'models_included':False,'real_documents_included':False,'trained_model':False,
               'erp_note':'index.html and ruhsat-erp.js are integration references; full ERP assets remain in the Git repository.'}
     output.parent.mkdir(parents=True,exist_ok=True)
