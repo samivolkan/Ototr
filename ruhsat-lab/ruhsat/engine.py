@@ -239,7 +239,9 @@ class OCRService:
         if not lines:
             warnings_out.append("Okunabilir metin bulunamadı.")
         output = io.BytesIO()
-        image.save(output, format="JPEG", quality=90)
+        # The browser uses this exact image for field crops. Lossy JPEG here
+        # can erase small punctuation before the second OCR pass.
+        image.save(output, format="PNG")
         fields, seller_suggestion = partition_fields(extracted["fields"])
         return {"schema_version": "1.1", "mode": mode, "preprocessing": preprocessing,
                 "elapsed_seconds": round(time.perf_counter() - started, 2),
@@ -247,7 +249,7 @@ class OCRService:
                 "document_recognized": extracted["document_recognized"], "anchor_count": extracted["anchor_count"],
                 "image": {"width": image.width, "height": image.height, "original": original,
                           "rotation": (rotation + auto_angle) % 360, "perspective_corrected": rectified,
-                          "preview": "data:image/jpeg;base64," + base64.b64encode(output.getvalue()).decode("ascii")},
+                          "preview": "data:image/png;base64," + base64.b64encode(output.getvalue()).decode("ascii")},
                 "quality": quality, "warnings": warnings_out, "fields": fields, "lines": lines,
                 "summary": {"read": sum(f["value"] is not None for f in fields),
                             "review": sum(f["status"] == "review" for f in fields),

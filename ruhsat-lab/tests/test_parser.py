@@ -137,7 +137,7 @@ def test_unrelated_captions_are_not_vehicle_values():
 
 def test_truncated_category_is_flagged_for_review():
     value, issues = validate(BY_KEY["vehicle_category"], "OTOMOBIL (AF")
-    assert value == "OTOMOBIL (AF" and issues
+    assert value == "OTOMOBİL (AF" and issues
 
 
 def test_skewed_overlapping_boxes_and_centered_values():
@@ -159,7 +159,7 @@ def test_fuzzy_caption_never_extends_past_text():
 
 def test_wrapped_category_with_skew_and_overlapping_boxes():
     lines=[line('(D.5) CİNSİ',x=233,y=399,w=136,h=45,idx=1),line('OTOMOBIL (AB',x=337,y=420,w=219,h=60,idx=2),line('HECBEK)',x=228,y=453,w=128,h=38,idx=3),line('(R) RENGI',x=593,y=422,w=128,h=45,idx=4),line('(P.5) MOTOR NO',x=234,y=479,w=191,h=47,idx=5)]
-    assert field(lines,'vehicle_category')['value']=='OTOMOBIL (AB HECBEK)'
+    assert field(lines,'vehicle_category')['value']=='OTOMOBİL (AB HEÇBEK)'
 
 
 def test_separate_serial_number_marker_is_not_an_extra_letter():
@@ -170,3 +170,34 @@ def test_separate_serial_number_marker_is_not_an_extra_letter():
 def test_short_caption_with_field_code_keeps_cell_left_edge():
     lines=[line('(D.2) TİPİ',x=57,y=615,w=116,h=42,idx=1),line('RFB',x=57,y=648,w=84,h=45,idx=2)]
     assert field(lines,'type')['value']=='RFB'
+
+
+def test_only_known_vehicle_terms_receive_turkish_spelling():
+    from ruhsat.parser import NORMALIZED_NOTE
+    value, issues = validate(BY_KEY['usage_purpose'], 'YOLCU NAKLI - HUSUSI')
+    assert value == 'YOLCU NAKLİ - HUSUSİ' and NORMALIZED_NOTE in issues
+    value, issues = validate(BY_KEY['vehicle_category'], 'OTOMOBIL (AB HECBEK)')
+    assert value == 'OTOMOBİL (AB HEÇBEK)' and NORMALIZED_NOTE in issues
+    assert validate(BY_KEY['usage_purpose'], 'YOLCU NAKLİ - HUSUSİ')[1] == []
+    for key in ['owner_name','owner_surname','brand','kind','type']:
+        assert validate(BY_KEY[key], 'HUSUSI')[0] == 'HUSUSI'
+    assert validate(BY_KEY['vin'], 'VF1TEST00000000000')[0] == 'VF1TEST00000000000'
+    assert validate(BY_KEY['vehicle_category'], 'OTOMOBİL (AB BİLİNMEYEN)')[0] == 'OTOMOBİL (AB BİLİNMEYEN)'
+
+
+def test_normalized_field_retains_source_and_requires_review():
+    result = field([line('KULLANIM AMACI: YOLCU NAKLI - HUSUSI')], 'usage_purpose')
+    assert result['value'] == 'YOLCU NAKLİ - HUSUSİ'
+    assert result['raw_value'] == 'YOLCU NAKLI - HUSUSI'
+    assert result['needs_review'] and result['issues']
+
+
+def test_date_cannot_be_a_vehicle_type():
+    assert validate(BY_KEY['type'], '13/07/2023')[0] is None
+    assert validate(BY_KEY['type'], '123')[0] == '123'
+
+
+def test_only_exact_known_body_description_can_complete_punctuation():
+    assert validate(BY_KEY['vehicle_category'], 'OTOMOBIL (AB HECBEK')[0] == 'OTOMOBİL (AB HEÇBEK)'
+    assert validate(BY_KEY['vehicle_category'], 'OTOMOBIL (AB HECBEKI')[0] == 'OTOMOBİL (AB HECBEKI'
+    assert validate(BY_KEY['usage_purpose'], 'YOLCU NAKLI-HUSUSI')[0] == 'YOLCU NAKLİ - HUSUSİ'

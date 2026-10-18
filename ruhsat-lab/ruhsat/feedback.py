@@ -26,7 +26,7 @@ class Feedback(BaseModel):
     request_id: UUID
     mode: Literal["fast", "detailed"]
     preprocessing: Literal["standard", "contrast"]
-    engine_version: Literal["0.2.0", "0.3.0"]
+    engine_version: Literal["0.2.0", "0.3.0", "0.3.1"]
     condition: Literal["unknown", "clear", "blur", "glare", "skew", "small", "mixed"] = "unknown"
     synthetic: bool = Field(strict=True)
     fields: list[Outcome] = Field(min_length=1, max_length=21)

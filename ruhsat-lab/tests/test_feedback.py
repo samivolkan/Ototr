@@ -10,6 +10,12 @@ from ruhsat.feedback import Feedback, FeedbackStore
 HEADERS={'X-OTOTR-Client':'ruhsat-lab'}
 
 
+def test_patch_release_keeps_private_feedback_compatible():
+    data=payload();data['engine_version']='0.3.1';data['condition']='skew'
+    result=Feedback.model_validate(data)
+    assert result.engine_version=='0.3.1' and result.condition=='skew'
+
+
 def payload(**extra):
     return dict(request_id=str(uuid4()),mode='fast',preprocessing='standard',engine_version='0.2.0',synthetic=True,
                 fields=[dict(key='plate',corrected=True,originally_missing=False,confidence=.8)],**extra)

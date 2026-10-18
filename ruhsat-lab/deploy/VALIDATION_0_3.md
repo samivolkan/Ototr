@@ -50,3 +50,18 @@ Yerel `127.0.0.1:8769` ekranında kurgusal örnek gerçek OCR ile okundu; 17 se�
 Model ağırlıkları eğitilmedi. Veri klasöründe iki fotoğraf bulunması ve doğrulanmış etiket dosyasının olmaması, eğitim ve bağımsız genelleme ölçümünün henüz yapılmadığı anlamına gelir. Eğitim/değerlendirme biçimi, insan kontrolü, aynı belgenin bölümler arasında sızmasını engelleyen kontroller ve karşılaştırma aracı hazırdır.
 
 Kalıcı sunucu, Linux container, üretim oto-tr.com entegrasyonu ve bilgisayar kapalıyken erişim bu sürümde kurulmadı/test edilmedi. GitHub Pages main yayını korunmuştur; 0.3 ayrı geliştirme dalı ve teslim ZIP'i üzerinden incelenir. Mevcut ERP aktarımının birim regresyonları geçti; bu turda yeni canlı iş emri oluşturulmadı.
+
+
+## 0.3.1 — gerçek belge ve yeniden okuma kabulü (19.10.2026)
+
+Renault geliştirme belgesi yeni servisle tekrar okundu: seçili 17 araç alanının 17'si fotoğraftan kontrol edilen değerlerle eşleşti. Bu sonuç, tek geliştirme belgesine aittir; bağımsız test doğruluğu değildir. Tam okuma 34.79 saniye sürdü.
+
+- Cins: iki satır tek tam aday olarak birleştirildi. Dört geçişin üçü aynı doğru adayı destekledi; eksik/bozuk devam satırı ayrı bir değiştirme adayı olmadı.
+- Kullanım amacı, tipi ve şasi: dört geçişin tamamı her alan için aynı doğru adayı destekledi.
+- Komşu model yılı başlığını içeren elle seçilmiş tipi bölgesinde yalnız hedef değer önerildi; tarih ve komşu başlık önerilmedi.
+- Kurgusal referans belgenin 23 beklenen değeri tam eşleşti.
+- 93 Python ve 24 Node testi geçti. Yeni testler Türkçe terim sınırlarını, ham metnin korunmasını, çok satırlı/satır içi parçaları, eksik parantezi, komşu tarih ve yıl hücrelerini, anonim geri bildirim sürüm uyumluluğunu kapsar.
+
+Türkçe yazım ve noktalama düzenlemesi yalnız sınırlı ruhsat terimleri sözlüğüne uygulanır. Örneğin açık parantez, ancak gövde kodu ve tam bilinen açıklaması birlikte okunmuşsa tamamlanır. Eksik kelimeler ve bilinmeyen açıklamalar tamamlanmaz. Standartlaştırılan alanlar işaretlenir, ham OCR kanıtı korunur ve kullanıcı onayı gerekir. Kimlikler ve kişi adları bu kurala dahil değildir.
+
+Tarayıcıda alan yeniden okuması için kullanılan hazırlanmış görsel artık kayıpsız PNG'dir. Tam okuma/yeniden okuma fotoğrafları sunucuda saklanmaz. Gerçek belgeler, alan değerleri ve yerel tanılama dosyaları Git/teslim paketine eklenmez. Model ağırlıkları bu sürümde eğitilmedi.

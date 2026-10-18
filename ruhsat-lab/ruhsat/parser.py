@@ -60,6 +60,28 @@ SPECS = [
     Spec("tc_or_tax_no", "T.C. / vergi numarası", ("T.C. KIMLIK NO", "TC KIMLIK NO", "T C KIMLIK NO", "VERGI NO", "KIMLIK NO"), ("Y.4",), "identity", "Sahip bilgileri"),
 ]
 BY_KEY = {s.key: s for s in SPECS}
+NORMALIZED_NOTE = "Bilinen ruhsat terimlerinin Türkçe yazımı ve biçimi standartlaştırıldı; fotoğrafla kontrol edin."
+
+
+def canonical_terms(key: str, value: str) -> str:
+    # A closed vocabulary, scoped to vehicle descriptions only. Never infer
+    # accents in names, brands, model codes or identifiers.
+    terms = {
+        "vehicle_category": {"OTOMOBIL": "OTOMOBİL", "MOTOSIKLET": "MOTOSİKLET",
+                             "HECBEK": "HEÇBEK", "COK": "ÇOK", "AMACLI": "AMAÇLI",
+                             "STEYSIN": "STEYŞİN"},
+        "usage_purpose": {"NAKLI": "NAKLİ", "HUSUSI": "HUSUSİ", "TICARI": "TİCARİ",
+                          "RESMI": "RESMİ", "TASIMA": "TAŞIMA", "OZEL": "ÖZEL",
+                          "YUK": "YÜK", "TAKSI": "TAKSİ"},
+    }.get(key, {})
+    value = re.sub(r"[^\W\d_]+", lambda m: terms.get(fold(m[0]), m[0]), value)
+    # Complete punctuation only after an exact, known body-code/description
+    # pair has been read. Never fill in missing words or unknown body codes.
+    if key == "vehicle_category" and re.fullmatch(r"OTOMOBIL\s*\(\s*(?:AB HECBEK|AC STEYSIN|AF COK AMACLI|AA SEDAN)", fold(value)):
+        value += ")"
+    if key == "usage_purpose":
+        value = re.sub(r"\s*-\s*", " - ", value)
+    return value
 # These labels are boundaries only. Their values are never extracted as fields.
 STOP_LABELS = ("ADRESI", "ADRES", "DIGER BILGILER", "HAK VE MENFAAT", "TIP ONAY NO", "TESCIL SIRA NO", "VERILDIGI IL", "NOTER", "ONAYLAYAN", "GECERLILIK SURESI")
 
@@ -142,6 +164,8 @@ def validate(spec: Spec, raw: str) -> tuple[str | None, list[str]]:
     issues: list[str] = []
     if looks_like_address(value):
         return None, ["Adres benzeri metin alan önerisinden çıkarıldı."]
+    if spec.key == "type" and re.fullmatch(r"\d{1,2}[./-]\d{1,2}[./-]\d{4}", value):
+        return None, ["Tipi alanına komşu hücredeki tarih önerilmedi."]
     if spec.key in ("brand", "kind", "color", "vehicle_category") and not re.search(r"[A-Z]", folded):
         return None, ["Metin alanı yerine sayısal bir satır okunmuş olabilir."]
     if spec.key == "vehicle_class" and not re.fullmatch(r"[A-Z]{1,2}\d[A-Z0-9/\-]{0,8}", folded):
@@ -205,11 +229,13 @@ def validate(spec: Spec, raw: str) -> tuple[str | None, list[str]]:
     # Only canonicalize known category names, never identifiers or personal names.
     canonical = {
         "fuel_type": {"BENZIN": "BENZİN", "BENZINLI": "BENZİNLİ", "DIZEL": "DİZEL", "ELEKTRIK": "ELEKTRİK", "BENZIN/LPG": "BENZİN/LPG"},
-        "vehicle_category": {"OTOMOBIL": "OTOMOBİL", "MOTOSIKLET": "MOTOSİKLET"},
-        "usage_purpose": {"HUSUSI": "HUSUSİ", "TICARI": "TİCARİ", "RESMI": "RESMİ"},
     }
     if spec.key in canonical:
         value = canonical[spec.key].get(fold(value), value)
+    standardized = canonical_terms(spec.key, value)
+    if standardized != value:
+        issues.append(NORMALIZED_NOTE)
+        value = standardized
     if spec.kind == "text" and value.count("(") != value.count(")"):
         issues.append("Metin eksik okunmuş olabilir; parantezli açıklamayı fotoğrafla karşılaştırın.")
     return value, issues
@@ -296,33 +322,44 @@ def extract(lines: list[dict], image_width: int, image_height: int) -> dict:
                 continue
             value, issues = validate(BY_KEY[key], line["text"])
             if value:
-                options.append({"raw": line["text"], "score": min(line["score"], anchor["line"]["score"]), "ids": [line["id"]], "method": "right" if same_row else "below", "priority": priority - (0.25 if issues else 0)})
+                options.append({"raw": line["text"], "score": min(line["score"], anchor["line"]["score"]), "ids": [line["id"]], "method": "right" if same_row else "below", "priority": priority - (0.25 if any(i != NORMALIZED_NOTE for i in issues) else 0)})
         if options:
             candidates[key].extend(options if key == "vehicle_category" else [max(options, key=lambda c: c["priority"])])
 
-    # A wrapped parenthesis description belongs to the same cell only when
-    # the next line is close, closes the bracket and precedes the next label.
+    # Join a wrapped description only within its column and before the next
+    # field caption. Continuation boxes are not independent alternative values.
+    continuations = set()
     for candidate in candidates["vehicle_category"]:
         if candidate["raw"].count("(") <= candidate["raw"].count(")"):
             continue
-        base = line_map[candidate["ids"][-1]]
-        bx0, by0, bx1, by1 = rect(base)
-        bcy = (by0+by1)/2
-        tails = []
-        for line in lines:
-            x0,y0,x1,y1=rect(line); cy=(y0+y1)/2
-            if (line["id"] in private_line_ids or find_labels(line["text"]) or ")" not in line["text"]
-                    or not bcy < cy < bcy+(by1-by0)*1.2 or x0 > bx1 or x1 < bx0-(by1-by0)*2):
-                continue
-            if any(bcy < (a["rect"][1]+a["rect"][3])/2 < cy and abs(a["rect"][0]-x0)<image_width*.1 for a in anchors):
-                continue
-            tails.append(line)
-        if len(tails)==1:
-            candidate["raw"] += " " + tails[0]["text"]
-            candidate["ids"].append(tails[0]["id"])
-            candidate["score"] = min(candidate["score"], tails[0]["score"])
-            if candidate["method"] != "inline" and not validate(BY_KEY["vehicle_category"], candidate["raw"])[1]:
-                candidate["priority"] = min(.94, candidate["priority"] + .25)
+        for _ in range(3):
+            base = line_map[candidate["ids"][-1]]
+            bx0, by0, bx1, by1 = rect(base)
+            bcy, bh = (by0+by1)/2, max(by1-by0, 8)
+            tails = []
+            for line in lines:
+                x0,y0,x1,y1 = rect(line); cy = (y0+y1)/2
+                if (line["id"] in private_line_ids or line["id"] in candidate["ids"]
+                        or find_labels(line["text"]) or not bcy < cy < bcy+bh*1.7
+                        or x0 > bx1 or x1 < bx0-bh*2):
+                    continue
+                if any(bcy < (a["rect"][1]+a["rect"][3])/2 < cy
+                       and abs(a["rect"][0]-x0) < image_width*.1 for a in anchors):
+                    continue
+                tails.append(line)
+            if not tails:
+                break
+            tail = min(tails, key=lambda l: rect(l)[1])
+            candidate["raw"] += " " + tail["text"]
+            candidate["ids"].append(tail["id"])
+            candidate["score"] = min(candidate["score"], tail["score"])
+            if candidate["raw"].count("(") == candidate["raw"].count(")"):
+                continuations.update(candidate["ids"][1:])
+                if candidate["method"] != "inline" and not any(i != NORMALIZED_NOTE for i in validate(BY_KEY["vehicle_category"], candidate["raw"])[1]):
+                    candidate["priority"] = min(.94, candidate["priority"] + .25)
+                break
+    candidates["vehicle_category"] = [c for c in candidates["vehicle_category"]
+                                      if not set(c["ids"]).issubset(continuations)]
 
     # Serial letters and digits can be separate OCR boxes on the same printed
     # baseline. Require the explicit Seri caption; never scan identity cells.
@@ -365,7 +402,7 @@ def extract(lines: list[dict], image_width: int, image_height: int) -> dict:
             if spec.kind in ("year", "date", "number", "integer", "identity") and not re.search(r"\d", value):
                 continue
             confidence = min(float(candidate["score"]), candidate["priority"])
-            if issues:
+            if any(issue != NORMALIZED_NOTE for issue in issues):
                 confidence = min(confidence, 0.65)
             normalized.append({**candidate, "value": value, "issues": issues, "confidence": round(confidence, 4)})
         normalized.sort(key=lambda c: c["confidence"], reverse=True)

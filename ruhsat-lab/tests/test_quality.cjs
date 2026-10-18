@@ -28,3 +28,9 @@ test('old server keeps its original strict feedback schema',()=>{
   const p=policy.feedback({request_id:'uuid',engine_version:'0.2.0',mode:'fast'},[{key:'plate',value:'TEST',confidence:.9}],{},new Set(['plate']),true,'glare');
   assert.equal('condition' in p,false);
 });
+
+test('0.3.1 accepts anonymous photo-condition feedback',()=>{
+  const p=policy.feedback({request_id:'uuid',engine_version:'0.3.1',mode:'detailed'},[{key:'plate',value:'PRIVATE',confidence:.9}],{},new Set(['plate']),true,'skew');
+  assert.equal(p.engine_version,'0.3.1');assert.equal(p.condition,'skew');
+  assert(!JSON.stringify(p).includes('PRIVATE'));
+});

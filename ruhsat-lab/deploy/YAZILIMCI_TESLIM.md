@@ -1,8 +1,10 @@
-# Ruhsat OCR 0.3 yazılımcı teslim kılavuzu
+# Ruhsat OCR 0.3.1 yazılımcı teslim kılavuzu
 
 Bu sürüm, GitHub Pages ERP'de ruhsatı okuyup kullanıcı kontrolünden sonra hızlı iş emrini dolduran prototipin geliştirme paketidir. Yeni alan eşlemesi, bölgesel yeniden okuma, koşul bazında anonim geri bildirim ve karşılaştırmalı değerlendirme aracı içerir. Mevcut model ağırlıkları kullanılmaktadır; ruhsatlarla yeniden eğitilmiş model değildir.
 
-Kalıcı sunucu geçişi beklemededir. 0.3 geliştirme dalı mevcut Pages yayınına veya oto-tr.com hostingine uygulanmamıştır. Geliştirme ekranı yerelde çalışır. Ayrı sunucu kurulmadığı sürece bilgisayar kapalıyken OCR çalışmaz.
+Kalıcı sunucu geçişi beklemededir. GitHub Pages ERP prototipi mevcut bilgisayardaki OCR servisine bağlıdır. Ayrı sunucu kurulmadığı sürece bilgisayar kapalıyken OCR çalışmaz. oto-tr.com hostingi bu prototip yayını kapsamında değiştirilmez.
+
+0.3.1, cins ve kullanım metnindeki bilinen terimleri Türkçe yazıma dönüştürür; ham OCR metnini korur ve değişen alanı kullanıcı kontrolüne bırakır. Marka, model kodları, kişi adları ve kimlikler bu sözlüğe dahil değildir. Yeniden okumada çok satırlı cins tek adaydır; komşu etiketli hücreler ve tipi alanına karışan tarihler elenir. Etiketsiz kırpım seçilen değerin çevresine ortalanmalıdır; sonuç her zaman fotoğrafla onaylanır.
 
 ## Kurulum ve çalıştırma
 
@@ -38,7 +40,7 @@ ERP uygulamasının bütünü Git deposundadır; OCR ZIP'i bağımsız servis ve
 
 ## API sözleşmesi
 
-Çalışan servisin OpenAPI tanımı `/api/openapi.json`, teslim anındaki kopyası `openapi.json` dosyasıdır. Tam okuma yanıt şeması `1.1`, motor sürümü `0.3.0`; mevcut `analysed.Data` alanları korunmuştur.
+Çalışan servisin OpenAPI tanımı `/api/openapi.json`, teslim anındaki kopyası `openapi.json` dosyasıdır. Tam okuma yanıt şeması `1.1`, motor sürümü `0.3.1`; mevcut `analysed.Data` alanları korunmuştur.
 
 | Uç | Girdi ve sonuç |
 |---|---|
