@@ -1,5 +1,15 @@
 # Hedef: ruhsattan mevcut OTOTR ekspertiz iş emri oluşturma
 
+## Güncel hedef: GitHub Pages ERP
+
+Kullanıcının son seçimi `https://samivolkan.github.io/Ototr/index.html#ruhsat` üzerindeki ERP'dir. `ruhsat-erp.js` kontrol edilen araç alanlarını buradaki hızlı iş emrine taşır. Paket seçimi ve mevcut kayıt düğmesi kullanıcıda kalır. Sahip önerileri ERP mesajına veya kalıcı kayda dahil edilmez. Renk, sınıf, tarihler, hacim, güç ve belge seri no gibi ek araç alanları `ruhsatVehicle` içinde saklanır; mevcut Supabase akışında araç metadata snapshot'ı kullanılır, şema değişikliği yapılmaz.
+
+Bulut oturumu kullanılamıyorsa mevcut yerel kayıt yolu kullanılır. Yeni kayıtlar `storageScope: browser-local` ile işaretlenir; liste yenilemesi ve sonraki bulut senkronu bu kayıtları silmez. Ekran bunların yalnız bu tarayıcıda olduğunu, buluta/mobile gönderilmediğini belirtir. Bu kayıtlar otomatik olarak buluta yüklenmez. Tarayıcı verileri silinirse yerel kayıtlar kaybolur.
+
+OCR motoru halen kullanıcının bilgisayarındaki 0.2.0 servisine geçici HTTPS tüneli üzerinden bağlıdır. Bilgisayar kapalıyken okuma çalışmaz. Kalıcı sunucu kurulumu ertelenmiştir. Açık test bağlantısında geri bildirim yönetimi kapalı, eşik ve görüntü iyileştirme ayarları kullanılabilir; yerel kalite panelinde anonim alan sonuçları kaydedilebilir. Eşik değişikliği model eğitimi değildir.
+
+Aşağıdaki bölüm önceki, yalnız okunarak yapılan üretim uygulaması incelemesidir; bu sürümde `oto-tr.com` değiştirilmemiştir.
+
 18 Ekim 2026 tarihinde yetkili kullanıcı oturumunda `https://oto-tr.com/Expertiz/Create` ekranı yalnız okunarak incelendi. Canlı iş emri oluşturulmadı; hosting, uygulama dosyaları ve veritabanı değiştirilmedi. GitHub Pages ERP prototipi ile bu canlı uygulama farklı sistemlerdir. Prototipteki aktarım, canlı uygulamada entegrasyon yapılmış olduğu anlamına gelmez.
 
 ## Kullanıcı akışı

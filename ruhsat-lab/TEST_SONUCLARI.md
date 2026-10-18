@@ -2,6 +2,18 @@
 
 Tarih: 18 Ekim 2026 (Europe/Istanbul). Windows, 16 GB RAM. OCR testlerinde CPU kullanıldı.
 
+## Güncel GitHub Pages kabul testi
+
+- Son otomatik koşular: 64 Python ve 21 Node.js testi başarılı (85 toplam). Çalıştırılabilir yedi inline JavaScript bloğu sözdizimi kontrolünden geçti.
+- Yayındaki ERP iframe'inde kurgusal belge gerçek OCR ile 24,41 saniyede okundu; Kokpit profilindeki 17 araç alanı beklenen değerlerle eşleşti. Bu tekil kurgusal ölçüm gerçek belge doğruluk oranı değildir.
+- 17 alan kontrol edilip hızlı iş emrine aktarıldı; Mini Ekspertiz seçildi ve `IE-2026-000844` oluşturuldu. Sayfa yenilendikten sonra kayıt listede kaldı; tam iş emri açıldığında temel alanlar ve 10 dolu ek ruhsat alanı korundu. Alıcı/satıcı adı ve kimlik alanları boştu; OCR sahip önerileri kayda aktarılmadı.
+- Mevcut Supabase yapılandırması bulunmadığından bu kabul testi tarayıcıdaki yerel kaydı kapsar; bulut veya mobil kayıt doğrulanmadı. Ekranda “Bu tarayıcıda kayıtlı · buluta gönderilmedi” açıklaması vardır.
+- Bulut dışındaki yeni kayıtların eski normalizasyon filtresinde silinmesi giderildi. Yeni `browser-local` kayıtları liste yenilemesinde ve sonraki bulut senkronunda korunur; önceki demo kayıtları yeniden eklenmez. Regresyon testi bu ayrımı ve yinelenen kimlik durumunu kapsar.
+- Taslağın ERP yeniden çizildiğinde kaybolması giderildi; açıkça Yeni İş Emri seçildiğinde taslak temizlenir. JavaScript sürüm parametreleri eski/yeni varlık karışmasını engeller.
+- HTTPS OCR servisi 0.2.0 olarak hazır. Kalıcı sunucuya taşınmadı; bilgisayar açık kalmalı. Açık testte geri bildirim yönetimi kapalıdır; yerel kalite panelinde anonim sonuç kaydı test edilmiştir. Eşik/kontrast ayarları model eğitimi anlamına gelmez.
+
+Aşağıdaki bölümler önceki sürümlerin tarihsel test kayıtlarıdır.
+
 ## Otomatik kontroller
 
 Son kontrol: `python -m pytest -q`: **44 test geçti**; Node dışa aktarım/alan ayarı testleri: **9 test geçti**, ERP aktarım sınırı ve ilk açılış sırası: **4 test geçti** (toplam 57). Paket bütünlüğü kontrolü: `pip check` başarılı. Python derleme ve JavaScript sözdizimi kontrolleri geçti.
