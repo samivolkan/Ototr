@@ -67,3 +67,18 @@ test('registration markup escapes document values',()=>{
   const html=extraMarkup({ruhsat_color:'"><img src=x onerror=alert(1)>'});
   assert(!html.includes('<img'));assert(html.includes('&lt;img'));
 });
+
+test('reviewed draft survives form refresh delay and explicit New Order clears it',()=>{
+  const vm=require('node:vm'),fs=require('node:fs');
+  const source=fs.readFileSync(require.resolve('../../index.html'),'utf8');
+  const start=source.indexOf('    function dealerPersistWorkOrderDraft(');
+  const end=source.indexOf('    function dealerRememberWorkOrderDraft(',start);
+  const storage=new Map();let now=100000;
+  const context={Date:{now:()=>now},sessionStorage:{setItem:(k,v)=>storage.set(k,v),getItem:k=>storage.get(k),removeItem:k=>storage.delete(k)},DEALER_WORKORDER_MODE_DRAFT_KEY:'test',dealerWorkOrderModeDraft:null,dealerPendingWorkOrderDraft:null};
+  vm.createContext(context);vm.runInContext(source.slice(start,end),context);
+  context.dealerPersistWorkOrderDraft({plate:'16TST123',ruhsat_color:'BEYAZ'});
+  now+=60000;
+  assert.equal(context.dealerStoredWorkOrderDraft().ruhsat_color,'BEYAZ');
+  context.dealerClearStoredWorkOrderDraft();assert.equal(context.dealerStoredWorkOrderDraft(),null);
+  assert.equal(storage.size,0);
+});

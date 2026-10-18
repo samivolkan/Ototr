@@ -10937,7 +10937,7 @@
       dealerWorkOrderModeDraft={...draft,_savedAt:Date.now()};
       try{sessionStorage.setItem(DEALER_WORKORDER_MODE_DRAFT_KEY,JSON.stringify(dealerWorkOrderModeDraft));}catch(e){}
     }
-    function dealerStoredWorkOrderDraft(maxAgeMs=15000){
+    function dealerStoredWorkOrderDraft(maxAgeMs=30*60*1000){
       const fresh=draft=>draft&&Object.keys(draft).length&&Date.now()-(Number(draft._savedAt)||0)<=maxAgeMs;
       if(fresh(dealerPendingWorkOrderDraft)) return dealerPendingWorkOrderDraft;
       if(fresh(dealerWorkOrderModeDraft)) return dealerWorkOrderModeDraft;
@@ -12430,7 +12430,7 @@
         const viewWo=ui.viewingWorkOrderId&&workOrder?.id===ui.viewingWorkOrderId?workOrder:null;
         const selectedWo=editWo||viewWo;
         const formReadOnly=!!viewWo&&!editWo;
-        const modeDraft={};
+        const modeDraft=selectedWo?{}:(dealerStoredWorkOrderDraft()||{});
         const selectedPkg=selectedWo?.packageName?dealerPackageName(selectedWo.packageName):dealerPackageName(modeDraft.packageName||'');
         const selectedAddonNames=selectedWo?dealerAddonNamesFromValue(selectedWo.additionalServices):dealerAddonNamesFromValue(modeDraft.addons);
         const selectedGiftAddonNames=selectedWo?dealerAddonNamesFromValue(selectedWo.giftedAdditionalServices):dealerAddonNamesFromValue(modeDraft.addonGifts);
