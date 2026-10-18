@@ -4,7 +4,7 @@ Tarih: 18 Ekim 2026 (Europe/Istanbul). Windows, 16 GB RAM. OCR testlerinde CPU k
 
 ## Otomatik kontroller
 
-Son kontrol: `python -m pytest -q`: **44 test geçti**; Node dışa aktarım/alan ayarı testleri: **9 test geçti**, ERP aktarım sınırı: **2 test geçti** (toplam 55). Paket bütünlüğü kontrolü: `pip check` başarılı. Python derleme ve JavaScript sözdizimi kontrolleri geçti.
+Son kontrol: `python -m pytest -q`: **44 test geçti**; Node dışa aktarım/alan ayarı testleri: **9 test geçti**, ERP aktarım sınırı ve ilk açılış sırası: **4 test geçti** (toplam 57). Paket bütünlüğü kontrolü: `pip check` başarılı. Python derleme ve JavaScript sözdizimi kontrolleri geçti.
 
 ## ERP ve girişsiz test güncellemesi
 

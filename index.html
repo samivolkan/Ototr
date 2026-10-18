@@ -16139,7 +16139,7 @@
     }
     function route(id,options={}){
       id = id==='expertise-report' ? 'report-design' : id;
-      if(id!=='dealer' && isDealerStandaloneRoute()){
+      if(id!=='dealer' && id!=='ruhsat' && isDealerStandaloneRoute()){
         const dealerTab = dealerStandaloneRouteTab(id);
         if(dealerTab) saveDealerPortalState({tab:dealerTab});
         id = 'dealer';
