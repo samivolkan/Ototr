@@ -4,7 +4,16 @@ Tarih: 18 Ekim 2026 (Europe/Istanbul). Windows, 16 GB RAM. OCR testlerinde CPU k
 
 ## Otomatik kontroller
 
-`python -m pytest -q`: **25 test geçti**. Paket bütünlüğü kontrolü: `pip check` başarılı. Python derleme ve JavaScript sözdizimi kontrolleri geçti.
+Son kontrol: `python -m pytest -q`: **43 test geçti**; Node dışa aktarım/alan ayarı testleri: **9 test geçti** (toplam 52). Paket bütünlüğü kontrolü: `pip check` başarılı. Python derleme ve JavaScript sözdizimi kontrolleri geçti.
+
+## Korumalı web önizlemesi
+
+- Resmi cloudflared 2026.10.1 Windows x64 paketi SHA-256 ile doğrulandı; `--allowed-mail` ile tek yetkili e-posta yapılandırıldı.
+- Anonim GET `/`, `/api/health` ve `/assets/app.js` istekleri giriş ekranına 302 ile yönlendirildi. Anonim OCR POST isteği 401 ile reddedildi.
+- Web modu sunucusu yalnız 127.0.0.1:8766 dinliyor. Kurgusal belge, web origin/Host başlıklarıyla yerel bağlantı üzerinden gerçek modellerle 24.65 saniyede okundu; 21 araç alanı döndü, plaka ve şasi beklenen değerlerle eşleşti, sahip alanları `analysed.Data` içine girmedi.
+- Yanlış Host 400, yanlış origin 403; yanıt `Cache-Control: no-store`. Boş/geçersiz web origin yapılandırması ve web gizlilik açıklaması test edildi.
+- Giriş sonrası dış web adresindeki OCR akışı kullanıcının e-posta koduyla girişini bekler. Yukarıdaki yerel bağlantı testi, internet üzerinden uçtan uca OCR doğrulaması değildir.
+- WebBaslat/WebDurdur PowerShell sözdizimi doğrulandı. Başlatma hatasında kapatma akışı çalıştı; varsayılan 8765 uygulaması açık kaldı. Kalıcı sunucu veya uptime garantisi yoktur.
 
 Kapsanan durumlar: Türkçe etiketler, uzun/kısa etiket çakışması, sütun ayrımı, örtüşen OCR kutuları, tarih ve model yılı, eksik değerler, sıfır yolcu sayısı, tahmini VIN düzeltmesinin engellenmesi, model uyuşmazlığı, isimlerde Türkçe karakter farklarının korunması, adresin ayrı alana aktarılmaması, geçerli/geçersiz API parametreleri, dosya boyutu, bozuk veri, çapraz origin/Host reddi, eşzamanlı istek ve motor hazırlık durumu.
 

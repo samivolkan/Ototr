@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import os
 import threading
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -8,15 +9,17 @@ from typing import Literal
 from urllib.parse import urlparse
 
 from fastapi import FastAPI, HTTPException, Query, Request
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.concurrency import run_in_threadpool
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from ruhsat.engine import ImageInputError, OCRService
+from ruhsat.web_access import origin_allowed, preview_origin
 
 ROOT = Path(__file__).resolve().parent
 MAX_BYTES = 20 * 1024 * 1024
+PUBLIC_ORIGIN = preview_origin(os.environ.get("OTOTR_PREVIEW_ORIGIN", ""))
 service = OCRService()
 
 
@@ -29,15 +32,16 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="OTOTR Ruhsat Lab", version="0.1.0", lifespan=lifespan,
               docs_url=None, redoc_url=None, openapi_url="/api/openapi.json")
-app.add_middleware(TrustedHostMiddleware, allowed_hosts=["127.0.0.1", "localhost", "[::1]"])
+app.add_middleware(TrustedHostMiddleware, allowed_hosts=["127.0.0.1", "localhost", "[::1]"] +
+                   ([urlparse(PUBLIC_ORIGIN).hostname] if PUBLIC_ORIGIN else []))
 
 
 @app.middleware("http")
 async def privacy_headers(request: Request, call_next):
     if request.method == "POST":
         origin = request.headers.get("origin")
-        if origin and origin != str(request.base_url).rstrip("/"):
-            return JSONResponse({"detail": "Yalnız bu bilgisayardaki uygulamadan istek kabul edilir."}, status_code=403)
+        if not origin_allowed(origin, str(request.base_url), PUBLIC_ORIGIN):
+            return JSONResponse({"detail": "Yalnız uygulamanın kendi adresinden istek kabul edilir."}, status_code=403)
         if request.headers.get("x-ototr-client") != "ruhsat-lab":
             return JSONResponse({"detail": "X-OTOTR-Client: ruhsat-lab başlığı gerekli."}, status_code=403)
     response = await call_next(request)
@@ -52,7 +56,9 @@ async def privacy_headers(request: Request, call_next):
 @app.get("/api/health")
 def health():
     return {"service": "ototr-ruhsat-lab", "status": service.status, "error": service.error,
-            "local_only": True, "version": "0.1.0"}
+            "local_only": not bool(PUBLIC_ORIGIN), "version": "0.1.0",
+            "access_mode": "email_protected_preview" if PUBLIC_ORIGIN else "local",
+            "processing_location": "host_computer"}
 
 
 @app.post("/api/v1/ruhsat/oku", summary="Read image bytes locally; nothing is stored",
@@ -105,7 +111,14 @@ async def analyze(request: Request,
 
 @app.get("/")
 def home():
-    return FileResponse(ROOT / "web" / "index.html")
+    html = (ROOT / "web" / "index.html").read_text(encoding="utf-8")
+    if PUBLIC_ORIGIN:
+        html = html.replace("YEREL PROTOTİP", "WEB TESTİ")
+        html = html.replace("Bu bilgisayarda işlenir", "E-posta ile korunan erişim")
+        html = html.replace("Harici servise gönderilmez.",
+                            "HTTPS / Cloudflare üzerinden kendi OCR bilgisayarınıza iletilir.")
+        html = html.replace("Yerel işleme · Otomatik kayıt yok", "Bilgisayar açıkken erişilebilir · Otomatik kayıt yok")
+    return HTMLResponse(html)
 
 
 app.mount("/assets", StaticFiles(directory=ROOT / "web"), name="assets")

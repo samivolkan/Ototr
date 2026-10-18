@@ -77,3 +77,16 @@ def test_transient_seller_response_is_not_cacheable():
     assert response.status_code == 200
     assert response.headers["cache-control"] == "no-store"
     assert "owner_name" not in response.json()["analysed"]["Data"]
+
+
+def test_web_preview_discloses_transport_and_preserves_csrf():
+    origin = "https://example-test.trycloudflare.com"
+    with patch("app.PUBLIC_ORIGIN", origin):
+        home = client.get("/")
+        assert "HTTPS / Cloudflare" in home.text
+        assert "Harici servise gönderilmez." not in home.text
+        assert "WEB TESTİ" in home.text
+        assert client.get("/api/health").json()["local_only"] is False
+        with patch.object(service, "status", "ready"), patch.object(service, "analyze", return_value={"ok": True}):
+            assert client.post("/api/v1/ruhsat/oku", content=b"image", headers={**HEADERS, "Origin": origin}).status_code == 200
+            assert client.post("/api/v1/ruhsat/oku", content=b"image", headers={**HEADERS, "Origin": origin + ".evil.example"}).status_code == 403

@@ -6,7 +6,7 @@ Windows üzerinde yerel ruhsat OCR prototipi. Fotoğraf → gerçek OCR → etik
 
 Bu klasör `samivolkan/Ototr` içindeki bağımsız ruhsat OCR prototipidir. Ana uygulamaya henüz bağlı değildir. Kaynak kod, kurgusal örnek ve testler bulunur; gerçek belgeler, kişisel OCR sonuçları, yerel günlükler, sanal ortam ve model ağırlıkları depoya alınmaz.
 
-**GitHub Pages bu uygulamanın Python/ONNX motorunu çalıştırmaz.** Ayrı dala push etmek mevcut canlı siteyi değiştirmez ve çalışan bir OCR adresi üretmez. Yerelde aşağıdaki kurulumla çalıştırılabilir. Canlı sürüm için Python 3.12 destekli bir sunucu, yerel model kurulumu, HTTPS ve erişim kontrolü gerekir. Mevcut API yalnız localhost erişimini kabul eder; canlı sunucuya doğrudan kopyalanıp internete açılmaya hazır değildir.
+**GitHub Pages bu uygulamanın Python/ONNX motorunu çalıştırmaz.** Ayrı dala push etmek mevcut canlı siteyi değiştirmez ve çalışan bir OCR adresi üretmez. Yerelde aşağıdaki kurulumla çalıştırılabilir. E-posta ile korunan geçici web erişimi için aşağıdaki `WebBaslat.ps1` bölümü eklenmiştir. Kalıcı canlı sürüm için Python 3.12 destekli bir sunucu, model kurulumu, HTTPS ve erişim kontrolü gerekir. Varsayılan API yalnız localhost erişimini kabul eder; doğrudan internete açılmamalıdır.
 
 ## Açma
 
@@ -55,6 +55,8 @@ Oto-TR entegrasyonu bu ayrımı korumalı: `seller_suggestion` yalnız geçici f
 
 ## Gizlilik
 
+Bu bölüm varsayılan `localhost:8765` kullanımı içindir. Aşağıdaki korunan web testi açılırsa fotoğraf ve yanıt HTTPS üzerinden Cloudflare ağına da geçer; OCR yine kendi bilgisayarınızdaki modellerde çalışır. Uygulama fotoğrafı veya sonucu kalıcı kaydetmez. Cloudflare giriş ve bağlantı hizmeti ayrıca kullanılır.
+
 Kurulumda paketler ve yaklaşık 123 MB model indirilir. Modellerin SHA-256 değerleri RapidOCR'nin sabit sürümdeki model kataloğuyla doğrulanır. Normal başlatma ve OCR, yerel model yollarıyla çalışır. Dışarıya görsel/metin gönderen servis, analitik, CDN veya uzaktan font yoktur.
 
 Fotoğraf ham HTTP gövdesiyle belleğe alınır; multipart geçici dosyası oluşturulmaz. Sunucuda belge geçmişi/veritabanı bulunmaz. Görsel ve OCR yanıtları uygulama tarafından dosyaya yazılmaz. Ham OCR metni, fotoğrafta bulunduğu ölçüde kişisel bilgi/adres içerebilir ve yalnız yerel oturumda gösterilir; adres ayrı bir iş alanına aktarılmaz. JSON indirmeniz yalnız araç alanlarını içeren açık bir disk kaydı oluşturur; satıcı önerileri dahil edilmez. İndirilen dosyaların saklanması sizin kontrolünüzdedir.
@@ -91,6 +93,24 @@ result = response.json()
 ```
 
 Bu yerel API'yi doğrudan internete açmayın. Ototr aşamasında sunucular arası kimlik doğrulama, şube yetkilendirmesi, iş kuyruğu, zaman aşımı ve denetim kaydı ayrıca eklenecektir.
+
+## E-posta ile korunan web testi (Windows)
+
+GitHub kod sayfası uygulamayı çalıştırmaz; GitHub Pages Python/ONNX sunucusunu barındırmaz. `WebBaslat.ps1`, mevcut bilgisayarınızda ikinci bir OCR sunucusunu yalnız `127.0.0.1:8766` üzerinde başlatır ve Cloudflare Quick Tunnel ile geçici HTTPS adresi verir. Sadece belirttiğiniz e-posta adresi tek kullanımlık kodla erişebilir. E-posta koruması Cloudflare tarafındadır; uygulamanın origin/host kontrolleri ayrıca korunur ve kendi başına kimlik doğrulama yerine geçmez.
+
+```powershell
+.\WebBaslat.ps1 -Email 'kendi-adresiniz@example.com'
+# Test bitince:
+.\WebDurdur.ps1
+```
+
+Başlatıcı resmi `cloudflared` 2026.10.1 Windows x64 sürümünü indirir, SHA-256 değerini doğrular ve e-posta koruma özelliği bulunmazsa yayını durdurur. Program ve geçici süreç bilgileri git dışında kalan `runtime/` dizinindedir. E-posta adresinizi kaynak koda veya GitHub'a eklemeyin. Tarayıcıdan giriş yapılması gerekir; bu bağlantı Ototr'nin sunucular arası API entegrasyonu için değildir.
+
+**Bu kalıcı barındırma değildir:** bilgisayar, internet ve iki arka plan işlemi açık kalmalı; bilgisayar uyursa bağlantı kesilir. Her yeniden başlatmada URL değişir. Otomatik Windows başlangıcı veya uyku ayarı değiştirilmez. WebDurdur yalnız bu projeye ait doğrulanmış süreçleri durdurur; yerel 8765 ekranını etkilemez.
+
+Web görünümü Cloudflare aktarımını belirtir. Fotoğraf ve sonuçlar yine uygulama tarafından kaydedilmez; sahip bilgileri geçici satıcı önerisidir. Giriş gerektiren web akışı yalnız yetkili tarayıcıda test edilmelidir; korumayı devre dışı bırakıp gerçek belgelerle denemeyin.
+
+Kalıcı yayın için Python 3.12 ve ONNX modellerini çalıştırabilen bir sunucu, sabit alan adı/TLS ve sunucu tarafı kimlik doğrulama gerekir. Cloudflare Quick Tunnel kullanım ve sınırları: https://developers.cloudflare.com/tunnel/get-started/quick-tunnels/
 
 ## Kurulum ve test
 
