@@ -4,7 +4,13 @@ Tarih: 18 Ekim 2026 (Europe/Istanbul). Windows, 16 GB RAM. OCR testlerinde CPU k
 
 ## Otomatik kontroller
 
-Son kontrol: `python -m pytest -q`: **43 test geçti**; Node dışa aktarım/alan ayarı testleri: **9 test geçti** (toplam 52). Paket bütünlüğü kontrolü: `pip check` başarılı. Python derleme ve JavaScript sözdizimi kontrolleri geçti.
+Son kontrol: `python -m pytest -q`: **44 test geçti**; Node dışa aktarım/alan ayarı testleri: **9 test geçti**, ERP aktarım sınırı: **2 test geçti** (toplam 55). Paket bütünlüğü kontrolü: `pip check` başarılı. Python derleme ve JavaScript sözdizimi kontrolleri geçti.
+
+## ERP ve girişsiz test güncellemesi
+
+GitHub Pages `main` yayını yeniden etkinleştirildi ve ERP dashboard tarayıcıda açıldı. E-posta kapısının API sağlık isteğini tekrar girişe yönlendirdiği gözlendi; motor yerelde hazır olduğu halde arayüz okuma düğmesini bu nedenle kapatıyordu. Kullanıcının isteğiyle girişsiz test modu eklendi. Dış HTTPS adresinde sağlık sorgusu ve ERP origin CORS preflight 200 döndü; kurgusal belge gerçek modellerle 18.11 saniyede okunup beklenen plaka/şasiyi verdi. Sahip alanları araç verisine girmedi.
+
+İstek origin'i zorunlu, yabancı origin reddediliyor, 10 istek/dakika sınırı test edildi. ERP mesajı ayrı izin listesiyle süzülüyor; sahip, fotoğraf ve ham metin kabul edilmiyor. Bunlar üretim kimlik doğrulaması değildir. Tarayıcıda ERP içi son kullanıcı akışı ayrıca kontrol edilir.
 
 ## Korumalı web önizlemesi
 

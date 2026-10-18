@@ -96,6 +96,18 @@ Bu yerel API'yi doğrudan internete açmayın. Ototr aşamasında sunucular aras
 
 ## E-posta ile korunan web testi (Windows)
 
+### ERP içindeki girişsiz test (18 Ekim güncellemesi)
+
+Kullanıcı isteğiyle ERP demosunda ayrı e-posta girişi kaldırıldı. `WebBaslat.ps1 -PublicTest` açık test API'si başlatır. Bu bir kimlik doğrulama mekanizması değildir; API'ye ulaşabilen kişiler kendi yükledikleri görselleri okutabilir. Başka incelemeleri listeleme/okuma veya kayıt geçmişi ucu yoktur. Dakikada toplam 10 OCR isteği, aynı anda tek okuma ve 20 MB sınırı uygulanır. CORS yalnız `https://samivolkan.github.io` için açıktır; CORS/origin kontrolleri kimlik doğrulama yerine geçmez. Sunucu yine sadece loopback üzerinde dinler; tünel yalnız bu OCR uygulamasını açar.
+
+ERP yolu: `index.html#ruhsat` → **Ruhsat Oku**. Arayüz dosyaları `ruhsat/` altında yayımlanır; Python motoru GitHub Pages'te çalışmaz. Motor bağlantı hatası artık açıklanır ve yeniden deneme düğmesi gösterilir. Fotoğraf seçili ve motor hazırsa okuma düğmesi etkinleşir.
+
+Kontrol edilen araç bilgileri, kullanıcının aktar düğmesiyle iş emri taslağına gider: plaka, şasi, motor no, marka, ticari ad/model, model yılı, yakıt. Diğer seçili araç alanları JSON çıktısında mevcuttur; ERP formunun henüz alanı yoktur. İş emri otomatik kaydedilmez. Sahip/satıcı önerileri, fotoğraf ve ham metin ERP mesajına veya iş emri formuna aktarılmaz. Modülden ayrılınca iframe boşaltılarak inceleme temizlenir.
+
+Tünel yeniden başlatıldığında adresi değişir. `publish_web.py --api-base <yeni-https-origin> --output <depo>/ruhsat` komutuyla yalnız izin verilen statik dosyalar ve `ruhsat/config.js` güncellenir, ardından `main` yayımlanır. Adres kaynak yapılandırmasıdır; anahtar veya müşteri verisi içermez. Kalıcı kullanımda sabit OCR sunucusu ve gerçek ERP yetkilendirmesi gerekir. Mevcut Supabase girişine, kullanıcılarına ve veri tabanına değişiklik yapılmadı.
+
+### İsteğe bağlı e-posta koruması
+
 GitHub kod sayfası uygulamayı çalıştırmaz; GitHub Pages Python/ONNX sunucusunu barındırmaz. `WebBaslat.ps1`, mevcut bilgisayarınızda ikinci bir OCR sunucusunu yalnız `127.0.0.1:8766` üzerinde başlatır ve Cloudflare Quick Tunnel ile geçici HTTPS adresi verir. Sadece belirttiğiniz e-posta adresi tek kullanımlık kodla erişebilir. E-posta koruması Cloudflare tarafındadır; uygulamanın origin/host kontrolleri ayrıca korunur ve kendi başına kimlik doğrulama yerine geçmez.
 
 ```powershell
@@ -108,7 +120,7 @@ Başlatıcı resmi `cloudflared` 2026.10.1 Windows x64 sürümünü indirir, SHA
 
 **Bu kalıcı barındırma değildir:** bilgisayar, internet ve iki arka plan işlemi açık kalmalı; bilgisayar uyursa bağlantı kesilir. Her yeniden başlatmada URL değişir. Otomatik Windows başlangıcı veya uyku ayarı değiştirilmez. WebDurdur yalnız bu projeye ait doğrulanmış süreçleri durdurur; yerel 8765 ekranını etkilemez.
 
-Web görünümü Cloudflare aktarımını belirtir. Fotoğraf ve sonuçlar yine uygulama tarafından kaydedilmez; sahip bilgileri geçici satıcı önerisidir. Giriş gerektiren web akışı yalnız yetkili tarayıcıda test edilmelidir; korumayı devre dışı bırakıp gerçek belgelerle denemeyin.
+Web görünümü Cloudflare aktarımını belirtir. Fotoğraf ve sonuçlar yine uygulama tarafından kaydedilmez; sahip bilgileri geçici satıcı önerisidir. E-posta modu seçilmişse Cloudflare girişinin API çağrılarında da geçerli olması gerekir. ERP testinde yukarıdaki açık test modu kullanılır.
 
 Kalıcı yayın için Python 3.12 ve ONNX modellerini çalıştırabilen bir sunucu, sabit alan adı/TLS ve sunucu tarafı kimlik doğrulama gerekir. Cloudflare Quick Tunnel kullanım ve sınırları: https://developers.cloudflare.com/tunnel/get-started/quick-tunnels/
 

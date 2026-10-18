@@ -6,7 +6,7 @@ $expectedTunnel = Join-Path $PSScriptRoot 'runtime\tools\cloudflared.exe'
 $expectedPython = Join-Path $PSScriptRoot '.venv\Scripts\python.exe'
 if ($state.tunnel_pid) {
     $tunnelProcess = Get-CimInstance Win32_Process -Filter "ProcessId = $([int]$state.tunnel_pid)"
-    if ($tunnelProcess -and $tunnelProcess.ExecutablePath -eq $expectedTunnel -and $tunnelProcess.CommandLine -like '*--url http://127.0.0.1:8766*' -and $tunnelProcess.CommandLine -like '*--allowed-mail*') {
+    if ($tunnelProcess -and $tunnelProcess.ExecutablePath -eq $expectedTunnel -and $tunnelProcess.CommandLine -like '*--url http://127.0.0.1:8766*') {
         Stop-Process -Id $tunnelProcess.ProcessId
     } elseif ($tunnelProcess) { throw 'Tunel islem kimligi dogrulanamadi; baska isleme dokunulmadi.' }
 }

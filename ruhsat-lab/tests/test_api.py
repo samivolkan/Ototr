@@ -90,3 +90,21 @@ def test_web_preview_discloses_transport_and_preserves_csrf():
         with patch.object(service, "status", "ready"), patch.object(service, "analyze", return_value={"ok": True}):
             assert client.post("/api/v1/ruhsat/oku", content=b"image", headers={**HEADERS, "Origin": origin}).status_code == 200
             assert client.post("/api/v1/ruhsat/oku", content=b"image", headers={**HEADERS, "Origin": origin + ".evil.example"}).status_code == 403
+
+
+def test_public_test_requires_origin_and_limits_cpu_requests():
+    import app as app_module
+    app_module.recent_requests.clear()
+    origin = "https://example-test.trycloudflare.com"
+    with patch("app.PUBLIC_ORIGIN", origin), patch("app.PUBLIC_TEST", True):
+        assert "Girişsiz test erişimi" in client.get("/").text
+        assert client.get("/api/health").json()["access_mode"] == "public_test"
+        assert client.post("/api/v1/ruhsat/oku", content=b"image", headers=HEADERS).status_code == 403
+        assert client.post("/api/v1/ruhsat/oku", content=b"image", headers={**HEADERS,"Origin":"https://evil.example"}).status_code == 403
+        with patch.object(service,"status","ready"), patch.object(service,"analyze",return_value={"ok":True}):
+            for _ in range(10):
+                r=client.post("/api/v1/ruhsat/oku",content=b"image",headers={**HEADERS,"Origin":"https://samivolkan.github.io"})
+                assert r.status_code == 200
+            r=client.post("/api/v1/ruhsat/oku",content=b"image",headers={**HEADERS,"Origin":origin})
+            assert r.status_code == 429 and r.headers["retry-after"] == "60"
+    app_module.recent_requests.clear()

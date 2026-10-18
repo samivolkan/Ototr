@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import asyncio
 import os
+import time
+from collections import deque
 import threading
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -13,6 +15,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.concurrency import run_in_threadpool
 from starlette.middleware.trustedhost import TrustedHostMiddleware
+from starlette.middleware.cors import CORSMiddleware
 
 from ruhsat.engine import ImageInputError, OCRService
 from ruhsat.web_access import origin_allowed, preview_origin
@@ -20,6 +23,9 @@ from ruhsat.web_access import origin_allowed, preview_origin
 ROOT = Path(__file__).resolve().parent
 MAX_BYTES = 20 * 1024 * 1024
 PUBLIC_ORIGIN = preview_origin(os.environ.get("OTOTR_PREVIEW_ORIGIN", ""))
+PUBLIC_TEST = os.environ.get("OTOTR_PREVIEW_ACCESS") == "public_test"
+ERP_ORIGIN = "https://samivolkan.github.io"
+recent_requests: deque[float] = deque()
 service = OCRService()
 
 
@@ -40,10 +46,21 @@ app.add_middleware(TrustedHostMiddleware, allowed_hosts=["127.0.0.1", "localhost
 async def privacy_headers(request: Request, call_next):
     if request.method == "POST":
         origin = request.headers.get("origin")
-        if not origin_allowed(origin, str(request.base_url), PUBLIC_ORIGIN):
+        accepted = origin_allowed(origin, str(request.base_url), PUBLIC_ORIGIN)
+        if PUBLIC_TEST and PUBLIC_ORIGIN:
+            accepted = bool(origin) and (accepted or origin == ERP_ORIGIN)
+        if not accepted:
             return JSONResponse({"detail": "Yalnız uygulamanın kendi adresinden istek kabul edilir."}, status_code=403)
         if request.headers.get("x-ototr-client") != "ruhsat-lab":
             return JSONResponse({"detail": "X-OTOTR-Client: ruhsat-lab başlığı gerekli."}, status_code=403)
+        if PUBLIC_TEST and PUBLIC_ORIGIN:
+            now = time.monotonic()
+            while recent_requests and now - recent_requests[0] >= 60:
+                recent_requests.popleft()
+            if len(recent_requests) >= 10:
+                return JSONResponse({"detail": "Test kullanım sınırına ulaşıldı. Bir dakika sonra tekrar deneyin."},
+                                    status_code=429, headers={"Retry-After": "60", "Cache-Control": "no-store"})
+            recent_requests.append(now)
     response = await call_next(request)
     response.headers["Cache-Control"] = "no-store"
     response.headers["X-Content-Type-Options"] = "nosniff"
@@ -53,11 +70,18 @@ async def privacy_headers(request: Request, call_next):
     return response
 
 
+# Outermost CORS also covers error responses, so the UI can explain failures.
+app.add_middleware(CORSMiddleware, allow_origins=[ERP_ORIGIN] if PUBLIC_TEST else [],
+                   allow_methods=["GET", "POST"], allow_headers=["Content-Type", "X-OTOTR-Client"],
+                   allow_credentials=False, max_age=600)
+
+
 @app.get("/api/health")
 def health():
-    return {"service": "ototr-ruhsat-lab", "status": service.status, "error": service.error,
+    return {"service": "ototr-ruhsat-lab", "status": service.status,
+            "error": ("OCR motoru hazırlanamadı." if service.error else None) if PUBLIC_ORIGIN else service.error,
             "local_only": not bool(PUBLIC_ORIGIN), "version": "0.1.0",
-            "access_mode": "email_protected_preview" if PUBLIC_ORIGIN else "local",
+            "access_mode": ("public_test" if PUBLIC_TEST else "email_protected_preview") if PUBLIC_ORIGIN else "local",
             "processing_location": "host_computer"}
 
 
@@ -114,7 +138,7 @@ def home():
     html = (ROOT / "web" / "index.html").read_text(encoding="utf-8")
     if PUBLIC_ORIGIN:
         html = html.replace("YEREL PROTOTİP", "WEB TESTİ")
-        html = html.replace("Bu bilgisayarda işlenir", "E-posta ile korunan erişim")
+        html = html.replace("Bu bilgisayarda işlenir", "Girişsiz test erişimi" if PUBLIC_TEST else "E-posta ile korunan erişim")
         html = html.replace("Harici servise gönderilmez.",
                             "HTTPS / Cloudflare üzerinden kendi OCR bilgisayarınıza iletilir.")
         html = html.replace("Yerel işleme · Otomatik kayıt yok", "Bilgisayar açıkken erişilebilir · Otomatik kayıt yok")

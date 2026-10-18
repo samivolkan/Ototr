@@ -1,4 +1,17 @@
 "use strict";
+const clientConfig = window.RUHSAT_CONFIG || {};
+const apiBase = String(clientConfig.apiBase || "").replace(/\/$/, "");
+let healthTimer;
+async function apiRequest(path, options={}) {
+  const response = await fetch(apiBase + path, {...options, cache:"no-store", credentials:apiBase?"omit":"same-origin",
+    signal:AbortSignal.timeout(path==="/api/health"?12000:180000)});
+  if (!(response.headers.get("content-type") || "").includes("application/json")) {
+    throw Error("OCR bağlantısı giriş veya hata sayfasına yönlendi. Bağlantıyı yeniden kontrol edin.");
+  }
+  const data = await response.json();
+  if (!response.ok) throw Error(typeof data.detail === "string" ? data.detail : `OCR sunucusu hata verdi (${response.status}).`);
+  return data;
+}
 const $ = id => document.getElementById(id);
 const state = {file:null,sourceUrl:null,result:null,rotation:0,zoom:1,filter:"all",selected:null,edits:{},confirmed:new Set(),ready:false,busy:false,sample:false,rawMode:"text",generation:0,enabled:new Set(RuhsatFieldSettings.defaults)};
 let toastTimer;
@@ -49,8 +62,10 @@ function updateControls(){
   ["modeSelect","rectify","autoRotate","sampleBtn","replaceBtn","fileInput"].forEach(id=>$(id).disabled=state.busy);
 }
 async function pollHealth(){
-  try{const response=await fetch("/api/health",{cache:"no-store"});if(!response.ok)throw Error();const health=await response.json();state.ready=health.status==="ready";const status=$("engineStatus");status.replaceChildren(node("i"),document.createTextNode(state.ready?(health.local_only?"Yerel · Motor hazır":"Web · Motor hazır"):health.status==="error"?"Motor başlatılamadı":"Motor hazırlanıyor"));status.className="status-pill "+(state.ready?"ready":health.status==="error"?"error":"");if(health.error)status.title=health.error;
-  }catch{state.ready=false;$("engineStatus").replaceChildren(node("i"),document.createTextNode("OCR sunucusuna ulaşılamıyor"));$("engineStatus").className="status-pill error";}updateControls();setTimeout(pollHealth,state.ready?15000:2000);
+  clearTimeout(healthTimer);
+  try{const health=await apiRequest("/api/health");if(health.service!=="ototr-ruhsat-lab")throw Error("OCR servisi doğrulanamadı.");state.ready=health.status==="ready";const status=$("engineStatus");status.replaceChildren(node("i"),document.createTextNode(state.ready?(health.local_only?"Yerel · Motor hazır":"Web · Motor hazır"):health.status==="error"?"Motor başlatılamadı":"Motor hazırlanıyor"));status.className="status-pill "+(state.ready?"ready":health.status==="error"?"error":"");status.title=health.error||"";$("connectionHint").textContent=state.ready?"Motor hazır. Fotoğraf seçtikten sonra Ruhsatı oku düğmesini kullanın.":health.error||"OCR motoru hazırlanıyor; hazır olduğunda okuma etkinleşir.";
+  }catch(error){state.ready=false;$("engineStatus").replaceChildren(node("i"),document.createTextNode("OCR bağlantısı kesildi"));$("engineStatus").className="status-pill error";$("connectionHint").textContent=(error.name==="TimeoutError"?"OCR sunucusu zamanında yanıt vermedi.":error.message)+" OCR bilgisayarının açık olduğundan emin olun.";}
+  $("retryConnection").hidden=state.ready;updateControls();healthTimer=setTimeout(pollHealth,state.ready?20000:10000);
 }
 function clearResult(){state.result=null;state.edits={};state.confirmed.clear();state.selected=null;state.filter="all";$("fieldSearch").value="";$("resultsContent").hidden=true;$("emptyResults").hidden=false;$("resultStatus").textContent="Belge bekleniyor";$("evidence").hidden=true;$("fields").replaceChildren();$("sellerFields").replaceChildren();$("sellerSuggestion").hidden=true;$("evidenceLabel").textContent="";$("evidenceText").textContent="";$("cropCanvas").width=0;$("cropCanvas").height=0;$("warnings").replaceChildren();$("overlay").replaceChildren();$("rawOutput").textContent="";document.querySelectorAll("[data-filter]").forEach(b=>b.classList.toggle("active",b.dataset.filter==="all"));}
 function reset(force=false){if(state.busy&&!force)return;state.generation++;if(state.sourceUrl)URL.revokeObjectURL(state.sourceUrl);Object.assign(state,{file:null,sourceUrl:null,rotation:0,zoom:1,sample:false});clearResult();$("previewImage").removeAttribute("src");$("previewArea").hidden=true;$("dropZone").hidden=false;$("replaceBtn").hidden=true;$("fileLabel").textContent="Yeni inceleme";$("fileLabel").removeAttribute("title");$("fileInput").value="";updateControls();}
@@ -66,8 +81,8 @@ async function analyze(){
   clearResult();setBusy(true);const started=Date.now();const generation=state.generation;let timer=setInterval(()=>{$("progressLabel").textContent=`Yerel OCR çalışıyor · ${Math.round((Date.now()-started)/1000)} sn · ${$("modeSelect").value==="detailed"?"İki model karşılaştırılıyor":"Metin ve alanlar ayrılıyor"}`;},1000);
   try{
     const params=new URLSearchParams({mode:$("modeSelect").value,rotation:String(state.rotation),rectify:String($("rectify").checked),auto_rotate:String($("autoRotate").checked)});
-    const response=await fetch("/api/v1/ruhsat/oku?"+params,{method:"POST",headers:{"Content-Type":state.file.type||"application/octet-stream","X-OTOTR-Client":"ruhsat-lab"},body:state.file,cache:"no-store"});
-    const data=await response.json();if(!response.ok)throw Error(typeof data.detail==="string"?data.detail:"Fotoğraf işlenemedi.");if(generation!==state.generation)return;
+    const data=await apiRequest("/api/v1/ruhsat/oku?"+params,{method:"POST",headers:{"Content-Type":state.file.type||"application/octet-stream","X-OTOTR-Client":"ruhsat-lab"},body:state.file});
+    if(generation!==state.generation)return;
     state.result=data;state.result.synthetic_sample=state.sample;state.edits=Object.fromEntries(allFields().map(f=>[f.key,f.value??""]));$("previewImage").src=data.image.preview;$("imageStage").style.width="100%";state.zoom=1;$("imageSize").textContent=`${data.image.width} × ${data.image.height} · ${data.image.rotation}°${data.image.perspective_corrected?" · Perspektif düzeltildi":""}`;$("resultStatus").textContent=state.sample?"KURGUSAL ÖRNEK":data.document_recognized?"İncelemeye hazır":"Belgeyi kontrol edin";$("emptyResults").hidden=true;$("resultsContent").hidden=false;$("readCount").textContent=data.summary.read;$("reviewCount").textContent=data.summary.review;$("elapsed").textContent=data.elapsed_seconds.toLocaleString("tr-TR");$("modelLabel").textContent=data.models.join(" + ");
     $("warnings").replaceChildren(...data.warnings.map(w=>node("p","",w)));$("warnings").hidden=!data.warnings.length;
     renderFields();renderOverlay();updateReview();renderRaw();
@@ -116,7 +131,8 @@ function download(reviewed){if(!state.result)return;if(reviewed&&!reviewReady())
 $("dropZone").addEventListener("click",()=>{if(!state.busy)$("fileInput").click();});$("dropZone").addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();if(!state.busy)$("fileInput").click();}});$("replaceBtn").addEventListener("click",()=>$("fileInput").click());$("fileInput").addEventListener("change",e=>selectFile(e.target.files[0]));
 for(const event of ["dragenter","dragover"]){$("dropZone").addEventListener(event,e=>{e.preventDefault();$("dropZone").classList.add("dragover");});}for(const event of ["dragleave","drop"]){$("dropZone").addEventListener(event,e=>{e.preventDefault();$("dropZone").classList.remove("dragover");if(event==="drop")selectFile(e.dataTransfer.files[0]);});}
 document.addEventListener("paste",e=>{if(state.busy||e.target.matches("input,textarea"))return;const image=[...(e.clipboardData?.items??[])].find(i=>i.type.startsWith("image/"));if(image){const f=image.getAsFile();selectFile(new File([f],"panodan-ruhsat.png",{type:f.type}));}});
-$("sampleBtn").addEventListener("click",async()=>{try{const r=await fetch("/assets/sample.png");if(!r.ok)throw Error();const blob=await r.blob();await selectFile(new File([blob],"kurgusal-test-belgesi.png",{type:"image/png"}),true);toast("Kurgusal örnek yüklendi. Ruhsatı oku düğmesi gerçek OCR işlemini başlatır.");}catch{toast("Örnek belge yüklenemedi.",true);}});
+$("sampleBtn").addEventListener("click",async()=>{try{const r=await fetch(clientConfig.samplePath||"/assets/sample.png");if(!r.ok)throw Error();const blob=await r.blob();await selectFile(new File([blob],"kurgusal-test-belgesi.png",{type:"image/png"}),true);toast("Kurgusal örnek yüklendi. Ruhsatı oku düğmesi gerçek OCR işlemini başlatır.");}catch{toast("Örnek belge yüklenemedi.",true);}});
+$("retryConnection").addEventListener("click",pollHealth);
 $("clearBtn").addEventListener("click",()=>reset());$("rotateBtn").addEventListener("click",rotate);$("analyzeBtn").addEventListener("click",analyze);$("zoomInBtn").addEventListener("click",()=>{state.zoom=Math.min(3,state.zoom+.25);$("imageStage").style.width=100*state.zoom+"%";});$("zoomOutBtn").addEventListener("click",()=>{state.zoom=Math.max(1,state.zoom-.25);$("imageStage").style.width=100*state.zoom+"%";});$("showBoxes").addEventListener("change",()=>renderOverlay());$("fieldSearch").addEventListener("input",renderFields);
 document.querySelectorAll("[data-filter]").forEach(button=>button.addEventListener("click",()=>{state.filter=button.dataset.filter;document.querySelectorAll("[data-filter]").forEach(b=>b.classList.toggle("active",b===button));renderFields();}));$("draftBtn").addEventListener("click",()=>download(false));$("exportBtn").addEventListener("click",()=>download(true));$("rawTextBtn").addEventListener("click",()=>{state.rawMode="text";renderRaw();});$("rawJsonBtn").addEventListener("click",()=>{state.rawMode="json";renderRaw();});initializeSettings();pollHealth();
 
