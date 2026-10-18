@@ -5,11 +5,11 @@ import {fileURLToPath} from 'node:url';
 import {fixture,sample,actors} from './fixture.mjs';
 import {createHandler} from '../../supabase/functions/isler-api/handler.mjs';
 const root=fileURLToPath(new URL('../../',import.meta.url));
-const {db,call}=await fixture();
+const {db,call,pick}=await fixture();
 await call('worker','POST','isler',null,{...sample(),due:new Date().toISOString().slice(0,10),title:'Yerel kontrol işi'});
 const port=43824,origin='http://127.0.0.1:'+port;
-const handler=createHandler({origins:[origin],authenticate:async token=>Boolean(actors[token.slice(7)]),
-  rpc:async(token,args)=>{try{return {data:await call(token.slice(7),args.method,args.resource,args.task_id,args.payload)}}catch(error){return {error}}}});
+const handler=createHandler({origins:[origin],authenticate:async token=>Boolean(actors[token.slice(7)])||/^Bearer pick_[a-f0-9]{64}$/.test(token),
+  rpc:async(token,args,req)=>{try{return {data:token.startsWith('Bearer pick_')?await pick(token.slice(12),req.headers.get('x-kokpit-user'),args.method,args.resource,args.task_id,args.payload):await call(token.slice(7),args.method,args.resource,args.task_id,args.payload)}}catch(error){return {error}}}});
 const server=http.createServer(async(req,res)=>{
   try{
     const url=new URL(req.url,origin);

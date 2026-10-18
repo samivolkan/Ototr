@@ -1,0 +1,20 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {fixture,sample,actors} from './fixture.mjs';
+test('Scoped user selection never creates an ERP login or admin grant',async t=>{
+ const {db,call,pick}=await fixture();t.after(()=>db.close());const token='a'.repeat(64);
+ await assert.rejects(pick('b'.repeat(64),null,'GET','users'),{code:'28000'});
+ const users=await pick(token,null,'GET','users');assert.equal(users.length,3);assert.ok(users.every(u=>Object.keys(u).sort().join(',')==='id,name'));
+ await assert.rejects(pick(token,'other','GET'),{code:'42501'});await assert.rejects(pick(token,'inactive','GET'),{code:'42501'});
+ const selected=await pick(token,'admin','GET','me');assert.equal(selected.role,'calisan');assert.equal(selected.authMethod,'selection');assert.match(selected.name,/kullanıcı seçimi/);
+ assert.equal((await call('admin','GET','me')).role,'yonetici');
+ await assert.rejects(pick(token,'admin','PUT','settings',null,{version:1,late:true,done:false}),{code:'42501'});
+ await assert.rejects(pick(token,'viewer','POST','isler',null,sample()),{code:'42501'});
+ let task=await pick(token,'worker','POST','isler',null,{...sample(),helpers:[]});assert.equal(task.creator,actors.worker);assert.match(task.log[0].m,/kullanıcı seçimi/);
+ task=await pick(token,'worker','PUT','isler',task.id,{...sample(),helpers:[],title:'Şifresiz düzenlendi',version:task.version});assert.equal(task.title,'Şifresiz düzenlendi');
+ await assert.rejects(pick(token,'admin','DELETE','isler',task.id,{version:task.version}),{code:'42501'});
+ await assert.rejects(db.transaction(async tx=>{await tx.exec('set local role anon');await tx.query('select public.isler24_selection($1,null,$2,$3)',[token,'GET','users'])}),{code:'42501'});
+ await assert.rejects(db.transaction(async tx=>{await tx.exec('set local role authenticated');await tx.query('select * from app_private.isler24_selection_links')}),{code:'42501'});
+ await db.exec('update app_private.isler24_selection_links set revoked=true');await assert.rejects(pick(token,'worker','GET'),{code:'28000'});
+ await db.exec("update app_private.isler24_selection_links set revoked=false,expires_at=now()-interval '1 second'");await assert.rejects(pick(token,'worker','GET'),{code:'28000'});
+});
