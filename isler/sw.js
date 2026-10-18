@@ -1,4 +1,4 @@
-const CACHE='ototr-isler-static-v24-1';
+const CACHE='ototr-isler-static-v24-2';
 const ROOT=new URL('./',self.location.href);
 const FILES=['./','index.html','app.js','manifest.webmanifest','icon-192.png','icon-512.png','../task-merkezi-v2/js/runtime-config.js','../task-merkezi-v2/js/vendor/supabase.js'].map(p=>new URL(p,ROOT).href);
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES))));

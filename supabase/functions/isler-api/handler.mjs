@@ -5,12 +5,12 @@ export function createHandler({authenticate, rpc, origins, smtpConfigured=false}
     const reply=(body,status=200)=>new Response(JSON.stringify(body),{status,headers});
     if(origin && !origins.includes(origin)) return reply({error:'Bu alan adına izin verilmiyor'},403);
     if(origin) headers['Access-Control-Allow-Origin']=origin;
-    headers['Access-Control-Allow-Headers']='authorization, apikey, content-type, x-client-info, x-kokpit-request';
+    headers['Access-Control-Allow-Headers']='authorization, apikey, content-type, x-client-info, x-kokpit-request, x-kokpit-user';
     headers['Access-Control-Allow-Methods']='GET, POST, PUT, DELETE, OPTIONS';
     if(req.method==='OPTIONS') return new Response(null,{status:204,headers});
     const token=req.headers.get('authorization')||'';
     if(!/^Bearer \S+$/.test(token)) return reply({error:'Oturum geçersiz. Yeniden giriş yapın.'},401);
-    try{if(!await authenticate(token))return reply({error:'Oturum geçersiz. Yeniden giriş yapın.'},401)}
+    try{if(!await authenticate(token,req))return reply({error:'Oturum geçersiz. Yeniden giriş yapın.'},401)}
     catch{return reply({error:'Oturum servisine ulaşılamadı. Tekrar deneyin.'},503)}
     const match=new URL(req.url).pathname.match(/\/api\/(isler|settings|me|users|import|filtreler)(?:\/(\d+|toplu))?(?:\/(yorum|gecmis|sayac|geri-al|sirala))?\/?$/);
     if(!match) return reply({error:'Uç nokta bulunamadı'},404);
@@ -37,12 +37,12 @@ export function createHandler({authenticate, rpc, origins, smtpConfigured=false}
       }catch{return reply({error:'Geçersiz JSON'},400)}
     }
     try {
-      const {data,error}=await rpc(token,{method:req.method,resource,task_id:id?Number(id):null,payload});
+      const {data,error}=await rpc(token,{method:req.method,resource,task_id:id?Number(id):null,payload},req);
       if(error){
         const status=({'28000':401,'42501':403,'P0002':404,'40001':409,'22023':400,'22007':400,'22008':400,'22P02':400,'22003':400})[error.code]||500;
         return reply({error:status===500?'İşlem kaydedilemedi. Tekrar deneyin.':error.message},status);
       }
-      return reply(resource==='me'?{...data,smtpConfigured}:data,req.method==='POST'?201:200);
+      return reply(resource==='me'?{...data,smtpConfigured:data.authMethod==='selection'?false:smtpConfigured}:data,req.method==='POST'?201:200);
     }catch{return reply({error:'Sunucuya ulaşılamadı. Tekrar deneyin.'},503)}
   };
 }

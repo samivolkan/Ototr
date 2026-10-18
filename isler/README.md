@@ -6,6 +6,18 @@ Kullanıcının GitHub ERP altyapısında yayımlama tercihiyle GitHub Pages + S
 
 ## Kimlik ve güvenlik
 
+### Şifresiz kullanıcı seçimi (19 Ekim 2026)
+
+Kullanıcının isteğiyle ilk ekran kullanıcı seçimine çevrildi. Kullanıcı listesi **özel ekip bağlantısıyla** açılır. Bağlantıda 256 bit rastgele yetki anahtarı URL fragment'ında (`#ekip=...`) taşınır, açılınca URL'den kaldırılır ve yalnızca sekmenin sessionStorage'ında tutulur. Anahtarın SHA-256 özeti, kapsamı, bitiş zamanı ve iptal durumu özel `isler24_selection_links` tablosunda saklanır. Açık kaynak koda, GitHub'a, önbelleğe veya raporlara gerçek bağlantı anahtarı yazılmaz. Hazırlanan deneme bağlantısı 7 gün geçerlidir.
+
+Bu **kişinin kimliğini doğrulamaz**: özel bağlantıya sahip herkes listeden ekipteki bir ismi seçebilir. Bu nedenle yalnızca güvenilen ekiple paylaşılmalıdır. İş geçmişi/yorumlarda "kullanıcı seçimi" etiketi bulunur. Seçim bağlantısı yalnızca İşler API'sine erişir; Supabase Auth JWT'si, ERP oturumu veya başka modüllere yetki vermez. Yönetici seçilse bile bu girişte en fazla çalışan yetkisi verilir; izleyici salt okunur kalır. Ekip otomasyon ayarları ve yönetici yetkileri için isteğe bağlı ERP hesabıyla giriş korunur.
+
+Edge Function, sadece sunucuda kalan service-role anahtarıyla dar kapsamlı `isler24_selection` RPC'sini çağırır. RPC her istekte bağlantının hash/süre/iptalini, aktif kullanıcıyı ve aynı ekipte oluşunu doğrular. İş yetkileri mevcut dispatcher içinde tekrar uygulanır. Bu RPC anon/authenticated rollerine kapalıdır; service-role key tarayıcıya verilmez. Bağlantı süresi dolunca veya iptal edilince sonraki API isteği reddedilir.
+
+Kurulum: önce `20261018214909_isler24_user_selection.sql`, sonra güncel `isler-api`, ardından statik dosyalar. Bağlantıyı güvenilir yönetim ortamında kriptografik RNG ile üretip yalnızca hash'ini, açıkça seçilen ekip kapsamını ve sona erme tarihini DB'ye kaydedin. İptal için yetkili DB operatörü `isler24_selection_links` kaydında `revoked=true` yapar. Kullanıcı değiştirme sekmedeki seçili kişiyi temizler; ekip bağlantısı aynı sekmede kalır. Normal oturumdan çıkma bu bağlantıyı dağıtmaz veya kamuya açmaz.
+
+Geri alma: bağlantıları iptal edin, önceki statik/Edge commit'ine dönün. Yeni tabloyu silmeyin. Önceki dispatcher tanımı gerekirse sürüm kontrolündeki `20261018212919_isler24_multiuser.sql` içinden yalnızca ilgili fonksiyona `CREATE OR REPLACE` ile geri yüklenir; tüm eski migration tekrar çalıştırılmaz. Şifreli erişim değişmeden çalışır.
+
 Mevcut ERP e-posta adresi + parola ile giriş yapılır. Supabase Auth parolaları bcrypt ile saklar ve giriş/yenileme uç noktalarında IP tabanlı hız sınırı uygular. Uygulama ayrı parola kopyası tutmaz. Kaynaklar: [Password security](https://supabase.com/docs/guides/auth/password-security), [Rate limits](https://supabase.com/docs/guides/auth/rate-limits). Projenin mevcut kota değerleri bu dağıtımda değiştirilmez.
 
 İş verisi, filtreler ve ekip otomasyon ayarları PostgreSQL'dedir. localStorage kullanılmaz. Yalnızca oturum anahtarları sekmeye özel sessionStorage'dadır; sekme kapanınca yeniden giriş gerekir. Yetki bilgileri kullanıcı metadata'sından değil aktif `app_users` kaydından ve mevcut `app_private.kokpit_roles` atamasından alınır. `CEO`, `GENERAL_MANAGER`, `BRANCH_MANAGER` yönetici; bilinen operasyon rolleri çalışan; diğerleri izleyicidir. Gerekirse yetkili DB operatörü `kokpit_roles` atamasını değiştirir. Bir pano aynı `branch_id` kapsamındadır; şubesi olmayan kullanıcılar `hq` kapsamını paylaşır.

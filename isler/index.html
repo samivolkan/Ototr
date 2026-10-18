@@ -149,12 +149,25 @@ form h3{font-size:18px;font-weight:800;letter-spacing:-.02em}
 #pal,#ask{width:min(520px,94vw);margin-top:12vh}
 #quick{flex:1 1 280px}
 @media (prefers-reduced-motion:reduce){#bulk{transition:none}}
-[hidden]{display:none!important}#login{max-width:420px;margin:10vh auto;padding:24px}#login label{display:grid;gap:8px;margin:18px 0}#login input{width:100%}#login-error{color:var(--red)}button:disabled,input:disabled,select:disabled{opacity:.5;cursor:not-allowed}#identity{font-size:12px}#fh{min-height:80px}header{flex-wrap:wrap}#toast{z-index:9999}
+[hidden]{display:none!important}#login{max-width:420px;margin:10vh auto;padding:24px}#login label{display:grid;gap:8px;margin:18px 0}#login input{width:100%}#login-error,#selection-error{color:var(--red)}#selection-note{font-size:12px;color:var(--muted)}#erp-login{margin:24px 0}button:disabled,input:disabled,select:disabled{opacity:.5;cursor:not-allowed}#identity{font-size:12px}#fh{min-height:80px}header{flex-wrap:wrap}#toast{z-index:9999}
 #bulk{visibility:hidden;opacity:0;pointer-events:none}#bulk.show{visibility:visible;opacity:1;pointer-events:auto}
 </style>
 </head>
 <body>
-<section id="login"><h1>Kokpit · İşler</h1><p>ERP hesabınızla giriş yapın.</p><form id="login-form"><label>Kullanıcı adı (ERP e-postası)<input id="email" type="email" autocomplete="username" required></label><label>Parola<input id="password" type="password" autocomplete="current-password" required></label><button class="pri" id="signin">Giriş yap</button><p id="login-error" role="alert"></p></form><a href="../">ERP’ye dön</a></section><div class="app" hidden><aside id="side"><div class="brand"><span class="logo"></span>Kokpit</div>
+<section id="login">
+  <h1>Kokpit · İşler</h1>
+  <p>İsmini seçerek görev panosuna devam et.</p>
+  <form id="selection-form">
+    <label>Kullanıcı<select id="selection-user" required disabled><option value="">Kullanıcı seç…</option></select></label>
+    <button class="pri" id="selection-submit" disabled>Devam et</button>
+    <p id="selection-note" role="status">Şifresiz devam etmek için özel ekip bağlantısını açın.</p>
+    <p id="selection-error" role="alert"></p>
+  </form>
+  <details id="erp-login"><summary>ERP hesabıyla giriş</summary>
+    <form id="login-form"><label>Kullanıcı adı (ERP e-postası)<input id="email" type="email" autocomplete="username" required></label><label>Parola<input id="password" type="password" autocomplete="current-password" required></label><button class="pri" id="signin">Giriş yap</button><p id="login-error" role="alert"></p></form>
+  </details>
+  <a href="../">ERP’ye dön</a>
+</section><div class="app" hidden><aside id="side"><div class="brand"><span class="logo"></span>Kokpit</div>
 <h5>Görünüm</h5><button class="nv on" id="v-board">Pano</button><button class="nv" id="v-list">Liste</button><button class="nv" id="v-cal">Takvim</button><button class="nv" id="v-gantt">Gantt</button>
 <h5>İşlerim</h5><button class="nv on" data-role="">Tüm işler</button><button class="nv" data-role="me">Bana atananlar</button><button class="nv" data-role="help">Yardımcı olduklarım</button><button class="nv" data-role="mine">Oluşturduklarım</button>
 <h5>Kayıtlı filtreler</h5><div id="savedf"></div><button class="nv" id="savef">＋ Filtreyi kaydet</button>

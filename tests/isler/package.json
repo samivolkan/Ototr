@@ -1,5 +1,5 @@
 {
   "name":"ototr-kokpit-tests","private":true,"type":"module",
-  "scripts":{"test":"node --test integration.test.mjs","serve":"node local-server.mjs","browser":"node browser.mjs"},
+  "scripts":{"test":"node --test integration.test.mjs selection.test.mjs","serve":"node local-server.mjs","browser":"node browser.mjs","browser:selection":"node selection-browser.mjs"},
   "devDependencies":{"@electric-sql/pglite":"0.3.14","playwright":"1.56.1"}
 }

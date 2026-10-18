@@ -7,7 +7,7 @@ const browser=await chromium.launch({channel:'msedge',headless:true});
 const errors=[],page=await browser.newPage({viewport:{width:1440,height:1000}});
 page.on('pageerror',e=>errors.push(e.message));page.on('dialog',d=>{errors.push('Unexpected dialog');d.dismiss()});
 const ready=p=>p.waitForFunction(()=>!document.querySelector('#new').disabled);
-const login=async(p,who)=>{await p.goto('http://127.0.0.1:43824/isler/');await p.locator('#email').fill(who+'@example.invalid');await p.locator('#password').fill('local-test-only');await p.locator('#signin').click();await p.locator('.app').waitFor({state:'visible'})};
+const login=async(p,who)=>{await p.goto('http://127.0.0.1:43824/isler/');await p.locator('#erp-login').evaluate(el=>{el.open=true});await p.locator('#email').fill(who+'@example.invalid');await p.locator('#password').fill('local-test-only');await p.locator('#signin').click();await p.locator('.app').waitFor({state:'visible'})};
 try{
  await login(page,'admin');await ready(page);assert.match(await page.locator('#identity').textContent(),/Yönetici/);
  await page.locator('#new').click();await page.locator('#ft').fill('Tarayıcı testi <img src=x onerror=alert(1)>');await page.locator('#fd').fill('Açıklama');
@@ -39,7 +39,7 @@ try{
  await page.locator('#new').click();await page.locator('#ft').fill('Kaydedilmemeli');await page.locator('#f button[type=submit]').click();await page.waitForFunction(()=>document.querySelector('#toast').textContent==='Test sunucu hatası');assert.ok(await page.locator('#dlg').isVisible());await page.locator('#cancel').click();await page.unroute('**/api/isler');
  assert.equal(await page.evaluate(()=>Object.keys(localStorage).length),0);
  await page.evaluate(()=>navigator.serviceWorker.ready);await page.reload();await page.locator('.app').waitFor({state:'visible'});await ready(page);
- const cached=await page.evaluate(async()=>{const c=await caches.open('ototr-isler-static-v24-1');return(await c.keys()).map(r=>r.url)});assert.ok(cached.some(u=>u.endsWith('/app.js')));assert.ok(cached.every(u=>!u.includes('/api/')&&!u.includes('/auth/')));
+ const cached=await page.evaluate(async()=>{const c=await caches.open('ototr-isler-static-v24-2');return(await c.keys()).map(r=>r.url)});assert.ok(cached.some(u=>u.endsWith('/app.js')));assert.ok(cached.every(u=>!u.includes('/api/')&&!u.includes('/auth/')));
  assert.equal(await page.locator('#bulk').isVisible(),false);
  const out=new URL('../../../../outputs/',import.meta.url);await fs.mkdir(out,{recursive:true});await page.screenshot({path:fileURLToPath(new URL('isler-v24-desktop.png',out)),fullPage:true});
  await page.locator('#logout').click();await login(page,'viewer');assert.ok(await page.locator('#new').isDisabled());assert.ok(await page.locator('[data-a=del]').first().isDisabled());assert.equal(await page.locator('#savedf button').count(),0);

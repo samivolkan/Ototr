@@ -3,6 +3,15 @@ const $=s=>document.querySelector(s),config=window.OTOTR_SUPABASE_CONFIG;
 // Only the login session lives in sessionStorage. Business data never lives in browser storage.
 const client=createClient(config.url,config.publishableKey,{auth:{storage:sessionStorage,storageKey:'ototr-isler24-session'}});
 const API=config.islerApi||config.url+'/functions/v1/isler-api/api';
+let selectionToken=sessionStorage.getItem('isler24-team-link')||'',selectionUser=sessionStorage.getItem('isler24-selected-user')||'';
+let authGeneration=0;
+const linkFragment=new URLSearchParams(location.hash.slice(1)).get('ekip');
+if(linkFragment&&/^[a-f0-9]{64}$/.test(linkFragment)){
+ if(selectionToken!==linkFragment){selectionUser='';sessionStorage.removeItem('isler24-selected-user')}
+ selectionToken=linkFragment;sessionStorage.setItem('isler24-team-link',selectionToken);
+ history.replaceState(null,'',location.pathname+location.search);
+}
+addEventListener('hashchange',()=>{const next=new URLSearchParams(location.hash.slice(1)).get('ekip');if(next&&/^[a-f0-9]{64}$/.test(next)&&next!==selectionToken)location.reload()});
 const ST={yapilacak:'Yapılacak',devam:'Devam ediyor',bitti:'Tamamlandı'},PR={yuksek:'Yüksek',orta:'Orta',dusuk:'Düşük'};
 let saved=[],filterVersion=1,sel=new Set(),tasks=[],users=[],me='',user={},auto={late:false,done:false,version:1},view='board',sf='',editId=null,cm=0,gw=0,pid=null,busy=false,session=null,drag=null,epoch=Date.now(),tick=performance.now(),loading=false,syncFailed=false;
 const serverNow=()=>epoch+performance.now()-tick;
@@ -11,16 +20,18 @@ const editable=t=>Boolean(session)&&user.role!=='izleyici'&&(!t||user.role==='yo
 const V=$('#view'),setV=v=>{view=v;render()},dt=x=>new Date(x).toLocaleString('tr-TR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
 function toast(m){const t=$('#toast');t.textContent=m;t.classList.remove('u');t.classList.add('show');clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove('show'),6000)}
 async function api(path,method='GET',body){
- const current=await client.auth.getSession();session=current.data.session;
+ if(selectionToken&&selectionUser)session={access_token:'pick_'+selectionToken};
+ else{const current=await client.auth.getSession();session=current.data.session}
  if(!session)throw new Error('Oturum sona erdi. Yeniden giriş yapın.');
- const res=await fetch(API+path,{method,credentials:'omit',cache:'no-store',headers:{Authorization:'Bearer '+session.access_token,apikey:config.publishableKey,'Content-Type':'application/json','X-Kokpit-Request':'1'},body:body===undefined?undefined:JSON.stringify(body),signal:AbortSignal.timeout(20000)});
+ const res=await fetch(API+path,{method,credentials:'omit',cache:'no-store',headers:{Authorization:'Bearer '+session.access_token,apikey:config.publishableKey,'Content-Type':'application/json','X-Kokpit-Request':'1',...(selectionUser?{'X-Kokpit-User':selectionUser}:{})},body:body===undefined?undefined:JSON.stringify(body),signal:AbortSignal.timeout(20000)});
  const data=await res.json();if(!res.ok){if(res.status===401)showLogin();throw new Error(data.error||'İşlem başarısız')}return data;
 }
 async function load(){
  if(loading){await loading;return load()}
  loading=(async()=>{
+  const generation=authGeneration;
   const [list,settings,filters,identity,team]=await Promise.all([api('/isler'),api('/settings'),api('/filtreler'),api('/me'),api('/users')]);
-  if(!session)return;tasks=list;auto=settings;saved=filters.data;filterVersion=filters.version;user=identity;me=user.id;users=team;epoch=user.serverTime;tick=performance.now();render();
+  if(!session||generation!==authGeneration)return;tasks=list;auto=settings;saved=filters.data;filterVersion=filters.version;user=identity;me=user.id;users=team;epoch=user.serverTime;tick=performance.now();render();
  })();try{await loading}finally{loading=false}
 }
 const clean=t=>Object.fromEntries(['title','desc','who','helpers','start','due','pri','status','proj','tags','subs','rec','time','ts','ord','version'].filter(k=>t[k]!==undefined).map(k=>[k,t[k]]));
@@ -35,6 +46,7 @@ function permissions(){
  if(pid)document.querySelectorAll('#pb input,#pb select,#pb button').forEach(el=>el.disabled=busy||!editable(tasks.find(t=>t.id===pid)));
  ['bst','bpr','bwho','bdel'].forEach(id=>$('#'+id).disabled=busy||![...sel].every(id=>editable(tasks.find(t=>t.id===id))));
  $('#refresh').disabled=busy;$('#logout').disabled=busy;
+ $('#logout').textContent=selectionUser?'Kullanıcı değiştir':'Çıkış';
  const current=$('#bwho').value;$('#bwho').innerHTML='<option value="">Sorumlu ata…</option>'+users.map(u=>`<option value="${esc(u.id)}">${esc(u.name)}</option>`).join('');$('#bwho').value=current;
 }
 function render(){renderContent();permissions()}
@@ -124,12 +136,27 @@ $('#quick').addEventListener('keydown',async e=>{
  for(const x of s.split(/\s+/)){const l=x.toLocaleLowerCase('tr-TR');if(x[0]==='#'&&x.length>1)o.tags.push(x.slice(1));else if(x[0]==='@'&&x.length>1){const found=users.filter(u=>u.name.toLocaleLowerCase('tr-TR').startsWith(l.slice(1)));if(found.length!==1)return toast('Kişi adı tek bir kayıtlı kullanıcıyla eşleşmeli');o.who=found[0].id}else if(x[0]==='!')o.pri={y:'yuksek',o:'orta',d:'dusuk'}[l[1]]||'orta';else if(l==='bugün')o.due=today();else if(l==='yarın')o.due=iso(addD(new Date(),1));else if(l==='haftaya')o.due=iso(addD(new Date(),7));else if(/^\d{4}-\d\d-\d\d$/.test(x))o.due=x;else words.push(x)}
  o.title=words.join(' ');if(!o.title)return toast('Başlık yazın');if(await mutate(()=>save(o),'İş eklendi'))e.target.value='';
 });
-function showLogin(){session=null;tasks=[];users=[];saved=[];sel.clear();closeP();document.querySelectorAll('dialog[open]').forEach(d=>d.close());$('.app').hidden=true;$('#login').hidden=false;$('#view').replaceChildren();$('#pb').replaceChildren();$('#bulk').classList.remove('show')}
-async function boot(){try{await load();$('.app').hidden=false;$('#login').hidden=true}catch(e){showLogin();$('#login-error').textContent=e.message}}
-$('#login-form').onsubmit=async e=>{e.preventDefault();$('#signin').disabled=true;$('#login-error').textContent='';try{const {data,error}=await client.auth.signInWithPassword({email:$('#email').value.trim(),password:$('#password').value});$('#password').value='';if(error)throw new Error(error.status===429?'Çok fazla giriş denemesi. Bir süre sonra tekrar deneyin.':'Giriş başarısız. ERP hesabınızı kontrol edin.');session=data.session;await boot()}catch(e){$('#login-error').textContent=e.message}finally{$('#signin').disabled=false}};
-$('#logout').onclick=async()=>{await client.auth.signOut();showLogin()};
+function showLogin(){authGeneration++;session=null;selectionUser='';sessionStorage.removeItem('isler24-selected-user');tasks=[];users=[];saved=[];sel.clear();closeP();document.querySelectorAll('dialog[open]').forEach(d=>d.close());$('.app').hidden=true;$('#login').hidden=false;$('#view').replaceChildren();$('#pb').replaceChildren();$('#bulk').classList.remove('show')}
+async function boot(){try{await load();$('.app').hidden=false;$('#login').hidden=true}catch(e){showLogin();$('#login-error').textContent=e.message;$('#selection-error').textContent=e.message}}
+$('#login-form').onsubmit=async e=>{e.preventDefault();$('#signin').disabled=true;$('#login-error').textContent='';try{const {data,error}=await client.auth.signInWithPassword({email:$('#email').value.trim(),password:$('#password').value});$('#password').value='';if(error)throw new Error(error.status===429?'Çok fazla giriş denemesi. Bir süre sonra tekrar deneyin.':'Giriş başarısız. ERP hesabınızı kontrol edin.');selectionUser='';sessionStorage.removeItem('isler24-selected-user');session=data.session;await boot()}catch(e){$('#login-error').textContent=e.message}finally{$('#signin').disabled=false}};
+$('#logout').onclick=async()=>{if(!selectionUser)await client.auth.signOut();showLogin();await prepareSelection()};
 $('#refresh').onclick=()=>load().catch(e=>toast(e.message));
-client.auth.onAuthStateChange(event=>{if(event==='SIGNED_OUT')showLogin()});
+client.auth.onAuthStateChange(event=>{if(event==='SIGNED_OUT'&&!selectionUser)showLogin()});
+async function prepareSelection(){
+ if(!selectionToken)return;
+ $('#selection-user').disabled=true;$('#selection-submit').disabled=true;$('#selection-user').value='';
+ $('#selection-error').textContent='';$('#selection-note').textContent='Ekip kullanıcıları yükleniyor…';
+ try{
+  const response=await fetch(API+'/users',{credentials:'omit',cache:'no-store',headers:{Authorization:'Bearer pick_'+selectionToken,apikey:config.publishableKey},signal:AbortSignal.timeout(20000)});
+  const team=await response.json();if(!response.ok)throw new Error(team.error||'Kullanıcılar alınamadı');
+  $('#selection-user').innerHTML='<option value="">Kullanıcı seç…</option>'+team.map(u=>`<option value="${esc(u.id)}">${esc(u.name)}</option>`).join('');
+  $('#selection-user').disabled=false;$('#selection-submit').disabled=false;$('#selection-note').textContent='Bu özel bağlantıyla seçtiğin isim adına işlem yaparsın. Bağlantıyı yalnızca ekibinle paylaş.';
+ }catch(e){$('#selection-user').disabled=true;$('#selection-submit').disabled=true;$('#selection-note').textContent='';$('#selection-error').textContent=e.message||'Bağlantı kurulamadı'}
+}
+$('#selection-form').onsubmit=async e=>{e.preventDefault();if(!selectionToken||!$('#selection-user').value)return;$('#selection-submit').disabled=true;
+ authGeneration++;selectionUser=$('#selection-user').value;sessionStorage.setItem('isler24-selected-user',selectionUser);session={access_token:'pick_'+selectionToken};
+ try{await boot()}finally{$('#selection-submit').disabled=false}
+};
 setInterval(()=>document.querySelectorAll('[data-tm]').forEach(el=>{const t=tasks.find(t=>t.id===+el.dataset.tm);if(t)el.textContent=(t.ts?'⏸ ':'▶ ')+fmtT(secs(t))}),1000);
 setInterval(async()=>{if(!session||busy||loading||document.hidden||document.querySelector('dialog[open]')||document.activeElement?.matches('#pb input,.sa'))return;try{await load();syncFailed=false}catch(e){if(!syncFailed)toast('Ortak pano güncellenemedi: '+e.message);syncFailed=true}},15000);
 addEventListener('offline',()=>toast('Çevrimdışısınız. Bağlantı kurulana kadar değişiklikler kaydedilemez.'));
@@ -225,4 +252,6 @@ $('#pl').addEventListener('click',e=>{const b=e.target.closest('[data-i]');if(b)
 addEventListener('keydown',e=>{const typing=/INPUT|TEXTAREA|SELECT/.test(e.target.tagName);if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();palOpen();return}if(typing||e.ctrlKey||e.metaKey||e.altKey||document.querySelector('dialog[open]'))return;if(e.key==='n'){e.preventDefault();openD()}else if(e.key==='/'){e.preventDefault();$('#q').focus()}else if(e.key.length===1&&'1234'.includes(e.key))setV(['board','list','cal','gantt'][+e.key-1])});
 
 
-const initial=await client.auth.getSession();session=initial.data.session;if(session)await boot();
+await prepareSelection();
+if(selectionToken&&selectionUser){session={access_token:'pick_'+selectionToken};await boot()}
+else{const initial=await client.auth.getSession();session=initial.data.session;if(session)await boot()}
