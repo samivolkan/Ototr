@@ -21,6 +21,7 @@ from starlette.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
 
 from ruhsat.engine import ImageInputError, OCRService
+from ruhsat import __version__
 from ruhsat.web_access import origin_allowed, preview_origin, server_origin
 from ruhsat.quality import apply_thresholds
 from ruhsat.feedback import Feedback, FeedbackStore
@@ -50,7 +51,7 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(title="OTOTR Ruhsat Lab", version="0.3.1", lifespan=lifespan,
+app = FastAPI(title="OTOTR Ruhsat Lab", version=__version__, lifespan=lifespan,
               docs_url=None, redoc_url=None, openapi_url="/api/openapi.json")
 app.add_middleware(TrustedHostMiddleware, allowed_hosts=["127.0.0.1", "localhost", "[::1]"] +
                    ([urlparse(PUBLIC_ORIGIN or SERVER_ORIGIN).hostname] if PUBLIC_ORIGIN or SERVER_ORIGIN else []))
@@ -117,7 +118,7 @@ app.add_middleware(CORSMiddleware, allow_origins=[ERP_ORIGIN] if PUBLIC_TEST or 
 def health():
     return {"service": "ototr-ruhsat-lab", "status": service.status,
             "error": ("OCR motoru hazırlanamadı." if service.error else None) if PUBLIC_ORIGIN or SERVER_ORIGIN else service.error,
-            "local_only": not bool(PUBLIC_ORIGIN or SERVER_ORIGIN), "version": "0.3.1",
+            "local_only": not bool(PUBLIC_ORIGIN or SERVER_ORIGIN), "version": __version__,
             "access_mode": "server_token" if SERVER_ORIGIN else ("public_test" if PUBLIC_TEST else "email_protected_preview") if PUBLIC_ORIGIN else "local",
             "processing_location": "server" if SERVER_ORIGIN else "host_computer",
             "field_retry": True, "feedback": "anonymous_statistics", "training_images_stored": False}
@@ -194,7 +195,7 @@ async def analyze(request: Request,
         result = await run_in_threadpool(service.analyze, bytes(body), mode, rotation, rectify, auto_rotate, preprocessing)
         apply_thresholds(result, review_threshold, vin_threshold)
         result["request_id"] = str(uuid4())
-        result["engine_version"] = "0.3.1"
+        result["engine_version"] = __version__
         if SERVER_ORIGIN and "privacy" in result:
             result["privacy"]["processing"] = "server"
         return result

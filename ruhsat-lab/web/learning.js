@@ -15,8 +15,8 @@
     if(managementRestricted){$('qualityRefresh').disabled=true;$('qualitySynthetic').disabled=true;}
   }
   function health(info){
-    supportsConditions=["0.3.0","0.3.1"].includes(info.version);
-    $('qualityAccess').hidden=info.access_mode!=='server_token';$('qualityCompatibility').hidden=['0.2.0','0.3.0','0.3.1'].includes(info.version);
+    supportsConditions=["0.3.0","0.3.1","0.3.2"].includes(info.version);
+    $('qualityAccess').hidden=info.access_mode!=='server_token';$('qualityCompatibility').hidden=['0.2.0','0.3.0','0.3.1','0.3.2'].includes(info.version);
     managementRestricted=['public_test','email_protected_preview'].includes(info.access_mode);
     if(managementRestricted)$('qualityMessage').textContent='Bu açık test bağlantısında geri bildirim yönetimi kapalıdır. Güven eşikleri ve görüntü iyileştirme kullanılabilir. Anonim sonuçları bilgisayarınızdaki yerel kalite panelinden kaydedebilirsiniz.';
   }

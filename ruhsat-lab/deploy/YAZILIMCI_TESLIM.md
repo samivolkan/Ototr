@@ -1,4 +1,4 @@
-# Ruhsat OCR 0.3.1 yazılımcı teslim kılavuzu
+# Ruhsat OCR 0.3.2 yazılımcı teslim kılavuzu
 
 Bu sürüm, GitHub Pages ERP'de ruhsatı okuyup kullanıcı kontrolünden sonra hızlı iş emrini dolduran prototipin geliştirme paketidir. Yeni alan eşlemesi, bölgesel yeniden okuma, koşul bazında anonim geri bildirim ve karşılaştırmalı değerlendirme aracı içerir. Mevcut model ağırlıkları kullanılmaktadır; ruhsatlarla yeniden eğitilmiş model değildir.
 
@@ -40,7 +40,7 @@ ERP uygulamasının bütünü Git deposundadır; OCR ZIP'i bağımsız servis ve
 
 ## API sözleşmesi
 
-Çalışan servisin OpenAPI tanımı `/api/openapi.json`, teslim anındaki kopyası `openapi.json` dosyasıdır. Tam okuma yanıt şeması `1.1`, motor sürümü `0.3.1`; mevcut `analysed.Data` alanları korunmuştur.
+Çalışan servisin OpenAPI tanımı `/api/openapi.json`, teslim anındaki kopyası `openapi.json` dosyasıdır. Tam okuma yanıt şeması `1.1`, motor sürümü `0.3.2`; mevcut `analysed.Data` alanları korunmuştur.
 
 | Uç | Girdi ve sonuç |
 |---|---|
@@ -114,3 +114,16 @@ Bu teslim model eğitimi, otomatik model terfisi veya üretim doğruluğu onayı
 0.3 frontend, `health.field_retry` olmadan yeniden okumayı etkinleştirmez. Önce ayrı OCR servisini doğrulayın, sonra `publish_web.py` ile ERP'nin `ruhsat/` dizinini üretin. Build kendi başına dağıtım yapmaz. Tam ERP entegrasyonu ve mevcut yerel kayıt sınırları [OTOTR_INTEGRATION.md](OTOTR_INTEGRATION.md) içindedir. Canlı hosting ve veritabanı bu teslim kapsamında değiştirilmez.
 
 Geri dönüşte önceki OCR kodu/model/sözlük seti ve frontend birlikte kullanılmalıdır. Feedback yedeğini önceki sürüme uygun kopyayla geri alın. Kullanıcı belgeleri veya kayıtlı ERP iş emirleri silinmez. Linux kurulumu, kalıcı HTTPS, yeniden başlatma ve bilgisayar kapalıyken erişim testleri hosting geçişinde ayrıca tamamlanmalıdır.
+
+
+## 0.3.2 — genişletilmiş belge geliştirme turu
+
+- Sayfa yönü belirlendikten sonra satırların ayrı ayrı 180 derece çevrilmesi kapatıldı. Bu, kısa sayılarda 999/666 gibi hataları önler. İlk dik okuma mevcut metin kutularını yeniden kullanır; koordinatlar korunur.
+- Ruhsat fotoğrafın küçük bir bölümünü kaplıyorsa etiket kanıtlarından belge alanı bulunur ve yeniden okunur. Yeterli yapı bulunamazsa veya plaka/şasi kaybolursa yakınlaştırma kabul edilmez. Önceki ve yeni araç okumaları çelişirse iki kanıt korunur ve kullanıcı kontrolü istenir. `image.document_crop`, yön/perspektif/ön işlem uygulanmış ara görseldeki kırpım kutusudur; tüm alan kutuları dönen PNG önizlemesinin koordinatlarındadır.
+- Yalnız rakamlardan oluşan 7–30 haneli motor seri numaraları desteklenir. Komşu hücredeki kısa güç/ağırlık sayıları bu yolla motor numarası sayılmaz.
+- Parantezsiz eski cins satırlarında AA/AB/AC/AF/BA/BB gövde açıklaması aynı hücreden birleştirilir. Devam satırı tek başına tam cins/ticari ad olarak sunulmaz.
+- Ticari ad başlığı bozuksa, ancak marka/tipi/model yılı/cins etiketlerinin yerleşimi yeterli kanıt sağlarsa düşük puanlı bir öneri yapılır. Yöntem `layout` ve kontrol açıklamasıyla belirtilir.
+- Yakıt açıklamalarındaki Türkçe terimler korunarak standartlaştırılır. Benzin-elektrik ve HEV açıklamaları ERP'deki Hibrit seçeneğine; benzin/LPG açıklaması mevcut LPG seçeneğine aktarılır. ERP'nin mevcut yakıt seçenekleri değiştirilmez.
+- `evaluate.py` ve API sürümü tek `ruhsat.__version__` kaynağını kullanır. Gerçek koleksiyon/etiketler kaynak koddan ayrı yerel klasörde kalır; Git ve teslim ZIP'i bunları içermez.
+
+Ölçümün kapsamı ve kalan sınırlamalar [VALIDATION_0_3.md](VALIDATION_0_3.md) dosyasındaki 0.3.2 bölümünde açıklanır. Bu geliştirmeler model ağırlığı eğitimi değildir. Okunmayan veya çelişkili alanlar iş emrinden önce fotoğrafla kontrol edilir; çok bulanık/üst üste basılmış belgelerde yeni fotoğraf gerekir.

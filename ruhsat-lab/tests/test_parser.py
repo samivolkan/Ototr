@@ -201,3 +201,59 @@ def test_only_exact_known_body_description_can_complete_punctuation():
     assert validate(BY_KEY['vehicle_category'], 'OTOMOBIL (AB HECBEK')[0] == 'OTOMOBİL (AB HEÇBEK)'
     assert validate(BY_KEY['vehicle_category'], 'OTOMOBIL (AB HECBEKI')[0] == 'OTOMOBİL (AB HECBEKI'
     assert validate(BY_KEY['usage_purpose'], 'YOLCU NAKLI-HUSUSI')[0] == 'YOLCU NAKLİ - HUSUSİ'
+
+
+def test_numeric_engine_serials_are_allowed_but_short_measurements_are_not():
+    assert validate(BY_KEY['engine_no'],'1234567890') == ('1234567890',[])
+    assert validate(BY_KEY['engine_no'],'000012345678901234567890')[0] == '000012345678901234567890'
+    for text in ['159','2145','0','MOTOR NO 1234567890']:
+        assert validate(BY_KEY['engine_no'],text)[0] is None
+
+
+def test_old_category_without_parentheses_joins_its_wrapped_body_description():
+    rows=[line('(D.5) CINSI',x=100,y=100,w=120,idx=1),
+          line('OTOMOBIL-AC',x=210,y=110,w=180,h=30,idx=2),
+          line('STEYSIN',x=100,y=139,w=130,idx=3),
+          line('(P.5) MOTOR NO',x=100,y=170,w=200,idx=4)]
+    assert field(rows,'vehicle_category')['value']=='OTOMOBİL-AC STEYŞİN'
+    assert validate(BY_KEY['vehicle_category'],'STEYSIN')[0] is None
+    assert validate(BY_KEY['vehicle_category'],'(Q) GUC AGIRLIK ORANI')[0] is None
+
+
+def test_missing_commercial_caption_is_a_low_confidence_layout_suggestion():
+    rows=[line('MARKASI',x=100,y=100,w=150,idx=1),line('TIPI',x=500,y=110,w=100,idx=2),
+          line('MODEL YILI',x=500,y=200,w=150,idx=3),line('PUMA',x=100,y=223,w=70,idx=4),
+          line('CINSI',x=100,y=255,w=100,idx=5)]
+    result=field(rows,'kind')
+    assert result['value']=='PUMA' and result['method']=='layout'
+    assert result['needs_review'] and result['confidence']<=.75
+    assert any('çevredeki' in issue for issue in result['issues'])
+    assert field(rows[:-1],'kind')['value'] is None
+
+
+def test_hybrid_fuel_keeps_descriptive_text_and_turkish_spelling():
+    assert validate(BY_KEY['fuel_type'],'BENZINLI (NOVC-HEV)')[0]=='BENZİNLİ (NOVC-HEV)'
+    assert validate(BY_KEY['fuel_type'],'BENZIN - ELEKTRIK')[0]=='BENZİN - ELEKTRİK'
+
+
+def test_grouped_measurements_do_not_become_decimal_litres_or_change_power():
+    assert validate(BY_KEY['engine_capacity'],'1.597 cm3')[0]=='1597'
+    assert validate(BY_KEY['engine_capacity'],'1,598')[0]=='1598'
+    assert validate(BY_KEY['engine_capacity'],'0')[0]=='0'
+    assert validate(BY_KEY['engine_power'],'1.597')[0]=='1.597'
+
+
+def test_corrupt_short_caption_is_not_the_type_value():
+    rows=[line('(D.2) TiPt',idx=1),line('R',y=36,w=25,idx=2)]
+    assert field(rows,'type')['value']=='R'
+    assert validate(BY_KEY['kind'],'(O.4) MODEL YULI')[0] is None
+    assert validate(BY_KEY['kind'],'SEDAN)')[0] is None
+    assert validate(BY_KEY['kind'],'MODEL Y')[0]=='MODEL Y'
+
+
+def test_compact_caption_span_does_not_eat_the_first_value_character():
+    assert field([line('(P.3) YAKITCINSIDIZEL')],'fuel_type')['value']=='DİZEL'
+    assert field([line('(P-3) YAKITCINSIBENZINLI')],'fuel_type')['value']=='BENZİNLİ'
+    assert field([line('(D.3) TICARIADIPUMA')],'kind')['value']=='PUMA'
+    assert field([line('(D.S)CINSIOTOMOBIL')],'vehicle_category')['value']=='OTOMOBİL'
+    assert field([line('(C.1.2) ADIL')],'owner_name')['value']=='ADIL'

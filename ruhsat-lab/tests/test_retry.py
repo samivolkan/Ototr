@@ -26,7 +26,7 @@ def test_rejects_owner_and_other_labelled_cells():
 
 def test_crop_limits_and_four_real_passes():
     class Service:
-        def read(self,image,model,prefix):return [dict(text='2018',score=.95)]
+        def read_upright(self,image,model,prefix):return [dict(text='2018',score=.95)]
     data=io.BytesIO();Image.new('RGB',(100,30),'white').save(data,format='PNG')
     result=reread(Service(),data.getvalue(),'model_year')
     assert result['attempts']==4 and result['candidates'][0]['model_agreement']
@@ -116,3 +116,7 @@ def test_unknown_or_missing_description_is_never_completed():
     for tail in ['HECBEKI','BILINMEYEN','']:
         rows=[box('OTOMOBIL (AB',200,30,240),box(tail,200,60,180)]
         assert collect_candidates('vehicle_category',[spatial_reading(rows)]) == []
+
+
+def test_glued_neighbour_caption_is_not_a_commercial_name_candidate():
+    assert collect_candidates('kind',[reading('(D.S)CINSIOTOMOBIL (AA')]) == []

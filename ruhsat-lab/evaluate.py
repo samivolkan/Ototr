@@ -12,6 +12,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 from ruhsat.feedback import VehicleKey
 from ruhsat.parser import same_value
+from ruhsat import __version__
 
 
 class Case(BaseModel):
@@ -131,7 +132,7 @@ def main():
             result=service.analyze(files[case.id][0].read_bytes(),'detailed',0,False,True)
             items.append(score_case(case,result['fields'],result['elapsed_seconds']))
             print(f"Completed {len(items)}/{len(cases)}",flush=True)
-        output=report(items,fingerprint,args.split,'0.3.0')
+        output=report(items,fingerprint,args.split,__version__)
         if args.compare:output['comparison']=compare(json.loads(args.compare.read_text()),output)
         args.output.parent.mkdir(parents=True,exist_ok=True)
         args.output.write_text(json.dumps(output,indent=2,ensure_ascii=False),encoding='utf-8')

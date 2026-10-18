@@ -8,6 +8,7 @@ import os
 import threading
 import time
 import warnings
+import statistics
 from pathlib import Path
 
 import cv2
@@ -15,9 +16,10 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageOps, UnidentifiedImageError
 from pillow_heif import register_heif_opener
 from rapidocr import RapidOCR, ModelType, OCRVersion
+from rapidocr.ch_ppocr_rec import TextRecInput
 from rapidocr.utils.process_img import get_rotate_crop_image
 
-from .parser import extract, reconcile
+from .parser import extract, reconcile, find_labels, rect, same_value
 from .privacy import partition_fields
 from .quality import prepare_image
 
@@ -105,6 +107,31 @@ def image_quality(image: Image.Image) -> dict:
     return {"sharpness": round(sharpness, 1), "contrast": round(contrast, 1), "warnings": messages}
 
 
+def document_region(image: Image.Image, lines: list[dict]):
+    """Bound the registration from caption evidence; ignore distant background.
+
+    The crop preserves pixels, rotation and coordinates. A second extraction
+    must improve or retain the recognized structure before it can be used.
+    """
+    anchors = [l for l in lines if find_labels(l["text"])]
+    if len(anchors) < 6:
+        return None
+    height = statistics.median(max(rect(l)[3]-rect(l)[1], 8) for l in anchors)
+    top = max(0, min(rect(l)[1] for l in anchors)-height*2)
+    bottom = min(image.height, max(rect(l)[3] for l in anchors)+height*2.5)
+    left = max(0, min(rect(l)[0] for l in anchors)-height*2)
+    body = [l for l in lines if top <= (rect(l)[1]+rect(l)[3])/2 <= bottom
+            and (rect(l)[0]+rect(l)[2])/2 >= left]
+    if not body:
+        return None
+    right = min(image.width, max(rect(l)[2] for l in body)+height*2)
+    box = tuple(map(int, (left,top,right,bottom)))
+    width, tall = right-left, bottom-top
+    if min(width,tall) < 200 or width*tall > image.width*image.height*.68:
+        return None
+    return box
+
+
 class OCRService:
     def __init__(self):
         self.status = "loading"
@@ -160,6 +187,27 @@ class OCRService:
                  "box": [[round(float(x), 1), round(float(y), 1)] for x, y in box], "model": model}
                 for idx, (box, text, score) in enumerate(zip(result.boxes, result.txts, result.scores))]
 
+    def read_upright(self, image: Image.Image, model: str, prefix: str, detected=None) -> list[dict]:
+        # Page orientation is already known. A line classifier can otherwise
+        # turn 999 into 666 (or invert short model names) independently of the
+        # page. Reuse detector boxes for the first upright recognition pass.
+        if detected is not None:
+            if not detected:
+                return []
+            bgr=cv2.cvtColor(np.asarray(image),cv2.COLOR_RGB2BGR)
+            crops=[get_rotate_crop_image(bgr,np.asarray(l["box"],dtype=np.float32)) for l in detected]
+            result=self.models[model].text_rec(TextRecInput(img=crops))
+            if result.txts is None:
+                return []
+            return [{**l,"id":f"{prefix}-{i}","text":text,"score":round(float(score),4),"model":model}
+                    for i,(l,text,score) in enumerate(zip(detected,result.txts,result.scores)) if score>=.4]
+        result=self.models[model](image,use_det=True,use_cls=False,use_rec=True)
+        if result.txts is None or result.boxes is None:
+            return []
+        return [{"id":f"{prefix}-{i}","text":text,"score":round(float(score),4),
+                 "box":[[round(float(x),1),round(float(y),1)] for x,y in box],"model":model}
+                for i,(box,text,score) in enumerate(zip(result.boxes,result.txts,result.scores))]
+
     def orientation(self, image: Image.Image, lines: list[dict]) -> int:
         """Vote across actual text crops to distinguish 0/90/180/270 degrees.
 
@@ -204,7 +252,9 @@ class OCRService:
         if auto_rotate and orientation_hint:
             auto_angle = orientation_hint
             image = image.rotate(-auto_angle,expand=True,fillcolor="white")
-            lines = self.read(image,"v5","a")
+            lines = self.read_upright(image,"v5","a")
+        elif not orientation_hint:
+            lines = self.read_upright(image,"v5","a",detected=lines)
         extracted = extract(lines, image.width, image.height)
         # Only retry orientation if extraction is weak; manual rotation is available.
         if auto_rotate and lines and not auto_angle and sum(bool(f["value"]) for f in extracted["fields"]) < 5:
@@ -212,15 +262,56 @@ class OCRService:
             best_score = extracted["anchor_count"] + sum(bool(f["value"]) for f in extracted["fields"])
             for angle in (90, 180, 270):
                 candidate = initial.rotate(-angle, expand=True, fillcolor="white")
-                candidate_lines = self.read(candidate, "v5", "a")
+                candidate_lines = self.read_upright(candidate, "v5", "a")
                 candidate_result = extract(candidate_lines, candidate.width, candidate.height)
                 score = candidate_result["anchor_count"] + sum(bool(f["value"]) for f in candidate_result["fields"])
                 if score > best_score:
                     image, lines, extracted, best_score, auto_angle = candidate, candidate_lines, candidate_result, score, angle
                 if best_score >= 20:
                     break
+        focused_region = None
+        region = document_region(image, lines)
+        if region:
+            focused_image = image.crop(region)
+            focused_lines = self.read_upright(focused_image, "v5", "a") if auto_rotate or not orientation_hint else self.read(focused_image,"v5","a")
+            focused = extract(focused_lines, focused_image.width, focused_image.height)
+            old_count = sum(bool(f["value"]) for f in extracted["fields"])
+            new_count = sum(bool(f["value"]) for f in focused["fields"])
+            old_fields = {f["key"]:f for f in extracted["fields"]}
+            new_fields = {f["key"]:f for f in focused["fields"]}
+            lost_critical = any(old_fields[k]["value"] and not new_fields[k]["value"] for k in ("plate","vin"))
+            improved = (focused["anchor_count"] >= extracted["anchor_count"] and new_count >= old_count
+                        or focused["anchor_count"] >= extracted["anchor_count"]+3)
+            if focused["document_recognized"] and improved and not lost_critical:
+                # Keep earlier vehicle evidence for missing/conflicting cells.
+                # Shift its coordinates into the same focused preview, so no
+                # stale box points at a different part of the document.
+                x0,y0,x1,y1 = region
+                old_lines = {l["id"]:l for l in lines}
+                for field in focused["fields"]:
+                    old = old_fields[field["key"]]
+                    if field["group"] == "Sahip bilgileri" or not old["value"] or same_value(old["value"], field["value"] or ""):
+                        continue
+                    evidence = [old_lines[i] for i in old["line_ids"] if i in old_lines]
+                    if not evidence or any(not (x0 <= (rect(l)[0]+rect(l)[2])/2 <= x1 and y0 <= (rect(l)[1]+rect(l)[3])/2 <= y1) for l in evidence):
+                        continue
+                    ids = []
+                    for l in evidence:
+                        lid = "original-"+l["id"]
+                        ids.append(lid)
+                        if not any(n["id"] == lid for n in focused_lines):
+                            focused_lines.append({**l,"id":lid,"box":[[max(0,min(focused_image.width,x-x0)),max(0,min(focused_image.height,y-y0))] for x,y in l["box"]]})
+                    if not field["value"]:
+                        field.update({**old,"line_ids":ids})
+                    else:
+                        field["alternatives"].append({"value":old["value"],"confidence":old["confidence"],"line_ids":ids})
+                    field["issues"].append("Tam fotoğraf ve belge yakınlaştırması farklı okudu; fotoğrafla kontrol edin.")
+                    field["needs_review"],field["status"] = True,"review"
+                image,lines,extracted = focused_image,focused_lines,focused
+                focused_region = list(region)
+                quality = image_quality(image)
         if mode == "detailed":
-            second = self.read(image, "v6", "b")
+            second = self.read_upright(image, "v6", "b") if auto_rotate or not orientation_hint else self.read(image,"v6","b")
             extracted = reconcile(extracted, extract(second, image.width, image.height))
             lines.extend(second)
         # Suppress impossible confidence when image quality has clear problems.
@@ -249,6 +340,7 @@ class OCRService:
                 "document_recognized": extracted["document_recognized"], "anchor_count": extracted["anchor_count"],
                 "image": {"width": image.width, "height": image.height, "original": original,
                           "rotation": (rotation + auto_angle) % 360, "perspective_corrected": rectified,
+                          "document_crop": focused_region,
                           "preview": "data:image/png;base64," + base64.b64encode(output.getvalue()).decode("ascii")},
                 "quality": quality, "warnings": warnings_out, "fields": fields, "lines": lines,
                 "summary": {"read": sum(f["value"] is not None for f in fields),

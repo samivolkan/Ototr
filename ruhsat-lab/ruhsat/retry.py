@@ -7,7 +7,7 @@ import cv2
 import numpy as np
 from PIL import Image, ImageOps
 
-from .parser import BY_KEY, extract, find_labels, fold, rect, same_value, validate
+from .parser import BY_KEY, CATEGORY_ROOT, category_continues, canonical_terms, extract, find_labels, fold, rect, same_value, validate
 
 VEHICLE_KEYS = frozenset(k for k, s in BY_KEY.items() if s.group != "Sahip bilgileri")
 
@@ -77,7 +77,7 @@ def field_blocks(key: str, reading: dict) -> list[dict]:
             if len(same_row) == 1:
                 raw += " " + same_row[0]["text"]
                 score = min(score, same_row[0]["score"])
-        if spatial and key == "vehicle_category" and raw.count("(") > raw.count(")"):
+        if spatial and key == "vehicle_category" and category_continues(raw):
             current = line
             used_ids = {line["id"]}
             for _ in range(3):
@@ -95,14 +95,14 @@ def field_blocks(key: str, reading: dict) -> list[dict]:
                 used_ids.add(current["id"])
                 raw += " " + current["text"]
                 score = min(score, current["score"])
-                if raw.count("(") == raw.count(")"):
+                if not category_continues(canonical_terms(key, raw)):
                     break
         value, issues = validate(BY_KEY[key], raw)
         if not value:
             continue
         if key == "vehicle_category":
             # A bare continuation like HECBEK is not the complete vehicle kind.
-            if not re.match(r"^(?:OTOMOBIL|KAMYONET|KAMYON|OTOBUS|MINIBUS|MOTOSIKLET|TRAKTOR|ROMORK|YARI ROMORK|OZEL AMACLI|ARAZI TASITI)\b", fold(value)):
+            if not re.match(CATEGORY_ROOT, fold(value)):
                 continue
             if value.count("(") != value.count(")"):
                 continue
@@ -142,7 +142,7 @@ def collect_candidates(key: str, readings: list[dict]) -> list[dict]:
             value, issues = validate(spec, raw)
             if not value:
                 continue
-            if key == "vehicle_category" and not re.match(r"^(?:OTOMOBIL|KAMYONET|KAMYON|OTOBUS|MINIBUS|MOTOSIKLET|TRAKTOR|ROMORK|YARI ROMORK|OZEL AMACLI|ARAZI TASITI)\b", fold(value)):
+            if key == "vehicle_category" and not re.match(CATEGORY_ROOT, fold(value)):
                 continue
             if key == "vehicle_category" and value.count("(") != value.count(")"):
                 continue
@@ -180,7 +180,7 @@ def reread(service, data: bytes, key: str) -> dict:
     for variant, prepared in crop_variants(image):
         for model in ("v5", "v6"):
             readings.append({"variant": variant, "model": model, "width": prepared.width, "height": prepared.height,
-                             "lines": service.read(prepared, model, "retry")})
+                             "lines": service.read_upright(prepared, model, "retry")})
     return {"field": key, "candidates": collect_candidates(key, readings),
             "elapsed_seconds": round(time.perf_counter() - started, 2),
             "attempts": len(readings), "requires_confirmation": True,

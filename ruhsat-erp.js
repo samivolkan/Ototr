@@ -27,6 +27,16 @@
   }
   const fuelNames = Object.freeze({BENZIN:"Benzin",BENZINLI:"Benzin",DIZEL:"Dizel",MOTORIN:"Dizel",
     ELEKTRIK:"Elektrik",ELEKTRIKLI:"Elektrik",HIBRIT:"Hibrit",LPG:"LPG"});
+  function fuelChoice(value) {
+    const label=value.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toUpperCase();
+    if(fuelNames[label])return fuelNames[label];
+    if(/\b(?:HIBRIT|HYBRID|HEV|PHEV)\b/.test(label)||(/\b(?:BENZIN\w*|DIZEL|MOTORIN)\b/.test(label)&&/\bELEKTRIK\w*\b/.test(label)))return "Hibrit";
+    if(/\bLPG\b/.test(label))return "LPG";
+    if(/\bBENZIN\w*\b/.test(label))return "Benzin";
+    if(/\b(?:DIZEL|MOTORIN)\b/.test(label))return "Dizel";
+    if(/\bELEKTRIK\w*\b/.test(label))return "Elektrik";
+    return value;
+  }
   function vehicleDraft(data) {
     const draft = {};
     for (const [source,target] of Object.entries(mapping)) {
@@ -37,7 +47,7 @@
     }
     if (!draft.plate || !/^[A-HJ-NPR-Z0-9]{17}$/.test(draft.vin || "")) return null;
     for(const key of Object.keys(extras)) {const value=textValue(data?.[key]);if(value)draft['ruhsat_'+key]=value;}
-    if (draft.fuel) draft.fuel = fuelNames[draft.fuel.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toUpperCase()] || draft.fuel;
+    if (draft.fuel) draft.fuel = fuelChoice(draft.fuel);
     return draft;
   }
   function page() {
@@ -47,7 +57,7 @@
     const frame = document.getElementById("ototrRuhsatFrame");
     if (!frame) return;
     if (routeName === "ruhsat") {
-      if (!frame.getAttribute("src") || frame.getAttribute("src") === "about:blank") frame.src = "./ruhsat/index.html?v=20261019-4";
+      if (!frame.getAttribute("src") || frame.getAttribute("src") === "about:blank") frame.src = "./ruhsat/index.html?v=20261019-5";
     } else if (frame.getAttribute("src") !== "about:blank") {
       frame.src = "about:blank";
     }

@@ -65,3 +65,31 @@ Renault geliştirme belgesi yeni servisle tekrar okundu: seçili 17 araç alanı
 Türkçe yazım ve noktalama düzenlemesi yalnız sınırlı ruhsat terimleri sözlüğüne uygulanır. Örneğin açık parantez, ancak gövde kodu ve tam bilinen açıklaması birlikte okunmuşsa tamamlanır. Eksik kelimeler ve bilinmeyen açıklamalar tamamlanmaz. Standartlaştırılan alanlar işaretlenir, ham OCR kanıtı korunur ve kullanıcı onayı gerekir. Kimlikler ve kişi adları bu kurala dahil değildir.
 
 Tarayıcıda alan yeniden okuması için kullanılan hazırlanmış görsel artık kayıpsız PNG'dir. Tam okuma/yeniden okuma fotoğrafları sunucuda saklanmaz. Gerçek belgeler, alan değerleri ve yerel tanılama dosyaları Git/teslim paketine eklenmez. Model ağırlıkları bu sürümde eğitilmedi.
+
+
+## 0.3.2 — genişletilmiş koleksiyon (19.10.2026)
+
+Aktarım sırasında dosyalar eklendiği ve bazı adların içeriği değiştiği için, karşılaştırma SHA-256 ile sabitlenmiş 51 fotoğraflık yerel kopyada yapılmıştır. Bunun 49'u yeni fotoğraflar, ikisi önceki geliştirme örnekleridir. Bu sayı bağımsız araç veya eğitim belgesi sayısı olarak yorumlanmaz. Fotoğraflar, sahip verileri, etiketler ve araç değerleri Git/teslim paketine alınmaz.
+
+### Fotoğraftan kontrol edilen geliştirme alt grubu
+
+Hata türlerini incelemek için seçilmiş 10 belgede, okunabilir 161 araç alanı fotoğraftan asistan tarafından etiketlenmiştir. Belirsiz görülen bir uzun motor numarası bu ölçüme dahil edilmemiştir. Bunlar insan tarafından onaylanmış veya bağımsız test etiketleri değildir; tamamı geliştirme bölmesindedir. Aynı fotoğraf ve aynı 161 beklenen değer eski/yeni karşılaştırmada korunmuştur.
+
+| Ölçüm | 0.3.1 | 0.3.2 |
+|---|---:|---:|
+| Tam eşleşen araç alanı | 113 / 161 | 143 / 161 |
+| Önceden doğru olup bozulan alan | — | 0 |
+| Önceden doğru plaka/şaside gerileme | — | 0 |
+
+Bu, hata odaklı seçilmiş küçük bir geliştirme grubudur; genel üretim doğruluğu veya eğitim başarısı olarak sunulmaz. Eksik ve farklı kalan 18 alan elle kontrol/yeni fotoğraf gerektirebilir. Örneğin küçük C5 yazısı G5 okunabilir; bu tür model/kimlik harfleri sözlükle tahmin edilerek değiştirilmez. Üst üste basılmış ve çok bulanık belgelerden güvenilir veri üretildiği iddia edilmez.
+
+### Ek kabul kontrolleri
+
+- Kurgusal referans belgenin 0/90/180/270 derecelik dört fotoğrafında 23'er beklenen değer tam eşleşti (92/92). Boş görselde araç değeri üretilmedi.
+- 105 Python ve 25 Node testi geçti. Sayısal motor serileri, binlik ayıracı, yönü belli sayfada 999/666 karışmasını önleme, görüntü yakınlaştırması, kritik alan kaybında geri dönüş, çelişki kanıtlarının aynı koordinatlarda tutulması, bozuk/boşluksuz etiketler ve ERP yakıt seçenekleri kapsanır.
+- Yeniden okumada komşu bozuk cins başlığı ticari ad adayı olarak sunulmaz. Küçük/bozuk metinde birden fazla denemenin aynı yanlış karakteri vermesi mümkündür; adaylar otomatik onaylanmaz.
+- Bu tur model ağırlığı eğitimi yapmaz. Kalıcı sunucu kurulmamıştır; GitHub Pages mevcut OCR bilgisayarına bağlıdır.
+
+Tüm fotoğrafların alan doluluğu, yukarıdaki tam eşleşme ölçümünden ayrı tutulur. Etiketsiz belgelerin çoğunda eski okumada bulunan sayfa yönü ikinci çalıştırmada açık parametre olarak yeniden kullanılmıştır; 10 etiketli belgenin karşılaştırması iki tarafta da varsayılan otomatik yön ayarındadır. Eşzamanlı test yükleri nedeniyle süreler performans karşılaştırması olarak sunulmaz.
+
+Son tam tarama: 51/51 fotoğraf işlendi; 17 seçili araç alanı üzerinden 867 alan yuvasında dolu değer sayısı 707 → 753 oldu. Bu doluluk ölçümüdür, doğruluk oranı değildir. 12 fotoğrafta kanıta dayalı belge yakınlaştırması kullanıldı. Çalıştırmalar aynı kaynak parmak iziyle doğrulandı; fotoğraf bazlı araç değerleri yalnız yerel özel klasördedir.

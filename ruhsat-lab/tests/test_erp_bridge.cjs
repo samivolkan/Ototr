@@ -18,6 +18,12 @@ test('OCR fuel labels match ERP choice values',()=>{
   }
 });
 
+test('compound hybrid and LPG descriptions match existing ERP choices',()=>{
+  for(const [fuel,expected] of [['BENZİN - ELEKTRİK','Hibrit'],['BENZİNLİ (NOVC-HEV)','Hibrit'],['DİZEL-ELEKTRİK','Hibrit'],['BENZİN/LPG','LPG'],['ELEKTRİK (BEV)','Elektrik']]) {
+    assert.equal(vehicleDraft({plate:'16TST123',vin:'TEST1234567890123',fuel_type:fuel}).fuel,expected);
+  }
+});
+
 test('first transfer waits for schema before building and filling the ERP form',async()=>{
   const vm=require('node:vm');
   const fs=require('node:fs');
