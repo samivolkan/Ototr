@@ -1,5 +1,6 @@
 "use strict";
 (function(){
+  let managementRestricted=false;
   let prefs=RuhsatQualityPolicy.preferences();
   try{prefs=RuhsatQualityPolicy.preferences(JSON.parse(preferenceStorage?.getItem('ototr-ocr-quality-v1')||'{}'));}catch{}
   $('qualityGeneral').value=prefs.general;
@@ -9,9 +10,14 @@
   function auth(kind){const value=$(kind==='admin'?'qualityAdminToken':'qualityApiToken').value.trim();return value?{Authorization:'Bearer '+value}:{};}
   function sync(){
     ['qualityGeneral','qualityVin','qualityPreprocessing','qualityRefresh','qualitySynthetic','qualityApiToken','qualityAdminToken'].forEach(id=>$(id).disabled=state.busy);
-    $('qualitySave').disabled=state.busy||!state.result?.request_id||!vehicleFields().some(f=>state.confirmed.has(f.key));
+    $('qualitySave').disabled=managementRestricted||state.busy||!state.result?.request_id||!vehicleFields().some(f=>state.confirmed.has(f.key));
+    if(managementRestricted){$('qualityRefresh').disabled=true;$('qualitySynthetic').disabled=true;}
   }
-  function health(info){$('qualityAccess').hidden=info.access_mode!=='server_token';$('qualityCompatibility').hidden=info.version==='0.2.0';}
+  function health(info){
+    $('qualityAccess').hidden=info.access_mode!=='server_token';$('qualityCompatibility').hidden=info.version==='0.2.0';
+    managementRestricted=['public_test','email_protected_preview'].includes(info.access_mode);
+    if(managementRestricted)$('qualityMessage').textContent='Bu açık test bağlantısında geri bildirim yönetimi kapalıdır. Güven eşikleri ve görüntü iyileştirme kullanılabilir. Anonim sonuçları bilgisayarınızdaki yerel kalite panelinden kaydedebilirsiniz.';
+  }
   for(const id of ['qualityGeneral','qualityVin','qualityPreprocessing'])$(id).addEventListener('change',()=>{
     const general=Number($('qualityGeneral').value),vin=Number($('qualityVin').value);
     if(!$('qualityGeneral').checkValidity()||!$('qualityVin').checkValidity()){toast('Güven eşiği 0,50 ile 1,00 arasında olmalı.',true);return;}
