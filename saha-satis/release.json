@@ -1,7 +1,7 @@
 {
   "sourceRepo": "samivolkan/ototr-saha-satis",
   "releaseDate": "2026-10-19",
-  "sourceCommit": "17883d78d19b865035541f24e484a300818b3d7b",
+  "sourceCommit": "a91441f7723bc030aec1ef5c3d2904281f116e04",
   "access": "public-profile-selection",
   "app": "responsive-web",
   "storage": "shared-supabase",
@@ -19,5 +19,19 @@
   "pdfReports": "browser-local-embedded-turkish-fonts",
   "reportSharing": "native-file-share-with-whatsapp-manual-fallback",
   "referrerContactSuggestions": true,
-  "advisorLabel": "Müşteri Danışmanı"
+  "advisorLabel": "Müşteri Danışmanı",
+  "compactReportPreview": true,
+  "reportIncludesCommercialTerms": true,
+  "esnafRewardEligibilityTracking": true,
+  "referralCommissionTracking": true,
+  "galleryOwnerRoleAndVerification": true,
+  "visitCommercialTracking": true,
+  "galleryQuickActions": [
+    "Maps",
+    "WhatsApp"
+  ],
+  "gallerySourceEvidence": [
+    "Excel",
+    "Sahibinden.com"
+  ]
 }
