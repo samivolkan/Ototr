@@ -138,3 +138,35 @@ def test_unrelated_captions_are_not_vehicle_values():
 def test_truncated_category_is_flagged_for_review():
     value, issues = validate(BY_KEY["vehicle_category"], "OTOMOBIL (AF")
     assert value == "OTOMOBIL (AF" and issues
+
+
+def test_skewed_overlapping_boxes_and_centered_values():
+    lines=[line('MARKASI',x=100,y=200,w=150,h=35,idx=1),line('RENAULT',x=115,y=230,w=130,h=35,idx=2),line('TİCARİ ADI',x=100,y=254,w=170,h=35,idx=3),line('TESCİL TARİHİ',x=500,y=200,w=190,h=35,idx=4),line('13/07/2023',x=560,y=230,w=130,h=35,idx=5),line('MOTOR NO',x=100,y=400,w=150,h=35,idx=6),line('ABC1234567',x=270,y=440,w=180,h=35,idx=7)]
+    assert field(lines,'brand')['value']=='RENAULT'
+    assert field(lines,'engine_no')['value']=='ABC1234567'
+
+
+def test_serial_caption_inline_and_split_boxes():
+    assert field([line('Seri: GS Ne 123456')],'document_serial_no')['value']=='GS123456'
+    lines=[line('Seri: GS No',x=600,y=900,w=110,idx=1),line('123456',x=715,y=900,w=90,idx=2)]
+    assert field(lines,'document_serial_no')['value']=='GS123456'
+    assert field([line('Seri: GS No')],'document_serial_no')['value'] is None
+
+
+def test_fuzzy_caption_never_extends_past_text():
+    assert find_labels('(A) PLAKA')[0][1]<=len('(A) PLAKA')
+
+
+def test_wrapped_category_with_skew_and_overlapping_boxes():
+    lines=[line('(D.5) CİNSİ',x=233,y=399,w=136,h=45,idx=1),line('OTOMOBIL (AB',x=337,y=420,w=219,h=60,idx=2),line('HECBEK)',x=228,y=453,w=128,h=38,idx=3),line('(R) RENGI',x=593,y=422,w=128,h=45,idx=4),line('(P.5) MOTOR NO',x=234,y=479,w=191,h=47,idx=5)]
+    assert field(lines,'vehicle_category')['value']=='OTOMOBIL (AB HECBEK)'
+
+
+def test_separate_serial_number_marker_is_not_an_extra_letter():
+    assert validate(BY_KEY['document_serial_no'],'HH N 123456')[0]=='HH123456'
+    assert validate(BY_KEY['document_serial_no'],'HHN123456')[0]=='HHN123456'
+
+
+def test_short_caption_with_field_code_keeps_cell_left_edge():
+    lines=[line('(D.2) TİPİ',x=57,y=615,w=116,h=42,idx=1),line('RFB',x=57,y=648,w=84,h=45,idx=2)]
+    assert field(lines,'type')['value']=='RFB'

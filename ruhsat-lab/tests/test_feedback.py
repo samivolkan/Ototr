@@ -85,3 +85,17 @@ def test_invalid_quality_parameters_do_not_reach_engine():
             response=client.post('/api/v1/ruhsat/oku?'+param,headers=HEADERS,content=b'x')
             assert response.status_code==422 and 'PRIVATE' not in response.text
         analyze.assert_not_called()
+
+
+def test_legacy_database_migrates_and_conditions_remain_separate(tmp_path):
+    import sqlite3
+    path=tmp_path/'old.sqlite3'
+    with sqlite3.connect(path) as db:
+        db.execute('CREATE TABLE reviews(request_id TEXT PRIMARY KEY, mode TEXT NOT NULL, preprocessing TEXT NOT NULL, engine_version TEXT NOT NULL, synthetic INTEGER NOT NULL)')
+        db.execute("INSERT INTO reviews VALUES ('old','fast','standard','0.2.0',1)")
+    store=FeedbackStore(path)
+    store.save(Feedback.model_validate(payload(condition='glare')))
+    store.save(Feedback.model_validate(payload(condition='blur')))
+    stats=store.stats(True)
+    assert stats['documents_reviewed']==3
+    assert {r['condition'] for r in stats['rows']}=={'glare','blur'}

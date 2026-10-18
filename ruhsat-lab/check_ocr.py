@@ -25,3 +25,5 @@ if __name__ == "__main__":
                       "warnings": result["warnings"], "summary": result["summary"]}, ensure_ascii=True, indent=2))
     (ROOT / "test-results").mkdir(exist_ok=True)
     (ROOT / "test-results/synthetic-result.json").write_text(json.dumps(result, ensure_ascii=False), encoding="utf-8")
+
+    assert matches == len(expected), "Synthetic regression: expected fields did not match"

@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {
+      "id": "synthetic-001",
+      "document_group": "synthetic-001",
+      "split": "development",
+      "condition": "clear",
+      "image": "web/sample.png",
+      "consent": true,
+      "label_review": "assistant",
+      "synthetic": true,
+      "expected": {
+        "plate": "16TST123",
+        "first_registration_date": "2021-06-15",
+        "registration_date": "2024-08-20",
+        "brand": "RENAULT",
+        "kind": "MEGANE",
+        "type": "RFB",
+        "model_year": "2021",
+        "vehicle_class": "M1",
+        "vehicle_category": "OTOMOBİL",
+        "color": "BEYAZ",
+        "vin": "TEST1234567890123",
+        "engine_no": "H5H123456",
+        "fuel_type": "BENZİN",
+        "engine_capacity": "1332",
+        "engine_power": "103",
+        "net_weight": "1320",
+        "max_loaded_weight": "1840",
+        "seat_count": "5",
+        "standing_passenger_count": "0",
+        "usage_purpose": "HUSUSİ",
+        "document_serial_no": "ZZ123456"
+      }
+    }
+  ]
+}

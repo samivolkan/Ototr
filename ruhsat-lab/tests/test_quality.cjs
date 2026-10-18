@@ -16,3 +16,15 @@ test('no feedback without reviewed fields or current server result',()=>{
   assert.throws(()=>policy.feedback({},[],{},new Set(),false));
   assert.throws(()=>policy.feedback({request_id:'uuid',engine_version:'0.2.0'},[{key:'plate',value:'A'}],{},new Set(),false));
 });
+
+test('new version records controlled photo condition without saving values',()=>{
+  const result={request_id:'uuid',engine_version:'0.3.0',mode:'detailed'};
+  const payload=policy.feedback(result,[{key:'vin',value:'PRIVATE',confidence:.9}],{vin:'PRIVATE'},new Set(['vin']),false,'glare');
+  assert.equal(payload.condition,'glare');assert.equal(payload.engine_version,'0.3.0');assert(!JSON.stringify(payload).includes('PRIVATE'));
+  assert.equal(policy.feedback(result,[{key:'vin',value:'PRIVATE',confidence:.9}],{},new Set(['vin']),false,'PRIVATE').condition,'unknown');
+});
+
+test('old server keeps its original strict feedback schema',()=>{
+  const p=policy.feedback({request_id:'uuid',engine_version:'0.2.0',mode:'fast'},[{key:'plate',value:'TEST',confidence:.9}],{},new Set(['plate']),true,'glare');
+  assert.equal('condition' in p,false);
+});

@@ -24,6 +24,7 @@ from ruhsat.engine import ImageInputError, OCRService
 from ruhsat.web_access import origin_allowed, preview_origin, server_origin
 from ruhsat.quality import apply_thresholds
 from ruhsat.feedback import Feedback, FeedbackStore
+from ruhsat.retry import reread, VEHICLE_KEYS
 
 ROOT = Path(__file__).resolve().parent
 MAX_BYTES = 20 * 1024 * 1024
@@ -49,7 +50,7 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(title="OTOTR Ruhsat Lab", version="0.2.0", lifespan=lifespan,
+app = FastAPI(title="OTOTR Ruhsat Lab", version="0.3.0", lifespan=lifespan,
               docs_url=None, redoc_url=None, openapi_url="/api/openapi.json")
 app.add_middleware(TrustedHostMiddleware, allowed_hosts=["127.0.0.1", "localhost", "[::1]"] +
                    ([urlparse(PUBLIC_ORIGIN or SERVER_ORIGIN).hostname] if PUBLIC_ORIGIN or SERVER_ORIGIN else []))
@@ -87,9 +88,9 @@ async def privacy_headers(request: Request, call_next):
             return JSONResponse({"detail": "Yalnız uygulamanın kendi adresinden istek kabul edilir."}, status_code=403)
         if request.headers.get("x-ototr-client") != "ruhsat-lab":
             return JSONResponse({"detail": "X-OTOTR-Client: ruhsat-lab başlığı gerekli."}, status_code=403)
-        if SERVER_ORIGIN and request.url.path == "/api/v1/ruhsat/oku" and not authorized(request, API_TOKEN):
+        if SERVER_ORIGIN and request.url.path in ("/api/v1/ruhsat/oku", "/api/v1/ruhsat/tekrar") and not authorized(request, API_TOKEN):
             return JSONResponse({"detail": "OCR erişim kodu gerekli."}, status_code=401, headers={"Cache-Control":"no-store"})
-        if (PUBLIC_TEST and PUBLIC_ORIGIN or SERVER_ORIGIN) and request.url.path == "/api/v1/ruhsat/oku":
+        if (PUBLIC_TEST and PUBLIC_ORIGIN or SERVER_ORIGIN) and request.url.path in ("/api/v1/ruhsat/oku", "/api/v1/ruhsat/tekrar"):
             now = time.monotonic()
             while recent_requests and now - recent_requests[0] >= 60:
                 recent_requests.popleft()
@@ -116,10 +117,10 @@ app.add_middleware(CORSMiddleware, allow_origins=[ERP_ORIGIN] if PUBLIC_TEST or 
 def health():
     return {"service": "ototr-ruhsat-lab", "status": service.status,
             "error": ("OCR motoru hazırlanamadı." if service.error else None) if PUBLIC_ORIGIN or SERVER_ORIGIN else service.error,
-            "local_only": not bool(PUBLIC_ORIGIN or SERVER_ORIGIN), "version": "0.2.0",
+            "local_only": not bool(PUBLIC_ORIGIN or SERVER_ORIGIN), "version": "0.3.0",
             "access_mode": "server_token" if SERVER_ORIGIN else ("public_test" if PUBLIC_TEST else "email_protected_preview") if PUBLIC_ORIGIN else "local",
             "processing_location": "server" if SERVER_ORIGIN else "host_computer",
-            "feedback": "anonymous_statistics", "training_images_stored": False}
+            "field_retry": True, "feedback": "anonymous_statistics", "training_images_stored": False}
 
 
 @app.get("/api/ready")
@@ -193,7 +194,7 @@ async def analyze(request: Request,
         result = await run_in_threadpool(service.analyze, bytes(body), mode, rotation, rectify, auto_rotate, preprocessing)
         apply_thresholds(result, review_threshold, vin_threshold)
         result["request_id"] = str(uuid4())
-        result["engine_version"] = "0.2.0"
+        result["engine_version"] = "0.3.0"
         if SERVER_ORIGIN and "privacy" in result:
             result["privacy"]["processing"] = "server"
         return result
@@ -206,6 +207,39 @@ async def analyze(request: Request,
     except Exception:
         # Never serialize OCR data, raw image bytes, filenames or model exceptions.
         raise HTTPException(500, "Fotoğraf işlenemedi. Başka bir fotoğrafla yeniden deneyin.")
+    finally:
+        service.lock.release()
+
+
+@app.post("/api/v1/ruhsat/tekrar", summary="Reread one vehicle field crop; no automatic replacement",
+          openapi_extra={"requestBody": {"required": True, "content": {
+              "image/png": {"schema": {"type": "string", "format": "binary"}},
+              "image/jpeg": {"schema": {"type": "string", "format": "binary"}}}}})
+async def retry_field(request: Request, field: str = Query(...)):
+    if field not in VEHICLE_KEYS:
+        raise HTTPException(422, "Yalnız izin verilen araç alanları yeniden okunabilir.")
+    if service.status != "ready":
+        raise HTTPException(503, "OCR motoru henüz hazır değil.")
+    if not service.lock.acquire(blocking=False):
+        raise HTTPException(429, "Bir fotoğraf işleniyor. İşlem bitince yeniden deneyin.")
+    try:
+        body = bytearray()
+        async with asyncio.timeout(30):
+            async for chunk in request.stream():
+                if len(body) + len(chunk) > 4 * 1024 * 1024:
+                    raise HTTPException(413, "Seçilen bölge en fazla 4 MB olabilir.")
+                body.extend(chunk)
+        if not body:
+            raise HTTPException(400, "Bölge görüntüsü boş.")
+        return await run_in_threadpool(reread, service, bytes(body), field)
+    except ImageInputError as exc:
+        raise HTTPException(422, str(exc))
+    except TimeoutError:
+        raise HTTPException(408, "Bölge yükleme süresi doldu.")
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(500, "Seçilen bölge okunamadı. Daha net bir bölge seçin.")
     finally:
         service.lock.release()
 

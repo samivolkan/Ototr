@@ -57,7 +57,7 @@ def test_accept_valid_rotation_query():
     with patch.object(service,"status","ready"),patch.object(service,"analyze",return_value={"ok":True}) as analyze:
         r=client.post("/api/v1/ruhsat/oku?rotation=90&mode=detailed&rectify=false&auto_rotate=true",content=b"image",headers=HEADERS)
         assert r.status_code==200 and r.json()["ok"] is True
-        assert r.json()["request_id"] and r.json()["engine_version"] == "0.2.0"
+        assert r.json()["request_id"] and r.json()["engine_version"] == "0.3.0"
         analyze.assert_called_once_with(b"image","detailed",90,False,True,"standard")
 
 

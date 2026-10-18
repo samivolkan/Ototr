@@ -47,7 +47,7 @@ SPECS = [
     Spec("vehicle_category", "Cinsi", ("ARACIN CINSI", "CINSI"), ("D.5",)),
     Spec("registration_date", "Tescil tarihi", ("TESCIL TARIHI",), ("I", "D"), "date", "Tescil bilgileri"),
     Spec("first_registration_date", "İlk tescil tarihi", ("ILK TESCIL TARIHI",), ("B",), "date", "Tescil bilgileri"),
-    Spec("document_serial_no", "Belge seri numarası", ("BELGE SERI NUMARASI", "BELGE SERI NO", "BELGE NO", "SERI NO"), ("N",), "serial", "Tescil bilgileri"),
+    Spec("document_serial_no", "Belge seri numarası", ("BELGE SERI NUMARASI", "BELGE SERI NO", "BELGE NO", "SERI NO", "SERI"), ("N",), "serial", "Tescil bilgileri"),
     Spec("usage_purpose", "Kullanım amacı", ("KULLANIM AMACI", "KULLANIM SEKLI", "KULLANIS AMACI"), ("Y.3",)),
     Spec("engine_capacity", "Silindir hacmi · cm³", ("SILINDIR HACMI", "MOTOR HACMI"), ("P.1",), "number", "Teknik bilgiler"),
     Spec("engine_power", "Motor gücü · kW", ("MOTOR GUCU",), ("P.2",), "number", "Teknik bilgiler"),
@@ -93,7 +93,7 @@ def find_labels(text: str) -> list[tuple[int, int, str]]:
             tail = normalized[coded.end():]
             for alias in sorted(coded_spec.aliases, key=len, reverse=True):
                 if len(alias) >= 5 and SequenceMatcher(None, tail[:len(alias)], alias).ratio() >= .80:
-                    end = coded.end() + len(alias)
+                    end = min(len(normalized), coded.end() + len(alias))
                     # A strong code+caption match resolves a partial label such
                     # as (B) lLK TESCIL TARIHI being mistaken for TESCIL TARIHI.
                     kept = [k for k in kept if k[0] >= end] + [(coded.start(), end, coded_spec.key)]
@@ -113,7 +113,7 @@ def find_labels(text: str) -> list[tuple[int, int, str]]:
                     for alias in sorted(spec.aliases, key=len, reverse=True):
                         probe = tail[:len(alias)]
                         if len(probe) >= 4 and SequenceMatcher(None, probe, alias).ratio() >= .76:
-                            end += offset + len(alias)
+                            end = min(len(normalized), end + offset + len(alias))
                             break
                     kept.append((m.start(), end, spec.key))
                     break
@@ -142,6 +142,8 @@ def validate(spec: Spec, raw: str) -> tuple[str | None, list[str]]:
     issues: list[str] = []
     if looks_like_address(value):
         return None, ["Adres benzeri metin alan önerisinden çıkarıldı."]
+    if spec.key in ("brand", "kind", "color", "vehicle_category") and not re.search(r"[A-Z]", folded):
+        return None, ["Metin alanı yerine sayısal bir satır okunmuş olabilir."]
     if spec.key == "vehicle_class" and not re.fullmatch(r"[A-Z]{1,2}\d[A-Z0-9/\-]{0,8}", folded):
         return None, ["Araç sınıfı kodu okunamadı."]
     if spec.key == "fuel_type" and not re.search(r"\b(?:BENZIN\w*|DIZEL|MOTORIN|ELEKTRIK\w*|HIBRIT|HYBRID|LPG|CNG|LNG|HIDROJEN|ETANOL|METANOL)\b", folded):
@@ -149,6 +151,10 @@ def validate(spec: Spec, raw: str) -> tuple[str | None, list[str]]:
     if spec.key == "usage_purpose" and (re.search(r"[0-9*]", folded) or not re.search(r"\b(?:HUSUSI|TICARI|RESMI|YOLCU|YUK|NAKLI|TASIMA|OKUL|SERVIS|AMBULANS|TAKSI|KIRALIK|OZEL)\b", folded)):
         return None, ["Kullanım şekli olarak tanınan bir değer okunamadı."]
     if spec.kind in ("plate", "vin", "engine", "identity", "serial"):
+        if spec.kind == "serial":
+            # Remove a visibly separate printed No/№ marker, not letters from
+            # the serial itself. Identifier characters are never guessed.
+            value = re.sub(r"^([A-Za-z]{1,4})\s+(?:N[°ºoOeE]?|№)\s*(?=\d)", r"\1", value)
         value = re.sub(r"\s+", "", value).upper()
         folded = fold(value)
     if spec.kind == "plate":
@@ -163,8 +169,11 @@ def validate(spec: Spec, raw: str) -> tuple[str | None, list[str]]:
         if not re.fullmatch(r"[A-Z0-9*./\-]{4,30}", value):
             issues.append("Motor numarasının biçimini kontrol edin.")
     elif spec.kind == "serial":
+        value = re.sub(r"^([A-Z]{1,4})(?:NO|NE|N[°º])(?=\d)", r"\1", value)
         if not re.fullmatch(r"[A-Z]{1,4}\d{5,10}", value):
-            issues.append("Belge seri numarasını kontrol edin.")
+            return None, ["Belge seri numarasının harf ve rakamları birlikte okunamadı."]
+        if not re.fullmatch(r"[A-Z]{2}\d{6}", value):
+            issues.append("Alışılmadık seri biçimi; basılı No işaretinin değere karışmadığını fotoğraftan kontrol edin.")
     elif spec.kind == "year":
         if not re.fullmatch(r"\d{4}", value) or not (1900 <= int(value) <= date.today().year + 1):
             issues.append("Model yılı geçerli aralıkta değil.")
@@ -215,6 +224,8 @@ def extract(lines: list[dict], image_width: int, image_height: int) -> dict:
         for idx, (start, end, key) in enumerate(labels):
             x0, y0, x1, y1 = bounds
             start_x = x0 + (x1 - x0) * start / max(len(line["text"]), 1)
+            if idx == 0 and re.fullmatch(r"\s*\([^)]{1,10}\)\s*", line["text"][:start]):
+                start_x = x0  # The printed field code belongs to the same cell.
             next_start = labels[idx + 1][0] if idx + 1 < len(labels) else len(line["text"])
             anchor_end_x = x0 + (x1 - x0) * end / max(len(line["text"]), 1)
             anchors.append({"key": key, "line": line, "rect": [start_x, y0, anchor_end_x, y1]})
@@ -253,6 +264,12 @@ def extract(lines: list[dict], image_width: int, image_height: int) -> dict:
         ax0, ay0, ax1, ay1 = anchor["rect"]
         ah = max(ay1 - ay0, 8)
         acy = (ay0 + ay1) / 2
+        # Slanted documents create overlapping axis-aligned boxes. Compare
+        # row centres, not the next label's top with the value's bottom.
+        right_edges = [other["rect"][0] for other in anchors if other is not anchor
+                       and other["rect"][0] > ax0 + ah * 2
+                       and abs((other["rect"][1]+other["rect"][3])/2-acy) < ah * .9]
+        cell_right = min(right_edges, default=min(image_width, ax0 + image_width * .45))
         options = []
         for line in lines:
             if line["id"] in private_line_ids or line["id"] == anchor["line"]["id"] or find_labels(line["text"]):
@@ -261,13 +278,16 @@ def extract(lines: list[dict], image_width: int, image_height: int) -> dict:
             lh = max(y1 - y0, 8)
             cy = (y0 + y1) / 2
             same_row = abs(cy - acy) < max(ah, lh) * 0.7 and x0 >= ax1 - ah * 0.3
-            below = -min(ah, lh) * .48 < y0 - ay1 < max(ah * 3.8, image_height * 0.035) and cy > acy + ah * .5 and abs(x0 - ax0) < max(image_width * 0.075, ah * 3)
+            below = (-min(ah, lh) * .7 < y0 - ay1 < max(ah * 3.8, image_height * 0.035)
+                     and cy > acy + ah * .5 and x0 >= ax0 - max(ah, image_width * .02)
+                     and (x0+x1)/2 < cell_right)
             if same_row and x0 - ax1 < image_width * 0.37:
                 blocked = any(other is not anchor and abs((other["rect"][1] + other["rect"][3]) / 2 - acy) < ah and ax1 < other["rect"][0] < x0 for other in anchors)
                 distance = max(0, x0 - ax1) / max(image_width, 1)
                 priority = 0.96 - distance * 0.3
             elif below:
-                blocked = any(other is not anchor and ay1 < other["rect"][1] < y1 and abs(other["rect"][0] - ax0) < max(image_width * 0.075, ah * 3) for other in anchors)
+                blocked = any(other is not anchor and acy < (other["rect"][1]+other["rect"][3])/2 < cy
+                              and abs(other["rect"][0]-ax0) < max(image_width*.075, ah*3) for other in anchors)
                 distance = max(0, y0 - ay1) / max(ah, 1)
                 priority = 0.94 - distance * 0.025
             else:
@@ -278,7 +298,51 @@ def extract(lines: list[dict], image_width: int, image_height: int) -> dict:
             if value:
                 options.append({"raw": line["text"], "score": min(line["score"], anchor["line"]["score"]), "ids": [line["id"]], "method": "right" if same_row else "below", "priority": priority - (0.25 if issues else 0)})
         if options:
-            candidates[key].append(max(options, key=lambda c: c["priority"]))
+            candidates[key].extend(options if key == "vehicle_category" else [max(options, key=lambda c: c["priority"])])
+
+    # A wrapped parenthesis description belongs to the same cell only when
+    # the next line is close, closes the bracket and precedes the next label.
+    for candidate in candidates["vehicle_category"]:
+        if candidate["raw"].count("(") <= candidate["raw"].count(")"):
+            continue
+        base = line_map[candidate["ids"][-1]]
+        bx0, by0, bx1, by1 = rect(base)
+        bcy = (by0+by1)/2
+        tails = []
+        for line in lines:
+            x0,y0,x1,y1=rect(line); cy=(y0+y1)/2
+            if (line["id"] in private_line_ids or find_labels(line["text"]) or ")" not in line["text"]
+                    or not bcy < cy < bcy+(by1-by0)*1.2 or x0 > bx1 or x1 < bx0-(by1-by0)*2):
+                continue
+            if any(bcy < (a["rect"][1]+a["rect"][3])/2 < cy and abs(a["rect"][0]-x0)<image_width*.1 for a in anchors):
+                continue
+            tails.append(line)
+        if len(tails)==1:
+            candidate["raw"] += " " + tails[0]["text"]
+            candidate["ids"].append(tails[0]["id"])
+            candidate["score"] = min(candidate["score"], tails[0]["score"])
+            if candidate["method"] != "inline" and not validate(BY_KEY["vehicle_category"], candidate["raw"])[1]:
+                candidate["priority"] = min(.94, candidate["priority"] + .25)
+
+    # Serial letters and digits can be separate OCR boxes on the same printed
+    # baseline. Require the explicit Seri caption; never scan identity cells.
+    for anchor in anchors:
+        if anchor["key"] != "document_serial_no":
+            continue
+        base = anchor["line"]
+        match = re.search(r"\bSERI\s*:?\s*([A-Z]{1,4})\s+N(?:O|E|[°º])?\s*$", fold(base["text"]))
+        if not match:
+            continue
+        x0,y0,x1,y1 = rect(base)
+        for line in lines:
+            a,b,c,d = rect(line)
+            digits = re.sub(r"\s+", "", line["text"])
+            if (line["id"] not in private_line_ids and re.fullmatch(r"\d{5,10}", digits)
+                    and abs((b+d-y0-y1)/2) < (y1-y0)*.6
+                    and x1-(y1-y0) <= a <= x1+image_width*.06):
+                candidates["document_serial_no"].append({"raw":match[1]+digits,
+                    "score":min(base["score"],line["score"]),"ids":[base["id"],line["id"]],
+                    "method":"serial_parts","priority":.94})
 
     # Unlabelled VIN/plate candidates are suggestions only. Never promote to trusted.
     for spec in SPECS[:2]:

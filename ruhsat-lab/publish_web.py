@@ -14,7 +14,7 @@ def build(output: Path, api_base: str, server: bool = False):
     if not api_base:
         raise ValueError("HTTPS OCR adresi gerekli.")
     output.mkdir(parents=True, exist_ok=True)
-    for name in ["app.js", "style.css", "field-settings.js", "data-policy.js", "sample.png", "erp-bridge.js", "quality-policy.js", "learning.js"]:
+    for name in ["app.js", "style.css", "field-settings.js", "data-policy.js", "sample.png", "erp-bridge.js", "quality-policy.js", "learning.js", "retry.js"]:
         shutil.copyfile(ROOT / "web" / name, output / name)
     html = (ROOT / "web/index.html").read_text(encoding="utf-8")
     html = html.replace('/assets/', './').replace('href="/"', 'href="../index.html#ruhsat" target="_top"')
@@ -24,7 +24,7 @@ def build(output: Path, api_base: str, server: bool = False):
     html = html.replace('Harici servise gönderilmez.', 'Kendi OCR sunucunuzda işlenir; ham fotoğraf kaydedilmez.' if server else 'HTTPS / Cloudflare üzerinden kendi OCR bilgisayarınıza iletilir.')
     html = html.replace('Yerel işleme · Otomatik kayıt yok · Ototr bağlantısı henüz etkin değil',
                         'OTOTR ERP · Sunucuda işleme · Geri bildirim isteğe bağlı' if server else 'OTOTR ERP · Otomatik kayıt yok · OCR bilgisayarı açık kalmalı')
-    html = re.sub(r'((?:src|href)="\./[^"?]+\.(?:js|css))"', r'\1?v=20261018-2"', html)
+    html = re.sub(r'((?:src|href)="\./[^"?]+\.(?:js|css))"', r'\1?v=20261019-3"', html)
     (output / "index.html").write_text(html, encoding="utf-8")
     config = {"apiBase": api_base, "samplePath": "./sample.png", "erp": True}
     (output / "config.js").write_text('window.RUHSAT_CONFIG = Object.freeze(' + json.dumps(config) + ');\n', encoding="utf-8")

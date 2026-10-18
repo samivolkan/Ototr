@@ -1,12 +1,16 @@
-# OTOTR Ruhsat Lab
+# OTOTR Ruhsat Lab 0.3
 
 Windows üzerinde yerel ruhsat OCR prototipi. Fotoğraf → gerçek OCR → etiket/konum eşlemesi → insan kontrolü → JSON.
 
 ## GitHub ve canlı yayın
 
-Bu klasör `samivolkan/Ototr` içindeki bağımsız ruhsat OCR prototipidir. Ana uygulamaya henüz bağlı değildir. Kaynak kod, kurgusal örnek ve testler bulunur; gerçek belgeler, kişisel OCR sonuçları, yerel günlükler, sanal ortam ve model ağırlıkları depoya alınmaz.
+Bu klasör `samivolkan/Ototr` içindeki bağımsız ruhsat OCR prototipidir. GitHub Pages ERP hızlı iş emrine kontrollü araç aktarımı bağlıdır; üretim oto-tr.com uygulaması bu bağlantıdan ayrıdır. Kaynak kod, kurgusal örnek ve testler bulunur; gerçek belgeler, kişisel OCR sonuçları, yerel günlükler, sanal ortam ve model ağırlıkları depoya alınmaz.
 
 **GitHub Pages bu uygulamanın Python/ONNX motorunu çalıştırmaz.** Ayrı dala push etmek mevcut canlı siteyi değiştirmez ve çalışan bir OCR adresi üretmez. Yerelde aşağıdaki kurulumla çalıştırılabilir. E-posta ile korunan geçici web erişimi için aşağıdaki `WebBaslat.ps1` bölümü eklenmiştir. Kalıcı canlı sürüm için Python 3.12 destekli bir sunucu, model kurulumu, HTTPS ve erişim kontrolü gerekir. Varsayılan API yalnız localhost erişimini kabul eder; doğrudan internete açılmamalıdır.
+
+## Yazılımcı teslimi
+
+0.3 sürümünün kapsamı, API sözleşmesi, karşılaştırmalı ölçüm ve eğitim koşulları [YAZILIMCI_TESLIM.md](deploy/YAZILIMCI_TESLIM.md) içinde. Yeni sürüm ayrı geliştirme dalındadır; bu dal mevcut Pages veya üretim hostingini otomatik güncellemez.
 
 ## Açma
 
@@ -51,7 +55,7 @@ Sahip adı, soyadı/unvanı ve T.C./vergi no, ayrı **Satıcı önerisi** bölü
 
 `schema_version: 1.1` ile araç alanları `fields` ve `analysed.Data` içinde, sahip alanları yalnız `seller_suggestion.fields` içinde döner. `seller_suggestion.persistence` değeri `memory_only` olur. Taslak ve kontrol edilen JSON çıktıları yalnız izin verilen araç alanlarından oluşturulur; sahip alanları, bunların ilk/elle düzeltilmiş/alternatif değerleri, fotoğraf ve ham OCR satırları dahil edilmez. Sahip bilgilerinin onayı araç JSON indirmesini engellemez.
 
-Oto-TR entegrasyonu bu ayrımı korumalı: `seller_suggestion` yalnız geçici form önerisidir; iş emri kaydına, veri tabanına, tarayıcı depolamasına, günlük veya analitiğe yazılmamalıdır. Tam OCR yanıtı `lines` ve `image.preview` nedeniyle kişisel bilgi/adres de içerebilir; tam yanıtın kaydedilmesi uygun değildir. Bu prototipte satıcı kaydı oluşturulmaz. Mevcut Oto-TR uygulamasında bu davranış henüz uygulanmış veya doğrulanmış değildir.
+Oto-TR entegrasyonu bu ayrımı korumalı: `seller_suggestion` yalnız geçici form önerisidir; iş emri kaydına, veri tabanına, tarayıcı depolamasına, günlük veya analitiğe yazılmamalıdır. Tam OCR yanıtı `lines` ve `image.preview` nedeniyle kişisel bilgi/adres de içerebilir; tam yanıtın kaydedilmesi uygun değildir. Bu prototipte satıcı kaydı oluşturulmaz. GitHub Pages ERP köprüsünde bu ayrım test edilmiştir; üretim oto-tr.com sunucu uygulamasına kurulmamıştır.
 
 ## Gizlilik
 
@@ -130,12 +134,12 @@ Kalıcı yayın için Python 3.12 ve ONNX modellerini çalıştırabilen bir sun
 
 ```powershell
 .\.venv\Scripts\python.exe -m pytest -q
-node --test tests/test_export.cjs tests/test_settings.cjs
+node --test tests/test_export.cjs tests/test_settings.cjs tests/test_quality.cjs tests/test_erp_bridge.cjs
 .\.venv\Scripts\python.exe -X utf8 check_ocr.py
 .\.venv\Scripts\python.exe -X utf8 benchmark.py
 ```
 
-`check_ocr.py` gerçek çıkarımı ağ bağlantılarını engelleyerek çalıştırır ve kurgusal örneği beklenen alanlarla karşılaştırır. `test-results/` yalnız kurgusal test çıktıları içindir. Tek örnekteki sonuç gerçek müşteri ruhsatları için başarı oranı değildir. Bir gerçek fotoğrafla yapılan ilk kontrolde eksik ve hatalı alanlar görüldü. Gerçek fotoğraf çeşitliliğiyle pilot test ve OCR iyileştirmesi gereklidir; mevcut sürüm üretim doğruluğu iddiası taşımaz.
+`check_ocr.py` gerçek çıkarımı ağ bağlantılarını engelleyerek çalıştırır ve kurgusal örneği beklenen alanlarla karşılaştırır. `test-results/` Git dışında tutulur. Kurgusal testler ayrıntılı tanı üretebilir; gerçek belge değerlendirmesi yalnız anonim sayaçlar üretir. Tek örnekteki sonuç gerçek müşteri ruhsatları için başarı oranı değildir. Bir gerçek fotoğrafla yapılan ilk kontrolde eksik ve hatalı alanlar görüldü. Gerçek fotoğraf çeşitliliğiyle pilot test ve OCR iyileştirmesi gereklidir; mevcut sürüm üretim doğruluğu iddiası taşımaz.
 
 Doğrulanan kontroller ve sınırlar [TEST_SONUCLARI.md](TEST_SONUCLARI.md) dosyasındadır.
 

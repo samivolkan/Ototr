@@ -32,7 +32,7 @@ class ImageInputError(ValueError):
     pass
 
 
-def decode_image(data: bytes, rotation: int = 0) -> tuple[Image.Image, dict]:
+def decode_image(data: bytes, rotation: int = 0, min_side: int = 80) -> tuple[Image.Image, dict]:
     try:
         with warnings.catch_warnings():
             warnings.simplefilter("error", Image.DecompressionBombWarning)
@@ -49,7 +49,7 @@ def decode_image(data: bytes, rotation: int = 0) -> tuple[Image.Image, dict]:
                 image = Image.alpha_composite(white, rgba).convert("RGB")
             else:
                 image = image.convert("RGB")
-            if min(image.size) < 80:
+            if min(image.size) < min_side:
                 raise ImageInputError("Fotoğraf çok küçük. Ruhsatı daha yakından çekin.")
             image.thumbnail((2400, 2400), Image.Resampling.LANCZOS)
             if rotation:
@@ -153,7 +153,7 @@ class OCRService:
             traceback.print_exc()
 
     def read(self, image: Image.Image, model: str, prefix: str) -> list[dict]:
-        result = self.models[model](image)
+        result = self.models[model](image, use_det=True, use_cls=True, use_rec=True)
         if result.txts is None or result.boxes is None:
             return []
         return [{"id": f"{prefix}-{idx}", "text": text, "score": round(float(score), 4),
