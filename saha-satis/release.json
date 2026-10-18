@@ -1,7 +1,7 @@
 {
   "sourceRepo": "samivolkan/ototr-saha-satis",
   "releaseDate": "2026-10-19",
-  "sourceCommit": "b28f50811056c9ba766797a20e3df7c9dd7c1861",
+  "sourceCommit": "8db6cb5282e4bc74ba747d1802295699b8e11c02",
   "access": "public-profile-selection",
   "app": "responsive-web",
   "storage": "shared-supabase",
@@ -11,5 +11,38 @@
   "defaultCheckIntervalDays": 3,
   "visitGalleryFilters": "district-neighborhood",
   "referralNeighborhoodSelect": true,
-  "gallerySearchSuggestions": true
+  "gallerySearchSuggestions": true,
+  "visitReports": [
+    "daily",
+    "weekly"
+  ],
+  "pdfReports": "browser-local-embedded-turkish-fonts",
+  "reportSharing": "native-file-share-with-whatsapp-manual-fallback",
+  "referrerContactSuggestions": true,
+  "advisorLabel": "Müşteri Danışmanı",
+  "compactReportPreview": true,
+  "reportIncludesCommercialTerms": true,
+  "esnafRewardEligibilityTracking": true,
+  "referralCommissionTracking": true,
+  "galleryOwnerRoleAndVerification": true,
+  "visitCommercialTracking": true,
+  "galleryQuickActions": [
+    "Maps",
+    "WhatsApp"
+  ],
+  "gallerySourceEvidence": [
+    "Excel",
+    "Sahibinden.com"
+  ],
+  "galleryArchive": "recoverable-soft-archive",
+  "visitSections": [
+    "planned",
+    "visited",
+    "referred-galleries"
+  ],
+  "weeklyTargets": [
+    "visits",
+    "referrals"
+  ],
+  "goalScope": "per-member-weekly-shared"
 }
