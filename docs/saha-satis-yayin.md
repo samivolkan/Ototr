@@ -9,6 +9,8 @@
 - 468 gerçek galeri, 488 iletişim kaydı, 478 kaynak satırı ortak veritabanındadır. Son araştırmada 255 kaydın 4'ü doğrulandı: 217 mahalleli / 251 teyit bekleyen. Örnek kayıt yoktur.
 - Üç günlük takvim, erteleme/iptal geçmişi, ziyaret sonucu ve takip planı, referans durumu ve galeriye dönüşüm.
 - Ziyaret planlama sırası: **İlçe → Mahalle → Galeri → Görüşülecek kişi**. Mahalle seçenekleri ilçeye bağlıdır; tüm mahalleler ve mahallesi bilinmeyenler seçilebilir. Bölge değişiminde eski galeri ve kişi seçimi temizlenir. Galeri detayından açılan planda bölge hazır gelir.
+- Referans ekleme ve ziyaret sonucunda referans alma formlarında mahalle ilçeye bağlı açılır listedir. Canlı kayıtlardaki mahalleler kullanılır; bilinmeyen adres boş bırakılabilir, listede olmayan mahalle açık elle giriş seçeneğinden girilir.
+- Kaynak galeri aramasında yazdıkça eşleşmeler görünür; sonuca tıklamak galeriyi seçer. Yeni arama eski seçimi temizler. Türkçe/ASCII adlar, kişi ve biçimlendirilmiş telefon araması desteklenir. Dört domain testi ve masaüstü/390 px telefon kontrolleri geçti.
 - Galeri listesinde ve detayda **Düzelt** bulunur; elle düzeltilen adresler otomatik araştırmada korunur.
 - **Yeni galeri kontrolü** 3/5/7/30 gün seçimini, duraklatmayı ve sıraya almayı destekler. Başlangıç 3 gündür; ilk kısmi kontrolde 4 mağaza incelendi ve 3 aday ayrıldı. Adaylar doğrulanmadan rehbere eklenmez. Sonraki vade 22 Ekim 2026 09.00'dır.
 - Kontrol Codex'in bu sohbetindeki yerel otomasyonla yürür; bilgisayar ve Codex açık olmalıdır. Günlük 09.00 yoklaması yalnızca canlı ayardaki vade geldiğinde araştırma yapar. Tam tarama gerçekleşmediğinde kısmi/engelli olarak kaydedilir.
