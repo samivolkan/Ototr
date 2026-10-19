@@ -27,6 +27,12 @@ Bu sayılar tüm belgelerin tamamen okunduğu anlamına gelmez. Son adayda bekle
 - Kullanıcının Renault belgesinde 17/17 beklenen araç alanı eşleşti. Şasi, motor numarası, cins ve yakıt için alan yeniden okumalarında beklenen değer adaylar arasında bulundu; dört işlem de kullanıcı onayı gerektiriyor.
 - Son kaynak parmak izi: `8f1a286e6acb6b93a0b382d039954182357fc4ae2c94583ea33678caff472de9`. Gerçek koleksiyon ve ayrıntılı yerel sonuçlar Git kapsamı dışındadır.
 
+## Hatalı alanlarda bölgesel yeniden okuma
+
+Sekiz farklı geliştirme fotoğrafında, ilk okumada yanlış olan fakat belge üzerinde kanıt kutusu bulunan birer araç alanı ayrıca sınandı. Sekiz denemenin dördünde beklenen doğru değer yeniden okuma adayları arasına girdi; dördünde bulunamadı. Bölgesel işlemler 0,43–1,49 saniye sürdü ve tamamı kullanıcı onayı gerektirdi. Bu sonuç 709/827 ilk okuma sayısına eklenmedi.
+
+Bu küçük seçilmiş grup rastgele veya bağımsız bir test değildir; kanıt kutusu olmayan eksik alanları kapsamaz. Bazı işlemler birden fazla aday ürettiği için adayın bulunması otomatik olarak doğru adayın seçildiği anlamına gelmez. Kullanıcı fotoğrafla karşılaştırmalı; gerekli durumda alanı elle düzeltmeli veya daha net fotoğraf yüklemelidir.
+
 ## Seçilen ve elenen değişiklikler
 
 Türkçe açıklama eşleme, aynı hücrede satır devamı, eğik başlık/değer kutuları, ağırlık hücresi sınırları ve gözlenen alternatifleri koruma iyileştirildi. Ayrıntılı okumada yakınlaştırmadan sonra eksik kalan araç alanı, tam fotoğraftaki ikinci model kanıtıyla kurtarılabilir; değer üzerine yazılmaz, sahip bilgisi kurtarılmaz ve kontrol zorunludur. Bu koruma zor belgelerde süreyi artırabilir.
