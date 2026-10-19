@@ -22,9 +22,11 @@ def build(output: Path, api_base: str, server: bool = False):
     html = html.replace('YEREL PROTOTİP', 'ERP / TEST')
     html = html.replace('Bu bilgisayarda işlenir', 'Kalıcı OCR sunucusu' if server else 'Girişsiz test erişimi')
     html = html.replace('Harici servise gönderilmez.', 'Kendi OCR sunucunuzda işlenir; ham fotoğraf kaydedilmez.' if server else 'HTTPS / Cloudflare üzerinden kendi OCR bilgisayarınıza iletilir.')
-    html = html.replace('Yerel işleme · Otomatik kayıt yok · Ototr bağlantısı henüz etkin değil',
-                        'OTOTR ERP · Sunucuda işleme · Geri bildirim isteğe bağlı' if server else 'OTOTR ERP · Otomatik kayıt yok · OCR bilgisayarı açık kalmalı')
-    html = re.sub(r'((?:src|href)="\./[^"?]+\.(?:js|css))"', r'\1?v=20261019-6"', html)
+    for footer in ('Yerel işleme · Otomatik kayıt yok · Ototr bağlantısı henüz etkin değil',
+                   'Yerel işleme · Otomatik kayıt yok · Alanları fotoğrafla kontrol edin'):
+        html = html.replace(footer, 'OTOTR ERP · Sunucuda işleme · Geri bildirim isteğe bağlı'
+                            if server else 'OTOTR ERP · Otomatik kayıt yok · OCR bilgisayarı açık kalmalı')
+    html = re.sub(r'((?:src|href)="\./[^"?]+\.(?:js|css))"', r'\1?v=20261019-7"', html)
     (output / "index.html").write_text(html, encoding="utf-8")
     config = {"apiBase": api_base, "samplePath": "./sample.png", "erp": True}
     (output / "config.js").write_text('window.RUHSAT_CONFIG = Object.freeze(' + json.dumps(config) + ');\n', encoding="utf-8")
