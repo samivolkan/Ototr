@@ -73,3 +73,44 @@ def test_upright_recognition_reuses_boxes_without_rotating_numeric_cells():
     detected=[dict(id='a-0',text='666',score=.99,box=[[10,10],[100,10],[100,40],[10,40]])]
     output=service.read_upright(Image.new('RGB',(200,100)),'v5','a',detected=detected)
     assert output[0]['text']=='999' and output[0]['box']==detected[0]['box']
+
+
+class RecoveryService(FakeService):
+    def __init__(self, outside=False):
+        super().__init__()
+        self.outside=outside
+        self.full_secondary_reads=0
+
+    def read(self,image,model,prefix):
+        result=super().read(image,model,prefix)
+        if image.size==(1600,1600) and model=='v6':
+            self.full_secondary_reads+=1
+            x=1200 if self.outside else 330
+            for i,text in enumerate(['ARAC SINIFI: M1','ADI: KURGUSAL']):
+                result.append(dict(id=f'{prefix}-extra-{i}',text=text,score=.98,
+                                   box=[[x,550+i*30],[x+200,550+i*30],
+                                        [x+200,570+i*30],[x,570+i*30]]))
+        return result
+
+
+def test_missing_focused_field_recovers_observed_full_frame_evidence_for_review():
+    service=RecoveryService()
+    result=service.analyze(document(),'detailed',0,False,True)
+    field=next(f for f in result['fields'] if f['key']=='vehicle_class')
+    assert field['value']=='M1' and field['needs_review'] and field['status']=='review'
+    assert service.full_secondary_reads==1
+    evidence=[l for l in result['lines'] if l['id'] in field['line_ids']]
+    assert evidence and all(l['id'].startswith('full-b-') for l in evidence)
+    assert all(0<=x<=result['image']['width'] and 0<=y<=result['image']['height']
+               for l in evidence for x,y in l['box'])
+    assert not any(f['value'] for f in result['seller_suggestion']['fields'])
+    assert not any('KURGUSAL' in l['text'] for l in result['lines'])
+
+
+def test_recovery_rejects_evidence_outside_preview_and_fast_mode_does_not_retry():
+    result=RecoveryService(outside=True).analyze(document(),'detailed',0,False,True)
+    assert result['analysed']['Data']['vehicle_class'] is None
+    service=RecoveryService()
+    result=service.analyze(document(),'fast',0,False,True)
+    assert service.full_secondary_reads==0
+    assert result['analysed']['Data']['vehicle_class'] is None

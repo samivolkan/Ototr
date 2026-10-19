@@ -7,6 +7,8 @@ import argparse
 import hashlib
 import json
 import statistics
+import time
+import math
 from pathlib import Path
 from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -113,26 +115,56 @@ def compare(before, after):
             "production_ready":False,"reason":"Independent representative human-reviewed test and operational validation required"}
 
 
+def repeat_summary(samples, changed_fields, initialization_seconds):
+    """Timing/consistency counts only; repeat runs never inflate accuracy."""
+    durations=sorted(s['seconds'] for s in samples)
+    per_case={}
+    for sample in samples:
+        per_case.setdefault(sample['id'],[]).append(sample['seconds'])
+    return {'runs':len(samples),'initialization_seconds':round(initialization_seconds,3),
+            'median_seconds':round(statistics.median(durations),3) if durations else None,
+            'p95_seconds':round(durations[max(0,math.ceil(len(durations)*.95)-1)],3) if durations else None,
+            'min_seconds':round(min(durations),3) if durations else None,
+            'max_seconds':round(max(durations),3) if durations else None,
+            'changed_field_observations':changed_fields,
+            'per_case':[{'id':key,'runs':len(values),'median_seconds':round(statistics.median(values),3)} for key,values in per_case.items()],
+            'samples':samples,'accuracy_counts_use_first_run_only':True}
+
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('manifest',type=Path)
     parser.add_argument('--split',choices=['development','train','validation','test'],default='test')
     parser.add_argument('--output',type=Path,required=True)
     parser.add_argument('--compare',type=Path)
+    parser.add_argument('--repeats',type=int,choices=range(1,21),default=1,
+                        help='Repeat all cases to measure speed and stability (1–20). Accuracy uses the first run only.')
     args=parser.parse_args()
     try:
         dataset,files,fingerprint=load_dataset(args.manifest)
         cases=[c for c in dataset.cases if c.split==args.split]
         if not cases:raise ValueError('Selected split is empty')
         from ruhsat.engine import OCRService
-        service=OCRService();service.initialize()
+        service=OCRService();started=time.perf_counter();service.initialize()
+        initialization_seconds=time.perf_counter()-started
         if service.status!='ready':raise ValueError('OCR model files unavailable')
-        items=[]
-        for case in cases:
-            result=service.analyze(files[case.id][0].read_bytes(),'detailed',0,False,True)
-            items.append(score_case(case,result['fields'],result['elapsed_seconds']))
-            print(f"Completed {len(items)}/{len(cases)}",flush=True)
+        items=[];samples=[];first_values={};changed_fields=0
+        for repeat in range(args.repeats):
+            for number,case in enumerate(cases,1):
+                raw=files[case.id][0].read_bytes()
+                if hashlib.sha256(raw).hexdigest()!=files[case.id][1]:
+                    raise ValueError('Dataset image changed during evaluation')
+                result=service.analyze(raw,'detailed',0,False,True)
+                current={f['key']:f['value'] for f in result['fields']}
+                if repeat==0:
+                    items.append(score_case(case,result['fields'],result['elapsed_seconds']))
+                    first_values[case.id]=current
+                else:
+                    changed_fields+=sum(current.get(key)!=value for key,value in first_values[case.id].items())
+                samples.append({'id':case.id,'repeat':repeat+1,'seconds':result['elapsed_seconds']})
+                print(f"Completed round {repeat+1}/{args.repeats}, case {number}/{len(cases)}",flush=True)
         output=report(items,fingerprint,args.split,__version__)
+        output['repeat_benchmark']=repeat_summary(samples,changed_fields,initialization_seconds)
         if args.compare:output['comparison']=compare(json.loads(args.compare.read_text()),output)
         args.output.parent.mkdir(parents=True,exist_ok=True)
         args.output.write_text(json.dumps(output,indent=2,ensure_ascii=False),encoding='utf-8')

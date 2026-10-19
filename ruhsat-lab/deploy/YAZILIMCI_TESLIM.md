@@ -1,4 +1,4 @@
-# Ruhsat OCR 0.3.2 yazılımcı teslim kılavuzu
+# Ruhsat OCR 0.3.3 yazılımcı teslim kılavuzu
 
 Bu sürüm, GitHub Pages ERP'de ruhsatı okuyup kullanıcı kontrolünden sonra hızlı iş emrini dolduran prototipin geliştirme paketidir. Yeni alan eşlemesi, bölgesel yeniden okuma, koşul bazında anonim geri bildirim ve karşılaştırmalı değerlendirme aracı içerir. Mevcut model ağırlıkları kullanılmaktadır; ruhsatlarla yeniden eğitilmiş model değildir.
 
@@ -12,16 +12,21 @@ Python 3.12 ve Node.js kullanın. Windows'ta `Kurulum.ps1` sanal ortamı, sabitl
 
 Model dizini isteğe bağlı `OTOTR_MODEL_DIR` ile belirtilebilir. Modeller ZIP/Git içinde bulunmaz; `setup_models.py` ile indirilir. Ortam anahtarları `.env.example` üzerinden sunucuda oluşturulur; web dosyalarına yazılmaz. `requirements-lock.txt` değiştirilmeden kurulum tekrarlanabilir.
 
+`OTOTR_OCR_THREADS` ile ONNX işlemci paralelliği 1–16 arasında ayarlanabilir. Varsayılan mevcut mantıksal işlemci sayısını aşmadan en fazla 6'dır; işlemci sayısı belirlenemezse 4 kullanılır. Geçersiz değerle motor belge kabul etmeden hata verir. Değişiklik servis yeniden başlatıldığında uygulanır. Bu bilgisayarda ölçülen kazancı başka sunucu için varsaymayın; aynı veriyle 4 ve 6 ayarlarını karşılaştırın. Aynı anda yalnız bir OCR işi çalıştırılması korunur.
+
 ```powershell
 .\Kurulum.ps1
 .\.venv\Scripts\python.exe -m pytest -q
 node --test tests/test_export.cjs tests/test_settings.cjs tests/test_quality.cjs tests/test_erp_bridge.cjs
 .\.venv\Scripts\python.exe -X utf8 check_ocr.py
+.\.venv\Scripts\python.exe -X utf8 check_orientation.py
 .\.venv\Scripts\python.exe -X utf8 benchmark.py
 .\Baslat.cmd
 ```
 
 `check_ocr.py` ağ bağlantısını engeller ve kurgusal örneğin beklenen değerlerinden sapma varsa başarısız çıkar. `benchmark.py` JPEG sıkıştırma, üç döndürme, farklı yerleşim, boş belge ve perspektif koşullarını ölçer. Bunlar sentetik regresyon kontrolleridir.
+
+`check_orientation.py`, dört otomatik yönü, otomatik yön kapalıyken dik belgeyi, elle döndürmeyi, düzeltilmemiş yan belgenin kontrol uyarısını ve boş belgeyi gerçek modellerle sınar. Alan farkında veya eksik uyarıda başarısız çıkar; rapor yalnız kurgusal durum adları ve alan anahtarları içerir.
 
 ## Kod haritası
 
@@ -36,11 +41,11 @@ node --test tests/test_export.cjs tests/test_settings.cjs tests/test_quality.cjs
 | `web/data-policy.js`, `web/erp-bridge.js` | Araç alanı beyaz listesi, onay ve ERP mesaj sınırı |
 | Depo kökündeki `ruhsat-erp.js`, `index.html` | Mevcut GitHub Pages hızlı iş emri entegrasyonu |
 
-ERP uygulamasının bütünü Git deposundadır; OCR ZIP'i bağımsız servis ve entegrasyon adaptörü içindir. Paket ve müşteri seçimi ruhsattan türetilmez. ERP'ye aktarım kayıt işlemini kendiliğinden yapmaz; mevcut kayıt düğmesi kullanıcı tarafından çalıştırılır. Bulut oturumu olmadığında kayıt yalnız tarayıcıda tutulabilir ve ekranda açıkça belirtilir. Üretim oto-tr.com farklı uygulamadır; bu depodaki entegrasyon oraya kurulmuş sayılmaz.
+ERP uygulamasının bütünü Git deposundadır; OCR ZIP'i bağımsız servis ve entegrasyon adaptörü içindir. Paket ve müşteri seçimi ruhsattan türetilmez. ERP'ye aktarım kayıt işlemini kendiliğinden yapmaz; mevcut kayıt düğmesi kullanıcı tarafından çalıştırılır. Yerel kayıt desteği kodda bulunur; ancak bayi portalının mevcut oturum/yapılandırma kontrolü nedeniyle son tarayıcı kabulünde gerçek iş emri kaydı uçtan uca doğrulanmamıştır. Yetkili bayi oturumuyla kayıt kabulü ayrıca yapılmalıdır. Üretim oto-tr.com farklı uygulamadır; bu depodaki entegrasyon oraya kurulmuş sayılmaz.
 
 ## API sözleşmesi
 
-Çalışan servisin OpenAPI tanımı `/api/openapi.json`, teslim anındaki kopyası `openapi.json` dosyasıdır. Tam okuma yanıt şeması `1.1`, motor sürümü `0.3.2`; mevcut `analysed.Data` alanları korunmuştur.
+Çalışan servisin OpenAPI tanımı `/api/openapi.json`, teslim anındaki kopyası `openapi.json` dosyasıdır. Tam okuma yanıt şeması `1.1`, motor sürümü `0.3.3`; mevcut `analysed.Data` alanları korunmuştur.
 
 | Uç | Girdi ve sonuç |
 |---|---|
@@ -98,6 +103,10 @@ Sahip adı/soyadı/kimlik ve adres eğitim etiketlerine, feedback'e, ERP mesajı
 
 Raporlar gerçek değerleri veya fotoğrafları içermez; alan/koşul bazında tam eşleşme, boş kalma, boş alana yanlış değer koyma ve süreyi içerir. Plaka/şasi gerilemeleri ayrıca listelenir. Dosyalar ve ayarlar değişmişse karşılaştırma reddedilir. Aynı belgenin tekrar çekimleri/kırpımları aynı `document_group` içinde ve aynı veri bölümünde kalmalıdır; grup bölünmesi ve birebir kopyanın farklı grup sayılması reddedilir. Farklı çekimlerin aynı araca ait olduğunu dosya hash'i anlayamaz; gruplamayı veri sorumlusu doğrular. Gerçek/kurgusal sonuçlar ayrı gruplarda raporlanır.
 
+Tekrarlanabilir hız ve kararlılık ölçümü için aynı manifesti `--repeats 3` ile çalıştırın (izin verilen aralık 1–20). Model başlatma süresi ayrı, belge süreleri medyan/p95/minimum/maksimum olarak raporlanır. Doğruluk yalnız ilk turdan hesaplanır; tekrarlar örnek sayısını veya doğruluğu yapay olarak artırmaz. Sonraki turlarda değişen araç değerleri ayrıca sayılır. Her turda dosya hash'i yeniden kontrol edilir; test sırasında fotoğraf değiştirilirse çalışma başarısız olur.
+
+Hız karşılaştırmasını aynı bilgisayar, aynı güç ayarı, aynı görüntü/ön işlem/yön ayarı ve tek OCR işiyle yapın. Eski–yeni–eski sıralaması sıcaklık ve arka plan yükü etkisini görmeye yardımcı olur. Daha hızlı fakat önceden doğru alanı bozan ayarı otomatik olarak varsayılan yapmayın. Geliştirmede görülmüş belgelerden elde edilen sonuçlar bağımsız test doğruluğu olarak sunulamaz; asistanın görsel etiketleri insan kontrolünün yerini tutmaz.
+
 Eğitim için sırayla:
 
 1. İzinli belge çeşitliliğini artırın. İki belge yeni modelin genellemesini ölçmek için yeterli değildir. Yüzlerce fotoğraf tek başına yeterlilik garantisi de değildir; farklı belge düzeni, kamera, ışık, açı ve araç grupları gerekir.
@@ -127,3 +136,18 @@ Geri dönüşte önceki OCR kodu/model/sözlük seti ve frontend birlikte kullan
 - `evaluate.py` ve API sürümü tek `ruhsat.__version__` kaynağını kullanır. Gerçek koleksiyon/etiketler kaynak koddan ayrı yerel klasörde kalır; Git ve teslim ZIP'i bunları içermez.
 
 Ölçümün kapsamı ve kalan sınırlamalar [VALIDATION_0_3.md](VALIDATION_0_3.md) dosyasındaki 0.3.2 bölümünde açıklanır. Bu geliştirmeler model ağırlığı eğitimi değildir. Okunmayan veya çelişkili alanlar iş emrinden önce fotoğrafla kontrol edilir; çok bulanık/üst üste basılmış belgelerde yeni fotoğraf gerekir.
+
+## 0.3.3 — alan eşleme ve tekrarlı ölçüm
+
+Son koleksiyon ölçümü, tekrar kararlılığı, Renault ve yön kabul kontrolleri [0.3.3 doğrulama raporunda](VALIDATION_0_3_3.md) yer alır. Önceki sürümlerin raporları tarihsel karşılaştırma içindir.
+
+- Eğik başlık ve değer kutuları üst üste geldiğinde satır merkezleri, sütun sınırları ve sonraki başlık birlikte değerlendirilir. Üstteki veya komşu hücredeki sayı doğru alana taşınmış sayılmaz.
+- Aynı hücrede iki satıra ayrılan renkler birleştirilebilir. Bilinen renk açıklamalarının Türkçe yazımı ve parantez boşlukları standartlaştırılır; bilinmeyen harfler tahminle değiştirilmez.
+- `2008` gibi yalnız rakamlardan oluşan ticari adlar korunur ve model yılıyla karışma ihtimaline karşı inceleme gerektirir. Sayısal marka veya renk bu yolla kabul edilmez.
+- Katar ve römork ağırlığı başlıkları, aracın azami yüklü ağırlığı için sınırdır. Bozuk model yılı başlığının ticari ad olarak önerilmesi engellenir.
+- İkinci modelde gerçekten gözlenen standart cins, renk veya kullanım açıklaması güçlü biçim kanıtı sağlayabilir. İlk değer ve diğer alternatifler saklanır; uyuşmazlık açık onay gerektirir. Şasi, motor numarası, kişi adı ve model kodu sözlükle tahmin edilmez.
+- CPU paralelliği ölçülebilir bir ayardır; varsayılan en fazla 6 mantıksal işlemcidir. Belge çözünürlüğü ve iki modelli ayrıntılı okuma korunur. Hız kazanıp bilinen doğru alanları bozan deneyler varsayılan yapılmaz.
+- Ayrıntılı okumada otomatik yakınlaştırmadan sonra eksik kalan araç alanları için ikinci model tam fotoğrafa da bakar. Yalnız önizleme içinde kanıtı bulunan eksik alan geri alınır; mevcut değer üzerine yazılmaz, sahip bilgileri eklenmez ve kullanıcı kontrolü gerekir. Bu ek işlem yakınlaştırılan zor belgelerde süreyi artırabilir.
+- Değerlendirme aracı 1–20 tekrar, ayrı başlatma süresi, medyan/p95 ve tekrarlar arasında değişen alan sayısını raporlar. Tekrarlar doğruluk örnek sayısını büyütmez. Yön kabul aracı otomatik, elle döndürme ve boş belge davranışını gerçek modellerle sınar.
+
+Bu sürüm mevcut yerel OCR ağırlıklarını kullanır. Geliştirmede görülen gerçek belgeler bağımsız test kümesi değildir; asistanın görsel etiketleri insan tarafından doğrulanmış eğitim etiketi sayılmaz. Yeni belge eklemek veya kalite panelinde hata işaretlemek kendiliğinden model eğitimi başlatmaz.

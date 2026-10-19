@@ -120,3 +120,12 @@ def test_unknown_or_missing_description_is_never_completed():
 
 def test_glued_neighbour_caption_is_not_a_commercial_name_candidate():
     assert collect_candidates('kind',[reading('(D.S)CINSIOTOMOBIL (AA')]) == []
+
+
+def test_category_retry_rejects_numeric_neighbor_even_with_closing_parenthesis():
+    rows=[box('OTOMOBIL (AA',100,20,240),box('ABC123456)',100,50,220)]
+    assert collect_candidates('vehicle_category',[spatial_reading(rows)]) == []
+
+
+def test_vehicle_weight_retry_never_uses_trailer_weight():
+    assert collect_candidates('max_loaded_weight',[reading('(G.2) ROMORK AZAMI YUKLU AGIRLIGI: 1500')]) == []

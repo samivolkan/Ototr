@@ -84,6 +84,7 @@ def field_blocks(key: str, reading: dict) -> list[dict]:
                 x0, y0, x1, y1 = rect(current)
                 cy, lh = (y0+y1)/2, max(y1-y0, 8)
                 tails = [l for l in values if l["id"] not in used_ids
+                         and not re.search(r'\d',l['text'])
                          and cy < (rect(l)[1]+rect(l)[3])/2 < cy+lh*1.7
                          and rect(l)[0] <= x1 and rect(l)[2] >= x0-lh*2
                          and not any(cy < (rect(a)[1]+rect(a)[3])/2 < (rect(l)[1]+rect(l)[3])/2

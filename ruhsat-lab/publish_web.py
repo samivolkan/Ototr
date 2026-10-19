@@ -24,7 +24,7 @@ def build(output: Path, api_base: str, server: bool = False):
     html = html.replace('Harici servise gönderilmez.', 'Kendi OCR sunucunuzda işlenir; ham fotoğraf kaydedilmez.' if server else 'HTTPS / Cloudflare üzerinden kendi OCR bilgisayarınıza iletilir.')
     html = html.replace('Yerel işleme · Otomatik kayıt yok · Ototr bağlantısı henüz etkin değil',
                         'OTOTR ERP · Sunucuda işleme · Geri bildirim isteğe bağlı' if server else 'OTOTR ERP · Otomatik kayıt yok · OCR bilgisayarı açık kalmalı')
-    html = re.sub(r'((?:src|href)="\./[^"?]+\.(?:js|css))"', r'\1?v=20261019-5"', html)
+    html = re.sub(r'((?:src|href)="\./[^"?]+\.(?:js|css))"', r'\1?v=20261019-6"', html)
     (output / "index.html").write_text(html, encoding="utf-8")
     config = {"apiBase": api_base, "samplePath": "./sample.png", "erp": True}
     (output / "config.js").write_text('window.RUHSAT_CONFIG = Object.freeze(' + json.dumps(config) + ');\n', encoding="utf-8")

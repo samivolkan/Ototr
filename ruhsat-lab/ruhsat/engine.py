@@ -34,6 +34,17 @@ class ImageInputError(ValueError):
     pass
 
 
+def inference_threads() -> int:
+    """Bound CPU parallelism; allow deployments to repeat the host benchmark."""
+    configured = os.environ.get("OTOTR_OCR_THREADS")
+    if configured is None:
+        return min(os.cpu_count() or 4, 6)
+    count = int(configured)
+    if not 1 <= count <= 16:
+        raise ValueError("OTOTR_OCR_THREADS must be between 1 and 16")
+    return count
+
+
 def decode_image(data: bytes, rotation: int = 0, min_side: int = 80) -> tuple[Image.Image, dict]:
     try:
         with warnings.catch_warnings():
@@ -149,7 +160,7 @@ class OCRService:
             common = {
                 "Global.log_level": "error", "Global.text_score": 0.40,
                 "Global.max_side_len": 2400,
-                "EngineConfig.onnxruntime.intra_op_num_threads": min(os.cpu_count() or 4, 4),
+                "EngineConfig.onnxruntime.intra_op_num_threads": inference_threads(),
                 "EngineConfig.onnxruntime.inter_op_num_threads": 1,
                 "Cls.model_path": str(MODELS / "ch_ppocr_mobile_v2.0_cls_mobile.onnx"),
                 "Det.limit_side_len": 1280, "Det.limit_type": "max",
@@ -270,6 +281,7 @@ class OCRService:
                 if best_score >= 20:
                     break
         focused_region = None
+        full_image = image
         region = document_region(image, lines)
         if region:
             focused_image = image.crop(region)
@@ -314,6 +326,34 @@ class OCRService:
             second = self.read_upright(image, "v6", "b") if auto_rotate or not orientation_hint else self.read(image,"v6","b")
             extracted = reconcile(extracted, extract(second, image.width, image.height))
             lines.extend(second)
+            # Cropping can improve most cells while making a previously legible
+            # cell too small or changing detection. Recover missing vehicle
+            # fields from the original pixels, with evidence in this preview.
+            missing = {f['key'] for f in extracted['fields']
+                       if not f['value'] and f['group'] != 'Sahip bilgileri'}
+            if focused_region and missing:
+                original_second = (self.read_upright(full_image, 'v6', 'full-b')
+                                   if auto_rotate or not orientation_hint
+                                   else self.read(full_image, 'v6', 'full-b'))
+                full_result = extract(original_second, full_image.width, full_image.height)
+                original_map = {l['id']: l for l in original_second}
+                x0, y0, x1, y1 = focused_region
+                for recovered in full_result['fields']:
+                    if recovered['key'] not in missing or not recovered['value']:
+                        continue
+                    evidence = [original_map[i] for i in recovered['line_ids'] if i in original_map]
+                    if not evidence or any(not (x0 <= rect(l)[0] and rect(l)[2] <= x1
+                                               and y0 <= rect(l)[1] and rect(l)[3] <= y1)
+                                           for l in evidence):
+                        continue
+                    field = next(f for f in extracted['fields'] if f['key'] == recovered['key'])
+                    field.update(recovered)
+                    field['needs_review'], field['status'] = True, 'review'
+                    field['issues'] = list(recovered['issues']) + [
+                        'Yakınlaştırmada okunamadı; tam fotoğraftaki ikinci okumadan alındı. Kontrol edin.']
+                    for line in evidence:
+                        if not any(l['id'] == line['id'] for l in lines):
+                            lines.append({**line, 'box': [[x-x0, y-y0] for x, y in line['box']]})
         # Suppress impossible confidence when image quality has clear problems.
         if quality["warnings"]:
             for field in extracted["fields"]:

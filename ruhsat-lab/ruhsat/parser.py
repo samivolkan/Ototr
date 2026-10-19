@@ -62,6 +62,7 @@ SPECS = [
 BY_KEY = {s.key: s for s in SPECS}
 NORMALIZED_NOTE = "Bilinen ruhsat terimlerinin Türkçe yazımı ve biçimi standartlaştırıldı; fotoğrafla kontrol edin."
 CATEGORY_ROOT = r"^(?:OTOMOBIL|KAMYONET|KAMYON|OTOBUS|MINIBUS|MOTOSIKLET|MOPED|TRAKTOR|ROMORK|YARI ROMORK|OZEL|ARAZI|CEKICI|IS MAKINESI|MOTORLU BISIKLET)\b"
+COLOR_ROOT = r"^(?:BEYAZ|SIYAH|GRI|MAVI|YESIL|KIRMIZI|SARI|MOR|TURUNCU|KAHVERENGI|BEJ|BORDO|LACIVERT|GUMUS|FILDISI|PEMBE|ALTIN)\b"
 
 
 def canonical_terms(key: str, value: str) -> str:
@@ -78,14 +79,28 @@ def canonical_terms(key: str, value: str) -> str:
                       "ELEKTRIK": "ELEKTRİK", "ELEKTRIKLI": "ELEKTRİKLİ", "HIBRIT": "HİBRİT"},
         "color": {"GRI":"GRİ", "SIYAH":"SİYAH", "YESIL":"YEŞİL", "MAVI":"MAVİ",
                   "GUMUS":"GÜMÜŞ", "LACIVERT":"LACİVERT", "FILDISI":"FİLDİŞİ",
-                  "INCI":"İNCİ", "METALIK":"METALİK", "PLATINYUM":"PLATİNYUM"},
+                  "INCI":"İNCİ", "METALIK":"METALİK", "PLATINYUM":"PLATİNYUM",
+                  "TITANYUM":"TİTANYUM", "VISNE":"VİŞNE", "EGZOTIK":"EGZOTİK", "MINERAL":"MİNERAL"},
     }.get(key, {})
     value = re.sub(r"[^\W\d_]+", lambda m: terms.get(fold(m[0]), m[0]), value)
     # Complete punctuation only after an exact, known body-code/description
     # pair has been read. Never fill in missing words or unknown body codes.
     if key == "vehicle_category" and re.fullmatch(r"OTOMOBIL\s*\(\s*(?:AB HECBEK|AC STEYSIN|AF COK AMACLI|AA SEDAN)", fold(value)):
         value += ")"
+    if key == "vehicle_category":
+        value = re.sub(r"^(OTOMOB[İI]L)\.\s*(?=\([A-Z]{2}\b)",r"\1 ",value)
+    if key == "color":
+        # Spacing around an observed descriptor is formatting, not evidence
+        # of a different colour. Preserve every word and punctuation mark.
+        value = re.sub(r"\s*\(\s*", " (", value).lstrip()
+        value = re.sub(r"\s*\)", ")", value)
     if key == "usage_purpose":
+        # Only restore spacing in fully observed, exact phrase letters.
+        # No missing or conflicting letter is substituted.
+        for compact,spaced in [('YOLCUNAKLI','YOLCU NAKLİ'),('YUKNAKLI','YÜK NAKLİ')]:
+            match=re.match(compact+r'(?=\s|[-/]|$)',fold(value))
+            if match:
+                value=spaced+value[match.end():]
         value = re.sub(r"\s*-\s*", " - ", value)
     return value
 
@@ -96,7 +111,7 @@ def category_continues(value: str) -> bool:
     return (value.count("(") > value.count(")")
             or bool(re.search(r"(?:-|\()\s*(?:AA|AB|AC|AF|BA|BB)\s*$", fold(value))))
 # These labels are boundaries only. Their values are never extracted as fields.
-STOP_LABELS = ("ADRESI", "ADRES", "DIGER BILGILER", "HAK VE MENFAAT", "TIP ONAY NO", "TESCIL SIRA NO", "VERILDIGI IL", "NOTER", "ONAYLAYAN", "GECERLILIK SURESI", "GUC AGIRLIK ORANI")
+STOP_LABELS = ("ADRESI", "ADRES", "DIGER BILGILER", "HAK VE MENFAAT", "TIP ONAY NO", "TESCIL SIRA NO", "VERILDIGI IL", "NOTER", "ONAYLAYAN", "GECERLILIK SURESI", "GUC AGIRLIK ORANI", "KATAR AGIRLIGI", "ROMORK AZAMI YUKLU AGIRLIGI", "ROMORK AZAMI YUKLU AGIRLIK", "ROMORK")
 
 
 def rect(line: dict) -> list[float]:
@@ -123,9 +138,20 @@ def find_labels(text: str) -> list[tuple[int, int, str]]:
     coded = re.match(r"^\s*\(\s*([A-Z](?:[.,-]\d+){0,2})\s*\)\s*", normalized)
     if coded:
         code = coded[1].replace(",", ".").replace("-", ".")
+        if code in ('G','G.2'):
+            return [(coded.start(),len(normalized),'_stop')]
         coded_spec = next((s for s in SPECS if code in s.codes), None)
         if coded_spec:
             tail = normalized[coded.end():]
+            if coded_spec.key == 'vehicle_category':
+                # The printed CINSI caption can merge into its value and lose
+                # letters. An exact vehicle word supplies the boundary; its
+                # characters are not consumed to match the caption's length.
+                root_match=re.search(CATEGORY_ROOT[1:],tail)
+                if root_match and 2<=root_match.start()<=6:
+                    caption=tail[:root_match.start()].strip()
+                    if SequenceMatcher(None,caption,'CINSI').ratio()>=.70:
+                        return [(coded.start(),coded.end()+root_match.start(),'vehicle_category')]
             # OCR can glue caption words and the value together. Consume the
             # actual matched caption span, never its expected printed length:
             # YAKITCINSIDIZEL must retain the D in DIZEL. Personal names are
@@ -165,7 +191,7 @@ def find_labels(text: str) -> list[tuple[int, int, str]]:
                             break
                     kept.append((m.start(), end, spec.key))
                     break
-            if code in ("C.1.3", "Z.1", "Z.2", "Y.1", "Y.2", "K", "Q"):
+            if code in ("C.1.3", "Z.1", "Z.2", "Y.1", "Y.2", "K", "Q", "G", "G.2"):
                 kept.append((m.start(), m.end(), "_stop"))
     if not kept:
         prefix=re.match(r"^\s*\([^)]{1,10}\)\s*",normalized)
@@ -211,11 +237,14 @@ def validate(spec: Spec, raw: str) -> tuple[str | None, list[str]]:
         return None, ["Gövde açıklamasının devam satırı ticari ad olarak önerilmedi."]
     if spec.key in {"kind","brand","type","color"} and re.match(r"^\([^)]{1,10}\)",folded):
         caption = re.sub(r"^\([^)]{1,10}\)\s*","",folded)
-        if any(len(alias)>=8 and abs(len(caption)-len(alias))<=2 and SequenceMatcher(None,caption,alias).ratio()>=.85 for item in SPECS for alias in item.aliases):
+        if any(len(alias)>=8 and abs(len(caption)-len(alias))<=2 and SequenceMatcher(None,caption,alias).ratio()>=.80 for item in SPECS for alias in item.aliases):
             return None, ["Bozuk alan başlığı araç değeri olarak önerilmedi."]
     if spec.key == "type" and re.fullmatch(r"\d{1,2}[./-]\d{1,2}[./-]\d{4}", value):
         return None, ["Tipi alanına komşu hücredeki tarih önerilmedi."]
-    if spec.key in ("brand", "kind", "color", "vehicle_category") and not re.search(r"[A-Z]", folded):
+    numeric_commercial_name = spec.key == "kind" and bool(re.fullmatch(r"\d{2,4}", value))
+    if numeric_commercial_name:
+        issues.append("Ticari ad yalnız rakamlardan oluşuyor; model yılıyla karışmadığını fotoğraftan kontrol edin.")
+    if spec.key in ("brand", "kind", "color", "vehicle_category") and not numeric_commercial_name and not re.search(r"[A-Z]", folded):
         return None, ["Metin alanı yerine sayısal bir satır okunmuş olabilir."]
     if spec.key == "vehicle_class" and not re.fullmatch(r"[A-Z]{1,2}\d[A-Z0-9/\-]{0,8}", folded):
         return None, ["Araç sınıfı kodu okunamadı."]
@@ -354,6 +383,20 @@ def extract(lines: list[dict], image_width: int, image_height: int) -> dict:
     for key in candidates:
         candidates[key] = [c for c in candidates[key] if not private_line_ids.intersection(c["ids"])]
 
+    if 'fuel_type' not in located and all(k in located for k in ('engine_capacity','engine_power','usage_purpose')):
+        capacity,power,usage=[located[k]['rect'] for k in ('engine_capacity','engine_power','usage_purpose')]
+        left,top=capacity[0],max(capacity[3],power[3])
+        bottom=(usage[1]+usage[3])/2
+        if power[0]-left>image_width*.12 and top<bottom and abs(usage[0]-left)<image_width*.1:
+            for line in lines:
+                x0,y0,x1,y1=rect(line)
+                if (line['id'] in private_line_ids or find_labels(line['text'])
+                        or not top<(y0+y1)/2<bottom
+                        or x0<left-image_width*.025 or (x0+x1)/2>=power[0]):
+                    continue
+                if re.fullmatch(r'(?:BENZIN(?:LI)?|DIZEL|MOTORIN|ELEKTRIK(?:LI)?|HIBRIT|LPG|CNG|LNG)(?:\s*[-/]\s*(?:BENZIN(?:LI)?|DIZEL|ELEKTRIK(?:LI)?|LPG|CNG))?(?:\s*\([^)]{1,25}\))?',fold(clean(line['text']))):
+                    candidates['fuel_type'].append({'raw':line['text'],'score':line['score'],'ids':[line['id']],'method':'layout','priority':.70})
+
     # Search within the same row or directly below, stopping at another label.
     for anchor in anchors:
         key = anchor["key"]
@@ -376,7 +419,10 @@ def extract(lines: list[dict], image_width: int, image_height: int) -> dict:
             lh = max(y1 - y0, 8)
             cy = (y0 + y1) / 2
             same_row = abs(cy - acy) < max(ah, lh) * 0.7 and x0 >= ax1 - ah * 0.75
-            below = (-min(ah, lh) * .7 < y0 - ay1 < max(ah * 3.8, image_height * 0.035)
+            # A slanted, wide caption's rectangular bounds can overlap the
+            # value substantially. Their centres still establish row order;
+            # a second overlap limit incorrectly drops readable lower rows.
+            below = (y0 - ay1 < max(ah * 3.8, image_height * 0.035)
                      and cy > acy + ah * .25 and x0 >= ax0 - max(ah, image_width * .02)
                      and (x0+x1)/2 < cell_right)
             if same_row and x0 - ax1 < image_width * 0.37:
@@ -415,6 +461,7 @@ def extract(lines: list[dict], image_width: int, image_height: int) -> dict:
                 x0,y0,x1,y1 = rect(line); cy = (y0+y1)/2
                 if (line["id"] in private_line_ids or line["id"] in candidate["ids"]
                         or find_labels(line["text"]) or not bcy < cy < bcy+bh*1.7
+                        or re.search(r'\d',line['text'])
                         or x0 > bx1 or x1 < bx0-bh*2):
                     continue
                 if any(bcy < (a["rect"][1]+a["rect"][3])/2 < cy
@@ -434,6 +481,34 @@ def extract(lines: list[dict], image_width: int, image_height: int) -> dict:
                 break
     candidates["vehicle_category"] = [c for c in candidates["vehicle_category"]
                                       if not set(c["ids"]).issubset(continuations)]
+
+    # Two-tone vehicles may print a second complete color on another line.
+    # Join only an independently readable color inside this same color cell;
+    # arbitrary nearby text and the next field are never continuations.
+    for candidate in candidates["color"]:
+        if not re.match(COLOR_ROOT,fold(candidate["raw"])):
+            continue
+        base=line_map[candidate["ids"][-1]]
+        bx0,by0,bx1,by1=rect(base);bcy=(by0+by1)/2;bh=max(by1-by0,8)
+        color_anchors=[a for a in anchors if a['key']=='color' and a['rect'][1]<=bcy]
+        if not color_anchors:
+            continue
+        anchor=min(color_anchors,key=lambda a:abs(a['rect'][1]-by0))
+        ax0,ay0,ax1,ay1=anchor['rect']
+        for tail in sorted(lines,key=lambda l:rect(l)[1]):
+            x0,y0,x1,y1=rect(tail);cy=(y0+y1)/2
+            if (tail['id'] in private_line_ids or tail['id'] in candidate['ids']
+                    or find_labels(tail['text']) or not re.match(COLOR_ROOT,fold(clean(tail['text'])))
+                    or not bcy+bh*.25<cy<bcy+bh*1.8
+                    or x0<ax0-bh*.5 or x0>bx1 or x1<bx0-bh*2):
+                continue
+            if any(bcy<(a['rect'][1]+a['rect'][3])/2<cy
+                   and abs(a['rect'][0]-ax0)<image_width*.12 for a in anchors):
+                continue
+            candidate['raw']+=' '+clean(tail['text'])
+            candidate['ids'].append(tail['id'])
+            candidate['score']=min(candidate['score'],tail['score'])
+            break
 
     # Serial letters and digits can be separate OCR boxes on the same printed
     # baseline. Require the explicit Seri caption; never scan identity cells.
@@ -522,6 +597,40 @@ def extract(lines: list[dict], image_width: int, image_height: int) -> dict:
     return {"fields": fields, "anchor_count": anchor_count, "document_recognized": recognized}
 
 
+def description_is_standard(key: str, value: str) -> bool:
+    """Prefer an observed standard description, never fabricate a correction.
+
+    This is deliberately not fuzzy matching. A nonstandard value remains an
+    alternative and requires review even when the other model has stronger
+    vocabulary evidence. Identifiers except the printed document-series
+    format are excluded.
+    """
+    text = fold(value)
+    if key == "document_serial_no":
+        return bool(re.fullmatch(r"[A-Z]{2}\d{6}", text))
+    if key == "color":
+        return bool(re.match(COLOR_ROOT,text))
+    if key == "usage_purpose":
+        return bool(re.fullmatch(r"(?:YOLCU|YUK)\s+NAKLI\s*-\s*(?:HUSUSI|TICARI|RESMI)", text))
+    if key == "vehicle_category":
+        if re.fullmatch(CATEGORY_ROOT,text):
+            return True
+        match=re.fullmatch(r'(?:OTOMOBIL|KAMYONET)\s*(?:-\s*|\(\s*)(AA|AB|AC|AF|BB)\s+([A-Z ]+)\)?',text)
+        return bool(match and match[2].strip()=={'AA':'SEDAN','AB':'HECBEK','AC':'STEYSIN','AF':'COK AMACLI','BB':'VAN'}[match[1]])
+    return False
+
+
+def prefer_secondary_observation(one: dict, two: dict) -> bool:
+    if (not description_is_standard(two['key'],two['value'])
+            or description_is_standard(one['key'],one['value'])):
+        return False
+    if one['key']=='document_serial_no':
+        a=re.fullmatch(r'([A-Z]{3,4})(\d{6})',fold(one['value']))
+        b=re.fullmatch(r'([A-Z]{2})(\d{6})',fold(two['value']))
+        return bool(a and b and a[1].startswith(b[1]) and a[2]==b[2])
+    return SequenceMatcher(None,fold(one['value']),fold(two['value'])).ratio()>=.80
+
+
 def reconcile(primary: dict, secondary: dict) -> dict:
     """Independent model disagreement forces human review; no majority invention."""
     for one, two in zip(primary["fields"], secondary["fields"]):
@@ -533,6 +642,18 @@ def reconcile(primary: dict, secondary: dict) -> dict:
             if same_value(one["value"], two["value"]):
                 one["agreement"] = True
             else:
+                if prefer_secondary_observation(one,two):
+                    earlier = dict(one)
+                    earlier["alternatives"] = list(one["alternatives"])
+                    one.update(two)
+                    one["issues"] = list(two["issues"])
+                    one["alternatives"] = list(two["alternatives"])
+                    for alternative in earlier['alternatives']:
+                        if (not same_value(alternative['value'],one['value'])
+                                and not any(same_value(alternative['value'],a['value']) for a in one['alternatives'])):
+                            one['alternatives'].append(alternative)
+                    two = earlier
+                    one["issues"].append("Diğer okumada standart alan biçimi bulundu; iki değeri fotoğrafla karşılaştırın.")
                 one["agreement"] = False
                 one["alternatives"].append({"value": two["value"], "confidence": two["confidence"], "line_ids": two["line_ids"]})
                 one["issues"].append("İki OCR modeli farklı okudu; fotoğraftan karşılaştırın.")

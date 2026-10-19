@@ -1,4 +1,4 @@
-# OTOTR Ruhsat Lab 0.3
+# OTOTR Ruhsat Lab 0.3.3
 
 Windows üzerinde yerel ruhsat OCR prototipi. Fotoğraf → gerçek OCR → etiket/konum eşlemesi → insan kontrolü → JSON.
 
@@ -6,11 +6,13 @@ Windows üzerinde yerel ruhsat OCR prototipi. Fotoğraf → gerçek OCR → etik
 
 Bu klasör `samivolkan/Ototr` içindeki bağımsız ruhsat OCR prototipidir. GitHub Pages ERP hızlı iş emrine kontrollü araç aktarımı bağlıdır; üretim oto-tr.com uygulaması bu bağlantıdan ayrıdır. Kaynak kod, kurgusal örnek ve testler bulunur; gerçek belgeler, kişisel OCR sonuçları, yerel günlükler, sanal ortam ve model ağırlıkları depoya alınmaz.
 
-**GitHub Pages bu uygulamanın Python/ONNX motorunu çalıştırmaz.** Ayrı dala push etmek mevcut canlı siteyi değiştirmez ve çalışan bir OCR adresi üretmez. Yerelde aşağıdaki kurulumla çalıştırılabilir. E-posta ile korunan geçici web erişimi için aşağıdaki `WebBaslat.ps1` bölümü eklenmiştir. Kalıcı canlı sürüm için Python 3.12 destekli bir sunucu, model kurulumu, HTTPS ve erişim kontrolü gerekir. Varsayılan API yalnız localhost erişimini kabul eder; doğrudan internete açılmamalıdır.
+**GitHub Pages bu uygulamanın Python/ONNX motorunu çalıştırmaz.** ERP web arayüzü Pages üzerinde, OCR motoru bilgisayardaki ayrı serviste çalışır. Bilgisayar kapalıyken mevcut geçici bağlantı okuyamaz. ERP içindeki mevcut test e-posta girişi istemez; aşağıdaki e-posta korumalı akış isteğe bağlı ayrı bir seçenektir. Kalıcı sunucu geçişi beklemededir. Varsayılan yerel API yalnız localhost erişimini kabul eder.
 
 ## Yazılımcı teslimi
 
-0.3 sürümünün kapsamı, API sözleşmesi, karşılaştırmalı ölçüm ve eğitim koşulları [YAZILIMCI_TESLIM.md](deploy/YAZILIMCI_TESLIM.md) içinde. Yeni sürüm ayrı geliştirme dalındadır; bu dal mevcut Pages veya üretim hostingini otomatik güncellemez.
+Sürümün kapsamı, API sözleşmesi, karşılaştırmalı ölçüm ve eğitim koşulları [YAZILIMCI_TESLIM.md](deploy/YAZILIMCI_TESLIM.md) içinde. Kaynak kodu göndermek tek başına OCR servisini güncellemez; web yayını ve çalışan Python servisi birlikte doğrulanmalıdır. Üretim oto-tr.com hostingi bu prototipten ayrıdır.
+
+51 fotoğrafın tekrarlı okuma sonuçları, hız karşılaştırması ve kalan sınırlamalar [0.3.3 doğrulama raporunda](deploy/VALIDATION_0_3_3.md) açıklanır.
 
 ## Açma
 

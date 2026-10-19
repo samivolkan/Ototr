@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "OTOTR Ruhsat Lab",
-    "version": "0.3.2"
+    "version": "0.3.3"
   },
   "paths": {
     "/api/health": {

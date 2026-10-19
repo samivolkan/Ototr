@@ -2,7 +2,23 @@ import json
 from copy import deepcopy
 import pytest
 from pydantic import ValidationError
-from evaluate import Dataset, load_dataset, report, compare, score_case
+from evaluate import Dataset, load_dataset, report, compare, score_case, repeat_summary
+
+
+def test_repeat_summary_has_counts_and_nearest_rank_tail_latency_only():
+    samples=[{'id':'synthetic','repeat':n+1,'seconds':n+1} for n in range(20)]
+    result=repeat_summary(samples,2,1.23456)
+    assert result['runs']==20 and result['median_seconds']==10.5
+    assert result['p95_seconds']==19 and result['max_seconds']==20
+    assert result['changed_field_observations']==2
+    assert result['accuracy_counts_use_first_run_only'] is True
+    assert result['initialization_seconds']==1.235
+    assert result['per_case']==[{'id':'synthetic','runs':20,'median_seconds':10.5}]
+
+
+def test_repeat_summary_handles_no_completed_samples():
+    result=repeat_summary([],0,0)
+    assert result['runs']==0 and result['p95_seconds'] is None
 
 
 def dataset():

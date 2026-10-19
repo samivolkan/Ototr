@@ -27,6 +27,26 @@ def test_adjacent_columns_do_not_mix():
     assert field(lines,"brand")["value"]=="RENAULT"
 
 
+def test_numeric_commercial_name_stays_in_its_cell_and_requires_review():
+    rows=[line('(D.3) TICARI ADI',x=20,y=100,w=200,idx=0),
+          line('2008',x=20,y=130,w=70,idx=1),
+          line('(D.4) MODEL YILI',x=550,y=100,w=200,idx=2),
+          line('2020',x=550,y=130,w=70,idx=3)]
+    result=field(rows,'kind')
+    assert result['value']=='2008' and result['needs_review']
+    assert field(rows,'model_year')['value']=='2020'
+    assert field([r for r in rows if r['id']!='1'],'kind')['value'] is None
+
+
+def test_slanted_caption_overlap_keeps_lower_fuel_value_not_upper_value():
+    rows=[line('(P.3) YAKIT CINSI',x=293,y=990,w=198,h=62,idx=0),
+          line('BENZINLI',x=344,y=1015,w=128,h=48,idx=1),
+          line('(Y.3) KULLANIM AMACI',x=298,y=1054,w=263,h=65,idx=2),
+          line('DIZEL',x=344,y=960,w=128,h=28,idx=3)]
+    assert field(rows,'fuel_type')['value']=='BENZİNLİ'
+    assert field([r for r in rows if r['id']!='1'],'fuel_type')['value'] is None
+
+
 def test_next_label_blocks_missing_value():
     lines=[line("PLAKA",idx=0),line("MARKASI",y=35,idx=1),line("RENAULT",y=62,idx=2)]
     assert field(lines,"plate")["value"] is None
@@ -257,3 +277,78 @@ def test_compact_caption_span_does_not_eat_the_first_value_character():
     assert field([line('(D.3) TICARIADIPUMA')],'kind')['value']=='PUMA'
     assert field([line('(D.S)CINSIOTOMOBIL')],'vehicle_category')['value']=='OTOMOBİL'
     assert field([line('(C.1.2) ADIL')],'owner_name')['value']=='ADIL'
+
+
+def test_two_tone_color_keeps_both_lines_inside_its_cell():
+    rows=[line('(R) RENGI',x=500,y=100,w=140,idx=1),
+          line('SIYAH (YILDIZ)',x=620,y=125,w=210,h=25,idx=2),
+          line('BEYAZ (FILDISI)',x=505,y=155,w=230,h=25,idx=3),
+          line('(P.5) MOTOR NO',x=100,y=193,w=210,idx=4)]
+    result=field(rows,'color')
+    assert result['value']=='SİYAH (YILDIZ) BEYAZ (FİLDİŞİ)'
+    assert len(result['line_ids'])==2
+
+
+def test_two_tone_color_does_not_join_neighbor_or_next_field():
+    rows=[line('(R) RENGI',x=500,y=100,w=140,idx=1),
+          line('SIYAH',x=620,y=125,w=120,h=25,idx=2),
+          line('BEYAZ',x=100,y=155,w=100,h=25,idx=3)]
+    assert field(rows,'color')['value']=='SİYAH'
+    rows[-1]=line('BEYAZ',x=505,y=180,w=100,h=25,idx=3)
+    rows.append(line('MARKASI',x=500,y=157,w=140,idx=4))
+    assert field(rows,'color')['value']=='SİYAH'
+
+
+def test_skewed_color_lines_can_overlap_in_their_bounding_boxes():
+    rows=[line('(R) RENGI',x=620,y=395,w=120,h=40,idx=1),
+          line('SIYAH (YILDIZ)',x=750,y=408,w=170,h=46,idx=2),
+          line('BEYAZ (FILDISI)',x=620,y=428,w=185,h=45,idx=3),
+          line('(P.5) MOTOR NO',x=260,y=460,w=200,h=40,idx=4)]
+    assert field(rows,'color')['value']=='SİYAH (YILDIZ) BEYAZ (FİLDİŞİ)'
+
+
+def test_partial_category_caption_never_consumes_the_vehicle_word():
+    rows=[line('(D.5) CINOTOMOBIL (AF',x=100,y=100,w=320,idx=1),
+          line('COK AMACLI)',x=100,y=131,w=180,idx=2),
+          line('(P.5) MOTOR NO',x=100,y=175,w=220,idx=3)]
+    assert field(rows,'vehicle_category')['value']=='OTOMOBİL (AF ÇOK AMAÇLI)'
+    assert field([line('(D.5) CINSITOMOBIL-AB')],'vehicle_category')['value'] is None
+    assert validate(BY_KEY['vehicle_category'],'OTOMOBIL. (AA SEDAN)')[0]=='OTOMOBİL (AA SEDAN)'
+
+
+def test_missing_fuel_caption_uses_visible_value_only_inside_technical_grid():
+    rows=[line('SILINDIR HACMI',x=100,y=100,w=180,idx=1),
+          line('MOTOR GUCU',x=500,y=100,w=140,idx=2),
+          line('KULLANIM AMACI',x=100,y=230,w=220,idx=3),
+          line('BENZIN',x=110,y=190,w=120,idx=4)]
+    result=field(rows,'fuel_type')
+    assert result['value']=='BENZİN' and result['method']=='layout'
+    assert result['confidence']<=.70 and result['needs_review']
+    assert field(rows[1:],'fuel_type')['value'] is None
+    rows[-1]=line('BENZIN',x=700,y=190,w=120,idx=4)
+    assert field(rows,'fuel_type')['value'] is None
+
+
+def test_trailer_and_combined_weight_cells_cannot_fill_vehicle_weights():
+    rows=[line('(G.1) NET AGIRLIGI',x=100,y=100,w=210,idx=1),
+          line('(F.1) AZAMI YUKLU AGIRLIGI',x=500,y=100,w=260,idx=2),
+          line('(G) KATAR AGIRLIGI',x=100,y=150,w=210,idx=3),
+          line('(G.2) ROMORK AZAMI YUKLU AGIRLIGI',x=500,y=150,w=300,idx=4),
+          line('1200',x=510,y=180,w=100,idx=5),
+          line('3500',x=110,y=180,w=100,idx=6)]
+    assert field(rows,'max_loaded_weight')['value'] is None
+    assert field(rows,'net_weight')['value'] is None
+    rows[4]=line('1200',x=790,y=180,w=100,idx=5)
+    assert field(rows,'max_loaded_weight')['value'] is None
+    assert field([line('ROMORK AZAMI YUKLU AGIRLIGI: 1500')],'max_loaded_weight')['value'] is None
+    assert field([line('(G.2) AZAMI YUKLU AGIRLIGI: 1500')],'max_loaded_weight')['value'] is None
+    assert field([line('(F.1) AZAMI YUKLU AGIRLIGI: 2400')],'max_loaded_weight')['value']=='2400'
+
+
+def test_incomplete_category_cannot_swallow_an_engine_serial():
+    rows=[line('(D.5) CINSI',x=100,y=100,w=120,idx=1),
+          line('OTOMOBIL (AA',x=100,y=130,w=200,idx=2),
+          line('SRISYOR NO 123ABC45678',x=100,y=161,w=300,idx=3)]
+    result=field(rows,'vehicle_category')
+    assert result['value']=='OTOMOBİL (AA' and result['needs_review']
+    assert len(result['line_ids'])==1

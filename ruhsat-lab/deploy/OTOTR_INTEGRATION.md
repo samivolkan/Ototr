@@ -4,9 +4,9 @@
 
 Kullanıcının son seçimi `https://samivolkan.github.io/Ototr/index.html#ruhsat` üzerindeki ERP'dir. `ruhsat-erp.js` kontrol edilen araç alanlarını buradaki hızlı iş emrine taşır. Paket seçimi ve mevcut kayıt düğmesi kullanıcıda kalır. Sahip önerileri ERP mesajına veya kalıcı kayda dahil edilmez. Renk, sınıf, tarihler, hacim, güç ve belge seri no gibi ek araç alanları `ruhsatVehicle` içinde saklanır; mevcut Supabase akışında araç metadata snapshot'ı kullanılır, şema değişikliği yapılmaz.
 
-Bulut oturumu kullanılamıyorsa mevcut yerel kayıt yolu kullanılır. Yeni kayıtlar `storageScope: browser-local` ile işaretlenir; liste yenilemesi ve sonraki bulut senkronu bu kayıtları silmez. Ekran bunların yalnız bu tarayıcıda olduğunu, buluta/mobile gönderilmediğini belirtir. Bu kayıtlar otomatik olarak buluta yüklenmez. Tarayıcı verileri silinirse yerel kayıtlar kaybolur.
+Kodda `storageScope: browser-local` ile işaretlenen yerel kayıt yolu bulunur; bu kayıtlar otomatik olarak buluta yüklenmez ve tarayıcı verileri silinirse kaybolur. Bununla birlikte bayi portalının mevcut oturum ve yapılandırma kontrolü devam eder. Önceki tarayıcı kabulünde OCR aktarımı bayi sayfasına yönlendirmiş, oturum/yapılandırma gereksinimi nedeniyle gerçek iş emrinin uçtan uca kaydı doğrulanmamıştır. Yetkili bayi oturumu ve paket seçimiyle kayıt kabulü ayrıca yapılmalıdır; OCR testinin geçmesi kayıt entegrasyonunun tamamlandığı anlamına gelmez.
 
-OCR motoru halen kullanıcının bilgisayarındaki 0.2.0 servisine geçici HTTPS tüneli üzerinden bağlıdır. Bilgisayar kapalıyken okuma çalışmaz. Kalıcı sunucu kurulumu ertelenmiştir. Açık test bağlantısında geri bildirim yönetimi kapalı, eşik ve görüntü iyileştirme ayarları kullanılabilir; yerel kalite panelinde anonim alan sonuçları kaydedilebilir. Eşik değişikliği model eğitimi değildir.
+OCR motoru kullanıcının bilgisayarındaki sürümlenmiş servise geçici HTTPS tüneli üzerinden bağlıdır. Bilgisayar kapalıyken okuma çalışmaz. Kalıcı sunucu kurulumu ertelenmiştir. Açık test bağlantısında geri bildirim yönetimi kapalı, eşik ve görüntü iyileştirme ayarları kullanılabilir; yerel kalite panelinde anonim alan sonuçları kaydedilebilir. Eşik değişikliği model eğitimi değildir.
 
 Aşağıdaki bölüm önceki, yalnız okunarak yapılan üretim uygulaması incelemesidir; bu sürümde `oto-tr.com` değiştirilmemiştir.
 
