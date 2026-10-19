@@ -1,7 +1,7 @@
 {
   "sourceRepo": "samivolkan/ototr-saha-satis",
   "releaseDate": "2026-10-19",
-  "sourceCommit": "0a72b9f",
+  "sourceCommit": "3e5bb78",
   "access": "verified-email-password-active-team",
   "app": "responsive-web",
   "storage": "shared-supabase",
