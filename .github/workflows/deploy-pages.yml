@@ -44,6 +44,9 @@ jobs:
           test -s docs/assets/rapor-arsiv-bulgu-kanitlari.webp
           grep -Fq './rapor-arsiv-tasarim.html' index.html
 
+      - name: Protect ERP entry screens
+        run: node scripts/apply-erp-access-gate.cjs
+
       - name: Upload static site
         uses: actions/upload-pages-artifact@v3
         with:
