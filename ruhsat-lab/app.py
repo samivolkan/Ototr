@@ -121,7 +121,8 @@ def health():
             "local_only": not bool(PUBLIC_ORIGIN or SERVER_ORIGIN), "version": __version__,
             "access_mode": "server_token" if SERVER_ORIGIN else ("public_test" if PUBLIC_TEST else "email_protected_preview") if PUBLIC_ORIGIN else "local",
             "processing_location": "server" if SERVER_ORIGIN else "host_computer",
-            "field_retry": True, "feedback": "anonymous_statistics", "training_images_stored": False}
+            "field_retry": True, "feedback": "anonymous_statistics", "feedback_revision": 2,
+            "training_images_stored": False}
 
 
 @app.get("/api/ready")

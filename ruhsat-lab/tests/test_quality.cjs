@@ -36,3 +36,37 @@ test('supported 0.3 patch versions accept anonymous photo-condition feedback',()
     assert(!JSON.stringify(p).includes('PRIVATE'));
   }
 });
+
+test('category feedback stores a checked code, never free text or conflicting code',()=>{
+  const result={request_id:'uuid',engine_version:'0.3.3',mode:'detailed'};
+  const fields=[{key:'vehicle_category',value:'OTOMOBİL-AA EDAN',confidence:.7}];
+  const p=policy.feedback(result,fields,{vehicle_category:'OTOMOBİL-AA SEDAN'},new Set(['vehicle_category']),false,'clear',2);
+  assert.equal(p.fields[0].category_target,'AA');
+  assert(!JSON.stringify(p).includes('EDAN'));assert(!JSON.stringify(p).includes('SEDAN'));
+  assert.equal(policy.categoryCode('OTOMOBİL-AB SEDAN'),null);
+  assert.equal(policy.categoryCode('OTOMOBİL-AA SEDAN PRIVATE'),null);
+  assert.equal(policy.categoryCode('OTOMOBİL (AF ÇOK AMAÇLI)'), 'AF');
+  assert.deepEqual(policy.feedback(result,fields,{},new Set(),false,'clear',2).fields,[]);
+});
+
+test('automatic feedback serializes, coalesces and retracts without duplicate counts',async()=>{
+  const sent=[];let release;
+  const queue=policy.feedbackQueue(async p=>{sent.push(p);if(sent.length===1)await new Promise(r=>release=r);});
+  const first={request_id:'one',fields:[{corrected:true}]};
+  queue.submit(first);queue.submit(first);
+  queue.submit({request_id:'one',fields:[{corrected:false}]});
+  queue.submit({request_id:'one',fields:[]});
+  queue.submit({request_id:'two',fields:[{}]});
+  assert.equal(sent.length,1);
+  release();await new Promise(r=>setImmediate(r));
+  assert.equal(sent.length,3);assert.deepEqual(sent[1].fields,[]);assert.equal(sent[2].request_id,'two');
+});
+
+test('failed feedback can be resubmitted',async()=>{
+  let attempts=0,errors=0;
+  const queue=policy.feedbackQueue(async()=>{if(++attempts===1)throw Error('offline');},()=>{},()=>errors++);
+  const p={request_id:'one',fields:[]};
+  queue.submit(p);await new Promise(r=>setImmediate(r));queue.submit(p);
+  await new Promise(r=>setImmediate(r));
+  assert.equal(attempts,2);assert.equal(errors,1);
+});

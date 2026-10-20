@@ -1,6 +1,22 @@
 "use strict";
 (function(){
-  let managementRestricted=false, supportsConditions=false;
+  let managementRestricted=false, supportsConditions=false,feedbackRevision=0;
+  const seen=new Set();
+  const queue=RuhsatQualityPolicy.feedbackQueue(
+    payload=>apiRequest('/api/admin/feedback',{method:'POST',headers:{'Content-Type':'application/json','X-OTOTR-Client':'ruhsat-lab',...auth('admin')},body:JSON.stringify(payload)}),
+    payload=>{if(state.result?.request_id===payload.request_id)$('qualityMessage').textContent=`${payload.fields.length} onaylı alanın geri bildirimi otomatik kaydedildi. Cins düzeltmeleri değerlendirme için biriktirilir; model kendiliğinden eğitilmez.`;},
+    (error,payload)=>{if(state.result?.request_id===payload.request_id)$('qualityMessage').textContent='Geri bildirim kaydedilemedi: '+error.message+' Bağlantıyı kontrol edin; yeniden kayıt deneyebilirsiniz.';}
+  );
+  function autoSave(){
+    if(feedbackRevision<2||managementRestricted||state.busy||!state.result?.request_id)return;
+    if($('qualityAccess').hidden===false&&!$('qualityAdminToken').value.trim())return;
+    try{
+      const payload=RuhsatQualityPolicy.feedback(state.result,vehicleFields(),state.edits,state.confirmed,state.sample,$('qualityCondition').value,feedbackRevision);
+      if(!payload.fields.length&&!seen.has(payload.request_id))return;
+      seen.add(payload.request_id);if(seen.size>100)seen.delete(seen.values().next().value);
+      queue.submit(payload);
+    }catch{}
+  }
   let prefs=RuhsatQualityPolicy.preferences();
   try{prefs=RuhsatQualityPolicy.preferences(JSON.parse(preferenceStorage?.getItem('ototr-ocr-quality-v1')||'{}'));}catch{}
   $('qualityGeneral').value=prefs.general;
@@ -13,13 +29,17 @@
     $('qualityCondition').disabled=state.busy||!supportsConditions;
     $('qualitySave').disabled=managementRestricted||state.busy||!state.result?.request_id||!vehicleFields().some(f=>state.confirmed.has(f.key));
     if(managementRestricted){$('qualityRefresh').disabled=true;$('qualitySynthetic').disabled=true;}
+    autoSave();
   }
   function health(info){
+    feedbackRevision=info.feedback_revision||0;
     supportsConditions=["0.3.0","0.3.1","0.3.2","0.3.3"].includes(info.version);
     $('qualityAccess').hidden=info.access_mode!=='server_token';$('qualityCompatibility').hidden=['0.2.0','0.3.0','0.3.1','0.3.2','0.3.3'].includes(info.version);
     managementRestricted=['public_test','email_protected_preview'].includes(info.access_mode);
     if(managementRestricted)$('qualityMessage').textContent='Bu açık test bağlantısında geri bildirim yönetimi kapalıdır. Güven eşikleri ve görüntü iyileştirme kullanılabilir. Anonim sonuçları bilgisayarınızdaki yerel kalite panelinden kaydedebilirsiniz.';
   }
+  $('qualityCondition').addEventListener('change',autoSave);
+  $('qualityAdminToken').addEventListener('change',autoSave);
   for(const id of ['qualityGeneral','qualityVin','qualityPreprocessing'])$(id).addEventListener('change',()=>{
     const general=Number($('qualityGeneral').value),vin=Number($('qualityVin').value);
     if(!$('qualityGeneral').checkValidity()||!$('qualityVin').checkValidity()){toast('Güven eşiği 0,50 ile 1,00 arasında olmalı.',true);return;}
@@ -30,6 +50,7 @@
   async function stats(){
     const data=await apiRequest('/api/admin/feedback?synthetic='+$('qualitySynthetic').checked,{headers:auth('admin')});
     $('qualityStatsSummary').textContent=`${data.documents_reviewed} inceleme · ${data.synthetic?'Kurgusal test':'Gerçek belge'} · Yalnız insan tarafından kontrol edilen alanlar`;
+    if(data.category_corrections?.length)$('qualityStatsSummary').textContent+=' · Cins düzeltmeleri (değerlendirme bekliyor): '+data.category_corrections.map(r=>r.code+': '+r.reviews).join(', ');
     const body=$('qualityStatsBody');body.replaceChildren();
     for(const row of data.rows){const tr=node('tr');const label=RuhsatFieldSettings.catalog.find(f=>f.key===row.key)?.label||row.key;for(const text of [label,row.mode==='detailed'?'Ayrıntılı':'Hızlı',row.preprocessing==='contrast'?'Kontrast':'Standart',row.engine_version,({unknown:'Belirtilmedi',clear:'Net',blur:'Bulanık',glare:'Yansıma',skew:'Eğik',small:'Küçük yazı',mixed:'Birden fazla'})[row.condition]||'Belirtilmedi',String(row.reviewed),String(row.corrected),String(row.originally_missing),Math.round(row.unchanged_rate*100)+'%'])tr.append(node('td','',text));body.append(tr);}
     $('qualityStats').hidden=!data.rows.length;
@@ -38,7 +59,8 @@
   $('qualitySave').addEventListener('click',async()=>{
     $('qualitySave').disabled=true;
     try{
-      const payload=RuhsatQualityPolicy.feedback(state.result,vehicleFields(),state.edits,state.confirmed,state.sample,$('qualityCondition').value);
+      const payload=RuhsatQualityPolicy.feedback(state.result,vehicleFields(),state.edits,state.confirmed,state.sample,$('qualityCondition').value,feedbackRevision);
+      if(feedbackRevision>=2){queue.submit(payload);return;}
       await apiRequest('/api/admin/feedback',{method:'POST',headers:{'Content-Type':'application/json','X-OTOTR-Client':'ruhsat-lab',...auth('admin')},body:JSON.stringify(payload)});
       $('qualityMessage').textContent=`${payload.fields.length} kontrol edilmiş alanın anonim sonucu kaydedildi. Fotoğraf ve alan değerleri kaydedilmedi. Model henüz eğitilmedi.`;
       $('qualitySynthetic').checked=payload.synthetic;await stats();toast('Anonim geri bildirim kaydedildi.');

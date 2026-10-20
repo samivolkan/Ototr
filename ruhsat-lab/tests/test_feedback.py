@@ -105,3 +105,21 @@ def test_legacy_database_migrates_and_conditions_remain_separate(tmp_path):
     stats=store.stats(True)
     assert stats['documents_reviewed']==3
     assert {r['condition'] for r in stats['rows']}=={'glare','blur'}
+
+
+def test_category_targets_are_controlled_retractable_and_not_training(tmp_path):
+    store=FeedbackStore(tmp_path/'feedback.sqlite3')
+    data=payload()
+    data['fields']=[dict(key='vehicle_category',corrected=True,originally_missing=False,confidence=.7,category_target='AA')]
+    store.save(Feedback.model_validate(data))
+    result=store.stats(True)
+    assert result['category_corrections']==[dict(code='AA',reviews=1,status='pending_evaluation')]
+    assert result['model_trained'] is False
+    for key,corrected,target in [('owner_name',True,'AA'),('plate',True,'AA'),('vehicle_category',False,'AA'),('vehicle_category',True,'PRIVATE')]:
+        invalid=deepcopy(data)
+        invalid['fields'][0].update(key=key,corrected=corrected,category_target=target)
+        with pytest.raises(ValidationError):Feedback.model_validate(invalid)
+    data['fields']=[]
+    store.save(Feedback.model_validate(data))
+    assert store.stats(True)['documents_reviewed']==0
+    assert store.stats(True)['category_corrections']==[]

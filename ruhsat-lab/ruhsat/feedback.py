@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Literal
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 VehicleKey = Literal["plate", "vin", "brand", "kind", "type", "model_year", "engine_no", "color",
                      "fuel_type", "vehicle_class", "vehicle_category", "registration_date",
@@ -19,6 +19,13 @@ class Outcome(BaseModel):
     corrected: bool
     originally_missing: bool
     confidence: float = Field(ge=0, le=1, allow_inf_nan=False)
+    category_target: Literal["AA", "AB", "AC", "AD", "AE", "AF", "AG"] | None = None
+
+    @model_validator(mode="after")
+    def safe_target(self):
+        if self.category_target is not None and (self.key != "vehicle_category" or not self.corrected):
+            raise ValueError("Gövde hedefi yalnız düzeltilmiş cins alanında kullanılabilir.")
+        return self
 
 
 class Feedback(BaseModel):
@@ -29,7 +36,7 @@ class Feedback(BaseModel):
     engine_version: Literal["0.2.0", "0.3.0", "0.3.1", "0.3.2", "0.3.3"]
     condition: Literal["unknown", "clear", "blur", "glare", "skew", "small", "mixed"] = "unknown"
     synthetic: bool = Field(strict=True)
-    fields: list[Outcome] = Field(min_length=1, max_length=21)
+    fields: list[Outcome] = Field(min_length=0, max_length=21)
 
 
 class FeedbackStore:
@@ -49,6 +56,8 @@ class FeedbackStore:
           request_id TEXT NOT NULL REFERENCES reviews(request_id) ON DELETE CASCADE,
           field_key TEXT NOT NULL, corrected INTEGER NOT NULL, originally_missing INTEGER NOT NULL,
           confidence REAL NOT NULL, PRIMARY KEY(request_id,field_key))""")
+        if "category_target" not in {row[1] for row in db.execute("PRAGMA table_info(outcomes)")}:
+            db.execute("ALTER TABLE outcomes ADD COLUMN category_target TEXT")
         return db
 
     def save(self, feedback: Feedback):
@@ -57,10 +66,12 @@ class FeedbackStore:
         with closing(self.connect()) as db, db:
             request_id = str(feedback.request_id)
             db.execute("DELETE FROM reviews WHERE request_id=?", (request_id,))
+            if not feedback.fields:
+                return
             db.execute("INSERT INTO reviews(request_id,mode,preprocessing,engine_version,synthetic,condition) VALUES (?,?,?,?,?,?)", (request_id, feedback.mode,
                        feedback.preprocessing, feedback.engine_version, int(feedback.synthetic), feedback.condition))
-            db.executemany("INSERT INTO outcomes VALUES (?,?,?,?,?)", [
-                (request_id, f.key, int(f.corrected), int(f.originally_missing), f.confidence)
+            db.executemany("INSERT INTO outcomes VALUES (?,?,?,?,?,?)", [
+                (request_id, f.key, int(f.corrected), int(f.originally_missing), f.confidence, f.category_target)
                 for f in feedback.fields])
 
     def stats(self, synthetic: bool = False):
@@ -71,7 +82,11 @@ class FeedbackStore:
                 FROM outcomes JOIN reviews USING(request_id) WHERE synthetic=?
                 GROUP BY field_key,mode,preprocessing,engine_version,condition ORDER BY field_key,mode,preprocessing,condition""",
                 (int(synthetic),)).fetchall()
+            targets = db.execute("""SELECT category_target,COUNT(*) FROM outcomes JOIN reviews USING(request_id)
+                WHERE synthetic=? AND category_target IS NOT NULL GROUP BY category_target ORDER BY COUNT(*) DESC""",
+                (int(synthetic),)).fetchall()
         return {"documents_reviewed": count, "synthetic": synthetic, "model_trained": False,
+                "category_corrections": [{"code": r[0], "reviews": r[1], "status": "pending_evaluation"} for r in targets],
                 "scope": "reviewed_fields_only", "rows": [{"key": r[0], "reviewed": r[1],
                 "corrected": r[2], "originally_missing": r[3], "mean_confidence": round(r[4], 3),
                 "mode": r[5], "preprocessing": r[6], "engine_version": r[7], "condition": r[8],
