@@ -7,8 +7,20 @@
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "orientation": "portrait-primary",
   "background_color": "#f4f5f7",
   "theme_color": "#e60012",
-  "icons": [{"src":"./brand/ototr-saha-icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+  "icons": [
+    {
+      "sizes": "192x192",
+      "purpose": "any",
+      "type": "image/png",
+      "src": "./brand/icon-192.png"
+    },
+    {
+      "sizes": "512x512",
+      "purpose": "any",
+      "type": "image/png",
+      "src": "./brand/icon-512.png"
+    }
+  ]
 }
