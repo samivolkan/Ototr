@@ -1,7 +1,7 @@
 {
   "sourceRepo": "samivolkan/ototr-saha-satis",
   "releaseDate": "2026-10-21",
-  "sourceCommit": "bb6375f",
+  "sourceCommit": "7f36fc1",
   "access": "verified-email-password-active-team",
   "app": "responsive-web",
   "storage": "shared-supabase",
@@ -109,5 +109,11 @@
   "erpBranchMapping": [
     "Nilüfer",
     "Gebze"
-  ]
+  ],
+  "mobileGalleryActions": "single-row-call-directions-edit-plan",
+  "mobileOverdue": "replaces-portfolio-card",
+  "visitCommercialFields": "outcome-dependent",
+  "visitOwnerSuggestion": true,
+  "voiceNote": "inline-microphone",
+  "galleryAddress": "collapsed"
 }
