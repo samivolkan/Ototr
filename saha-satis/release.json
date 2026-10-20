@@ -1,7 +1,7 @@
 {
   "sourceRepo": "samivolkan/ototr-saha-satis",
   "releaseDate": "2026-10-20",
-  "sourceCommit": "d739c5f",
+  "sourceCommit": "dc27f88",
   "access": "verified-email-password-active-team",
   "app": "responsive-web",
   "storage": "shared-supabase",
@@ -98,5 +98,7 @@
     "Nilüfer",
     "Gebze"
   ],
-  "researchCandidates": "existing-approved-imported-future-require-user-approval"
+  "researchCandidates": "existing-approved-imported-future-require-user-approval",
+  "mobilePortrait": "bottom-tabs-sheets-44px",
+  "offlineResults": "identity-scoped-indexeddb-version-checked"
 }

@@ -1,17 +1,19 @@
-// Cache only this public fallback. Never cache ERP HTML, API responses or records.
-const OFFLINE_CACHE = 'ototr-saha-offline-v1';
+// Only public static application files. Auth/API responses are never cached here.
+const OFFLINE_CACHE = 'ototr-saha-shell-v2';
+const shellFiles = ["./","offline.html","manifest.webmanifest","brand/icon-192.png","brand/icon-512.png","brand/icon-180.png","brand/ototr-logo.svg","assets/api-Er7TM07m.js","assets/app-Bdvo1lJp.js","assets/app-CE0-gC6y.css","assets/html2canvas-319lNmyC.js","assets/index.es-DOXtaJaJ.js","assets/inter-latin-400-normal-C38fXH4l.woff2","assets/inter-latin-500-normal-Cerq10X2.woff2","assets/inter-latin-600-normal-LgqL8muc.woff2","assets/inter-latin-700-normal-Yt3aPRUw.woff2","assets/inter-latin-ext-400-normal-C1nco2VV.woff2","assets/inter-latin-ext-500-normal-CV4jyFjo.woff2","assets/inter-latin-ext-600-normal-D2bJ5OIk.woff2","assets/inter-latin-ext-700-normal-Ca8adRJv.woff2","assets/purify.es-wSQYG3tN.js","assets/reportPdf-bh1erPhW.js","assets/typeof-B5XbjTb1.js"];
 const offlineUrl = new URL('offline.html', self.registration.scope).href;
 self.addEventListener('install', event => {
-  event.waitUntil(caches.open(OFFLINE_CACHE).then(cache => cache.add(offlineUrl)));
+  event.waitUntil(caches.open(OFFLINE_CACHE).then(cache => cache.addAll(shellFiles.length?shellFiles.map(p=>new URL(p,self.registration.scope).href):[offlineUrl])));
 });
 self.addEventListener('activate', event => {
   event.waitUntil(self.clients.claim());
 });
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
-  if (event.request.mode !== 'navigate' || !url.href.startsWith(self.registration.scope)) return;
-  event.respondWith(fetch(event.request).catch(async () =>
-    (await caches.match(offlineUrl)) || new Response('İnternet bağlantısı gerekli', {status:503,headers:{'Content-Type':'text/plain; charset=utf-8'}})));
+  if (event.request.method!=='GET'||url.origin!==self.location.origin||!url.href.startsWith(self.registration.scope)) return;
+  if(event.request.mode==='navigate')event.respondWith(fetch(event.request).catch(async () =>
+    (await caches.match(self.registration.scope)) || (await caches.match(offlineUrl)) || new Response('İlk giriş için internet gerekli', {status:503,headers:{'Content-Type':'text/plain; charset=utf-8'}})));
+  else if(url.pathname.includes('/assets/')||url.pathname.includes('/brand/'))event.respondWith(caches.match(url.href,{ignoreVary:true}).then(cached=>cached||fetch(event.request)));
 });
 self.addEventListener('push', event => {
   let payload = {};
@@ -40,3 +42,4 @@ self.addEventListener('notificationclick', event => {
     return existing ? existing.focus() : self.clients.openWindow(target.href);
   }));
 });
+

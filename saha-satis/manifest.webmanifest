@@ -7,18 +7,19 @@
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#f4f5f7",
   "theme_color": "#e60012",
   "icons": [
     {
       "sizes": "192x192",
-      "purpose": "any",
+      "purpose": "any maskable",
       "type": "image/png",
       "src": "./brand/icon-192.png"
     },
     {
       "sizes": "512x512",
-      "purpose": "any",
+      "purpose": "any maskable",
       "type": "image/png",
       "src": "./brand/icon-512.png"
     }
