@@ -1,7 +1,7 @@
 {
   "sourceRepo": "samivolkan/ototr-saha-satis",
-  "releaseDate": "2026-10-19",
-  "sourceCommit": "3e5bb78",
+  "releaseDate": "2026-10-20",
+  "sourceCommit": "9c7c219",
   "access": "verified-email-password-active-team",
   "app": "responsive-web",
   "storage": "shared-supabase",
@@ -70,5 +70,11 @@
     "normalized-phone",
     "shop-host"
   ],
-  "phoneInput": "fixed-0-plus-10-digits"
+  "phoneInput": "fixed-0-plus-10-digits",
+  "recentVisitEntry": {
+    "pastDays": 7,
+    "timezone": "Europe/Istanbul",
+    "atomic": true,
+    "retrySafe": true
+  }
 }
