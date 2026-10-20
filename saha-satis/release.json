@@ -1,7 +1,7 @@
 {
   "sourceRepo": "samivolkan/ototr-saha-satis",
   "releaseDate": "2026-10-20",
-  "sourceCommit": "3d349f0",
+  "sourceCommit": "ab0826d",
   "access": "verified-email-password-active-team",
   "app": "responsive-web",
   "storage": "shared-supabase",
@@ -90,5 +90,7 @@
   "assistant": "server-authenticated-openai-live-verified",
   "mobileVoice": "permission-status-timer-cancel-cleanup",
   "branchDirectory": "account-assignment-hq-selector",
-  "pendingPersonnel": "no-login-until-verified-account"
+  "pendingPersonnel": "no-login-until-verified-account",
+  "navigationLayout": "fixed-compact-viewport-sidebar",
+  "accountControls": "topbar-after-date-responsive-menu"
 }
