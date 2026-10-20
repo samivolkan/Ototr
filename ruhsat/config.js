@@ -1,1 +1,1 @@
-window.RUHSAT_CONFIG = Object.freeze({"apiBase": "https://ram-vatican-picnic-council.trycloudflare.com", "samplePath": "./sample.png", "erp": true});
+window.RUHSAT_CONFIG = Object.freeze({"erp":true,"apiBase":"https://modifications-size-rugs-mode.trycloudflare.com","samplePath":"./sample.png"});

@@ -57,7 +57,7 @@
     const frame = document.getElementById("ototrRuhsatFrame");
     if (!frame) return;
     if (routeName === "ruhsat") {
-      if (!frame.getAttribute("src") || frame.getAttribute("src") === "about:blank") frame.src = "./ruhsat/index.html?v=20261019-7";
+      if (!frame.getAttribute("src") || frame.getAttribute("src") === "about:blank") frame.src = "./ruhsat/index.html?v=20261020-1";
     } else if (frame.getAttribute("src") !== "about:blank") {
       frame.src = "about:blank";
     }
