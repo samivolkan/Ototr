@@ -1,7 +1,7 @@
 {
   "sourceRepo": "samivolkan/ototr-saha-satis",
   "releaseDate": "2026-10-21",
-  "sourceCommit": "46e7af2",
+  "sourceCommit": "bb6375f",
   "access": "verified-email-password-active-team",
   "app": "responsive-web",
   "storage": "shared-supabase",
@@ -101,6 +101,13 @@
   "researchCandidates": "existing-approved-imported-future-require-user-approval",
   "mobilePortrait": "bottom-tabs-sheets-44px",
   "offlineResults": "identity-scoped-indexeddb-version-checked",
-  "bonusBasis": "current-hq-accepted-result-only",
-  "provisionalPerformance": true
+  "bonusBasis": "hq-approved-completed-expertise-net-collected",
+  "provisionalPerformance": true,
+  "customerErpPipeline": true,
+  "monthlyBonusClosing": "branch-hq-paid-immutable-adjustments",
+  "galleryRewards": "audited-commission-free-expertise-esnaf",
+  "erpBranchMapping": [
+    "Nilüfer",
+    "Gebze"
+  ]
 }
