@@ -1,7 +1,7 @@
 {
   "sourceRepo": "samivolkan/ototr-saha-satis",
   "releaseDate": "2026-10-21",
-  "sourceCommit": "c3e41b5",
+  "sourceCommit": "20c9789",
   "access": "verified-email-password-active-team",
   "app": "responsive-web",
   "storage": "shared-supabase",
@@ -114,7 +114,7 @@
   "mobileOverdue": "replaces-portfolio-card",
   "visitCommercialFields": "outcome-dependent",
   "visitOwnerSuggestion": true,
-  "voiceNote": "inline-microphone",
+  "voiceNote": "retryable-status-local-capture-file-input",
   "galleryAddress": "collapsed",
   "syncIndicator": "single-icon-green-on-success",
   "visitPlanSections": "pastel-blue-green",
@@ -146,11 +146,13 @@
     "atomic": true,
     "retrySafe": true
   },
-  "planRemoval": "request-supervisor-approved-soft-archive",
+  "planRemoval": "active-branch-team-confirmed-soft-archive",
   "sahibindenImport": {
     "mode": "desktop-chrome-extension",
     "reviewBeforeSave": true,
     "requiresInstallation": true,
     "mobileAutoImport": false
-  }
+  },
+  "galleryEditing": "active-branch-team",
+  "visitCards": "compact-staff-top-purpose-before-icons-attendance-pastels"
 }
