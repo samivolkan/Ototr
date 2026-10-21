@@ -1,7 +1,7 @@
 {
   "sourceRepo": "samivolkan/ototr-saha-satis",
   "releaseDate": "2026-10-21",
-  "sourceCommit": "010840e",
+  "sourceCommit": "b20c7be",
   "access": "verified-email-password-active-team",
   "app": "responsive-web",
   "storage": "shared-supabase",
@@ -169,7 +169,7 @@
   "visitDirections": "gallery-contact-panel",
   "galleryFieldChecks": "explicit-value-confirmations",
   "galleryCorrection": "live-filter-and-dashboard-refresh",
-  "sourceImportExtension": "1.1.1",
+  "sourceImportExtension": "1.1.2",
   "sourceImportRecovery": "preserve-team-url-and-page-origin-identity",
-  "sourceImportDownload": "ototr-source-extension-1.1.1.zip"
+  "sourceImportDownload": "ototr-source-extension-1.1.2.zip"
 }
