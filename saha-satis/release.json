@@ -1,7 +1,7 @@
 {
   "sourceRepo": "samivolkan/ototr-saha-satis",
   "releaseDate": "2026-10-21",
-  "sourceCommit": "80f16bd",
+  "sourceCommit": "483aff6",
   "access": "verified-email-password-active-team",
   "app": "responsive-web",
   "storage": "shared-supabase",
@@ -154,7 +154,7 @@
     "mobileAutoImport": false
   },
   "galleryEditing": "active-branch-team",
-  "visitCards": "compact-staff-top-purpose-before-icons-attendance-pastels",
+  "visitCards": "single-row-time-staff-countdown-and-actions",
   "galleryRows": "white-pastel-turquoise-alternating",
   "mobileGalleryFilters": "collapsible-search-row",
   "galleryTableHeadings": "12px-bold"
