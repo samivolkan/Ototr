@@ -1,7 +1,7 @@
 {
   "sourceRepo": "samivolkan/ototr-saha-satis",
   "releaseDate": "2026-10-21",
-  "sourceCommit": "027f742",
+  "sourceCommit": "c3e41b5",
   "access": "verified-email-password-active-team",
   "app": "responsive-web",
   "storage": "shared-supabase",
@@ -146,5 +146,11 @@
     "atomic": true,
     "retrySafe": true
   },
-  "planRemoval": "request-supervisor-approved-soft-archive"
+  "planRemoval": "request-supervisor-approved-soft-archive",
+  "sahibindenImport": {
+    "mode": "desktop-chrome-extension",
+    "reviewBeforeSave": true,
+    "requiresInstallation": true,
+    "mobileAutoImport": false
+  }
 }
