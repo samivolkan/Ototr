@@ -1,7 +1,7 @@
 {
   "sourceRepo": "samivolkan/ototr-saha-satis",
   "releaseDate": "2026-10-21",
-  "sourceCommit": "d33635f",
+  "sourceCommit": "9def5c1",
   "access": "verified-email-password-active-team",
   "app": "responsive-web",
   "storage": "shared-supabase",
@@ -130,7 +130,7 @@
   "pageDensity": "compact-screen-no-decorative-intros",
   "mobileNavigation": "four-tabs-plan-in-topbar",
   "mobileGalleryCards": "compact-home-status-last-visit-under-name",
-  "feedbackEntry": "saha-menus-and-shake",
+  "feedbackEntry": "last-in-mobile-and-account-menus",
   "mobileGalleryDetail": "header-plan-icon-bottom-edit-history-icons",
   "desktopMobileView": true,
   "reviewQueue": "dense-rows-primary-action-collapsed-secondary",
@@ -158,6 +158,6 @@
   "galleryRows": "white-pastel-turquoise-alternating",
   "mobileGalleryFilters": "collapsible-search-row",
   "galleryTableHeadings": "12px-bold",
-  "visitedResults": "compact-top-time-staff-horizontal-actions",
+  "visitedResults": "calendar-style-day-columns-and-compact-cards",
   "calendarCounters": "pastel-chips-above-day-headings"
 }
