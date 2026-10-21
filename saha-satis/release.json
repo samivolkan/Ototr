@@ -1,7 +1,7 @@
 {
   "sourceRepo": "samivolkan/ototr-saha-satis",
   "releaseDate": "2026-10-21",
-  "sourceCommit": "d99b1ba",
+  "sourceCommit": "d7a8504",
   "access": "verified-email-password-active-team",
   "app": "responsive-web",
   "storage": "shared-supabase",
@@ -162,5 +162,6 @@
   "calendarCounters": "pastel-chips-above-day-headings",
   "cancelledVisits": "history-only-with-cancellation-label-and-filter",
   "cancelledVisitActions": "result-entry-and-confirmed-removal",
-  "visitDetails": "inline-toggle-icon"
+  "visitDetails": "inline-toggle-icon",
+  "planNotes": "colored-inline-icon-five-actions-one-row"
 }
