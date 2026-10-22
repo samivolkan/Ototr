@@ -1,6 +1,7 @@
 {
   "version": "V2",
-  "buildId": "2026-10-21T21:29:27.307Z",
-  "sourceCommit": "d9b49dd747494b92331449d5aec13c1e6b8ca805",
-  "comparison": "https://samivolkan.github.io/Ototr/saha-satis/v2/karsilastir.html"
+  "channel": "preview",
+  "buildId": "2026-10-22T10:45:38.859Z",
+  "sourceCommit": "c6a0174",
+  "backup": "/Ototr/saha-satis/v1/"
 }
