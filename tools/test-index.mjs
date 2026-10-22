@@ -121,6 +121,16 @@ for (const route of navRoutes) {
   await page.waitForSelector(`#page-${pageRoute}.active`);
 }
 
+await page.locator('#nav [data-nav-route="kpi-prime"]').click();
+await page.waitForSelector('#page-kpi-prime.active [data-kp-root]');
+await page.locator('#page-kpi-prime [data-kp-mode="demo"]').click();
+await page.locator('#page-kpi-prime').getByText('DEMO · KAYDEDİLMEZ').waitFor();
+const kpiPrimeReady = await page.evaluate(() => {
+  const root = document.querySelector('#page-kpi-prime.active');
+  const demoStored = localStorage.getItem('ototr-kpi-demo');
+  return Boolean(root?.textContent?.includes('Ayşe Demir') && root?.textContent?.includes('Bordro Kaydı') && demoStored === null);
+});
+
 await page.locator('#nav [data-nav-route="report-design"]').click();
 await page.waitForSelector("#page-report-design.active");
 await page.locator("#page-report-design.active .report-page-title").filter({ hasText: "Dijital Araç Karnesi" }).first().waitFor();
@@ -365,6 +375,7 @@ const result = {
   franchiseDetailReady,
   mobileNavCount,
   missingMobileRoutes,
+  kpiPrimeReady,
   errors,
   mobileErrors,
 };
@@ -401,6 +412,10 @@ if (!searchRoute.startsWith("Franchise")) {
 
 if (missingMobileRoutes.length > 0) {
   throw new Error("Mobil gorunumde nav elemanlari eksik.");
+}
+
+if (!kpiPrimeReady) {
+  throw new Error("KPI ve Prim Yönetimi DEMO/gölge güvenlik testi başarısız.");
 }
 
 if (!revenueChartReady) {

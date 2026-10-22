@@ -1295,6 +1295,8 @@
     @media(max-width:960px){html.dealer-standalone-root,html.dealer-standalone-root body{width:100%!important;max-width:100%!important;overflow-x:hidden!important}body.dealer-standalone .app,body.dealer-standalone .main,body.dealer-standalone .wrap,body.dealer-standalone #page-dealer{width:100%!important;max-width:100vw!important;overflow-x:hidden!important}body.dealer-standalone #page-dealer{overflow:hidden!important}body.dealer-standalone .module-page-head{width:calc(100vw - 24px)!important;max-width:calc(100vw - 24px)!important;margin-left:0!important;flex-direction:column!important;align-items:stretch!important;overflow:hidden!important}body.dealer-standalone .module-page-head>div{min-width:0!important;width:100%!important}body.dealer-standalone .module-page-head h1,body.dealer-standalone .module-page-head p{max-width:100%!important;overflow-wrap:anywhere!important;word-break:normal!important;white-space:normal!important}body.dealer-standalone .module-page-actions{display:grid!important;grid-template-columns:1fr!important;width:100%!important}body.dealer-standalone .module-page-actions .btn{width:100%!important;justify-content:center!important;white-space:normal!important}body.dealer-standalone .module-page-head .dealer-header-search,.dealer-login-card.pro{width:calc(100vw - 24px)!important;max-width:calc(100vw - 24px)!important}}
     @media(max-width:520px){body.dealer-standalone .module-page-head{width:calc(100vw - 48px)!important;max-width:calc(100vw - 48px)!important;padding:14px!important;border-radius:12px!important;gap:10px!important}body.dealer-standalone .module-page-head h1{font-size:20px!important;line-height:1.16!important;margin-bottom:5px!important}body.dealer-standalone .module-page-head p{font-size:11px!important;line-height:1.38!important}body.dealer-standalone .module-page-head .dealer-header-search{width:100%!important;max-width:100%!important;height:38px!important;margin-top:10px!important;padding:0 10px!important}body.dealer-standalone .module-page-actions{gap:7px!important}body.dealer-standalone .module-page-actions .btn{min-height:40px!important;padding:8px 10px!important}.dealer-login-card.pro{width:calc(100vw - 48px)!important;max-width:calc(100vw - 48px)!important}}
   </style>
+  <link rel="stylesheet" href="src/kpi-prime.css">
+  <script src="src/kpi-prime.js"></script>
 </head>
 <body>
   <script>
@@ -2876,10 +2878,10 @@
       ['Ekspertiz & Rapor', [['test-master','Ekspertiz Test Masterı','list-tree'],['report-design','Ekspertiz Rapor Tasarımı','file-check-2']]],
       ['Müşteri & Satış', [['crm','CRM & Randevu','users'],['complaints','Müşteri Şikayetleri','message-circle-warning'],['google-reviews','Google Yorumlar','star'],['reputation','Sosyal Medya İtibar Radar','radar'],['marketing','Pazarlama','megaphone']]],
       ['Franchise Yönetimi', [['franchise','Franchise Satış','handshake'],['growth','Bayii Büyüme','map'],['finance','Finans & Royalty','banknote']]],
-      ['Kurumsal Yönetim', [['academy','OTOTR Academy','graduation-cap'],['hr','İnsan Kaynakları','badge-check'],['legal','Hukuk & Risk','scale']]],
+      ['Kurumsal Yönetim', [['kpi-prime','KPI ve Prim Yönetimi','badge-percent'],['academy','OTOTR Academy','graduation-cap'],['hr','İnsan Kaynakları','badge-check'],['legal','Hukuk & Risk','scale']]],
       ['Ayarlar', [['architecture','Sistem Mimarisi','network'],['settings','Ayarlar','settings'],['legacy','Legacy Room','landmark']]]
     ];
-    const titles = {dashboard:'Yönetim Kokpiti',intelligence:'İş Zekası',branches:'Bayiler & Şubeler',dealer:'Bayi Portalı','ototr-web':'OTOTR Web',operations:'Operasyon',franchise:'Franchise Satış',crm:'CRM & Randevu',complaints:'Müşteri Şikayetleri','google-reviews':'Google Haritalar İtibar Merkezi',reputation:'İtibar Radar',finance:'Finans & Royalty',marketing:'Pazarlama',quality:'Kalite & Denetim','test-master':'Ekspertiz Test Masterı','report-design':'Ekspertiz Rapor Tasarımı','vehicle-passport':'Dijital Araç Karnesi',academy:'OTOTR Academy',hr:'İnsan Kaynakları',legal:'Hukuk & Risk',crisis:'Kriz Merkezi',actions:'Aksiyon & Görev',ai:'AI Öneri',growth:'Bayii Büyüme',legacy:'Legacy Room',architecture:'Sistem Mimarisi',settings:'Ayarlar',branchProfile:'Şube Profili',franchiseProfile:'Aday Değerlendirme',customerProfile:'Müşteri 360'};
+    const titles = {dashboard:'Yönetim Kokpiti',intelligence:'İş Zekası',branches:'Bayiler & Şubeler',dealer:'Bayi Portalı','ototr-web':'OTOTR Web',operations:'Operasyon',franchise:'Franchise Satış',crm:'CRM & Randevu',complaints:'Müşteri Şikayetleri','google-reviews':'Google Haritalar İtibar Merkezi',reputation:'İtibar Radar',finance:'Finans & Royalty',marketing:'Pazarlama',quality:'Kalite & Denetim','test-master':'Ekspertiz Test Masterı','report-design':'Ekspertiz Rapor Tasarımı','vehicle-passport':'Dijital Araç Karnesi','kpi-prime':'KPI ve Prim Yönetimi',academy:'OTOTR Academy',hr:'İnsan Kaynakları',legal:'Hukuk & Risk',crisis:'Kriz Merkezi',actions:'Aksiyon & Görev',ai:'AI Öneri',growth:'Bayii Büyüme',legacy:'Legacy Room',architecture:'Sistem Mimarisi',settings:'Ayarlar',branchProfile:'Şube Profili',franchiseProfile:'Aday Değerlendirme',customerProfile:'Müşteri 360'};
     function dealerPortalUrl(){ return 'bayi-portal/index.html?portal=dealer&version=v4'; }
     function openDealerPortalWindow(){ window.open(dealerPortalUrl(),'_blank','noopener,noreferrer'); }
     function dealerScrubSensitiveUrlParams(){
@@ -4022,6 +4024,7 @@
     }
 
     const moduleHeaderMeta={
+      'kpi-prime':['Kurumsal Yönetim · Performans','KPI ve Prim Yönetimi','Canlı ERP verisini değiştirmeden gölge prim hesaplayın; plan sürümlerini, onayları ve denetim geçmişini yönetin.'],
       intelligence:['Komuta · İş Zekası','İş Zekası / Analiz Room','Dashboard karar sinyallerinin derin analizini; trend, dönem, bölge, şube ve performans kırılımlarında inceleyin.'],
       branches:['İş Zekası · Bayiler & Şubeler','Bayiler & Şubeler / Network Room','Aktif bayi ve şubeleri; sahip, müdür, ciro, EBITDA, royalty, kalite, SLA, Academy ve hukuk riskiyle yönetin.'],
       dealer:['Operasyon · Bayi Kullanımı','OTOTR Bayi Portalı / Şube İşletim Sistemi','Bayi sahibi, şube müdürü, müşteri kabul, usta ve kasa personeli aynı şube verisini rol bazlı kullanır.'],
@@ -4317,6 +4320,7 @@
       demoReviews:googleReputationData.reviews
     };
     function renderPages(){
+      window.__OTOTR_KPI_DB__=DB;
       const totalRevenue=DB.branches.reduce((s,b)=>s+b.revenue,0);
       const royalty=DB.branches.reduce((s,b)=>s+b.royalty,0);
       const activeReports=DB.appointments.length;
@@ -4389,6 +4393,7 @@
         pageShell('finance', FinanceRoyaltyHealthCenterPage())+
         pageShell('marketing', typeof MarketingDashboard==='function' ? MarketingDashboard() : `<div class="grid g4">${stat('Pazarlama Harcaması',fmtTL(368000),'Nisan kampanyaları')}${stat('Toplam Lead',1314,'Çapraz kanal','green')}${stat('En İyi ROI','6.6x','Google Maps','blue')}${stat('CPL Ort.',fmtTL(268),'- %11 düşüş','green')}</div><div class="card"><div class="card-head"><div><div class="card-title">Kanal Performansı</div><div class="card-sub">Google Maps dominasyonu, sosyal medya, remarketing</div></div></div>${marketingTable()}</div>`)+
         pageShell('intelligence', IntelligencePage())+
+        pageShell('kpi-prime', window.KpiPrime ? window.KpiPrime.render() : '<div class="card">KPI ve Prim modülü yüklenemedi.</div>')+
         pageShell('academy', AcademyDashboard())+
         pageShell('hr', renderHRRoom())+
         pageShell('legal', LegalCommandCenterPage())+
@@ -15939,7 +15944,7 @@
         },180);
       }
     }
-    function renderAll(){ renderHero(); renderNav(); renderPages(); syncOnlineIndicator(); if(typeof dealerInitVehicleSelects==='function') dealerInitVehicleSelects(document); if(typeof dealerRefreshSmartWorkOrderFormState==='function') dealerRefreshSmartWorkOrderFormState(); dealerEnhanceCockpitRevenue(); }
+    function renderAll(){ renderHero(); renderNav(); renderPages(); if(window.KpiPrime) window.KpiPrime.bind(document.getElementById('page-kpi-prime')); syncOnlineIndicator(); if(typeof dealerInitVehicleSelects==='function') dealerInitVehicleSelects(document); if(typeof dealerRefreshSmartWorkOrderFormState==='function') dealerRefreshSmartWorkOrderFormState(); dealerEnhanceCockpitRevenue(); }
     (async function init(){
       const apiStatus=document.getElementById('apiStatus');
       if(apiStatus) apiStatus.textContent='Mock API bağlanıyor';

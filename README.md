@@ -40,6 +40,13 @@ $env:NODE_PATH='C:\Users\Samivolkannnn\.cache\codex-runtimes\codex-primary-runti
 & 'C:\Users\Samivolkannnn\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe' tools/test-index.mjs
 ```
 
+KPI ve Prim Yönetimi odak testi:
+
+```powershell
+$env:NODE_PATH='C:\Users\Samivolkannnn\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\node_modules'
+& 'C:\Users\Samivolkannnn\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe' tools/test-kpi-prime.mjs
+```
+
 ## Ekspertiz Test Masteri
 
 CRM'deki `#test-master` rotasi, 24.08.2026 tarihli kilitli ekspertiz
