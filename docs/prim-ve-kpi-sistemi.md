@@ -10,12 +10,23 @@ Modül ana ERP içindeki `KPI ve Prim Yönetimi` menüsünden açılır. İlk s�
 - Ödeme eğrisi: %60 altı 0; %100'de 1x; %120'de 1,5x; %140 ve üzerinde en fazla 2x.
 - Finansal KPI tavanı %140, diğer KPI tavanı %120.
 - Nitelikli ziyaret için tarih, galeri, yetkili, sonuç ve takip adımı zorunludur.
-- Atıf süresi 30 gün; kaynak ve kapatan çalışan kredisi %50/%50.
+- Galeri kazanım atfı 30 gün; aktif portföy değerlendirmesi hareketli 90 gündür.
+- Kaynak sahibi CRM'deki `gallery_owner_employee_id`, kapatan kişi randevu/iş emrindeki `sales_closer_employee_id` alanıdır. Teknik personel satış kapatan olarak otomatik atanmaz.
+- Kaynak ve kapatan çalışan kredisi %50/%50; aynı kişiyse kredi %100'dür.
+- Üretken galeri için ilk 60 günde iki tahsil edilmiş iş, iki farklı araç ve kendine yönlendirme kontrolü gerekir.
 - Eksik veri sıfır sayılmaz; sonuç `Eksik Veri` olur.
 - Hedefler aktif çalışma gününe göre orantılanır.
 - Gölge sonuçlar Şube, Genel Merkez/İK ve Finans kontrolünden geçer.
 - Canlı aktivasyon Genel Müdür + İK + Finans ortak onayı gerektirir.
-- Snapshot ve audit kayıtları 10 yıl saklanır.
+- Gölge kayıtlar için başlangıç saklama hedefi iki yıldır; kesinleşmiş kayıtların süresi hukuk/KVKK veri kategorisi matrisine göre belirlenir.
+
+## Maliyet ve canlıya geçiş
+
+Rapor %100, %120 ve KPI tavanı (%131 / yaklaşık 1,775x) senaryolarını gösterir. Net tahsilat oranı sırasıyla en fazla %3, %4 ve %5; primin bayi faaliyet kârına etkisi en fazla %20 olmalıdır. Sınır aşılırsa ödeme sessizce kesilmez, plan yeniden tasarlanır.
+
+Üç ay dolması tek başına aktivasyon sağlamaz. Veri tamamlılığı en az %95, atıf itirazı en fazla %3, beş iş gününde itiraz çözümü en az %90, doğrulanmamış satış en fazla %2 olmalı; maliyet, güvenlik, hukuk/KVKK ve son iki kapanış kriterleri geçmelidir. Supabase/PostgreSQL, RLS, sunucu tarafı hesaplama, hash'li snapshot, audit ve yedek/geri yükleme testi canlı aktivasyonun zorunlu kapısıdır.
+
+İadeler 90 gün izlenir ve sonraki primde ayrı mahsup satırı olarak gösterilir; otomatik maaş kesintisi yapılmaz. Kalite göstergesi ilk gölge dönemde yalnızca izlenir. Mevsim katsayısı en az 12 aylık veri oluşmadan uygulanmaz. Genel Müdür kendi planının onayında yer almaz.
 
 ## Veri güvenliği
 

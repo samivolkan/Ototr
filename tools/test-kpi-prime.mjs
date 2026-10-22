@@ -24,7 +24,7 @@ const liveState=await page.evaluate(()=>({
 }));
 await page.locator('[data-kp-mode="demo"]').click();
 await page.getByText("DEMO · KAYDEDİLMEZ").waitFor();
-const demoRows=await page.locator("#page-kpi-prime tbody tr").count();
+const demoRows=await page.locator("#page-kpi-prime [data-kp-results] tbody tr").count();
 const storageBefore=await page.evaluate(()=>localStorage.getItem("ototr-kpi-prime-v1"));
 await page.locator('[data-kp-tab="plan"]').click();
 await page.locator('[data-kp-weight="financial"]').fill("54");
@@ -43,6 +43,10 @@ const engine=await page.evaluate(()=>({
   refundNet:window.KpiPrime.aggregateFinancialEvents([{sourceSystem:'ERP',sourceId:'A',type:'sale',completed:true,collected:true,netAmount:100000},{sourceSystem:'ERP',sourceId:'A',type:'sale',completed:true,collected:true,netAmount:100000},{sourceSystem:'ERP',sourceId:'R',type:'refund',netAmount:15000},{sourceSystem:'ERP',sourceId:'U',type:'sale',completed:true,collected:false,netAmount:50000}]),
   creditValid:window.KpiPrime.validateCredits([{percent:50},{percent:50}]).valid&&!window.KpiPrime.validateCredits([{percent:60},{percent:50}]).valid,
   unpaidAmount:window.KpiPrime.calculate({...window.KpiPrime.demoScenario(),gates:{completed:true,collected:false},plan:window.KpiPrime.repository.load()}).amount,
+  galleryReady:window.KpiPrime.productiveGallery(window.KpiPrime.demoScenario().galleryEvents,window.KpiPrime.demoScenario()).productive,
+  galleryFarmingBlocked:!window.KpiPrime.productiveGallery([{sourceSystem:'ERP',sourceId:'1',daysFromAcquisition:2,completed:true,collected:true,netAmount:1,vin:'SELF',customerPhone:'05000000000'},{sourceSystem:'ERP',sourceId:'2',daysFromAcquisition:3,completed:true,collected:true,netAmount:1,vin:'SELF',customerPhone:'05000000000'}],{phone:'05000000000',vehicles:['SELF']}).productive,
+  costMultipliers:window.KpiPrime.costScenarios(10000,400000,27).map(x=>x.multiplier),
+  goLiveBlocked:!window.KpiPrime.exitReadiness({completeness:99,disputeRate:1,disputeResolution:95,unverifiedRate:1,costPass:true,securityPass:true,supabaseReady:false,legalReady:true,consecutivePasses:2}).ready,
   shadowCreatesPayroll:Boolean(localStorage.getItem('payroll')||localStorage.getItem('bordro')),
   missing:window.KpiPrime.calculate({role:'field',grossSalary:50000,gates:{completed:true,collected:true},metrics:{financial:{target:null,actual:1}},plan:window.KpiPrime.repository.load()}).status
 }));
@@ -56,6 +60,7 @@ if(errors.length)throw new Error("KPI ekranında console/page hatası bulundu.")
 if(liveState.demoBadge||liveState.missingRows<1||demoRows!==1)throw new Error("Canlı/DEMO veri ayrımı başarısız.");
 if(!disabledSavePrevented||planSaved?.version!==2)throw new Error("Plan ağırlık doğrulaması veya sürümleme başarısız.");
 if(JSON.stringify(engine.multipliers)!==JSON.stringify([0,1,1.5,2]))throw new Error("Ödeme eğrisi sınır testi başarısız.");
-if(engine.weightInvalid||engine.dedupe!==1||engine.refundNet!==85000||!engine.creditValid||engine.unpaidAmount!==0)throw new Error("Hesaplama güvenlik kuralları başarısız.");
+if(engine.weightInvalid||engine.dedupe!==1||engine.refundNet!==85000||!engine.creditValid||engine.unpaidAmount!==0||!engine.galleryReady||!engine.galleryFarmingBlocked)throw new Error("Hesaplama güvenlik kuralları başarısız.");
+if(JSON.stringify(engine.costMultipliers)!==JSON.stringify([1,1.5,1.775])||!engine.goLiveBlocked)throw new Error("Maliyet veya canlıya geçiş kapısı başarısız.");
 if(engine.shadowCreatesPayroll||engine.missing!=="DATA_MISSING")throw new Error("Gölge/eksik veri güvenliği başarısız.");
 if(demoStored!==null)throw new Error("DEMO verisi kalıcı depoya yazıldı.");
