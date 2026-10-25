@@ -1,6 +1,6 @@
 // Only public static application files. Auth/API responses are never cached here.
 const OFFLINE_CACHE = 'ototr-saha-main-v2';
-const shellFiles = ["./","offline.html","manifest.webmanifest","brand/icon-192.png","brand/icon-512.png","brand/icon-180.png","brand/ototr-logo.svg","assets/app-B-lExTf9.js","assets/app-C5gN-diA.css","assets/BranchesPage-BnLqRqKv.js","assets/browser-BQakVJvE.js","assets/browser-B_7DiHC-.js","assets/browser-Dsu8d5GH.js","assets/createReactComponent-9VDQH0-B.js","assets/customerPipeline-C3TXIujS.js","assets/CustomerPipelinePage-CsUoP-sY.js","assets/dates-DHKoqRh6.js","assets/dist-CdAJbOrv.js","assets/domain-Bm1vKkSX.js","assets/FeedbackCenter-DNoTf9Sg.js","assets/feedbackLoader-N63oUCEp.js","assets/html2canvas-CRV6Yc1K.js","assets/index.es-BXduuHp8.js","assets/inter-latin-400-normal-C38fXH4l.woff2","assets/inter-latin-500-normal-Cerq10X2.woff2","assets/inter-latin-600-normal-LgqL8muc.woff2","assets/inter-latin-700-normal-Yt3aPRUw.woff2","assets/inter-latin-ext-400-normal-C1nco2VV.woff2","assets/inter-latin-ext-500-normal-CV4jyFjo.woff2","assets/inter-latin-ext-600-normal-D2bJ5OIk.woff2","assets/inter-latin-ext-700-normal-Ca8adRJv.woff2","assets/jsx-runtime-BHz_hoGM.js","assets/ManagementPage-CA5sIBCC.js","assets/PerformancePage-BHlXDcSp.js","assets/purify.es-wSQYG3tN.js","assets/ReportPage-B1ct2YII.js","assets/ReportPage-CAYjlkEl.css","assets/reportPdf-B1EDZPYO.js","assets/reports-CkD9M1o-.js","assets/rolldown-runtime-Bh1tDfsg.js","assets/SourceMonitor-DQQmIUEC.js","assets/typeof-B5XbjTb1.js","assets/v2Management-BU3MqhYQ.css","assets/vendor-BDmYBZtP.js"];
+const shellFiles = ["./","offline.html","manifest.webmanifest","brand/icon-192.png","brand/icon-512.png","brand/icon-180.png","brand/ototr-logo.svg","assets/app-Bj7cNuwE.js","assets/app-C5gN-diA.css","assets/BranchesPage-8TzjKFVR.js","assets/browser-BQakVJvE.js","assets/browser-B_7DiHC-.js","assets/browser-Dsu8d5GH.js","assets/createReactComponent-9VDQH0-B.js","assets/customerPipeline-C3TXIujS.js","assets/CustomerPipelinePage-bUGYft5R.js","assets/dates-DHKoqRh6.js","assets/dist-CdAJbOrv.js","assets/domain-Bm1vKkSX.js","assets/FeedbackCenter-DNoTf9Sg.js","assets/feedbackLoader-N63oUCEp.js","assets/html2canvas-CRV6Yc1K.js","assets/index.es-BXduuHp8.js","assets/inter-latin-400-normal-C38fXH4l.woff2","assets/inter-latin-500-normal-Cerq10X2.woff2","assets/inter-latin-600-normal-LgqL8muc.woff2","assets/inter-latin-700-normal-Yt3aPRUw.woff2","assets/inter-latin-ext-400-normal-C1nco2VV.woff2","assets/inter-latin-ext-500-normal-CV4jyFjo.woff2","assets/inter-latin-ext-600-normal-D2bJ5OIk.woff2","assets/inter-latin-ext-700-normal-Ca8adRJv.woff2","assets/jsx-runtime-BHz_hoGM.js","assets/ManagementPage-z8WdF8vb.js","assets/PerformancePage-CsERpQu0.js","assets/purify.es-wSQYG3tN.js","assets/ReportPage-CAYjlkEl.css","assets/ReportPage-DD-gXdM7.js","assets/reportPdf-CoQwEvUF.js","assets/reports-BO7TpQak.js","assets/rolldown-runtime-Bh1tDfsg.js","assets/SourceMonitor-DUyC8MLg.js","assets/typeof-B5XbjTb1.js","assets/v2Management-BU3MqhYQ.css","assets/vendor-BDmYBZtP.js"];
 const offlineUrl = new URL('offline.html', self.registration.scope).href;
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(OFFLINE_CACHE).then(cache => cache.addAll(shellFiles.length?shellFiles.map(p=>new URL(p,self.registration.scope).href):[offlineUrl])).then(()=>self.skipWaiting()));
@@ -25,7 +25,7 @@ self.addEventListener('push', event => {
     badge: new URL('brand/ototr-saha-icon.svg', self.registration.scope).href,
     tag: payload.tag || 'ototr-saha-reminder',
     renotify: false,
-    data: { url: self.registration.scope }
+    data: { url: payload.url || self.registration.scope }
   };
   event.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(windows => {
     if (windows.some(client => client.visibilityState === 'visible')) return;
@@ -36,10 +36,11 @@ self.addEventListener('push', event => {
 self.addEventListener('notificationclick', event => {
   event.notification.close();
   const target = new URL(event.notification.data?.url || self.registration.scope, self.registration.scope);
-  if (target.origin !== self.location.origin) target.href = self.registration.scope;
+  if (target.origin !== self.location.origin || !target.href.startsWith(self.registration.scope)) target.href = self.registration.scope;
   event.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(windows => {
     const existing = windows.find(client => client.url.startsWith(self.registration.scope));
-    return existing ? existing.focus() : self.clients.openWindow(target.href);
+    if(existing){existing.postMessage({type:'OTOTR_REVIEW_OPEN',url:target.href});return existing.focus();}
+    return self.clients.openWindow(target.href);
   }));
 });
 
