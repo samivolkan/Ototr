@@ -15,3 +15,4 @@ create table if not exists public.google_reviews (
 create index if not exists google_reviews_branch_idx on public.google_reviews(branch_id, review_date desc);
 alter table public.google_reviews enable row level security;
 revoke all on table public.google_reviews from anon, authenticated;
+
