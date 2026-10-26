@@ -73,6 +73,34 @@
     return data;
   }
 
+  async function googleBusinessRequest(action, extra = {}) {
+    const auth = session();
+    if (!auth?.access_token || typeof DEALER_SUPABASE_KEY === 'undefined') throw new Error('ERP oturumu gerekli.');
+    const response = await globalThis.fetch('https://bsjkohwbtrfwrqcyhsfz.supabase.co/functions/v1/google-business-oauth', {
+      method: 'POST',
+      headers: { apikey: DEALER_SUPABASE_KEY, Authorization: `Bearer ${auth.access_token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action, ...extra })
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || `Google bağlantı servisi ${response.status} hatası verdi.`);
+    return data;
+  }
+
+  async function connectGoogleBusiness() {
+    try {
+      const data = await googleBusinessRequest('start');
+      if (!data.auth_url) throw new Error('Google yetkilendirme adresi alınamadı.');
+      location.assign(data.auth_url);
+    } catch (error) {
+      if (typeof window.toast === 'function') window.toast(error.message);
+    }
+  }
+
+  async function googleBusinessStatus() {
+    try { return await googleBusinessRequest('status'); }
+    catch (_) { return { connected: false }; }
+  }
+
   async function generate(reviewId, regenerate) {
     const api = window.OTOTRGoogleReputation;
     const review = (api?.demoReviews || []).find((item) => item.id === reviewId);
@@ -101,7 +129,7 @@
   function install() {
     if (!window.OTOTRGoogleReputation) return setTimeout(install, 100);
     window.OTOTRGoogleReputation.generateReplyDraft = generate;
-    window.OTOTRGoogleReviewAI = { generate, getApprovalQueue: () => JSON.parse(localStorage.getItem(DRAFTS_KEY) || '[]') };
+    window.OTOTRGoogleReviewAI = { generate, connectGoogleBusiness, googleBusinessStatus, getApprovalQueue: () => JSON.parse(localStorage.getItem(DRAFTS_KEY) || '[]') };
   }
 
   install();

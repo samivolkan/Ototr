@@ -4417,7 +4417,7 @@
       return `<div class="google-reviews-kpis">${items.map(x=>`<article class="google-premium-kpi ${x[6]}"><div class="google-kpi-top"><div class="google-kpi-title"><span>${x[0]}</span><small>${x[2]}</small></div><div class="google-kpi-icon">${icon(x[5])}</div></div><div class="google-kpi-value-large">${x[1]}</div><div class="google-kpi-foot"><span class="google-trend-chip ${x[4]}">${x[3]}</span><div class="google-spark ${x[6]}">${x[7].map(h=>`<i style="height:${h}%"></i>`).join('')}</div></div></article>`).join('')}</div>`;
     }
     function GooglePremiumHero(){
-      return `<section class="google-premium-hero"><div><h2>OTOTR Google Yorum Yönetimi</h2><p>Nilüfer, Gebze ve İnegöl işletmelerinin yorumları, AI yanıt taslakları ve genel merkez onay akışı bu ekrandan yönetilecek.</p></div><div class="google-premium-actions"><span class="google-sync-pill">${icon('clock-3')}${googleEsc(googleReputationState.lastSync)}</span></div></section>`;
+      return `<section class="google-premium-hero"><div><h2>OTOTR Google Yorum Yönetimi</h2><p>Nilüfer, Gebze ve İnegöl işletmelerinin yorumları, AI yanıt taslakları ve genel merkez onay akışı bu ekrandan yönetilecek.</p></div><div class="google-premium-actions"><span class="google-sync-pill">${icon('clock-3')}${googleEsc(googleReputationState.lastSync)}</span><button class="btn primary" onclick="OTOTRGoogleReviewAI.connectGoogleBusiness()">${icon('key-round')}Google Hesabını Bağla</button></div></section>`;
     }
     function GoogleBranchRanking(){
       const rows=[...googleBranches()].sort((a,b)=>b.reputationScore-a.reputationScore);
