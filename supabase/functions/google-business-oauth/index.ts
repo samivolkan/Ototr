@@ -45,11 +45,19 @@ async function verifyState(state: string) {
   return data.userId as string;
 }
 function env(name: string) { const value = Deno.env.get(name); if (!value) throw new Error(`${name} tanımlı değil.`); return value; }
-function admin() { return createClient(env('SUPABASE_URL'), env('SUPABASE_SERVICE_ROLE_KEY'), { auth: { persistSession: false, autoRefreshToken: false } }); }
+function injectedSupabaseKey(legacyName: string, dictionaryName: string) {
+  const legacy = Deno.env.get(legacyName);
+  if (legacy) return legacy;
+  const dictionary = env(dictionaryName);
+  const value = JSON.parse(dictionary).default;
+  if (typeof value !== 'string' || !value) throw new Error(`${dictionaryName}.default tanımlı değil.`);
+  return value;
+}
+function admin() { return createClient(env('SUPABASE_URL'), injectedSupabaseKey('SUPABASE_SERVICE_ROLE_KEY', 'SUPABASE_SECRET_KEYS'), { auth: { persistSession: false, autoRefreshToken: false } }); }
 async function currentUser(req: Request) {
   const token = req.headers.get('authorization');
   if (!token) throw new Error('ERP oturumu gerekli.');
-  const client = createClient(env('SUPABASE_URL'), env('SUPABASE_ANON_KEY'), { global: { headers: { Authorization: token } }, auth: { persistSession: false, autoRefreshToken: false } });
+  const client = createClient(env('SUPABASE_URL'), injectedSupabaseKey('SUPABASE_ANON_KEY', 'SUPABASE_PUBLISHABLE_KEYS'), { global: { headers: { Authorization: token } }, auth: { persistSession: false, autoRefreshToken: false } });
   const { data, error } = await client.auth.getUser();
   if (error || !data.user) throw new Error('ERP oturumu geçersiz.');
   return data.user;
