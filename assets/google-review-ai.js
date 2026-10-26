@@ -10,7 +10,10 @@
     })[char]);
   }
 
-  function session() {
+  async function session() {
+    if (typeof window.OTOTRGetLiveSession === 'function') {
+      try { return await window.OTOTRGetLiveSession(); } catch (_) {}
+    }
     try { return JSON.parse(localStorage.getItem('ototr-dealer-supabase-session-v1') || 'null'); }
     catch (_) { return null; }
   }
@@ -61,7 +64,7 @@
   }
 
   async function requestDraft(review, branch) {
-    const auth = session();
+    const auth = await session();
     if (!auth?.access_token || typeof DEALER_SUPABASE_KEY === 'undefined') throw new Error('ERP oturumu veya backend bağlantısı bulunamadı.');
     const response = await globalThis.fetch(AI_ENDPOINT, {
       method: 'POST',
@@ -74,7 +77,7 @@
   }
 
   async function googleBusinessRequest(action, extra = {}) {
-    const auth = session();
+    const auth = await session();
     if (!auth?.access_token || typeof DEALER_SUPABASE_KEY === 'undefined') throw new Error('ERP oturumu gerekli.');
     const response = await globalThis.fetch('https://bsjkohwbtrfwrqcyhsfz.supabase.co/functions/v1/google-business-oauth', {
       method: 'POST',
@@ -134,4 +137,3 @@
 
   install();
 })();
-
