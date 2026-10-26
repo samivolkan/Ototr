@@ -16,7 +16,7 @@
   }
 
   function fallbackReply(review, branch) {
-    const team = `${String(branch.name || 'OTOTR').replace(/ Test Şube$/i, '').trim()} ekibi`;
+    const team = `${String(branch.replySignatureName || branch.name || 'OTOTR').replace(/ Test Şube$/i, '').trim()} ekibi`;
     if (Number(review.rating) >= 4) {
       return `Deneyiminizi bizimle paylaştığınız için çok teşekkür ederiz. Güzel değerlendirmeniz ekibimiz için çok kıymetli; sizi yeniden ağırlamaktan memnuniyet duyarız.\n\n${team}`;
     }
@@ -66,7 +66,7 @@
     const response = await globalThis.fetch(AI_ENDPOINT, {
       method: 'POST',
       headers: { apikey: DEALER_SUPABASE_KEY, Authorization: `Bearer ${auth.access_token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'generate', review: { id: review.id, rating: review.rating, comment: review.comment }, branch: { id: branch.id, name: branch.name, city: branch.city } })
+      body: JSON.stringify({ action: 'generate', review: { id: review.id, rating: review.rating, comment: review.comment }, branch: { id: branch.id, name: branch.name, city: branch.city, replySignatureName: branch.replySignatureName } })
     });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(data.error || data.message || `AI servisi ${response.status} hatası verdi (${new URL(response.url).hostname}).`);

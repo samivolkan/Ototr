@@ -41,6 +41,7 @@ Deno.serve(async (req: Request) => {
     const apiKey = Deno.env.get('OPENAI_API_KEY');
     if (!apiKey) return json({ error: 'OPENAI_API_KEY sunucu sırrı tanımlı değil.' }, 503);
 
+    const replySignatureName = String(branch.replySignatureName || branch.name || 'OTOTR').slice(0, 180);
     const prompt = `Şube: ${String(branch.name || 'OTOTR').slice(0, 180)}\nŞehir: ${String(branch.city || '').slice(0, 80)}\nPuan: ${rating}/5\nMüşteri yorumu: ${comment}`;
     const response = await fetch('https://api.openai.com/v1/responses', {
       method: 'POST',
@@ -49,7 +50,7 @@ Deno.serve(async (req: Request) => {
         model: Deno.env.get('OPENAI_MODEL') || 'gpt-5-mini',
         max_output_tokens: 450,
         moderation: { model: 'omni-moderation-latest' },
-        instructions: `Sen OTOTR genel merkez müşteri deneyimi editörüsün. Google Haritalar yorumuna Türkçe, doğal ve gerçekten insan yazmış gibi kısa bir işletme yanıtı üret. Yorumdaki somut ayrıntıya değin; klişe ve tekrar eden cümlelerden kaçın. Müşterinin adını kullanma. Gerçekleştirilmemiş inceleme, arama, telafi veya sonuç vaadinde bulunma. Özel bilgi isteme; gerekirse yalnızca resmi iletişim kanalına davet et. 4-5 yıldızda sıcak ve özgün teşekkür; 3 yıldızda teşekkür ve iyileştirme niyeti; 1-2 yıldızda savunmaya geçmeden empati ve inceleme daveti kullan. Hukuk, dava, dolandırıcılık, güvenlik, ayrımcılık, kişisel veri, ücret iadesi veya ciddi teknik hata iddiasında requires_human_review=true ve uygun route seç. Yanıtın sonunda ayrı satırda "${String(branch.name || 'OTOTR').replace(/ Test Şube$/i, '').trim()} ekibi" imzası olsun. 90 kelimeyi geçme.`,
+        instructions: `Sen OTOTR genel merkez müşteri deneyimi editörüsün. Google Haritalar yorumuna Türkçe, doğal ve gerçekten insan yazmış gibi kısa bir işletme yanıtı üret. Yorumdaki somut ayrıntıya değin; klişe ve tekrar eden cümlelerden kaçın. Müşterinin adını kullanma. Gerçekleştirilmemiş inceleme, arama, telafi veya sonuç vaadinde bulunma. Özel bilgi isteme; gerekirse yalnızca resmi iletişim kanalına davet et. 4-5 yıldızda sıcak ve özgün teşekkür; 3 yıldızda teşekkür ve iyileştirme niyeti; 1-2 yıldızda savunmaya geçmeden empati ve inceleme daveti kullan. Hukuk, dava, dolandırıcılık, güvenlik, ayrımcılık, kişisel veri, ücret iadesi veya ciddi teknik hata iddiasında requires_human_review=true ve uygun route seç. Yanıtın sonunda ayrı satırda "${replySignatureName} ekibi" imzası olsun. 90 kelimeyi geçme.`,
         input: prompt,
         text: { format: { type: 'json_schema', name: 'google_review_reply', strict: true, schema } },
       }),
