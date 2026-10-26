@@ -4497,6 +4497,8 @@
       demoBranches:googleReputationData.branches,
       demoReviews:googleReputationData.reviews
     };
+    window.OTOTRGetLiveSession=dealerSupabaseActiveSession;
+    window.OTOTRGetSupabaseKey=()=>DEALER_SUPABASE_KEY;
     setTimeout(refreshGoogleBusinessConnectionStatus, 250);
     const chronicIssueModels=[
       {id:'bmw-3-2021',brand:'BMW',model:'3 Serisi',years:'2019-2023',score:82,reports:148,issueCount:6,coverage:'top3',flags:['top3','low_sample'],issues:['Zincir ve zamanlama sesi','Elektronik sensör uyarıları','Şanzıman geçiş vuruntusu'],erp:'İş emri açılışında Premium 360 + OBD tarama öner.'},
@@ -7342,13 +7344,16 @@
     const DEALER_REPORT_PREVIEW_SNAPSHOT_KEY='ototr-dealer-report-preview-snapshot-v1';
     const DEALER_PRINT_PENDING_KEY='ototr-dealer-print-pending-v1';
     const DEALER_SUPABASE_CONFIG_KEY='ototr-dealer-supabase-config-v1';
+    // Public Supabase connection used by the hosted ERP. This is a publishable key, not a secret.
+    const DEALER_SUPABASE_DEFAULT_URL='https://bsjkohwbtrfwrqcyhsfz.supabase.co';
+    const DEALER_SUPABASE_DEFAULT_KEY='sb_publishable_2vkXvrJrWhex-e0wFdM3Bg_nVlqGGuE';
     function dealerSupabaseRuntimeConfig(){
       let stored={};
       try{stored=JSON.parse(localStorage.getItem(DEALER_SUPABASE_CONFIG_KEY)||'{}')||{};}catch(err){stored={};}
       const runtime=window.OTOTR_SUPABASE_CONFIG||{};
       return {
-        url:String(runtime.url||stored.url||'').replace(/\/$/,''),
-        key:String(runtime.key||stored.key||'')
+        url:String(runtime.url||stored.url||DEALER_SUPABASE_DEFAULT_URL).replace(/\/$/,''),
+        key:String(runtime.key||stored.key||DEALER_SUPABASE_DEFAULT_KEY)
       };
     }
     const DEALER_SUPABASE_RUNTIME_CONFIG=dealerSupabaseRuntimeConfig();
@@ -18242,7 +18247,7 @@
 })();
 </script>
 
-<script src="assets/google-review-ai.js"></script>
+<script src="assets/google-review-ai.js?v=oauth-session-3"></script>
 <script type="text/plain" id="google-backend-service-sample">
 /**
  * Google Haritalar İtibar Merkezi backend servis iskeleti

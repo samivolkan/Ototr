@@ -10,9 +10,20 @@
     })[char]);
   }
 
-  function session() {
+  async function session() {
+    if (typeof window.OTOTRGetLiveSession === 'function') {
+      try { return await window.OTOTRGetLiveSession(); } catch (_) {}
+    }
     try { return JSON.parse(localStorage.getItem('ototr-dealer-supabase-session-v1') || 'null'); }
     catch (_) { return null; }
+  }
+
+  function supabaseKey() {
+    if (typeof window.OTOTRGetSupabaseKey === 'function') {
+      try { return window.OTOTRGetSupabaseKey(); } catch (_) {}
+    }
+    try { return typeof DEALER_SUPABASE_KEY === 'undefined' ? '' : DEALER_SUPABASE_KEY; }
+    catch (_) { return ''; }
   }
 
   function fallbackReply(review, branch) {
@@ -61,11 +72,12 @@
   }
 
   async function requestDraft(review, branch) {
-    const auth = session();
-    if (!auth?.access_token || typeof DEALER_SUPABASE_KEY === 'undefined') throw new Error('ERP oturumu veya backend bağlantısı bulunamadı.');
+    const auth = await session();
+    const key = supabaseKey();
+    if (!auth?.access_token || !key) throw new Error('ERP oturumu veya backend bağlantısı bulunamadı.');
     const response = await globalThis.fetch(AI_ENDPOINT, {
       method: 'POST',
-      headers: { apikey: DEALER_SUPABASE_KEY, Authorization: `Bearer ${auth.access_token}`, 'Content-Type': 'application/json' },
+      headers: { apikey: key, Authorization: `Bearer ${auth.access_token}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'generate', review: { id: review.id, rating: review.rating, comment: review.comment }, branch: { id: branch.id, name: branch.name, city: branch.city, replySignatureName: branch.replySignatureName } })
     });
     const data = await response.json().catch(() => ({}));
@@ -74,11 +86,13 @@
   }
 
   async function googleBusinessRequest(action, extra = {}) {
-    const auth = session();
-    if (!auth?.access_token || typeof DEALER_SUPABASE_KEY === 'undefined') throw new Error('ERP oturumu gerekli.');
+    const auth = await session();
+    const key = supabaseKey();
+    if (!auth?.access_token) throw new Error('ERP oturumu süresi dolmuş. Lütfen ERP’ye tekrar giriş yapın.');
+    if (!key) throw new Error('Supabase bağlantı anahtarı bulunamadı.');
     const response = await globalThis.fetch('https://bsjkohwbtrfwrqcyhsfz.supabase.co/functions/v1/google-business-oauth', {
       method: 'POST',
-      headers: { apikey: DEALER_SUPABASE_KEY, Authorization: `Bearer ${auth.access_token}`, 'Content-Type': 'application/json' },
+      headers: { apikey: key, Authorization: `Bearer ${auth.access_token}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ action, ...extra })
     });
     const data = await response.json().catch(() => ({}));

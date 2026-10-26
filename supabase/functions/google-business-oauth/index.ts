@@ -49,16 +49,19 @@ function injectedSupabaseKey(legacyName: string, dictionaryName: string) {
   const legacy = Deno.env.get(legacyName);
   if (legacy) return legacy;
   const dictionary = env(dictionaryName);
-  const value = JSON.parse(dictionary).default;
-  if (typeof value !== 'string' || !value) throw new Error(`${dictionaryName}.default tanımlı değil.`);
+  const environmentName = JSON.parse(dictionary)?.default;
+  if (typeof environmentName !== 'string' || !environmentName) throw new Error(`${dictionaryName}.default tanımlı değil.`);
+  const value = Deno.env.get(environmentName);
+  if (!value) throw new Error(`${environmentName} tanımlı değil.`);
   return value;
 }
 function admin() { return createClient(env('SUPABASE_URL'), injectedSupabaseKey('SUPABASE_SERVICE_ROLE_KEY', 'SUPABASE_SECRET_KEYS'), { auth: { persistSession: false, autoRefreshToken: false } }); }
 async function currentUser(req: Request) {
-  const token = req.headers.get('authorization');
+  const authorization = req.headers.get('authorization') || '';
+  const token = authorization.replace(/^Bearer\s+/i, '').trim();
   if (!token) throw new Error('ERP oturumu gerekli.');
-  const client = createClient(env('SUPABASE_URL'), injectedSupabaseKey('SUPABASE_ANON_KEY', 'SUPABASE_PUBLISHABLE_KEYS'), { global: { headers: { Authorization: token } }, auth: { persistSession: false, autoRefreshToken: false } });
-  const { data, error } = await client.auth.getUser();
+  const client = createClient(env('SUPABASE_URL'), injectedSupabaseKey('SUPABASE_ANON_KEY', 'SUPABASE_PUBLISHABLE_KEYS'), { auth: { persistSession: false, autoRefreshToken: false } });
+  const { data, error } = await client.auth.getUser(token);
   if (error || !data.user) throw new Error('ERP oturumu geçersiz.');
   return data.user;
 }
@@ -67,6 +70,12 @@ async function accessToken(refreshToken: string) {
   const data = await response.json();
   if (!response.ok) throw new Error(data.error_description || data.error || 'Google token yenileme başarısız.');
   return data.access_token as string;
+}
+async function googleJson(url: string, token: string, init: RequestInit = {}) {
+  const response = await fetch(url, { ...init, headers: { Authorization: `Bearer ${token}`, ...(init.headers || {}) } });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.error?.message || data.error_description || 'Google Business Profile API hatası.');
+  return data;
 }
 
 Deno.serve(async (req) => {
@@ -97,13 +106,26 @@ Deno.serve(async (req) => {
     if (body.action === 'status') return json({ connected: Boolean(connection), connected_at: connection?.connected_at || null });
     if (!connection) return json({ error: 'Google Business Profile bağlantısı kurulmamış.' }, 409);
     const token = await accessToken(await decrypt(connection.refresh_token_encrypted));
+    if (body.action === 'accounts') {
+      const data = await googleJson('https://mybusinessaccountmanagement.googleapis.com/v1/accounts', token);
+      return json(data);
+    }
+    if (body.action === 'locations') {
+      const accountId = String(body.account_id || '');
+      if (!/^accounts\/\d+$/.test(accountId)) return json({ error: 'Geçersiz Google hesap kimliği.' }, 400);
+      const data = await googleJson(`https://mybusinessbusinessinformation.googleapis.com/v1/${accountId}/locations?readMask=name,title,storeCode,metadata&pageSize=100`, token);
+      return json(data);
+    }
     if (body.action === 'reviews') {
       const locationId = String(body.location_id || '');
       const accountId = String(body.account_id || '');
       if (!/^\d+$/.test(locationId) || !/^\d+$/.test(accountId)) return json({ error: 'Geçersiz Google hesap/konum kimliği.' }, 400);
-      const response = await fetch(`https://mybusiness.googleapis.com/v4/accounts/${accountId}/locations/${locationId}/reviews?pageSize=50`, { headers: { Authorization: `Bearer ${token}` } });
-      const data = await response.json();
-      return response.ok ? json(data) : json({ error: data.error?.message || 'Yorumlar alınamadı.' }, response.status);
+      return json(await googleJson(`https://mybusiness.googleapis.com/v4/accounts/${accountId}/locations/${locationId}/reviews?pageSize=50`, token));
+    }
+    if (body.action === 'reply') {
+      const accountId = String(body.account_id || ''), locationId = String(body.location_id || ''), reviewId = String(body.review_id || ''), reply = String(body.reply || '').trim();
+      if (!/^\d+$/.test(locationId) || !/^\d+$/.test(accountId) || !reviewId || !reply) return json({ error: 'Cevap için hesap, konum, yorum ve metin gereklidir.' }, 400);
+      return json(await googleJson(`https://mybusiness.googleapis.com/v4/accounts/${accountId}/locations/${locationId}/reviews/${encodeURIComponent(reviewId)}/reply`, token, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ comment: reply }) }));
     }
     return json({ error: 'Geçersiz işlem.' }, 400);
   } catch (error) {
