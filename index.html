@@ -4455,12 +4455,23 @@
       return `<section class="google-api-note"><b>Canlı API hazırlığı:</b> Frontend içinde API anahtarı tutulmayacak. Backend tarafında <code>POST /api/integrations/google/locations/import</code> ile Maps URL/Place ID eşlemesi, <code>GET /api/google-reviews/branches</code> ile yorum listesi, <code>POST /api/google-reviews/:reviewId/reply-draft</code> ile cevap taslağı ve <code>POST /api/google-reviews/:reviewId/publish-reply</code> ile onaylı yanıt akışı kurulacak. Places API public puan/işletme bilgisini verir; gerçek yorum ID, yanıt durumu ve cevap yayınlama için Google Business Profile OAuth gerekir.</section>`;
     }
     function GoogleReputationPremiumDashboard(){
-      return `<div class="google-reviews-page premium">${GooglePremiumHero()}${GooglePilotIntegrationPanel()}${GoogleBackendNote()}</div>`;
+      return `<div class="google-reviews-page premium">${GooglePremiumHero()}${GoogleKpiCards()}<div class="google-reviews-layout">${GoogleBranchRanking()}<div class="google-feed-shell">${GoogleSelectedBranchPanel()}${GoogleReviewFeed()}</div></div>${GoogleRiskRadar()}${GoogleManagementSummary()}${GooglePilotIntegrationPanel()}${GoogleBackendNote()}</div>`;
     }
     function refreshGoogleReputationPage(){
       const page=document.getElementById('page-google-reviews');
       if(page) page.innerHTML=pageHeader('google-reviews')+GoogleReputationPremiumDashboard()+deptPlan('google-reviews');
       if(window.lucide) lucide.createIcons();
+    }
+    async function refreshGoogleBusinessConnectionStatus(){
+      if(!window.OTOTRGoogleReviewAI?.googleBusinessStatus) return;
+      const status=await window.OTOTRGoogleReviewAI.googleBusinessStatus();
+      if(status.connected){
+        googleReputationState.lastSync=`Google bağlantısı aktif · ${new Date(status.connected_at||Date.now()).toLocaleString('tr-TR')}`;
+        googleBranches().forEach(b=>{b.integrationStatus='Google Business Profile bağlı · yorum senkronizasyonu hazır';b.dataMode='Canlı bağlantı';b.responseSlaStatus='Veri bekleniyor';b.recommendedAction='Google Yorumları Senkronize Et ile güncel yorumları çekin.';});
+      } else {
+        googleReputationState.lastSync='OAuth yetkilendirmesi bekleniyor';
+      }
+      refreshGoogleReputationPage();
     }
     function getGoogleReviewById(reviewId){ return googleReviews().find(r=>r.id===reviewId); }
     function getGoogleBranchById(branchId){ return googleBranches().find(b=>b.id===branchId); }
@@ -4486,6 +4497,7 @@
       demoBranches:googleReputationData.branches,
       demoReviews:googleReputationData.reviews
     };
+    setTimeout(refreshGoogleBusinessConnectionStatus, 250);
     const chronicIssueModels=[
       {id:'bmw-3-2021',brand:'BMW',model:'3 Serisi',years:'2019-2023',score:82,reports:148,issueCount:6,coverage:'top3',flags:['top3','low_sample'],issues:['Zincir ve zamanlama sesi','Elektronik sensör uyarıları','Şanzıman geçiş vuruntusu'],erp:'İş emri açılışında Premium 360 + OBD tarama öner.'},
       {id:'vw-passat-2018',brand:'Volkswagen',model:'Passat',years:'2015-2020',score:74,reports:216,issueCount:9,coverage:'top3',flags:['top3'],issues:['DSG kavrama titremesi','EGR ve emisyon sistemi','Su pompası kaçağı'],erp:'Galeri al-sat kontrolünde şanzıman ve soğutma kontrolünü zorunlu göster.'},
