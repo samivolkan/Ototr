@@ -7460,6 +7460,21 @@
     async function dealerSupabaseActiveSession(){
       const active=dealerSupabaseSession();
       if(active) return active;
+      if(typeof window.OTOTRGetERPAuthSession==='function'){
+        try{
+          const live=await window.OTOTRGetERPAuthSession();
+          if(live?.access_token){
+            const normalized={
+              access_token:live.access_token,
+              refresh_token:live.refresh_token||'',
+              email:live.user?.email||'',
+              expires_at:(Number(live.expires_at)||0)*1000
+            };
+            localStorage.setItem(DEALER_SUPABASE_SESSION_KEY,JSON.stringify(normalized));
+            return normalized;
+          }
+        }catch(err){}
+      }
       const stored=dealerStoredSupabaseSession();
       if(!stored?.refresh_token) return null;
       try{return await dealerRefreshSupabaseSession(stored);}
@@ -18247,7 +18262,7 @@
 })();
 </script>
 
-<script src="assets/google-review-ai.js?v=oauth-session-3"></script>
+<script src="assets/google-review-ai.js?v=oauth-session-4"></script>
 <script type="text/plain" id="google-backend-service-sample">
 /**
  * Google Haritalar İtibar Merkezi backend servis iskeleti
