@@ -2,6 +2,7 @@
   'use strict';
 
   const DRAFTS_KEY = 'ototr-google-review-ai-drafts-v1';
+  const AI_ENDPOINT = 'https://bsjkohwbtrfwrqcyhsfz.supabase.co/functions/v1/google-review-ai';
 
   function esc(value) {
     return String(value ?? '').replace(/[&<>'"]/g, (char) => ({
@@ -61,14 +62,14 @@
 
   async function requestDraft(review, branch) {
     const auth = session();
-    if (!auth?.access_token || typeof DEALER_SUPABASE_URL === 'undefined' || typeof DEALER_SUPABASE_KEY === 'undefined') throw new Error('ERP oturumu veya backend bağlantısı bulunamadı.');
-    const response = await fetch(`${DEALER_SUPABASE_URL}/functions/v1/google-review-ai`, {
+    if (!auth?.access_token || typeof DEALER_SUPABASE_KEY === 'undefined') throw new Error('ERP oturumu veya backend bağlantısı bulunamadı.');
+    const response = await globalThis.fetch(AI_ENDPOINT, {
       method: 'POST',
       headers: { apikey: DEALER_SUPABASE_KEY, Authorization: `Bearer ${auth.access_token}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'generate', review: { id: review.id, rating: review.rating, comment: review.comment }, branch: { id: branch.id, name: branch.name, city: branch.city } })
     });
     const data = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error(data.error || data.message || `AI servisi ${response.status} hatası verdi.`);
+    if (!response.ok) throw new Error(data.error || data.message || `AI servisi ${response.status} hatası verdi (${new URL(response.url).hostname}).`);
     return data;
   }
 
