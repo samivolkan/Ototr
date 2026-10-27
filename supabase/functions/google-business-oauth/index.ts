@@ -507,6 +507,20 @@ Deno.serve(async (req) => {
     const clientMatches = Boolean(connection && connection.oauth_client_id === env('GOOGLE_OAUTH_CLIENT_ID'));
     if (body.action === 'status') return json({ connected: clientMatches, connected_at: connection?.connected_at || null, reconnection_required: Boolean(connection && !clientMatches) });
     if (!connection) return json({ error: 'Google Business Profile bağlantısı kurulmamış.' }, 409);
+    if (body.action === 'targets_list') {
+      const { data, error } = await db.from('google_review_targets').select('branch_id,month,target,version,updated_at').eq('connection_id', connectionId).order('month', { ascending: false }).limit(1000);
+      databaseFailure(error); return json({ items: data || [] });
+    }
+    if (body.action === 'target_save') {
+      const { branch_id, month, target, expected_version } = body;
+      if (!['branch-google-nilufer','branch-google-gebze'].includes(branch_id) || typeof month !== 'string' || !/^20\d{2}-(0[1-9]|1[0-2])-01$/.test(month) || !Number.isSafeInteger(target) || target < 1 || target > 10000 || !Number.isSafeInteger(expected_version) || expected_version < 0) throw new RequestError('Şube, ay ve 1–10000 arası tam sayı hedef gerekli.', 400);
+      const row = { connection_id: connectionId, branch_id, month, target, version: expected_version + 1, updated_by: user.id, updated_at: new Date().toISOString() };
+      const result = expected_version === 0
+        ? await db.from('google_review_targets').insert(row).select('branch_id,month,target,version,updated_at').maybeSingle()
+        : await db.from('google_review_targets').update(row).eq('connection_id', connectionId).eq('branch_id', branch_id).eq('month', month).eq('version', expected_version).select('branch_id,month,target,version,updated_at').maybeSingle();
+      if (result.error?.code === '23505' || (!result.error && !result.data)) throw new RequestError('Hedef başka oturumda değişti. Hedefleri yenileyip tekrar kaydedin.', 409);
+      databaseFailure(result.error); return json({ item: result.data });
+    }
     if (body.action === 'workflow_list') {
       const offset = Number(body.offset || 0);
       if (!Number.isSafeInteger(offset) || offset < 0) throw new RequestError('Geçersiz liste sayfası.', 400);

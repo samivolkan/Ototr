@@ -180,14 +180,14 @@ test('card styles provide desktop columns, mobile stacking and readable wrap-saf
 
 test('all-branch inbox keeps each reply and Google link bound to its own branch',()=>{
  const calls=[];const h=screen({renderReplyCard(review,branch){calls.push([review.branchId,branch.id]);return 'fixture';}});
- h.addReview('branch-google-nilufer');h.addReview('branch-google-inegol');h.addReview('branch-google-gebze');
+ h.addReview('branch-google-nilufer');h.addReview('branch-google-gebze');
  h.api.selectBranch('all');calls.length=0;const result=h.render();
- assert.equal(calls.length,3);assert.ok(calls.every(([a,b])=>a===b));
+ assert.equal(calls.length,2);assert.ok(calls.every(([a,b])=>a===b));
  assert.match(result,/Tüm şubeler/);assert.match(result,/aria-label="Google yorum şubeleri"/);
- h.api.selectBranch('branch-google-inegol');calls.length=0;h.render();
- assert.deepEqual(calls,[['branch-google-inegol','branch-google-inegol']]);
+ h.api.selectBranch('branch-google-gebze');calls.length=0;h.render();
+ assert.deepEqual(calls,[['branch-google-gebze','branch-google-gebze']]);
 });
 test('failed branch sync is explicitly marked as old data in navigation',()=>{
- const h=screen();h.read("googleBranches()[2].synced=true;googleBranches()[2].syncError='fixture missing'");
+ const h=screen();h.read("googleBranches()[1].synced=true;googleBranches()[1].syncError='fixture missing'");
  assert.match(h.render(),/Güncellenemedi · son başarılı veri/);
 });

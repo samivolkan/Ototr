@@ -92,3 +92,11 @@ Canlı yayın için her şubenin `accountId`, `locationId` ve sunucu tarafında 
 - Google'a göre yanıt incelemesi genellikle 10 dakikayı bulur, bazı durumlarda 30 güne uzayabilir. ERP'nin kontrol sıklığı, Google'ın inceleme süresi için garanti değildir. [Google İşletme Profili Yardımı](https://support.google.com/business/answer/3474050?hl=tr)
 - Google'ın sağladığı geçerli `reviewReplyUrl` ile karttaki “Google’da yorumu aç” bağlantısı ilgili yoruma gider. Bağlantı verilmemişse düğme açıkça “Google’da şubeyi aç” olarak şube profiline gider; yorum kimliğinden hayali bir bağlantı üretilmez.
 - Canlı API'nin döndürdüğü `business.google.com/.../.../reviews/...` bağlantıları desteklenir. Yalnız izin verilen Google HTTPS adresleri kabul edilir; farklı alan adı, kullanıcı bilgisi, yönlendirme parametresi ve hatalı yol engellenir. Tanı kaydı URL değerini veya müşteri metnini içermez.
+
+## Dashboard ve aylık hedefler
+
+İnegöl geçici olarak aktif görünümden ve ekranın senkronizasyon kapsamından çıkarıldı; eski veriler silinmedi. Nilüfer ve Gebze aktif. Başlık alanı kaldırıldı, bağlantı durumu üst satıra taşındı ve KPI kartları kompakt pastel renklere dönüştürüldü. Diğer ERP sayfalarının stili değişmez.
+
+Dashboard gerçek yorum tarihlerini Europe/Istanbul takviminde aylık toplar, yinelenen kimlikleri ve gelecekteki/geçersiz tarihleri dışlar. Tam ve güncel listelerde doğrusal ay sonu tahmini sunar. Eski aylardaki yorum sayıları mevcut Google listesinden hesaplanır; silinen yorumların tarihsel anlık görüntüsü değildir. Hedef geçmişi yalnız kaydedilen aylardan oluşur; varsayılan/demo hedef atanmaz.
+
+`google_review_targets` tablosu RLS ile kapalıdır, anon/authenticated doğrudan erişimi kaldırılmıştır. `targets_list` ve `target_save`, mevcut ERP bağlantı sahibi/izinli yönetici kontrolünden sonra service-role ile çalışır. Hedefler ay ve şubeye göre saklanır, sürüm kontrolü eşzamanlı kaydın üzerine yazmayı engeller. Google erişim anahtarı veya müşteri verisi bu tabloya yazılmaz. RLS-no-policy danışman notu kasıtlı kapalı erişim modelidir.

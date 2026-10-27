@@ -58,7 +58,7 @@ function workflowFixture(options = {}) {
     };
     function execute() {
       if (table === 'google_business_connections') return { data: clone(connection), error: null };
-      assert.equal(table, 'google_review_work_items', 'Unexpected database table');
+      assert.ok(['google_review_work_items','google_review_targets'].includes(table), 'Unexpected database table');
       if (operation === 'select' && state.failReads) return { data: null, error: { code: '42P01', message: 'fixture table unavailable' } };
       if (operation !== 'select') {
         mutations.push({ operation, payload: clone(payload) });
@@ -69,7 +69,7 @@ function workflowFixture(options = {}) {
         const incoming = Array.isArray(payload) ? payload : [payload];
         selected = [];
         for (const data of incoming) {
-          const existing = rows.find(row => ['connection_id', 'location_id', 'review_id', 'kind'].every(column => row[column] === data[column]));
+          const existing = rows.find(row => (table==='google_review_targets'?['connection_id','branch_id','month']:['connection_id', 'location_id', 'review_id', 'kind']).every(column => row[column] === data[column]));
           if (existing && operation === 'insert') return { data: null, error: { code: '23505', message: 'fixture duplicate' } };
           if (existing) Object.assign(existing, clone(data));
           const row = existing || { id: randomUUID(), version: 1, created_at: new Date().toISOString(), updated_at: new Date().toISOString(), last_error: '', ...clone(data) };
@@ -994,4 +994,21 @@ for (const action of ['workflow_list', 'save_draft', 'create_task', 'update_task
 test('pinned location with an edited store code prepares a draft without publishing',async()=>{
  const f=workflowFixture({storeCode:'edited-code'});const result=await f.request(prepareBody());
  assert.equal(result.status,200);assert.equal(result.data.item.status,'approval_pending');assert.equal(f.state.putCount,0);
+});
+
+test('HQ targets save, reload and reject stale concurrent changes without Google calls',async()=>{
+ const f=workflowFixture();const input={action:'target_save',branch_id:'branch-google-nilufer',month:'2026-10-01',target:40,expected_version:0};
+ const first=await f.request(input);assert.equal(first.status,200);assert.equal(first.data.item.version,1);
+ const listed=await f.request({action:'targets_list'});assert.equal(listed.data.items[0].target,40);
+ assert.equal((await f.request(input)).status,409);
+ const second=await f.request({...input,target:50,expected_version:1});assert.equal(second.data.item.version,2);
+ assert.equal((await f.request({...input,target:60,expected_version:1})).status,409);
+ assert.equal(f.calls.length,0);
+});
+test('targets reject unauthorized access, inactive branch and invalid input',async()=>{
+ const input={action:'target_save',branch_id:'branch-google-nilufer',month:'2026-10-01',target:40,expected_version:0};
+ for(const override of [{branch_id:'branch-google-inegol'},{month:'2026-13-01'},{month:'2026-10-02'},{target:0},{target:1.5},{target:10001},{expected_version:-1}]){
+  const f=workflowFixture();assert.equal((await f.request({...input,...override})).status,400);assert.equal(f.mutations.length,0);
+ }
+ const denied=workflowFixture({userId:OTHER});assert.equal((await denied.request(input)).status,403);assert.equal((await denied.request({action:'targets_list'})).status,403);
 });

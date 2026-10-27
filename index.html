@@ -1520,7 +1520,7 @@
     @media(max-width:1280px){.google-reviews-page .google-reviews-layout{grid-template-columns:1fr}.google-reviews-page .google-branch-list{grid-template-columns:repeat(3,minmax(0,1fr))}}
     @media(max-width:760px){.google-review-card.premium.google-review-pair{grid-template-columns:1fr}.google-review-source,.google-reply-panel{padding:18px}.google-reply-panel{border-left:0;border-top:1px solid #e2e8f0}.google-reviews-page .google-branch-list{grid-template-columns:1fr}.google-review-source .google-review-top{flex-direction:row}.google-reply-actions .google-reply-primary{width:100%}}
   </style>
-  <link rel="stylesheet" href="assets/google-review-center.css?v=review-center-3">
+  <link rel="stylesheet" href="assets/google-review-center.css?v=review-center-4">
 </head>
 <body>
   <script>
@@ -4321,7 +4321,7 @@
     }
     function pageHeader(id){
       if(id==='dashboard') return '';
-      if(id==='google-reviews') return `<div class="google-center-page-head"><span class="google-center-eyebrow">Genel Merkez / Müşteri deneyimi</span><div class="google-center-page-actions">${moduleHeaderActions(id,'Yorum Merkezi')}</div></div>`;
+      if(id==='google-reviews') return `<div class="google-center-page-head"><span class="google-center-eyebrow">Genel Merkez / Müşteri deneyimi</span><div class="google-center-page-actions">${GoogleConnectionHeader()}${moduleHeaderActions(id,'Yorum Merkezi')}</div></div>`;
       const plan=departmentPlans[id], baseTitle=titles[id]||id;
       const group=(navGroups.find(([,items])=>items.some(x=>x[0]===id))||['Sistem'])[0];
       const owner=plan?.owner || (id==='branchProfile'?'Operasyon Direktörlüğü':'Genel Merkez');
@@ -4431,7 +4431,7 @@
       branch.replySignatureName=branch.replySignatureName.replace(/Şubesi$/, 'Şube');
       ['googleRating','googleReviewCount','previousRating','reputationScore','last30DaysReviewCount','negativeReviewRate','unrepliedCount','criticalCount'].forEach(key=>{branch[key]=null;});
     });
-    function googleBranches(){ return googleReputationData.branches; }
+    function googleBranches(){ return googleReputationData.branches.filter(branch=>branch.id!=='branch-google-inegol'); }
     function googleReviews(){ return googleReputationData.reviews; }
     function googleSelectedBranch(){ return googleBranches().find(b=>b.id===googleReputationState.selectedBranchId) || googleBranches()[0]; }
     function googleBranchReviews(branchId){ return googleReviews().filter(r=>branchId==='all'||r.branchId===branchId).sort((a,b)=>new Date(b.reviewDate)-new Date(a.reviewDate)); }
@@ -4580,14 +4580,14 @@
     async function syncLiveGoogleReviews(branchId='',options={}){
       if(googleReputationState.loading) return null;
       const startedAt=Date.now();
-      googleReputationState.loading=true; googleReputationState.error=''; googleReputationState.progress=branchId?'Şube yorumları alınıyor…':'Üç şubenin yorumları birlikte alınıyor…'; refreshGoogleReputationPage();
+      googleReputationState.loading=true; googleReputationState.error=''; googleReputationState.progress=branchId?'Şube yorumları alınıyor…':'Aktif şubelerin yorumları birlikte alınıyor…'; refreshGoogleReputationPage();
       try {
         const api=window.OTOTRGoogleReviewAI,targets=branchId?googleBranches().filter(branch=>branch.id===branchId):googleBranches();
         if(!api?.googleBusinessRequest) throw new Error('Google bağlantı modülü henüz hazır değil. Sayfayı yenileyip tekrar deneyin.');
         if(!targets.length) throw new Error('Google şubesi bulunamadı.');
         let payload;
         try {
-          payload=await api.googleBusinessRequest('sync_reviews',branchId?{branch_ids:[branchId]}:{});
+          payload=await api.googleBusinessRequest('sync_reviews',{branch_ids:targets.map(branch=>branch.id)});
         } catch(error) {
           // Only an explicit unsupported action permits the old read path during rollout.
           if(error.status===400&&(error.code==='UNSUPPORTED_ACTION'||error.message==='Geçersiz işlem.')) payload=await googleLegacyReviewBatch(targets);
@@ -4650,15 +4650,18 @@
       ];
       return `<div class="google-reviews-kpis" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">${items.map(item=>`<article class="google-premium-kpi"><div class="google-kpi-top"><div class="google-kpi-title"><span>${item[0]}</span><small>${item[2]}</small></div><div class="google-kpi-icon">${icon(item[3])}</div></div><div class="google-kpi-value-large">${item[1]}</div><small>${note}</small></article>`).join('')}</div>`;
     }
+    function GoogleConnectionHeader(){
+      const state=googleReputationState;
+      return `<div class="google-connection-header"><span class="google-sync-pill">${icon('key-round')}${state.connected===true?'Google hesabı bağlı':state.connected===false?'Google hesabı bağlı değil':'Bağlantı kontrol ediliyor'}</span><small>${googleEsc(state.lastSync)}</small>${state.connected===false?`<button type="button" class="btn primary" data-testid="google-connect" onclick="OTOTRGoogleReviewAI.connectGoogleBusiness()">Google Hesabını Bağla</button>`:''}</div>`;
+    }
     function GooglePremiumHero(){
       const state=googleReputationState;
-      const connection=state.connected===true?'Google hesabı bağlı':state.connected===false?'Google hesabı bağlı değil':'Bağlantı kontrol ediliyor';
-      return `<section class="google-premium-hero"><div><span class="google-center-eyebrow">OTOTR · Google İşletme Profili</span><h1>Yorum Merkezi</h1><p>Her yorum bir diyalog. Şubelerinizin yorumlarını inceleyin, hazır yanıtı düzenleyin ve onayınızla yayımlayın.</p></div><div class="google-premium-actions"><span class="google-sync-pill">${icon('key-round')}${connection}</span><small>${googleEsc(state.lastSync)}</small>${state.connected===false?`<button type="button" class="btn primary" data-testid="google-connect" onclick="OTOTRGoogleReviewAI.connectGoogleBusiness()">${icon('key-round')}Google Hesabını Bağla</button>`:''}</div></section>${state.loading?`<div role="status" aria-live="polite" class="google-api-note">${googleEsc(state.progress)}</div>`:''}${state.error?`<div role="alert" data-testid="google-sync-error" class="google-api-note" style="border:1px solid #efb2b2;background:#fff3f3;color:#8d1820"><b>Senkronizasyon tamamlanamadı</b><p style="margin:8px 0;overflow-wrap:anywhere">${googleEsc(state.error)}</p><span>Önceden alınan veriler son başarılı senkronizasyonu gösterir. Henüz veri alınmayan şubelerde puan ve sayılar boş bırakılır.</span></div>`:''}`;
+      return `${state.loading?`<div role="status" aria-live="polite" class="google-api-note">${googleEsc(state.progress)}</div>`:''}${state.error?`<div role="alert" data-testid="google-sync-error" class="google-api-note" style="border:1px solid #efb2b2;background:#fff3f3;color:#8d1820"><b>Senkronizasyon tamamlanamadı</b><p style="margin:8px 0;overflow-wrap:anywhere">${googleEsc(state.error)}</p><span>Önceden alınan veriler son başarılı senkronizasyonu gösterir. Henüz veri alınmayan şubelerde puan ve sayılar boş bırakılır.</span></div>`:''}`;
     }
     function GoogleBranchRanking(){
       const selected=googleReputationState.selectedBranchId;
       const rows=[{id:'all',name:'Tüm şubeler'},...googleBranches()];
-      return `<aside class="google-premium-card google-branch-nav"><div class="google-premium-title"><div><h3>Şubeler</h3><p>Bir şube seçerek yorum ve görevlerini açın.</p></div></div><nav aria-label="Google yorum şubeleri" class="google-branch-list">${rows.map(branch=>{
+      return `<aside class="google-premium-card google-branch-nav"><div class="google-premium-title"><div><h3>Şubeler</h3><p>Bir şube seçerek yorum ve görevlerini açın.</p></div></div>${window.OTOTRGoogleDashboard?.navigation?.()||''}<nav aria-label="Google yorum şubeleri" class="google-branch-list">${rows.map(branch=>{
         const all=branch.id==='all',count=all?googleReviews().length:branch.loadedReviewCount;
         return `<button type="button" aria-pressed="${selected===branch.id}" class="google-branch-item premium ${selected===branch.id?'active':''}" onclick="OTOTRGoogleReputation.selectBranch('${branch.id}')"><span class="google-branch-nav-row"><span class="google-branch-name">${googleEsc(all?branch.name:branch.name.replace('OTOTR Oto Ekspertiz ',''))}</span><span class="google-branch-count">${all?count:googleMetric(branch.synced?count:null)}</span></span><span class="google-branch-city">${all?'Genel merkez · tüm yorumlar':`★ ${googleMetric(branch.googleRating,1)} · ${googleMetric(branch.synced?branch.loadedUnrepliedCount:null)} cevap bekleyen`}</span>${!all?`<span class="google-branch-health ${branch.syncError?'error':''}">${branch.syncError?(branch.synced?'Güncellenemedi · son başarılı veri':'Google erişimi bekleniyor'):branch.synced?'Güncel veri alındı':'Veri bekleniyor'}</span>`:''}</button>`;
       }).join('')}</nav></aside>`;
@@ -4712,7 +4715,7 @@
     function GoogleReputationPremiumDashboard(){
       const branchId=googleReputationState.selectedBranchId;
       const tasks=window.OTOTRGoogleReviewAI?.renderWorkflow?.(branchId,{tasksOnly:true})||'';
-      return `<div class="google-reviews-page premium google-center">${GooglePremiumHero()}<p class="google-center-refresh-note">Otomatik yenileme · yorumlar 5 dk, görevler 1 dk. Bu ekran açıkken çalışır; yanıt düzenlerken bekler.${googleReputationState.lastDurationMs!=null?` <span data-testid="google-sync-duration" data-duration-ms="${googleReputationState.lastDurationMs}">Son yenileme: ${googleMetric(googleReputationState.lastDurationMs/1000,1)} sn</span>`:''}</p>${GoogleKpiCards()}<div class="google-reviews-layout">${GoogleBranchRanking()}<div class="google-feed-shell" style="grid-template-columns:1fr">${GoogleSelectedBranchPanel()}${window.OTOTRGoogleReviewAI?.renderAutoDraftSummary?.(branchId)||''}${tasks?`<details class="google-branch-tasks"><summary>Şube görevleri ve incelemeler</summary>${tasks}</details>`:''}${GoogleReviewFeed()}</div></div></div>`;
+      return `<div class="google-reviews-page premium google-center">${GooglePremiumHero()}<p class="google-center-refresh-note">Otomatik yenileme · yorumlar 5 dk, görevler 1 dk. Bu ekran açıkken çalışır; yanıt düzenlerken bekler.${googleReputationState.lastDurationMs!=null?` <span data-testid="google-sync-duration" data-duration-ms="${googleReputationState.lastDurationMs}">Son yenileme: ${googleMetric(googleReputationState.lastDurationMs/1000,1)} sn</span>`:''}</p>${GoogleKpiCards()}<div class="google-reviews-layout">${GoogleBranchRanking()}<div class="google-feed-shell" style="grid-template-columns:1fr">${window.OTOTRGoogleDashboard?.render?.(googleBranches(),googleReviews(),branchId)||''}<div class="google-inbox-view" ${window.OTOTRGoogleDashboard?.view!=='reviews'&&window.OTOTRGoogleDashboard?'hidden':''}>${GoogleSelectedBranchPanel()}${window.OTOTRGoogleReviewAI?.renderAutoDraftSummary?.(branchId)||''}${tasks?`<details class="google-branch-tasks"><summary>Şube görevleri ve incelemeler</summary>${tasks}</details>`:''}${GoogleReviewFeed()}</div></div></div></div>`;
     }
     function refreshGoogleReputationPage(){
       const page=document.getElementById('page-google-reviews');
@@ -4767,8 +4770,8 @@
       openQualityAudit(reviewId){ return createGoogleWorkTask(reviewId,'quality'); },
       sendToCrisisCenter(reviewId){ return createGoogleWorkTask(reviewId,'crisis'); },
       exportGoogleReputationReport(){ googleQueuePush('dashboard',{createdAt:new Date().toISOString(),summary:'Google Haritalar İtibar Merkezi yönetim raporu demo olarak hazırlandı.'}); toast('Google itibar raporu demo olarak hazırlandı.'); },
-      demoBranches:googleReputationData.branches,
-      get demoReviews(){ return googleReputationData.reviews; }
+      demoBranches:googleBranches(),
+      get demoReviews(){ return googleReviews(); }
     };
     window.OTOTRGetLiveSession=dealerSupabaseActiveSession;
     window.OTOTRGetSupabaseKey=()=>DEALER_SUPABASE_KEY;
@@ -18572,7 +18575,8 @@
 <style>
   .google-workflow-row{padding:14px 0;border-bottom:1px solid var(--line,#dbe3ee)}.google-workflow-row:last-child{border-bottom:0}.google-workflow-row p{white-space:pre-wrap;overflow-wrap:anywhere}.google-workflow-head{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}.google-ai-warning{border:1px solid #f8d49b;background:#fff8eb;border-radius:10px;padding:10px 12px;color:#805100;font-size:12px;margin:12px 0}
 </style>
-<script src="assets/google-review-ai.js?v=google-workflow-14"></script>
+<script src="assets/google-review-ai.js?v=google-workflow-15"></script>
+<script src="assets/google-review-dashboard.js?v=1"></script>
 <script src="assets/google-review-refresh.js?v=google-refresh-3"></script>
 <script type="text/plain" id="google-backend-service-sample">
 /**

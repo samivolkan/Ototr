@@ -18,6 +18,7 @@ function harness() {
   });
   vm.runInContext(html.slice(begin, end), context);
   const read = expression => vm.runInContext(expression, context);
+  context.pageHeader=()=>read('GoogleConnectionHeader()');
   return { context, read, page, api: context.window.OTOTRGoogleReputation,
     state: read('googleReputationState'), branches: read('googleBranches()') };
 }
@@ -57,7 +58,8 @@ test('batch sync needs one read request, retains branch/filter and exposes measu
   };
   const result = await h.api.syncAllGoogleReviews({ quiet: true });
   assert.equal(calls.length, 1); assert.equal(calls[0].action, 'sync_reviews');
-  assert.equal(result.syncedBranches, 3); assert.equal(result.receivedReviews, 3);
+  assert.equal(result.syncedBranches, 2); assert.equal(result.receivedReviews, 2);
+  assert.deepEqual([...calls[0].body.branch_ids], ['branch-google-nilufer','branch-google-gebze']);
   assert.equal(h.state.selectedBranchId, 'branch-google-gebze'); assert.equal(h.state.filter, 'unreplied');
   assert.equal(h.state.lastDurationMs, 4200); assert.match(h.page.innerHTML, /Son yenileme: 4,2 sn/);
   assert.match(h.page.innerHTML, /data-duration-ms="4200"/);
@@ -76,7 +78,7 @@ test('one-branch refresh scopes batch to that branch and preserves every other b
 });
 
 test('background branch verification preserves the selected branch/filter without a toast while manual refresh selects its branch', async () => {
-  const h = harness(), refreshed = h.branches[1], selected = h.branches[2], toasts = [];
+  const h = harness(), refreshed = h.branches[1], selected = h.branches[0], toasts = [];
   h.context.toast = message => toasts.push(message);
   h.api.selectBranch(selected.id); h.api.setFilter('unreplied');
   h.context.window.OTOTRGoogleReviewAI = { googleBusinessRequest: async () => ({ connected: true,
@@ -97,10 +99,10 @@ test('partial batch failure keeps last-good data, applies healthy branches and d
   failed.googleReviewCount = 12; failed.googleRating = 4.5; failed.synced = true;
   const old = { id: 'preserved', branchId: failed.id }; h.api.demoReviews.push(old);
   h.context.window.OTOTRGoogleReviewAI = { googleBusinessRequest: async () => ({ connected: true,
-    branches: [batchBranch(good)], errors: [{ branch_id: failed.id, error: 'Fixture quota denied' }, { branch_id: h.branches[2].id, error: 'Fixture unavailable' }],
+    branches: [batchBranch(good)], errors: [{ branch_id: failed.id, error: 'Fixture quota denied' }],
   }) };
   const result = await h.api.syncAllGoogleReviews({ quiet: true });
-  assert.equal(result.syncedBranches, 1); assert.equal(result.missing.length, 2);
+  assert.equal(result.syncedBranches, 1); assert.equal(result.missing.length, 1);
   assert.equal(failed.googleReviewCount, 12); assert.strictEqual(h.api.demoReviews.find(row => row.id === 'preserved'), old);
   assert.equal(good.googleReviewCount, 1); assert.equal(h.state.lastAllSyncAt, 0);
   assert.match(h.state.error, /Fixture quota denied/);
@@ -116,7 +118,7 @@ test('reported total/list mismatch is explicit and unanswered totals are not tre
   assert.equal(h.branches[0].loadedUnrepliedCount, 1); assert.equal(h.branches[0].unrepliedCount, null);
   assert.ok(h.state.lastAllSyncAt > 0, 'all pages finished; normal five-minute refresh remains appropriate');
   assert.match(h.page.innerHTML, /Google 2 toplam yorum bildiriyor; 1 yorum alınabildi/);
-  assert.match(h.page.innerHTML, /Alınan 3 yorumda; tam toplam henüz doğrulanmadı/);
+  assert.match(h.page.innerHTML, /Alınan 2 yorumda; tam toplam henüz doğrulanmadı/);
   assert.match(h.page.innerHTML, /<div class="google-kpi-value-large">3<\/div>/);
   assert.match(h.page.innerHTML, /Cevap bekleyen \(alınan\)/);
 });
@@ -176,7 +178,7 @@ test('OAuth client rotation shows reconnect control and explains the correct Goo
 test('strict branch matching cannot mix the Bursa branches and rejects ambiguous identifiers', () => {
   const h = harness();
   const nilufer = h.branches.find(branch => branch.id === 'branch-google-nilufer');
-  const inegol = h.branches.find(branch => branch.id === 'branch-google-inegol');
+  const inegol = h.read("googleReputationData.branches.find(branch=>branch.id==='branch-google-inegol')");
   h.context.candidates = [location(inegol)];
   h.context.targetBranch = nilufer;
   assert.equal(h.read('googleLiveLocationForBranch(targetBranch,candidates)'), null);
@@ -366,4 +368,12 @@ test('the changed classic inline scripts and AI asset parse', () => {
   assert.ok(scripts.length);
   scripts.forEach(([, , source]) => new vm.Script(source));
   new vm.Script(aiSource);
+});
+
+test('inactive Inegol is excluded from navigation and default synchronization',async()=>{
+ const h=harness();let sent;
+ assert.deepEqual(Array.from(h.branches,b=>b.id),['branch-google-nilufer','branch-google-gebze']);
+ h.context.window.OTOTRGoogleReviewAI={googleBusinessRequest:async(action,body)=>{sent=body;return {connected:true,branches:h.branches.map(b=>batchBranch(b)),errors:[]};}};
+ await h.api.syncAllGoogleReviews();assert.deepEqual(Array.from(sent.branch_ids),['branch-google-nilufer','branch-google-gebze']);
+ assert.doesNotMatch(h.page.innerHTML,/Bursa İnegöl|Senkronizasyon tamamlanamadı/);
 });
