@@ -39,3 +39,11 @@ Canlı yayın için her şubenin `accountId`, `locationId` ve sunucu tarafında 
 - Başka ekrandayken, sekme gizliyken veya yanıt/görev düzenleyicisi açıkken arka plan yenilemesi bekler. Düzenlenen metin ve şube/filtre seçimi korunur.
 - Arka plan yenilemesi yalnız okuma yapar; AI taslağı oluşturmaz, onay vermez ve Google'a yanıt yayımlamaz. Sayfa kapalıyken çalışan bir sunucu zamanlayıcısı değildir.
 - Başarısız yenilemede son başarılı veri tutulur ve hata gösterilir; aynı anda ikinci senkronizasyon başlatılmaz.
+
+## Senkronizasyon performansı
+
+- `sync_reviews`, tek ERP yetki kontrolü ve tek Google erişim anahtarı yenilemesiyle şube yorumlarını okur. Anahtar yalnız sunucuda kullanılır.
+- Hesap/konum keşfinin ve yorumların tüm sayfaları okunur. Bağımsız şubeler sınırlı paralellikle işlenir; aynı şubenin sonraki sayfası önceki sayfa anahtarını bekler.
+- Şube eşleşmesi sunucuda kesin mağaza koduyla yapılır. Başarısız şube son başarılı verisini korur; başka şubedeki hata başarılı sonuçları gizlemez.
+- Google'ın bildirdiği toplam yorum sayısı ile alınabilen yorum sayısı farklıysa arayüz bu farkı belirtir. Cevap bekleyen sayı yalnız alınan yorumlara dayanır; eksik yorum uydurulmaz.
+- Her senkronizasyon Google'dan yeniden okur; performans için eski yorum sonucu önbelleğe alınmaz.

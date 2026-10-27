@@ -31,6 +31,99 @@ function review(id, rating = 'FIVE', replied = false) {
     reviewer: { displayName: 'Test kullanıcı' }, ...(replied ? { reviewReply: { comment: 'Teşekkürler' } } : {}) };
 }
 
+// Older deployed backends explicitly reject the new action; other errors must
+// not silently trigger a second set of Google calls.
+const legacyRequest = handler => async (action, extra) => {
+  if (action === 'sync_reviews') throw Object.assign(new Error('Geçersiz işlem.'), { status: 400 });
+  return handler(action, extra);
+};
+
+function batchBranch(branch, reviews = [review(`batch-${branch.id}`)], extra = {}) {
+  return { branch_id: branch.id, account_id: '123', location_id: branch.googleBusinessLocationId,
+    location: location(branch), reviews, averageRating: 5, totalReviewCount: reviews.length,
+    pagination_complete: true, ...extra };
+}
+
+test('batch sync needs one read request, retains branch/filter and exposes measured duration', async () => {
+  const h = harness(), calls = []; let clock = 1000;
+  h.context.Date = class extends Date { static now() { return clock; } };
+  h.api.selectBranch('branch-google-gebze'); h.api.setFilter('unreplied');
+  h.context.window.OTOTRGoogleReviewAI = {
+    googleBusinessStatus: async () => { throw new Error('Batch must not perform an extra status call'); },
+    googleBusinessRequest: async (action, body) => {
+      calls.push({ action, body }); clock += 4200;
+      return { connected: true, branches: h.branches.map(branch => batchBranch(branch)), errors: [] };
+    },
+  };
+  const result = await h.api.syncAllGoogleReviews({ quiet: true });
+  assert.equal(calls.length, 1); assert.equal(calls[0].action, 'sync_reviews');
+  assert.equal(result.syncedBranches, 3); assert.equal(result.receivedReviews, 3);
+  assert.equal(h.state.selectedBranchId, 'branch-google-gebze'); assert.equal(h.state.filter, 'unreplied');
+  assert.equal(h.state.lastDurationMs, 4200); assert.match(h.page.innerHTML, /Son yenileme: 4,2 sn/);
+  assert.match(h.page.innerHTML, /data-duration-ms="4200"/);
+});
+
+test('one-branch refresh scopes batch to that branch and preserves every other branch', async () => {
+  const h = harness(), branch = h.branches[1], existing = { id: 'old-other', branchId: h.branches[0].id };
+  h.api.demoReviews.push(existing); let sent;
+  h.context.window.OTOTRGoogleReviewAI = { googleBusinessRequest: async (action, body) => {
+    sent = body; return { connected: true, branches: [batchBranch(branch)], errors: [] };
+  } };
+  await h.api.syncGoogleReviewsForBranch(branch.id);
+  assert.deepEqual([...sent.branch_ids], [branch.id]);
+  assert.strictEqual(h.api.demoReviews.find(row => row.id === 'old-other'), existing);
+  assert.equal(h.state.lastAllSyncAt, 0);
+});
+
+test('partial batch failure keeps last-good data, applies healthy branches and does not claim all fresh', async () => {
+  const h = harness(), failed = h.branches[0], good = h.branches[1];
+  failed.googleReviewCount = 12; failed.googleRating = 4.5; failed.synced = true;
+  const old = { id: 'preserved', branchId: failed.id }; h.api.demoReviews.push(old);
+  h.context.window.OTOTRGoogleReviewAI = { googleBusinessRequest: async () => ({ connected: true,
+    branches: [batchBranch(good)], errors: [{ branch_id: failed.id, error: 'Fixture quota denied' }, { branch_id: h.branches[2].id, error: 'Fixture unavailable' }],
+  }) };
+  const result = await h.api.syncAllGoogleReviews({ quiet: true });
+  assert.equal(result.syncedBranches, 1); assert.equal(result.missing.length, 2);
+  assert.equal(failed.googleReviewCount, 12); assert.strictEqual(h.api.demoReviews.find(row => row.id === 'preserved'), old);
+  assert.equal(good.googleReviewCount, 1); assert.equal(h.state.lastAllSyncAt, 0);
+  assert.match(h.state.error, /Fixture quota denied/);
+});
+
+test('reported total/list mismatch is explicit and unanswered totals are not treated as complete', async () => {
+  const h = harness();
+  h.context.window.OTOTRGoogleReviewAI = { googleBusinessRequest: async () => ({ connected: true,
+    branches: h.branches.map((branch, index) => batchBranch(branch, [review(`count-${index}`)], index === 0 ? { totalReviewCount: 2 } : {})), errors: [],
+  }) };
+  await h.api.syncAllGoogleReviews({ quiet: true });
+  assert.equal(h.branches[0].googleReviewCount, 2); assert.equal(h.branches[0].loadedReviewCount, 1);
+  assert.equal(h.branches[0].loadedUnrepliedCount, 1); assert.equal(h.branches[0].unrepliedCount, null);
+  assert.ok(h.state.lastAllSyncAt > 0, 'all pages finished; normal five-minute refresh remains appropriate');
+  assert.match(h.page.innerHTML, /Google 2 toplam yorum bildiriyor; 1 yorum alınabildi/);
+  assert.match(h.page.innerHTML, /Alınan 3 yorumda; tam toplam henüz doğrulanmadı/);
+  assert.match(h.page.innerHTML, /<div class="google-kpi-value-large">3<\/div>/);
+  assert.match(h.page.innerHTML, /Cevap bekleyen \(alınan\)/);
+});
+
+for (const status of [401, 403, 429, 500]) {
+  test(`batch HTTP ${status} never falls back to duplicate legacy requests`, async () => {
+    const h = harness(); let calls = 0;
+    h.context.window.OTOTRGoogleReviewAI = {
+      googleBusinessStatus: async () => { throw new Error('Unexpected status fallback'); },
+      googleBusinessRequest: async () => { calls++; throw Object.assign(new Error('Fixture upstream failure'), { status }); },
+    };
+    await h.api.syncAllGoogleReviews(); assert.equal(calls, 1); assert.match(h.state.error, /Fixture upstream failure/);
+  });
+}
+
+test('incomplete or wrong-branch batch rows never replace prior branch data', async () => {
+  for (const invalid of [{ pagination_complete: false }, { location: { name: 'locations/999', storeCode: 'wrong-branch' } }]) {
+    const h = harness(), branch = h.branches[0]; branch.googleReviewCount = 8;
+    h.context.window.OTOTRGoogleReviewAI = { googleBusinessRequest: async () => ({ connected: true, branches: [batchBranch(branch, [], invalid)], errors: [] }) };
+    assert.equal(await h.api.syncGoogleReviewsForBranch(branch.id), null);
+    assert.equal(branch.googleReviewCount, 8); assert.ok(h.state.error);
+  }
+});
+
 test('initial dashboard distinguishes unavailable data from zero or critical scores', () => {
   const h = harness();
   h.api.render();
@@ -81,14 +174,14 @@ test('sync follows all account, location and review pages and updates the AI rev
   const branch = h.branches[0], calls = [], originalReviews = h.api.demoReviews;
   h.context.window.OTOTRGoogleReviewAI = {
     googleBusinessStatus: async () => ({ connected: true }),
-    googleBusinessRequest: async (action, extra) => {
+    googleBusinessRequest: legacyRequest(async (action, extra) => {
       calls.push({ action, ...extra });
       if (action === 'accounts') return extra.page_token ? { accounts: [{ name: 'accounts/123' }] } : { accounts: [], nextPageToken: 'account-next' };
       if (action === 'locations') return extra.page_token ? { locations: [location(branch)] } : { locations: [], nextPageToken: 'location-next' };
       return extra.page_token
         ? { reviews: [review('r2', 'ONE'), review('r1', 'FIVE', true)] }
         : { reviews: [review('r1', 'FIVE', true)], averageRating: 3, totalReviewCount: 2, nextPageToken: 'review-next' };
-    },
+    }),
   };
   const result = await h.api.syncGoogleReviewsForBranch(branch.id);
   assert.equal(result.syncedBranches, 1);
@@ -119,9 +212,9 @@ test('quiet full sync preserves branch/filter and records freshness without a su
   h.api.selectBranch('branch-google-gebze'); h.api.setFilter('unreplied');
   h.context.window.OTOTRGoogleReviewAI = {
     googleBusinessStatus: async () => ({ connected: true }),
-    googleBusinessRequest: async action => action === 'accounts' ? { accounts: [{ name: 'accounts/123' }] }
+    googleBusinessRequest: legacyRequest(async action => action === 'accounts' ? { accounts: [{ name: 'accounts/123' }] }
       : action === 'locations' ? { locations: h.branches.map(branch => location(branch)) }
-      : { reviews: [], totalReviewCount: 0 },
+      : { reviews: [], totalReviewCount: 0 }),
   };
   await h.api.syncAllGoogleReviews({ quiet: true });
   assert.equal(toasts.length, 0);
@@ -192,7 +285,7 @@ test('repeated pagination tokens fail visibly without accepting incomplete metri
   const h = harness();
   h.context.window.OTOTRGoogleReviewAI = {
     googleBusinessStatus: async () => ({ connected: true }),
-    googleBusinessRequest: async () => ({ accounts: [{ name: 'accounts/123' }], nextPageToken: 'repeated' }),
+    googleBusinessRequest: legacyRequest(async () => ({ accounts: [{ name: 'accounts/123' }], nextPageToken: 'repeated' })),
   };
   await h.api.syncAllGoogleReviews();
   assert.match(h.state.error, /sayfalama yanıtı tekrarlandı/);
@@ -205,7 +298,7 @@ test('loading is rendered and concurrent sync clicks do not duplicate requests',
   let release, calls = 0;
   h.context.window.OTOTRGoogleReviewAI = {
     googleBusinessStatus: () => { calls++; return new Promise(resolve => { release = resolve; }); },
-    googleBusinessRequest: async () => ({ accounts: [] }),
+    googleBusinessRequest: legacyRequest(async () => ({ accounts: [] })),
   };
   const pending = h.api.syncAllGoogleReviews();
   assert.equal(h.state.loading, true);

@@ -65,15 +65,18 @@ async function currentUser(req: Request) {
   if (error || !data.user) throw new RequestError('ERP oturumu geçersiz.', 401);
   return data.user;
 }
-async function accessToken(refreshToken: string) {
-  const response = await fetch('https://oauth2.googleapis.com/token', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ client_id: env('GOOGLE_OAUTH_CLIENT_ID'), client_secret: env('GOOGLE_OAUTH_CLIENT_SECRET'), refresh_token: refreshToken, grant_type: 'refresh_token' }) });
+async function accessToken(refreshToken: string, signal?: AbortSignal) {
+  const response = await fetch('https://oauth2.googleapis.com/token', { method: 'POST', ...(signal ? { signal } : {}), headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ client_id: env('GOOGLE_OAUTH_CLIENT_ID'), client_secret: env('GOOGLE_OAUTH_CLIENT_SECRET'), refresh_token: refreshToken, grant_type: 'refresh_token' }) });
   const data = await response.json();
   if (!response.ok) throw new Error(data.error_description || data.error || 'Google token yenileme başarısız.');
   return data.access_token as string;
 }
-async function googleJson(url: string, token: string, init: RequestInit = {}) {
+async function googleJson(url: string, token: string, init: RequestInit = {}, strictJson = false) {
   const response = await fetch(url, { ...init, headers: { Authorization: `Bearer ${token}`, ...(init.headers || {}) } });
-  const data = await response.json().catch(() => ({}));
+  const data = await response.json().catch(error => {
+    if (strictJson && response.ok) throw init.signal?.aborted ? error : new GoogleApiError('Google veri yanıtı okunamadı. Tam veri alınamadı.', 502, 'INVALID_GOOGLE_RESPONSE');
+    return {};
+  });
   if (!response.ok) throw new GoogleApiError(data.error?.message || data.error_description || 'Google Business Profile API hatası.', response.status, data.error?.status || 'GOOGLE_API_ERROR');
   return data;
 }
@@ -114,6 +117,83 @@ const branches: Record<string, { name: string; storeCode: string }> = {
   'branch-google-gebze': { name: 'OTOTR Gebze Şube', storeCode: '05971556162544786377' },
   'branch-google-inegol': { name: 'OTOTR Bursa İnegöl Şube', storeCode: '03710924650104046695' },
 };
+function syncBranchIds(value: unknown): string[] {
+  if (value === undefined) return Object.keys(branches);
+  if (!Array.isArray(value) || !value.length || value.length > 3 || value.some(id => typeof id !== 'string' || !Object.hasOwn(branches, id))) {
+    throw new RequestError('Geçersiz senkronizasyon şubesi.', 400);
+  }
+  return [...new Set(value)];
+}
+async function googlePages(base: string, field: string, token: string, signal: AbortSignal) {
+  const items: any[] = [], seen = new Set<string>();
+  let pageToken = '', first: any;
+  do {
+    const page = await googleJson(paginatedUrl(base, pageToken), token, { signal }, true);
+    if (!page || typeof page !== 'object' || Array.isArray(page) || (page[field] != null && !Array.isArray(page[field]))) {
+      throw new GoogleApiError('Google veri yanıtı okunamadı. Tam veri alınamadı.', 502, 'INVALID_GOOGLE_RESPONSE');
+    }
+    first ||= page;
+    items.push(...(page[field] || []));
+    const next = page.nextPageToken;
+    if (next != null && (typeof next !== 'string' || next.length > 8192)) throw new GoogleApiError('Google sayfalama anahtarı geçersiz.', 502, 'INVALID_GOOGLE_RESPONSE');
+    pageToken = next || '';
+    if (pageToken && (seen.has(pageToken) || seen.size >= 500)) throw new GoogleApiError('Google sayfalaması tamamlanamadı. Önceki veriler korunuyor.', 502, 'INCOMPLETE_PAGINATION');
+    if (pageToken) seen.add(pageToken);
+  } while (pageToken);
+  return { ...first, [field]: items };
+}
+async function mapThree<T, R>(items: T[], request: (item: T) => Promise<R>): Promise<R[]> {
+  const results: R[] = new Array(items.length);
+  let cursor = 0;
+  await Promise.all(Array.from({ length: Math.min(3, items.length) }, async () => {
+    while (cursor < items.length) {
+      const index = cursor++;
+      results[index] = await request(items[index]);
+    }
+  }));
+  return results;
+}
+async function syncReviews(targets: string[], token: string, signal: AbortSignal) {
+  // One request-scoped token; no global token or customer-data cache. Reads only.
+  const accountPage = await googlePages('https://mybusinessaccountmanagement.googleapis.com/v1/accounts?pageSize=20', 'accounts', token, signal);
+  const accounts = [...new Set<string>(accountPage.accounts.map((account: any) => String(account?.name || '')))];
+  if (accounts.some(name => !/^accounts\/\d+$/.test(name))) throw new GoogleApiError('Google hesap kimliği okunamadı.', 502, 'INVALID_GOOGLE_RESPONSE');
+  const groups = await mapThree(accounts, async accountName => {
+    const page = await googlePages(`https://mybusinessbusinessinformation.googleapis.com/v1/${accountName}/locations?readMask=name,title,storeCode,metadata&pageSize=100`, 'locations', token, signal);
+    return page.locations.map((location: any) => ({ ...location, accountName }));
+  });
+  const locations = groups.flat();
+  const results = await mapThree(targets, async branch_id => {
+    try {
+      const matching = locations.filter(location => location.storeCode === branches[branch_id].storeCode);
+      if (matching.some(location => !/^locations\/\d+$/.test(String(location.name || '')))) throw new GoogleApiError('Google konum kimliği okunamadı.', 502, 'INVALID_GOOGLE_RESPONSE');
+      // The same location may be accessible through more than one account wrapper.
+      // Keep the wrapper and location together; never match by a similar title.
+      const distinct = new Map(matching.map(location => [location.name, location]));
+      if (distinct.size !== 1) throw new GoogleApiError(distinct.size ? 'Mağaza kodu birden fazla Google konumuyla eşleşiyor.' : 'Şubenin mağaza kodu Google hesabında bulunamadı.', 409, distinct.size ? 'AMBIGUOUS_LOCATION' : 'LOCATION_NOT_FOUND');
+      const selected: any = matching.find(location => location.accountName === 'accounts/114698852482564472140') || matching.sort((a, b) => a.accountName.localeCompare(b.accountName))[0];
+      const account_id = selected.accountName.slice('accounts/'.length), location_id = selected.name.slice('locations/'.length);
+      const base = `https://mybusiness.googleapis.com/v4/accounts/${account_id}/locations/${location_id}/reviews`;
+      const page = await googlePages(`${base}?pageSize=50&orderBy=updateTime%20desc`, 'reviews', token, signal);
+      const unique = new Map<string, any>();
+      for (const review of page.reviews) {
+        const id = typeof review?.reviewId === 'string' && review.reviewId ? review.reviewId : String(review?.name || '').split('/').at(-1);
+        if (!id || id.length > 512 || (review.name && review.name !== `accounts/${account_id}/locations/${location_id}/reviews/${id}`)) throw new GoogleApiError('Google yorum kimliği okunamadı.', 502, 'INVALID_GOOGLE_RESPONSE');
+        const current = unique.get(id);
+        const updated = (item: any) => Math.max(Date.parse(item?.updateTime || item?.createTime || '') || 0, Date.parse(item?.reviewReply?.updateTime || '') || 0);
+        if (!current || updated(review) > updated(current)) unique.set(id, review);
+      }
+      const reviews = [...unique.values()];
+      const totalReviewCount = Number.isSafeInteger(page.totalReviewCount) && page.totalReviewCount >= 0 ? page.totalReviewCount : null;
+      const { accountName: _, ...location } = selected;
+      return { branch: { branch_id, account_id, location_id, location, reviews, averageRating: page.averageRating ?? null, totalReviewCount, pagination_complete: true, review_count_matches: totalReviewCount === null ? null : totalReviewCount === reviews.length } };
+    } catch (error) {
+      const timedOut = signal.aborted;
+      return { error: { branch_id, error: timedOut ? 'Google senkronizasyonu zaman aşımına uğradı. Önceki veriler korunuyor.' : error instanceof Error ? error.message : 'Google yorumları alınamadı.', status: timedOut ? 504 : error instanceof GoogleApiError ? error.status : 502, code: timedOut ? 'GOOGLE_SYNC_TIMEOUT' : error instanceof GoogleApiError ? error.code : 'GOOGLE_SYNC_FAILED', source: 'google' } };
+    }
+  });
+  return { connected: true, branches: results.flatMap(result => result.branch ? [result.branch] : []), errors: results.flatMap(result => result.error ? [result.error] : []) };
+}
 const taskKinds = ['branch', 'complaint', 'legal', 'quality', 'crisis'];
 function reviewUrl(item: { account_id: string; location_id: string; review_id: string }) {
   return `https://mybusiness.googleapis.com/v4/accounts/${item.account_id}/locations/${item.location_id}/reviews/${encodeURIComponent(item.review_id)}`;
@@ -282,6 +362,17 @@ Deno.serve(async (req) => {
     }
     if (body.action === 'reply') throw new RequestError('Doğrudan yayın kapalı. Kayıtlı taslağı onay kuyruğundan yayımlayın.', 400);
     if (!clientMatches) return json({ error: 'Google uygulama bağlantısı değişti. Google Hesabını Bağla ile hesabınızı yeniden yetkilendirin.', reconnection_required: true }, 409);
+    const syncTargets = body.action === 'sync_reviews' ? syncBranchIds(body.branch_ids) : null;
+    if (syncTargets) {
+      const signal = AbortSignal.timeout(25_000);
+      try {
+        const token = await accessToken(await decrypt(connection.refresh_token_encrypted), signal);
+        return json(await syncReviews(syncTargets, token, signal));
+      } catch (error) {
+        if (signal.aborted) throw new GoogleApiError('Google senkronizasyonu zaman aşımına uğradı. Önceki veriler korunuyor.', 504, 'GOOGLE_SYNC_TIMEOUT');
+        throw error;
+      }
+    }
     const token = await accessToken(await decrypt(connection.refresh_token_encrypted));
     if (['save_draft', 'create_task'].includes(body.action)) return json(await saveWork(db, user, body, token));
     if (['publish_reply', 'verify_reply'].includes(body.action)) return json(await publishWork(db, user, body, token));

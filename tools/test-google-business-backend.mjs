@@ -14,9 +14,10 @@ const key = await webcrypto.subtle.importKey('raw', keyBytes, 'AES-GCM', false, 
 const encrypted = await webcrypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, new TextEncoder().encode('fixture-refresh'));
 const encryptedRefresh = `${Buffer.from(iv).toString('base64')}.${Buffer.from(encrypted).toString('base64')}`;
 
-function fixture({ authenticated = true, connected = true, userId = 'fixture-owner', allowedUsers = '', savedClientId = 'fixture-client', databaseError = null, googleStatus = 200, googleBody = { reviews: [], nextPageToken: 'next-page' } } = {}) {
+function fixture({ authenticated = true, connected = true, userId = 'fixture-owner', allowedUsers = '', savedClientId = 'fixture-client', databaseError = null, googleStatus = 200, googleBody = { reviews: [], nextPageToken: 'next-page' }, googleResponse, abortSync = false } = {}) {
   const fetches = [];
   const writes = [];
+  const stats = { auth: 0, connectionReads: 0, timeouts: [] };
   let handler;
   const values = {
     SUPABASE_URL: 'https://fixture.supabase.invalid',
@@ -32,30 +33,33 @@ function fixture({ authenticated = true, connected = true, userId = 'fixture-own
   const builder = {
     select() { return this; },
     eq() { return this; },
-    async maybeSingle() { return { data: connection, error: databaseError }; },
+    async maybeSingle() { stats.connectionReads++; return { data: connection, error: databaseError }; },
     async upsert(value) { writes.push(value); return { error: null }; },
   };
   const context = vm.createContext({
     URL, URLSearchParams, Request, Response, TextEncoder, TextDecoder, Uint8Array,
     btoa, atob, crypto: webcrypto,
+    AbortSignal: { timeout(ms) { stats.timeouts.push(ms); return abortSync ? AbortSignal.abort() : AbortSignal.timeout(ms); } },
     createClient() {
       return {
-        auth: { async getUser() { return authenticated ? { data: { user: { id: userId, app_metadata: {}, user_metadata: { role: 'admin' } } }, error: null } : { data: { user: null }, error: { message: 'invalid fixture session' } }; } },
+        auth: { async getUser() { stats.auth++; return authenticated ? { data: { user: { id: userId, app_metadata: {}, user_metadata: { role: 'admin' } } }, error: null } : { data: { user: null }, error: { message: 'invalid fixture session' } }; } },
         from() { return builder; },
       };
     },
     async fetch(url, init = {}) {
       const target = new URL(url);
       fetches.push({ url: target, init });
+      if (init.signal?.aborted) throw init.signal.reason;
       if (target.hostname === 'oauth2.googleapis.com') return Response.json({ access_token: 'fixture-access', refresh_token: 'fixture-refresh', scope: 'https://www.googleapis.com/auth/business.manage' });
       assert.ok(['mybusinessaccountmanagement.googleapis.com', 'mybusinessbusinessinformation.googleapis.com', 'mybusiness.googleapis.com'].includes(target.hostname), 'Unexpected external destination');
+      if (googleResponse) return googleResponse(target, init);
       return Response.json(googleBody, { status: googleStatus });
     },
     Deno: { env: { get(name) { return values[name]; } }, serve(value) { handler = value; } },
   });
   vm.runInContext(javascript, context, { filename: 'google-business-oauth.js' });
   return {
-    fetches, writes,
+    fetches, writes, stats,
     setOwner(userId) { connection.connected_by = userId; },
     async call(body, { authorization = 'Bearer fixture-session', method = 'POST', query = '' } = {}) {
       return handler(new Request(`https://fixture.supabase.invalid/functions/v1/google-business-oauth${query}`, {
@@ -150,7 +154,7 @@ test('allowlisted operator sees disconnected sync explicitly before Google reque
   assert.equal(f.fetches.length, 0);
 });
 
-for (const action of ['start', 'status', 'accounts', 'locations', 'reviews', 'reply']) {
+for (const action of ['start', 'status', 'accounts', 'locations', 'reviews', 'sync_reviews', 'reply']) {
   test(`unprivileged authenticated account cannot perform ${action} even with editable admin metadata`, async () => {
     const f = fixture({ userId: 'fixture-branch-user' });
     const response = await f.call({ action, account_id: '123', location_id: '456', review_id: 'review', reply: 'fixture' });
@@ -236,4 +240,142 @@ test('legacy direct reply cannot bypass the saved draft approval workflow', asyn
   const response = await f.call({ action: 'reply', account_id: '123', location_id: '456', review_id: 'review/one?two', reply: '  Fixture approved reply  ' });
   assert.ok(response.status >= 400);
   assert.equal(f.fetches.some(request => request.init.method === 'PUT'), false);
+});
+
+const syncLocations = [
+  { name: 'locations/101', storeCode: '13674839659006303129', title: 'Fixture Nilüfer' },
+  { name: 'locations/102', storeCode: '05971556162544786377', title: 'Fixture Gebze' },
+  { name: 'locations/103', storeCode: '03710924650104046695', title: 'Fixture İnegöl' },
+];
+const syncBranchNames = ['branch-google-nilufer', 'branch-google-gebze', 'branch-google-inegol'];
+function syncResponse(overrides = {}) {
+  return async (url, init) => {
+    if (url.hostname === 'mybusinessaccountmanagement.googleapis.com') return overrides.accounts ? overrides.accounts(url, init) : Response.json({ accounts: [{ name: 'accounts/114698852482564472140' }] });
+    if (url.hostname === 'mybusinessbusinessinformation.googleapis.com') return overrides.locations ? overrides.locations(url, init) : Response.json({ locations: syncLocations });
+    return overrides.reviews ? overrides.reviews(url, init) : Response.json({ reviews: [{ reviewId: `fixture-${url.pathname.split('/')[4]}`, starRating: 'FIVE' }], totalReviewCount: 1, averageRating: 5 });
+  };
+}
+
+test('batch sync reuses one auth, connection read and refresh token for all branches and pages', async () => {
+  const f = fixture({ googleResponse: syncResponse({ reviews(url) {
+    assert.equal(url.searchParams.get('pageSize'), '50');
+    assert.equal(url.searchParams.get('orderBy'), 'updateTime desc');
+    const next = url.searchParams.get('pageToken');
+    return Response.json({ reviews: [{ reviewId: next ? 'second' : 'first' }], totalReviewCount: 2, averageRating: 4.5, ...(next ? {} : { nextPageToken: opaqueToken }) });
+  } }) });
+  const response = await f.call({ action: 'sync_reviews' });
+  assert.equal(response.status, 200);
+  const result = await response.json();
+  assert.deepEqual(result.errors, []);
+  assert.deepEqual(result.branches.map(b => b.branch_id), syncBranchNames);
+  assert.ok(result.branches.every(b => b.reviews.length === 2 && b.pagination_complete && b.review_count_matches && b.account_id === '114698852482564472140'));
+  assert.equal(f.stats.auth, 1); assert.equal(f.stats.connectionReads, 1);
+  assert.equal(f.fetches.filter(r => r.url.hostname === 'oauth2.googleapis.com').length, 1);
+  assert.equal(f.fetches.filter(r => r.url.searchParams.get('pageToken') === opaqueToken).length, 3);
+  assert.deepEqual(f.stats.timeouts, [25000]);
+  assert.ok(f.fetches.every(r => r.init.signal === f.fetches[0].init.signal));
+  assert.equal(f.fetches.some(r => r.init.method === 'PUT'), false); assert.equal(f.writes.length, 0);
+});
+
+test('batch sync paginates discovery, limits concurrency to three and only fetches requested branches', async () => {
+  let active = 0, peak = 0;
+  const f = fixture({ googleResponse: syncResponse({
+    accounts(url) { return Response.json(url.searchParams.has('pageToken') ? { accounts: [{ name: 'accounts/5' }, { name: 'accounts/6' }] } : { accounts: [1, 2, 3, 4].map(id => ({ name: `accounts/${id}` })), nextPageToken: opaqueToken }); },
+    async locations(url) {
+      active++; peak = Math.max(peak, active); await new Promise(resolve => setTimeout(resolve, 5)); active--;
+      return Response.json(url.searchParams.has('pageToken') ? { locations: [syncLocations[2]] } : { locations: syncLocations.slice(0, 2), nextPageToken: opaqueToken });
+    },
+  }) });
+  const result = await (await f.call({ action: 'sync_reviews', branch_ids: ['branch-google-inegol'] })).json();
+  assert.equal(peak, 3);
+  assert.equal(result.branches.length, 1); assert.deepEqual(result.errors, []);
+  assert.equal(result.branches[0].account_id, '1');
+  assert.equal(f.fetches.filter(r => r.url.hostname === 'mybusiness.googleapis.com').length, 1);
+  assert.equal(f.fetches.filter(r => r.url.hostname === 'mybusinessbusinessinformation.googleapis.com' && r.url.searchParams.get('pageToken') === opaqueToken).length, 6);
+});
+
+test('three branch review reads run concurrently and prefer the existing group wrapper', async () => {
+  let active = 0, peak = 0;
+  const f = fixture({ googleResponse: syncResponse({
+    accounts() { return Response.json({ accounts: [{ name: 'accounts/114698852482564472140' }, { name: 'accounts/999' }] }); },
+    async reviews() { active++; peak = Math.max(peak, active); await new Promise(resolve => setTimeout(resolve, 5)); active--; return Response.json({ totalReviewCount: 0 }); },
+  }) });
+  const result = await (await f.call({ action: 'sync_reviews' })).json();
+  assert.equal(peak, 3);
+  assert.ok(result.branches.every(b => b.account_id === '114698852482564472140' && b.review_count_matches));
+});
+
+for (const branch_ids of [null, [], ['other'], ['__proto__'], ['branch-google-inegol', 1], ['branch-google-inegol', 'branch-google-inegol', 'branch-google-inegol', 'branch-google-inegol']]) {
+  test('batch sync rejects invalid branch selection before refreshing Google token', async () => {
+    const f = fixture(); assert.equal((await f.call({ action: 'sync_reviews', branch_ids })).status, 400); assert.equal(f.fetches.length, 0);
+  });
+}
+
+test('batch Google 429 is isolated to its branch and preserves upstream diagnostics', async () => {
+  const f = fixture({ googleResponse: syncResponse({ reviews(url) { return url.pathname.includes('/locations/102/') ? Response.json({ error: { message: 'Fixture quota', status: 'RESOURCE_EXHAUSTED' } }, { status: 429 }) : Response.json({ totalReviewCount: 0 }); } }) });
+  const result = await (await f.call({ action: 'sync_reviews' })).json();
+  assert.equal(result.branches.length, 2);
+  assert.deepEqual(result.errors, [{ branch_id: 'branch-google-gebze', error: 'Fixture quota', status: 429, code: 'RESOURCE_EXHAUSTED', source: 'google' }]);
+});
+
+test('batch discovery failure preserves HTTP 403 and never claims an empty sync', async () => {
+  const f = fixture({ googleResponse: syncResponse({ locations() { return Response.json({ error: { message: 'Fixture denied', status: 'PERMISSION_DENIED' } }, { status: 403 }); } }) });
+  const response = await f.call({ action: 'sync_reviews' }); assert.equal(response.status, 403);
+  assert.equal((await response.json()).code, 'PERMISSION_DENIED');
+  assert.equal(f.fetches.some(r => r.url.hostname === 'mybusiness.googleapis.com'), false);
+});
+
+for (const locations of [[], [{ ...syncLocations[0], storeCode: 'other' }], [syncLocations[0], { ...syncLocations[0], name: 'locations/999' }]]) {
+  test('batch exact store-code matching rejects missing or ambiguous locations', async () => {
+    const f = fixture({ googleResponse: syncResponse({ locations() { return Response.json({ locations }); } }) });
+    const result = await (await f.call({ action: 'sync_reviews', branch_ids: ['branch-google-nilufer'] })).json();
+    assert.equal(result.branches.length, 0); assert.equal(result.errors[0].status, 409);
+    assert.equal(f.fetches.some(r => r.url.hostname === 'mybusiness.googleapis.com'), false);
+  });
+}
+
+test('batch deduplicates repeated IDs using newest content and exposes Google count mismatch', async () => {
+  const f = fixture({ googleResponse: syncResponse({ reviews(url) { return Response.json(url.searchParams.has('pageToken') ? { reviews: [{ reviewId: 'same', updateTime: '2026-10-25T00:00:00Z' }] } : { reviews: [{ reviewId: 'same', updateTime: '2026-10-26T00:00:00Z', reviewReply: { comment: 'Fixture existing reply' } }], nextPageToken: opaqueToken, totalReviewCount: 2 }); } }) });
+  const result = await (await f.call({ action: 'sync_reviews', branch_ids: ['branch-google-nilufer'] })).json();
+  assert.equal(result.branches[0].reviews.length, 1); assert.equal(result.branches[0].reviews[0].reviewReply.comment, 'Fixture existing reply');
+  assert.equal(result.branches[0].totalReviewCount, 2); assert.equal(result.branches[0].pagination_complete, true); assert.equal(result.branches[0].review_count_matches, false);
+});
+
+test('missing Google total remains unknown rather than invented from the loaded list', async () => {
+  const f = fixture({ googleResponse: syncResponse({ reviews() { return Response.json({ reviews: [{ reviewId: 'fixture' }] }); } }) });
+  const result = await (await f.call({ action: 'sync_reviews', branch_ids: ['branch-google-inegol'] })).json();
+  assert.equal(result.branches[0].totalReviewCount, null); assert.equal(result.branches[0].review_count_matches, null);
+});
+
+for (const response of [
+  () => Response.json({ reviews: [], nextPageToken: 'cycle' }),
+  () => Response.json({ reviews: [{ starRating: 'FIVE' }] }),
+  () => Response.json({ reviews: [{ reviewId: 'fixture', name: 'accounts/999/locations/999/reviews/fixture' }] }),
+  () => Response.json({ reviews: 'invalid' }),
+  () => new Response('{broken-json'),
+  () => ({ ok: true, json: async () => { throw new DOMException('Fixture body aborted', 'AbortError'); } }),
+]) {
+  test('incomplete or malformed review page cannot produce a successful replacement', async () => {
+    const f = fixture({ googleResponse: syncResponse({ reviews: response }) });
+    const result = await (await f.call({ action: 'sync_reviews', branch_ids: ['branch-google-inegol'] })).json();
+    assert.equal(result.branches.length, 0); assert.equal(result.errors.length, 1); assert.equal(result.errors[0].status, 502);
+  });
+}
+
+test('shared sync deadline covers token refresh and returns clear 504 without resource reads', async () => {
+  const f = fixture({ abortSync: true });
+  const response = await f.call({ action: 'sync_reviews' }); assert.equal(response.status, 504);
+  assert.equal((await response.json()).code, 'GOOGLE_SYNC_TIMEOUT');
+  assert.equal(f.fetches.filter(r => r.url.hostname !== 'oauth2.googleapis.com').length, 0);
+});
+
+for (const authCase of [{ authenticated: false }, { authorization: '' }]) {
+  test('batch endpoint rejects missing or invalid ERP auth before any Google access', async () => {
+    const f = fixture(authCase); assert.equal((await f.call({ action: 'sync_reviews' }, authCase)).status, 401); assert.equal(f.fetches.length, 0);
+  });
+}
+
+test('rotated OAuth client blocks batch sync without a stale refresh request', async () => {
+  const f = fixture({ savedClientId: 'retired-client' });
+  const response = await f.call({ action: 'sync_reviews' }); assert.equal(response.status, 409); assert.equal((await response.json()).reconnection_required, true); assert.equal(f.fetches.length, 0);
 });

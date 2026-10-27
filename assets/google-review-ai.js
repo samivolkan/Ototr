@@ -112,6 +112,9 @@
       if (!response.ok) {
         const error = new Error(googleBusinessError(data.error || `Google bağlantı servisi ${response.status} hatası verdi.`));
         error.status = response.status;
+        error.code = data.code;
+        error.source = data.source;
+        error.reconnection_required = data.reconnection_required === true;
         throw error;
       }
       return data;
@@ -349,6 +352,7 @@
     connectGoogleBusiness,
     googleBusinessStatus,
     googleBusinessRequest,
+    formatBusinessError: googleBusinessError,
     getApprovalQueue: () => workflow.items.filter(item => item.kind === 'reply'),
     getRefreshState: () => ({ busy: workflow.loading || Boolean(editor?.busy) || pendingTasks.size > 0, lastSuccessAt: workflow.lastSuccessAt }),
     refreshWorkflow, renderWorkflow, createTask, openItem
