@@ -203,3 +203,51 @@ test('workflow load failure is shown as unavailable instead of an empty successf
   assert.match(html, /Fixture storage unavailable/);
   assert.doesNotMatch(html, /Bu şubeye ait kayıtlı yanıt veya görev yok/);
 });
+
+test('an older in-flight workflow response cannot replace a freshly saved draft', async () => {
+  const shared = server(), originalFetch = shared.fetch;
+  let hold = true, release, signalStarted;
+  const started = new Promise(resolve => { signalStarted = resolve; });
+  shared.fetch = async (url, options) => {
+    const response = await originalFetch(url, options);
+    if (JSON.parse(options.body).action === 'workflow_list' && hold) {
+      signalStarted(); await new Promise(resolve => { release = resolve; });
+    }
+    return response;
+  };
+  const h = ui(shared);
+  await h.api.generate(REVIEW.id); await h.element('[data-google-ai-queue]').dispatch('click');
+  const pending = h.api.refreshWorkflow(); await started;
+  h.element('#googleAiReply').value = 'Newly saved reply, version two.';
+  await h.element('#googleAiReply').dispatch('input');
+  await h.element('[data-google-ai-queue]').dispatch('click');
+  release(); const result = await pending;
+  assert.equal(result.skipped, true);
+  assert.equal(h.api.getApprovalQueue()[0].version, 2);
+  assert.equal(h.api.getApprovalQueue()[0].reply_text, 'Newly saved reply, version two.');
+  assert.equal(h.api.getRefreshState().lastSuccessAt, 0);
+  hold = false; await h.api.refreshWorkflow();
+  assert.ok(h.api.getRefreshState().lastSuccessAt > 0);
+  assert.match(h.api.renderWorkflow(BRANCH.id), /Newly saved reply, version two/);
+});
+
+test('an older failed workflow request cannot replace a newer save error', async () => {
+  const shared = server(), originalFetch = shared.fetch;
+  let release, signalStarted;
+  const started = new Promise(resolve => { signalStarted = resolve; });
+  shared.fetch = async (url, options) => {
+    if (JSON.parse(options.body).action === 'workflow_list') {
+      signalStarted(); await new Promise(resolve => { release = resolve; });
+      return Response.json({ error: 'Old list error' }, { status: 503 });
+    }
+    return originalFetch(url, options);
+  };
+  const h = ui(shared); await h.api.generate(REVIEW.id);
+  const pending = h.api.refreshWorkflow(); await started;
+  shared.state.saveFails = true;
+  await h.element('[data-google-ai-queue]').dispatch('click');
+  release(); const result = await pending;
+  assert.equal(result.skipped, true);
+  assert.match(h.api.renderWorkflow(BRANCH.id), /Fixture save rejected/);
+  assert.doesNotMatch(h.api.renderWorkflow(BRANCH.id), /Old list error/);
+});

@@ -113,6 +113,27 @@ test('upstream identifiers cannot break inline action attributes', () => {
   assert.equal(model.googleReviewId, "x');alert(1);//\"<&");
 });
 
+test('quiet full sync preserves branch/filter and records freshness without a success toast', async () => {
+  const h = harness(), toasts = [];
+  h.context.toast = message => toasts.push(message);
+  h.api.selectBranch('branch-google-gebze'); h.api.setFilter('unreplied');
+  h.context.window.OTOTRGoogleReviewAI = {
+    googleBusinessStatus: async () => ({ connected: true }),
+    googleBusinessRequest: async action => action === 'accounts' ? { accounts: [{ name: 'accounts/123' }] }
+      : action === 'locations' ? { locations: h.branches.map(branch => location(branch)) }
+      : { reviews: [], totalReviewCount: 0 },
+  };
+  await h.api.syncAllGoogleReviews({ quiet: true });
+  assert.equal(toasts.length, 0);
+  assert.equal(h.state.selectedBranchId, 'branch-google-gebze');
+  assert.equal(h.state.filter, 'unreplied');
+  assert.ok(h.api.getRefreshState().lastSuccessAt > 0);
+  const snapshot = h.api.getRefreshState(); snapshot.busy = true;
+  assert.equal(h.api.getRefreshState().busy, false);
+  await h.api.syncAllGoogleReviews();
+  assert.equal(toasts.length, 1);
+});
+
 test('AI draft reads the current live review and signs with its own branch team', async () => {
   const h = harness();
   const fields = new Map();

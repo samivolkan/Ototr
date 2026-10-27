@@ -31,3 +31,11 @@ Canlı yayın için her şubenin `accountId`, `locationId` ve sunucu tarafında 
 - API kapalıysa güvenli yerel taslak görünür ve bunun API taslağı olmadığı açıkça belirtilir.
 - Onay kuyruğuna alma Google'a gönderim yapmaz.
 - Anahtar veya OAuth tokenı tarayıcı kaynaklarında bulunmaz.
+
+## Otomatik yenileme ve yayın
+
+- Test edilen değişiklikler `main` dalına gönderildiğinde GitHub Pages dağıtımı otomatik başlar. Dağıtımın başarılı olduğu ve canlı dosyaların gönderilen sürümle eşleştiği kontrol edilmelidir.
+- Google Yorumlar ekranı açıldığında yorumlar kendiliğinden alınır. Ekran açık, görünür ve çevrimiçiyken Google yorumları beş dakikada, ortak görev/onay listesi bir dakikada yenilenir.
+- Başka ekrandayken, sekme gizliyken veya yanıt/görev düzenleyicisi açıkken arka plan yenilemesi bekler. Düzenlenen metin ve şube/filtre seçimi korunur.
+- Arka plan yenilemesi yalnız okuma yapar; AI taslağı oluşturmaz, onay vermez ve Google'a yanıt yayımlamaz. Sayfa kapalıyken çalışan bir sunucu zamanlayıcısı değildir.
+- Başarısız yenilemede son başarılı veri tutulur ve hata gösterilir; aynı anda ikinci senkronizasyon başlatılmaz.

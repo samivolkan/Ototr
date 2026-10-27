@@ -2,11 +2,11 @@
   'use strict';
 
   const AI_ENDPOINT = 'https://bsjkohwbtrfwrqcyhsfz.supabase.co/functions/v1/google-review-ai';
-  const workflow = { items: [], loaded: false, loading: false, error: '' };
+  const workflow = { items: [], loaded: false, loading: false, lastSuccessAt: 0, error: '' };
   const statusNames = { approval_pending: 'Onay bekliyor', publishing: 'Yayın doğrulanıyor', published: 'Google’da yayımlandı', publish_failed: 'Yayımlanamadı', publish_unknown: 'Yayın sonucu belirsiz', open: 'Açık görev', done: 'Tamamlandı' };
   const kindNames = { reply: 'Yanıt taslağı', branch: 'Şube yanıt görevi', complaint: 'Müşteri deneyimi görevi', legal: 'Hukuk incelemesi', quality: 'Kalite incelemesi', crisis: 'Kriz incelemesi' };
   const sourceNames = { openai: 'OpenAI taslağı', local_template: 'Yerel şablon · AI bağlantısı başarısız', manual: 'Elle düzenlenen taslak' };
-  let editor = null, generationSequence = 0;
+  let editor = null, generationSequence = 0, workflowRevision = 0;
   const pendingTasks = new Set();
   const rerender = () => window.OTOTRGoogleReputation?.render?.();
 
@@ -155,7 +155,8 @@
   }
 
   async function refreshWorkflow() {
-    if (workflow.loading) return;
+    if (workflow.loading) return { skipped: true };
+    const revision = workflowRevision;
     workflow.loading = true; workflow.error = ''; rerender();
     try {
       const items = []; let offset = 0;
@@ -168,15 +169,19 @@
         offset = next;
         if (items.length > 10000) throw new Error('Görev listesi çok büyük; yönetici incelemesi gerekli.');
       } while (offset != null);
-      workflow.items = items; workflow.loaded = true;
+      if (revision !== workflowRevision) return { skipped: true };
+      workflow.items = items; workflow.loaded = true; workflow.lastSuccessAt = Date.now();
     } catch (error) {
+      if (revision !== workflowRevision) return { skipped: true };
       workflow.error = error.message;
       if ([401, 403].includes(error.status)) { workflow.items = []; workflow.loaded = false; }
     }
     finally { workflow.loading = false; rerender(); }
+    return { ok: !workflow.error, lastSuccessAt: workflow.lastSuccessAt };
   }
 
   function remember(item) {
+    workflowRevision++;
     workflow.items = [item, ...workflow.items.filter(row => row.id !== item.id)];
     workflow.error = ''; rerender();
   }
@@ -287,7 +292,7 @@
       remember(data.item);
       if (editor === current) { openItem(data.item.id); ensureModal().querySelector('#googleAiWarning').textContent = task ? 'Görev ortak kayıtlara kaydedildi.' : 'Taslak kaydedildi. Metni onayladığınızda tek yanıt Google’da yayımlanacak.'; }
     } catch (error) {
-      workflow.error = error.message; rerender();
+      workflowRevision++; workflow.error = error.message; rerender();
       if (editor === current) modal.querySelector('#googleAiWarning').textContent = error.message;
     } finally { current.busy = false; if (editor === current) updateEditorControls(); }
   }
@@ -327,7 +332,7 @@
       remember(data.item); openItem(data.item.id);
       window.toast?.(data.existing ? 'Bu yorumun mevcut görevi açıldı.' : 'Görev genel merkez ortak kayıtlarına kaydedildi.');
       return data.item;
-    } catch (error) { workflow.error = error.message; rerender(); api?.setError(error.message); }
+    } catch (error) { workflowRevision++; workflow.error = error.message; rerender(); api?.setError(error.message); }
     finally { pendingTasks.delete(key); }
   }
 
@@ -345,6 +350,7 @@
     googleBusinessStatus,
     googleBusinessRequest,
     getApprovalQueue: () => workflow.items.filter(item => item.kind === 'reply'),
+    getRefreshState: () => ({ busy: workflow.loading || Boolean(editor?.busy) || pendingTasks.size > 0, lastSuccessAt: workflow.lastSuccessAt }),
     refreshWorkflow, renderWorkflow, createTask, openItem
   };
     if (typeof document !== 'undefined') {
@@ -353,7 +359,6 @@
         if (open) openItem(open.dataset.googleWorkOpen);
         if (event.target.closest?.('[data-google-work-refresh]')) refreshWorkflow();
       });
-      setTimeout(refreshWorkflow, 300);
     }
   }
 
