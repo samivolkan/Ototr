@@ -231,6 +231,7 @@ function safeReviewReplyUrl(value: unknown) {
     const url = new URL(value), path = decodeURIComponent(url.pathname);
     const pathAllowed = url.hostname === 'search.google.com' ? /^\/local\/reviews\/?$/.test(path)
       : url.hostname === 'maps.google.com' ? path === '/' || /^\/maps(?:\/|$)/.test(path)
+      : url.hostname === 'business.google.com' ? /^\/[a-z][a-z0-9_-]{0,31}\/[A-Za-z0-9_-]{1,512}\/reviews\/[A-Za-z0-9_-]{1,512}\/?$/.test(path)
       : ['google.com', 'www.google.com'].includes(url.hostname) && (/^\/maps(?:\/|$)/.test(path) || /^\/search\/?$/.test(path));
     if (url.protocol !== 'https:' || url.username || url.password || url.port || !pathAllowed || /(?:^|\/)(?:url|redirect|out|imgres)(?:\/|$)/i.test(path)) return '';
     for (const key of url.searchParams.keys()) if (/^(?:url|u|qurl|target|dest|destination|redirect.*|continue|next|return.*|callback|link|followup)$/.test(key.toLowerCase().replace(/[-_]/g, ''))) return '';
@@ -386,23 +387,29 @@ async function publishWork(db: any, user: any, body: any, token: string) {
   }
   function replyDiagnostics(review: any) {
     const state = (value: any) => ['PENDING', 'REJECTED', 'APPROVED', 'REVIEW_REPLY_STATE_UNSPECIFIED'].includes(value) ? value : value ? 'OTHER' : '';
-    return { reviewReply_present: Object.hasOwn(review, 'reviewReply'), reviewReply_comment_length: typeof review.reviewReply?.comment === 'string' ? review.reviewReply.comment.length : null, reviewReply_state: state(review.reviewReply?.reviewReplyState), reply_present: Object.hasOwn(review, 'reply'), reply_comment_length: typeof review.reply?.comment === 'string' ? review.reply.comment.length : null, reply_state: state(review.reply?.reviewReplyState) };
+    const value = review.reviewReplyUrl, link: any = { reviewReplyUrl_present: Object.hasOwn(review, 'reviewReplyUrl'), reviewReplyUrl_type: value === null ? 'null' : Array.isArray(value) ? 'array' : typeof value, reviewReplyUrl_accepted: Boolean(safeReviewReplyUrl(value)) };
+    try { if (typeof value === 'string' && value.length <= 4096) { const url = new URL(value); Object.assign(link, { reviewReplyUrl_hostname: url.hostname.slice(0, 253), reviewReplyUrl_path: url.pathname.replace(/[^/]+/g, part => /^(?:local|reviews?|maps|search|place|writereview|r|url|redirect|out)$/i.test(part) ? part : ':segment').slice(0, 256), reviewReplyUrl_query_parameter_names: [...new Set(url.searchParams.keys())].filter(key => /^[a-zA-Z][a-zA-Z0-9_-]{0,63}$/.test(key)).slice(0, 20) }); } } catch (_) { /* Never retain the raw URL, credentials or query values. */ }
+    return { reviewReply_present: Object.hasOwn(review, 'reviewReply'), reviewReply_comment_length: typeof review.reviewReply?.comment === 'string' ? review.reviewReply.comment.length : null, reviewReply_state: state(review.reviewReply?.reviewReplyState), reply_present: Object.hasOwn(review, 'reply'), reply_comment_length: typeof review.reply?.comment === 'string' ? review.reply.comment.length : null, reply_state: state(review.reply?.reviewReplyState), ...link };
   }
   async function readReview() {
     const review = await googleJson(reviewUrl(item), token, { signal }, true);
     if (reviewIdentity(review) !== item.review_id) throw new GoogleApiError('Google yorum kimliği doğrulanamadı.', 502, 'INVALID_GOOGLE_RESPONSE');
     replySnapshot = withReviewReplyUrl({ ...replySnapshot, verification_diagnostics: { get: replyDiagnostics(review) } }, review.reviewReplyUrl);
-    if (review.reviewReply?.comment) {
+    const needsModerationState = replySnapshot.google_reply_state === 'PENDING' && !review.reviewReply?.reviewReplyState;
+    if (review.reviewReply?.comment && !needsModerationState) {
       replySnapshot = { ...replySnapshot, verification_source: 'reviews.get', verification_at: new Date().toISOString() };
       return review;
     }
-    // Google may omit a reply from reviews.get while its fresh list includes it.
+    // Google may omit a reply or a previously pending reply's moderation state
+    // from reviews.get while its fresh list includes it.
     // Resolve only this exact review, with full pagination and identity checks;
     // a missing or ambiguous entry must never permit an overwrite.
     const page = await googlePages(`https://mybusiness.googleapis.com/v4/accounts/${item.account_id}/locations/${item.location_id}/reviews?pageSize=50&orderBy=updateTime%20desc`, 'reviews', token, signal);
     const matches = page.reviews.filter((candidate: any) => reviewIdentity(candidate) === item.review_id);
     if (matches.length !== 1) throw new GoogleApiError('Google yorum listesinde bu kayıt kesin olarak doğrulanamadı. Yeniden gönderim yapılmadı.', 502, 'REVIEW_NOT_CONFIRMED');
     replySnapshot = withReviewReplyUrl({ ...replySnapshot, verification_source: 'reviews.list', verification_at: new Date().toISOString(), verification_diagnostics: { ...replySnapshot.verification_diagnostics, list: replyDiagnostics(matches[0]) } }, matches[0].reviewReplyUrl);
+    const directComment = review.reviewReply?.comment, listedComment = matches[0].reviewReply?.comment;
+    if (directComment && listedComment && !sameGoogleReply(directComment, listedComment) && !sameGoogleReply(listedComment, directComment)) throw new GoogleApiError('Google yanıt metni okumalar arasında farklı. Yeniden göndermeden sonucu tekrar kontrol edin.', 409, 'GOOGLE_REPLY_CONTENT_CONFLICT');
     const directState = review.reviewReply?.reviewReplyState;
     if (directState && directState !== 'APPROVED' && directState !== matches[0].reviewReply?.reviewReplyState) throw new GoogleApiError('Google yanıtının moderasyon durumu okumalar arasında farklı. Yeniden göndermeden sonucu tekrar kontrol edin.', 409, 'GOOGLE_REPLY_STATE_CONFLICT');
     if (!matches[0].reviewReply?.comment && (directState || matches[0].reviewReply?.reviewReplyState)) throw new GoogleApiError('Google yanıt durumu mevcut ancak metin doğrulanamadı. Yeniden göndermeden sonucu tekrar kontrol edin.', 409, 'GOOGLE_REPLY_STATE_UNCONFIRMED');

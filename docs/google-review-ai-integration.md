@@ -64,6 +64,7 @@ Canlı yayın için her şubenin `accountId`, `locationId` ve sunucu tarafında 
 - Daha önce insan tarafından onaylanmış başarısız kayıtlar `verify_reply` ile yeniden okunabilir. Bu işlem Google'a PUT yapmaz; onay kaydı olmayan bir taslağı yayımlanmış saymaz.
 - Google'ın `reviewReplyState` alanındaki `PENDING` ve `REJECTED` durumları başarılı yayın sayılmaz. Belirsiz sonuçları kurtarma işlemi aynı yanıtı otomatik yeniden göndermez.
 - Tekil Google sorgusu yanıtı boş döndürürse aynı hesap/konumun güncel yorum listesi tüm sayfalarıyla kontrol edilir. Yalnız aynı yorum kimliği ve konum adı eşleşen kayıt doğrulamaya alınır; eksik, çelişkili veya yarım veri yeni gönderime izin vermez. Doğrulamanın kaynağı ve zamanı kayıt üzerinde tutulur.
+- Son bilinen durum `PENDING` iken tekil sorgu metni döndürüp durum alanını atlıyorsa güncel liste de okunur. Böylece listede `APPROVED` olarak doğrulanmış bir yanıt eski bekleme durumunda kalmaz. İki kaynak da durum bildirmiyorsa onay varsayılmaz; açık `PENDING` veya `REJECTED` korunur.
 - Resmî API kaynakları: [ReviewReply ve moderasyon durumları](https://developers.google.com/my-business/reference/rest/v4/accounts.locations.reviews#ReviewReply), [updateReply yanıtı](https://developers.google.com/my-business/reference/rest/v4/accounts.locations.reviews/updateReply).
 
 ## Gönderim sonrası takip ve Google bağlantısı
@@ -74,3 +75,4 @@ Canlı yayın için her şubenin `accountId`, `locationId` ve sunucu tarafında 
 - Doğrulanmış yayınlar ve Google'ın reddettiği veya gerçek içerik çakışması olan kayıtlar otomatik kontrol kuyruğundan çıkar. Kullanıcı mevcut elle doğrulama seçeneğini kullanabilir.
 - Google'a göre yanıt incelemesi genellikle 10 dakikayı bulur, bazı durumlarda 30 güne uzayabilir. ERP'nin kontrol sıklığı, Google'ın inceleme süresi için garanti değildir. [Google İşletme Profili Yardımı](https://support.google.com/business/answer/3474050?hl=tr)
 - Google'ın sağladığı geçerli `reviewReplyUrl` ile karttaki “Google’da yorumu aç” bağlantısı ilgili yoruma gider. Bağlantı verilmemişse düğme açıkça “Google’da şubeyi aç” olarak şube profiline gider; yorum kimliğinden hayali bir bağlantı üretilmez.
+- Canlı API'nin döndürdüğü `business.google.com/.../.../reviews/...` bağlantıları desteklenir. Yalnız izin verilen Google HTTPS adresleri kabul edilir; farklı alan adı, kullanıcı bilgisi, yönlendirme parametresi ve hatalı yol engellenir. Tanı kaydı URL değerini veya müşteri metnini içermez.

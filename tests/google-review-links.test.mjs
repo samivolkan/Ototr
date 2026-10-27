@@ -56,6 +56,18 @@ test('missing or unsafe per-review URL uses an honestly labelled branch profile,
   assert.doesNotMatch(result, /Google’da yorumu aç|href="[^"]*opaque-api-id/);
 });
 
+test('the Business Profile reviewReplyUrl opens the exact review instead of falling back to the branch', () => {
+  const h = screen();
+  h.read("getGoogleBranchById('branch-google-nilufer').publicProfileUrl='https://maps.google.com/maps?cid=12345'");
+  const direct = 'https://business.google.com/n/location/reviews/review';
+  const review = h.addReview({ reviewReplyUrl: direct });
+  assert.equal(review.reviewReplyUrl, direct);
+  const result = h.render();
+  assert.ok(result.includes(`href="${direct}"`));
+  assert.match(result, /Google’da yorumu aç/);
+  assert.doesNotMatch(result, /Google’da şubeyi aç/);
+});
+
 test('a missing safe profile leaves a clear unavailable message instead of a dangerous link', () => {
   const h = screen(); h.read("getGoogleBranchById('branch-google-nilufer').publicProfileUrl='https://evil.example/maps'");
   h.addReview({ reviewReplyUrl: '//www.google.com/maps' });
@@ -72,6 +84,8 @@ test('only known HTTPS Google review/profile surfaces are accepted', () => {
     'https://maps.google.com/?cid=123',
     'https://search.google.com/local/reviews?placeid=123&reviewId=abc#review',
     'https://www.google.com:443/maps/reviews',
+    'https://business.google.com/n/location/reviews/review',
+    'https://business.google.com/l/Location_123-abc/reviews/Review_123-abc/?authuser=1&hl=tr',
   ]) assert.ok(h.validate(url), url);
   for (const url of [null, {}, '', ' javascript:alert(1)', 'javascript:alert(1)', 'data:text/html,hello',
     '//www.google.com/maps', 'http://www.google.com/maps', 'https://www.google.com:8443/maps',
@@ -85,6 +99,21 @@ test('only known HTTPS Google review/profile surfaces are accepted', () => {
     'https://www.google.com/maps?returnTo=https://evil.example',
     'https://www.google.com/maps?TARGET=https://evil.example',
     'https://www.google.com/maps\\@evil.example', 'https://www.google.com/ma\nps',
+    'https://business.google.com.evil.example/n/location/reviews/review',
+    'http://business.google.com/n/location/reviews/review',
+    'https://user:password@business.google.com/n/location/reviews/review',
+    'https://business.google.com:8443/n/location/reviews/review',
+    'https://business.google.com/n/location/reviews/review?redirect_uri=https://evil.example',
+    'https://business.google.com/n/location/reviews/review?url=https://evil.example',
+    'https://business.google.com/redirect/location/reviews/review',
+    'https://business.google.com/n/location/reviews/url',
+    'https://business.google.com/n/location/reviews/review/extra',
+    'https://business.google.com/n/location/reviews',
+    'https://business.google.com/N/location/reviews/review',
+    `https://business.google.com/${'n'.repeat(33)}/location/reviews/review`,
+    `https://business.google.com/n/${'l'.repeat(513)}/reviews/review`,
+    `https://business.google.com/n/location/reviews/${'r'.repeat(513)}`,
+    'https://business.google.com/n/location/reviews/review%2Fextra',
   ]) assert.equal(h.validate(url), '', String(url));
 });
 

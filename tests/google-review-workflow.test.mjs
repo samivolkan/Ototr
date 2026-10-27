@@ -786,6 +786,41 @@ test('positive individual GET does not require a list lookup and records its sou
   const result = await f.request(verify); assert.equal(result.data.item.status, 'published'); assert.equal(result.data.item.review_snapshot.verification_source, 'reviews.get'); assert.equal(f.state.putCount, 0);
 });
 
+test('previously pending replies missing GET moderation consult the list and require explicit approval there', async () => {
+  for (const listState of ['APPROVED', 'PENDING', undefined]) {
+    const f = workflowFixture(); const verify = await approvedVerification(f); f.rows[0].review_snapshot.google_reply_state = 'PENDING';
+    f.setRemoteReply(REPLY); f.state.listResponse = (_, remote) => Response.json({ reviews: [{ ...remote, reviewReply: { comment: REPLY, ...(listState ? { reviewReplyState: listState } : {}) } }] });
+    const result = await f.request(verify), snapshot = result.data.item.review_snapshot;
+    assert.equal(result.data.item.status, listState === 'APPROVED' ? 'published' : 'publish_unknown'); assert.equal(snapshot.google_reply_state, listState || 'PENDING');
+    assert.equal(snapshot.verification_source, 'reviews.list'); assert.equal(f.state.putCount, 0);
+  }
+});
+
+test('moderation fallback rejects differing GET/list reply text while preserving Google translation equivalence', async () => {
+  for (const [direct, listed, matching] of [
+    ['Different external answer', REPLY, false],
+    [REPLY, 'Different external answer', false],
+    [REPLY + GOOGLE_TRANSLATION, REPLY, true],
+    [REPLY, REPLY + GOOGLE_TRANSLATION, true],
+  ]) {
+    const f = workflowFixture(); const verify = await approvedVerification(f);
+    Object.assign(f.rows[0].review_snapshot, { google_reply_state: 'PENDING', google_reply_accepted: true }); f.setRemoteReply(direct);
+    f.state.listResponse = (_, remote) => Response.json({ reviews: [{ ...remote, reviewReply: { comment: listed, reviewReplyState: 'APPROVED' } }] });
+    const result = await f.request(verify);
+    assert.equal(result.status, matching ? 200 : 409); assert.equal(f.rows[0].status, matching ? 'published' : 'publish_unknown'); assert.equal(f.state.putCount, 0);
+    if (!matching) { assert.equal(result.data.code, 'GOOGLE_REPLY_CONTENT_CONFLICT'); assert.equal(f.rows[0].review_snapshot.google_reply_state, 'PENDING'); assert.equal(f.rows[0].published_at, null); }
+  }
+});
+
+test('explicit pending or rejected GET moderation is not replaced by a list approval', async () => {
+  for (const state of ['PENDING', 'REJECTED']) {
+    const f = workflowFixture(); const verify = await approvedVerification(f); f.rows[0].review_snapshot.google_reply_state = 'PENDING'; f.setRemoteReply(REPLY, { reviewReplyState: state });
+    f.state.listResponse = () => { throw new Error('Explicit GET moderation must not fall through to the list'); };
+    const result = await f.request(verify);
+    assert.equal(result.data.item.status, state === 'PENDING' ? 'publish_unknown' : 'publish_failed'); assert.equal(result.data.item.review_snapshot.verification_source, 'reviews.get'); assert.equal(f.state.putCount, 0);
+  }
+});
+
 for (const scenario of ['missing', 'wrong-name', 'duplicate', 'malformed', 'cycle', 'second-page-error']) {
   test(`list fallback ${scenario} cannot confirm or permit a write`, async () => {
     const f = workflowFixture(); const verify = await approvedVerification(f); f.setRemoteReply(REPLY, { reviewReplyState: 'APPROVED' }); f.state.readTransform = withoutReply;
@@ -851,6 +886,26 @@ test('allowed Google link hosts and paths preserve compatible parameters', async
   }
 });
 
+test('observed Google Business review link paths are trusted without allowing redirects or host confusion', async () => {
+  const path = '/n/fixture_location-1/reviews/fixture_review-1';
+  for (const [url, accepted] of [
+    [`https://business.google.com${path}`, true],
+    ['https://business.google.com/l/fixtureLocation/reviews/fixtureReview_2/?authuser=1', true],
+    [`https://business.google.com.evil.test${path}`, false],
+    [`https://fixture-user:fixture-password@business.google.com${path}`, false],
+    [`https://business.google.com:8443${path}`, false],
+    [`http://business.google.com${path}`, false],
+    [`https://business.google.com${path}/redirect`, false],
+    ['https://business.google.com/n/redirect/reviews/fixtureReview', false],
+    ['https://business.google.com/n/fixtureLocation/reviews/%75rl', false],
+    [`https://business.google.com${path}?redirect_uri=https://evil.test`, false],
+    ['https://business.google.com/n/fixtureLocation/not-reviews/fixtureReview', false],
+  ]) {
+    const f = workflowFixture({ reviewReplyUrl: url }); const item = await saveDraft(f);
+    assert.equal(item.review_snapshot.review_reply_url, accepted ? url : undefined, url); assert.equal(f.state.putCount, 0);
+  }
+});
+
 test('unsafe or unrecognized review URLs are omitted without changing draft behavior', async () => {
   for (const url of [undefined, 'http://search.google.com/local/reviews', '//search.google.com/local/reviews', 'javascript:alert(1)', 'https://google.com.evil.test/maps', 'https://user:pass@www.google.com/maps', 'https://www.google.com:8443/maps', 'https://www.google.com/url?q=https://evil.test', 'https://www.google.com/maps/redirect', 'https://www.google.com/maps/%75rl', 'https://search.google.com/local/reviews?continue=https://evil.test', 'https://google.com/maps?redirect_uri=https://evil.test', 'https://google.com/maps?target=https://evil.test', 'https://google.com/maps?qurl=https://evil.test', 'https://www.google.com/\nmaps', 'https://www.google.com\\maps', { url: REVIEW_LINK }]) {
     const f = workflowFixture({ reviewReplyUrl: url }); const item = await saveDraft(f);
@@ -878,6 +933,19 @@ test('a safe review link can also be discovered through the exact list fallback'
   f.state.readTransform = review => { delete review.reviewReply; delete review.reviewReplyUrl; return review; };
   f.state.listResponse = (_, remote) => Response.json({ reviews: [remote] });
   const result = await f.request(verify); assert.equal(result.data.item.review_snapshot.review_reply_url, REVIEW_LINK); assert.equal(result.data.item.review_snapshot.verification_source, 'reviews.list'); assert.equal(f.state.putCount, 0);
+});
+
+test('review link diagnostics distinguish absent, wrong-type and rejected URLs without retaining values', async () => {
+  for (const value of [undefined, { secret: 'fixture-hidden-object' }, 'https://fixture-user:fixture-password@search.google.com/local/reviews/fixture-customer-name?review_id=fixture-review-secret&token=fixture-token-secret', REVIEW_LINK]) {
+    const f = workflowFixture(); const verify = await approvedVerification(f); f.setRemoteReplyUrl(value); f.setRemoteReply(REPLY, { reviewReplyState: 'PENDING' });
+    const result = await f.request(verify), diagnostic = result.data.item.review_snapshot.verification_diagnostics.get;
+    assert.equal(diagnostic.reviewReplyUrl_present, value !== undefined); assert.equal(diagnostic.reviewReplyUrl_type, typeof value); assert.equal(diagnostic.reviewReplyUrl_accepted, value === REVIEW_LINK);
+    if (typeof value === 'string') {
+      assert.equal(diagnostic.reviewReplyUrl_hostname, 'search.google.com'); assert.equal(diagnostic.reviewReplyUrl_path, value === REVIEW_LINK ? '/local/reviews' : '/local/reviews/:segment');
+      assert.deepEqual(diagnostic.reviewReplyUrl_query_parameter_names, value === REVIEW_LINK ? ['placeid', 'review_id', 'authuser', 'hl'] : ['review_id', 'token']);
+    }
+    assert.doesNotMatch(JSON.stringify(diagnostic), /fixture-|ChIJ|Deneyiminizi|teşekkür/); assert.equal(f.state.putCount, 0); assert.equal(result.data.item.status, 'publish_unknown');
+  }
 });
 
 test('an uncertain send without an acknowledgement uses a neutral outcome message', async () => {

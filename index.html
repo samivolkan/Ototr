@@ -4468,7 +4468,8 @@
         const host=url.hostname.toLowerCase(),path=decodeURIComponent(url.pathname);
         const allowed=(['google.com','www.google.com'].includes(host)&&/^\/(maps(?:\/|$)|search\/?$)/.test(path)) ||
           (host==='maps.google.com'&&(path==='/'||/^\/maps(?:\/|$)/.test(path))) ||
-          (host==='search.google.com'&&/^\/local\/reviews\/?$/.test(path));
+          (host==='search.google.com'&&/^\/local\/reviews\/?$/.test(path)) ||
+          (host==='business.google.com'&&/^\/[a-z][a-z0-9_-]{0,31}\/[A-Za-z0-9_-]{1,512}\/reviews\/[A-Za-z0-9_-]{1,512}\/?$/.test(path));
         if(!allowed||/\/(url|redirect|out|imgres)(\/|$)/i.test(path)||[...url.searchParams.keys()].some(key=>/^(url|u|qurl|target|dest|destination|redirect.*|continue|next|return.*|callback|link|followup)$/.test(key.toLowerCase().replace(/[-_]/g,'')))) return '';
         return url.href;
       } catch (_) { return ''; }
