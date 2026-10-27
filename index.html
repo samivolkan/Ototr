@@ -4391,14 +4391,15 @@
     function GooglePilotIntegrationPanel(){
       const rows=googlePilotBranches();
       if(!rows.length) return '';
+      const connected=googleReputationState.lastSync.startsWith('Google bağlantısı aktif');
       const steps=[
         ['İşletme eşlemesi','Üç doğrulanmış OTOTR işletmesi ve mağaza kodları kaydedildi.','map-pinned'],
-        ['OAuth bağlantısı','Google Business Profile erişimi güvenli backend üzerinden yetkilendirilecek.','key-round'],
-        ['Canlı senkronizasyon','Yorum kimliği, puan, metin ve cevap durumu API üzerinden alınacak.','refresh-cw'],
+        ['OAuth bağlantısı',connected?'Google Business Profile erişimi yetkilendirildi.':'Google Business Profile erişimi güvenli backend üzerinden yetkilendirilecek.','key-round'],
+        ['Canlı senkronizasyon',connected?'Yorum kimliği, puan, metin ve cevap durumu API üzerinden alınmaya hazır.':'Yorum kimliği, puan, metin ve cevap durumu API üzerinden alınacak.','refresh-cw'],
         ['Yorum akışı','reviews.list verisi CRM, kalite, hukuk ve şube görevlerine düşer.','messages-square'],
         ['Yanıt onayı','Taslak cevap şube/genel merkez onayıyla Google’a yayınlanır.','send']
       ];
-      return `<section class="google-premium-card google-pilot-panel"><div class="google-premium-title"><div><h3>OTOTR Google İşletmeleri</h3><p>Doğrulanmış işletmeler eşleştirildi. Canlı yorum akışı için Google Business Profile OAuth bağlantısı tamamlanacak.</p></div><span class="google-status-pill watch">${rows.length} gerçek işletme</span></div><div class="google-pilot-grid">${rows.map(b=>`<article class="google-pilot-card"><div class="google-pilot-card-head"><span class="google-live-dot"></span><div><b>${googleEsc(b.name)}</b><small>${googleEsc(b.integrationStatus||'Bağlantı bekliyor')}</small></div></div><div class="google-pilot-kv"><span>Mağaza kodu</span><b>${googleEsc(b.storeCode)}</b><span>GBP konum kimliği</span><b>${googleEsc(b.googleBusinessLocationId)}</b></div><div class="google-pilot-actions"><a href="${googleEsc(b.mapsUrl)}" target="_blank" rel="noopener">Maps aç</a><button type="button" onclick="OTOTRGoogleReputation.selectBranch('${b.id}')">Şubeyi seç</button></div></article>`).join('')}</div><div class="google-pilot-flow">${steps.map((s,i)=>`<div class="google-pilot-step"><span>${icon(s[2])}</span><b>${i+1}. ${s[0]}</b><small>${s[1]}</small></div>`).join('')}</div></section>`;
+      return `<section class="google-premium-card google-pilot-panel"><div class="google-premium-title"><div><h3>OTOTR Google İşletmeleri</h3><p>${connected?'Doğrulanmış işletmeler ve OAuth bağlantısı aktif. Canlı yorum senkronizasyonu başlatılabilir.':'Doğrulanmış işletmeler eşleştirildi. Canlı yorum akışı için Google Business Profile OAuth bağlantısı tamamlanacak.'}</p></div><span class="google-status-pill ${connected?'excellent':'watch'}">${rows.length} gerçek işletme</span></div><div class="google-pilot-grid">${rows.map(b=>`<article class="google-pilot-card"><div class="google-pilot-card-head"><span class="google-live-dot"></span><div><b>${googleEsc(b.name)}</b><small>${googleEsc(b.integrationStatus||'Bağlantı bekliyor')}</small></div></div><div class="google-pilot-kv"><span>Mağaza kodu</span><b>${googleEsc(b.storeCode)}</b><span>GBP konum kimliği</span><b>${googleEsc(b.googleBusinessLocationId)}</b></div><div class="google-pilot-actions"><a href="${googleEsc(b.mapsUrl)}" target="_blank" rel="noopener">Maps aç</a><button type="button" onclick="OTOTRGoogleReputation.selectBranch('${b.id}')">Şubeyi seç</button></div></article>`).join('')}</div><div class="google-pilot-flow">${steps.map((s,i)=>`<div class="google-pilot-step"><span>${icon(s[2])}</span><b>${i+1}. ${s[0]}</b><small>${s[1]}</small></div>`).join('')}</div></section>`;
     }
     function GoogleKpiCards(){
       const branches=googleBranches(), reviews=googleReviews();
@@ -4462,14 +4463,18 @@
       if(page) page.innerHTML=pageHeader('google-reviews')+GoogleReputationPremiumDashboard()+deptPlan('google-reviews');
       if(window.lucide) lucide.createIcons();
     }
-    async function refreshGoogleBusinessConnectionStatus(){
-      if(!window.OTOTRGoogleReviewAI?.googleBusinessStatus) return;
+    async function refreshGoogleBusinessConnectionStatus(retry=0){
+      if(!window.OTOTRGoogleReviewAI?.googleBusinessStatus){
+        if(retry<20) setTimeout(()=>refreshGoogleBusinessConnectionStatus(retry+1),250);
+        return;
+      }
       const status=await window.OTOTRGoogleReviewAI.googleBusinessStatus();
       if(status.connected){
         googleReputationState.lastSync=`Google bağlantısı aktif · ${new Date(status.connected_at||Date.now()).toLocaleString('tr-TR')}`;
         googleBranches().forEach(b=>{b.integrationStatus='Google Business Profile bağlı · yorum senkronizasyonu hazır';b.dataMode='Canlı bağlantı';b.responseSlaStatus='Veri bekleniyor';b.recommendedAction='Google Yorumları Senkronize Et ile güncel yorumları çekin.';});
       } else {
         googleReputationState.lastSync='OAuth yetkilendirmesi bekleniyor';
+        if(retry<8){ setTimeout(()=>refreshGoogleBusinessConnectionStatus(retry+1),1000); return; }
       }
       refreshGoogleReputationPage();
     }
