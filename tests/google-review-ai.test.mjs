@@ -224,6 +224,17 @@ test('rich reply guidance is proportional to the review and keeps claims grounde
   }
 });
 
+test('reply guidance reserves contact invitations for concrete questions or complaints and closes warmly', async () => {
+  const h = harness(); await h.request();
+  const instructions = h.calls[0].body.instructions;
+  assert.match(instructions, /Olumlu veya yalnız yıldız verilmiş bir değerlendirmeye kendiliğinden arama, randevu ya da iletişim tavsiyesi ekleme/);
+  assert.match(instructions, /Yalnızca yorum metninde somut çözüm gerektiren bir şikâyet veya soru varsa/);
+  assert.match(instructions, /"resmi iletişim kanallarımız" gibi bürokratik ifadeler kullanma/);
+  assert.match(instructions, /Kapanışı yoruma uygun, sıcak tek bir cümleyle yap/);
+  assert.match(instructions, /taahhütlerle veya dolgu cümleleriyle kurma/);
+  assert.doesNotMatch(instructions, /gerekirse yalnızca resmi iletişim kanalına davet et/);
+});
+
 for (const name of ['Ahmet Yılmaz', 'Ayşe Nur Çelik', 'Mehmet Ali Can Öztürk', "Jean-Luc O'Neill", 'Élodie Dupré']) {
   test(`clear full display name is used once without invented honorifics: ${name}`, async () => {
     const reply = `Merhaba ${name}, değerlendirmeniz için teşekkür ederiz.`;
