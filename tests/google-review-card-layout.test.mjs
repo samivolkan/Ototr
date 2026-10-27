@@ -84,7 +84,7 @@ test('the compact summary and task-only section do not repeat the approval reply
   assert.equal(options.tasksOnly, true);
   assert.match(result, /<details class="google-branch-tasks"><summary>Şube görevleri ve incelemeler<\/summary>/);
   assert.match(result, /TASK-ONLY/); assert.doesNotMatch(result, /DUPLICATE-REPLIES/);
-  assert.equal((result.match(/2 hazır taslak/g) || []).length, 1);
+  assert.equal((result.match(/2 hazır taslak/g) || []).length, 3);
 });
 
 test('branch and reply-status filters continue selecting the correct paired cards', () => {

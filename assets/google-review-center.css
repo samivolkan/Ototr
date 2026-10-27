@@ -465,6 +465,8 @@ body.dark-mode #page-google-reviews .google-branch-health.error{color:#f0a18d}
 #page-google-reviews .google-premium-kpi:nth-child(4){background:#f3e2e3!important}
 #page-google-reviews .google-inbox-view{display:grid;gap:16px;min-width:0}
 #page-google-reviews .google-inbox-view[hidden]{display:none}
+#page-google-reviews .google-branch-draft-mini{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px}
+#page-google-reviews .google-branch-draft-btn{display:inline-flex;align-items:center;padding:3px 7px;border:1px solid rgba(112,89,45,.18);border-radius:999px;background:rgba(255,255,255,.62);color:var(--muted,#667085);font-size:10px;font-weight:800;line-height:1.2}
 #page-google-reviews .google-dashboard-nav{display:grid;gap:5px;border-bottom:1px solid var(--gc-line);padding-bottom:14px;margin-bottom:14px}
 #page-google-reviews .google-dashboard-nav button{border:0;background:transparent;color:var(--gc-muted);padding:10px;border-radius:8px;text-align:left;font-weight:600}
 #page-google-reviews .google-dashboard-nav button.active{background:var(--gc-brass-bg);color:var(--gc-ink);box-shadow:inset 3px 0 0 var(--gc-brass)}

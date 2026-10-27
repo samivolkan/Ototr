@@ -46,10 +46,13 @@
 
   function fallbackReply(review, branch) {
     const team = `${String(branch.replySignatureName || branch.name || 'OTOTR').replace(/ Test Şube$/i, '').trim()} ekibi`;
+    const rawName = String(review?.reviewerName || '').trim().replace(/\s+/g, ' ');
+    const name = /^(?!Google kullanıc(?:ı|i)|Google User$)[\p{L}][\p{L}'’.-]*(?:\s+[\p{L}][\p{L}'’.-]*){1,3}$/iu.test(rawName) ? rawName : '';
+    const greeting = `Sayın ${name || 'Değerli müşterimiz'},`;
     if (Number(review.rating) >= 4) {
-      return `Deneyiminizi bizimle paylaştığınız için çok teşekkür ederiz. Güzel değerlendirmeniz ekibimiz için çok kıymetli; sizi yeniden ağırlamaktan memnuniyet duyarız.\n\n${team}`;
+      return `${greeting}\n\nBizi tercih ettiğiniz için teşekkür ederiz. Memnuniyetinizi paylaşmanız ekibimize güç veriyor; sizi yeniden ağırlamaktan mutluluk duyarız.\n\n${team}`;
     }
-    return `Geri bildiriminizi dikkatle okuduk. Yaşadığınız deneyimi inceleyip gerekli iyileştirmeleri yapabilmemiz için konuyu şube yönetimimizle değerlendireceğiz. Bizimle iletişime geçerseniz size doğrudan yardımcı olmak isteriz.\n\n${team}`;
+    return `${greeting}\n\nYaşadığınız deneyimi önemsiyoruz. Konuyu şube yönetimimizle değerlendirerek hizmetimizi geliştirmek için gerekli adımları atacağız; ayrıntıları paylaşmanız hâlinde size yardımcı olmaktan memnuniyet duyarız.\n\n${team}`;
   }
 
   function ensureModal() {
@@ -513,6 +516,17 @@
     const waiting = Math.max(0, reviews.length - ready - preparing - failed - verification - sent);
     return `<section class="google-auto-draft-summary" data-testid="google-auto-drafts"><div><strong>Hazır yanıtlar</strong><p>Cevapsız yorumlar için AI taslakları otomatik hazırlanır. Yalnızca tek tek onayladığınız yanıtlar gönderilir.</p></div><div class="google-draft-summary-counts"><span>${ready} hazır</span><span>${preparing} hazırlanıyor</span><span>${waiting} sırada</span>${failed ? `<span>${failed} tekrar deneme bekliyor</span>` : ''}${verification ? `<span>${verification} yayın kontrolü</span>` : ''}${sent ? `<span>${sent} gönderildi</span>` : ''}</div>${verificationItems.length ? `<div class="google-reply-actions">${verificationItems.map(({ item, review }, index) => `<button type="button" class="google-reply-secondary" data-google-work-open="${esc(item.id)}">Yayın kaydını incele${review.reviewerName ? ` · ${esc(review.reviewerName)}` : verificationItems.length > 1 ? ` · ${index + 1}` : ''}</button>`).join('')}</div>` : ''}${workflow.error ? `<p class="google-reply-error">${esc(workflow.error)} Taslakların yeniden hazırlanması, kayıtlar okunana kadar bekler.</p>` : ''}</section>`;
   }
+  function renderAutoDraftMiniSummary(branchId) {
+    const reviews = (window.OTOTRGoogleReputation?.demoReviews || []).filter(review => (branchId === 'all' || review.branchId === branchId) && (!review.isReplied || canVerifyReply(cardContext(review.id)?.item)));
+    let ready = 0, preparing = 0, waiting = 0;
+    for (const review of reviews) {
+      const context = cardContext(review.id), status = context?.item?.status;
+      if (canVerifyReply(context?.item) || ['approval_pending', 'publish_failed'].includes(status)) ready++;
+      else if (preparingReviews.has(review.id) || status === 'preparing') preparing++;
+      else waiting++;
+    }
+    return `<span class="google-branch-draft-mini" aria-label="Hazır yanıt durumu"><span class="google-branch-draft-btn">${ready} hazır</span><span class="google-branch-draft-btn">${preparing} hazırlanıyor</span><span class="google-branch-draft-btn">${waiting} sırada</span></span>`;
+  }
   function renderReplyCard(review, branch) {
     const context = cardContext(review.id);
     if (!context) return '';
@@ -598,7 +612,7 @@
     getApprovalQueue: () => workflow.items.filter(item => item.kind === 'reply'),
     getRefreshState: () => ({ busy: workflow.loading || automaticVerification.busy || Boolean(editor?.busy) || pendingTasks.size > 0 || editingCards(), lastSuccessAt: workflow.lastSuccessAt }),
     refreshWorkflow, renderWorkflow, createTask, openItem,
-    renderReplyCard, renderAutoDraftSummary, preparePendingDrafts, verifyPendingReply
+    renderReplyCard, renderAutoDraftSummary, renderAutoDraftMiniSummary, preparePendingDrafts, verifyPendingReply
   };
     if (typeof document !== 'undefined') {
       document.addEventListener('click', event => {
