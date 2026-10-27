@@ -14,7 +14,7 @@ const key = await webcrypto.subtle.importKey('raw', keyBytes, 'AES-GCM', false, 
 const encrypted = await webcrypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, new TextEncoder().encode('fixture-refresh'));
 const encryptedRefresh = `${Buffer.from(iv).toString('base64')}.${Buffer.from(encrypted).toString('base64')}`;
 
-function fixture({ authenticated = true, connected = true, userId = 'fixture-owner', allowedUsers = '', databaseError = null, googleStatus = 200, googleBody = { reviews: [], nextPageToken: 'next-page' } } = {}) {
+function fixture({ authenticated = true, connected = true, userId = 'fixture-owner', allowedUsers = '', savedClientId = 'fixture-client', databaseError = null, googleStatus = 200, googleBody = { reviews: [], nextPageToken: 'next-page' } } = {}) {
   const fetches = [];
   const writes = [];
   let handler;
@@ -28,7 +28,7 @@ function fixture({ authenticated = true, connected = true, userId = 'fixture-own
     GOOGLE_OAUTH_CLIENT_SECRET: 'fixture-secret',
     GOOGLE_BUSINESS_ADMIN_USER_IDS: allowedUsers,
   };
-  const connection = connected ? { id: 'ototr-primary', connected_by: 'fixture-owner', refresh_token_encrypted: encryptedRefresh, connected_at: '2026-10-27T00:00:00Z' } : null;
+  const connection = connected ? { id: 'ototr-primary', connected_by: 'fixture-owner', oauth_client_id: savedClientId, refresh_token_encrypted: encryptedRefresh, connected_at: '2026-10-27T00:00:00Z' } : null;
   const builder = {
     select() { return this; },
     eq() { return this; },
@@ -47,7 +47,7 @@ function fixture({ authenticated = true, connected = true, userId = 'fixture-own
     async fetch(url, init = {}) {
       const target = new URL(url);
       fetches.push({ url: target, init });
-      if (target.hostname === 'oauth2.googleapis.com') return Response.json({ access_token: 'fixture-access' });
+      if (target.hostname === 'oauth2.googleapis.com') return Response.json({ access_token: 'fixture-access', refresh_token: 'fixture-refresh', scope: 'https://www.googleapis.com/auth/business.manage' });
       assert.ok(['mybusinessaccountmanagement.googleapis.com', 'mybusinessbusinessinformation.googleapis.com', 'mybusiness.googleapis.com'].includes(target.hostname), 'Unexpected external destination');
       return Response.json(googleBody, { status: googleStatus });
     },
@@ -139,7 +139,7 @@ test('status never returns encrypted connection credentials or contacts Google',
   const f = fixture();
   const response = await f.call({ action: 'status' });
   assert.equal(response.status, 200);
-  assert.deepEqual(await response.json(), { connected: true, connected_at: '2026-10-27T00:00:00Z' });
+  assert.deepEqual(await response.json(), { connected: true, connected_at: '2026-10-27T00:00:00Z', reconnection_required: false });
   assert.equal(f.fetches.length, 0);
 });
 
@@ -172,6 +172,27 @@ test('server allowlist authorizes another general-center operator', async () => 
   const response = await f.call({ action: 'status' });
   assert.equal(response.status, 200);
 });
+
+for (const savedClientId of [null, 'retired-google-project-client']) {
+  test('legacy or rotated OAuth client requires reconnect without using an old refresh token', async () => {
+    const f = fixture({ savedClientId });
+    const status = await f.call({ action: 'status' });
+    assert.deepEqual(await status.json(), { connected: false, connected_at: '2026-10-27T00:00:00Z', reconnection_required: true });
+    const accounts = await f.call({ action: 'accounts' });
+    assert.equal(accounts.status, 409);
+    assert.equal((await accounts.json()).reconnection_required, true);
+    assert.equal(f.fetches.length, 0);
+    const start = await f.call({ action: 'start' });
+    const auth = new URL((await start.json()).auth_url);
+    assert.equal(auth.searchParams.get('client_id'), 'fixture-client');
+    assert.equal(auth.searchParams.get('login_hint'), 'dijital@ototr.com');
+    assert.equal(auth.searchParams.get('scope'), 'https://www.googleapis.com/auth/business.manage');
+    const callback = await f.call(null, { method: 'GET', authorization: '', query: `?${new URLSearchParams({ code: 'fixture-code', state: auth.searchParams.get('state') })}` });
+    assert.equal(callback.status, 302);
+    assert.equal(f.writes[0].oauth_client_id, 'fixture-client');
+    assert.equal(f.writes[0].connected_by, 'fixture-owner');
+  });
+}
 
 test('database read error fails closed instead of pretending the account is disconnected', async () => {
   const f = fixture({ databaseError: { message: 'fixture database unavailable' } });
@@ -210,12 +231,9 @@ test('OAuth callback rejects an invalid state before token exchange or writes', 
   assert.equal(f.writes.length, 0);
 });
 
-test('review ID is encoded as a single reply path component', async () => {
-  const f = fixture({ googleBody: { comment: 'Fixture approved reply' } });
+test('legacy direct reply cannot bypass the saved draft approval workflow', async () => {
+  const f = fixture();
   const response = await f.call({ action: 'reply', account_id: '123', location_id: '456', review_id: 'review/one?two', reply: '  Fixture approved reply  ' });
-  assert.equal(response.status, 200);
-  const request = f.fetches.at(-1);
-  assert.equal(request.url.pathname, '/v4/accounts/123/locations/456/reviews/review%2Fone%3Ftwo/reply');
-  assert.equal(request.init.method, 'PUT');
-  assert.deepEqual(JSON.parse(request.init.body), { comment: 'Fixture approved reply' });
+  assert.ok(response.status >= 400);
+  assert.equal(f.fetches.some(request => request.init.method === 'PUT'), false);
 });

@@ -53,6 +53,16 @@ test('a connected account is not presented as having synchronized reviews', asyn
   assert.ok(h.branches.every(branch => !branch.synced));
 });
 
+test('OAuth client rotation shows reconnect control and explains the correct Google account', async () => {
+  const h = harness();
+  h.context.window.OTOTRGoogleReviewAI = { googleBusinessStatus: async () => ({ connected: false, reconnection_required: true }) };
+  await h.read('refreshGoogleBusinessConnectionStatus()');
+  assert.equal(h.state.connected, false);
+  assert.match(h.page.innerHTML, /data-testid="google-connect"/);
+  assert.match(h.page.innerHTML, /dijital@ototr\.com/);
+  assert.match(h.page.innerHTML, /yeniden yetkilendirin/);
+});
+
 test('strict branch matching cannot mix the Bursa branches and rejects ambiguous identifiers', () => {
   const h = harness();
   const nilufer = h.branches.find(branch => branch.id === 'branch-google-nilufer');
@@ -105,11 +115,17 @@ test('upstream identifiers cannot break inline action attributes', () => {
 
 test('AI draft reads the current live review and signs with its own branch team', async () => {
   const h = harness();
-  const fields = new Map(['#googleAiContext', '#googleAiMeta', '#googleAiWarning', '#googleAiReply'].map(id => [id, { value: '', textContent: '', innerHTML: '' }]));
-  const modal = { dataset: {}, classList: { add: () => {} }, querySelector: id => fields.get(id) };
+  const fields = new Map();
+  const field = id => {
+    if (!fields.has(id)) fields.set(id, { value: '', textContent: '', innerHTML: '', checked: false, setAttribute() {} });
+    return fields.get(id);
+  };
+  const modal = { dataset: {}, classList: { add: () => {} }, querySelector: field };
   h.context.document.getElementById = id => id === 'googleReviewAiModal' ? modal : h.page;
+  h.context.document.addEventListener = () => {};
   vm.runInContext(aiSource, h.context);
   for (const branch of h.branches) {
+    branch.googleBusinessAccountId = '123';
     h.context.raw = review(`signature-${branch.id}`);
     h.context.branch = branch;
     const item = h.read('googleLiveReviewModel(raw,branch)');

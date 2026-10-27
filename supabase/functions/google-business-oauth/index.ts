@@ -107,6 +107,137 @@ function paginatedUrl(base: string, pageToken: unknown) {
   return url.toString();
 }
 
+const workTable = 'google_review_work_items';
+const connectionId = 'ototr-primary';
+const branches: Record<string, { name: string; storeCode: string }> = {
+  'branch-google-nilufer': { name: 'OTOTR Bursa Nilüfer Şube', storeCode: '13674839659006303129' },
+  'branch-google-gebze': { name: 'OTOTR Gebze Şube', storeCode: '05971556162544786377' },
+  'branch-google-inegol': { name: 'OTOTR Bursa İnegöl Şube', storeCode: '03710924650104046695' },
+};
+const taskKinds = ['branch', 'complaint', 'legal', 'quality', 'crisis'];
+function reviewUrl(item: { account_id: string; location_id: string; review_id: string }) {
+  return `https://mybusiness.googleapis.com/v4/accounts/${item.account_id}/locations/${item.location_id}/reviews/${encodeURIComponent(item.review_id)}`;
+}
+function workIdentity(body: any) {
+  const account_id = String(body.account_id || ''), location_id = String(body.location_id || ''), review_id = String(body.review_id || '');
+  const branch_id = String(body.branch_id || '');
+  if (!/^\d+$/.test(account_id) || !/^\d+$/.test(location_id) || !review_id || review_id.length > 512 || !branches[branch_id]) {
+    throw new RequestError('Geçerli hesap, şube ve Google yorum kimliği gerekli.', 400);
+  }
+  return { connection_id: connectionId, account_id, location_id, review_id, branch_id, branch_name: branches[branch_id].name };
+}
+function workId(body: any) {
+  const id = String(body.item_id || '');
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) throw new RequestError('Geçerli görev kimliği gerekli.', 400);
+  return id;
+}
+function expectedVersion(body: any) {
+  if (!Number.isSafeInteger(body.expected_version) || body.expected_version < 1) throw new RequestError('Kayıt sürümü eksik. Listeyi yenileyin.', 400);
+  return body.expected_version;
+}
+function databaseFailure(error: any) {
+  if (error) throw new RequestError('Yorum görevleri kaydedilemedi veya okunamadı. İş akışı veritabanı kurulumunu kontrol edin.', 503);
+}
+async function getWork(db: any, body: any) {
+  const { data, error } = await db.from(workTable).select('*').eq('connection_id', connectionId).eq('id', workId(body)).maybeSingle();
+  databaseFailure(error);
+  if (!data) throw new RequestError('Yorum görevi bulunamadı.', 404);
+  if (data.version !== expectedVersion(body)) throw new RequestError('Kayıt başka bir oturumda değişti. Listeyi yenileyin.', 409);
+  return data;
+}
+async function verifiedReview(identity: ReturnType<typeof workIdentity>, token: string) {
+  const location = await googleJson(`https://mybusinessbusinessinformation.googleapis.com/v1/locations/${identity.location_id}?readMask=name,title,storeCode`, token);
+  if (String(location.storeCode || '') !== branches[identity.branch_id].storeCode) throw new RequestError('Google konumu seçilen OTOTR şubesiyle eşleşmiyor.', 409);
+  const review = await googleJson(reviewUrl(identity), token);
+  if (String(review.reviewId || review.name?.split('/').pop() || '') !== identity.review_id) throw new RequestError('Google yorum kimliği doğrulanamadı.', 409);
+  const stars: Record<string, number> = { ONE: 1, TWO: 2, THREE: 3, FOUR: 4, FIVE: 5 };
+  return { snapshot: { comment: String(review.comment || '').slice(0, 6000), rating: stars[review.starRating] || 0, reviewer_name: String(review.reviewer?.displayName || 'Google kullanıcısı').slice(0, 180), review_date: review.createTime || null }, expected_reply: String(review.reviewReply?.comment || '') };
+}
+async function saveWork(db: any, user: any, body: any, token: string) {
+  const identity = workIdentity(body), isReply = body.action === 'save_draft';
+  const kind = isReply ? 'reply' : String(body.kind || 'branch');
+  if (!isReply && !taskKinds.includes(kind)) throw new RequestError('Geçersiz görev türü.', 400);
+  const reply = isReply ? String(body.reply_text || '').trim() : '';
+  if (isReply && (!reply || reply.length > 4000)) throw new RequestError('Yanıt 1–4000 karakter olmalıdır.', 400);
+  const source = ['openai', 'local_template', 'manual'].includes(body.draft_source) ? body.draft_source : 'manual';
+  const verified = await verifiedReview(identity, token);
+  let existingQuery = db.from(workTable).select('*').eq('connection_id', connectionId).eq('location_id', identity.location_id).eq('review_id', identity.review_id).eq('kind', kind);
+  const { data: existing, error } = await existingQuery.maybeSingle(); databaseFailure(error);
+  if (existing && existing.account_id !== identity.account_id) throw new RequestError('Bu Google yorumu başka hesap eşleşmesiyle kayıtlı. Mevcut görevi kullanın; hedef otomatik değiştirilmedi.', 409);
+  if (existing && !isReply) return { item: existing, existing: true };
+  if (existing && !body.item_id) {
+    if (existing.reply_text === reply && existing.status === 'approval_pending') return { item: existing, existing: true };
+    throw new RequestError('Bu yorum için kayıtlı yanıt var. Onay kuyruğundan açıp düzenleyin.', 409);
+  }
+  if (existing && (workId(body) !== existing.id || expectedVersion(body) !== existing.version)) throw new RequestError('Taslak başka oturumda değişti. Listeyi yenileyin.', 409);
+  if (existing && !['approval_pending', 'publish_failed'].includes(existing.status)) throw new RequestError('Yayımlanan veya yayın sonucu beklenen taslak değiştirilemez.', 409);
+  if (!existing && body.item_id) throw new RequestError('Düzenlenecek taslak bulunamadı.', 404);
+  const now = new Date().toISOString();
+  const values = { ...identity, kind, review_snapshot: verified.snapshot, expected_reply: verified.expected_reply, reply_text: reply, draft_source: source, status: isReply ? 'approval_pending' : 'open', note: String(body.note || '').trim().slice(0, 2000), version: existing ? existing.version + 1 : 1, updated_by: user.id, updated_at: now, last_error: null, attempt_id: null, approved_by: null, approved_at: null, published_at: null };
+  const result = existing
+    ? await db.from(workTable).update(values).eq('connection_id', connectionId).eq('id', existing.id).eq('version', existing.version).in('status', ['approval_pending', 'publish_failed']).select('*').maybeSingle()
+    : await db.from(workTable).insert({ ...values, created_by: user.id }).select('*').single();
+  if (result.error?.code === '23505') throw new RequestError('Bu yorum için görev zaten oluşturuldu. Listeyi yenileyin.', 409);
+  databaseFailure(result.error);
+  if (!result.data) throw new RequestError('Taslak değişti. Listeyi yenileyin.', 409);
+  return { item: result.data };
+}
+async function finishPublication(db: any, item: any, attemptId: string, changes: any) {
+  const result = await db.from(workTable).update({ ...changes, updated_at: new Date().toISOString() }).eq('connection_id', connectionId).eq('id', item.id).eq('version', item.version).eq('attempt_id', attemptId).eq('status', 'publishing').select('*').maybeSingle();
+  databaseFailure(result.error);
+  if (!result.data) throw new RequestError('Yayın kaydı eşzamanlı değişti. Sonucu kontrol edin.', 409);
+  return result.data;
+}
+async function publishWork(db: any, user: any, body: any, token: string) {
+  const item = await getWork(db, body), verifyOnly = body.action === 'verify_reply';
+  if (item.kind !== 'reply') throw new RequestError('Bu kayıt yanıt taslağı değil.', 400);
+  if (!verifyOnly && body.approved !== true) throw new RequestError('Bu yanıtı Google’da yayımlamak için açık onay gerekli.', 400);
+  if (!verifyOnly && item.review_snapshot?.reply_conflict) throw new RequestError('Google’daki farklı yanıtı inceleyin ve taslağı yeniden kaydedin. Yeniden onay olmadan üzerine yazılmaz.', 409);
+  if (item.status === 'published') return { item, already_published: true };
+  const stalePublishing = item.status === 'publishing' && Date.now() - new Date(item.updated_at).getTime() > 90_000;
+  if (item.status === 'publishing' && !stalePublishing) throw new RequestError('Yayın işlemi sürüyor. Sonucu biraz sonra kontrol edin.', 409);
+  if (stalePublishing && !verifyOnly) throw new RequestError('Önce önceki yayının sonucunu kontrol edin.', 409);
+  const allowed = verifyOnly ? ['publish_unknown', 'publishing'] : ['approval_pending', 'publish_failed', 'publish_unknown'];
+  if (!allowed.includes(item.status)) throw new RequestError('Bu kaydın durumu bu işleme uygun değil.', 409);
+  const attemptId = crypto.randomUUID(), now = new Date().toISOString();
+  const claim = await db.from(workTable).update({ status: 'publishing', attempt_id: attemptId, updated_at: now, updated_by: user.id, ...(!verifyOnly ? { approved_by: user.id, approved_at: now } : {}) }).eq('connection_id', connectionId).eq('id', item.id).eq('version', item.version).eq('status', item.status).eq('updated_at', item.updated_at).select('*').maybeSingle();
+  databaseFailure(claim.error);
+  if (!claim.data) throw new RequestError('Bu yanıt için başka bir işlem başladı. Listeyi yenileyin.', 409);
+  let writeStarted = false, writeDefinitelyRejected = false;
+  try {
+    const live = await googleJson(reviewUrl(item), token);
+    const currentReply = String(live.reviewReply?.comment || '');
+    if (currentReply === item.reply_text) {
+      return { item: await finishPublication(db, item, attemptId, { status: 'published', published_at: live.reviewReply?.updateTime || now, last_error: null }), already_published: true };
+    }
+    if (verifyOnly) {
+      if (currentReply !== item.expected_reply) {
+        return { item: await finishPublication(db, item, attemptId, {
+          status: 'publish_failed',
+          review_snapshot: { ...item.review_snapshot, reply_conflict: true, current_reply: currentReply },
+          last_error: 'Google’da farklı bir yanıt bulundu ve korundu. Mevcut yanıtı inceleyip taslağı yeniden kaydedin; yeni sürüm için yeniden onay gerekir.',
+        }) };
+      }
+      return { item: await finishPublication(db, item, attemptId, { status: 'publish_unknown', last_error: 'Kayıtlı yanıt Google’da henüz doğrulanamadı. Aynı metni yeniden onaylayarak deneyebilirsiniz.' }) };
+    }
+    if (currentReply !== item.expected_reply) throw new RequestError('Google’daki mevcut yanıt değişmiş. Yayın durduruldu; taslağı yeniden inceleyin.', 409);
+    writeStarted = true;
+    try {
+      await googleJson(`${reviewUrl(item)}/reply`, token, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ comment: item.reply_text }) });
+    } catch (error) {
+      writeDefinitelyRejected = error instanceof GoogleApiError && error.status >= 400 && error.status < 500;
+      throw error;
+    }
+    const verified = await googleJson(reviewUrl(item), token);
+    if (String(verified.reviewReply?.comment || '') !== item.reply_text) throw new Error('Google yanıtı alındı ancak yayın sonucu doğrulanamadı. Sonucu kontrol edin.');
+    return { item: await finishPublication(db, item, attemptId, { status: 'published', published_at: verified.reviewReply?.updateTime || new Date().toISOString(), last_error: null }) };
+  } catch (error) {
+    const uncertain = !writeDefinitelyRejected && (writeStarted || verifyOnly || item.status === 'publish_unknown' || stalePublishing);
+    try { await finishPublication(db, item, attemptId, { status: uncertain ? 'publish_unknown' : 'publish_failed', last_error: String(error instanceof Error ? error.message : 'Yayın doğrulanamadı.').slice(0, 800) }); } catch (_) { /* Leave the claim intact; later verification recovers it. */ }
+    throw error;
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
   try {
@@ -118,7 +249,7 @@ Deno.serve(async (req) => {
       const response = await fetch('https://oauth2.googleapis.com/token', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ code: url.searchParams.get('code') || '', client_id: env('GOOGLE_OAUTH_CLIENT_ID'), client_secret: env('GOOGLE_OAUTH_CLIENT_SECRET'), redirect_uri: callbackUrl, grant_type: 'authorization_code' }) });
       const tokens = await response.json();
       if (!response.ok || !tokens.refresh_token) throw new Error(tokens.error_description || 'Google kalıcı erişim anahtarı alınamadı.');
-      const { error } = await db.from('google_business_connections').upsert({ id: 'ototr-primary', connected_by: userId, refresh_token_encrypted: await encrypt(tokens.refresh_token), scope: tokens.scope || '', connected_at: new Date().toISOString(), updated_at: new Date().toISOString() });
+      const { error } = await db.from('google_business_connections').upsert({ id: 'ototr-primary', connected_by: userId, oauth_client_id: env('GOOGLE_OAUTH_CLIENT_ID'), refresh_token_encrypted: await encrypt(tokens.refresh_token), scope: tokens.scope || '', connected_at: new Date().toISOString(), updated_at: new Date().toISOString() });
       if (error) throw error;
       return Response.redirect(erpUrl, 302);
     }
@@ -130,12 +261,30 @@ Deno.serve(async (req) => {
     if (body.action === 'start') {
       const state = await makeState(user.id);
       const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
-      authUrl.search = new URLSearchParams({ client_id: env('GOOGLE_OAUTH_CLIENT_ID'), redirect_uri: callbackUrl, response_type: 'code', scope: 'https://www.googleapis.com/auth/business.manage', access_type: 'offline', prompt: 'consent', state }).toString();
+      authUrl.search = new URLSearchParams({ client_id: env('GOOGLE_OAUTH_CLIENT_ID'), redirect_uri: callbackUrl, response_type: 'code', scope: 'https://www.googleapis.com/auth/business.manage', access_type: 'offline', prompt: 'consent', login_hint: 'dijital@ototr.com', state }).toString();
       return json({ auth_url: authUrl.toString() });
     }
-    if (body.action === 'status') return json({ connected: Boolean(connection), connected_at: connection?.connected_at || null });
+    const clientMatches = Boolean(connection && connection.oauth_client_id === env('GOOGLE_OAUTH_CLIENT_ID'));
+    if (body.action === 'status') return json({ connected: clientMatches, connected_at: connection?.connected_at || null, reconnection_required: Boolean(connection && !clientMatches) });
     if (!connection) return json({ error: 'Google Business Profile bağlantısı kurulmamış.' }, 409);
+    if (body.action === 'workflow_list') {
+      const offset = Number(body.offset || 0);
+      if (!Number.isSafeInteger(offset) || offset < 0) throw new RequestError('Geçersiz liste sayfası.', 400);
+      const { data, error } = await db.from(workTable).select('*').eq('connection_id', connectionId).order('created_at', { ascending: false }).order('id', { ascending: false }).range(offset, offset + 99);
+      databaseFailure(error); return json({ items: data || [], next_offset: data?.length === 100 ? offset + 100 : null });
+    }
+    if (body.action === 'update_task') {
+      const item = await getWork(db, body);
+      if (!taskKinds.includes(item.kind) || !['open', 'done'].includes(body.status)) throw new RequestError('Geçersiz görev durumu.', 400);
+      const { data, error } = await db.from(workTable).update({ status: body.status, note: String(body.note || '').trim().slice(0, 2000), version: item.version + 1, updated_by: user.id, updated_at: new Date().toISOString() }).eq('connection_id', connectionId).eq('id', item.id).eq('version', item.version).select('*').maybeSingle();
+      databaseFailure(error); if (!data) throw new RequestError('Görev başka oturumda değişti. Listeyi yenileyin.', 409);
+      return json({ item: data });
+    }
+    if (body.action === 'reply') throw new RequestError('Doğrudan yayın kapalı. Kayıtlı taslağı onay kuyruğundan yayımlayın.', 400);
+    if (!clientMatches) return json({ error: 'Google uygulama bağlantısı değişti. Google Hesabını Bağla ile hesabınızı yeniden yetkilendirin.', reconnection_required: true }, 409);
     const token = await accessToken(await decrypt(connection.refresh_token_encrypted));
+    if (['save_draft', 'create_task'].includes(body.action)) return json(await saveWork(db, user, body, token));
+    if (['publish_reply', 'verify_reply'].includes(body.action)) return json(await publishWork(db, user, body, token));
     if (body.action === 'accounts') {
       const data = await googleJson(paginatedUrl('https://mybusinessaccountmanagement.googleapis.com/v1/accounts', body.page_token), token);
       return json(data);
@@ -151,11 +300,6 @@ Deno.serve(async (req) => {
       const accountId = String(body.account_id || '');
       if (!/^\d+$/.test(locationId) || !/^\d+$/.test(accountId)) return json({ error: 'Geçersiz Google hesap/konum kimliği.' }, 400);
       return json(await googleJson(paginatedUrl(`https://mybusiness.googleapis.com/v4/accounts/${accountId}/locations/${locationId}/reviews?pageSize=50`, body.page_token), token));
-    }
-    if (body.action === 'reply') {
-      const accountId = String(body.account_id || ''), locationId = String(body.location_id || ''), reviewId = String(body.review_id || ''), reply = String(body.reply || '').trim();
-      if (!/^\d+$/.test(locationId) || !/^\d+$/.test(accountId) || !reviewId || !reply) return json({ error: 'Cevap için hesap, konum, yorum ve metin gereklidir.' }, 400);
-      return json(await googleJson(`https://mybusiness.googleapis.com/v4/accounts/${accountId}/locations/${locationId}/reviews/${encodeURIComponent(reviewId)}/reply`, token, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ comment: reply }) }));
     }
     return json({ error: 'Geçersiz işlem.' }, 400);
   } catch (error) {

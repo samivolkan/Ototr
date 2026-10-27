@@ -4452,6 +4452,7 @@
       if(!api?.googleBusinessRequest) throw new Error('Google bağlantı modülü henüz hazır değil. Sayfayı yenileyip tekrar deneyin.');
       const status=await api.googleBusinessStatus();
       googleReputationState.connected=Boolean(status.connected);
+      if(status.reconnection_required) throw new Error('Google uygulama bağlantısı değişti. Google Hesabını Bağla ile dijital@ototr.com hesabını yeniden yetkilendirin.');
       if(!status.connected) throw new Error('Google Business Profile bağlantısı bulunamadı. Önce Google hesabını bağlayın.');
       googleReputationState.progress='Google işletmeleri alınıyor…'; refreshGoogleReputationPage();
       const accountPayload=await googleCollectPages('accounts','accounts');
@@ -4532,7 +4533,7 @@
         ['Google Puanı',googleMetric(avg,1),'Yorum sayısıyla ağırlıklı ortalama','star'],
         ['Toplam Yorum',googleMetric(total),'Üç OTOTR şubesinin yorumları','messages-square'],
         ['Cevap Bekleyen',googleMetric(complete?ready.reduce((sum,branch)=>sum+branch.unrepliedCount,0):null),'Henüz işletme yanıtı olmayan yorumlar','message-circle-warning'],
-        ['İnceleme Gereken',googleMetric(complete?ready.reduce((sum,branch)=>sum+branch.criticalCount,0):null),'Düşük puan veya riskli ifade sinyali','shield-alert']
+        ['İnceleme Gereken',googleMetric(complete?ready.reduce((sum,branch)=>sum+branch.criticalCount,0):null),'1 yıldız veya riskli ifade sinyali','shield-alert']
       ];
       return `<div class="google-reviews-kpis" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">${items.map(item=>`<article class="google-premium-kpi"><div class="google-kpi-top"><div class="google-kpi-title"><span>${item[0]}</span><small>${item[2]}</small></div><div class="google-kpi-icon">${icon(item[3])}</div></div><div class="google-kpi-value-large">${item[1]}</div><small>${note}</small></article>`).join('')}</div>`;
     }
@@ -4559,7 +4560,7 @@
     function GoogleReviewFeed(){
       const branch=googleSelectedBranch(),rows=googleBranchReviews(branch.id).filter(r=>googleReviewMatchesFilter(r));
       const empty=branch.synced?'Bu filtreye uygun yorum bulunamadı.':googleReputationState.loading?'Google yorumları alınıyor…':'Yorumlar henüz alınmadı. Google Senkronize Et ile şube yorumlarını yükleyin.';
-      const list=rows.length?rows.map(r=>`<article class="google-review-card premium ${r.riskLevel}"><div class="google-review-top"><div class="google-review-meta"><div class="google-reviewer">${googleEsc(r.reviewerName)}</div><div class="google-review-date">${new Date(r.reviewDate).toLocaleDateString('tr-TR',{day:'2-digit',month:'long',year:'numeric'})}</div></div><div class="google-stars">${googleStars(r.rating)} ${r.rating}/5</div></div><p class="google-review-comment">${googleEsc(r.comment)}</p><div class="google-review-tags"><span class="google-tag ${r.riskLevel}">${googleEsc(r.sentiment)}</span><span class="google-tag neutral">${r.isReplied?'Yanıtlandı':'Cevap Bekliyor'}</span><span class="google-tag neutral">CRM: ${googleEsc(r.crmStatus)}</span></div>${r.replyText?`<div class="google-ai-box"><b>İşletme yanıtı</b><p>${googleEsc(r.replyText)}</p></div>`:''}<div class="google-ai-box"><b>${icon('bot')}Öneri</b><p>${googleEsc(r.recommendedAction)}</p></div><div class="google-review-action-grid"><button type="button" class="google-action-btn blue" onclick="OTOTRGoogleReputation.convertGoogleReviewToComplaint('${r.id}')">CRM Şikayetine Aktar</button><button type="button" class="google-action-btn green" onclick="OTOTRGoogleReputation.generateReplyDraft('${r.id}')">Yanıt Taslağı Oluştur</button><button type="button" class="google-action-btn" onclick="OTOTRGoogleReputation.assignTaskToBranch('${r.id}')">Şubeye Görev Ata</button><button type="button" class="google-action-btn danger" onclick="OTOTRGoogleReputation.sendToLegal('${r.id}')">Hukuka Gönder</button><button type="button" class="google-action-btn amber" onclick="OTOTRGoogleReputation.openQualityAudit('${r.id}')">Kalite Denetimi Aç</button></div></article>`).join(''):`<div class="google-empty">${empty}</div>`;
+      const list=rows.length?rows.map(r=>`<article class="google-review-card premium ${r.riskLevel}"><div class="google-review-top"><div class="google-review-meta"><div class="google-reviewer">${googleEsc(r.reviewerName)}</div><div class="google-review-date">${new Date(r.reviewDate).toLocaleDateString('tr-TR',{day:'2-digit',month:'long',year:'numeric'})}</div></div><div class="google-stars">${googleStars(r.rating)} ${r.rating}/5</div></div><p class="google-review-comment">${googleEsc(r.comment)}</p><div class="google-review-tags"><span class="google-tag ${r.riskLevel}">${googleEsc(r.sentiment)}</span><span class="google-tag neutral">${r.isReplied?'Yanıtlandı':'Cevap Bekliyor'}</span><span class="google-tag neutral">CRM: ${googleEsc(r.crmStatus)}</span></div>${r.replyText?`<div class="google-ai-box"><b>İşletme yanıtı</b><p>${googleEsc(r.replyText)}</p></div>`:''}<div class="google-ai-box"><b>${icon('bot')}Öneri</b><p>${googleEsc(r.recommendedAction)}</p></div><div class="google-review-action-grid"><button type="button" class="google-action-btn blue" onclick="OTOTRGoogleReputation.convertGoogleReviewToComplaint('${r.id}')">Müşteri Deneyimi Görevi</button><button type="button" class="google-action-btn green" onclick="OTOTRGoogleReputation.generateReplyDraft('${r.id}')">Yanıt Taslağı Oluştur</button><button type="button" class="google-action-btn" onclick="OTOTRGoogleReputation.assignTaskToBranch('${r.id}')">Şubeye Görev Ata</button><button type="button" class="google-action-btn danger" onclick="OTOTRGoogleReputation.sendToLegal('${r.id}')">Hukuka Gönder</button><button type="button" class="google-action-btn amber" onclick="OTOTRGoogleReputation.openQualityAudit('${r.id}')">Kalite Denetimi Aç</button></div></article>`).join(''):`<div class="google-empty">${empty}</div>`;
       return `<section class="google-premium-card"><div class="google-review-toolbar"><div><h3 style="margin:0;font-size:16px">Yorum Akışı</h3><p style="margin:3px 0 0;color:var(--muted);font-size:12px">${googleEsc(branch.name)} · ${branch.synced?`${rows.length} yorum gösteriliyor`:'Veri bekleniyor'}</p></div>${GoogleReviewFilters()}</div><div class="google-review-list">${list}</div></section>`;
     }
     function GoogleManagementSummary(){
@@ -4576,7 +4577,7 @@
       return `<section class="google-api-note"><b>Canlı bağlantı:</b> Google işletme ve yorum verisi güvenli Supabase Edge Function üzerinden alınır. API anahtarı tarayıcıda tutulmaz; şube eşleşmesi mağaza kodu ile yapılır. AI yanıtları önce genel merkez onay kuyruğuna düşer, doğrudan Google'a yayımlanmaz.</section>`;
     }
     function GoogleReputationPremiumDashboard(){
-      return `<div class="google-reviews-page premium">${GooglePremiumHero()}${GoogleKpiCards()}<div class="google-reviews-layout">${GoogleBranchRanking()}<div class="google-feed-shell" style="grid-template-columns:1fr">${GoogleSelectedBranchPanel()}${GoogleReviewFeed()}</div></div></div>`;
+      return `<div class="google-reviews-page premium">${GooglePremiumHero()}${GoogleKpiCards()}<div class="google-reviews-layout">${GoogleBranchRanking()}<div class="google-feed-shell" style="grid-template-columns:1fr">${GoogleSelectedBranchPanel()}${window.OTOTRGoogleReviewAI?.renderWorkflow?.(googleSelectedBranch().id)||''}${GoogleReviewFeed()}</div></div></div>`;
     }
     function refreshGoogleReputationPage(){
       const page=document.getElementById('page-google-reviews');
@@ -4592,6 +4593,7 @@
       try {
         const status=await window.OTOTRGoogleReviewAI.googleBusinessStatus();
         googleReputationState.connected=Boolean(status.connected);
+        if(status.reconnection_required) googleReputationState.error='Google uygulama bağlantısı değişti. Google Hesabını Bağla ile dijital@ototr.com hesabını yeniden yetkilendirin.';
         googleBranches().filter(branch=>!branch.synced).forEach(branch=>{
           branch.integrationStatus=status.connected?'Google hesabı bağlı · yorumlar henüz alınmadı':'Google hesabı bağlantısı bekleniyor';
         });
@@ -4603,6 +4605,10 @@
     function getGoogleReviewById(reviewId){ return googleReviews().find(r=>r.id===reviewId); }
     function getGoogleBranchById(branchId){ return googleBranches().find(b=>b.id===branchId); }
     function googleQueuePush(queue,payload){ googleTransferQueues[queue]?.unshift(payload); try{ localStorage.setItem('ototr-google-transfer-queues',JSON.stringify(googleTransferQueues)); }catch(e){} return payload; }
+    function createGoogleWorkTask(reviewId,kind){
+      if(!window.OTOTRGoogleReviewAI?.createTask){ toast('Google görev modülü yükleniyor. Lütfen tekrar deneyin.'); return null; }
+      return window.OTOTRGoogleReviewAI.createTask(reviewId,kind);
+    }
     window.OTOTRGoogleReputation={
       render:refreshGoogleReputationPage,
       setError(message){ googleReputationState.error=String(message||''); refreshGoogleReputationPage(); },
@@ -4617,12 +4623,12 @@
       fetchGoogleReviews(branchId){ return googleBranchReviews(branchId); },
       calculateReputationScore(branch){ return Number(branch?.reputationScore)||0; },
       detectGoogleReviewRisk(review){ return review?.riskLevel || (Number(review?.rating)<=2?'negative':'positive'); },
-      convertGoogleReviewToComplaint(reviewId){ const r=getGoogleReviewById(reviewId), b=r&&getGoogleBranchById(r.branchId); if(!r||!b) return null; const payload=googleQueuePush('complaints',{source:'Google Haritalar',branchId:b.id,branchName:b.name,customerName:r.reviewerName,rating:r.rating,complaintText:r.comment,complaintDate:r.reviewDate,riskLevel:r.riskLevel,status:'Yeni',assignedDepartment:r.legalRisk==='Yüksek'?'Genel Merkez / Hukuk':'Müşteri Deneyimi'}); toast('Google yorumu CRM şikayetine aktarıldı.'); return payload; },
-      generateReplyDraft(reviewId){ const r=getGoogleReviewById(reviewId); if(!r) return ''; toast('Yanıt taslağı oluşturuldu.'); return r.suggestedReply; },
-      assignTaskToBranch(reviewId){ const r=getGoogleReviewById(reviewId), b=r&&getGoogleBranchById(r.branchId); if(!r||!b) return null; const payload=googleQueuePush('branches',{source:'Google Haritalar',reviewId,branchId:b.id,branchName:b.name,title:'Google yorumu için şube aksiyonu',priority:r.riskLevel==='critical'?'Acil':'Normal',dueDate:new Date(Date.now()+86400000).toISOString().slice(0,10),description:r.recommendedAction}); toast('Şubeye Google yorum görevi atandı.'); return payload; },
-      sendToLegal(reviewId){ const r=getGoogleReviewById(reviewId), b=r&&getGoogleBranchById(r.branchId); if(!r||!b) return null; const payload=googleQueuePush('legal',{source:'Google Haritalar',reviewId,branchId:b.id,branchName:b.name,status:'Ön İnceleme Gerekli',riskLevel:r.legalRisk,legalReason:'Yorum metninde hukuki risk veya itibar riski tespit edildi.',comment:r.comment}); toast('Yorum hukuk ön incelemesine gönderildi.'); return payload; },
-      openQualityAudit(reviewId){ const r=getGoogleReviewById(reviewId), b=r&&getGoogleBranchById(r.branchId); if(!r||!b) return null; const payload=googleQueuePush('quality',{source:'Google Haritalar',reviewId,branchId:b.id,branchName:b.name,auditType:'Google yorum kaynaklı kalite denetimi',riskLevel:r.operationalRisk,recommendedAction:r.recommendedAction}); toast('Kalite denetimi önerisi oluşturuldu.'); return payload; },
-      sendToCrisisCenter(reviewId){ const r=getGoogleReviewById(reviewId); if(!r) return null; const payload=googleQueuePush('crisis',{source:'Google Haritalar',reviewId,title:'Google yorum kaynaklı kriz sinyali',riskLevel:r.riskLevel,comment:r.comment}); toast('Kriz Merkezi için demo kayıt oluşturuldu.'); return payload; },
+      convertGoogleReviewToComplaint(reviewId){ return createGoogleWorkTask(reviewId,'complaint'); },
+      generateReplyDraft(){ toast('AI yanıt modülü yükleniyor. Lütfen tekrar deneyin.'); return ''; },
+      assignTaskToBranch(reviewId){ return createGoogleWorkTask(reviewId,'branch'); },
+      sendToLegal(reviewId){ return createGoogleWorkTask(reviewId,'legal'); },
+      openQualityAudit(reviewId){ return createGoogleWorkTask(reviewId,'quality'); },
+      sendToCrisisCenter(reviewId){ return createGoogleWorkTask(reviewId,'crisis'); },
       exportGoogleReputationReport(){ googleQueuePush('dashboard',{createdAt:new Date().toISOString(),summary:'Google Haritalar İtibar Merkezi yönetim raporu demo olarak hazırlandı.'}); toast('Google itibar raporu demo olarak hazırlandı.'); },
       demoBranches:googleReputationData.branches,
       get demoReviews(){ return googleReputationData.reviews; }
@@ -18426,7 +18432,10 @@
 })();
 </script>
 
-<script src="assets/google-review-ai.js?v=google-live-state-6"></script>
+<style>
+  .google-workflow-row{padding:14px 0;border-bottom:1px solid var(--line,#dbe3ee)}.google-workflow-row:last-child{border-bottom:0}.google-workflow-row p{white-space:pre-wrap;overflow-wrap:anywhere}.google-workflow-head{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}.google-ai-warning{border:1px solid #f8d49b;background:#fff8eb;border-radius:10px;padding:10px 12px;color:#805100;font-size:12px;margin:12px 0}
+</style>
+<script src="assets/google-review-ai.js?v=google-workflow-7"></script>
 <script type="text/plain" id="google-backend-service-sample">
 /**
  * Google Haritalar İtibar Merkezi backend servis iskeleti
