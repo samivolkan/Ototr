@@ -7977,6 +7977,9 @@
       }
     }
     function dealerMaybeAutoSyncSupabase(){
+      // Genel merkez ekranları bayi portalı bileşenlerini de render edebilir;
+      // bayi canlı senkronu bu ekranlarda çalışıp rotayı #dealer'a çevirmemeli.
+      if(current!=='dealer' && !isDealerStandaloneRoute()) return;
       const session=dealerSupabaseSession()||dealerStoredSupabaseSession();
       if(!session||dealerSupabaseSyncInFlight) return;
       const state=dealerSupabaseSyncState();
