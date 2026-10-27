@@ -256,6 +256,15 @@ test('Google translation text does not inflate the original review length target
   }
 });
 
+test('text reviews open with their distinctive detail while rating-only reviews can open with thanks', async () => {
+  const h = harness(); await h.request();
+  const instructions = h.calls[0].body.instructions;
+  assert.match(instructions, /hitaptan sonraki ilk cümleyi, yalnızca yorumda gerçekten bulunan ayırt edici ayrıntıya karşılık vererek kur/);
+  assert.match(instructions, /genel bir girişle başlama, teşekkürü sonraya veya kapanışa bırak/);
+  assert.match(instructions, /yalnız yıldız verilmişse ayrıntı uydurmadan puana teşekkürle başlayabilirsin/);
+  assert.match(instructions, /onceki_yanit verilmişse yeni açılış önceki taslaktan açıkça farklı olmalıdır/);
+});
+
 for (const name of ['Ahmet Yılmaz', 'Ayşe Nur Çelik', 'Mehmet Ali Can Öztürk', "Jean-Luc O'Neill", 'Élodie Dupré']) {
   test(`clear full display name is used once without invented honorifics: ${name}`, async () => {
     const reply = `Merhaba ${name}, değerlendirmeniz için teşekkür ederiz.`;
