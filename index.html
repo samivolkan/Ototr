@@ -7438,6 +7438,21 @@
         return session;
       }catch(err){return null;}
     }
+    function dealerNativeSupabaseSession(){
+      try{
+        const ref=new URL(DEALER_SUPABASE_URL).hostname.split('.')[0];
+        const parsed=JSON.parse(localStorage.getItem(`sb-${ref}-auth-token`)||'null');
+        const live=parsed?.currentSession||parsed?.session||parsed;
+        if(!live?.access_token) return null;
+        const expires=Number(live.expires_at)||0;
+        return {
+          access_token:live.access_token,
+          refresh_token:live.refresh_token||'',
+          email:live.user?.email||'',
+          expires_at:expires>1e12?expires:expires*1000
+        };
+      }catch(err){return null;}
+    }
     async function dealerRefreshSupabaseSession(session){
       if(!session?.refresh_token) return null;
       dealerRequireSupabaseConfig();
@@ -7460,6 +7475,12 @@
     async function dealerSupabaseActiveSession(){
       const active=dealerSupabaseSession();
       if(active) return active;
+      const native=dealerNativeSupabaseSession();
+      if(native){
+        localStorage.setItem(DEALER_SUPABASE_SESSION_KEY,JSON.stringify(native));
+        const bridged=dealerSupabaseSession();
+        if(bridged) return bridged;
+      }
       if(typeof window.OTOTRGetERPAuthSession==='function'){
         try{
           const live=await window.OTOTRGetERPAuthSession();
