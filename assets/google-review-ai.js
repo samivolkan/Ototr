@@ -143,7 +143,13 @@
   function install() {
     if (!window.OTOTRGoogleReputation) return setTimeout(install, 100);
     window.OTOTRGoogleReputation.generateReplyDraft = generate;
-    window.OTOTRGoogleReviewAI = { generate, connectGoogleBusiness, googleBusinessStatus, getApprovalQueue: () => JSON.parse(localStorage.getItem(DRAFTS_KEY) || '[]') };
+  window.OTOTRGoogleReviewAI = {
+    generate,
+    connectGoogleBusiness,
+    googleBusinessStatus,
+    googleBusinessRequest,
+    getApprovalQueue: () => JSON.parse(localStorage.getItem(DRAFTS_KEY) || '[]')
+  };
   }
 
   install();
