@@ -113,6 +113,60 @@ test('customer text is escaped and every task action remains attached to its own
   }
 });
 
+test('ordinary review text stays complete and an inline translation phrase is not mistaken for the Google marker', () => {
+  const h = screen();
+  for (const comment of [
+    `SENTETİK UZUN YORUM\n${'Açıklamalar anlaşılır ve ayrıntılıydı. '.repeat(80)}\nSON CÜMLE KORUNDU.`,
+    'SENTETİK TEST: (Translated by Google) ifadesini bu cümlenin içinde görüyorum.',
+  ]) {
+    h.context.fixtureComment = comment;
+    const result = h.read('GoogleReviewComment(fixtureComment)');
+    assert.equal(result, `<p class="google-review-comment">${comment}</p>`);
+    assert.doesNotMatch(result, /<details|<summary/);
+  }
+});
+
+test('CRLF Google translations render in a closed disclosure without changing the review supplied to the reply controller', () => {
+  let receivedComment;
+  const h = screen({ renderReplyCard(review) { receivedComment = review.comment; return '<p>SENTETİK TASLAK</p>'; } });
+  const original = 'SENTETİK TEST: Açıklamalar anlaşılırdı.\r\nİlginiz için teşekkür ederim.';
+  const translation = 'SYNTHETIC TEST: The explanation was clear.\r\nThank you for your attention.';
+  const comment = `${original}\r\n\r\n(Translated by Google)\r\n${translation}`;
+  const review = h.addReview(undefined, { comment });
+  const result = h.render();
+  assert.ok(result.includes(`<p class="google-review-comment">${original}</p>`));
+  assert.match(result, /<details class="google-review-translation"><summary>Google çevirisini göster<\/summary>/);
+  assert.ok(result.includes(`<p class="google-review-comment">${translation}</p></details>`));
+  assert.doesNotMatch(result, /<details[^>]*class="google-review-translation"[^>]*\sopen(?:\s|=|>)/);
+  assert.equal(review.comment, comment);
+  assert.equal(receivedComment, comment);
+});
+
+test('both original and translated review text escape executable HTML inside the disclosure', () => {
+  const h = screen();
+  h.context.fixtureComment = '<img src=x onerror=attack()> & özgün\n\n(Translated by Google)\n</p></details><script>attack()</script> & translation';
+  const result = h.read('GoogleReviewComment(fixtureComment)');
+  assert.match(result, /&lt;img src=x onerror=attack\(\)&gt; &amp; özgün/);
+  assert.match(result, /&lt;\/p&gt;&lt;\/details&gt;&lt;script&gt;attack\(\)&lt;\/script&gt; &amp; translation/);
+  assert.doesNotMatch(result, /<img|<script/);
+  assert.equal((result.match(/<details\b/g) || []).length, 1);
+  assert.equal((result.match(/<\/details>/g) || []).length, 1);
+});
+
+test('a translation marker with an empty original or translation preserves the entire text without an empty disclosure', () => {
+  const h = screen();
+  for (const comment of [
+    '\n\n(Translated by Google)\nOnly translated text.',
+    'Yalnız özgün metin.\n\n(Translated by Google)\n',
+    ' \r\n\r\n(Translated by Google)\r\n \t',
+  ]) {
+    h.context.fixtureComment = comment;
+    const result = h.read('GoogleReviewComment(fixtureComment)');
+    assert.equal(result, `<p class="google-review-comment">${comment}</p>`);
+    assert.doesNotMatch(result, /<details|<summary/);
+  }
+});
+
 test('card styles provide desktop columns, mobile stacking and readable wrap-safe reply controls', () => {
   const css = html.match(/<style id="google-review-pair-styles">([\s\S]*?)<\/style>/)?.[1];
   assert.ok(css);

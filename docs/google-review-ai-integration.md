@@ -57,6 +57,13 @@ Canlı yayın için her şubenin `accountId`, `locationId` ve sunucu tarafında 
 - Kartta düzenleme ve kaydetme, yeniden üretme, açık onay kutusu ve **Onayla ve gönder** bulunur. Onay yalnız görülen kayıt kimliği, sürüm ve metne bağlıdır; metin veya sürüm değişince sıfırlanır.
 - Otomatik hazırlık hiçbir zaman yayın onayı vermez. Taslaklar, görevler ve Google'ın mevcut yanıtları korunur.
 
+## Yorum Merkezi görünümü
+
+- `assets/google-review-center.css` yalnız `#page-google-reviews` alanını biçimlendirir. Sıcak açık/koyu yüzeyler, serif başlıklar, kompakt şube ve puan özetleri kullanılır; ERP kabuğu ve kırmızı yayın düğmesi korunur.
+- Masaüstünde yorum solda, yanıt sağda; dar ekranda aynı kartın altında gösterilir. Şube ve filtre seçimleri `aria-pressed` ile bildirilir.
+- Google'ın bilinen çeviri eki kapalı bir “Google çevirisini göster” bölümünde sunulur. Özgün yorum ve çeviri güvenli biçimde kaçırılır; kayıttaki yorum veya AI'ya iletilen metin değiştirilmez.
+- Referans prototipin örnek hedefleri, tahminleri, puan geçmişi ve rol anahtarı canlı veri ya da yetki özelliği olarak kullanılmaz. Mevcut gerçek veri ve insan onayı akışı devam eder.
+
 ## Kişiselleştirilmiş yanıt kalitesi
 
 - Tam ad gibi görünen Google profil ismi doğal bir hitapta kullanılabilir. İsim tahmini kimlik doğrulaması değildir; takma ad, işletme adı, sayı içeren kullanıcı adı veya belirsiz isimde kişisel hitap yapılmaz. Cinsiyete dayalı Bey/Hanım tahmini yapılmaz.
