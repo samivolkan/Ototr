@@ -12,7 +12,7 @@ assert.ok(begin >= 0 && end > begin);
 function harness() {
   const page = { innerHTML: '' };
   const context = vm.createContext({
-    window: {}, document: { getElementById: id => id === 'page-google-reviews' ? page : null },
+    URL, window: {}, document: { getElementById: id => id === 'page-google-reviews' ? page : null },
     icon: () => '', pageHeader: () => '', deptPlan: () => '', toast: () => {},
     localStorage: { getItem: () => null, setItem: () => {} }, setTimeout: () => 0,
   });
@@ -73,6 +73,23 @@ test('one-branch refresh scopes batch to that branch and preserves every other b
   assert.deepEqual([...sent.branch_ids], [branch.id]);
   assert.strictEqual(h.api.demoReviews.find(row => row.id === 'old-other'), existing);
   assert.equal(h.state.lastAllSyncAt, 0);
+});
+
+test('background branch verification preserves the selected branch/filter without a toast while manual refresh selects its branch', async () => {
+  const h = harness(), refreshed = h.branches[1], selected = h.branches[2], toasts = [];
+  h.context.toast = message => toasts.push(message);
+  h.api.selectBranch(selected.id); h.api.setFilter('unreplied');
+  h.context.window.OTOTRGoogleReviewAI = { googleBusinessRequest: async () => ({ connected: true,
+    branches: [batchBranch(refreshed)], errors: [] }) };
+  await h.api.syncGoogleReviewsForBranch(refreshed.id, { quiet: true });
+  assert.equal(h.state.selectedBranchId, selected.id);
+  assert.equal(h.state.filter, 'unreplied');
+  assert.equal(toasts.length, 0);
+  assert.equal(refreshed.synced, true);
+  await h.api.syncGoogleReviewsForBranch(refreshed.id);
+  assert.equal(h.state.selectedBranchId, refreshed.id);
+  assert.equal(h.state.filter, 'unreplied');
+  assert.equal(toasts.length, 1);
 });
 
 test('partial batch failure keeps last-good data, applies healthy branches and does not claim all fresh', async () => {
@@ -231,7 +248,7 @@ test('AI draft reads the current live review and signs with its own branch team'
   const h = harness();
   const fields = new Map();
   const field = id => {
-    if (!fields.has(id)) fields.set(id, { value: '', textContent: '', innerHTML: '', checked: false, setAttribute() {} });
+    if (!fields.has(id)) fields.set(id, { value: '', textContent: '', innerHTML: '', checked: false, dataset: {}, setAttribute() {} });
     return fields.get(id);
   };
   const modal = { dataset: {}, classList: { add: () => {} }, querySelector: field };

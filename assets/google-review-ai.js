@@ -9,6 +9,8 @@
   let editor = null, generationSequence = 0, workflowRevision = 0;
   const pendingTasks = new Set();
   const cards = new Map(), preparingReviews = new Set(), automaticAttempts = new Set();
+  const publicationLocks = new Set(), verificationChecks = new Map(), pendingPublicationRefreshes = new Set();
+  const automaticVerification = { busy: false, due: 0, failures: 0 };
   let automaticPumpScheduled = false;
   const rerender = () => {
     const focused = document.activeElement, reviewId = focused?.dataset?.googleCardText;
@@ -60,6 +62,7 @@
       .google-ai-dialog h2{margin:0;font-size:22px}.google-ai-dialog p{color:#667085;line-height:1.5}.google-ai-dialog textarea{width:100%;min-height:180px;resize:vertical;border:1px solid #cfd8e6;border-radius:12px;padding:14px;font:inherit;line-height:1.55;box-sizing:border-box}
       .google-ai-meta{display:flex;gap:7px;flex-wrap:wrap;margin:12px 0}.google-ai-meta span{padding:5px 8px;border-radius:999px;background:#f2f5f9;font-size:11px;font-weight:800}
       .google-ai-warning{border:1px solid #f8d49b;background:#fff8eb;border-radius:10px;padding:10px 12px;color:#805100;font-size:12px;margin:12px 0}
+      .google-ai-warning[data-tone="waiting"]{border-color:#bfdbfe;background:#eff6ff;color:#1e40af}
       .google-ai-actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-top:14px}.google-ai-actions button{border:1px solid #d4dce8;background:#fff;border-radius:9px;padding:9px 12px;font-weight:800;cursor:pointer}.google-ai-actions .primary{background:#111827;color:#fff;border-color:#111827}
       .google-ai-actions button:disabled{opacity:.45;cursor:not-allowed}.google-ai-approval{display:flex;gap:9px;align-items:flex-start;margin-top:14px;font-size:13px;line-height:1.5}.google-ai-existing{white-space:pre-wrap;padding:12px;border:1px solid #dbe3ee;border-radius:10px}.google-workflow-row{padding:14px 0;border-bottom:1px solid var(--line,#dbe3ee)}.google-workflow-row:last-child{border-bottom:0}.google-workflow-row p{white-space:pre-wrap;overflow-wrap:anywhere}.google-workflow-head{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
       body.dark-mode .google-ai-dialog{background:#111f33;color:#f1f5f9;border-color:#2b3c56}body.dark-mode .google-ai-dialog textarea{background:#0b1627;color:#f1f5f9;border-color:#40516b}
@@ -204,7 +207,7 @@
     const items = workflow.items.filter(item => item.branch_id === branchId && (!options.tasksOnly || item.kind !== 'reply'));
     const pending = workflow.loaded ? items.filter(item => item.kind === 'reply' && item.status !== 'published').length : '—';
     const tasks = workflow.loaded ? items.filter(item => item.kind !== 'reply' && item.status === 'open').length : '—';
-    return `<section class="google-premium-card" data-testid="google-workflow"><div class="google-premium-title"><div><h3>Yanıt onayları ve şube görevleri</h3><p>Genel merkezde ortak kayıt · ${pending} yanıt bekliyor · ${tasks} açık görev</p></div><button type="button" class="google-action-btn" data-google-work-refresh ${workflow.loading ? 'disabled' : ''}>${workflow.loading ? 'Yükleniyor…' : 'Listeyi yenile'}</button></div>${workflow.error ? `<div class="google-ai-warning" role="alert">${esc(workflow.error)}${workflow.loaded ? ' Son alınan kayıtlar gösteriliyor.' : ' Görevler henüz alınamadı.'}</div>` : ''}${items.length ? items.map(item => `<article class="google-workflow-row"><div class="google-workflow-head"><strong>${esc(kindNames[item.kind] || item.kind)}</strong><span class="badge b-blue">${esc(statusNames[item.status] || item.status)}</span></div><p>${esc(item.review_snapshot?.rating || '—')}/5 · ${esc(item.review_snapshot?.comment || 'Yalnız yıldız değerlendirmesi')}</p>${item.kind === 'reply' ? `<small>${esc(sourceNames[item.draft_source] || 'Taslak')}</small><p>${esc(item.reply_text)}</p>` : `<p>${esc(item.note || 'Henüz görev notu yok.')}</p>`}${item.last_error ? `<p role="status">${esc(item.last_error)}</p>` : ''}<button type="button" class="google-action-btn" data-google-work-open="${esc(item.id)}">${item.kind === 'reply' ? 'Yanıtı incele' : 'Görevi aç'}</button></article>`).join('') : `<div class="google-empty">${workflow.loading ? 'Kayıtlar yükleniyor…' : workflow.loaded ? 'Bu şubeye ait kayıtlı yanıt veya görev yok.' : 'Ortak görev listesi henüz alınmadı.'}</div>`}<p style="font-size:12px;color:var(--muted)">Bu kayıtlar yetkili genel merkez kullanıcıları arasında paylaşılır. Şube bildirimi veya e-posta otomatik gönderilmez.</p></section>`;
+    return `<section class="google-premium-card" data-testid="google-workflow"><div class="google-premium-title"><div><h3>Yanıt onayları ve şube görevleri</h3><p>Genel merkezde ortak kayıt · ${pending} yanıt bekliyor · ${tasks} açık görev</p></div><button type="button" class="google-action-btn" data-google-work-refresh ${workflow.loading ? 'disabled' : ''}>${workflow.loading ? 'Yükleniyor…' : 'Listeyi yenile'}</button></div>${workflow.error ? `<div class="google-ai-warning" role="alert">${esc(workflow.error)}${workflow.loaded ? ' Son alınan kayıtlar gösteriliyor.' : ' Görevler henüz alınamadı.'}</div>` : ''}${items.length ? items.map(item => `<article class="google-workflow-row"><div class="google-workflow-head"><strong>${esc(kindNames[item.kind] || item.kind)}</strong><span class="badge b-blue">${esc(replyStatus(item))}</span></div><p>${esc(item.review_snapshot?.rating || '—')}/5 · ${esc(item.review_snapshot?.comment || 'Yalnız yıldız değerlendirmesi')}</p>${item.kind === 'reply' ? `<small>${esc(sourceNames[item.draft_source] || 'Taslak')}</small><p>${esc(item.reply_text)}</p>` : `<p>${esc(item.note || 'Henüz görev notu yok.')}</p>`}${item.last_error ? `<p role="status">${esc(item.last_error)}</p>` : ''}<button type="button" class="google-action-btn" data-google-work-open="${esc(item.id)}">${item.kind === 'reply' ? 'Yanıtı incele' : 'Görevi aç'}</button></article>`).join('') : `<div class="google-empty">${workflow.loading ? 'Kayıtlar yükleniyor…' : workflow.loaded ? 'Bu şubeye ait kayıtlı yanıt veya görev yok.' : 'Ortak görev listesi henüz alınmadı.'}</div>`}<p style="font-size:12px;color:var(--muted)">Bu kayıtlar yetkili genel merkez kullanıcıları arasında paylaşılır. Şube bildirimi veya e-posta otomatik gönderilmez.</p></section>`;
   }
 
   function canVerifyReply(item) {
@@ -212,9 +215,21 @@
       (item.status === 'publish_failed' && Boolean(item.approved_by && item.approved_at)));
   }
 
-  async function publicationConfirmed(item) {
-    window.toast?.('Yanıtın doğru Google yorumunda yayımlandığı doğrulandı.');
-    try { await window.OTOTRGoogleReputation?.syncGoogleReviewsForBranch?.(item.branch_id); }
+  function publicationWaiting(item) { return ['publishing', 'publish_unknown'].includes(item?.status); }
+  function googleAccepted(item) { return item?.review_snapshot?.google_reply_accepted === true || item?.review_snapshot?.google_reply_state === 'PENDING'; }
+  function replyStatus(item) {
+    return publicationWaiting(item) ? googleAccepted(item) ? 'Yanıt gönderildi, kontrol ediliyor' : 'Gönderim sonucu kontrol ediliyor' : statusNames[item?.status] || item?.status || '';
+  }
+  function verificationNote(item) {
+    const checked = verificationChecks.get(item.id);
+    const last = checked?.at ? ` Son kontrol: ${new Date(checked.at).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}.` : '';
+    const retry = checked?.error ? ' Bağlantı kontrolü tamamlanamadı; otomatik yeniden denenecek.' : '';
+    return `${googleAccepted(item) ? 'Google yanıtı aldı; yayın onayı bekleniyor.' : 'Gönderimin sonucu henüz doğrulanmadı.'} Sayfa açık ve düzenleme kapalıyken sıradaki kayıt dakikada bir kontrol edilir.${last}${retry}`;
+  }
+
+  async function publicationConfirmed(item, quiet = false) {
+    if (!quiet) window.toast?.('Yanıtın doğru Google yorumunda yayımlandığı doğrulandı.');
+    try { await window.OTOTRGoogleReputation?.syncGoogleReviewsForBranch?.(item.branch_id, { quiet }); }
     catch (error) { window.OTOTRGoogleReputation?.setError?.(`Yanıt yayımlandı; yorum listesi yenilenemedi: ${error.message}`); }
   }
 
@@ -230,7 +245,8 @@
     modal.querySelector('#googleAiReply').setAttribute('aria-label', task ? 'Şube görev notu' : 'Google yorum yanıt taslağı');
     modal.querySelector('#googleTaskStateLabel').hidden = !task;
     modal.querySelector('#googleTaskState').disabled = editor.busy;
-    modal.querySelector('#googleAiApproval').hidden = task || status === 'published';
+    const acceptedWaiting = publicationWaiting(item) && googleAccepted(item);
+    modal.querySelector('#googleAiApproval').hidden = task || status === 'published' || acceptedWaiting;
     modal.querySelector('#googleAiApprove').disabled = editor.busy || !sameSavedText || status === 'publishing' || requiresResave;
     const save = modal.querySelector('[data-google-ai-queue]');
     save.textContent = task ? 'Görevi kaydet' : item ? 'Taslak değişikliğini kaydet' : 'Onay kuyruğuna kaydet';
@@ -238,11 +254,11 @@
     const regen = modal.querySelector('[data-google-ai-regenerate]');
     regen.hidden = task || !editable; regen.disabled = editor.busy;
     const publish = modal.querySelector('[data-google-ai-publish]');
-    publish.hidden = task || status === 'published';
+    publish.hidden = task || status === 'published' || acceptedWaiting;
     publish.textContent = status === 'publish_unknown' ? 'Aynı yanıtı onayla ve yeniden yayımla' : 'Onayla ve Google’da yayımla';
-    publish.disabled = editor.busy || !sameSavedText || !modal.querySelector('#googleAiApprove').checked || !['approval_pending', 'publish_failed', 'publish_unknown'].includes(status) || requiresResave;
+    publish.disabled = editor.busy || acceptedWaiting || publicationLocks.has(item?.id) || !sameSavedText || !modal.querySelector('#googleAiApprove').checked || !['approval_pending', 'publish_failed', 'publish_unknown'].includes(status) || requiresResave;
     const verify = modal.querySelector('[data-google-ai-verify]');
-    verify.hidden = !canVerifyReply(item); verify.disabled = editor.busy || !sameSavedText;
+    verify.hidden = !canVerifyReply(item); verify.disabled = editor.busy || publicationLocks.has(item?.id) || !sameSavedText;
   }
 
   function showEditor(current, text) {
@@ -254,11 +270,12 @@
     modal.querySelector('#googleAiReply').value = text || '';
     modal.querySelector('#googleAiApprove').checked = false;
     modal.querySelector('#googleTaskState').value = task ? item.status : 'open';
-    modal.querySelector('#googleAiMeta').innerHTML = `<span>${esc(task ? 'Kalıcı şube görevi' : sourceNames[editor.source])}</span>${item ? `<span>${esc(statusNames[item.status])}</span>` : ''}`;
+    modal.querySelector('#googleAiMeta').innerHTML = `<span>${esc(task ? 'Kalıcı şube görevi' : sourceNames[editor.source])}</span>${item ? `<span>${esc(replyStatus(item))}</span>` : ''}`;
     const previous = editor.review.replyText || (item?.review_snapshot?.reply_conflict ? item.review_snapshot.current_reply : item?.expected_reply) || '';
     modal.querySelector('#googleAiExisting').hidden = task || item?.status === 'published' || !previous;
     modal.querySelector('#googleAiExisting').textContent = `Google’daki mevcut yanıt (yayımlarsanız değiştirilecek):\n${previous}`;
-    modal.querySelector('#googleAiWarning').textContent = item?.status === 'published' ? 'Bu yanıtın Google’da yayımlandığı doğrulandı. Metin salt okunur.' : item?.last_error || (task ? 'Not ve durum genel merkezde ortak kaydedilir.' : 'Önce taslağı kaydedin. Yalnızca açıkça onayladığınız tek yanıt Google’da yayımlanır.');
+    modal.querySelector('#googleAiWarning').dataset.tone = publicationWaiting(item) ? 'waiting' : '';
+    modal.querySelector('#googleAiWarning').textContent = item?.status === 'published' ? 'Bu yanıtın Google’da yayımlandığı doğrulandı. Metin salt okunur.' : publicationWaiting(item) ? verificationNote(item) : item?.last_error || (task ? 'Not ve durum genel merkezde ortak kaydedilir.' : 'Önce taslağı kaydedin. Yalnızca açıkça onayladığınız tek yanıt Google’da yayımlanır.');
     updateEditorControls();
   }
 
@@ -326,8 +343,10 @@
   async function publishEditor(verifyOnly) {
     if (!editor?.item || editor.busy) return;
     const current = editor, modal = ensureModal(), item = current.item;
+    if (publicationLocks.has(item.id)) return;
     if (verifyOnly && (!canVerifyReply(item) || modal.querySelector('#googleAiReply').value.trim() !== item.reply_text)) return;
-    if (!verifyOnly && (item.kind !== 'reply' || !['approval_pending', 'publish_failed', 'publish_unknown'].includes(item.status) || item.review_snapshot?.reply_conflict || !modal.querySelector('#googleAiApprove').checked || modal.querySelector('#googleAiReply').value.trim() !== item.reply_text)) return;
+    if (!verifyOnly && (item.kind !== 'reply' || (publicationWaiting(item) && googleAccepted(item)) || !['approval_pending', 'publish_failed', 'publish_unknown'].includes(item.status) || item.review_snapshot?.reply_conflict || !modal.querySelector('#googleAiApprove').checked || modal.querySelector('#googleAiReply').value.trim() !== item.reply_text)) return;
+    publicationLocks.add(item.id);
     modal.querySelector('#googleAiApprove').checked = false;
     current.busy = true; updateEditorControls();
     modal.querySelector('#googleAiWarning').textContent = verifyOnly ? 'Google’daki yayın sonucu kontrol ediliyor…' : 'Onayladığınız yanıt Google’a gönderiliyor ve sonucu doğrulanıyor…';
@@ -346,7 +365,12 @@
         if (latest) current.item = latest;
         modal.querySelector('#googleAiWarning').textContent = `${error.message} ${canVerifyReply(current.item) ? 'Yayın sonucunu kontrol et düğmesiyle Google’daki yanıtı doğrulayabilirsiniz.' : 'Kayıtlı yayın durumunu inceleyin.'} Yeniden gönderim yapılmadı.`;
       }
-    } finally { current.busy = false; if (editor === current) updateEditorControls(); }
+    } finally {
+      publicationLocks.delete(item.id); automaticVerification.due = Math.max(automaticVerification.due, Date.now() + 60000);
+      if (verifyOnly) verificationChecks.set(item.id, { at: Date.now() });
+      current.busy = false; if (editor === current) updateEditorControls();
+      else if (editor?.item?.id === item.id) updateEditorControls();
+    }
   }
 
   async function createTask(reviewId, kind = 'branch') {
@@ -376,12 +400,61 @@
   }
 
   function editingCards() { return [...cards.values()].some(state => state.editing || state.busy); }
-  function autoPreparationAllowed() {
+  function automaticViewAllowed() {
     return typeof location !== 'undefined' && location.hash === '#google-reviews' && document.visibilityState === 'visible' &&
       (typeof navigator === 'undefined' || navigator.onLine !== false) &&
       !document.documentElement?.classList.contains('ototr-access-locked') &&
-      !document.getElementById('googleReviewAiModal')?.classList.contains('open') && !editingCards() && !editor?.busy &&
+      !document.getElementById('googleReviewAiModal')?.classList.contains('open') && !editingCards() && !editor?.busy;
+  }
+  function autoPreparationAllowed() {
+    return automaticViewAllowed() && !automaticVerification.busy && !publicationLocks.size &&
       workflow.loaded && !workflow.loading && !workflow.error && !window.OTOTRGoogleReputation?.getRefreshState?.().busy;
+  }
+  async function verifyPendingReply() {
+    const now = Date.now();
+    if (!autoPreparationAllowed()) return { skipped: true };
+    if (pendingPublicationRefreshes.size) {
+      const branchId = pendingPublicationRefreshes.values().next().value;
+      automaticVerification.busy = true;
+      try { await publicationConfirmed({ branch_id: branchId }, true); pendingPublicationRefreshes.delete(branchId); }
+      finally { automaticVerification.busy = false; }
+      return { skipped: true };
+    }
+    if (now < automaticVerification.due) return { skipped: true };
+    const candidates = workflow.items.filter(item => item.kind === 'reply' && item.approved_by && item.approved_at &&
+      !item.review_snapshot?.reply_conflict && item.review_snapshot?.google_reply_state !== 'REJECTED' &&
+      (item.status === 'publish_unknown' || (item.status === 'publishing' && now - new Date(item.updated_at).getTime() > 90000)));
+    candidates.sort((left, right) => (verificationChecks.get(left.id)?.at || 0) - (verificationChecks.get(right.id)?.at || 0));
+    const item = candidates[0];
+    if (!item) return { skipped: true };
+    automaticVerification.busy = true; publicationLocks.add(item.id);
+    let errorMessage = '';
+    try {
+      const data = await googleBusinessRequest('verify_reply', { item_id: item.id, expected_version: item.version });
+      if (!data.item || data.item.id !== item.id) throw new Error('Yayın kontrolü sonucu okunamadı.');
+      const current = workflow.items.find(row => row.id === item.id);
+      if (!current || current.version !== item.version) return { skipped: true };
+      remember(data.item);
+      const modal = document.getElementById('googleReviewAiModal');
+      if (modal?.classList.contains('open') && editor?.item?.id === item.id && !editor.busy && modal.querySelector('#googleAiReply').value.trim() === editor.item.reply_text) openItem(item.id);
+      if (data.item.status === 'published') {
+        if (automaticViewAllowed()) await publicationConfirmed(data.item, true);
+        else pendingPublicationRefreshes.add(item.branch_id);
+      }
+      automaticVerification.failures = 0;
+      return { ok: true };
+    } catch (error) {
+      errorMessage = error.message;
+      automaticVerification.failures = Math.min(automaticVerification.failures + 1, 4);
+      return { ok: false };
+    } finally {
+      const finished = Date.now();
+      verificationChecks.set(item.id, { at: finished, error: errorMessage });
+      automaticVerification.due = finished + (errorMessage ? Math.min(300000, 60000 * 2 ** (automaticVerification.failures - 1)) : 60000);
+      automaticVerification.busy = false; publicationLocks.delete(item.id);
+      if (editor?.item?.id === item.id) updateEditorControls();
+      rerender();
+    }
   }
   function schedulePreparation() {
     if (automaticPumpScheduled) return;
@@ -437,10 +510,10 @@
     const context = cardContext(review.id);
     if (!context) return '';
     const { item, state } = context, status = item?.status;
-    const action = (name, label, disabled = false, primary = false) => `<button type="button" class="${primary ? 'google-reply-primary' : 'google-reply-secondary'}" data-google-card-action="${name}" data-review-id="${esc(review.id)}" ${disabled ? 'disabled' : ''}>${label}</button>`;
+    const action = (name, label, disabled = false, primary = false) => `<button type="button" class="${primary ? 'google-reply-primary' : 'google-reply-secondary'}" data-google-card-action="${name}" data-review-id="${esc(review.id)}" ${disabled || (name !== 'details' && publicationLocks.has(item?.id)) ? 'disabled' : ''}>${label}</button>`;
     if (review.isReplied) {
       const verification = canVerifyReply(item), conflict = Boolean(item?.review_snapshot?.reply_conflict), failed = item?.status === 'publish_failed';
-      return `<div class="google-reply-heading"><strong>Google’daki yanıt</strong><span class="google-reply-status" data-tone="${verification ? 'loading' : 'published'}">${verification ? 'Yayın kaydı doğrulama bekliyor' : item?.status === 'published' ? 'Yayımlandığı doğrulandı' : 'Yanıtlandı'}</span></div><div class="google-reply-text">${esc(review.replyText || 'Google’da yanıt mevcut.')}</div><p class="google-reply-note">${verification ? 'Google’da bir yanıt görünüyor. Kayıtlı taslağın yayın sonucunu kontrol edin; bu işlem yanıt göndermez.' : 'Mevcut işletme yanıtı korunuyor.'}</p>${!verification && (conflict || failed) ? '<p class="google-reply-error">Kayıtlı taslağı ve Google’daki mevcut yanıtı inceleyin. Değişiklik için taslağı yeniden kaydetmeniz ve onaylamanız gerekir.</p>' : ''}${state.error && item?.status !== 'published' ? `<p class="google-reply-error" role="status">${esc(state.error)}</p>` : ''}${verification || conflict || failed ? `<div class="google-reply-actions">${verification ? action('verify', 'Yayın sonucunu kontrol et', state.busy) : ''}${action('details', 'Kayıtlı taslağı ve mevcut yanıtı incele', state.busy)}</div>` : ''}`;
+      return `<div class="google-reply-heading"><strong>Google’daki yanıt</strong><span class="google-reply-status" data-tone="${verification ? 'loading' : 'published'}">${verification ? publicationWaiting(item) ? esc(replyStatus(item)) : 'Yayın kaydı doğrulama bekliyor' : item?.status === 'published' ? 'Yayımlandığı doğrulandı' : 'Yanıtlandı'}</span></div><div class="google-reply-text">${esc(review.replyText || 'Google’da yanıt mevcut.')}</div><p class="google-reply-note">${publicationWaiting(item) ? esc(verificationNote(item)) : verification ? 'Google’da bir yanıt görünüyor. Kayıtlı taslağın yayın sonucunu kontrol edin; bu işlem yanıt göndermez.' : 'Mevcut işletme yanıtı korunuyor.'}</p>${!verification && (conflict || failed) ? '<p class="google-reply-error">Kayıtlı taslağı ve Google’daki mevcut yanıtı inceleyin. Değişiklik için taslağı yeniden kaydetmeniz ve onaylamanız gerekir.</p>' : ''}${state.error && item?.status !== 'published' ? `<p class="google-reply-error" role="status">${esc(state.error)}</p>` : ''}${verification || conflict || failed ? `<div class="google-reply-actions">${verification ? action('verify', 'Yayın sonucunu kontrol et', state.busy) : ''}${action('details', 'Kayıtlı taslağı ve mevcut yanıtı incele', state.busy)}</div>` : ''}`;
     }
     if (!item || ['preparing', 'draft_failed'].includes(status)) {
       const pending = preparingReviews.has(review.id) || status === 'preparing', error = state.error || item?.last_error;
@@ -450,7 +523,7 @@
     const mayApprove = editable && !conflict && !state.editing && !state.busy && Boolean(item.reply_text?.trim());
     const risk = item.review_snapshot?.ai_analysis?.risk_reason;
     const versionChanged = state.editing && state.baseVersion !== item.version;
-    return `<div class="google-reply-heading"><strong>${status === 'published' ? 'Yayımlanan yanıt' : 'Hazır yanıt'}</strong><span class="google-reply-status" data-tone="${status === 'published' ? 'published' : editable ? 'ready' : 'loading'}">${esc(statusNames[status] || status)}</span></div><p class="google-reply-note">${esc(sourceNames[item.draft_source] || 'Kayıtlı taslak')}</p>${state.editing ? `<textarea class="google-reply-editor" data-google-card-text="${esc(review.id)}" aria-label="${esc(branch.replySignatureName || branch.name)} yanıtını düzenle" maxlength="4000" ${state.busy ? 'disabled' : ''}>${esc(state.text)}</textarea>` : `<div class="google-reply-text">${esc(item.reply_text)}</div>`}${risk ? `<p class="google-reply-note">${esc(risk)}</p>` : ''}${conflict ? '<p class="google-reply-error">Google’daki yanıt değişmiş. Mevcut yanıtı inceleyip taslağı yeniden kaydedin.</p>' : ''}${versionChanged ? '<p class="google-reply-error">Taslak başka oturumda değişti. Yazdığınız metin korundu; kayıtlı sürümü inceleyin.</p>' : ''}${status !== 'published' && (state.error || item.last_error) ? `<p class="google-reply-error" role="status">${esc(state.error || item.last_error)}</p>` : ''}${editable && !state.editing && !conflict ? `<label class="google-reply-approval"><input type="checkbox" data-google-card-approve="${esc(review.id)}" ${state.approved ? 'checked' : ''} ${mayApprove ? '' : 'disabled'}>Bu yorumu ve hazır yanıtı kontrol ettim, Google’da yayımlanmasını onaylıyorum.</label>` : ''}<div class="google-reply-actions">${state.editing ? action('save', 'Değişikliği kaydet', state.busy || versionChanged || !state.text.trim(), true) + action('cancel', 'Vazgeç', state.busy) : editable ? action('send', state.busy ? 'İşleniyor…' : 'Onayla ve gönder', !mayApprove || !state.approved, true) + action('edit', 'Düzenle', state.busy) + action('regenerate', 'Yeniden üret', state.busy) : ''}${conflict ? action('details', 'Mevcut yanıtı incele', state.busy) : ''}${canVerifyReply(item) && !state.editing ? action('verify', 'Yayın sonucunu kontrol et', state.busy) : ''}</div>`;
+    return `<div class="google-reply-heading"><strong>${status === 'published' ? 'Yayımlanan yanıt' : 'Hazır yanıt'}</strong><span class="google-reply-status" data-tone="${status === 'published' ? 'published' : editable ? 'ready' : 'loading'}">${esc(replyStatus(item))}</span></div><p class="google-reply-note">${esc(sourceNames[item.draft_source] || 'Kayıtlı taslak')}</p>${state.editing ? `<textarea class="google-reply-editor" data-google-card-text="${esc(review.id)}" aria-label="${esc(branch.replySignatureName || branch.name)} yanıtını düzenle" maxlength="4000" ${state.busy ? 'disabled' : ''}>${esc(state.text)}</textarea>` : `<div class="google-reply-text">${esc(item.reply_text)}</div>`}${risk ? `<p class="google-reply-note">${esc(risk)}</p>` : ''}${conflict ? '<p class="google-reply-error">Google’daki yanıt değişmiş. Mevcut yanıtı inceleyip taslağı yeniden kaydedin.</p>' : ''}${versionChanged ? '<p class="google-reply-error">Taslak başka oturumda değişti. Yazdığınız metin korundu; kayıtlı sürümü inceleyin.</p>' : ''}${publicationWaiting(item) ? `<p class="google-reply-note" role="status">${esc(verificationNote(item))}</p>` : status !== 'published' && (state.error || item.last_error) ? `<p class="google-reply-error" role="status">${esc(state.error || item.last_error)}</p>` : ''}${editable && !state.editing && !conflict ? `<label class="google-reply-approval"><input type="checkbox" data-google-card-approve="${esc(review.id)}" ${state.approved ? 'checked' : ''} ${mayApprove ? '' : 'disabled'}>Bu yorumu ve hazır yanıtı kontrol ettim, Google’da yayımlanmasını onaylıyorum.</label>` : ''}<div class="google-reply-actions">${state.editing ? action('save', 'Değişikliği kaydet', state.busy || versionChanged || !state.text.trim(), true) + action('cancel', 'Vazgeç', state.busy) : editable ? action('send', state.busy ? 'İşleniyor…' : 'Onayla ve gönder', !mayApprove || !state.approved, true) + action('edit', 'Düzenle', state.busy) + action('regenerate', 'Yeniden üret', state.busy) : ''}${conflict ? action('details', 'Mevcut yanıtı incele', state.busy) : ''}${canVerifyReply(item) && !state.editing ? action('verify', 'Yayın sonucunu kontrol et', state.busy) : ''}</div>`;
   }
   async function cardAction(reviewId, action) {
     const context = cardContext(reviewId);
@@ -458,6 +531,7 @@
     const { review, branch, item, state } = context;
     if (action === 'prepare') return prepareCard(reviewId, true);
     if (action === 'details' && item) return openItem(item.id);
+    if (publicationLocks.has(item?.id)) return;
     if (!item || (review.isReplied && action !== 'verify')) return;
     if (item.review_snapshot?.reply_conflict && ['edit', 'regenerate'].includes(action)) return openItem(item.id);
     if (action === 'edit' && ['approval_pending', 'publish_failed'].includes(item.status)) {
@@ -469,6 +543,7 @@
     if (action === 'regenerate' && (state.editing || !['approval_pending', 'publish_failed'].includes(item.status))) return;
     if (action === 'verify' && (!canVerifyReply(item) || state.editing)) return;
     if (!['save', 'regenerate', 'send', 'verify'].includes(action)) return;
+    if (['send', 'verify'].includes(action)) publicationLocks.add(item.id);
     state.busy = true; state.error = ''; const approved = state.approved; state.approved = null; rerender();
     try {
       let data;
@@ -490,7 +565,13 @@
         const latest = workflow.items.find(row => row.id === item.id);
         if (latest?.status === 'published') { state.error = ''; await publicationConfirmed(latest); }
       }
-    } finally { state.busy = false; rerender(); schedulePreparation(); }
+    } finally {
+      if (['send', 'verify'].includes(action)) {
+        publicationLocks.delete(item.id); automaticVerification.due = Math.max(automaticVerification.due, Date.now() + 60000);
+        if (action === 'verify') verificationChecks.set(item.id, { at: Date.now() });
+      }
+      state.busy = false; rerender(); schedulePreparation();
+    }
   }
 
   function install() {
@@ -508,9 +589,9 @@
     googleBusinessRequest,
     formatBusinessError: googleBusinessError,
     getApprovalQueue: () => workflow.items.filter(item => item.kind === 'reply'),
-    getRefreshState: () => ({ busy: workflow.loading || Boolean(editor?.busy) || pendingTasks.size > 0 || editingCards(), lastSuccessAt: workflow.lastSuccessAt }),
+    getRefreshState: () => ({ busy: workflow.loading || automaticVerification.busy || Boolean(editor?.busy) || pendingTasks.size > 0 || editingCards(), lastSuccessAt: workflow.lastSuccessAt }),
     refreshWorkflow, renderWorkflow, createTask, openItem,
-    renderReplyCard, renderAutoDraftSummary, preparePendingDrafts
+    renderReplyCard, renderAutoDraftSummary, preparePendingDrafts, verifyPendingReply
   };
     if (typeof document !== 'undefined') {
       document.addEventListener('click', event => {

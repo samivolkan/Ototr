@@ -1,8 +1,8 @@
 (function () {
   'use strict';
 
-  // This scheduler only reads reviews/tasks. AI generation and Google publication
-  // remain explicit editor actions. Loading this asset twice must not add timers.
+  // Refreshing and verification never publish. The separate preparation hook
+  // creates drafts only. Loading this asset twice must not add timers.
   if (window.OTOTRGoogleReviewRefresh) return;
   const POLL_MS = 5000, MAX_BACKOFF_MS = 15 * 60 * 1000;
   const jobs = {
@@ -60,6 +60,7 @@
         await run(jobs.workflow, () => window.OTOTRGoogleReviewAI.refreshWorkflow());
         observeSuccess(jobs.workflow, window.OTOTRGoogleReviewAI.getRefreshState());
       }
+      if (allowed()) await window.OTOTRGoogleReviewAI.verifyPendingReply?.();
       if (allowed()) window.OTOTRGoogleReviewAI.preparePendingDrafts?.();
     } finally { running = false; }
   }

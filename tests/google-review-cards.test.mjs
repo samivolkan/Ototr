@@ -12,7 +12,8 @@ const settle = async () => { for (let i = 0; i < 12; i++) await Promise.resolve(
 function fixture(count = 1) {
   const reviews = Array.from({ length: count }, (_, index) => ({ id: `erp-${index}`, googleReviewId: `google-${index}`, branchId: BRANCH.id, rating: 5, comment: `Synthetic review ${index}`, replyText: '', isReplied: false }));
   const server = { items: [], calls: [], holds: [], prepareHold: false, prepareError: false, publishHold: false, active: 0, maxActive: 0 };
-  const state = { hash: '#google-reviews', visible: 'visible', online: true, locked: false, modal: false, syncBusy: false };
+  const state = { now: Date.parse('2026-10-27T12:00:00Z'), hash: '#google-reviews', visible: 'visible', online: true, locked: false, modal: false, syncBusy: false };
+  const toasts = [], syncs = [];
   const listeners = new Map(), timeouts = new Map(), modalElements = new Map(); let timerId = 0, controller, rendered = new Map(), textareas = new Map();
   function modalElement() {
     const children = new Map(), classes = new Set();
@@ -41,10 +42,10 @@ function fixture(count = 1) {
     querySelectorAll: selector => selector === '[data-google-card-text]' ? [...textareas.values()] : [],
     addEventListener(type, callback) { if (!listeners.has(type)) listeners.set(type, []); listeners.get(type).push(callback); },
   };
-  const window = { addEventListener() {}, OTOTRGetLiveSession: async () => ({ access_token: 'synthetic-only' }), OTOTRGetSupabaseKey: () => 'synthetic-only', toast() {},
+  const window = { addEventListener() {}, OTOTRGetLiveSession: async () => ({ access_token: 'synthetic-only' }), OTOTRGetSupabaseKey: () => 'synthetic-only', toast: message => toasts.push(message),
     OTOTRGoogleReputation: { demoReviews: reviews, getReviewById: id => reviews.find(review => review.id === id), getBranchById: id => id === BRANCH.id ? BRANCH : null,
       getRefreshState: () => ({ busy: state.syncBusy, lastSuccessAt: Date.now() }), syncAllGoogleReviews: async () => ({ syncedBranches: 3, missing: [] }),
-      syncGoogleReviewsForBranch: async () => {}, setError() {}, render() {
+      syncGoogleReviewsForBranch: async (id, options) => { syncs.push({ id, options }); }, setError() {}, render() {
         if (!controller) return;
         const nextTextareas = new Map(); rendered = new Map();
         for (const review of reviews) {
@@ -84,21 +85,24 @@ function fixture(count = 1) {
       return server.publishResponseLost ? Response.json({ error: 'Synthetic lost response' }, { status: 502 }) : Response.json({ item: saved });
     }
     if (body.action === 'verify_reply') {
+      if (server.verifyHold) await new Promise(resolve => server.holds.push({ action: 'verify', resolve, body }));
+      if (server.verifyError) return Response.json({ error: 'Synthetic verification network error' }, { status: 502 });
       const saved = server.items.find(row => row.id === body.item_id);
-      Object.assign(saved, { status: 'published', last_error: null, review_snapshot: { ...saved.review_snapshot, reply_conflict: false } });
+      Object.assign(saved, { status: server.verifyOutcome || 'published', last_error: null, review_snapshot: { ...saved.review_snapshot, reply_conflict: false } });
       return Response.json({ item: saved });
     }
     if (String(url).endsWith('/google-review-ai')) return Response.json({ reply: 'Explicitly regenerated synthetic draft' });
     throw new Error(`Unexpected synthetic action: ${body.action}`);
   }
   const context = vm.createContext({ window, document, fetch, Response, URL, AbortController,
+    Date: class extends Date { constructor(...args) { super(...(args.length ? args : [state.now])); } static now() { return state.now; } },
     location: { get hash() { return state.hash; } }, navigator: { get onLine() { return state.online; } },
     setTimeout(callback, delay) { const id = ++timerId; timeouts.set(id, { callback, delay }); return id; },
     clearTimeout(id) { timeouts.delete(id); }, setInterval() {}, localStorage: { getItem: () => null },
   });
   vm.runInContext(source, context); controller = window.OTOTRGoogleReviewAI;
   function emit(type, target) { for (const handler of listeners.get(type) || []) handler({ target }); }
-  return { api: controller, state, server, reviews, window, document, context, item,
+  return { api: controller, state, server, reviews, window, document, context, item, toasts, syncs,
     html: id => controller.renderReplyCard(reviews.find(review => review.id === id), BRANCH),
     async load() { await controller.refreshWorkflow(); },
     async pump() { controller.preparePendingDrafts(); await settle(); },
@@ -272,7 +276,7 @@ for (const status of ['publishing', 'publish_unknown', 'publish_failed']) {
     const h = fixture(); h.reviews[0].isReplied = true; h.reviews[0].replyText = 'Reply already visible on Google';
     const saved = h.item(h.reviews[0], status, { approved_by: 'synthetic-user', approved_at: '2026-10-27T00:00:00Z' });
     h.server.items.push(saved); await h.load();
-    assert.match(h.html('erp-0'), /Yayın kaydı doğrulama bekliyor/);
+    assert.match(h.html('erp-0'), status === 'publish_failed' ? /Yayın kaydı doğrulama bekliyor/ : /Gönderim sonucu kontrol ediliyor/);
     assert.match(h.html('erp-0'), /data-google-card-action="verify"/);
     assert.match(h.html('erp-0'), /data-google-card-action="details"/);
     assert.doesNotMatch(h.html('erp-0'), /data-google-card-action="send"|data-google-card-approve/);
@@ -333,4 +337,102 @@ test('summary opens each answered pending verification in its branch even when t
   assert.equal(h.modalField('#googleAiReply').value, first.reply_text);
   assert.equal(h.modalField('[data-google-ai-verify]').hidden, false);
   assert.equal(h.calls('publish_reply').length, 0); assert.equal(h.calls('verify_reply').length, 0);
+});
+
+const approvedWaiting = { approved_by: 'synthetic-user', approved_at: '2026-10-27T00:00:00Z' };
+
+test('accepted pending and uncertain submissions use distinct waiting information without error styling', async () => {
+  for (const accepted of [true, false]) {
+    const h = fixture();
+    h.server.items.push(h.item(h.reviews[0], 'publish_unknown', { ...approvedWaiting, last_error: 'Legacy unknown error', review_snapshot: { google_reply_accepted: accepted, google_reply_state: accepted ? 'PENDING' : '' } }));
+    await h.load();
+    assert.match(h.html('erp-0'), accepted ? /Yanıt gönderildi, kontrol ediliyor/ : /Gönderim sonucu kontrol ediliyor/);
+    assert.doesNotMatch(h.html('erp-0'), /google-reply-error|Legacy unknown error|data-google-card-action="send"/);
+    await h.pump(); assert.equal(h.calls('publish_reply').length, 0);
+  }
+});
+
+test('automatic verification rotates approved pending items once per minute and only performs read-only requests', async () => {
+  const h = fixture(3); h.server.verifyOutcome = 'publish_unknown';
+  h.reviews.forEach(review => h.server.items.push(h.item(review, 'publish_unknown', approvedWaiting))); await h.load();
+  await h.api.verifyPendingReply(); await h.api.verifyPendingReply();
+  assert.equal(h.calls('verify_reply').length, 1);
+  h.state.now += 59999; await h.api.verifyPendingReply(); assert.equal(h.calls('verify_reply').length, 1);
+  h.state.now++; await h.api.verifyPendingReply(); h.state.now += 60000; await h.api.verifyPendingReply();
+  assert.deepEqual(h.calls('verify_reply').map(call => call.item_id), h.server.items.map(item => item.id));
+  assert.ok(h.calls('verify_reply').every(call => !('approved' in call)));
+  assert.equal(h.calls('publish_reply').length, 0); assert.equal(h.toasts.length, 0); assert.equal(h.syncs.length, 0);
+  assert.match(h.html('erp-0'), /Son kontrol:/);
+});
+
+test('automatic verification excludes unapproved, fresh publishing, published, rejected and conflicted records', async () => {
+  const h = fixture(7);
+  const statuses = ['publish_unknown', 'publishing', 'published', 'publish_unknown', 'publish_failed', 'publish_unknown', 'publishing'];
+  h.reviews.forEach((review, index) => h.server.items.push(h.item(review, statuses[index], {
+    ...(index === 0 ? {} : approvedWaiting), updated_at: new Date(h.state.now - (index === 6 ? 90001 : 90000)).toISOString(),
+    review_snapshot: index === 3 ? { google_reply_state: 'REJECTED' } : index === 5 ? { reply_conflict: true } : {},
+  })));
+  await h.load(); await h.api.verifyPendingReply();
+  assert.equal(h.calls('verify_reply').length, 1); assert.equal(h.calls('verify_reply')[0].item_id, h.server.items[6].id);
+  h.state.now += 1; await h.api.verifyPendingReply(); assert.equal(h.calls('verify_reply').length, 1);
+  assert.equal(h.calls('publish_reply').length, 0);
+});
+
+for (const [key, blocked] of [['hash', '#dealer'], ['visible', 'hidden'], ['online', false], ['locked', true], ['modal', true], ['syncBusy', true]]) {
+  test(`automatic verification pauses while ${key} is blocked`, async () => {
+    const h = fixture(); h.server.items.push(h.item(h.reviews[0], 'publish_unknown', approvedWaiting)); await h.load();
+    h.state[key] = blocked; await h.api.verifyPendingReply(); assert.equal(h.calls('verify_reply').length, 0);
+  });
+}
+
+test('automatic verification waits for inline edits and never overwrites the draft', async () => {
+  const h = fixture(2); h.server.items.push(h.item(h.reviews[0], 'publish_unknown', approvedWaiting), h.item(h.reviews[1])); await h.load();
+  await h.click('erp-1', 'edit'); h.input('erp-1', 'My unsaved draft');
+  await h.api.verifyPendingReply(); assert.equal(h.calls('verify_reply').length, 0); assert.match(h.html('erp-1'), /My unsaved draft/);
+});
+
+test('in-flight automatic verification and manual controls share one lock, and published completion is quiet', async () => {
+  const h = fixture(); h.server.items.push(h.item(h.reviews[0], 'publish_unknown', approvedWaiting)); h.server.verifyHold = true; await h.load();
+  const pending = h.api.verifyPendingReply(); await settle();
+  await h.api.verifyPendingReply(); await h.click('erp-0', 'verify');
+  assert.equal(h.calls('verify_reply').length, 1); assert.equal(h.api.getRefreshState().busy, true);
+  await h.click('erp-0', 'details'); assert.equal(h.modalField('[data-google-ai-verify]').disabled, true);
+  h.release('verify'); await pending;
+  assert.equal(h.calls('publish_reply').length, 0); assert.equal(h.toasts.length, 0);
+  assert.equal(h.syncs.length, 0, 'opening the modal defers the background review refresh');
+  assert.equal(h.api.getApprovalQueue()[0].status, 'published');
+  assert.match(h.modalField('#googleAiWarning').textContent, /yayımlandığı doğrulandı/);
+  h.modal().classList.remove('open'); await h.api.verifyPendingReply();
+  assert.equal(h.syncs.length, 1); assert.equal(h.syncs[0].options.quiet, true);
+});
+
+test('verification network errors back off to five minutes; rejected results stop polling', async () => {
+  const h = fixture(); h.server.items.push(h.item(h.reviews[0], 'publish_unknown', approvedWaiting)); h.server.verifyError = true; await h.load();
+  for (const wait of [60000, 120000, 240000, 300000]) {
+    await h.api.verifyPendingReply(); const count = h.calls('verify_reply').length;
+    h.state.now += wait - 1; await h.api.verifyPendingReply(); assert.equal(h.calls('verify_reply').length, count);
+    h.state.now++;
+  }
+  h.server.verifyError = false; h.server.verifyOutcome = 'publish_failed';
+  await h.api.verifyPendingReply(); const count = h.calls('verify_reply').length;
+  h.state.now += 600000; await h.api.verifyPendingReply(); assert.equal(h.calls('verify_reply').length, count);
+  assert.equal(h.calls('publish_reply').length, 0); assert.equal(h.toasts.length, 0);
+});
+
+test('automatic verification never reopens a modal the user already closed', async () => {
+  const h = fixture(); h.server.items.push(h.item(h.reviews[0], 'publish_unknown', approvedWaiting)); await h.load();
+  await h.click('erp-0', 'details'); h.modal().classList.remove('open');
+  await h.api.verifyPendingReply();
+  assert.equal(h.modal().classList.contains('open'), false); assert.equal(h.syncs.length, 1); assert.equal(h.toasts.length, 0);
+});
+
+test('an edit begun while verification is in flight keeps its text and focus and defers the review refresh', async () => {
+  const h = fixture(2); h.server.items.push(h.item(h.reviews[0], 'publish_unknown', approvedWaiting), h.item(h.reviews[1]));
+  h.server.verifyHold = true; await h.load(); const pending = h.api.verifyPendingReply(); await settle();
+  await h.click('erp-1', 'edit'); const field = h.input('erp-1', 'Draft typed during verification'); field.selectionStart = 3; field.selectionEnd = 8;
+  h.release('verify'); await pending;
+  assert.equal(h.syncs.length, 0); assert.match(h.html('erp-1'), /Draft typed during verification/);
+  assert.strictEqual(h.document.activeElement, h.field('erp-1')); assert.equal(h.field('erp-1').selectionStart, 3); assert.equal(h.field('erp-1').selectionEnd, 8);
+  await h.click('erp-1', 'cancel'); await h.api.verifyPendingReply(); assert.equal(h.syncs.length, 1);
+  assert.equal(h.calls('publish_reply').length, 0);
 });

@@ -148,3 +148,22 @@ test('persistent failures cap retry backoff at fifteen minutes and recovery rest
   await h.advance(299999); assert.equal(h.calls.filter(call => call.kind === 'reviews').length, 5);
   await h.advance(1); assert.equal(h.calls.filter(call => call.kind === 'reviews').length, 6);
 });
+
+test('scheduler awaits read-only verification after workflow refresh before preparation', async () => {
+  const h = fixture(); let release;
+  h.window.OTOTRGoogleReviewAI.verifyPendingReply = async () => { h.calls.push({ kind: 'verify' }); await new Promise(resolve => { release = resolve; }); return { ok: true }; };
+  h.window.OTOTRGoogleReviewAI.preparePendingDrafts = () => h.calls.push({ kind: 'prepare' });
+  const pending = h.check(); for (let i = 0; i < 10; i++) await Promise.resolve();
+  assert.deepEqual(h.calls.map(call => call.kind), ['reviews', 'workflow', 'verify']);
+  await h.events.get('focus')(); await h.events.get('online')(); assert.equal(h.calls.filter(call => call.kind === 'verify').length, 1);
+  h.state.modal = true; release(); await pending;
+  assert.equal(h.calls.some(call => call.kind === 'prepare'), false);
+});
+
+test('opening the editor during workflow refresh defers automatic verification', async () => {
+  const h = fixture();
+  h.window.OTOTRGoogleReviewAI.refreshWorkflow = async () => { h.calls.push({ kind: 'workflow' }); h.state.workflowSuccess = h.state.now; h.state.modal = true; return { ok: true }; };
+  h.window.OTOTRGoogleReviewAI.verifyPendingReply = async () => { h.calls.push({ kind: 'verify' }); return { skipped: true }; };
+  await h.check(); assert.equal(h.calls.some(call => call.kind === 'verify'), false);
+  h.state.modal = false; await h.advance(5000); assert.equal(h.calls.filter(call => call.kind === 'verify').length, 1);
+});

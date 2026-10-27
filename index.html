@@ -1500,6 +1500,7 @@
     .google-reply-note{margin:0;color:#64748b;font-size:11px;line-height:1.6;overflow-wrap:anywhere}
     .google-reply-error{padding:11px 13px;border:1px solid #efc4c8;border-radius:9px;background:#fff1f2;color:#9a2630;font-size:12px;line-height:1.6;overflow-wrap:anywhere}
     .google-reply-actions{display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+    .google-review-open{display:inline-flex;align-items:center;justify-content:center;gap:7px;align-self:flex-start;text-decoration:none;margin-top:4px}.google-review-open:hover{border-color:#8aa8d0;background:#f1f6fd}.google-review-open:focus-visible{outline:3px solid #bfdbfe;outline-offset:2px}
     .google-reply-actions button,.google-reply-primary,.google-reply-secondary{min-height:37px;padding:9px 13px;border:1px solid #ced8e5;border-radius:8px;background:#fff;color:#324257;font:inherit;font-size:12px;font-weight:750;cursor:pointer}
     .google-reply-primary,.google-reply-actions .google-reply-primary{background:#c91620;color:#fff;border-color:#c91620}
     .google-reply-primary:hover:not(:disabled){background:#ad1119}
@@ -4459,12 +4460,31 @@
       const riskLevel=critical?'critical':rating<=2?'negative':rating===3?'neutral':'positive';
       return {rating,text,legal,critical,riskLevel};
     }
+    function googleSafeReviewUrl(value){
+      if(typeof value!=='string'||!value||value.length>4096||/[\u0000-\u0020\u007f\\]/.test(value)) return '';
+      try {
+        const url=new URL(value);
+        if(url.protocol!=='https:'||url.username||url.password||url.port) return '';
+        const host=url.hostname.toLowerCase(),path=decodeURIComponent(url.pathname);
+        const allowed=(['google.com','www.google.com'].includes(host)&&/^\/(maps(?:\/|$)|search\/?$)/.test(path)) ||
+          (host==='maps.google.com'&&(path==='/'||/^\/maps(?:\/|$)/.test(path))) ||
+          (host==='search.google.com'&&/^\/local\/reviews\/?$/.test(path));
+        if(!allowed||/\/(url|redirect|out|imgres)(\/|$)/i.test(path)||[...url.searchParams.keys()].some(key=>/^(url|u|qurl|target|dest|destination|redirect.*|continue|next|return.*|callback|link|followup)$/.test(key.toLowerCase().replace(/[-_]/g,'')))) return '';
+        return url.href;
+      } catch (_) { return ''; }
+    }
+    function googleReviewOpenLink(review,branch){
+      const direct=googleSafeReviewUrl(review.reviewReplyUrl),href=direct||googleSafeReviewUrl(branch.publicProfileUrl);
+      if(!href) return '<span class="google-reply-note">Google bağlantısı henüz alınamadı.</span>';
+      return `<a class="google-reply-secondary google-review-open" data-testid="google-review-open" href="${googleEsc(href)}" target="_blank" rel="noopener noreferrer">${icon('external-link')}${direct?'Google’da yorumu aç':'Google’da şubeyi aç'}</a>`;
+    }
     function googleLiveReviewModel(review,branch){
       const risk=googleLiveReviewRisk(review);
       const isReplied=Boolean(review.reviewReply?.comment || review.reply?.comment);
       return {
         id:`gbp-${branch.id}-${Array.from(String(review.reviewId||review.name||'')).map(char=>char.codePointAt(0).toString(16)).join('-')}`,
         googleReviewId:String(review.reviewId||review.name?.split('/').pop()||''),
+        reviewReplyUrl:googleSafeReviewUrl(review.reviewReplyUrl),
         source:'Google',branchId:branch.id,reviewerName:String(review.reviewer?.displayName||review.reviewer?.displayName||'Google kullanıcısı'),
         rating:risk.rating,comment:risk.text||'Yorum metni paylaşılmamış.',reviewDate:review.createTime||review.updateTime||new Date().toISOString(),
         isReplied,replyText:review.reviewReply?.comment||review.reply?.comment||'',riskLevel:risk.riskLevel,
@@ -4654,7 +4674,7 @@
         const actionId=googleEsc(JSON.stringify(r.id));
         const fallback=r.isReplied?`<div class="google-reply-heading"><h4>Google’daki yanıt</h4><span class="google-reply-status" data-tone="published">Yayımlandı</span></div><p class="google-reply-text">${googleEsc(r.replyText)}</p>`:`<div class="google-reply-heading"><h4>AI yanıt taslağı</h4><span class="google-reply-status" data-tone="loading">Yükleniyor</span></div><p class="google-reply-note">Yanıt bölümü yükleniyor. Taslak hazır olduğunda burada inceleyip onaylayabilirsiniz.</p>`;
         const reply=window.OTOTRGoogleReviewAI?.renderReplyCard?.(r,branch)||fallback;
-        return `<article class="google-review-card premium google-review-pair ${r.riskLevel}" data-review-id="${googleEsc(r.id)}"><div class="google-review-source" data-testid="google-review-left"><div class="google-review-source-label"><span>Müşteri yorumu</span><span class="google-stars" aria-label="5 üzerinden ${r.rating} yıldız">${googleStars(r.rating)} ${r.rating}/5</span></div><div class="google-review-top"><div class="google-review-meta"><div class="google-reviewer">${googleEsc(r.reviewerName)}</div><time class="google-review-date" datetime="${googleEsc(r.reviewDate)}">${new Date(r.reviewDate).toLocaleDateString('tr-TR',{day:'2-digit',month:'long',year:'numeric'})}</time></div></div><div class="google-review-branch">${icon('map-pin')}${googleEsc(branch.name)}</div><p class="google-review-comment">${googleEsc(r.comment)}</p><div class="google-review-tags"><span class="google-tag ${r.riskLevel}">${googleEsc(r.sentiment)}</span><span class="google-tag neutral">${r.isReplied?'Yanıtlandı':'Cevap bekliyor'}</span></div></div><div class="google-reply-panel" data-testid="google-review-right">${reply}<details class="google-review-task-menu"><summary>Diğer işlemler</summary><div class="google-review-action-grid"><button type="button" class="google-action-btn" onclick="OTOTRGoogleReputation.assignTaskToBranch(${actionId})">Şubeye görev ata</button><button type="button" class="google-action-btn" onclick="OTOTRGoogleReputation.convertGoogleReviewToComplaint(${actionId})">Müşteri deneyimi</button><button type="button" class="google-action-btn danger" onclick="OTOTRGoogleReputation.sendToLegal(${actionId})">Hukuk incelemesi</button><button type="button" class="google-action-btn" onclick="OTOTRGoogleReputation.openQualityAudit(${actionId})">Kalite incelemesi</button></div></details></div></article>`;
+        return `<article class="google-review-card premium google-review-pair ${r.riskLevel}" data-review-id="${googleEsc(r.id)}"><div class="google-review-source" data-testid="google-review-left"><div class="google-review-source-label"><span>Müşteri yorumu</span><span class="google-stars" aria-label="5 üzerinden ${r.rating} yıldız">${googleStars(r.rating)} ${r.rating}/5</span></div><div class="google-review-top"><div class="google-review-meta"><div class="google-reviewer">${googleEsc(r.reviewerName)}</div><time class="google-review-date" datetime="${googleEsc(r.reviewDate)}">${new Date(r.reviewDate).toLocaleDateString('tr-TR',{day:'2-digit',month:'long',year:'numeric'})}</time></div></div><div class="google-review-branch">${icon('map-pin')}${googleEsc(branch.name)}</div><p class="google-review-comment">${googleEsc(r.comment)}</p><div class="google-review-tags"><span class="google-tag ${r.riskLevel}">${googleEsc(r.sentiment)}</span><span class="google-tag neutral">${r.isReplied?'Yanıtlandı':'Cevap bekliyor'}</span></div>${googleReviewOpenLink(r,branch)}</div><div class="google-reply-panel" data-testid="google-review-right">${reply}<details class="google-review-task-menu"><summary>Diğer işlemler</summary><div class="google-review-action-grid"><button type="button" class="google-action-btn" onclick="OTOTRGoogleReputation.assignTaskToBranch(${actionId})">Şubeye görev ata</button><button type="button" class="google-action-btn" onclick="OTOTRGoogleReputation.convertGoogleReviewToComplaint(${actionId})">Müşteri deneyimi</button><button type="button" class="google-action-btn danger" onclick="OTOTRGoogleReputation.sendToLegal(${actionId})">Hukuk incelemesi</button><button type="button" class="google-action-btn" onclick="OTOTRGoogleReputation.openQualityAudit(${actionId})">Kalite incelemesi</button></div></details></div></article>`;
       }).join(''):`<div class="google-empty">${empty}</div>`;
       return `<section class="google-premium-card google-review-feed"><div class="google-review-toolbar"><div><h3 style="margin:0;font-size:17px">Yorumlar ve yanıtlar</h3><p style="margin:4px 0 0;color:var(--muted);font-size:12px">${googleEsc(branch.name)} · ${branch.synced?`${rows.length} yorum gösteriliyor`:'Veri bekleniyor'}</p></div>${GoogleReviewFilters()}</div><div class="google-review-list">${list}</div></section>`;
     }
@@ -4717,7 +4737,7 @@
       setFilter(filter){ googleReputationState.filter=filter||'all'; refreshGoogleReputationPage(); },
       openCriticalReviews(){ const b=googleBranches().find(x=>x.criticalCount>0)||googleBranches()[0]; googleReputationState.selectedBranchId=b.id; googleReputationState.filter='critical'; refreshGoogleReputationPage(); toast('Kritik Google yorumları açıldı.'); },
       async syncAllGoogleReviews(options={}){ try{return await syncLiveGoogleReviews('',options);}catch(error){ googleReputationState.error=error?.message||'Google yorumları senkronize edilemedi.'; refreshGoogleReputationPage(); if(!options.quiet) toast(googleReputationState.error); return null; } },
-      async syncGoogleReviewsForBranch(branchId){ googleReputationState.selectedBranchId=branchId; refreshGoogleReputationPage(); try{return await syncLiveGoogleReviews(branchId);}catch(error){ toast(error?.message||'Şube yorumları senkronize edilemedi.'); return null; } },
+      async syncGoogleReviewsForBranch(branchId,options={}){ if(!options.quiet){ googleReputationState.selectedBranchId=branchId; refreshGoogleReputationPage(); } try{return await syncLiveGoogleReviews(branchId,options);}catch(error){ googleReputationState.error=error?.message||'Şube yorumları senkronize edilemedi.'; refreshGoogleReputationPage(); if(!options.quiet) toast(googleReputationState.error); return null; } },
       fetchGoogleBranchRating(branchId){ const b=getGoogleBranchById(branchId); return b?{branchId,googlePlaceId:b.googlePlaceId,rating:b.googleRating,reviewCount:b.googleReviewCount,lastSyncAt:googleReputationState.lastSync,reputationScore:b.reputationScore}:null; },
       fetchGoogleReviews(branchId){ return googleBranchReviews(branchId); },
       calculateReputationScore(branch){ return Number(branch?.reputationScore)||0; },
@@ -18534,8 +18554,8 @@
 <style>
   .google-workflow-row{padding:14px 0;border-bottom:1px solid var(--line,#dbe3ee)}.google-workflow-row:last-child{border-bottom:0}.google-workflow-row p{white-space:pre-wrap;overflow-wrap:anywhere}.google-workflow-head{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}.google-ai-warning{border:1px solid #f8d49b;background:#fff8eb;border-radius:10px;padding:10px 12px;color:#805100;font-size:12px;margin:12px 0}
 </style>
-<script src="assets/google-review-ai.js?v=google-workflow-11"></script>
-<script src="assets/google-review-refresh.js?v=google-refresh-2"></script>
+<script src="assets/google-review-ai.js?v=google-workflow-12"></script>
+<script src="assets/google-review-refresh.js?v=google-refresh-3"></script>
 <script type="text/plain" id="google-backend-service-sample">
 /**
  * Google Haritalar İtibar Merkezi backend servis iskeleti

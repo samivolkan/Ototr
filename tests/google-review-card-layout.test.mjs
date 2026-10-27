@@ -10,7 +10,7 @@ assert.ok(begin >= 0 && end > begin);
 
 function screen(controller) {
   const page = { innerHTML: '' };
-  const context = vm.createContext({ window: { OTOTRGoogleReviewAI: controller },
+  const context = vm.createContext({ URL, window: { OTOTRGoogleReviewAI: controller },
     document: { getElementById: id => id === 'page-google-reviews' ? page : null },
     icon: () => '', pageHeader: () => '', deptPlan: () => '', toast: () => {}, setTimeout: () => 0,
     localStorage: { getItem: () => null, setItem: () => {} },

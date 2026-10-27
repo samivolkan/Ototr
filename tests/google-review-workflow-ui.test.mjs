@@ -144,7 +144,7 @@ test('a failed publication refreshes its actual status without success toast or 
   assert.equal(h.element('[data-google-ai-publish]').disabled, true);
   assert.equal(h.element('[data-google-ai-verify]').hidden, false);
   assert.equal(h.element('#googleAiReply').readOnly, true);
-  assert.match(h.api.renderWorkflow(BRANCH.id), /Yayın sonucu belirsiz/);
+  assert.match(h.api.renderWorkflow(BRANCH.id), /Gönderim sonucu kontrol ediliyor/);
 });
 
 test('a failed save leaves draft unpublished and visibly reports the error', async () => {
@@ -311,4 +311,23 @@ test('verification cannot discard unsaved modal edits of a previously approved f
   await h.element('[data-google-ai-verify]').dispatch('click');
   assert.equal(h.shared.state.calls.some(call => call.action === 'verify_reply'), false);
   assert.equal(h.element('#googleAiReply').value, 'Unsaved modal work');
+});
+
+test('accepted pending replies show normal waiting information and cannot be republished from the modal', async () => {
+  const h = ui(); await h.api.generate(REVIEW.id); await h.element('[data-google-ai-queue]').dispatch('click');
+  const item = h.shared.state.items[0];
+  Object.assign(item, { status: 'publish_unknown', approved_by: 'original-approver', approved_at: '2026-10-27T00:00:00Z', last_error: 'Legacy unknown error' });
+  item.review_snapshot.google_reply_state = 'PENDING'; item.review_snapshot.google_reply_accepted = true;
+  await h.api.refreshWorkflow(); h.api.openItem(item.id);
+  assert.match(h.element('#googleAiMeta').innerHTML, /Yanıt gönderildi, kontrol ediliyor/);
+  assert.equal(h.element('#googleAiWarning').dataset.tone, 'waiting');
+  assert.match(h.element('#googleAiWarning').textContent, /Google yanıtı aldı/);
+  assert.doesNotMatch(h.element('#googleAiWarning').textContent, /Legacy unknown error/);
+  assert.equal(h.element('#googleAiApproval').hidden, true); assert.equal(h.element('[data-google-ai-publish]').hidden, true);
+  assert.equal(h.element('[data-google-ai-queue]').hidden, true); assert.equal(h.element('[data-google-ai-verify]').hidden, false);
+  h.element('#googleAiApprove').checked = true; await h.element('[data-google-ai-publish]').dispatch('click');
+  assert.equal(h.shared.state.calls.some(call => call.action === 'publish_reply'), false);
+  await h.element('[data-google-ai-verify]').dispatch('click');
+  const verify = h.shared.state.calls.find(call => call.action === 'verify_reply'); assert.ok(verify); assert.equal('approved' in verify, false);
+  assert.equal(item.approved_by, 'original-approver'); assert.equal(item.approved_at, '2026-10-27T00:00:00Z');
 });

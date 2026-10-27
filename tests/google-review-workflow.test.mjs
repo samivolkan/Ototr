@@ -30,7 +30,7 @@ function workflowFixture(options = {}) {
     GOOGLE_TOKEN_ENCRYPTION_KEY: Buffer.from(keyBytes).toString('base64'), GOOGLE_OAUTH_STATE_SECRET: 'fixture-state-signing',
     GOOGLE_OAUTH_CLIENT_ID: 'fixture-client', GOOGLE_OAUTH_CLIENT_SECRET: 'fixture-secret', GOOGLE_BUSINESS_ADMIN_USER_IDS: options.allowedUsers || '',
   };
-  let remote = { reviewId: options.reviewId || 'review-one', name: `accounts/123/locations/${LOCATION}/reviews/${options.reviewId || 'review-one'}`, starRating: 'FIVE', comment: 'Fixture public review', reviewer: { displayName: 'Fixture reviewer' }, createTime: '2026-10-27T00:00:00Z', ...(options.remoteReply ? { reviewReply: { comment: options.remoteReply } } : {}) };
+  let remote = { reviewId: options.reviewId || 'review-one', name: `accounts/123/locations/${LOCATION}/reviews/${options.reviewId || 'review-one'}`, starRating: 'FIVE', comment: 'Fixture public review', reviewer: { displayName: 'Fixture reviewer' }, createTime: '2026-10-27T00:00:00Z', ...(options.remoteReply ? { reviewReply: { comment: options.remoteReply } } : {}), ...(options.reviewReplyUrl !== undefined ? { reviewReplyUrl: options.reviewReplyUrl } : {}) };
   const state = { putFailure: null, getFailure: null, failPublishedWrite: false, failAllWrites: false, failReads: false, beforePut: null, putCount: 0, beforeAI: null, aiCount: 0, aiStatus: 200, aiDraft: null, readTransform: null, listResponse: null, putReplyState: '', putPolicyViolation: '', putResponse: null };
 
   function query(table) {
@@ -132,6 +132,7 @@ function workflowFixture(options = {}) {
     rotateClient(value) { values.GOOGLE_OAUTH_CLIENT_ID = value; },
     setRemoteReply(text, extra = {}) { remote.reviewReply = { comment: text, updateTime: new Date().toISOString(), ...extra }; },
     setRemoteComment(text) { remote.comment = text; },
+    setRemoteReplyUrl(value) { if (value === undefined) delete remote.reviewReplyUrl; else remote.reviewReplyUrl = value; },
     getRemoteReply() { return remote.reviewReply?.comment || ''; },
     async request(body) {
       const response = await handler(new Request('https://fixture.supabase.invalid/functions/v1/google-business-oauth', { method: 'POST', headers: { authorization: 'Bearer fixture-session', 'content-type': 'application/json' }, body: JSON.stringify(body) }));
@@ -700,6 +701,7 @@ test('Google pending moderation is never published and repeat approval cannot su
   const pending = await f.request(publishBody(item));
   assert.equal(pending.status, 200); assert.equal(pending.data.item.status, 'publish_unknown'); assert.equal(pending.data.item.published_at, null);
   assert.equal(pending.data.item.review_snapshot.google_reply_state, 'PENDING');
+  assert.equal(pending.data.item.last_error, 'Yanıt gönderildi, kontrol ediliyor. Google’ın yayın kontrolü bekleniyor.');
   await f.request(publishBody(item)); assert.equal(f.state.putCount, 1);
   f.setRemoteReply(REPLY + GOOGLE_TRANSLATION, { reviewReplyState: 'APPROVED' });
   const verified = await f.request({ action: 'verify_reply', item_id: item.id, expected_version: item.version });
@@ -831,6 +833,56 @@ test('matching empty PENDING state in GET and list cannot permit a new PUT', asy
   f.setRemoteReply('', { reviewReplyState: 'PENDING' });
   const result = await f.request(publishBody(item));
   assert.equal(result.status, 409); assert.equal(result.data.code, 'GOOGLE_REPLY_STATE_UNCONFIRMED'); assert.equal(f.state.putCount, 0); assert.notEqual(f.rows[0].status, 'published');
+});
+
+const REVIEW_LINK = 'https://search.google.com/local/reviews?placeid=ChIJ-fixture&review_id=fixture&authuser=1&hl=tr';
+test('verified Google review links are saved and survive a later read omitting the URL', async () => {
+  const f = workflowFixture({ reviewReplyUrl: REVIEW_LINK }); const item = await saveDraft(f);
+  assert.equal(item.review_snapshot.review_reply_url, REVIEW_LINK);
+  f.setRemoteReplyUrl(undefined);
+  const edited = await saveDraft(f, { item_id: item.id, expected_version: item.version, reply_text: `${REPLY}.` });
+  assert.equal(edited.review_snapshot.review_reply_url, REVIEW_LINK);
+  assert.equal(edited.status, 'approval_pending'); assert.equal(edited.approved_at, null);
+});
+
+test('allowed Google link hosts and paths preserve compatible parameters', async () => {
+  for (const url of [REVIEW_LINK, 'https://www.google.com/maps/place/Fixture?authuser=1', 'https://google.com/maps?cid=123', 'https://www.google.com/search?q=OTOTR&authuser=1', 'https://maps.google.com/?cid=123', 'https://maps.google.com/maps?cid=123']) {
+    const f = workflowFixture({ reviewReplyUrl: url }); const item = await saveDraft(f); assert.equal(item.review_snapshot.review_reply_url, url);
+  }
+});
+
+test('unsafe or unrecognized review URLs are omitted without changing draft behavior', async () => {
+  for (const url of [undefined, 'http://search.google.com/local/reviews', '//search.google.com/local/reviews', 'javascript:alert(1)', 'https://google.com.evil.test/maps', 'https://user:pass@www.google.com/maps', 'https://www.google.com:8443/maps', 'https://www.google.com/url?q=https://evil.test', 'https://www.google.com/maps/redirect', 'https://www.google.com/maps/%75rl', 'https://search.google.com/local/reviews?continue=https://evil.test', 'https://google.com/maps?redirect_uri=https://evil.test', 'https://google.com/maps?target=https://evil.test', 'https://google.com/maps?qurl=https://evil.test', 'https://www.google.com/\nmaps', 'https://www.google.com\\maps', { url: REVIEW_LINK }]) {
+    const f = workflowFixture({ reviewReplyUrl: url }); const item = await saveDraft(f);
+    assert.equal(item.review_snapshot.review_reply_url, undefined); assert.equal(item.status, 'approval_pending');
+  }
+});
+
+test('automatic draft preparation persists the safe review URL across an explicit retry', async () => {
+  const f = workflowFixture({ reviewReplyUrl: REVIEW_LINK }); f.state.aiStatus = 503;
+  const failed = (await f.request(prepareBody())).data.item; assert.equal(failed.review_snapshot.review_reply_url, REVIEW_LINK);
+  f.setRemoteReplyUrl(undefined); f.state.aiStatus = 200;
+  const ready = (await f.request(prepareBody({ retry: true, item_id: failed.id, expected_version: failed.version }))).data.item;
+  assert.equal(ready.status, 'approval_pending'); assert.equal(ready.review_snapshot.review_reply_url, REVIEW_LINK); assert.equal(f.state.putCount, 0);
+});
+
+test('read-only pending verification discovers a safe link and retains it after approval', async () => {
+  const f = workflowFixture(); const verify = await approvedVerification(f); f.setRemoteReplyUrl(REVIEW_LINK); f.setRemoteReply(REPLY, { reviewReplyState: 'PENDING' });
+  const pending = await f.request(verify); assert.equal(pending.data.item.review_snapshot.review_reply_url, REVIEW_LINK); assert.equal(pending.data.item.status, 'publish_unknown');
+  f.setRemoteReplyUrl(undefined); f.setRemoteReply(REPLY, { reviewReplyState: 'APPROVED' });
+  const approved = await f.request(verify); assert.equal(approved.data.item.review_snapshot.review_reply_url, REVIEW_LINK); assert.equal(approved.data.item.status, 'published'); assert.equal(f.state.putCount, 0);
+});
+
+test('a safe review link can also be discovered through the exact list fallback', async () => {
+  const f = workflowFixture(); const verify = await approvedVerification(f); f.setRemoteReplyUrl(REVIEW_LINK); f.setRemoteReply(REPLY, { reviewReplyState: 'APPROVED' });
+  f.state.readTransform = review => { delete review.reviewReply; delete review.reviewReplyUrl; return review; };
+  f.state.listResponse = (_, remote) => Response.json({ reviews: [remote] });
+  const result = await f.request(verify); assert.equal(result.data.item.review_snapshot.review_reply_url, REVIEW_LINK); assert.equal(result.data.item.review_snapshot.verification_source, 'reviews.list'); assert.equal(f.state.putCount, 0);
+});
+
+test('an uncertain send without an acknowledgement uses a neutral outcome message', async () => {
+  const f = workflowFixture(); const item = await saveDraft(f); f.state.putFailure = 'before'; await f.request(publishBody(item));
+  assert.equal(f.rows[0].status, 'publish_unknown'); assert.equal(f.rows[0].last_error, 'Gönderim sonucu kontrol ediliyor.');
 });
 
 test('saved Google review IDs stay a single encoded path component on publication', async () => {

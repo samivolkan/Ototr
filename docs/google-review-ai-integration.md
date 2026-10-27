@@ -65,3 +65,12 @@ Canlı yayın için her şubenin `accountId`, `locationId` ve sunucu tarafında 
 - Google'ın `reviewReplyState` alanındaki `PENDING` ve `REJECTED` durumları başarılı yayın sayılmaz. Belirsiz sonuçları kurtarma işlemi aynı yanıtı otomatik yeniden göndermez.
 - Tekil Google sorgusu yanıtı boş döndürürse aynı hesap/konumun güncel yorum listesi tüm sayfalarıyla kontrol edilir. Yalnız aynı yorum kimliği ve konum adı eşleşen kayıt doğrulamaya alınır; eksik, çelişkili veya yarım veri yeni gönderime izin vermez. Doğrulamanın kaynağı ve zamanı kayıt üzerinde tutulur.
 - Resmî API kaynakları: [ReviewReply ve moderasyon durumları](https://developers.google.com/my-business/reference/rest/v4/accounts.locations.reviews#ReviewReply), [updateReply yanıtı](https://developers.google.com/my-business/reference/rest/v4/accounts.locations.reviews/updateReply).
+
+## Gönderim sonrası takip ve Google bağlantısı
+
+- Google'ın teslim aldığını doğruladığı yanıtlar “Yanıt gönderildi, kontrol ediliyor” durumunda gösterilir. Teslim alındığı henüz doğrulanamayan ağ sonuçları ayrıca “Gönderim sonucu kontrol ediliyor” olarak belirtilir.
+- Google Yorumlar sayfası açık, görünür ve çevrimiçiyken bekleyen onaylı kayıtlar dakikada en fazla bir kontrol olacak şekilde sırayla doğrulanır. Bu işlem yalnız `verify_reply` çağırır; yeniden yanıt göndermez veya insan onayı üretmez.
+- Açık düzenleyici, modal, kilitli oturum ve gizli sekmede otomatik kontrol bekler. Ağ hatalarında kontrol aralığı en fazla beş dakikaya çıkar. Sayfa kapalıyken sunucuda çalışan bir zamanlayıcı değildir; yeniden açıldığında kalıcı kayıtlardan devam eder.
+- Doğrulanmış yayınlar ve Google'ın reddettiği veya gerçek içerik çakışması olan kayıtlar otomatik kontrol kuyruğundan çıkar. Kullanıcı mevcut elle doğrulama seçeneğini kullanabilir.
+- Google'a göre yanıt incelemesi genellikle 10 dakikayı bulur, bazı durumlarda 30 güne uzayabilir. ERP'nin kontrol sıklığı, Google'ın inceleme süresi için garanti değildir. [Google İşletme Profili Yardımı](https://support.google.com/business/answer/3474050?hl=tr)
+- Google'ın sağladığı geçerli `reviewReplyUrl` ile karttaki “Google’da yorumu aç” bağlantısı ilgili yoruma gider. Bağlantı verilmemişse düğme açıkça “Google’da şubeyi aç” olarak şube profiline gider; yorum kimliğinden hayali bir bağlantı üretilmez.
