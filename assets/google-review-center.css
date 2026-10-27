@@ -394,6 +394,15 @@ body.dark-mode #page-google-reviews {
 /* The ERP already provides its own navigation; these breakpoints concern only
    the Google reviews content area and its existing two-column review cards. */
 @media (min-width: 1440px) {
+  /* The ERP's overflow-x:hidden created non-scrolling ancestors that trapped
+     position:sticky. Clip horizontal overflow without creating a scroll box,
+     and only while this page is active. */
+  body:has(#page-google-reviews.active),
+  body:has(#page-google-reviews.active) .app,
+  body:has(#page-google-reviews.active) main.main {
+    overflow-x: clip;
+    overflow-y: visible;
+  }
   #page-google-reviews .google-reviews-layout > aside { position: sticky; top: 20px; }
 }
 @media (max-width: 1280px) {
