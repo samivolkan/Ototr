@@ -4641,7 +4641,7 @@
       const total=complete?ready.reduce((sum,branch)=>sum+branch.googleReviewCount,0):null;
       const avg=total?ready.reduce((sum,branch)=>sum+(branch.googleRating||0)*branch.googleReviewCount,0)/total:null;
       const stale=branches.some(branch=>branch.syncError);
-      const note=stale?'Bazı şubelerde son başarılı veri gösteriliyor':complete?(listsComplete?'Google verisi':`Google toplamı ${googleMetric(total)} · alınan liste ${googleMetric(ready.reduce((sum,branch)=>sum+(branch.loadedReviewCount||0),0))}`):`${ready.length}/${branches.length} şube yüklendi`;
+      const note=stale?'Bazı şubelerin güncel verisi alınamadı':complete?(listsComplete?'Google verisi':`Google toplamı ${googleMetric(total)} · alınan liste ${googleMetric(ready.reduce((sum,branch)=>sum+(branch.loadedReviewCount||0),0))}`):`${ready.length}/${branches.length} şube yüklendi`;
       const items=[
         ['Google Puanı',googleMetric(avg,1),'Yorum sayısıyla ağırlıklı ortalama','star'],
         ['Toplam Yorum',googleMetric(total),`${branches.length} OTOTR şubesinin yorumları`,'messages-square'],
@@ -4660,7 +4660,7 @@
       const rows=[{id:'all',name:'Tüm şubeler'},...googleBranches()];
       return `<aside class="google-premium-card google-branch-nav"><div class="google-premium-title"><div><h3>Şubeler</h3><p>Bir şube seçerek yorum ve görevlerini açın.</p></div></div><nav aria-label="Google yorum şubeleri" class="google-branch-list">${rows.map(branch=>{
         const all=branch.id==='all',count=all?googleReviews().length:branch.loadedReviewCount;
-        return `<button type="button" aria-pressed="${selected===branch.id}" class="google-branch-item premium ${selected===branch.id?'active':''}" onclick="OTOTRGoogleReputation.selectBranch('${branch.id}')"><span class="google-branch-nav-row"><span class="google-branch-name">${googleEsc(all?branch.name:branch.name.replace('OTOTR Oto Ekspertiz ',''))}</span><span class="google-branch-count">${all?count:googleMetric(branch.synced?count:null)}</span></span><span class="google-branch-city">${all?'Genel merkez · tüm yorumlar':`★ ${googleMetric(branch.googleRating,1)} · ${googleMetric(branch.synced?branch.loadedUnrepliedCount:null)} cevap bekleyen`}</span>${!all?`<span class="google-branch-health ${branch.syncError?'error':''}">${branch.syncError?'Güncellenemedi · son başarılı veri':branch.synced?'Güncel veri alındı':'Veri bekleniyor'}</span>`:''}</button>`;
+        return `<button type="button" aria-pressed="${selected===branch.id}" class="google-branch-item premium ${selected===branch.id?'active':''}" onclick="OTOTRGoogleReputation.selectBranch('${branch.id}')"><span class="google-branch-nav-row"><span class="google-branch-name">${googleEsc(all?branch.name:branch.name.replace('OTOTR Oto Ekspertiz ',''))}</span><span class="google-branch-count">${all?count:googleMetric(branch.synced?count:null)}</span></span><span class="google-branch-city">${all?'Genel merkez · tüm yorumlar':`★ ${googleMetric(branch.googleRating,1)} · ${googleMetric(branch.synced?branch.loadedUnrepliedCount:null)} cevap bekleyen`}</span>${!all?`<span class="google-branch-health ${branch.syncError?'error':''}">${branch.syncError?(branch.synced?'Güncellenemedi · son başarılı veri':'Google erişimi bekleniyor'):branch.synced?'Güncel veri alındı':'Veri bekleniyor'}</span>`:''}</button>`;
       }).join('')}</nav></aside>`;
     }
     function GoogleSelectedBranchPanel(){
