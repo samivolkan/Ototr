@@ -59,10 +59,10 @@ function admin() { return createClient(env('SUPABASE_URL'), injectedSupabaseKey(
 async function currentUser(req: Request) {
   const authorization = req.headers.get('authorization') || '';
   const token = authorization.replace(/^Bearer\s+/i, '').trim();
-  if (!token) throw new Error('ERP oturumu gerekli.');
+  if (!token) throw new RequestError('ERP oturumu gerekli.', 401);
   const client = createClient(env('SUPABASE_URL'), injectedSupabaseKey('SUPABASE_ANON_KEY', 'SUPABASE_PUBLISHABLE_KEYS'), { auth: { persistSession: false, autoRefreshToken: false } });
   const { data, error } = await client.auth.getUser(token);
-  if (error || !data.user) throw new Error('ERP oturumu geçersiz.');
+  if (error || !data.user) throw new RequestError('ERP oturumu geçersiz.', 401);
   return data.user;
 }
 async function accessToken(refreshToken: string) {
@@ -74,8 +74,37 @@ async function accessToken(refreshToken: string) {
 async function googleJson(url: string, token: string, init: RequestInit = {}) {
   const response = await fetch(url, { ...init, headers: { Authorization: `Bearer ${token}`, ...(init.headers || {}) } });
   const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(data.error?.message || data.error_description || 'Google Business Profile API hatası.');
+  if (!response.ok) throw new GoogleApiError(data.error?.message || data.error_description || 'Google Business Profile API hatası.', response.status, data.error?.status || 'GOOGLE_API_ERROR');
   return data;
+}
+class GoogleApiError extends Error {
+  status: number;
+  code: string;
+  constructor(message: string, status: number, code: string) {
+    super(message); this.status = status; this.code = code;
+  }
+}
+class RequestError extends Error {
+  status: number;
+  constructor(message: string, status: number) { super(message); this.status = status; }
+}
+async function authorizedConnection(db: ReturnType<typeof admin>, userId: string) {
+  const { data: connection, error } = await db.from('google_business_connections').select('*').eq('id', 'ototr-primary').maybeSingle();
+  if (error) throw new RequestError('Google bağlantı kaydı okunamadı.', 503);
+  const allowedUsers = (Deno.env.get('GOOGLE_BUSINESS_ADMIN_USER_IDS') || '').split(',').map(value => value.trim()).filter(Boolean);
+  // A browser role or editable user metadata must never grant access to the shared Google account.
+  if (connection?.connected_by !== userId && !allowedUsers.includes(userId)) {
+    throw new RequestError('Google yorum yönetimi yalnızca yetkilendirilmiş genel merkez hesabına açıktır.', 403);
+  }
+  return connection;
+}
+function paginatedUrl(base: string, pageToken: unknown) {
+  const url = new URL(base);
+  if (pageToken !== undefined && pageToken !== null && pageToken !== '') {
+    if (typeof pageToken !== 'string' || pageToken.length > 8192) throw new RequestError('Geçersiz sayfalama anahtarı.', 400);
+    url.searchParams.set('pageToken', pageToken);
+  }
+  return url.toString();
 }
 
 Deno.serve(async (req) => {
@@ -84,10 +113,11 @@ Deno.serve(async (req) => {
     const url = new URL(req.url);
     if (req.method === 'GET' && url.searchParams.has('code')) {
       const userId = await verifyState(url.searchParams.get('state') || '');
+      const db = admin();
+      await authorizedConnection(db, userId);
       const response = await fetch('https://oauth2.googleapis.com/token', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ code: url.searchParams.get('code') || '', client_id: env('GOOGLE_OAUTH_CLIENT_ID'), client_secret: env('GOOGLE_OAUTH_CLIENT_SECRET'), redirect_uri: callbackUrl, grant_type: 'authorization_code' }) });
       const tokens = await response.json();
       if (!response.ok || !tokens.refresh_token) throw new Error(tokens.error_description || 'Google kalıcı erişim anahtarı alınamadı.');
-      const db = admin();
       const { error } = await db.from('google_business_connections').upsert({ id: 'ototr-primary', connected_by: userId, refresh_token_encrypted: await encrypt(tokens.refresh_token), scope: tokens.scope || '', connected_at: new Date().toISOString(), updated_at: new Date().toISOString() });
       if (error) throw error;
       return Response.redirect(erpUrl, 302);
@@ -96,31 +126,31 @@ Deno.serve(async (req) => {
     const user = await currentUser(req);
     const body = await req.json();
     const db = admin();
+    const connection = await authorizedConnection(db, user.id);
     if (body.action === 'start') {
       const state = await makeState(user.id);
       const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
       authUrl.search = new URLSearchParams({ client_id: env('GOOGLE_OAUTH_CLIENT_ID'), redirect_uri: callbackUrl, response_type: 'code', scope: 'https://www.googleapis.com/auth/business.manage', access_type: 'offline', prompt: 'consent', state }).toString();
       return json({ auth_url: authUrl.toString() });
     }
-    const { data: connection } = await db.from('google_business_connections').select('*').eq('id', 'ototr-primary').maybeSingle();
     if (body.action === 'status') return json({ connected: Boolean(connection), connected_at: connection?.connected_at || null });
     if (!connection) return json({ error: 'Google Business Profile bağlantısı kurulmamış.' }, 409);
     const token = await accessToken(await decrypt(connection.refresh_token_encrypted));
     if (body.action === 'accounts') {
-      const data = await googleJson('https://mybusinessaccountmanagement.googleapis.com/v1/accounts', token);
+      const data = await googleJson(paginatedUrl('https://mybusinessaccountmanagement.googleapis.com/v1/accounts', body.page_token), token);
       return json(data);
     }
     if (body.action === 'locations') {
       const accountId = String(body.account_id || '');
       if (!/^accounts\/\d+$/.test(accountId)) return json({ error: 'Geçersiz Google hesap kimliği.' }, 400);
-      const data = await googleJson(`https://mybusinessbusinessinformation.googleapis.com/v1/${accountId}/locations?readMask=name,title,storeCode,metadata&pageSize=100`, token);
+      const data = await googleJson(paginatedUrl(`https://mybusinessbusinessinformation.googleapis.com/v1/${accountId}/locations?readMask=name,title,storeCode,metadata&pageSize=100`, body.page_token), token);
       return json(data);
     }
     if (body.action === 'reviews') {
       const locationId = String(body.location_id || '');
       const accountId = String(body.account_id || '');
       if (!/^\d+$/.test(locationId) || !/^\d+$/.test(accountId)) return json({ error: 'Geçersiz Google hesap/konum kimliği.' }, 400);
-      return json(await googleJson(`https://mybusiness.googleapis.com/v4/accounts/${accountId}/locations/${locationId}/reviews?pageSize=50`, token));
+      return json(await googleJson(paginatedUrl(`https://mybusiness.googleapis.com/v4/accounts/${accountId}/locations/${locationId}/reviews?pageSize=50`, body.page_token), token));
     }
     if (body.action === 'reply') {
       const accountId = String(body.account_id || ''), locationId = String(body.location_id || ''), reviewId = String(body.review_id || ''), reply = String(body.reply || '').trim();
@@ -129,6 +159,8 @@ Deno.serve(async (req) => {
     }
     return json({ error: 'Geçersiz işlem.' }, 400);
   } catch (error) {
+    if (error instanceof RequestError) return json({ error: error.message }, error.status);
+    if (error instanceof GoogleApiError) return json({ error: error.message, code: error.code, source: 'google' }, error.status);
     return json({ error: error instanceof Error ? error.message : 'Beklenmeyen hata.' }, 500);
   }
 });

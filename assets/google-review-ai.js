@@ -90,14 +90,34 @@
     const key = supabaseKey();
     if (!auth?.access_token) throw new Error('ERP oturumu süresi dolmuş. Lütfen ERP’ye tekrar giriş yapın.');
     if (!key) throw new Error('Supabase bağlantı anahtarı bulunamadı.');
-    const response = await globalThis.fetch('https://bsjkohwbtrfwrqcyhsfz.supabase.co/functions/v1/google-business-oauth', {
-      method: 'POST',
-      headers: { apikey: key, Authorization: `Bearer ${auth.access_token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action, ...extra })
-    });
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error(data.error || `Google bağlantı servisi ${response.status} hatası verdi.`);
-    return data;
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 30000);
+    try {
+      const response = await globalThis.fetch('https://bsjkohwbtrfwrqcyhsfz.supabase.co/functions/v1/google-business-oauth', {
+        method: 'POST',
+        headers: { apikey: key, Authorization: `Bearer ${auth.access_token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action, ...extra }),
+        signal: controller.signal
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(googleBusinessError(data.error || `Google bağlantı servisi ${response.status} hatası verdi.`));
+      return data;
+    } catch (error) {
+      if (error.name === 'AbortError') throw new Error('Google bağlantısı 30 saniye içinde yanıt vermedi. Tekrar senkronize edin.');
+      throw error;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  function googleBusinessError(message) {
+    const text = String(message || 'Google verisi alınamadı.');
+    if (/has not been used in project.*before or it is disabled|SERVICE_DISABLED|API.*disabled/i.test(text)) {
+      const api = text.match(/(?:My Business|Google My Business)[\w ]*API/i)?.[0] || 'Google Business Profile API';
+      return `Google hesabı bağlı, ancak ${api} erişimi Google Cloud projesinde etkin değil. Bu API etkinleştirildikten sonra Google Senkronize Et ile yeniden deneyin.`;
+    }
+    if (/quota|RESOURCE_EXHAUSTED|rate limit/i.test(text)) return 'Google Business Profile API erişim kotası bu isteği karşılamıyor. Google Cloud kotası 0 ise Business Profile API erişim onayı ve kota tanımlanması gerekir; tekrar bağlanmak veya yeniden denemek bunu çözmez. Kota 0’dan yüksekse kullanım sınırını kontrol edin.';
+    return text;
   }
 
   async function connectGoogleBusiness() {
@@ -106,19 +126,19 @@
       if (!data.auth_url) throw new Error('Google yetkilendirme adresi alınamadı.');
       location.assign(data.auth_url);
     } catch (error) {
+      window.OTOTRGoogleReputation?.setError(error.message);
       if (typeof window.toast === 'function') window.toast(error.message);
     }
   }
 
   async function googleBusinessStatus() {
-    try { return await googleBusinessRequest('status'); }
-    catch (_) { return { connected: false }; }
+    return googleBusinessRequest('status');
   }
 
   async function generate(reviewId, regenerate) {
     const api = window.OTOTRGoogleReputation;
-    const review = (api?.demoReviews || []).find((item) => item.id === reviewId);
-    const branch = review && (api?.demoBranches || []).find((item) => item.id === review.branchId);
+    const review = api?.getReviewById(reviewId);
+    const branch = review && api?.getBranchById(review.branchId);
     if (!review || !branch) return '';
     const modal = ensureModal();
     modal.dataset.reviewId = reviewId;
