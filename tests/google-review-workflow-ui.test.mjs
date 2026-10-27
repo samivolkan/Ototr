@@ -37,7 +37,13 @@ function server() {
       if (body.action === 'publish_reply') {
         const item = state.items.find(item => item.id === body.item_id);
         if (state.publishFails) { item.status = 'publish_unknown'; item.last_error = 'Fixture publication outcome unknown'; return Response.json({ error: item.last_error }, { status: 502 }); }
-        item.status = 'published'; return Response.json({ item });
+        item.status = 'published';
+        return state.publishResponseLost ? Response.json({ error: 'Fixture lost publication response' }, { status: 502 }) : Response.json({ item });
+      }
+      if (body.action === 'verify_reply') {
+        const item = state.items.find(item => item.id === body.item_id);
+        Object.assign(item, { status: 'published', last_error: null, review_snapshot: { ...item.review_snapshot, reply_conflict: false } });
+        return Response.json({ item });
       }
       if (body.action === 'update_task') {
         const item = state.items.find(item => item.id === body.item_id);
@@ -132,7 +138,10 @@ test('a failed publication refreshes its actual status without success toast or 
   await h.element('[data-google-ai-publish]').dispatch('click');
   assert.equal(h.toasts.length, 0);
   assert.equal(h.syncs.length, 0);
-  assert.match(h.element('#googleAiWarning').textContent, /Başarı bildirimi alınmadı/);
+  assert.match(h.element('#googleAiWarning').textContent, /Yayın sonucunu kontrol et/);
+  assert.match(h.element('#googleAiWarning').textContent, /Yeniden gönderim yapılmadı/);
+  assert.equal(h.element('#googleAiApprove').checked, false);
+  assert.equal(h.element('[data-google-ai-publish]').disabled, true);
   assert.equal(h.element('[data-google-ai-verify]').hidden, false);
   assert.equal(h.element('#googleAiReply').readOnly, true);
   assert.match(h.api.renderWorkflow(BRANCH.id), /Yayın sonucu belirsiz/);
@@ -250,4 +259,56 @@ test('an older failed workflow request cannot replace a newer save error', async
   assert.equal(result.skipped, true);
   assert.match(h.api.renderWorkflow(BRANCH.id), /Fixture save rejected/);
   assert.doesNotMatch(h.api.renderWorkflow(BRANCH.id), /Old list error/);
+});
+
+test('a previously approved failed publication can be verified in the modal without approving or sending again', async () => {
+  const h = ui(); await h.api.generate(REVIEW.id); await h.element('[data-google-ai-queue]').dispatch('click');
+  const item = h.shared.state.items[0];
+  Object.assign(item, { status: 'publish_failed', approved_by: 'synthetic-user', approved_at: '2026-10-27T00:00:00Z', last_error: 'Previous false conflict' });
+  item.review_snapshot.reply_conflict = true;
+  await h.api.refreshWorkflow(); h.api.openItem(item.id);
+  assert.equal(h.element('[data-google-ai-verify]').hidden, false);
+  assert.equal(h.element('#googleAiApprove').checked, false);
+  assert.equal(h.element('[data-google-ai-publish]').disabled, true);
+  await h.element('[data-google-ai-verify]').dispatch('click');
+  const verifies = h.shared.state.calls.filter(call => call.action === 'verify_reply');
+  assert.deepEqual(verifies, [{ action: 'verify_reply', item_id: item.id, expected_version: 1 }]);
+  assert.equal(h.shared.state.calls.filter(call => call.action === 'publish_reply').length, 0);
+  assert.equal(h.element('[data-google-ai-verify]').hidden, true);
+  assert.equal(h.element('#googleAiReply').readOnly, true);
+  assert.match(h.element('#googleAiWarning').textContent, /yayımlandığı doğrulandı/);
+  assert.equal(h.toasts.length, 1);
+});
+
+test('a failed unapproved draft cannot be verified through a hidden modal control', async () => {
+  const h = ui(); await h.api.generate(REVIEW.id); await h.element('[data-google-ai-queue]').dispatch('click');
+  const item = h.shared.state.items[0]; item.status = 'publish_failed';
+  await h.api.refreshWorkflow(); h.api.openItem(item.id);
+  assert.equal(h.element('[data-google-ai-verify]').hidden, true);
+  await h.element('[data-google-ai-verify]').dispatch('click');
+  assert.equal(h.shared.state.calls.some(call => call.action === 'verify_reply'), false);
+});
+
+test('a lost publication response with refreshed published state shows confirmed success in the modal', async () => {
+  const h = ui(); await h.api.generate(REVIEW.id); await h.element('[data-google-ai-queue]').dispatch('click');
+  h.shared.state.publishResponseLost = true; h.element('#googleAiApprove').checked = true;
+  await h.element('#googleAiApprove').dispatch('change'); await h.element('[data-google-ai-publish]').dispatch('click');
+  assert.equal(h.shared.state.calls.filter(call => call.action === 'publish_reply').length, 1);
+  assert.match(h.element('#googleAiWarning').textContent, /yayımlandığı doğrulandı/);
+  assert.doesNotMatch(h.element('#googleAiWarning').textContent, /lost publication response|Başarı bildirimi/);
+  assert.equal(h.element('[data-google-ai-publish]').hidden, true);
+  assert.equal(h.element('#googleAiApproval').hidden, true);
+  assert.equal(h.toasts.length, 1); assert.deepEqual(h.syncs, [BRANCH.id]);
+});
+
+test('verification cannot discard unsaved modal edits of a previously approved failed reply', async () => {
+  const h = ui(); await h.api.generate(REVIEW.id); await h.element('[data-google-ai-queue]').dispatch('click');
+  const item = h.shared.state.items[0];
+  Object.assign(item, { status: 'publish_failed', approved_by: 'synthetic-user', approved_at: '2026-10-27T00:00:00Z' });
+  await h.api.refreshWorkflow(); h.api.openItem(item.id);
+  h.element('#googleAiReply').value = 'Unsaved modal work'; await h.element('#googleAiReply').dispatch('input');
+  assert.equal(h.element('[data-google-ai-verify]').disabled, true);
+  await h.element('[data-google-ai-verify]').dispatch('click');
+  assert.equal(h.shared.state.calls.some(call => call.action === 'verify_reply'), false);
+  assert.equal(h.element('#googleAiReply').value, 'Unsaved modal work');
 });

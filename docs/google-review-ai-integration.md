@@ -56,3 +56,11 @@ Canlı yayın için her şubenin `accountId`, `locationId` ve sunucu tarafında 
 - Sunucu Google'dan doğru yorumu ve şubeyi doğrular; hazırlık sırasında yorum veya mevcut yanıt değişirse taslak onaya geçirilmez.
 - Kartta düzenleme ve kaydetme, yeniden üretme, açık onay kutusu ve **Onayla ve gönder** bulunur. Onay yalnız görülen kayıt kimliği, sürüm ve metne bağlıdır; metin veya sürüm değişince sıfırlanır.
 - Otomatik hazırlık hiçbir zaman yayın onayı vermez. Taslaklar, görevler ve Google'ın mevcut yanıtları korunur.
+
+## Google yayın doğrulaması
+
+- Canlı bir yanıtta Google, onaylanan Türkçe metne `\n\n(Translated by Google)\n` ve İngilizce çevirisini ekledi. Eski tam metin karşılaştırması bu yanıtı yanlışlıkla belirsiz yayın ve ardından çakışma olarak işaretledi.
+- Doğrulama önce birebir eşleşme arar; yalnız bu gözlemlenen işaretin ayırdığı çeviri eki için onaylanan asıl metni birebir karşılaştırır. Harf, noktalama ve içerik farkları yok sayılmaz. Bu biçim gözlemlenen API davranışıdır; Google'ın belgelenmiş çeviri ayrıştırma sözleşmesi değildir.
+- Daha önce insan tarafından onaylanmış başarısız kayıtlar `verify_reply` ile yeniden okunabilir. Bu işlem Google'a PUT yapmaz; onay kaydı olmayan bir taslağı yayımlanmış saymaz.
+- Google'ın `reviewReplyState` alanındaki `PENDING` ve `REJECTED` durumları başarılı yayın sayılmaz. Belirsiz sonuçları kurtarma işlemi aynı yanıtı otomatik yeniden göndermez.
+- Resmî API kaynakları: [ReviewReply ve moderasyon durumları](https://developers.google.com/my-business/reference/rest/v4/accounts.locations.reviews#ReviewReply), [updateReply yanıtı](https://developers.google.com/my-business/reference/rest/v4/accounts.locations.reviews/updateReply).

@@ -207,6 +207,17 @@
     return `<section class="google-premium-card" data-testid="google-workflow"><div class="google-premium-title"><div><h3>Yanıt onayları ve şube görevleri</h3><p>Genel merkezde ortak kayıt · ${pending} yanıt bekliyor · ${tasks} açık görev</p></div><button type="button" class="google-action-btn" data-google-work-refresh ${workflow.loading ? 'disabled' : ''}>${workflow.loading ? 'Yükleniyor…' : 'Listeyi yenile'}</button></div>${workflow.error ? `<div class="google-ai-warning" role="alert">${esc(workflow.error)}${workflow.loaded ? ' Son alınan kayıtlar gösteriliyor.' : ' Görevler henüz alınamadı.'}</div>` : ''}${items.length ? items.map(item => `<article class="google-workflow-row"><div class="google-workflow-head"><strong>${esc(kindNames[item.kind] || item.kind)}</strong><span class="badge b-blue">${esc(statusNames[item.status] || item.status)}</span></div><p>${esc(item.review_snapshot?.rating || '—')}/5 · ${esc(item.review_snapshot?.comment || 'Yalnız yıldız değerlendirmesi')}</p>${item.kind === 'reply' ? `<small>${esc(sourceNames[item.draft_source] || 'Taslak')}</small><p>${esc(item.reply_text)}</p>` : `<p>${esc(item.note || 'Henüz görev notu yok.')}</p>`}${item.last_error ? `<p role="status">${esc(item.last_error)}</p>` : ''}<button type="button" class="google-action-btn" data-google-work-open="${esc(item.id)}">${item.kind === 'reply' ? 'Yanıtı incele' : 'Görevi aç'}</button></article>`).join('') : `<div class="google-empty">${workflow.loading ? 'Kayıtlar yükleniyor…' : workflow.loaded ? 'Bu şubeye ait kayıtlı yanıt veya görev yok.' : 'Ortak görev listesi henüz alınmadı.'}</div>`}<p style="font-size:12px;color:var(--muted)">Bu kayıtlar yetkili genel merkez kullanıcıları arasında paylaşılır. Şube bildirimi veya e-posta otomatik gönderilmez.</p></section>`;
   }
 
+  function canVerifyReply(item) {
+    return item?.kind === 'reply' && (['publishing', 'publish_unknown'].includes(item.status) ||
+      (item.status === 'publish_failed' && Boolean(item.approved_by && item.approved_at)));
+  }
+
+  async function publicationConfirmed(item) {
+    window.toast?.('Yanıtın doğru Google yorumunda yayımlandığı doğrulandı.');
+    try { await window.OTOTRGoogleReputation?.syncGoogleReviewsForBranch?.(item.branch_id); }
+    catch (error) { window.OTOTRGoogleReputation?.setError?.(`Yanıt yayımlandı; yorum listesi yenilenemedi: ${error.message}`); }
+  }
+
   function updateEditorControls() {
     if (!editor) return;
     const modal = ensureModal(), item = editor.item, task = item && item.kind !== 'reply';
@@ -231,7 +242,7 @@
     publish.textContent = status === 'publish_unknown' ? 'Aynı yanıtı onayla ve yeniden yayımla' : 'Onayla ve Google’da yayımla';
     publish.disabled = editor.busy || !sameSavedText || !modal.querySelector('#googleAiApprove').checked || !['approval_pending', 'publish_failed', 'publish_unknown'].includes(status) || requiresResave;
     const verify = modal.querySelector('[data-google-ai-verify]');
-    verify.hidden = task || !['publishing', 'publish_unknown'].includes(status); verify.disabled = editor.busy;
+    verify.hidden = !canVerifyReply(item); verify.disabled = editor.busy || !sameSavedText;
   }
 
   function showEditor(current, text) {
@@ -315,23 +326,25 @@
   async function publishEditor(verifyOnly) {
     if (!editor?.item || editor.busy) return;
     const current = editor, modal = ensureModal(), item = current.item;
-    if (!verifyOnly && (item.review_snapshot?.reply_conflict || !modal.querySelector('#googleAiApprove').checked || modal.querySelector('#googleAiReply').value.trim() !== item.reply_text)) return;
+    if (verifyOnly && (!canVerifyReply(item) || modal.querySelector('#googleAiReply').value.trim() !== item.reply_text)) return;
+    if (!verifyOnly && (item.kind !== 'reply' || !['approval_pending', 'publish_failed', 'publish_unknown'].includes(item.status) || item.review_snapshot?.reply_conflict || !modal.querySelector('#googleAiApprove').checked || modal.querySelector('#googleAiReply').value.trim() !== item.reply_text)) return;
+    modal.querySelector('#googleAiApprove').checked = false;
     current.busy = true; updateEditorControls();
     modal.querySelector('#googleAiWarning').textContent = verifyOnly ? 'Google’daki yayın sonucu kontrol ediliyor…' : 'Onayladığınız yanıt Google’a gönderiliyor ve sonucu doğrulanıyor…';
     try {
       const data = await googleBusinessRequest(verifyOnly ? 'verify_reply' : 'publish_reply', { item_id: item.id, expected_version: item.version, ...(!verifyOnly ? { approved: true } : {}) });
       remember(data.item);
       if (editor === current) openItem(data.item.id);
-      if (data.item.status === 'published') {
-        window.toast?.('Yanıtın doğru Google yorumunda yayımlandığı doğrulandı.');
-        await window.OTOTRGoogleReputation?.syncGoogleReviewsForBranch?.(item.branch_id);
-      }
+      if (data.item.status === 'published') await publicationConfirmed(data.item);
     } catch (error) {
       await refreshWorkflow();
       const latest = workflow.items.find(row => row.id === item.id);
-      if (editor === current) {
+      if (latest?.status === 'published') {
+        if (editor === current) openItem(latest.id);
+        await publicationConfirmed(latest);
+      } else if (editor === current) {
         if (latest) current.item = latest;
-        modal.querySelector('#googleAiWarning').textContent = `${error.message} Başarı bildirimi alınmadı; yayın durumunu listeden kontrol edin.`;
+        modal.querySelector('#googleAiWarning').textContent = `${error.message} ${canVerifyReply(current.item) ? 'Yayın sonucunu kontrol et düğmesiyle Google’daki yanıtı doğrulayabilirsiniz.' : 'Kayıtlı yayın durumunu inceleyin.'} Yeniden gönderim yapılmadı.`;
       }
     } finally { current.busy = false; if (editor === current) updateEditorControls(); }
   }
@@ -406,25 +419,29 @@
     }
   }
   function renderAutoDraftSummary(branchId) {
-    const reviews = (window.OTOTRGoogleReputation?.demoReviews || []).filter(review => review.branchId === branchId && !review.isReplied);
+    const reviews = (window.OTOTRGoogleReputation?.demoReviews || []).filter(review => review.branchId === branchId && (!review.isReplied || canVerifyReply(cardContext(review.id)?.item)));
+    const verificationItems = [];
     let ready = 0, preparing = 0, failed = 0, verification = 0, sent = 0;
     for (const review of reviews) {
       const context = cardContext(review.id), status = context?.item?.status;
       if (status === 'published') sent++;
-      else if (['publishing', 'publish_unknown'].includes(status)) verification++;
+      else if (canVerifyReply(context?.item)) { verification++; verificationItems.push({ item: context.item, review }); }
       else if (['approval_pending', 'publish_failed'].includes(status)) ready++;
       else if (preparingReviews.has(review.id) || status === 'preparing') preparing++;
       else if (status === 'draft_failed' || context?.state.error) failed++;
     }
     const waiting = Math.max(0, reviews.length - ready - preparing - failed - verification - sent);
-    return `<section class="google-auto-draft-summary" data-testid="google-auto-drafts"><div><strong>Hazır yanıtlar</strong><p>Cevapsız yorumlar için AI taslakları otomatik hazırlanır. Yalnızca tek tek onayladığınız yanıtlar gönderilir.</p></div><div class="google-draft-summary-counts"><span>${ready} hazır</span><span>${preparing} hazırlanıyor</span><span>${waiting} sırada</span>${failed ? `<span>${failed} tekrar deneme bekliyor</span>` : ''}${verification ? `<span>${verification} yayın kontrolü</span>` : ''}${sent ? `<span>${sent} gönderildi</span>` : ''}</div>${workflow.error ? `<p class="google-reply-error">${esc(workflow.error)} Taslakların yeniden hazırlanması, kayıtlar okunana kadar bekler.</p>` : ''}</section>`;
+    return `<section class="google-auto-draft-summary" data-testid="google-auto-drafts"><div><strong>Hazır yanıtlar</strong><p>Cevapsız yorumlar için AI taslakları otomatik hazırlanır. Yalnızca tek tek onayladığınız yanıtlar gönderilir.</p></div><div class="google-draft-summary-counts"><span>${ready} hazır</span><span>${preparing} hazırlanıyor</span><span>${waiting} sırada</span>${failed ? `<span>${failed} tekrar deneme bekliyor</span>` : ''}${verification ? `<span>${verification} yayın kontrolü</span>` : ''}${sent ? `<span>${sent} gönderildi</span>` : ''}</div>${verificationItems.length ? `<div class="google-reply-actions">${verificationItems.map(({ item, review }, index) => `<button type="button" class="google-reply-secondary" data-google-work-open="${esc(item.id)}">Yayın kaydını incele${review.reviewerName ? ` · ${esc(review.reviewerName)}` : verificationItems.length > 1 ? ` · ${index + 1}` : ''}</button>`).join('')}</div>` : ''}${workflow.error ? `<p class="google-reply-error">${esc(workflow.error)} Taslakların yeniden hazırlanması, kayıtlar okunana kadar bekler.</p>` : ''}</section>`;
   }
   function renderReplyCard(review, branch) {
     const context = cardContext(review.id);
     if (!context) return '';
     const { item, state } = context, status = item?.status;
     const action = (name, label, disabled = false, primary = false) => `<button type="button" class="${primary ? 'google-reply-primary' : 'google-reply-secondary'}" data-google-card-action="${name}" data-review-id="${esc(review.id)}" ${disabled ? 'disabled' : ''}>${label}</button>`;
-    if (review.isReplied) return `<div class="google-reply-heading"><strong>Google’daki yanıt</strong><span class="google-reply-status" data-tone="published">Yanıtlandı</span></div><div class="google-reply-text">${esc(review.replyText || 'Google’da yanıt mevcut.')}</div><p class="google-reply-note">Mevcut işletme yanıtı korunuyor.</p>${item && (item.review_snapshot?.reply_conflict || item.status === 'publish_failed') ? `<p class="google-reply-error">Kayıtlı taslak Google’daki mevcut yanıttan farklı. Değiştirmek için mevcut yanıtı inceleyip taslağı yeniden kaydetmeniz ve onaylamanız gerekir.</p><div class="google-reply-actions">${action('details', 'Kayıtlı taslağı ve mevcut yanıtı incele', state.busy)}</div>` : ''}`;
+    if (review.isReplied) {
+      const verification = canVerifyReply(item), conflict = Boolean(item?.review_snapshot?.reply_conflict), failed = item?.status === 'publish_failed';
+      return `<div class="google-reply-heading"><strong>Google’daki yanıt</strong><span class="google-reply-status" data-tone="${verification ? 'loading' : 'published'}">${verification ? 'Yayın kaydı doğrulama bekliyor' : item?.status === 'published' ? 'Yayımlandığı doğrulandı' : 'Yanıtlandı'}</span></div><div class="google-reply-text">${esc(review.replyText || 'Google’da yanıt mevcut.')}</div><p class="google-reply-note">${verification ? 'Google’da bir yanıt görünüyor. Kayıtlı taslağın yayın sonucunu kontrol edin; bu işlem yanıt göndermez.' : 'Mevcut işletme yanıtı korunuyor.'}</p>${!verification && (conflict || failed) ? '<p class="google-reply-error">Kayıtlı taslağı ve Google’daki mevcut yanıtı inceleyin. Değişiklik için taslağı yeniden kaydetmeniz ve onaylamanız gerekir.</p>' : ''}${state.error && item?.status !== 'published' ? `<p class="google-reply-error" role="status">${esc(state.error)}</p>` : ''}${verification || conflict || failed ? `<div class="google-reply-actions">${verification ? action('verify', 'Yayın sonucunu kontrol et', state.busy) : ''}${action('details', 'Kayıtlı taslağı ve mevcut yanıtı incele', state.busy)}</div>` : ''}`;
+    }
     if (!item || ['preparing', 'draft_failed'].includes(status)) {
       const pending = preparingReviews.has(review.id) || status === 'preparing', error = state.error || item?.last_error;
       return `<div class="google-reply-heading"><strong>AI yanıt taslağı</strong><span class="google-reply-status" data-tone="${error ? 'error' : 'loading'}">${pending ? 'Hazırlanıyor' : error ? 'Tekrar deneme gerekli' : 'Hazırlama sırasında'}</span></div><div class="google-reply-text">${pending ? 'Yoruma ve şubeye özel yanıt hazırlanıyor…' : error ? 'Taslak hazır olduğunda burada görünecek.' : 'Bu yorumun yanıtı otomatik hazırlanacak.'}</div>${error ? `<p class="google-reply-error" role="status">${esc(error)}</p>` : ''}<div class="google-reply-actions">${error || status === 'preparing' ? action('prepare', status === 'preparing' ? 'Hazırlığı kontrol et' : 'Yeniden dene', preparingReviews.has(review.id)) : ''}</div><p class="google-reply-note">Hazırlanan taslak otomatik kaydedilir; onayınız olmadan Google’a gönderilmez.</p>`;
@@ -433,7 +450,7 @@
     const mayApprove = editable && !conflict && !state.editing && !state.busy && Boolean(item.reply_text?.trim());
     const risk = item.review_snapshot?.ai_analysis?.risk_reason;
     const versionChanged = state.editing && state.baseVersion !== item.version;
-    return `<div class="google-reply-heading"><strong>${status === 'published' ? 'Yayımlanan yanıt' : 'Hazır yanıt'}</strong><span class="google-reply-status" data-tone="${status === 'published' ? 'published' : editable ? 'ready' : 'loading'}">${esc(statusNames[status] || status)}</span></div><p class="google-reply-note">${esc(sourceNames[item.draft_source] || 'Kayıtlı taslak')}</p>${state.editing ? `<textarea class="google-reply-editor" data-google-card-text="${esc(review.id)}" aria-label="${esc(branch.replySignatureName || branch.name)} yanıtını düzenle" maxlength="4000" ${state.busy ? 'disabled' : ''}>${esc(state.text)}</textarea>` : `<div class="google-reply-text">${esc(item.reply_text)}</div>`}${risk ? `<p class="google-reply-note">${esc(risk)}</p>` : ''}${conflict ? '<p class="google-reply-error">Google’daki yanıt değişmiş. Mevcut yanıtı inceleyip taslağı yeniden kaydedin.</p>' : ''}${versionChanged ? '<p class="google-reply-error">Taslak başka oturumda değişti. Yazdığınız metin korundu; kayıtlı sürümü inceleyin.</p>' : ''}${state.error || item.last_error ? `<p class="google-reply-error" role="status">${esc(state.error || item.last_error)}</p>` : ''}${editable && !state.editing && !conflict ? `<label class="google-reply-approval"><input type="checkbox" data-google-card-approve="${esc(review.id)}" ${state.approved ? 'checked' : ''} ${mayApprove ? '' : 'disabled'}>Bu yorumu ve hazır yanıtı kontrol ettim, Google’da yayımlanmasını onaylıyorum.</label>` : ''}<div class="google-reply-actions">${state.editing ? action('save', 'Değişikliği kaydet', state.busy || versionChanged || !state.text.trim(), true) + action('cancel', 'Vazgeç', state.busy) : editable ? action('send', state.busy ? 'İşleniyor…' : 'Onayla ve gönder', !mayApprove || !state.approved, true) + action('edit', 'Düzenle', state.busy) + action('regenerate', 'Yeniden üret', state.busy) : ''}${conflict ? action('details', 'Mevcut yanıtı incele', state.busy) : ''}${['publishing', 'publish_unknown'].includes(status) ? action('verify', 'Yayın sonucunu kontrol et', state.busy) : ''}</div>`;
+    return `<div class="google-reply-heading"><strong>${status === 'published' ? 'Yayımlanan yanıt' : 'Hazır yanıt'}</strong><span class="google-reply-status" data-tone="${status === 'published' ? 'published' : editable ? 'ready' : 'loading'}">${esc(statusNames[status] || status)}</span></div><p class="google-reply-note">${esc(sourceNames[item.draft_source] || 'Kayıtlı taslak')}</p>${state.editing ? `<textarea class="google-reply-editor" data-google-card-text="${esc(review.id)}" aria-label="${esc(branch.replySignatureName || branch.name)} yanıtını düzenle" maxlength="4000" ${state.busy ? 'disabled' : ''}>${esc(state.text)}</textarea>` : `<div class="google-reply-text">${esc(item.reply_text)}</div>`}${risk ? `<p class="google-reply-note">${esc(risk)}</p>` : ''}${conflict ? '<p class="google-reply-error">Google’daki yanıt değişmiş. Mevcut yanıtı inceleyip taslağı yeniden kaydedin.</p>' : ''}${versionChanged ? '<p class="google-reply-error">Taslak başka oturumda değişti. Yazdığınız metin korundu; kayıtlı sürümü inceleyin.</p>' : ''}${status !== 'published' && (state.error || item.last_error) ? `<p class="google-reply-error" role="status">${esc(state.error || item.last_error)}</p>` : ''}${editable && !state.editing && !conflict ? `<label class="google-reply-approval"><input type="checkbox" data-google-card-approve="${esc(review.id)}" ${state.approved ? 'checked' : ''} ${mayApprove ? '' : 'disabled'}>Bu yorumu ve hazır yanıtı kontrol ettim, Google’da yayımlanmasını onaylıyorum.</label>` : ''}<div class="google-reply-actions">${state.editing ? action('save', 'Değişikliği kaydet', state.busy || versionChanged || !state.text.trim(), true) + action('cancel', 'Vazgeç', state.busy) : editable ? action('send', state.busy ? 'İşleniyor…' : 'Onayla ve gönder', !mayApprove || !state.approved, true) + action('edit', 'Düzenle', state.busy) + action('regenerate', 'Yeniden üret', state.busy) : ''}${conflict ? action('details', 'Mevcut yanıtı incele', state.busy) : ''}${canVerifyReply(item) && !state.editing ? action('verify', 'Yayın sonucunu kontrol et', state.busy) : ''}</div>`;
   }
   async function cardAction(reviewId, action) {
     const context = cardContext(reviewId);
@@ -441,7 +458,7 @@
     const { review, branch, item, state } = context;
     if (action === 'prepare') return prepareCard(reviewId, true);
     if (action === 'details' && item) return openItem(item.id);
-    if (!item || review.isReplied) return;
+    if (!item || (review.isReplied && action !== 'verify')) return;
     if (item.review_snapshot?.reply_conflict && ['edit', 'regenerate'].includes(action)) return openItem(item.id);
     if (action === 'edit' && ['approval_pending', 'publish_failed'].includes(item.status)) {
       state.editing = true; state.text = item.reply_text; state.baseVersion = item.version; state.approved = null; state.error = ''; rerender(); return;
@@ -450,7 +467,7 @@
     if (action === 'send' && (!state.approved || state.editing || item.review_snapshot?.reply_conflict || state.approved.id !== item.id || state.approved.version !== item.version || state.approved.text !== item.reply_text || !['approval_pending', 'publish_failed'].includes(item.status))) return;
     if (action === 'save' && (!state.editing || !state.text.trim() || state.text.trim().length > 4000 || state.baseVersion !== item.version)) return;
     if (action === 'regenerate' && (state.editing || !['approval_pending', 'publish_failed'].includes(item.status))) return;
-    if (action === 'verify' && !['publishing', 'publish_unknown'].includes(item.status)) return;
+    if (action === 'verify' && (!canVerifyReply(item) || state.editing)) return;
     if (!['save', 'regenerate', 'send', 'verify'].includes(action)) return;
     state.busy = true; state.error = ''; const approved = state.approved; state.approved = null; rerender();
     try {
@@ -465,10 +482,14 @@
       }
       if (!data.item) throw new Error('Kayıt sonucu doğrulanamadı. Listeyi yenileyin.');
       remember(data.item); state.editing = false;
-      if (data.item.status === 'published') await window.OTOTRGoogleReputation?.syncGoogleReviewsForBranch?.(branch.id);
+      if (data.item.status === 'published') await publicationConfirmed(data.item);
     } catch (error) {
       state.error = error.message;
-      if (['send', 'verify'].includes(action)) await refreshWorkflow();
+      if (['send', 'verify'].includes(action)) {
+        await refreshWorkflow();
+        const latest = workflow.items.find(row => row.id === item.id);
+        if (latest?.status === 'published') { state.error = ''; await publicationConfirmed(latest); }
+      }
     } finally { state.busy = false; rerender(); schedulePreparation(); }
   }
 

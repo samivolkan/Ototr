@@ -31,7 +31,7 @@ function workflowFixture(options = {}) {
     GOOGLE_OAUTH_CLIENT_ID: 'fixture-client', GOOGLE_OAUTH_CLIENT_SECRET: 'fixture-secret', GOOGLE_BUSINESS_ADMIN_USER_IDS: options.allowedUsers || '',
   };
   let remote = { reviewId: options.reviewId || 'review-one', name: `accounts/123/locations/${LOCATION}/reviews/${options.reviewId || 'review-one'}`, starRating: 'FIVE', comment: 'Fixture public review', reviewer: { displayName: 'Fixture reviewer' }, createTime: '2026-10-27T00:00:00Z', ...(options.remoteReply ? { reviewReply: { comment: options.remoteReply } } : {}) };
-  const state = { putFailure: null, getFailure: null, failPublishedWrite: false, failAllWrites: false, failReads: false, beforePut: null, putCount: 0, beforeAI: null, aiCount: 0, aiStatus: 200, aiDraft: null };
+  const state = { putFailure: null, getFailure: null, failPublishedWrite: false, failAllWrites: false, failReads: false, beforePut: null, putCount: 0, beforeAI: null, aiCount: 0, aiStatus: 200, aiDraft: null, readTransform: null, putReplyState: '', putPolicyViolation: '', putResponse: null };
 
   function query(table) {
     const filters = [];
@@ -116,12 +116,12 @@ function workflowFixture(options = {}) {
         const data = JSON.parse(init.body);
         if (state.putFailure === 'before') throw new TypeError('fixture network unavailable');
         if (typeof state.putFailure === 'number') return Response.json({ error: { status: 'PERMISSION_DENIED', message: 'fixture Google rejected' } }, { status: state.putFailure });
-        remote.reviewReply = { comment: data.comment, updateTime: new Date().toISOString() };
+        remote.reviewReply = { comment: data.comment, updateTime: new Date().toISOString(), ...(state.putReplyState ? { reviewReplyState: state.putReplyState } : {}), ...(state.putPolicyViolation ? { policyViolation: state.putPolicyViolation } : {}) };
         if (state.putFailure === 'after') throw new TypeError('fixture response lost after remote write');
-        return Response.json(remote.reviewReply);
+        return state.putResponse ? state.putResponse(clone(remote.reviewReply)) : Response.json(remote.reviewReply);
       }
       if (state.getFailure) return Response.json({ error: { status: 'UNAVAILABLE', message: 'fixture Google read failed' } }, { status: state.getFailure });
-      return Response.json(remote);
+      return Response.json(state.readTransform ? state.readTransform(clone(remote)) : remote);
     },
     Deno: { env: { get(name) { return values[name]; } }, serve(fn) { handler = fn; } },
   });
@@ -129,7 +129,7 @@ function workflowFixture(options = {}) {
   return {
     calls, mutations, rows, state,
     rotateClient(value) { values.GOOGLE_OAUTH_CLIENT_ID = value; },
-    setRemoteReply(text) { remote.reviewReply = { comment: text, updateTime: new Date().toISOString() }; },
+    setRemoteReply(text, extra = {}) { remote.reviewReply = { comment: text, updateTime: new Date().toISOString(), ...extra }; },
     setRemoteComment(text) { remote.comment = text; },
     getRemoteReply() { return remote.reviewReply?.comment || ''; },
     async request(body) {
@@ -652,6 +652,102 @@ test('verification of an unknown outcome never itself publishes the draft', asyn
   assert.equal(retry.status, 200);
   assert.equal(retry.data.item.status, 'published');
   assert.equal(f.getRemoteReply(), REPLY);
+});
+
+const GOOGLE_TRANSLATION = '\n\n(Translated by Google)\nThank you for sharing your experience. OTOTR Bursa Nilufer Branch Team';
+test('fresh Google GET confirms the exact approved original followed by Google translation markup', async () => {
+  const f = workflowFixture(); const item = await saveDraft(f);
+  f.state.putReplyState = 'APPROVED';
+  f.state.readTransform = review => { if (review.reviewReply) review.reviewReply.comment += GOOGLE_TRANSLATION; return review; };
+  const response = await f.request(publishBody(item));
+  assert.equal(response.status, 200); assert.equal(response.data.item.status, 'published');
+  assert.equal(response.data.item.reply_text, REPLY); assert.equal(f.state.putCount, 1);
+  assert.equal(response.data.item.review_snapshot.google_reply_state, 'APPROVED');
+});
+
+test('an approved false conflict is reconciled read-only and clears obsolete conflict metadata', async () => {
+  const f = workflowFixture(); const item = await saveDraft(f);
+  f.state.putFailure = 'before'; await f.request(publishBody(item)); f.state.putFailure = null;
+  f.setRemoteReply(REPLY + GOOGLE_TRANSLATION, { reviewReplyState: 'APPROVED' });
+  Object.assign(f.rows[0], { status: 'publish_failed', review_snapshot: { ...f.rows[0].review_snapshot, reply_conflict: true, current_reply: REPLY + GOOGLE_TRANSLATION } });
+  const writes = f.state.putCount;
+  const result = await f.request({ action: 'verify_reply', item_id: item.id, expected_version: item.version });
+  assert.equal(result.status, 200); assert.equal(result.data.item.status, 'published'); assert.equal(f.state.putCount, writes);
+  assert.equal(result.data.item.review_snapshot.reply_conflict, undefined); assert.equal(result.data.item.review_snapshot.current_reply, undefined); assert.equal(result.data.item.last_error, null);
+});
+
+for (const actual of [REPLY + ' Extra text', REPLY + '\n\n(Translated by Google)\n ', REPLY.replace('Deneyiminizi', 'deneyiminizi') + GOOGLE_TRANSLATION, REPLY + GOOGLE_TRANSLATION + GOOGLE_TRANSLATION, 'Changed original' + GOOGLE_TRANSLATION]) {
+  test('translation handling does not accept changed original, arbitrary suffix, empty or duplicate markers', async () => {
+    const f = workflowFixture(); const item = await saveDraft(f);
+    f.state.putFailure = 'before'; await f.request(publishBody(item)); f.state.putFailure = null; f.setRemoteReply(actual);
+    const count = f.state.putCount;
+    const result = await f.request({ action: 'verify_reply', item_id: item.id, expected_version: item.version });
+    assert.equal(result.data.item.status, 'publish_failed'); assert.equal(result.data.item.review_snapshot.reply_conflict, true); assert.equal(f.state.putCount, count); assert.equal(f.getRemoteReply(), actual);
+  });
+}
+
+test('approved text containing the Google marker is never specially stripped', async () => {
+  const f = workflowFixture(); const literal = REPLY + '\n\n(Translated by Google)\nLiteral user-approved content';
+  const item = await saveDraft(f, { reply_text: literal });
+  f.state.putFailure = 'before'; await f.request(publishBody(item)); f.state.putFailure = null; f.setRemoteReply(literal + GOOGLE_TRANSLATION);
+  const result = await f.request({ action: 'verify_reply', item_id: item.id, expected_version: item.version });
+  assert.equal(result.data.item.status, 'publish_failed'); assert.equal(result.data.item.review_snapshot.reply_conflict, true);
+});
+
+test('Google pending moderation is never published and repeat approval cannot submit another PUT', async () => {
+  const f = workflowFixture(); const item = await saveDraft(f); f.state.putReplyState = 'PENDING';
+  const pending = await f.request(publishBody(item));
+  assert.equal(pending.status, 200); assert.equal(pending.data.item.status, 'publish_unknown'); assert.equal(pending.data.item.published_at, null);
+  assert.equal(pending.data.item.review_snapshot.google_reply_state, 'PENDING');
+  await f.request(publishBody(item)); assert.equal(f.state.putCount, 1);
+  f.setRemoteReply(REPLY + GOOGLE_TRANSLATION, { reviewReplyState: 'APPROVED' });
+  const verified = await f.request({ action: 'verify_reply', item_id: item.id, expected_version: item.version });
+  assert.equal(verified.data.item.status, 'published'); assert.equal(f.state.putCount, 1);
+});
+
+test('Google rejected moderation remains failed and exposes its reason without a false success', async () => {
+  const f = workflowFixture(); const item = await saveDraft(f); f.state.putReplyState = 'REJECTED'; f.state.putPolicyViolation = 'REPETITIVE';
+  const result = await f.request(publishBody(item));
+  assert.equal(result.status, 200); assert.equal(result.data.item.status, 'publish_failed'); assert.equal(result.data.item.published_at, null); assert.match(result.data.item.last_error, /REPETITIVE/);
+  await f.request({ action: 'verify_reply', item_id: item.id, expected_version: item.version }); assert.equal(f.state.putCount, 1);
+});
+
+for (const replyState of ['PENDING', 'APPROVED']) {
+  test('a PUT receipt with a stale empty GET stays unconfirmed and suppresses a second write', async () => {
+    const f = workflowFixture(); const item = await saveDraft(f); f.state.putReplyState = replyState;
+    f.state.readTransform = review => { if (f.state.putCount) delete review.reviewReply; return review; };
+    const result = await f.request(publishBody(item));
+    assert.equal(result.status, 200); assert.equal(result.data.item.status, 'publish_unknown'); assert.equal(result.data.item.published_at, null);
+    assert.equal(result.data.item.review_snapshot.google_reply_accepted, true);
+    await f.request(publishBody(item)); assert.equal(f.state.putCount, 1);
+    f.state.readTransform = null; f.setRemoteReply(REPLY, { reviewReplyState: 'APPROVED' });
+    const verified = await f.request({ action: 'verify_reply', item_id: item.id, expected_version: item.version });
+    assert.equal(verified.data.item.status, 'published'); assert.equal(f.state.putCount, 1);
+  });
+}
+
+test('a GET missing moderation state cannot erase an explicit PENDING receipt', async () => {
+  const f = workflowFixture(); const item = await saveDraft(f); f.state.putReplyState = 'PENDING';
+  f.state.readTransform = review => { if (review.reviewReply) delete review.reviewReply.reviewReplyState; return review; };
+  const result = await f.request(publishBody(item)); assert.equal(result.data.item.status, 'publish_unknown'); assert.equal(result.data.item.review_snapshot.google_reply_state, 'PENDING');
+});
+
+test('unknown Google moderation states do not become published merely because the comment matches', async () => {
+  const f = workflowFixture(); const item = await saveDraft(f); f.state.putReplyState = 'FUTURE_REVIEW_STATE';
+  const result = await f.request(publishBody(item)); assert.equal(result.data.item.status, 'publish_unknown'); assert.equal(result.data.item.published_at, null);
+});
+
+test('unapproved failed or unknown records cannot be promoted by read-only verification', async () => {
+  for (const status of ['publish_failed', 'publish_unknown']) {
+    const f = workflowFixture(); const item = await saveDraft(f); f.rows[0].status = status; f.setRemoteReply(REPLY, { reviewReplyState: 'APPROVED' });
+    const result = await f.request({ action: 'verify_reply', item_id: item.id, expected_version: item.version });
+    assert.equal(result.status, 409); assert.notEqual(f.rows[0].status, 'published'); assert.equal(f.state.putCount, 0); assert.equal(f.rows[0].approved_at, null);
+  }
+});
+
+test('a malformed preflight Google review cannot be treated as an empty reply before a write', async () => {
+  const f = workflowFixture(); const item = await saveDraft(f); f.state.readTransform = () => ({});
+  const result = await f.request(publishBody(item)); assert.equal(result.status, 502); assert.equal(f.state.putCount, 0); assert.notEqual(f.rows[0].status, 'published');
 });
 
 test('saved Google review IDs stay a single encoded path component on publication', async () => {

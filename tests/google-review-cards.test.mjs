@@ -80,7 +80,13 @@ function fixture(count = 1) {
       if (server.publishHold) await new Promise(resolve => server.holds.push({ action: 'publish', resolve, body }));
       const saved = server.items.find(row => row.id === body.item_id);
       if (saved.version !== body.expected_version) return Response.json({ error: 'Synthetic stale publication' }, { status: 409 });
-      saved.status = 'published'; return Response.json({ item: saved });
+      saved.status = 'published';
+      return server.publishResponseLost ? Response.json({ error: 'Synthetic lost response' }, { status: 502 }) : Response.json({ item: saved });
+    }
+    if (body.action === 'verify_reply') {
+      const saved = server.items.find(row => row.id === body.item_id);
+      Object.assign(saved, { status: 'published', last_error: null, review_snapshot: { ...saved.review_snapshot, reply_conflict: false } });
+      return Response.json({ item: saved });
     }
     if (String(url).endsWith('/google-review-ai')) return Response.json({ reply: 'Explicitly regenerated synthetic draft' });
     throw new Error(`Unexpected synthetic action: ${body.action}`);
@@ -98,6 +104,7 @@ function fixture(count = 1) {
     async pump() { controller.preparePendingDrafts(); await settle(); },
     async runTimers() { const pending = [...timeouts].filter(([, timer]) => timer.delay === 0); for (const [id, timer] of pending) { timeouts.delete(id); timer.callback(); } await settle(); },
     async click(id, action) { const target = { dataset: { reviewId: id, googleCardAction: action }, closest: selector => selector === '[data-google-card-action]' ? target : null }; emit('click', target); await settle(); },
+    async openWorkflow(id) { const target = { dataset: { googleWorkOpen: id }, closest: selector => selector === '[data-google-work-open]' ? target : null }; emit('click', target); await settle(); },
     approve(id, checked = true) { emit('change', { dataset: { googleCardApprove: id }, checked }); },
     input(id, value) { const target = textareas.get(id) || textarea(id, value); target.value = value; document.activeElement = target; emit('input', target); return target; },
     field: id => textareas.get(id), calls: action => server.calls.filter(call => call.action === action),
@@ -258,4 +265,72 @@ test('conflicted edit and regenerate actions open the comparison modal without g
     assert.doesNotMatch(h.html('erp-0'), /data-google-card-text=/);
     assert.equal(h.calls('generate').length, 0); assert.equal(h.calls('save_draft').length, 0);
   }
+});
+
+for (const status of ['publishing', 'publish_unknown', 'publish_failed']) {
+  test(`an answered ${status} reply remains visible for read-only publication verification`, async () => {
+    const h = fixture(); h.reviews[0].isReplied = true; h.reviews[0].replyText = 'Reply already visible on Google';
+    const saved = h.item(h.reviews[0], status, { approved_by: 'synthetic-user', approved_at: '2026-10-27T00:00:00Z' });
+    h.server.items.push(saved); await h.load();
+    assert.match(h.html('erp-0'), /Yayın kaydı doğrulama bekliyor/);
+    assert.match(h.html('erp-0'), /data-google-card-action="verify"/);
+    assert.match(h.html('erp-0'), /data-google-card-action="details"/);
+    assert.doesNotMatch(h.html('erp-0'), /data-google-card-action="send"|data-google-card-approve/);
+    assert.match(h.api.renderAutoDraftSummary(BRANCH.id), /1 yayın kontrolü/);
+    await h.click('erp-0', 'verify');
+    assert.equal(h.calls('verify_reply').length, 1);
+    assert.deepEqual(h.calls('verify_reply')[0], { action: 'verify_reply', item_id: saved.id, expected_version: 1 });
+    assert.equal(h.calls('publish_reply').length, 0); assert.equal(h.calls('save_draft').length, 0);
+    assert.match(h.html('erp-0'), /Yayımlandığı doğrulandı/);
+    assert.doesNotMatch(h.html('erp-0'), /data-google-card-action="verify"/);
+    assert.doesNotMatch(h.api.renderAutoDraftSummary(BRANCH.id), /1 yayın kontrolü/);
+  });
+}
+
+test('failed replies require both original approval fields for read-only recovery, even on synthetic clicks', async () => {
+  for (const approval of [{}, { approved_by: 'synthetic-user' }, { approved_at: '2026-10-27T00:00:00Z' }]) {
+    const h = fixture(); h.reviews[0].isReplied = true;
+    h.server.items.push(h.item(h.reviews[0], 'publish_failed', approval)); await h.load();
+    assert.doesNotMatch(h.html('erp-0'), /data-google-card-action="verify"/);
+    await h.click('erp-0', 'verify'); assert.equal(h.calls('verify_reply').length, 0);
+    assert.equal(h.calls('publish_reply').length, 0);
+  }
+});
+
+test('a lost publication response followed by authoritative published status clears the card error without sending again', async () => {
+  const h = fixture(); h.server.items.push(h.item(h.reviews[0])); h.server.publishResponseLost = true;
+  await h.load(); h.approve('erp-0'); await h.click('erp-0', 'send');
+  assert.equal(h.calls('publish_reply').length, 1);
+  assert.equal(h.api.getApprovalQueue()[0].status, 'published');
+  assert.match(h.html('erp-0'), /Google’da yayımlandı/);
+  assert.doesNotMatch(h.html('erp-0'), /Synthetic lost response|data-google-card-approve/);
+});
+
+test('verification cannot discard an unsaved inline edit of a previously approved failed reply', async () => {
+  const h = fixture();
+  h.server.items.push(h.item(h.reviews[0], 'publish_failed', { approved_by: 'synthetic-user', approved_at: '2026-10-27T00:00:00Z' }));
+  await h.load(); await h.click('erp-0', 'edit'); h.input('erp-0', 'Unsaved work must remain');
+  assert.doesNotMatch(h.html('erp-0'), /data-google-card-action="verify"/);
+  await h.click('erp-0', 'verify');
+  assert.equal(h.calls('verify_reply').length, 0); assert.match(h.html('erp-0'), /Unsaved work must remain/);
+});
+
+test('summary opens each answered pending verification in its branch even when the review list is filtered out', async () => {
+  const h = fixture(3);
+  h.reviews.forEach(review => { review.isReplied = true; review.replyText = 'Visible Google answer'; });
+  h.reviews[0].reviewerName = '<img src=x onerror=attack()>';
+  const first = h.item(h.reviews[0], 'publish_unknown'), second = h.item(h.reviews[1], 'publishing');
+  h.reviews[2].branchId = 'another-branch';
+  const other = h.item(h.reviews[2], 'publish_unknown', { branch_id: 'another-branch' });
+  h.server.items.push(first, second, other); await h.load();
+  const summary = h.api.renderAutoDraftSummary(BRANCH.id);
+  assert.match(summary, /2 yayın kontrolü/); assert.match(summary, /&lt;img src=x onerror=attack\(\)&gt;/);
+  assert.doesNotMatch(summary, /<img src=x/);
+  assert.ok(summary.includes(`data-google-work-open="${first.id}"`));
+  assert.ok(summary.includes(`data-google-work-open="${second.id}"`));
+  assert.ok(!summary.includes(`data-google-work-open="${other.id}"`));
+  await h.openWorkflow(first.id);
+  assert.equal(h.modalField('#googleAiReply').value, first.reply_text);
+  assert.equal(h.modalField('[data-google-ai-verify]').hidden, false);
+  assert.equal(h.calls('publish_reply').length, 0); assert.equal(h.calls('verify_reply').length, 0);
 });
