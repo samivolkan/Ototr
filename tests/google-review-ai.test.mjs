@@ -235,6 +235,27 @@ test('reply guidance reserves contact invitations for concrete questions or comp
   assert.doesNotMatch(instructions, /gerekirse yalnızca resmi iletişim kanalına davet et/);
 });
 
+test('reply guidance keeps respectful plural address and avoids guessing the customer role or feelings', async () => {
+  const h = harness(); await h.request();
+  const instructions = h.calls[0].body.instructions;
+  assert.match(instructions, /Müşteriye her zaman siz\/sizin diliyle hitap et/);
+  assert.match(instructions, /sen\/senin\/seni, yorumun, beğenmene veya geldiğinde gibi tekil samimiyet ifadeleri kullanma/);
+  assert.match(instructions, /Yorumda açıkça belirtilmedikçe müşterinin araç sahibi, alıcı veya satıcı olduğunu ya da belirli bir duygu hissettiğini kesinleşmiş olay gibi çıkarma/);
+});
+
+test('Google translation text does not inflate the original review length target', async () => {
+  for (const [original, target] of [
+    ['Çok ilgili ekip tüm sorularımı sabırla yanıtladı.', '35–60'],
+    ['Çok ilgili ekip araç raporuyla ilgili tüm sorularımı sabırla yanıtladı.', '60–110'],
+  ]) {
+    const comment = `${original}\n\n(Translated by Google)\nThe team was very attentive and patiently answered all of my questions.`;
+    const h = harness(); await h.request({ ...baseBody, review: { ...baseBody.review, comment } });
+    const input = JSON.parse(h.calls[0].body.input);
+    assert.equal(input.hedef_kelime_araligi, target);
+    assert.equal(input.musteri_yorumu, comment);
+  }
+});
+
 for (const name of ['Ahmet Yılmaz', 'Ayşe Nur Çelik', 'Mehmet Ali Can Öztürk', "Jean-Luc O'Neill", 'Élodie Dupré']) {
   test(`clear full display name is used once without invented honorifics: ${name}`, async () => {
     const reply = `Merhaba ${name}, değerlendirmeniz için teşekkür ederiz.`;
