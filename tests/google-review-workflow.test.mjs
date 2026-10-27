@@ -153,7 +153,7 @@ const prepareBody = extra => ({ action: 'prepare_draft', ...TARGET, ...extra });
 
 test('automatic preparation persists verified AI draft and analysis without approval or publication', async () => {
   const f = workflowFixture();
-  const result = await f.request(prepareBody({ review: { comment: 'Forged client content' }, branch_name: 'Wrong branch' }));
+  const result = await f.request(prepareBody({ review: { comment: 'Forged client content', reviewerName: 'Forged client name' }, reviewer_name: 'Forged client name', branch_name: 'Wrong branch' }));
   assert.equal(result.status, 200);
   const item = result.data.item;
   assert.equal(item.status, 'approval_pending'); assert.equal(item.draft_source, 'openai');
@@ -163,7 +163,7 @@ test('automatic preparation persists verified AI draft and analysis without appr
   assert.equal(f.state.putCount, 0); assert.equal(f.state.aiCount, 1);
   const call = f.calls.find(c => c.url.pathname === '/functions/v1/google-review-ai');
   assert.equal(call.headers.Authorization, 'Bearer fixture-session'); assert.equal(call.headers.apikey, 'fixture-public');
-  assert.deepEqual(JSON.parse(call.body), { action: 'generate', branch: { id: BRANCH }, review: { rating: 5, comment: 'Fixture public review' } });
+  assert.deepEqual(JSON.parse(call.body), { action: 'generate', branch: { id: BRANCH }, review: { rating: 5, comment: 'Fixture public review', reviewerName: 'Fixture reviewer' } });
   assert.doesNotMatch(JSON.stringify(result.data), /fixture-refresh|fixture-secret|refresh_token_encrypted/);
 });
 
@@ -251,10 +251,14 @@ test('explicit stale retry reclaims atomically and the old worker cannot overwri
   assert.deepEqual(f.rows[0], retry.data.item); assert.equal(f.state.aiCount, 2); assert.equal(f.state.putCount, 0);
 });
 
-for (const during of ['reply', 'review']) {
+for (const during of ['reply', 'review', 'reviewer name']) {
   test(`a ${during} changed on Google during AI generation cannot become an approvable stale draft`, async () => {
     const f = workflowFixture();
-    f.state.beforeAI = () => during === 'reply' ? f.setRemoteReply('Fixture external reply') : f.setRemoteComment('Fixture changed review');
+    f.state.beforeAI = () => {
+      if (during === 'reply') f.setRemoteReply('Fixture external reply');
+      else if (during === 'review') f.setRemoteComment('Fixture changed review');
+      else f.state.readTransform = review => ({ ...review, reviewer: { displayName: 'Changed fixture reviewer' } });
+    };
     const result = await f.request(prepareBody());
     assert.equal(result.data.item.status, 'draft_failed'); assert.equal(result.data.item.reply_text, ''); assert.equal(f.state.putCount, 0);
     if (during === 'reply') assert.equal(f.getRemoteReply(), 'Fixture external reply');

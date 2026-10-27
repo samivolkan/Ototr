@@ -299,13 +299,13 @@ async function prepareDraft(db: any, user: any, body: any, connection: any, auth
     if (verified.expected_reply) { skipped = true; throw new RequestError('Bu yorum Google’da zaten yanıtlanmış. Mevcut yanıt korundu.', 409); }
     // Forward the same ERP identity to the existing AI service. Its authorization,
     // canonical prompt, moderation and signature validation remain the only path.
-    const response = await fetch(`${env('SUPABASE_URL')}/functions/v1/google-review-ai`, { method: 'POST', signal, headers: { Authorization: authorization, apikey: injectedSupabaseKey('SUPABASE_ANON_KEY', 'SUPABASE_PUBLISHABLE_KEYS'), 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'generate', branch: { id: identity.branch_id }, review: { rating: snapshot.rating, comment: snapshot.comment } }) });
+    const response = await fetch(`${env('SUPABASE_URL')}/functions/v1/google-review-ai`, { method: 'POST', signal, headers: { Authorization: authorization, apikey: injectedSupabaseKey('SUPABASE_ANON_KEY', 'SUPABASE_PUBLISHABLE_KEYS'), 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'generate', branch: { id: identity.branch_id }, review: { rating: snapshot.rating, comment: snapshot.comment, reviewerName: snapshot.reviewer_name } }) });
     const draft = await response.json().catch(() => null);
     if (!response.ok) throw new RequestError(typeof draft?.error === 'string' ? draft.error.slice(0, 800) : 'AI taslağı hazırlanamadı. Yeniden deneyin.', response.status);
     if (!draft || typeof draft.reply !== 'string' || draft.reply.length > 4000 || !draft.reply.endsWith(`${identity.branch_name} ekibi`) || typeof draft.requires_human_review !== 'boolean') throw new RequestError('AI yanıtı doğrulanamadı. Yeniden deneyin.', 502);
     const current = await verifiedReview(identity, token, signal);
     if (current.expected_reply) { skipped = true; throw new RequestError('Hazırlık sırasında bu yoruma Google’da yanıt verilmiş. Mevcut yanıt korundu.', 409); }
-    if (current.snapshot.comment !== snapshot.comment || current.snapshot.rating !== snapshot.rating) throw new RequestError('Yorum hazırlık sırasında değişti. Güncel yorum için taslağı yeniden hazırlayın.', 409);
+    if (current.snapshot.comment !== snapshot.comment || current.snapshot.rating !== snapshot.rating || current.snapshot.reviewer_name !== snapshot.reviewer_name) throw new RequestError('Yorum hazırlık sırasında değişti. Güncel yorum için taslağı yeniden hazırlayın.', 409);
     snapshot = withReviewReplyUrl(snapshot, current.snapshot.review_reply_url);
     const ai_analysis = { tone: draft.tone, requires_human_review: draft.requires_human_review, risk_reason: draft.risk_reason, suggested_route: draft.suggested_route, quality_score: draft.quality_score };
     return preparationResult(await finish({ status: 'approval_pending', reply_text: draft.reply, draft_source: 'openai', review_snapshot: { ...snapshot, ai_analysis }, expected_reply: '', last_error: null }));

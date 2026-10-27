@@ -7,7 +7,7 @@ ERP içindeki **Google Yorumlar** modülünde, yorum ve puana göre insan üslub
 ## Güvenlik modeli
 
 - `OPENAI_API_KEY` yalnızca Supabase Edge Function sırrıdır; HTML, JavaScript veya Git deposuna yazılmaz.
-- OpenAI'ye müşteri adı, telefon, plaka veya ERP iç kayıtları gönderilmez. Yalnızca şube adı/şehir, yıldız puanı ve herkese açık yorum metni gider.
+- Kullanıcının isimle kişiselleştirme talebi doğrultusunda Google yorumunda herkese açık görünen ve ad soyada benzeyen isim, şube/konum, yıldız puanı ve yorum metni OpenAI'ye iletilir. Yeni alternatif istenirken önceki taslak da karşılaştırma için gönderilir. ERP müşteri kayıtları, telefon, plaka veya gizli anahtarlar bağlam olarak eklenmez; herkese açık yorum kendi içinde bu tür bilgiler içerebilir. Modelden özel bilgileri yanıtta tekrarlamaması istenir.
 - OpenAI Structured Outputs ile yanıt, risk rotası ve insan onayı zorunluluğu şemaya bağlanır.
 - Girdi ve çıktı moderasyonu etkinleştirilmiştir.
 - Hukuk/dava/iade/güvenlik/kişisel veri/ciddi teknik hata iddiası otomatik yayınlanamaz.
@@ -56,6 +56,15 @@ Canlı yayın için her şubenin `accountId`, `locationId` ve sunucu tarafında 
 - Sunucu Google'dan doğru yorumu ve şubeyi doğrular; hazırlık sırasında yorum veya mevcut yanıt değişirse taslak onaya geçirilmez.
 - Kartta düzenleme ve kaydetme, yeniden üretme, açık onay kutusu ve **Onayla ve gönder** bulunur. Onay yalnız görülen kayıt kimliği, sürüm ve metne bağlıdır; metin veya sürüm değişince sıfırlanır.
 - Otomatik hazırlık hiçbir zaman yayın onayı vermez. Taslaklar, görevler ve Google'ın mevcut yanıtları korunur.
+
+## Kişiselleştirilmiş yanıt kalitesi
+
+- Tam ad gibi görünen Google profil ismi doğal bir hitapta kullanılabilir. İsim tahmini kimlik doğrulaması değildir; takma ad, işletme adı, sayı içeren kullanıcı adı veya belirsiz isimde kişisel hitap yapılmaz. Cinsiyete dayalı Bey/Hanım tahmini yapılmaz.
+- Yanıt uzunluğu yorumun ayrıntısına göre ayarlanır. Normal yorumda daha kapsamlı ve somut, çok kısa yorumda daha öz, yalnız yıldızda deneyim uydurmayan bir yanıt hazırlanır. Gövde en fazla 1200 karakterdir; doğru şube imzasını sunucu ekler.
+- Yerel SEO yaklaşımı doğal şehir/ilçe ve oto ekspertiz bağlamıdır. Anahtar kelime yığını, satış promosyonu, doğrulanmamış hizmet/ücret/çalışma saati ve arama sıralaması garantisi kullanılmaz.
+- Kart ve düzenleyicideki **Yeni yanıt hazırla** önceki taslağı karşılaştırma verisi olarak iletir. Model farklı açılış, cümle yapısı ve kapanış üretir. Aynı metin veya yalnız hitabı değiştiren eşdeğer yanıt yeni taslak olarak kabul edilmez.
+- Yeni üretim başarısız olursa mevcut metin korunur. Başarılı yeni taslak için eski onay sıfırlanır; kaydetme ve yayın yine ayrı işlemlerdir. Karttaki yeni taslak kaydedilir, Google'a gönderilmez.
+- Başvuru için kaynaklar: [OpenAI prompt engineering](https://developers.openai.com/api/docs/guides/prompt-engineering), [Google yorum yanıtları rehberi](https://support.google.com/business/answer/3474122?hl=tr).
 
 ## Google yayın doğrulaması
 

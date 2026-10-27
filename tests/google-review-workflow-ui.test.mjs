@@ -5,7 +5,7 @@ import test from 'node:test';
 
 const source = await readFile(new URL('../assets/google-review-ai.js', import.meta.url), 'utf8');
 const BRANCH = { id: 'branch-google-nilufer', name: 'OTOTR Oto Ekspertiz Bursa Nilüfer', replySignatureName: 'OTOTR Bursa Nilüfer Şube', googleBusinessAccountId: '123', googleBusinessLocationId: '13476693615171033693' };
-const REVIEW = { id: 'erp-review-one', googleReviewId: 'google-review-one', branchId: BRANCH.id, rating: 5, comment: 'Özenli hizmet için teşekkürler.', recommendedAction: 'Yanıtı değerlendirin.' };
+const REVIEW = { id: 'erp-review-one', googleReviewId: 'google-review-one', branchId: BRANCH.id, rating: 5, comment: 'Özenli hizmet için teşekkürler.', reviewerName: 'Synthetic Reviewer', recommendedAction: 'Yanıtı değerlendirin.' };
 
 class Element {
   constructor() { this.children = new Map(); this.listeners = new Map(); this.value = ''; this.checked = false; this.disabled = false; this.hidden = false; this.innerHTML = ''; this.textContent = ''; this.dataset = {}; this.attributes = {}; const classes = new Set(); this.classList = { add: value => classes.add(value), remove: value => classes.delete(value), contains: value => classes.has(value) }; }
@@ -22,13 +22,16 @@ function server() {
     state,
     async fetch(url, options) {
       const body = JSON.parse(options.body); state.calls.push(body);
-      if (String(url).endsWith('/google-review-ai')) return state.aiFails ? Response.json({ error: 'Fixture OpenAI unavailable' }, { status: 502 }) : Response.json({ reply: 'Özenli hizmetimizi değerlendirmeniz bizi mutlu etti.\n\nOTOTR Bursa Nilüfer Şube ekibi', tone: 'samimi', risk_reason: '' });
+      if (String(url).endsWith('/google-review-ai')) {
+        if (state.aiHold) await new Promise(resolve => { state.releaseAI = resolve; });
+        return state.aiFails ? Response.json({ error: 'Fixture OpenAI unavailable' }, { status: 502 }) : Response.json({ reply: state.aiReply ?? 'Özenli hizmetimizi değerlendirmeniz bizi mutlu etti.\n\nOTOTR Bursa Nilüfer Şube ekibi', tone: 'samimi', risk_reason: '' });
+      }
       if (body.action === 'workflow_list') return state.listFails ? Response.json({ error: 'Fixture storage unavailable' }, { status: 503 }) : Response.json({ items: state.items, next_offset: null });
       if (body.action === 'save_draft' || body.action === 'create_task') {
         if (state.saveFails) return Response.json({ error: 'Fixture save rejected' }, { status: 503 });
         let item = body.item_id ? state.items.find(item => item.id === body.item_id) : null;
         if (!item) {
-          item = { id: `00000000-0000-4000-8000-${String(state.items.length + 1).padStart(12, '0')}`, branch_id: body.branch_id, branch_name: BRANCH.name, account_id: body.account_id, location_id: body.location_id, review_id: body.review_id, kind: body.action === 'save_draft' ? 'reply' : body.kind, version: 0, expected_reply: '', review_snapshot: { rating: REVIEW.rating, comment: REVIEW.comment } };
+          item = { id: `00000000-0000-4000-8000-${String(state.items.length + 1).padStart(12, '0')}`, branch_id: body.branch_id, branch_name: BRANCH.name, account_id: body.account_id, location_id: body.location_id, review_id: body.review_id, kind: body.action === 'save_draft' ? 'reply' : body.kind, version: 0, expected_reply: '', review_snapshot: { rating: REVIEW.rating, comment: REVIEW.comment, reviewer_name: REVIEW.reviewerName } };
           state.items.push(item);
         }
         Object.assign(item, { reply_text: body.reply_text || '', draft_source: body.draft_source || 'manual', status: body.action === 'save_draft' ? 'approval_pending' : 'open', note: body.note || '', version: item.version + 1 });
@@ -330,4 +333,57 @@ test('accepted pending replies show normal waiting information and cannot be rep
   await h.element('[data-google-ai-verify]').dispatch('click');
   const verify = h.shared.state.calls.find(call => call.action === 'verify_reply'); assert.ok(verify); assert.equal('approved' in verify, false);
   assert.equal(item.approved_by, 'original-approver'); assert.equal(item.approved_at, '2026-10-27T00:00:00Z');
+});
+
+test('modal regeneration uses the current edited reply and reviewer name and requires saving and approval again', async () => {
+  const h = ui(); await h.api.generate(REVIEW.id); await h.element('[data-google-ai-queue]').dispatch('click');
+  const oldSaved = h.shared.state.items[0].reply_text;
+  h.element('#googleAiReply').value = 'The user edited this current reply'; await h.element('#googleAiReply').dispatch('input');
+  h.shared.state.aiReply = 'New alternative reply';
+  await h.element('[data-google-ai-regenerate]').dispatch('click');
+  const request = h.shared.state.calls.filter(call => call.action === 'generate').at(-1);
+  assert.equal(request.previous_reply, 'The user edited this current reply'); assert.equal(request.review.reviewerName, REVIEW.reviewerName);
+  assert.equal(h.element('#googleAiReply').value, 'New alternative reply'); assert.equal(h.shared.state.items[0].reply_text, oldSaved);
+  assert.equal(h.element('#googleAiApprove').checked, false); assert.equal(h.element('[data-google-ai-publish]').disabled, true);
+  await h.element('[data-google-ai-queue]').dispatch('click'); assert.equal(h.shared.state.items[0].version, 2);
+  assert.equal(h.shared.state.items[0].reply_text, 'New alternative reply'); assert.equal(h.element('#googleAiApprove').checked, false);
+  assert.equal(h.shared.state.calls.some(call => call.action === 'publish_reply'), false);
+});
+
+test('failed modal regeneration preserves saved or unsaved text and its source instead of substituting a fallback', async () => {
+  for (const saved of [true, false]) {
+    const h = ui(); await h.api.generate(REVIEW.id);
+    if (saved) await h.element('[data-google-ai-queue]').dispatch('click');
+    const text = saved ? h.element('#googleAiReply').value : 'Unsaved custom text remains exactly';
+    h.element('#googleAiReply').value = text; await h.element('#googleAiReply').dispatch('input');
+    const metadata = h.element('#googleAiMeta').innerHTML;
+    h.shared.state.aiFails = true; await h.element('[data-google-ai-regenerate]').dispatch('click');
+    assert.equal(h.element('#googleAiReply').value, text); assert.equal(h.element('#googleAiMeta').innerHTML, metadata);
+    assert.match(h.element('#googleAiWarning').textContent, /mevcut metniniz korundu/);
+    assert.doesNotMatch(h.element('#googleAiMeta').innerHTML, /Yerel şablon/);
+    assert.equal(h.element('#googleAiApprove').checked, false); assert.equal(h.shared.state.calls.some(call => call.action === 'publish_reply'), false);
+  }
+});
+
+test('modal new reply preparation has a busy label and ignores a second click', async () => {
+  const h = ui(); await h.api.generate(REVIEW.id); h.shared.state.aiHold = true;
+  const first = h.element('[data-google-ai-regenerate]').dispatch('click');
+  for (let i = 0; i < 8; i++) await Promise.resolve();
+  assert.equal(h.element('[data-google-ai-regenerate]').textContent, 'Yeni yanıt hazırlanıyor…');
+  assert.equal(h.element('[data-google-ai-regenerate]').disabled, true);
+  await h.element('[data-google-ai-regenerate]').dispatch('click');
+  assert.equal(h.shared.state.calls.filter(call => call.action === 'generate').length, 2, 'initial generation plus one regeneration');
+  h.shared.state.releaseAI(); await first;
+  assert.equal(h.element('[data-google-ai-regenerate]').textContent, 'Yeni yanıt hazırla');
+  assert.equal(h.element('[data-google-ai-regenerate]').disabled, false);
+});
+
+test('published and pending modal replies cannot regenerate through a hidden action', async () => {
+  for (const status of ['published', 'publishing', 'publish_unknown']) {
+    const h = ui(); await h.api.generate(REVIEW.id); await h.element('[data-google-ai-queue]').dispatch('click');
+    h.shared.state.items[0].status = status; await h.api.refreshWorkflow(); h.api.openItem(h.shared.state.items[0].id);
+    assert.equal(h.element('[data-google-ai-regenerate]').hidden, true);
+    await h.element('[data-google-ai-regenerate]').dispatch('click');
+    assert.equal(h.shared.state.calls.filter(call => call.action === 'generate').length, 1);
+  }
 });
