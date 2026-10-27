@@ -439,3 +439,14 @@ body.dark-mode #page-google-reviews {
   #page-google-reviews .google-kpi-value-large { font-size: 29px; }
   #page-google-reviews .google-reply-actions .google-reply-secondary { flex: 1 1 120px; }
 }
+
+/* Branch inbox navigation: exact scope stays visible in the selected row. */
+#page-google-reviews .google-branch-nav-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+#page-google-reviews .google-branch-count{font:600 12px/1.5 system-ui;background:var(--gc-line,#e1ddd3);padding:2px 9px;border-radius:99px;flex-shrink:0;color:var(--ink)}
+#page-google-reviews .google-branch-nav .google-branch-item{gap:7px;padding:14px 12px}
+#page-google-reviews .google-branch-nav .google-branch-item.active{box-shadow:inset 4px 0 0 #805e27}
+#page-google-reviews .google-branch-health{font-size:11px;color:var(--muted)}
+#page-google-reviews .google-branch-health.error{color:#b4442f}
+body.dark-mode #page-google-reviews .google-branch-health.error{color:#f0a18d}
+@media(max-width:1280px){#page-google-reviews .google-branch-nav .google-branch-list{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:720px){#page-google-reviews .google-branch-nav .google-branch-list{grid-template-columns:repeat(2,minmax(0,1fr))}}

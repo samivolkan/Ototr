@@ -288,7 +288,7 @@ test('preparation deadline is persisted as failure instead of success or automat
 });
 
 test('wrong branch, invalid review, unauthorized user and database failure spend no AI calls', async () => {
-  for (const options of [{ storeCode: 'wrong-code' }, { reviewId: 'wrong-review' }, { userId: OTHER }]) {
+  for (const options of [{ storeCode: '05971556162544786377' }, { reviewId: 'wrong-review' }, { userId: OTHER }]) {
     const f = workflowFixture(options); const result = await f.request(prepareBody());
     assert.ok(result.status >= 400 || result.data.item.status === 'draft_failed'); assert.equal(f.state.aiCount, 0); assert.equal(f.state.putCount, 0);
   }
@@ -990,3 +990,8 @@ for (const action of ['workflow_list', 'save_draft', 'create_task', 'update_task
     assert.equal(f.mutations.length, 0);
   });
 }
+
+test('pinned location with an edited store code prepares a draft without publishing',async()=>{
+ const f=workflowFixture({storeCode:'edited-code'});const result=await f.request(prepareBody());
+ assert.equal(result.status,200);assert.equal(result.data.item.status,'approval_pending');assert.equal(f.state.putCount,0);
+});

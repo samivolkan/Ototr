@@ -112,10 +112,10 @@ function paginatedUrl(base: string, pageToken: unknown) {
 
 const workTable = 'google_review_work_items';
 const connectionId = 'ototr-primary';
-const branches: Record<string, { name: string; storeCode: string }> = {
-  'branch-google-nilufer': { name: 'OTOTR Bursa Nilüfer Şube', storeCode: '13674839659006303129' },
-  'branch-google-gebze': { name: 'OTOTR Gebze Şube', storeCode: '05971556162544786377' },
-  'branch-google-inegol': { name: 'OTOTR Bursa İnegöl Şube', storeCode: '03710924650104046695' },
+const branches: Record<string, { name: string; storeCode: string; locationId: string }> = {
+  'branch-google-nilufer': { name: 'OTOTR Bursa Nilüfer Şube', storeCode: '13674839659006303129', locationId: '13476693615171033693' },
+  'branch-google-gebze': { name: 'OTOTR Gebze Şube', storeCode: '05971556162544786377', locationId: '7218866682466737157' },
+  'branch-google-inegol': { name: 'OTOTR Bursa İnegöl Şube', storeCode: '03710924650104046695', locationId: '16859471132010192752' },
 };
 function syncBranchIds(value: unknown): string[] {
   if (value === undefined) return Object.keys(branches);
@@ -165,7 +165,20 @@ async function syncReviews(targets: string[], token: string, signal: AbortSignal
   const locations = groups.flat();
   const results = await mapThree(targets, async branch_id => {
     try {
-      const matching = locations.filter(location => location.storeCode === branches[branch_id].storeCode);
+      const expected = branches[branch_id];
+      // Store codes are editable. A pinned Google resource ID is also an exact identity.
+      // Never infer a branch from its title; reject conflicting known branch codes.
+      const matching = locations.filter(location => location.storeCode === expected.storeCode || location.name === `locations/${expected.locationId}`);
+      if (!matching.length && accounts.includes('accounts/114698852482564472140')) {
+        let direct;
+        try { direct = await googleJson(`https://mybusinessbusinessinformation.googleapis.com/v1/locations/${expected.locationId}?readMask=name,title,storeCode,metadata`, token, { signal }, true); }
+        catch (error) {
+          if (error instanceof GoogleApiError && error.status === 404) throw new GoogleApiError('Bağlı Google hesabı bu şubenin kayıtlı işletme profiline erişemiyor (Google: kayıt bulunamadı). İşletme erişimi, taşınma veya profil birleştirme durumu kontrol edilmeli. Önceki veriler korunuyor.', 404, 'LOCATION_UNAVAILABLE');
+          throw error;
+        }
+        if (direct?.name === `locations/${expected.locationId}`) matching.push({ ...direct, accountName: 'accounts/114698852482564472140' });
+      }
+      if (matching.some(location => Object.entries(branches).some(([id, branch]) => id !== branch_id && (location.storeCode === branch.storeCode || location.name === `locations/${branch.locationId}`)))) throw new GoogleApiError('Google konum eşleşmesi başka bir şubeyle çakışıyor.', 409, 'AMBIGUOUS_LOCATION');
       if (matching.some(location => !/^locations\/\d+$/.test(String(location.name || '')))) throw new GoogleApiError('Google konum kimliği okunamadı.', 502, 'INVALID_GOOGLE_RESPONSE');
       // The same location may be accessible through more than one account wrapper.
       // Keep the wrapper and location together; never match by a similar title.
@@ -245,7 +258,7 @@ function withReviewReplyUrl(snapshot: any, value: unknown) {
 }
 async function verifiedReview(identity: ReturnType<typeof workIdentity>, token: string, signal?: AbortSignal) {
   const location = await googleJson(`https://mybusinessbusinessinformation.googleapis.com/v1/locations/${identity.location_id}?readMask=name,title,storeCode`, token, signal ? { signal } : {}, Boolean(signal));
-  if (String(location.storeCode || '') !== branches[identity.branch_id].storeCode) throw new RequestError('Google konumu seçilen OTOTR şubesiyle eşleşmiyor.', 409);
+  if ((String(location.storeCode || '') !== branches[identity.branch_id].storeCode && !(identity.location_id === branches[identity.branch_id].locationId && location.name === `locations/${branches[identity.branch_id].locationId}`)) || Object.entries(branches).some(([id, branch]) => id !== identity.branch_id && (location.storeCode === branch.storeCode || location.name === `locations/${branch.locationId}`))) throw new RequestError('Google konumu seçilen OTOTR şubesiyle eşleşmiyor.', 409);
   const review = await googleJson(reviewUrl(identity), token, signal ? { signal } : {}, Boolean(signal));
   if (String(review.reviewId || review.name?.split('/').pop() || '') !== identity.review_id) throw new RequestError('Google yorum kimliği doğrulanamadı.', 409);
   const stars: Record<string, number> = { ONE: 1, TWO: 2, THREE: 3, FOUR: 4, FIVE: 5 };

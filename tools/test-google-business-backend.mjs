@@ -379,3 +379,27 @@ test('rotated OAuth client blocks batch sync without a stale refresh request', a
   const f = fixture({ savedClientId: 'retired-client' });
   const response = await f.call({ action: 'sync_reviews' }); assert.equal(response.status, 409); assert.equal((await response.json()).reconnection_required, true); assert.equal(f.fetches.length, 0);
 });
+
+for (const direct of [false,true]) test(`pinned Inegol identity survives editable store code (direct=${direct})`, async () => {
+  const location={name:'locations/16859471132010192752',storeCode:'updated-code',title:'Fixture'};
+  const f=fixture({googleResponse:syncResponse({locations(url){return Response.json(url.pathname.includes('/accounts/')?{locations:direct?[]:[location]}:location);}})});
+  const result=await (await f.call({action:'sync_reviews',branch_ids:['branch-google-inegol']})).json();
+  assert.equal(result.errors.length,0);
+  assert.equal(result.branches[0].location_id,'16859471132010192752');
+  assert.equal(result.branches[0].account_id,'114698852482564472140');
+});
+for (const location of [
+ {name:'locations/999',storeCode:'updated-code',title:'OTOTR Bursa İnegöl'},
+ {name:'locations/16859471132010192752',storeCode:'05971556162544786377'},
+]) test('fallback rejects wrong resource and cross-branch code conflict',async()=>{
+ const f=fixture({googleResponse:syncResponse({locations(url){return Response.json(url.pathname.includes('/accounts/')?{locations:[]}:location);}})});
+ const result=await (await f.call({action:'sync_reviews',branch_ids:['branch-google-inegol']})).json();
+ assert.equal(result.branches.length,0);assert.equal(result.errors[0].status,409);
+ assert.equal(f.fetches.some(r=>r.url.hostname==='mybusiness.googleapis.com'),false);
+});
+test('fallback preserves denied Google access and never reads reviews',async()=>{
+ const f=fixture({googleResponse:syncResponse({locations(url){return url.pathname.includes('/accounts/')?Response.json({locations:[]}):Response.json({error:{message:'denied',status:'PERMISSION_DENIED'}},{status:403});}})});
+ const result=await (await f.call({action:'sync_reviews',branch_ids:['branch-google-inegol']})).json();
+ assert.equal(result.branches.length,0);assert.equal(result.errors[0].status,403);
+ assert.equal(f.fetches.some(r=>r.url.hostname==='mybusiness.googleapis.com'),false);
+});
