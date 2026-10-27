@@ -358,10 +358,35 @@ async function publishWork(db: any, user: any, body: any, token: string) {
   if (!claim.data) throw new RequestError('Bu yanıt için başka bir işlem başladı. Listeyi yenileyin.', 409);
   const signal = AbortSignal.timeout(20_000);
   let replySnapshot = { ...item.review_snapshot };
+  function reviewIdentity(review: any) {
+    const prefix = `accounts/${item.account_id}/locations/${item.location_id}/reviews/`;
+    const id = typeof review?.reviewId === 'string' ? review.reviewId : typeof review?.name === 'string' && review.name.startsWith(prefix) ? review.name.slice(prefix.length) : '';
+    if (!id || id.length > 512 || (review.reviewId != null && typeof review.reviewId !== 'string') || (review.name != null && review.name !== `${prefix}${id}`) || (review.reviewReply?.comment != null && typeof review.reviewReply.comment !== 'string')) throw new GoogleApiError('Google yorum kimliği veya yanıtı doğrulanamadı.', 502, 'INVALID_GOOGLE_RESPONSE');
+    return id;
+  }
+  function replyDiagnostics(review: any) {
+    const state = (value: any) => ['PENDING', 'REJECTED', 'APPROVED', 'REVIEW_REPLY_STATE_UNSPECIFIED'].includes(value) ? value : value ? 'OTHER' : '';
+    return { reviewReply_present: Object.hasOwn(review, 'reviewReply'), reviewReply_comment_length: typeof review.reviewReply?.comment === 'string' ? review.reviewReply.comment.length : null, reviewReply_state: state(review.reviewReply?.reviewReplyState), reply_present: Object.hasOwn(review, 'reply'), reply_comment_length: typeof review.reply?.comment === 'string' ? review.reply.comment.length : null, reply_state: state(review.reply?.reviewReplyState) };
+  }
   async function readReview() {
     const review = await googleJson(reviewUrl(item), token, { signal }, true);
-    if (String(review.reviewId || review.name?.split('/').pop() || '') !== item.review_id) throw new GoogleApiError('Google yorum kimliği doğrulanamadı.', 502, 'INVALID_GOOGLE_RESPONSE');
-    return review;
+    if (reviewIdentity(review) !== item.review_id) throw new GoogleApiError('Google yorum kimliği doğrulanamadı.', 502, 'INVALID_GOOGLE_RESPONSE');
+    replySnapshot = { ...replySnapshot, verification_diagnostics: { get: replyDiagnostics(review) } };
+    if (review.reviewReply?.comment) {
+      replySnapshot = { ...replySnapshot, verification_source: 'reviews.get', verification_at: new Date().toISOString() };
+      return review;
+    }
+    // Google may omit a reply from reviews.get while its fresh list includes it.
+    // Resolve only this exact review, with full pagination and identity checks;
+    // a missing or ambiguous entry must never permit an overwrite.
+    const page = await googlePages(`https://mybusiness.googleapis.com/v4/accounts/${item.account_id}/locations/${item.location_id}/reviews?pageSize=50&orderBy=updateTime%20desc`, 'reviews', token, signal);
+    const matches = page.reviews.filter((candidate: any) => reviewIdentity(candidate) === item.review_id);
+    if (matches.length !== 1) throw new GoogleApiError('Google yorum listesinde bu kayıt kesin olarak doğrulanamadı. Yeniden gönderim yapılmadı.', 502, 'REVIEW_NOT_CONFIRMED');
+    replySnapshot = { ...replySnapshot, verification_source: 'reviews.list', verification_at: new Date().toISOString(), verification_diagnostics: { ...replySnapshot.verification_diagnostics, list: replyDiagnostics(matches[0]) } };
+    const directState = review.reviewReply?.reviewReplyState;
+    if (directState && directState !== 'APPROVED' && directState !== matches[0].reviewReply?.reviewReplyState) throw new GoogleApiError('Google yanıtının moderasyon durumu okumalar arasında farklı. Yeniden göndermeden sonucu tekrar kontrol edin.', 409, 'GOOGLE_REPLY_STATE_CONFLICT');
+    if (!matches[0].reviewReply?.comment && (directState || matches[0].reviewReply?.reviewReplyState)) throw new GoogleApiError('Google yanıt durumu mevcut ancak metin doğrulanamadı. Yeniden göndermeden sonucu tekrar kontrol edin.', 409, 'GOOGLE_REPLY_STATE_UNCONFIRMED');
+    return matches[0];
   }
   function rememberReply(reply: any) {
     const state = String(reply?.reviewReplyState || replySnapshot.google_reply_state || '');
@@ -385,14 +410,14 @@ async function publishWork(db: any, user: any, body: any, token: string) {
       if (!sameGoogleReply(currentReply, item.expected_reply)) {
         return { item: await finishPublication(db, item, attemptId, {
           status: 'publish_failed',
-          review_snapshot: { ...item.review_snapshot, reply_conflict: true, current_reply: currentReply },
+          review_snapshot: { ...replySnapshot, reply_conflict: true, current_reply: currentReply },
           last_error: 'Google’da farklı bir yanıt bulundu ve korundu. Mevcut yanıtı inceleyip taslağı yeniden kaydedin; yeni sürüm için yeniden onay gerekir.',
         }) };
       }
-      return { item: await finishPublication(db, item, attemptId, { status: item.status === 'publish_failed' ? 'publish_failed' : 'publish_unknown', last_error: replySnapshot.google_reply_accepted ? 'Google gönderimi aldı; yayın henüz doğrulanamadı. Yeniden göndermeden yayın sonucunu kontrol edin.' : 'Kayıtlı yanıt Google’da henüz doğrulanamadı. Yayın sonucunu tekrar kontrol edin.' }) };
+      return { item: await finishPublication(db, item, attemptId, { status: item.status === 'publish_failed' ? 'publish_failed' : 'publish_unknown', review_snapshot: replySnapshot, last_error: replySnapshot.google_reply_accepted ? 'Google gönderimi aldı; yayın henüz doğrulanamadı. Yeniden göndermeden yayın sonucunu kontrol edin.' : 'Kayıtlı yanıt Google’da henüz doğrulanamadı. Yayın sonucunu tekrar kontrol edin.' }) };
     }
     if (!sameGoogleReply(currentReply, item.expected_reply)) throw new RequestError('Google’daki mevcut yanıt değişmiş. Yayın durduruldu; taslağı yeniden inceleyin.', 409);
-    if (replySnapshot.google_reply_accepted) return { item: await finishPublication(db, item, attemptId, { status: replySnapshot.google_reply_state === 'REJECTED' ? 'publish_failed' : 'publish_unknown', last_error: replySnapshot.google_reply_state === 'REJECTED' ? 'Google yanıtı reddetti. Metni inceleyip yeniden kaydedin; yeni onay gerekir.' : 'Google gönderimi aldı; yeniden gönderim yapılmadı. Yayın sonucunu kontrol edin.' }) };
+    if (replySnapshot.google_reply_accepted) return { item: await finishPublication(db, item, attemptId, { status: replySnapshot.google_reply_state === 'REJECTED' ? 'publish_failed' : 'publish_unknown', review_snapshot: replySnapshot, last_error: replySnapshot.google_reply_state === 'REJECTED' ? 'Google yanıtı reddetti. Metni inceleyip yeniden kaydedin; yeni onay gerekir.' : 'Google gönderimi aldı; yeniden gönderim yapılmadı. Yayın sonucunu kontrol edin.' }) };
     writeStarted = true;
     try {
       const receipt = await googleJson(`${reviewUrl(item)}/reply`, token, { method: 'PUT', signal, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ comment: item.reply_text }) }, true);

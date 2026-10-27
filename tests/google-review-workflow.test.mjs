@@ -31,7 +31,7 @@ function workflowFixture(options = {}) {
     GOOGLE_OAUTH_CLIENT_ID: 'fixture-client', GOOGLE_OAUTH_CLIENT_SECRET: 'fixture-secret', GOOGLE_BUSINESS_ADMIN_USER_IDS: options.allowedUsers || '',
   };
   let remote = { reviewId: options.reviewId || 'review-one', name: `accounts/123/locations/${LOCATION}/reviews/${options.reviewId || 'review-one'}`, starRating: 'FIVE', comment: 'Fixture public review', reviewer: { displayName: 'Fixture reviewer' }, createTime: '2026-10-27T00:00:00Z', ...(options.remoteReply ? { reviewReply: { comment: options.remoteReply } } : {}) };
-  const state = { putFailure: null, getFailure: null, failPublishedWrite: false, failAllWrites: false, failReads: false, beforePut: null, putCount: 0, beforeAI: null, aiCount: 0, aiStatus: 200, aiDraft: null, readTransform: null, putReplyState: '', putPolicyViolation: '', putResponse: null };
+  const state = { putFailure: null, getFailure: null, failPublishedWrite: false, failAllWrites: false, failReads: false, beforePut: null, putCount: 0, beforeAI: null, aiCount: 0, aiStatus: 200, aiDraft: null, readTransform: null, listResponse: null, putReplyState: '', putPolicyViolation: '', putResponse: null };
 
   function query(table) {
     const filters = [];
@@ -121,6 +121,7 @@ function workflowFixture(options = {}) {
         return state.putResponse ? state.putResponse(clone(remote.reviewReply)) : Response.json(remote.reviewReply);
       }
       if (state.getFailure) return Response.json({ error: { status: 'UNAVAILABLE', message: 'fixture Google read failed' } }, { status: state.getFailure });
+      if (parsed.pathname.endsWith('/reviews')) return state.listResponse ? state.listResponse(parsed, clone(remote)) : Response.json({ reviews: [state.readTransform ? state.readTransform(clone(remote)) : remote], totalReviewCount: 1 });
       return Response.json(state.readTransform ? state.readTransform(clone(remote)) : remote);
     },
     Deno: { env: { get(name) { return values[name]; } }, serve(fn) { handler = fn; } },
@@ -748,6 +749,88 @@ test('unapproved failed or unknown records cannot be promoted by read-only verif
 test('a malformed preflight Google review cannot be treated as an empty reply before a write', async () => {
   const f = workflowFixture(); const item = await saveDraft(f); f.state.readTransform = () => ({});
   const result = await f.request(publishBody(item)); assert.equal(result.status, 502); assert.equal(f.state.putCount, 0); assert.notEqual(f.rows[0].status, 'published');
+});
+
+async function approvedVerification(f, status = 'publish_unknown') {
+  const item = await saveDraft(f);
+  Object.assign(f.rows[0], { status, approved_by: OWNER, approved_at: new Date().toISOString() });
+  return { action: 'verify_reply', item_id: item.id, expected_version: item.version };
+}
+const withoutReply = review => { delete review.reviewReply; return review; };
+test('empty individual GET is reconciled from the exact review on a later list page without PUT', async () => {
+  const f = workflowFixture(); const verify = await approvedVerification(f, 'publish_failed');
+  f.rows[0].review_snapshot.reply_conflict = true;
+  f.setRemoteReply(REPLY + GOOGLE_TRANSLATION, { reviewReplyState: 'APPROVED' }); f.state.readTransform = withoutReply;
+  f.state.listResponse = (url, remote) => Response.json(url.searchParams.has('pageToken') ? { reviews: [remote] } : { reviews: [{ ...remote, reviewId: 'other', name: `accounts/123/locations/${LOCATION}/reviews/other` }], nextPageToken: 'opaque+/= &token' });
+  const result = await f.request(verify);
+  assert.equal(result.status, 200); assert.equal(result.data.item.status, 'published'); assert.equal(result.data.item.review_snapshot.reply_conflict, undefined); assert.equal(f.state.putCount, 0);
+  assert.equal(result.data.item.review_snapshot.verification_source, 'reviews.list');
+  assert.equal(result.data.item.review_snapshot.verification_diagnostics.get.reviewReply_present, false);
+  assert.equal(result.data.item.review_snapshot.verification_diagnostics.list.reviewReply_comment_length, (REPLY + GOOGLE_TRANSLATION).length);
+  assert.equal(f.calls.filter(call => call.url.pathname.endsWith('/reviews')).length, 2);
+  assert.equal(f.calls.at(-1).url.searchParams.get('pageToken'), 'opaque+/= &token');
+});
+
+test('empty preflight GET cannot overwrite a different reply found in the fresh list', async () => {
+  const f = workflowFixture(); const item = await saveDraft(f); f.setRemoteReply('Fixture different manager reply');
+  f.state.readTransform = withoutReply; f.state.listResponse = (_, remote) => Response.json({ reviews: [remote] });
+  const result = await f.request(publishBody(item));
+  assert.equal(result.status, 409); assert.equal(f.state.putCount, 0); assert.equal(f.getRemoteReply(), 'Fixture different manager reply');
+});
+
+test('positive individual GET does not require a list lookup and records its source', async () => {
+  const f = workflowFixture(); const verify = await approvedVerification(f); f.setRemoteReply(REPLY, { reviewReplyState: 'APPROVED' });
+  f.state.listResponse = () => { throw new Error('No list lookup expected'); };
+  const result = await f.request(verify); assert.equal(result.data.item.status, 'published'); assert.equal(result.data.item.review_snapshot.verification_source, 'reviews.get'); assert.equal(f.state.putCount, 0);
+});
+
+for (const scenario of ['missing', 'wrong-name', 'duplicate', 'malformed', 'cycle', 'second-page-error']) {
+  test(`list fallback ${scenario} cannot confirm or permit a write`, async () => {
+    const f = workflowFixture(); const verify = await approvedVerification(f); f.setRemoteReply(REPLY, { reviewReplyState: 'APPROVED' }); f.state.readTransform = withoutReply;
+    f.state.listResponse = (url, remote) => {
+      if (scenario === 'missing') return Response.json({ reviews: [{ ...remote, reviewId: 'different-id', name: `accounts/123/locations/${LOCATION}/reviews/different-id` }] });
+      if (scenario === 'wrong-name') return Response.json({ reviews: [{ ...remote, name: `accounts/999/locations/${LOCATION}/reviews/review-one` }] });
+      if (scenario === 'duplicate') return Response.json({ reviews: [remote, remote] });
+      if (scenario === 'malformed') return Response.json({ reviews: {} });
+      if (scenario === 'cycle') return Response.json({ reviews: [], nextPageToken: 'cycle' });
+      return url.searchParams.has('pageToken') ? Response.json({ error: { message: 'Fixture listing denied', status: 'PERMISSION_DENIED' } }, { status: 403 }) : Response.json({ reviews: [remote], nextPageToken: 'next' });
+    };
+    const result = await f.request(verify);
+    assert.ok(result.status >= 400); assert.notEqual(f.rows[0].status, 'published'); assert.equal(f.state.putCount, 0);
+    if (scenario === 'second-page-error') assert.equal(result.status, 403);
+  });
+}
+
+for (const state of ['PENDING', 'REJECTED']) {
+  test(`list reply with ${state} moderation cannot be mislabeled as published`, async () => {
+    const f = workflowFixture(); const verify = await approvedVerification(f); f.setRemoteReply(REPLY, { reviewReplyState: state }); f.state.readTransform = withoutReply;
+    f.state.listResponse = (_, remote) => Response.json({ reviews: [remote] });
+    const result = await f.request(verify); assert.equal(result.data.item.status, state === 'PENDING' ? 'publish_unknown' : 'publish_failed'); assert.equal(f.state.putCount, 0); assert.equal(result.data.item.review_snapshot.verification_source, 'reviews.list');
+  });
+}
+
+test('conflicting explicit moderation in GET and list fails closed', async () => {
+  const f = workflowFixture(); const verify = await approvedVerification(f); f.setRemoteReply(REPLY, { reviewReplyState: 'APPROVED' });
+  f.state.readTransform = review => ({ ...review, reviewReply: { comment: '', reviewReplyState: 'PENDING' } });
+  f.state.listResponse = (_, remote) => Response.json({ reviews: [remote] });
+  const result = await f.request(verify); assert.equal(result.status, 409); assert.equal(result.data.code, 'GOOGLE_REPLY_STATE_CONFLICT'); assert.notEqual(f.rows[0].status, 'published'); assert.equal(f.state.putCount, 0);
+});
+
+test('unproven reply alias is diagnostic only and cannot falsely confirm publication', async () => {
+  const f = workflowFixture(); const verify = await approvedVerification(f); f.setRemoteReply(REPLY, { reviewReplyState: 'APPROVED' });
+  const alias = review => { review.reply = review.reviewReply; delete review.reviewReply; return review; };
+  f.state.readTransform = alias; f.state.listResponse = (_, remote) => Response.json({ reviews: [alias(remote)] });
+  const result = await f.request(verify); assert.equal(result.data.item.status, 'publish_unknown'); assert.equal(f.state.putCount, 0);
+  const diagnostic = result.data.item.review_snapshot.verification_diagnostics;
+  assert.equal(diagnostic.get.reviewReply_present, false); assert.equal(diagnostic.get.reply_present, true); assert.equal(diagnostic.list.reply_comment_length, REPLY.length);
+  assert.doesNotMatch(JSON.stringify(diagnostic), /Deneyiminizi|teşekkür/);
+});
+
+test('matching empty PENDING state in GET and list cannot permit a new PUT', async () => {
+  const f = workflowFixture(); const item = await saveDraft(f);
+  f.setRemoteReply('', { reviewReplyState: 'PENDING' });
+  const result = await f.request(publishBody(item));
+  assert.equal(result.status, 409); assert.equal(result.data.code, 'GOOGLE_REPLY_STATE_UNCONFIRMED'); assert.equal(f.state.putCount, 0); assert.notEqual(f.rows[0].status, 'published');
 });
 
 test('saved Google review IDs stay a single encoded path component on publication', async () => {
