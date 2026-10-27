@@ -37,7 +37,7 @@ Canlı yayın için her şubenin `accountId`, `locationId` ve sunucu tarafında 
 - Test edilen değişiklikler `main` dalına gönderildiğinde GitHub Pages dağıtımı otomatik başlar. Dağıtımın başarılı olduğu ve canlı dosyaların gönderilen sürümle eşleştiği kontrol edilmelidir.
 - Google Yorumlar ekranı açıldığında yorumlar kendiliğinden alınır. Ekran açık, görünür ve çevrimiçiyken Google yorumları beş dakikada, ortak görev/onay listesi bir dakikada yenilenir.
 - Başka ekrandayken, sekme gizliyken veya yanıt/görev düzenleyicisi açıkken arka plan yenilemesi bekler. Düzenlenen metin ve şube/filtre seçimi korunur.
-- Arka plan yenilemesi yalnız okuma yapar; AI taslağı oluşturmaz, onay vermez ve Google'a yanıt yayımlamaz. Sayfa kapalıyken çalışan bir sunucu zamanlayıcısı değildir.
+- Yorum ve görev yenilemesi tamamlandıktan sonra cevapsız ve kayıtlı taslağı olmayan yorumların AI yanıtları otomatik hazırlanır. Sayfa kapalıyken çalışan bir sunucu zamanlayıcısı değildir.
 - Başarısız yenilemede son başarılı veri tutulur ve hata gösterilir; aynı anda ikinci senkronizasyon başlatılmaz.
 
 ## Senkronizasyon performansı
@@ -47,3 +47,12 @@ Canlı yayın için her şubenin `accountId`, `locationId` ve sunucu tarafında 
 - Şube eşleşmesi sunucuda kesin mağaza koduyla yapılır. Başarısız şube son başarılı verisini korur; başka şubedeki hata başarılı sonuçları gizlemez.
 - Google'ın bildirdiği toplam yorum sayısı ile alınabilen yorum sayısı farklıysa arayüz bu farkı belirtir. Cevap bekleyen sayı yalnız alınan yorumlara dayanır; eksik yorum uydurulmaz.
 - Her senkronizasyon Google'dan yeniden okur; performans için eski yorum sonucu önbelleğe alınmaz.
+
+## Hazır yanıt kartları
+
+- Yorum solda, kayıtlı AI yanıtı ve işlemler sağdadır. Yanıtlanmış yorumlarda mevcut Google yanıtı gösterilir ve otomatik değiştirilmez.
+- Ekran görünürken en fazla iki taslak aynı anda hazırlanır. `prepare_draft` her yorum kimliği için veritabanında tek hazırlık rezervasyonu oluşturur; başka oturum mevcut kaydı alır, ikinci AI çağrısı açılmaz.
+- Başarılı hazırlık `approval_pending` olarak kalıcı kaydedilir. Başarısızlık `draft_failed` durumudur ve yalnız açık yeniden deneme ile tekrar AI çağrılır. Yarım kalan hazırlıklar sürüm/deneme kimliği kontrolüyle kurtarılır.
+- Sunucu Google'dan doğru yorumu ve şubeyi doğrular; hazırlık sırasında yorum veya mevcut yanıt değişirse taslak onaya geçirilmez.
+- Kartta düzenleme ve kaydetme, yeniden üretme, açık onay kutusu ve **Onayla ve gönder** bulunur. Onay yalnız görülen kayıt kimliği, sürüm ve metne bağlıdır; metin veya sürüm değişince sıfırlanır.
+- Otomatik hazırlık hiçbir zaman yayın onayı vermez. Taslaklar, görevler ve Google'ın mevcut yanıtları korunur.

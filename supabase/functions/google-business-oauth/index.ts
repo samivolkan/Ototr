@@ -201,7 +201,7 @@ function reviewUrl(item: { account_id: string; location_id: string; review_id: s
 function workIdentity(body: any) {
   const account_id = String(body.account_id || ''), location_id = String(body.location_id || ''), review_id = String(body.review_id || '');
   const branch_id = String(body.branch_id || '');
-  if (!/^\d+$/.test(account_id) || !/^\d+$/.test(location_id) || !review_id || review_id.length > 512 || !branches[branch_id]) {
+  if (!/^\d+$/.test(account_id) || !/^\d+$/.test(location_id) || !review_id || review_id.length > 512 || !Object.hasOwn(branches, branch_id)) {
     throw new RequestError('Geçerli hesap, şube ve Google yorum kimliği gerekli.', 400);
   }
   return { connection_id: connectionId, account_id, location_id, review_id, branch_id, branch_name: branches[branch_id].name };
@@ -225,13 +225,75 @@ async function getWork(db: any, body: any) {
   if (data.version !== expectedVersion(body)) throw new RequestError('Kayıt başka bir oturumda değişti. Listeyi yenileyin.', 409);
   return data;
 }
-async function verifiedReview(identity: ReturnType<typeof workIdentity>, token: string) {
-  const location = await googleJson(`https://mybusinessbusinessinformation.googleapis.com/v1/locations/${identity.location_id}?readMask=name,title,storeCode`, token);
+async function verifiedReview(identity: ReturnType<typeof workIdentity>, token: string, signal?: AbortSignal) {
+  const location = await googleJson(`https://mybusinessbusinessinformation.googleapis.com/v1/locations/${identity.location_id}?readMask=name,title,storeCode`, token, signal ? { signal } : {}, Boolean(signal));
   if (String(location.storeCode || '') !== branches[identity.branch_id].storeCode) throw new RequestError('Google konumu seçilen OTOTR şubesiyle eşleşmiyor.', 409);
-  const review = await googleJson(reviewUrl(identity), token);
+  const review = await googleJson(reviewUrl(identity), token, signal ? { signal } : {}, Boolean(signal));
   if (String(review.reviewId || review.name?.split('/').pop() || '') !== identity.review_id) throw new RequestError('Google yorum kimliği doğrulanamadı.', 409);
   const stars: Record<string, number> = { ONE: 1, TWO: 2, THREE: 3, FOUR: 4, FIVE: 5 };
   return { snapshot: { comment: String(review.comment || '').slice(0, 6000), rating: stars[review.starRating] || 0, reviewer_name: String(review.reviewer?.displayName || 'Google kullanıcısı').slice(0, 180), review_date: review.createTime || null }, expected_reply: String(review.reviewReply?.comment || '') };
+}
+async function preparationItem(db: any, identity: ReturnType<typeof workIdentity>) {
+  const result = await db.from(workTable).select('*').eq('connection_id', connectionId).eq('location_id', identity.location_id).eq('review_id', identity.review_id).eq('kind', 'reply').maybeSingle();
+  databaseFailure(result.error);
+  if (result.data && (result.data.account_id !== identity.account_id || result.data.branch_id !== identity.branch_id)) throw new RequestError('Bu yorumun kayıtlı hesap veya şube eşleşmesi farklı. Mevcut kaydı kullanın.', 409);
+  return result.data;
+}
+function preparationResult(item: any, extra: any = {}) {
+  return { item, preparing: item.status === 'preparing', requires_retry: item.status === 'draft_failed', ...extra };
+}
+async function prepareDraft(db: any, user: any, body: any, connection: any, authorization: string) {
+  const identity = workIdentity(body), now = new Date().toISOString(), attemptId = crypto.randomUUID();
+  let existing = await preparationItem(db, identity), item: any;
+  const stale = existing?.status === 'preparing' && Date.now() - Date.parse(existing.updated_at) > 120_000;
+  if (existing) {
+    if (body.retry === true && (existing.status === 'draft_failed' || stale)) {
+      if (workId(body) !== existing.id || expectedVersion(body) !== existing.version) throw new RequestError('Taslak başka oturumda değişti. Listeyi yenileyin.', 409);
+      const claim = await db.from(workTable).update({ status: 'preparing', attempt_id: attemptId, last_error: null, version: existing.version + 1, updated_by: user.id, updated_at: now }).eq('connection_id', connectionId).eq('id', existing.id).eq('version', existing.version).eq('status', existing.status).eq('updated_at', existing.updated_at).select('*').maybeSingle();
+      databaseFailure(claim.error);
+      if (!claim.data) throw new RequestError('Bu taslak için başka işlem başladı. Listeyi yenileyin.', 409);
+      item = claim.data;
+    } else {
+      if (stale) {
+        const recovered = await db.from(workTable).update({ status: 'draft_failed', attempt_id: null, last_error: 'Önceki taslak hazırlığı tamamlanamadı. Yeniden hazırlamak için tekrar deneyin.', version: existing.version + 1, updated_by: user.id, updated_at: now }).eq('connection_id', connectionId).eq('id', existing.id).eq('version', existing.version).eq('status', 'preparing').eq('updated_at', existing.updated_at).select('*').maybeSingle();
+        databaseFailure(recovered.error); existing = recovered.data || await preparationItem(db, identity);
+      }
+      return preparationResult(existing, { existing: true });
+    }
+  } else {
+    if (body.retry === true || body.item_id) throw new RequestError('Yeniden hazırlanacak taslak bulunamadı.', 404);
+    const claim = await db.from(workTable).insert({ ...identity, kind: 'reply', status: 'preparing', reply_text: '', expected_reply: '', review_snapshot: {}, draft_source: 'manual', note: '', version: 1, attempt_id: attemptId, last_error: null, approved_by: null, approved_at: null, published_at: null, created_by: user.id, updated_by: user.id, updated_at: now }).select('*').single();
+    if (claim.error?.code === '23505') return preparationResult(await preparationItem(db, identity), { existing: true });
+    databaseFailure(claim.error); item = claim.data;
+  }
+  async function finish(changes: any) {
+    const result = await db.from(workTable).update({ ...changes, version: item.version + 1, attempt_id: null, updated_at: new Date().toISOString() }).eq('connection_id', connectionId).eq('id', item.id).eq('version', item.version).eq('attempt_id', attemptId).eq('status', 'preparing').select('*').maybeSingle();
+    databaseFailure(result.error);
+    if (!result.data) throw new RequestError('Taslak hazırlığı başka oturumda değişti. Listeyi yenileyin.', 409);
+    return result.data;
+  }
+  const signal = AbortSignal.timeout(35_000);
+  let snapshot: any = {}, skipped = false;
+  try {
+    const token = await accessToken(await decrypt(connection.refresh_token_encrypted), signal);
+    const verified = await verifiedReview(identity, token, signal);
+    snapshot = verified.snapshot;
+    if (verified.expected_reply) { skipped = true; throw new RequestError('Bu yorum Google’da zaten yanıtlanmış. Mevcut yanıt korundu.', 409); }
+    // Forward the same ERP identity to the existing AI service. Its authorization,
+    // canonical prompt, moderation and signature validation remain the only path.
+    const response = await fetch(`${env('SUPABASE_URL')}/functions/v1/google-review-ai`, { method: 'POST', signal, headers: { Authorization: authorization, apikey: injectedSupabaseKey('SUPABASE_ANON_KEY', 'SUPABASE_PUBLISHABLE_KEYS'), 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'generate', branch: { id: identity.branch_id }, review: { rating: snapshot.rating, comment: snapshot.comment } }) });
+    const draft = await response.json().catch(() => null);
+    if (!response.ok) throw new RequestError(typeof draft?.error === 'string' ? draft.error.slice(0, 800) : 'AI taslağı hazırlanamadı. Yeniden deneyin.', response.status);
+    if (!draft || typeof draft.reply !== 'string' || draft.reply.length > 4000 || !draft.reply.endsWith(`${identity.branch_name} ekibi`) || typeof draft.requires_human_review !== 'boolean') throw new RequestError('AI yanıtı doğrulanamadı. Yeniden deneyin.', 502);
+    const current = await verifiedReview(identity, token, signal);
+    if (current.expected_reply) { skipped = true; throw new RequestError('Hazırlık sırasında bu yoruma Google’da yanıt verilmiş. Mevcut yanıt korundu.', 409); }
+    if (current.snapshot.comment !== snapshot.comment || current.snapshot.rating !== snapshot.rating) throw new RequestError('Yorum hazırlık sırasında değişti. Güncel yorum için taslağı yeniden hazırlayın.', 409);
+    const ai_analysis = { tone: draft.tone, requires_human_review: draft.requires_human_review, risk_reason: draft.risk_reason, suggested_route: draft.suggested_route, quality_score: draft.quality_score };
+    return preparationResult(await finish({ status: 'approval_pending', reply_text: draft.reply, draft_source: 'openai', review_snapshot: { ...snapshot, ai_analysis }, expected_reply: '', last_error: null }));
+  } catch (error) {
+    const message = signal.aborted ? 'AI taslağı hazırlığı zaman aşımına uğradı. Yeniden denemek için tekrar hazırlayın.' : error instanceof RequestError || error instanceof GoogleApiError ? error.message : 'AI taslağı hazırlanamadı. Yeniden denemek için tekrar hazırlayın.';
+    return preparationResult(await finish({ status: 'draft_failed', reply_text: '', draft_source: 'manual', review_snapshot: snapshot, last_error: message.slice(0, 800) }), { ...(skipped ? { skipped: true } : {}) });
+  }
 }
 async function saveWork(db: any, user: any, body: any, token: string) {
   const identity = workIdentity(body), isReply = body.action === 'save_draft';
@@ -250,12 +312,12 @@ async function saveWork(db: any, user: any, body: any, token: string) {
     throw new RequestError('Bu yorum için kayıtlı yanıt var. Onay kuyruğundan açıp düzenleyin.', 409);
   }
   if (existing && (workId(body) !== existing.id || expectedVersion(body) !== existing.version)) throw new RequestError('Taslak başka oturumda değişti. Listeyi yenileyin.', 409);
-  if (existing && !['approval_pending', 'publish_failed'].includes(existing.status)) throw new RequestError('Yayımlanan veya yayın sonucu beklenen taslak değiştirilemez.', 409);
+  if (existing && !['approval_pending', 'publish_failed', 'draft_failed'].includes(existing.status)) throw new RequestError('Yayımlanan veya yayın sonucu beklenen taslak değiştirilemez.', 409);
   if (!existing && body.item_id) throw new RequestError('Düzenlenecek taslak bulunamadı.', 404);
   const now = new Date().toISOString();
   const values = { ...identity, kind, review_snapshot: verified.snapshot, expected_reply: verified.expected_reply, reply_text: reply, draft_source: source, status: isReply ? 'approval_pending' : 'open', note: String(body.note || '').trim().slice(0, 2000), version: existing ? existing.version + 1 : 1, updated_by: user.id, updated_at: now, last_error: null, attempt_id: null, approved_by: null, approved_at: null, published_at: null };
   const result = existing
-    ? await db.from(workTable).update(values).eq('connection_id', connectionId).eq('id', existing.id).eq('version', existing.version).in('status', ['approval_pending', 'publish_failed']).select('*').maybeSingle()
+    ? await db.from(workTable).update(values).eq('connection_id', connectionId).eq('id', existing.id).eq('version', existing.version).in('status', ['approval_pending', 'publish_failed', 'draft_failed']).select('*').maybeSingle()
     : await db.from(workTable).insert({ ...values, created_by: user.id }).select('*').single();
   if (result.error?.code === '23505') throw new RequestError('Bu yorum için görev zaten oluşturuldu. Listeyi yenileyin.', 409);
   databaseFailure(result.error);
@@ -362,6 +424,7 @@ Deno.serve(async (req) => {
     }
     if (body.action === 'reply') throw new RequestError('Doğrudan yayın kapalı. Kayıtlı taslağı onay kuyruğundan yayımlayın.', 400);
     if (!clientMatches) return json({ error: 'Google uygulama bağlantısı değişti. Google Hesabını Bağla ile hesabınızı yeniden yetkilendirin.', reconnection_required: true }, 409);
+    if (body.action === 'prepare_draft') return json(await prepareDraft(db, user, body, connection, req.headers.get('authorization') || ''));
     const syncTargets = body.action === 'sync_reviews' ? syncBranchIds(body.branch_ids) : null;
     if (syncTargets) {
       const signal = AbortSignal.timeout(25_000);

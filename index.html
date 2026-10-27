@@ -1466,6 +1466,59 @@
     @media(max-width:340px){.dealer-archive-tests{grid-template-columns:1fr}}
     #dealerWorkOrderForm .dealer-wo-vehicle-card:has(.dealer-ruhsat-details) .dealer-wo-form-grid{grid-template-columns:repeat(auto-fit,minmax(180px,1fr))!important;min-width:0}
   </style>
+  <style id="google-review-pair-styles">
+    .google-reviews-page .google-reviews-layout{grid-template-columns:260px minmax(0,1fr)}
+    .google-reviews-page .google-branch-meta{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .google-review-feed{padding:0;background:transparent;border:0;box-shadow:none}
+    .google-review-feed .google-review-toolbar{margin:0 0 14px;align-items:flex-start}
+    .google-review-feed .google-review-list{gap:16px}
+    .google-review-card.premium.google-review-pair{display:grid;grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr);gap:0;padding:0;overflow:hidden;border:1px solid #dce3ec;background:#fff;box-shadow:0 5px 20px rgba(15,23,42,.04)}
+    .google-review-card.premium.google-review-pair:before{display:none}
+    .google-review-card.google-review-pair.critical{border-color:#efc5c8}
+    .google-review-source,.google-reply-panel{min-width:0;padding:22px}
+    .google-review-source{display:flex;flex-direction:column;gap:15px}
+    .google-review-source-label{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:11px;font-weight:800;color:#64748b;letter-spacing:.035em;text-transform:uppercase}
+    .google-review-source-label .google-stars{font-size:13px;letter-spacing:.02em}
+    .google-review-source .google-review-top{gap:12px;align-items:flex-start}
+    .google-review-source .google-reviewer{font-size:15px;font-weight:800;overflow-wrap:anywhere}
+    .google-review-source .google-review-date{font-size:12px;margin-top:5px}
+    .google-review-branch{display:flex;align-items:center;gap:7px;font-size:11px;color:#64748b;line-height:1.5;overflow-wrap:anywhere}
+    .google-review-branch svg{width:14px;height:14px;flex:none}
+    .google-review-source .google-review-comment{font-size:14px;line-height:1.8;color:#253247;white-space:pre-wrap;overflow-wrap:anywhere}
+    .google-review-source .google-review-tags{margin-top:auto;padding-top:6px}
+    .google-review-source .google-tag{padding:5px 9px;font-size:11px;font-weight:700}
+    .google-reply-panel{display:flex;flex-direction:column;gap:14px;border-left:1px solid #e2e8f0;background:#f8fafc}
+    .google-reply-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;color:#17243a;font-size:13px;font-weight:800}
+    .google-reply-heading h4{margin:0;font-size:14px}
+    .google-reply-status{display:inline-flex;align-items:center;gap:6px;border:1px solid #dbe3ee;border-radius:999px;padding:5px 9px;background:#fff;font-size:10px;line-height:1.3;font-weight:800;white-space:normal}
+    .google-reply-status[data-tone="ready"],.google-reply-status[data-tone="published"]{background:#edf9f3;color:#08734f;border-color:#bfe6d4}
+    .google-reply-status[data-tone="loading"]{background:#edf4ff;color:#245ca7;border-color:#cbdcf6}
+    .google-reply-status[data-tone="error"]{background:#fff1f1;color:#a12c35;border-color:#eebfc3}
+    .google-reply-text{margin:0;padding:15px 16px;border:1px solid #dce5ef;border-radius:10px;background:#fff;color:#26374d;font-size:13px;line-height:1.8;white-space:pre-wrap;overflow-wrap:anywhere}
+    .google-reply-editor{display:block;width:100%;min-height:170px;box-sizing:border-box;resize:vertical;padding:14px;border:1px solid #aebed2;border-radius:10px;background:#fff;color:#26374d;font:inherit;font-size:13px;line-height:1.75}
+    .google-reply-editor:focus{outline:3px solid #dbeafe;border-color:#5f89c3}
+    .google-reply-note{margin:0;color:#64748b;font-size:11px;line-height:1.6;overflow-wrap:anywhere}
+    .google-reply-error{padding:11px 13px;border:1px solid #efc4c8;border-radius:9px;background:#fff1f2;color:#9a2630;font-size:12px;line-height:1.6;overflow-wrap:anywhere}
+    .google-reply-actions{display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+    .google-reply-actions button,.google-reply-primary,.google-reply-secondary{min-height:37px;padding:9px 13px;border:1px solid #ced8e5;border-radius:8px;background:#fff;color:#324257;font:inherit;font-size:12px;font-weight:750;cursor:pointer}
+    .google-reply-primary,.google-reply-actions .google-reply-primary{background:#c91620;color:#fff;border-color:#c91620}
+    .google-reply-primary:hover:not(:disabled){background:#ad1119}
+    .google-reply-actions button:disabled,.google-reply-primary:disabled,.google-reply-secondary:disabled{opacity:.48;cursor:not-allowed}
+    .google-reply-approval{display:flex;gap:9px;align-items:flex-start;color:#435168;font-size:12px;line-height:1.6}
+    .google-reply-approval input{width:17px!important;height:17px;min-height:17px;flex:none;margin:2px 0 0;accent-color:#c91620}
+    .google-review-task-menu{padding-top:12px;border-top:1px solid #e2e8f0;margin-top:auto}
+    .google-review-task-menu summary,.google-branch-tasks>summary{cursor:pointer;color:#526279;font-size:12px;font-weight:700;line-height:1.6}
+    .google-review-task-menu .google-review-action-grid{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+    .google-review-task-menu .google-action-btn{font-size:11px;padding:8px 10px}
+    .google-branch-tasks{padding:12px 15px;border:1px solid #dce3ec;border-radius:10px;background:#fff}
+    .google-branch-tasks[open]>summary{margin-bottom:12px}
+    .google-branch-tasks .google-premium-card{padding:0;border:0;box-shadow:none}
+    .google-auto-draft-summary{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:12px 16px;border:1px solid #dce5ef;border-radius:10px;background:#f8fafc;color:#435168;font-size:12px;line-height:1.6}
+    .google-draft-summary-counts{display:flex;gap:8px;flex-wrap:wrap}.google-draft-summary-counts span{padding:3px 9px;border:1px solid #dce5ef;border-radius:20px;background:#fff;font-weight:700}body.dark-mode .google-draft-summary-counts span{background:#0d1b2c;border-color:#30425c}
+    body.dark-mode .google-reply-panel{background:#0d1b2c;border-color:#2b3c56}body.dark-mode .google-reply-heading{color:#e5edf8}body.dark-mode .google-reply-text,body.dark-mode .google-reply-editor,body.dark-mode .google-branch-tasks,body.dark-mode .google-auto-draft-summary{background:#14243a;color:#dbe7f5;border-color:#30425c}body.dark-mode .google-reply-note,body.dark-mode .google-review-branch,body.dark-mode .google-reply-approval{color:#a8b8cf}
+    @media(max-width:1280px){.google-reviews-page .google-reviews-layout{grid-template-columns:1fr}.google-reviews-page .google-branch-list{grid-template-columns:repeat(3,minmax(0,1fr))}}
+    @media(max-width:760px){.google-review-card.premium.google-review-pair{grid-template-columns:1fr}.google-review-source,.google-reply-panel{padding:18px}.google-reply-panel{border-left:0;border-top:1px solid #e2e8f0}.google-reviews-page .google-branch-list{grid-template-columns:1fr}.google-review-source .google-review-top{flex-direction:row}.google-reply-actions .google-reply-primary{width:100%}}
+  </style>
 </head>
 <body>
   <script>
@@ -4597,8 +4650,13 @@
     function GoogleReviewFeed(){
       const branch=googleSelectedBranch(),rows=googleBranchReviews(branch.id).filter(r=>googleReviewMatchesFilter(r));
       const empty=branch.synced?'Bu filtreye uygun yorum bulunamadı.':googleReputationState.loading?'Google yorumları alınıyor…':'Yorumlar henüz alınmadı. Google Senkronize Et ile şube yorumlarını yükleyin.';
-      const list=rows.length?rows.map(r=>`<article class="google-review-card premium ${r.riskLevel}"><div class="google-review-top"><div class="google-review-meta"><div class="google-reviewer">${googleEsc(r.reviewerName)}</div><div class="google-review-date">${new Date(r.reviewDate).toLocaleDateString('tr-TR',{day:'2-digit',month:'long',year:'numeric'})}</div></div><div class="google-stars">${googleStars(r.rating)} ${r.rating}/5</div></div><p class="google-review-comment">${googleEsc(r.comment)}</p><div class="google-review-tags"><span class="google-tag ${r.riskLevel}">${googleEsc(r.sentiment)}</span><span class="google-tag neutral">${r.isReplied?'Yanıtlandı':'Cevap Bekliyor'}</span><span class="google-tag neutral">CRM: ${googleEsc(r.crmStatus)}</span></div>${r.replyText?`<div class="google-ai-box"><b>İşletme yanıtı</b><p>${googleEsc(r.replyText)}</p></div>`:''}<div class="google-ai-box"><b>${icon('bot')}Öneri</b><p>${googleEsc(r.recommendedAction)}</p></div><div class="google-review-action-grid"><button type="button" class="google-action-btn blue" onclick="OTOTRGoogleReputation.convertGoogleReviewToComplaint('${r.id}')">Müşteri Deneyimi Görevi</button><button type="button" class="google-action-btn green" onclick="OTOTRGoogleReputation.generateReplyDraft('${r.id}')">Yanıt Taslağı Oluştur</button><button type="button" class="google-action-btn" onclick="OTOTRGoogleReputation.assignTaskToBranch('${r.id}')">Şubeye Görev Ata</button><button type="button" class="google-action-btn danger" onclick="OTOTRGoogleReputation.sendToLegal('${r.id}')">Hukuka Gönder</button><button type="button" class="google-action-btn amber" onclick="OTOTRGoogleReputation.openQualityAudit('${r.id}')">Kalite Denetimi Aç</button></div></article>`).join(''):`<div class="google-empty">${empty}</div>`;
-      return `<section class="google-premium-card"><div class="google-review-toolbar"><div><h3 style="margin:0;font-size:16px">Yorum Akışı</h3><p style="margin:3px 0 0;color:var(--muted);font-size:12px">${googleEsc(branch.name)} · ${branch.synced?`${rows.length} yorum gösteriliyor`:'Veri bekleniyor'}</p></div>${GoogleReviewFilters()}</div><div class="google-review-list">${list}</div></section>`;
+      const list=rows.length?rows.map(r=>{
+        const actionId=googleEsc(JSON.stringify(r.id));
+        const fallback=r.isReplied?`<div class="google-reply-heading"><h4>Google’daki yanıt</h4><span class="google-reply-status" data-tone="published">Yayımlandı</span></div><p class="google-reply-text">${googleEsc(r.replyText)}</p>`:`<div class="google-reply-heading"><h4>AI yanıt taslağı</h4><span class="google-reply-status" data-tone="loading">Yükleniyor</span></div><p class="google-reply-note">Yanıt bölümü yükleniyor. Taslak hazır olduğunda burada inceleyip onaylayabilirsiniz.</p>`;
+        const reply=window.OTOTRGoogleReviewAI?.renderReplyCard?.(r,branch)||fallback;
+        return `<article class="google-review-card premium google-review-pair ${r.riskLevel}" data-review-id="${googleEsc(r.id)}"><div class="google-review-source" data-testid="google-review-left"><div class="google-review-source-label"><span>Müşteri yorumu</span><span class="google-stars" aria-label="5 üzerinden ${r.rating} yıldız">${googleStars(r.rating)} ${r.rating}/5</span></div><div class="google-review-top"><div class="google-review-meta"><div class="google-reviewer">${googleEsc(r.reviewerName)}</div><time class="google-review-date" datetime="${googleEsc(r.reviewDate)}">${new Date(r.reviewDate).toLocaleDateString('tr-TR',{day:'2-digit',month:'long',year:'numeric'})}</time></div></div><div class="google-review-branch">${icon('map-pin')}${googleEsc(branch.name)}</div><p class="google-review-comment">${googleEsc(r.comment)}</p><div class="google-review-tags"><span class="google-tag ${r.riskLevel}">${googleEsc(r.sentiment)}</span><span class="google-tag neutral">${r.isReplied?'Yanıtlandı':'Cevap bekliyor'}</span></div></div><div class="google-reply-panel" data-testid="google-review-right">${reply}<details class="google-review-task-menu"><summary>Diğer işlemler</summary><div class="google-review-action-grid"><button type="button" class="google-action-btn" onclick="OTOTRGoogleReputation.assignTaskToBranch(${actionId})">Şubeye görev ata</button><button type="button" class="google-action-btn" onclick="OTOTRGoogleReputation.convertGoogleReviewToComplaint(${actionId})">Müşteri deneyimi</button><button type="button" class="google-action-btn danger" onclick="OTOTRGoogleReputation.sendToLegal(${actionId})">Hukuk incelemesi</button><button type="button" class="google-action-btn" onclick="OTOTRGoogleReputation.openQualityAudit(${actionId})">Kalite incelemesi</button></div></details></div></article>`;
+      }).join(''):`<div class="google-empty">${empty}</div>`;
+      return `<section class="google-premium-card google-review-feed"><div class="google-review-toolbar"><div><h3 style="margin:0;font-size:17px">Yorumlar ve yanıtlar</h3><p style="margin:4px 0 0;color:var(--muted);font-size:12px">${googleEsc(branch.name)} · ${branch.synced?`${rows.length} yorum gösteriliyor`:'Veri bekleniyor'}</p></div>${GoogleReviewFilters()}</div><div class="google-review-list">${list}</div></section>`;
     }
     function GoogleManagementSummary(){
       const branches=[...googleBranches()];
@@ -4614,7 +4672,9 @@
       return `<section class="google-api-note"><b>Canlı bağlantı:</b> Google işletme ve yorum verisi güvenli Supabase Edge Function üzerinden alınır. API anahtarı tarayıcıda tutulmaz; şube eşleşmesi mağaza kodu ile yapılır. AI yanıtları önce genel merkez onay kuyruğuna düşer, doğrudan Google'a yayımlanmaz.</section>`;
     }
     function GoogleReputationPremiumDashboard(){
-      return `<div class="google-reviews-page premium">${GooglePremiumHero()}<p style="margin:0;color:var(--muted);font-size:12px">Otomatik yenileme · yorumlar 5 dk, görevler 1 dk. Bu ekran açıkken çalışır; yanıt düzenlerken bekler.${googleReputationState.lastDurationMs!=null?` <span data-testid="google-sync-duration" data-duration-ms="${googleReputationState.lastDurationMs}">Son yenileme: ${googleMetric(googleReputationState.lastDurationMs/1000,1)} sn</span>`:''}</p>${GoogleKpiCards()}<div class="google-reviews-layout">${GoogleBranchRanking()}<div class="google-feed-shell" style="grid-template-columns:1fr">${GoogleSelectedBranchPanel()}${window.OTOTRGoogleReviewAI?.renderWorkflow?.(googleSelectedBranch().id)||''}${GoogleReviewFeed()}</div></div></div>`;
+      const branchId=googleSelectedBranch().id;
+      const tasks=window.OTOTRGoogleReviewAI?.renderWorkflow?.(branchId,{tasksOnly:true})||'';
+      return `<div class="google-reviews-page premium">${GooglePremiumHero()}<p style="margin:0;color:var(--muted);font-size:12px">Otomatik yenileme · yorumlar 5 dk, görevler 1 dk. Bu ekran açıkken çalışır; yanıt düzenlerken bekler.${googleReputationState.lastDurationMs!=null?` <span data-testid="google-sync-duration" data-duration-ms="${googleReputationState.lastDurationMs}">Son yenileme: ${googleMetric(googleReputationState.lastDurationMs/1000,1)} sn</span>`:''}</p>${GoogleKpiCards()}<div class="google-reviews-layout">${GoogleBranchRanking()}<div class="google-feed-shell" style="grid-template-columns:1fr">${GoogleSelectedBranchPanel()}${window.OTOTRGoogleReviewAI?.renderAutoDraftSummary?.(branchId)||''}${tasks?`<details class="google-branch-tasks"><summary>Şube görevleri ve incelemeler</summary>${tasks}</details>`:''}${GoogleReviewFeed()}</div></div></div>`;
     }
     function refreshGoogleReputationPage(){
       const page=document.getElementById('page-google-reviews');
@@ -18474,8 +18534,8 @@
 <style>
   .google-workflow-row{padding:14px 0;border-bottom:1px solid var(--line,#dbe3ee)}.google-workflow-row:last-child{border-bottom:0}.google-workflow-row p{white-space:pre-wrap;overflow-wrap:anywhere}.google-workflow-head{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}.google-ai-warning{border:1px solid #f8d49b;background:#fff8eb;border-radius:10px;padding:10px 12px;color:#805100;font-size:12px;margin:12px 0}
 </style>
-<script src="assets/google-review-ai.js?v=google-workflow-9"></script>
-<script src="assets/google-review-refresh.js?v=google-refresh-1"></script>
+<script src="assets/google-review-ai.js?v=google-workflow-10"></script>
+<script src="assets/google-review-refresh.js?v=google-refresh-2"></script>
 <script type="text/plain" id="google-backend-service-sample">
 /**
  * Google Haritalar İtibar Merkezi backend servis iskeleti

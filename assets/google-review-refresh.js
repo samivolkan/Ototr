@@ -60,6 +60,7 @@
         await run(jobs.workflow, () => window.OTOTRGoogleReviewAI.refreshWorkflow());
         observeSuccess(jobs.workflow, window.OTOTRGoogleReviewAI.getRefreshState());
       }
+      if (allowed()) window.OTOTRGoogleReviewAI.preparePendingDrafts?.();
     } finally { running = false; }
   }
 

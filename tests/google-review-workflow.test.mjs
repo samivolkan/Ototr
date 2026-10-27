@@ -31,7 +31,7 @@ function workflowFixture(options = {}) {
     GOOGLE_OAUTH_CLIENT_ID: 'fixture-client', GOOGLE_OAUTH_CLIENT_SECRET: 'fixture-secret', GOOGLE_BUSINESS_ADMIN_USER_IDS: options.allowedUsers || '',
   };
   let remote = { reviewId: options.reviewId || 'review-one', name: `accounts/123/locations/${LOCATION}/reviews/${options.reviewId || 'review-one'}`, starRating: 'FIVE', comment: 'Fixture public review', reviewer: { displayName: 'Fixture reviewer' }, createTime: '2026-10-27T00:00:00Z', ...(options.remoteReply ? { reviewReply: { comment: options.remoteReply } } : {}) };
-  const state = { putFailure: null, getFailure: null, failPublishedWrite: false, failAllWrites: false, failReads: false, beforePut: null, putCount: 0 };
+  const state = { putFailure: null, getFailure: null, failPublishedWrite: false, failAllWrites: false, failReads: false, beforePut: null, putCount: 0, beforeAI: null, aiCount: 0, aiStatus: 200, aiDraft: null };
 
   function query(table) {
     const filters = [];
@@ -88,7 +88,8 @@ function workflowFixture(options = {}) {
     return builder;
   }
   const context = vm.createContext({
-    URL, URLSearchParams, Request, Response, TextEncoder, TextDecoder, Uint8Array, btoa, atob, crypto: webcrypto, AbortSignal,
+    URL, URLSearchParams, Request, Response, TextEncoder, TextDecoder, Uint8Array, btoa, atob, crypto: webcrypto,
+    AbortSignal: options.abortPreparation ? { timeout: () => AbortSignal.abort() } : AbortSignal,
     createClient() {
       return {
         auth: { async getUser() { return { data: { user: { id: options.userId || OWNER, app_metadata: {}, user_metadata: { role: 'admin' } } }, error: null }; } },
@@ -97,8 +98,16 @@ function workflowFixture(options = {}) {
     },
     async fetch(url, init = {}) {
       const parsed = new URL(url), method = init.method || 'GET';
-      calls.push({ url: parsed, method, body: init.body ? String(init.body) : null });
+      calls.push({ url: parsed, method, body: init.body ? String(init.body) : null, headers: init.headers });
+      if (init.signal?.aborted) throw init.signal.reason;
       if (parsed.hostname === 'oauth2.googleapis.com') return Response.json({ access_token: 'fixture-access' });
+      if (parsed.hostname === 'fixture.supabase.invalid') {
+        assert.equal(parsed.pathname, '/functions/v1/google-review-ai');
+        state.aiCount++;
+        if (state.beforeAI) await state.beforeAI();
+        if (state.aiStatus !== 200) return Response.json({ error: 'Fixture AI unavailable' }, { status: state.aiStatus });
+        return Response.json(state.aiDraft || { reply: REPLY, tone: 'samimi', requires_human_review: false, risk_reason: '', suggested_route: 'standard', quality_score: 95 });
+      }
       if (parsed.hostname === 'mybusinessbusinessinformation.googleapis.com') return Response.json({ name: `locations/${LOCATION}`, storeCode: options.storeCode || '13674839659006303129', title: 'OTOTR Oto Ekspertiz Bursa Nilüfer' });
       assert.equal(parsed.hostname, 'mybusiness.googleapis.com', 'Unexpected remote API');
       if (method === 'PUT') {
@@ -121,6 +130,7 @@ function workflowFixture(options = {}) {
     calls, mutations, rows, state,
     rotateClient(value) { values.GOOGLE_OAUTH_CLIENT_ID = value; },
     setRemoteReply(text) { remote.reviewReply = { comment: text, updateTime: new Date().toISOString() }; },
+    setRemoteComment(text) { remote.comment = text; },
     getRemoteReply() { return remote.reviewReply?.comment || ''; },
     async request(body) {
       const response = await handler(new Request('https://fixture.supabase.invalid/functions/v1/google-business-oauth', { method: 'POST', headers: { authorization: 'Bearer fixture-session', 'content-type': 'application/json' }, body: JSON.stringify(body) }));
@@ -137,6 +147,153 @@ async function saveDraft(f, extra = {}) {
   return response.data.item;
 }
 const publishBody = item => ({ action: 'publish_reply', item_id: item.id, expected_version: item.version, approved: true });
+const prepareBody = extra => ({ action: 'prepare_draft', ...TARGET, ...extra });
+
+test('automatic preparation persists verified AI draft and analysis without approval or publication', async () => {
+  const f = workflowFixture();
+  const result = await f.request(prepareBody({ review: { comment: 'Forged client content' }, branch_name: 'Wrong branch' }));
+  assert.equal(result.status, 200);
+  const item = result.data.item;
+  assert.equal(item.status, 'approval_pending'); assert.equal(item.draft_source, 'openai');
+  assert.equal(item.reply_text, REPLY); assert.equal(item.expected_reply, ''); assert.equal(item.version, 2);
+  assert.equal(item.approved_at, null); assert.equal(item.approved_by, null); assert.equal(item.published_at, null);
+  assert.equal(item.review_snapshot.ai_analysis.quality_score, 95);
+  assert.equal(f.state.putCount, 0); assert.equal(f.state.aiCount, 1);
+  const call = f.calls.find(c => c.url.pathname === '/functions/v1/google-review-ai');
+  assert.equal(call.headers.Authorization, 'Bearer fixture-session'); assert.equal(call.headers.apikey, 'fixture-public');
+  assert.deepEqual(JSON.parse(call.body), { action: 'generate', branch: { id: BRANCH }, review: { rating: 5, comment: 'Fixture public review' } });
+  assert.doesNotMatch(JSON.stringify(result.data), /fixture-refresh|fixture-secret|refresh_token_encrypted/);
+});
+
+test('concurrent tabs generate only once and a later call preserves the saved draft', async () => {
+  const f = workflowFixture();
+  let release, entered;
+  const waiting = new Promise(resolve => { release = resolve; });
+  const started = new Promise(resolve => { entered = resolve; });
+  f.state.beforeAI = async () => { entered(); await waiting; };
+  const first = f.request(prepareBody()); await started;
+  const duplicate = await f.request(prepareBody());
+  assert.equal(duplicate.status, 200); assert.equal(duplicate.data.preparing, true); assert.equal(f.state.aiCount, 1);
+  release(); const complete = await first;
+  const calls = f.calls.length;
+  const again = await f.request(prepareBody());
+  assert.equal(again.data.item.id, complete.data.item.id); assert.equal(again.data.existing, true);
+  assert.equal(f.calls.length, calls); assert.equal(f.rows.length, 1); assert.equal(f.state.aiCount, 1);
+});
+
+test('an automatically prepared draft still needs explicit approval of its stored version', async () => {
+  const f = workflowFixture(); const item = (await f.request(prepareBody())).data.item;
+  assert.equal(f.state.putCount, 0);
+  assert.equal((await f.request({ ...publishBody(item), approved: false })).status, 400);
+  assert.equal((await f.request({ ...publishBody(item), expected_version: item.version - 1 })).status, 409);
+  assert.equal(f.state.putCount, 0);
+  const approved = await f.request(publishBody(item));
+  assert.equal(approved.data.item.status, 'published'); assert.equal(f.state.putCount, 1); assert.equal(f.getRemoteReply(), REPLY);
+});
+
+test('simultaneous first reservations use the unique database identity before paid generation', async () => {
+  const f = workflowFixture();
+  const results = await Promise.all([f.request(prepareBody()), f.request(prepareBody()), f.request(prepareBody())]);
+  assert.ok(results.every(result => result.status === 200)); assert.equal(f.rows.length, 1); assert.equal(f.state.aiCount, 1);
+  assert.equal(f.rows[0].status, 'approval_pending'); assert.equal(f.state.putCount, 0);
+});
+
+test('existing manual draft and published reply are untouched by auto preparation', async () => {
+  const f = workflowFixture(); let item = await saveDraft(f);
+  const before = clone(item), calls = f.calls.length;
+  assert.deepEqual((await f.request(prepareBody())).data.item, before); assert.equal(f.calls.length, calls);
+  const published = await f.request(publishBody(item)); item = published.data.item;
+  assert.deepEqual((await f.request(prepareBody({ retry: true, item_id: item.id, expected_version: item.version }))).data.item, item);
+  assert.equal(f.state.aiCount, 0); assert.equal(f.state.putCount, 1);
+});
+
+test('Google existing reply skips AI and persists a non-publishable failed preparation', async () => {
+  const f = workflowFixture({ remoteReply: 'Fixture existing Google reply' });
+  const result = await f.request(prepareBody());
+  assert.equal(result.status, 200); assert.equal(result.data.skipped, true);
+  assert.equal(result.data.item.status, 'draft_failed'); assert.equal(result.data.item.reply_text, '');
+  assert.equal(f.state.aiCount, 0); assert.equal(f.getRemoteReply(), 'Fixture existing Google reply'); assert.equal(f.state.putCount, 0);
+});
+
+test('AI failure never enters an automatic retry loop and explicit retry requires the saved version', async () => {
+  const f = workflowFixture(); f.state.aiStatus = 503;
+  const first = await f.request(prepareBody()); const failed = first.data.item;
+  assert.equal(failed.status, 'draft_failed'); assert.equal(failed.draft_source, 'manual'); assert.equal(first.data.requires_retry, true);
+  await f.request(prepareBody()); await f.request(prepareBody()); assert.equal(f.state.aiCount, 1);
+  assert.equal((await f.request(prepareBody({ retry: true }))).status, 400);
+  assert.equal((await f.request(prepareBody({ retry: true, item_id: failed.id, expected_version: 999 }))).status, 409);
+  f.state.aiStatus = 200;
+  const retry = await f.request(prepareBody({ retry: true, item_id: failed.id, expected_version: failed.version }));
+  assert.equal(retry.data.item.status, 'approval_pending'); assert.equal(f.state.aiCount, 2);
+  assert.equal(retry.data.item.version, failed.version + 2); assert.equal(f.state.putCount, 0);
+});
+
+test('stale preparation is recovered to failed without a fresh paid call', async () => {
+  const f = workflowFixture(); f.state.aiStatus = 503;
+  const result = await f.request(prepareBody());
+  Object.assign(f.rows[0], { status: 'preparing', attempt_id: randomUUID(), updated_at: '2026-01-01T00:00:00Z' });
+  const recovered = await f.request(prepareBody());
+  assert.equal(recovered.data.item.status, 'draft_failed'); assert.equal(recovered.data.item.version, result.data.item.version + 1); assert.equal(f.state.aiCount, 1);
+});
+
+test('explicit stale retry reclaims atomically and the old worker cannot overwrite its result', async () => {
+  const f = workflowFixture(); let release, entered;
+  const waiting = new Promise(resolve => { release = resolve; });
+  const started = new Promise(resolve => { entered = resolve; });
+  f.state.beforeAI = async () => { if (f.state.aiCount === 1) { entered(); await waiting; } };
+  const old = f.request(prepareBody()); await started;
+  f.rows[0].updated_at = '2026-01-01T00:00:00Z'; const stale = clone(f.rows[0]);
+  const retry = await f.request(prepareBody({ retry: true, item_id: stale.id, expected_version: stale.version }));
+  assert.equal(retry.data.item.status, 'approval_pending');
+  release(); assert.equal((await old).status, 409);
+  assert.deepEqual(f.rows[0], retry.data.item); assert.equal(f.state.aiCount, 2); assert.equal(f.state.putCount, 0);
+});
+
+for (const during of ['reply', 'review']) {
+  test(`a ${during} changed on Google during AI generation cannot become an approvable stale draft`, async () => {
+    const f = workflowFixture();
+    f.state.beforeAI = () => during === 'reply' ? f.setRemoteReply('Fixture external reply') : f.setRemoteComment('Fixture changed review');
+    const result = await f.request(prepareBody());
+    assert.equal(result.data.item.status, 'draft_failed'); assert.equal(result.data.item.reply_text, ''); assert.equal(f.state.putCount, 0);
+    if (during === 'reply') assert.equal(f.getRemoteReply(), 'Fixture external reply');
+  });
+}
+
+test('preparing drafts cannot be saved, approved or verified as a public reply', async () => {
+  const f = workflowFixture(); f.state.aiStatus = 503;
+  await f.request(prepareBody()); Object.assign(f.rows[0], { status: 'preparing', attempt_id: randomUUID() }); const item = clone(f.rows[0]);
+  const saved = await f.request({ action: 'save_draft', ...TARGET, item_id: item.id, expected_version: item.version, reply_text: REPLY });
+  assert.equal(saved.status, 409); assert.equal((await f.request(publishBody(item))).status, 409);
+  assert.equal((await f.request({ ...publishBody(item), action: 'verify_reply' })).status, 409); assert.equal(f.state.putCount, 0);
+});
+
+test('failed preparation may be replaced with an explicitly saved manual draft and new approval', async () => {
+  const f = workflowFixture(); f.state.aiStatus = 503;
+  const failed = (await f.request(prepareBody())).data.item;
+  const manual = await saveDraft(f, { item_id: failed.id, expected_version: failed.version });
+  assert.equal(manual.status, 'approval_pending'); assert.equal(manual.draft_source, 'manual'); assert.equal(manual.approved_at, null); assert.equal(manual.version, failed.version + 1);
+});
+
+test('preparation deadline is persisted as failure instead of success or automatic retries', async () => {
+  const f = workflowFixture({ abortPreparation: true });
+  const result = await f.request(prepareBody());
+  assert.equal(result.status, 200); assert.equal(result.data.item.status, 'draft_failed'); assert.match(result.data.item.last_error, /zaman aşım/);
+  assert.equal(f.state.aiCount, 0); assert.equal((await f.request(prepareBody())).data.existing, true);
+});
+
+test('wrong branch, invalid review, unauthorized user and database failure spend no AI calls', async () => {
+  for (const options of [{ storeCode: 'wrong-code' }, { reviewId: 'wrong-review' }, { userId: OTHER }]) {
+    const f = workflowFixture(options); const result = await f.request(prepareBody());
+    assert.ok(result.status >= 400 || result.data.item.status === 'draft_failed'); assert.equal(f.state.aiCount, 0); assert.equal(f.state.putCount, 0);
+  }
+  const invalid = workflowFixture(); assert.equal((await invalid.request(prepareBody({ branch_id: '__proto__' }))).status, 400); assert.equal(invalid.rows.length, 0);
+  const broken = workflowFixture(); broken.state.failAllWrites = true; assert.equal((await broken.request(prepareBody())).status, 503); assert.equal(broken.calls.length, 0);
+});
+
+test('AI response with an invalid signature cannot be mislabeled as an OpenAI approval draft', async () => {
+  const f = workflowFixture(); f.state.aiDraft = { reply: 'Fixture wrong signature', requires_human_review: false };
+  const result = await f.request(prepareBody()); assert.equal(result.data.item.status, 'draft_failed'); assert.equal(result.data.item.draft_source, 'manual'); assert.equal(result.data.item.reply_text, '');
+});
 
 test('draft is persisted against verified Google IDs and canonical branch, without publishing', async () => {
   const f = workflowFixture();
