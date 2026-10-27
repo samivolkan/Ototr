@@ -44,6 +44,8 @@ test('authorized owner receives complete validated OpenAI draft and canonical si
   assert.ok(call.body.max_output_tokens > 450);
   assert.equal(call.body.text.format.type, 'json_schema');
   assert.equal(call.body.text.format.strict, true);
+  assert.equal(call.body.text.format.schema.properties.reply.maxLength, 600);
+  assert.match(call.body.instructions, /yalnızca yanıt gövdesini üret/);
   assert.equal(call.body.moderation.model, 'omni-moderation-latest');
   assert.doesNotMatch(call.body.instructions, /OTORAPOR|Untrusted branch/);
   assert.equal(JSON.parse(call.body.input).sube, 'OTOTR Bursa Nilüfer Şube');
@@ -89,7 +91,8 @@ for (const [id, signature] of [['branch-google-gebze', 'OTOTR Gebze Şube ekibi'
     const result = await h.request({ ...baseBody, branch: { id, replySignatureName: 'OTORAPOR' } });
     assert.equal(result.status, 200);
     assert.ok(result.data.reply.endsWith(signature));
-    assert.ok(h.calls[0].body.instructions.includes(signature));
+    assert.equal(JSON.parse(h.calls[0].body.input).sube, signature.replace(/ ekibi$/, ''));
+    assert.match(h.calls[0].body.instructions, /doğru şube imzasını sunucu ekleyecek/);
     assert.doesNotMatch(h.calls[0].body.instructions, /OTORAPOR/);
   });
 }
@@ -117,7 +120,7 @@ test('moderation error or missing moderation does not silently pass', async () =
   const absent = responsePayload(); delete absent.moderation;
   assert.equal((await harness({ payload: absent }).request()).status, 503);
 });
-for (const draft of [{ ...goodDraft, quality_score: 101 }, { ...goodDraft, reply: 'Wrong team signature text' }, { ...goodDraft, extra: 'unexpected' }, { ...goodDraft, requires_human_review: 'false' }]) {
+for (const draft of [{ ...goodDraft, quality_score: 101 }, { ...goodDraft, reply: 'Teşekkür ederiz. OTOTR Gebze Şube ekibi' }, { ...goodDraft, extra: 'unexpected' }, { ...goodDraft, requires_human_review: 'false' }]) {
   test('malformed schema or incorrect branch signature is rejected', async () => {
     const result = await harness({ payload: responsePayload(draft) }).request();
     assert.equal(result.status, 502);
@@ -143,4 +146,59 @@ test('missing server key reports setup failure without a provider call', async (
   const h = harness({ missingKey: true });
   assert.equal((await h.request()).status, 503);
   assert.equal(h.calls.length, 0);
+});
+
+test('body-only generation receives exactly one deterministic canonical branch signature', async () => {
+  const body = '7/24 hizmetimizden memnun kalmanıza sevindik. Güveniniz için teşekkür ederiz.';
+  for (const [id, signature] of [['branch-google-nilufer', 'OTOTR Bursa Nilüfer Şube ekibi'], ['branch-google-gebze', 'OTOTR Gebze Şube ekibi'], ['branch-google-inegol', 'OTOTR Bursa İnegöl Şube ekibi']]) {
+    const result = await harness({ payload: responsePayload({ ...goodDraft, reply: body }) }).request({ ...baseBody, branch: { id } });
+    assert.equal(result.status, 200);
+    assert.equal(result.data.reply, `${body}\n\n${signature}`);
+    assert.equal(result.data.reply.match(/OTOTR/g).length, 1);
+  }
+});
+
+test('customer travel from another branch city is not mistaken for a wrong signature', async () => {
+  const body = 'Gebze’den gelerek bizi tercih etmeniz ve güzel değerlendirmeniz için teşekkür ederiz.';
+  const result = await harness({ payload: responsePayload({ ...goodDraft, reply: body }) }).request();
+  assert.equal(result.status, 200);
+  assert.equal(result.data.reply, `${body}\n\nOTOTR Bursa Nilüfer Şube ekibi`);
+});
+
+for (const suffix of [
+  'OTOTR Bursa Nilüfer Şube ekibi.',
+  '**OTOTR Bursa Nilüfer Şube ekibi**.',
+  '— OTOTR Bursa\nNilüfer Şubesi ekibi',
+  '`OTOTR Bursa Nilüfer Şube ekibi`',
+  'OTOTR Bursa Nilüfer Şube ekibi\n\nOTOTR Bursa Nilüfer Şube ekibi',
+]) {
+  test(`format drift in a correct trailing signature is normalized: ${JSON.stringify(suffix)}`, async () => {
+    const result = await harness({ payload: responsePayload({ ...goodDraft, reply: `Değerlendirmeniz için teşekkür ederiz.\r\n\r\n${suffix}` }) }).request();
+    assert.equal(result.status, 200);
+    assert.equal(result.data.reply, goodDraft.reply);
+  });
+}
+
+for (const body of [
+  'OTORAPOR olarak güveniniz için teşekkür ederiz.',
+  'Oto Rapor olarak güveniniz için teşekkür ederiz.',
+  'Gebze hizmetimizden memnun kalmanıza sevindik.',
+  'İnegöl şubemize güveniniz için teşekkür ederiz.',
+  'Değerlendirmeniz için teşekkür ederiz. OTOTR Ankara Şube ekibi',
+  'OTOTR Bursa Nilüfer Şube ekibi.',
+  'a'.repeat(601),
+]) {
+  test(`wrong identity or invalid reply body cannot become successful: ${body.slice(0, 50)}`, async () => {
+    const result = await harness({ payload: responsePayload({ ...goodDraft, reply: body }) }).request();
+    assert.equal(result.status, 502);
+    assert.equal(result.data.reply, undefined);
+  });
+}
+
+test('maximum permitted model body leaves space for the server signature', async () => {
+  const body = 'a'.repeat(600);
+  const result = await harness({ payload: responsePayload({ ...goodDraft, reply: body }) }).request();
+  assert.equal(result.status, 200);
+  assert.equal(result.data.reply, `${body}\n\nOTOTR Bursa Nilüfer Şube ekibi`);
+  assert.ok(result.data.reply.length <= 700);
 });
