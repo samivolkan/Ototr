@@ -4688,7 +4688,7 @@
       return `<p class="google-review-comment">${googleEsc(original)}</p><details class="google-review-translation"><summary>Google çevirisini göster</summary><p class="google-review-comment">${googleEsc(translation)}</p></details>`;
     }
     function GoogleReviewFeed(){
-      const all=googleReputationState.selectedBranchId==='all',branch=all?{id:'all',name:'Tüm şubeler',synced:googleBranches().some(b=>b.synced)}:googleSelectedBranch(),rows=googleBranchReviews(branch.id).filter(r=>googleReviewMatchesFilter(r));
+      const all=googleReputationState.selectedBranchId==='all',branch=all?{id:'all',name:'Tüm şubeler',synced:googleBranches().some(b=>b.synced)}:googleSelectedBranch(),analyticsIds=window.OTOTRGoogleAnalytics?.filtered?.(googleReviews(),branch.id)?.map?.(r=>r.id)||null,rows=googleBranchReviews(branch.id).filter(r=>googleReviewMatchesFilter(r)).filter(r=>!analyticsIds||analyticsIds.includes(r.id));
       const empty=branch.synced?'Bu filtreye uygun yorum bulunamadı.':googleReputationState.loading?'Google yorumları alınıyor…':'Yorumlar henüz alınmadı. Google Senkronize Et ile şube yorumlarını yükleyin.';
       const list=rows.length?rows.map(r=>{
         const branch=getGoogleBranchById(r.branchId);
@@ -4715,7 +4715,7 @@
     function GoogleReputationPremiumDashboard(){
       const branchId=googleReputationState.selectedBranchId;
       const tasks=window.OTOTRGoogleReviewAI?.renderWorkflow?.(branchId,{tasksOnly:true})||'';
-      return `<div class="google-reviews-page premium google-center">${GooglePremiumHero()}<p class="google-center-refresh-note">Otomatik yenileme · yorumlar 5 dk, görevler 1 dk. Bu ekran açıkken çalışır; yanıt düzenlerken bekler.${googleReputationState.lastDurationMs!=null?` <span data-testid="google-sync-duration" data-duration-ms="${googleReputationState.lastDurationMs}">Son yenileme: ${googleMetric(googleReputationState.lastDurationMs/1000,1)} sn</span>`:''}</p>${GoogleKpiCards()}<div class="google-reviews-layout">${GoogleBranchRanking()}<div class="google-feed-shell" style="grid-template-columns:1fr">${window.OTOTRGoogleDashboard?.render?.(googleBranches(),googleReviews(),branchId)||''}<div class="google-inbox-view" ${window.OTOTRGoogleDashboard?.view!=='reviews'&&window.OTOTRGoogleDashboard?'hidden':''}>${GoogleSelectedBranchPanel()}${tasks?`<details class="google-branch-tasks"><summary>Şube görevleri ve incelemeler</summary>${tasks}</details>`:''}${GoogleReviewFeed()}</div></div></div></div>`;
+      return `<div class="google-reviews-page premium google-center">${GooglePremiumHero()}<p class="google-center-refresh-note">Otomatik yenileme · yorumlar 5 dk, görevler 1 dk. Bu ekran açıkken çalışır; yanıt düzenlerken bekler.${googleReputationState.lastDurationMs!=null?` <span data-testid="google-sync-duration" data-duration-ms="${googleReputationState.lastDurationMs}">Son yenileme: ${googleMetric(googleReputationState.lastDurationMs/1000,1)} sn</span>`:''}</p>${GoogleKpiCards()}${window.OTOTRGoogleAnalytics?.render?.(googleBranches(),googleReviews(),branchId)||''}<div class="google-reviews-layout">${GoogleBranchRanking()}<div class="google-feed-shell" style="grid-template-columns:1fr">${window.OTOTRGoogleDashboard?.render?.(googleBranches(),googleReviews(),branchId)||''}<div class="google-inbox-view" ${window.OTOTRGoogleDashboard?.view!=='reviews'&&window.OTOTRGoogleDashboard?'hidden':''}>${GoogleSelectedBranchPanel()}${tasks?`<details class="google-branch-tasks"><summary>Şube görevleri ve incelemeler</summary>${tasks}</details>`:''}${GoogleReviewFeed()}</div></div></div></div>`;
     }
     function refreshGoogleReputationPage(){
       const page=document.getElementById('page-google-reviews');
@@ -18575,7 +18575,9 @@
 <style>
   .google-workflow-row{padding:14px 0;border-bottom:1px solid var(--line,#dbe3ee)}.google-workflow-row:last-child{border-bottom:0}.google-workflow-row p{white-space:pre-wrap;overflow-wrap:anywhere}.google-workflow-head{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}.google-ai-warning{border:1px solid #f8d49b;background:#fff8eb;border-radius:10px;padding:10px 12px;color:#805100;font-size:12px;margin:12px 0}
 </style>
+<link rel="stylesheet" href="assets/google-review-analytics.css?v=1">
 <script src="assets/google-review-ai.js?v=google-workflow-15"></script>
+<script src="assets/google-review-analytics.js?v=1"></script>
 <script src="assets/google-review-dashboard.js?v=1"></script>
 <script src="assets/google-review-refresh.js?v=google-refresh-3"></script>
 <script type="text/plain" id="google-backend-service-sample">

@@ -507,6 +507,20 @@ Deno.serve(async (req) => {
     const clientMatches = Boolean(connection && connection.oauth_client_id === env('GOOGLE_OAUTH_CLIENT_ID'));
     if (body.action === 'status') return json({ connected: clientMatches, connected_at: connection?.connected_at || null, reconnection_required: Boolean(connection && !clientMatches) });
     if (!connection) return json({ error: 'Google Business Profile bağlantısı kurulmamış.' }, 409);
+    if (body.action === 'operations_list') {
+      const { data, error } = await db.from('google_review_operations').select('review_id,branch_id,status,version,updated_at').eq('connection_id', connectionId).order('updated_at', { ascending: false }).limit(5000);
+      databaseFailure(error); return json({ items: data || [] });
+    }
+    if (body.action === 'operation_save') {
+      const { review_id, branch_id, status, expected_version } = body;
+      if (typeof review_id !== 'string' || !review_id || review_id.length > 512 || !['branch-google-nilufer','branch-google-gebze'].includes(branch_id) || !['new','reviewing','reply_waiting','branch_action','resolved','follow_up'].includes(status) || !Number.isSafeInteger(expected_version) || expected_version < 0) throw new RequestError('Yorum, şube, durum ve sürüm bilgisi geçerli olmalı.', 400);
+      const row = { connection_id: connectionId, review_id, branch_id, status, version: expected_version + 1, updated_by: user.id, updated_at: new Date().toISOString() };
+      const result = expected_version === 0
+        ? await db.from('google_review_operations').insert(row).select('review_id,branch_id,status,version,updated_at').maybeSingle()
+        : await db.from('google_review_operations').update(row).eq('connection_id', connectionId).eq('review_id', review_id).eq('version', expected_version).select('review_id,branch_id,status,version,updated_at').maybeSingle();
+      if (result.error?.code === '23505' || (!result.error && !result.data)) throw new RequestError('Takip durumu başka oturumda değişti. Listeyi yenileyip tekrar deneyin.', 409);
+      databaseFailure(result.error); return json({ item: result.data });
+    }
     if (body.action === 'targets_list') {
       const { data, error } = await db.from('google_review_targets').select('branch_id,month,target,version,updated_at').eq('connection_id', connectionId).order('month', { ascending: false }).limit(1000);
       databaseFailure(error); return json({ items: data || [] });
