@@ -45,7 +45,7 @@
   }
 
   function fallbackReply(review, branch) {
-    const team = `${String(branch.replySignatureName || branch.name || 'OTOTR').replace(/ Test Şube$/i, '').trim()} ekibi`;
+    const team = String(branch.replySignatureName || branch.name || 'OTOTR').replace(/ Test Şube$/i, '').trim().replace(/\s+ekibi$/iu, ' Ekibi');
     const rawName = String(review?.reviewerName || '').trim().replace(/\s+/g, ' ');
     const name = /^(?!Google kullanıc(?:ı|i)|Google User$)[\p{L}][\p{L}'’.-]*(?:\s+[\p{L}][\p{L}'’.-]*){1,3}$/iu.test(rawName) ? rawName : '';
     const greeting = `Sayın ${name || 'Değerli müşterimiz'},`;

@@ -4431,7 +4431,7 @@
       branch.replySignatureName=branch.replySignatureName.replace(/Şubesi$/, 'Şube');
       ['googleRating','googleReviewCount','previousRating','reputationScore','last30DaysReviewCount','negativeReviewRate','unrepliedCount','criticalCount'].forEach(key=>{branch[key]=null;});
     });
-    function googleBranches(){ return googleReputationData.branches.filter(branch=>branch.id!=='branch-google-inegol'); }
+    function googleBranches(){ return googleReputationData.branches.filter(branch=>branch.id!=='branch-google-inegol').map(branch=>branch.id==='branch-google-nilufer'?{...branch,replySignatureName:'OTOTR Bursa Nilüfer Otoekspertiz Ekibi'}:branch); }
     function googleReviews(){ return googleReputationData.reviews; }
     function googleSelectedBranch(){ return googleBranches().find(b=>b.id===googleReputationState.selectedBranchId) || googleBranches()[0]; }
     function googleBranchReviews(branchId){ return googleReviews().filter(r=>branchId==='all'||r.branchId===branchId).sort((a,b)=>new Date(b.reviewDate)-new Date(a.reviewDate)); }

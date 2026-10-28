@@ -198,7 +198,7 @@ Deno.serve(async (req: Request) => {
     const apiKey = Deno.env.get('OPENAI_API_KEY');
     if (!apiKey) return json({ error: 'OPENAI_API_KEY sunucu sırrı tanımlı değil.' }, 503);
 
-    const replySignatureName = branch.name;
+    const replySignatureName = branch.id === 'branch-google-nilufer' ? 'OTOTR Bursa Nilüfer Otoekspertiz Ekibi' : `${branch.name} ekibi`;
     const prompt = JSON.stringify({ sube: branch.name, sehir: branch.city, ilce: branch.district, puan: rating,
       musteri_yorumu: comment, yalniz_yildiz: !comment, hitap_adi: reviewerName || null,
       onceki_yanit: previousReply || null, hedef_kelime_araligi: wordTarget });
@@ -230,8 +230,8 @@ reply alanında yalnızca yanıt gövdesini üret. Marka, şube adı veya ekip i
     });
     const payload = await response.json().catch(() => ({}));
     if (!response.ok) return json({ error: response.status === 429 ? 'OpenAI kullanım sınırına ulaşıldı. Biraz sonra yeniden deneyin.' : response.status === 401 || response.status === 403 ? 'OpenAI sunucu yetkilendirmesi başarısız. Genel merkez yöneticisi bağlantıyı kontrol etmelidir.' : 'OpenAI servisi yanıt üretemedi. Yeniden deneyin.' }, response.status === 429 ? 503 : 502);
-    const draft = parseDraft(payload, `${replySignatureName} ekibi`);
-    validatePersonalization(draft.reply, reviewerName, previousReply, `${replySignatureName} ekibi`);
+    const draft = parseDraft(payload, replySignatureName);
+    validatePersonalization(draft.reply, reviewerName, previousReply, replySignatureName);
     const legal = /dava|avukat|hukuk|mahkeme|dolandır|kişisel veri|ayrımcılık/i.test(comment);
     const risk = legal || rating <= 2 || /güvenlik|can güven|ücret iade|ciddi teknik/i.test(comment);
     if (risk) {
