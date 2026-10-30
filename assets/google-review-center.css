@@ -313,6 +313,19 @@
 #page-google-reviews .google-reply-approval { color: var(--gc-ink) !important; font-size: 12px; font-weight: 400; line-height: 1.65; }
 #page-google-reviews .google-reply-approval input { width: 18px !important; height: 18px; min-height: 18px; accent-color: var(--gc-cta); }
 
+/* Nilüfer yorum merkezi: okunabilir iki aşamalı inceleme kartı */
+#page-google-reviews .google-review-card.premium.google-review-pair { grid-template-columns: minmax(360px,.9fr) minmax(420px,1.1fr); border-radius: 16px; }
+#page-google-reviews .google-review-source { min-height: 330px; background: linear-gradient(180deg,var(--gc-panel),var(--gc-paper)); }
+#page-google-reviews .google-review-source-label { padding-bottom: 12px; border-bottom: 1px solid var(--gc-line); }
+#page-google-reviews .google-review-source .google-review-comment { min-height: 92px; padding: 14px 15px; border: 1px solid var(--gc-line); border-radius: 12px; background: var(--gc-paper); }
+#page-google-reviews .google-review-branch { padding: 9px 11px; border: 1px solid var(--gc-line); border-radius: 9px; background: var(--gc-blue-bg); font-weight: 650; }
+#page-google-reviews .google-reply-panel { min-height: 330px; background: linear-gradient(180deg,var(--gc-bg),var(--gc-paper)) !important; }
+#page-google-reviews .google-reply-panel::before { content: 'YANIT İŞLEMİ'; display: block; color: var(--gc-muted); font-size: 10px; font-weight: 800; letter-spacing: .12em; }
+@media (max-width: 900px) {
+  #page-google-reviews .google-review-card.premium.google-review-pair { grid-template-columns: 1fr; }
+  #page-google-reviews .google-review-source, #page-google-reviews .google-reply-panel { min-height: 0; }
+}
+
 #page-google-reviews .google-reply-actions { gap: 8px; flex-wrap: wrap; min-width: 0; }
 #page-google-reviews .google-reply-actions button,
 #page-google-reviews .google-reply-primary,

@@ -1503,6 +1503,15 @@
     .google-review-task-menu summary,.google-branch-tasks>summary{cursor:pointer;color:#526279;font-size:12px;font-weight:700;line-height:1.6}
     .google-review-task-menu .google-review-action-grid{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
     .google-review-task-menu .google-action-btn{font-size:11px;padding:8px 10px}
+    .google-review-card.premium.google-review-pair{border-radius:16px;grid-template-columns:minmax(360px,.9fr) minmax(420px,1.1fr)}
+    .google-review-source{background:linear-gradient(180deg,#fff 0%,#fbfcfe 100%);min-height:330px}
+    .google-review-source-label{padding-bottom:12px;border-bottom:1px solid #e7edf4}
+    .google-review-source .google-review-comment{min-height:92px;background:#fff;border:1px solid #e5ebf2;border-radius:12px;padding:14px 15px}
+    .google-review-source .google-review-tags{margin-top:0;padding-top:0}
+    .google-review-branch{padding:9px 11px;border:1px solid #e4ebf3;border-radius:9px;background:#f7faff;font-weight:700}
+    .google-reply-panel{min-height:330px;background:linear-gradient(180deg,#f6f9fc 0%,#eef3f8 100%)}
+    .google-reply-panel:before{content:'YANIT İŞLEMİ';display:block;color:#6b7a8f;font-size:10px;font-weight:900;letter-spacing:.12em}
+    @media(max-width:900px){.google-review-card.premium.google-review-pair{grid-template-columns:1fr}.google-review-source,.google-reply-panel{min-height:0}}
     .google-branch-tasks{padding:12px 15px;border:1px solid #dce3ec;border-radius:10px;background:#fff}
     .google-branch-tasks[open]>summary{margin-bottom:12px}
     .google-branch-tasks .google-premium-card{padding:0;border:0;box-shadow:none}
@@ -1512,7 +1521,7 @@
     @media(max-width:1280px){.google-reviews-page .google-reviews-layout{grid-template-columns:1fr}.google-reviews-page .google-branch-list{grid-template-columns:repeat(3,minmax(0,1fr))}}
     @media(max-width:760px){.google-review-card.premium.google-review-pair{grid-template-columns:1fr}.google-review-source,.google-reply-panel{padding:18px}.google-reply-panel{border-left:0;border-top:1px solid #e2e8f0}.google-reviews-page .google-branch-list{grid-template-columns:1fr}.google-review-source .google-review-top{flex-direction:row}.google-reply-actions .google-reply-primary{width:100%}}
   </style>
-  <link rel="stylesheet" href="assets/google-review-center.css?v=review-center-4">
+  <link rel="stylesheet" href="assets/google-review-center.css?v=review-center-5">
 </head>
 <body>
   <script>
@@ -18535,7 +18544,7 @@
   .google-workflow-row{padding:14px 0;border-bottom:1px solid var(--line,#dbe3ee)}.google-workflow-row:last-child{border-bottom:0}.google-workflow-row p{white-space:pre-wrap;overflow-wrap:anywhere}.google-workflow-head{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}.google-ai-warning{border:1px solid #f8d49b;background:#fff8eb;border-radius:10px;padding:10px 12px;color:#805100;font-size:12px;margin:12px 0}
 </style>
 <link rel="stylesheet" href="assets/google-review-analytics.css?v=1">
-<script src="assets/google-review-ai.js?v=google-workflow-15"></script>
+<script src="assets/google-review-ai.js?v=google-workflow-16"></script>
 <script src="assets/google-review-analytics.js?v=1"></script>
 <script src="assets/google-review-dashboard.js?v=1"></script>
 <script src="assets/google-review-refresh.js?v=google-refresh-3"></script>
