@@ -278,11 +278,12 @@ button:focus-visible{outline:3px solid #fff;outline-offset:3px}
 <sc-if value="{{resultPage}}" hint-placeholder-val="{{ false }}">
 <div style="margin:12px -12px 0;display:flex;flex-direction:column;gap:7px">
 <figure style="margin:0 0 2px;aspect-ratio:3/1;overflow:hidden;border:1px solid {{t.track}};border-radius:16px;background:{{t.rowBase}};box-shadow:0 10px 24px rgba(0,0,0,.12)"><img src="{{resultBanner}}" alt="{{pg.title}} bölümü ekspertiz görseli" width="2172" height="724" style="display:block;width:100%;height:100%;object-fit:cover;object-position:center"></figure>
-<sc-for list="{{resultSections}}" as="section" hint-placeholder-count="5"><div style="overflow:hidden;border-radius:16px;{{t.card}}"><div style="display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:42px;padding:0 13px;border-left:4px solid #35A853"><strong style="font-size:13px;line-height:1.2">{{section.title}}</strong><span style="flex:none;font-size:11px;font-weight:900;color:{{t.sub}}">{{section.score}}</span></div><div style="margin:0 10px 9px;padding:8px 9px;border-radius:10px;background:rgba(46,160,67,.10);color:#218838;font-size:11px;font-weight:800">Kusurlu alan tespit edilmemiştir.</div></div></sc-for>
+<sc-if value="{{showGasketEvidence}}" hint-placeholder-val="{{ false }}"><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><sc-for list="{{gasketEvidence}}" as="evidence" hint-placeholder-count="2"><button aria-label="{{evidence.label}} fotoğrafını büyüt" onClick="{{evidence.open}}" style="height:94px;padding:0;position:relative;overflow:hidden;border:1px solid {{t.track}};border-radius:14px;background:{{t.rowBase}};box-shadow:0 7px 16px rgba(0,0,0,.10)"><img src="{{evidence.src}}" alt="{{evidence.label}}" style="display:block;width:100%;height:100%;object-fit:cover"><strong style="position:absolute;left:8px;bottom:8px;padding:5px 9px;border-radius:999px;background:rgba(15,20,28,.82);color:#fff;font-size:9px;letter-spacing:.4px">{{evidence.label}}</strong></button></sc-for></div></sc-if>
+<sc-for list="{{resultSections}}" as="section" hint-placeholder-count="5"><div style="overflow:hidden;border-radius:16px;{{t.card}}"><div style="display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:42px;padding:0 13px;border-left:4px solid {{section.accent}}"><strong style="font-size:13px;line-height:1.2">{{section.title}}</strong><span style="flex:none;font-size:11px;font-weight:900;color:{{t.sub}}">{{section.score}}</span></div><sc-if value="{{section.hasFindings}}" hint-placeholder-val="{{ false }}"><div style="padding:0 10px 8px;display:flex;flex-direction:column;gap:4px"><sc-for list="{{section.findings}}" as="finding" hint-placeholder-count="1"><div style="display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:40px;padding:3px 5px 3px 8px;border-radius:10px;background:{{t.rowAlt}}"><span style="flex:1;min-width:0;font-size:11px;line-height:1.25">{{finding.label}}</span><span style="flex:none;max-width:120px;padding:5px 8px;border-radius:999px;background:{{finding.bg}};color:{{finding.color}};font-size:9px;font-weight:900;text-align:center">{{finding.status}}</span><sc-if value="{{finding.hasPhoto}}" hint-placeholder-val="{{ false }}"><button aria-label="{{finding.label}} fotoğrafını büyüt" onClick="{{finding.openPhoto}}" style="width:54px;height:42px;flex:none;padding:0;overflow:hidden;border:2px solid {{finding.color}};border-radius:9px;background:{{t.rowBase}};box-shadow:0 3px 8px rgba(0,0,0,.16)"><img src="{{finding.photo}}" alt="{{finding.label}} bulgu fotoğrafı" style="display:block;width:100%;height:100%;object-fit:cover"></button></sc-if></div></sc-for></div></sc-if><sc-if value="{{section.clean}}" hint-placeholder-val="{{ true }}"><div style="margin:0 10px 9px;padding:8px 9px;border-radius:10px;background:rgba(46,160,67,.10);color:#218838;font-size:11px;font-weight:800">Kusurlu alan tespit edilmemiştir.</div></sc-if></div></sc-for>
 </div>
 </sc-if>
 
-<sc-if value="{{showResultSummary}}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:32px;right:32px;bottom:14px;z-index:5;box-sizing:border-box;display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:18px;background:rgba(46,160,67,.10);border:1px solid rgba(46,160,67,.28);box-shadow:0 8px 20px rgba(0,0,0,.08)"><span style="width:9px;height:9px;flex:none;border-radius:50%;background:#2EA043;box-shadow:0 0 0 5px rgba(46,160,67,.12)"></span><strong style="font-size:12px;line-height:1.3;color:#218838">{{resultSummary}}</strong></div></sc-if>
+<sc-if value="{{showResultSummary}}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:32px;right:32px;bottom:14px;z-index:5;box-sizing:border-box;display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:18px;background:{{resultSummaryBg}};border:1px solid {{resultSummaryBorder}};box-shadow:0 8px 20px rgba(0,0,0,.08)"><span style="width:9px;height:9px;flex:none;border-radius:50%;background:{{resultSummaryColor}};box-shadow:0 0 0 5px {{resultSummaryGlow}}"></span><strong style="font-size:12px;line-height:1.3;color:{{resultSummaryColor}}">{{resultSummary}}</strong></div></sc-if>
 
 <sc-if value="{{vehiclePhotosPage}}" hint-placeholder-val="{{ false }}">
 <div style="margin:12px -12px 0;display:flex;flex-direction:column;gap:10px">
@@ -541,7 +542,16 @@ const previousPage = findPage(-1);
 const followingPage = findPage(1);
 const withPhoto = (item) => ({ ...item, hasPhoto: Boolean(item.photo), openPhoto: () => item.photo && this.setState({ findingPhoto: { src: item.photo, title: item.label } }) });
 const resultConfig = TEST_RESULT_CONFIG[p] ?? { total: 0, sections: [] };
-const resultSections = resultConfig.sections.map(([title, count]) => ({ title, score: count + ' / ' + count }));
+const reportEvidence = this.props.reportEvidence ?? {};
+const rawResultFindings = Array.isArray(reportEvidence.findings) ? reportEvidence.findings : [];
+const pageResultFindings = rawResultFindings.filter((finding) => Number(finding.page) === p);
+const resultSections = resultConfig.sections.map(([title, count]) => {
+const findings = pageResultFindings.filter((finding) => finding.section === title).map((finding) => withPhoto({ label:finding.label, status:finding.status ?? 'TAKİP EDİLMELİ', bg:finding.bg ?? 'rgba(232,137,18,.14)', color:finding.color ?? '#C86A00', photo:finding.photo ?? '' }));
+return { title, score: count + ' / ' + count, accent:findings.length ? '#E88912' : '#35A853', hasFindings:findings.length > 0, clean:findings.length === 0, findings };
+});
+const gasketEvidence = [{ label:'ÖNCESİ', src:reportEvidence.gasketBefore }, { label:'SONRASI', src:reportEvidence.gasketAfter }].filter((item) => Boolean(item.src)).map((item) => ({ ...item, open:() => this.setState({ findingPhoto:{ src:item.src, title:'Conta kaçak testi · ' + item.label } }) }));
+const batteryReceiptPhoto = reportEvidence.batteryReceipt ?? '';
+const resultFindingCount = pageResultFindings.length;
 const resultBannerNames = { 11:'08-beyin-obd.png', 12:'09-yol-testi.png', 13:'10-fren-suspansiyon.png', 14:'11-dis-ekspertiz.png', 15:'12-ic-ekspertiz.png', 16:'13-airbag-guvenlik.png', 17:'14-conta-kacak.png', 18:'15-uclu-km-kontrolu.png', 19:'16-duman-kacak.png', 20:'17-motor-asinma.png', 21:'18-mor-isik.png' };
 const resultBanner = './assets/inspection/section-banners/' + (resultBannerNames[p] ?? '08-beyin-obd.png');
 const queryRows = [
@@ -613,14 +623,16 @@ resultPage: p >= 11 && p <= 21,
 showResultSummary: p >= 11 && p <= 21,
 resultSections,
 resultBanner,
-resultSummary: resultConfig.total + ' kontrol noktasında kritik bulgu tespit edilmedi.',
+gasketEvidence, showGasketEvidence:p === 17 && gasketEvidence.length > 0,
+resultSummary: resultFindingCount ? resultConfig.total + ' kontrol noktasında ' + resultFindingCount + ' takip gerektiren bulgu var.' : resultConfig.total + ' kontrol noktasında kritik bulgu tespit edilmedi.',
+resultSummaryBg:resultFindingCount ? 'rgba(232,137,18,.10)' : 'rgba(46,160,67,.10)', resultSummaryBorder:resultFindingCount ? 'rgba(232,137,18,.34)' : 'rgba(46,160,67,.28)', resultSummaryColor:resultFindingCount ? '#B86700' : '#218838', resultSummaryGlow:resultFindingCount ? 'rgba(232,137,18,.14)' : 'rgba(46,160,67,.12)',
 vehiclePhotosPage: p === 22,
   showVehiclePhotoSummary: false,
 bodyDefects, showBodyDefects: bodyDefects.length > 0,
 motorSections: [
 { title: 'MOTOR ÜST BÖLGE & GENEL DURUM', score: '3 / 3', accent: '#D92727', hasFindings: true, clean: false, findings: [{ label: 'Araçta Motor - Mekanik Olarak İşlem Mevcut', status: 'EVET', bg: 'rgba(217,39,39,.12)', color: '#C51F1F', photo: '' }].map(withPhoto) },
 { title: 'SOĞUTMA SİSTEMİ', score: '6 / 6', accent: '#35A853', hasFindings: false, clean: true, findings: [] },
-{ title: 'ELEKTRİK / ŞARJ / KLİMA & YARDIMCI SİSTEMLER', score: '5 / 5', accent: '#E88912', hasFindings: true, clean: false, findings: [{ label: 'Akü voltajı: 12,0 V', status: 'KÖTÜ', bg: 'rgba(217,39,39,.12)', color: '#C51F1F', photo: '' }, { label: 'V Kayışı Gergi Rulmanı Ses Durumu', status: 'SESLİ ÇALIŞMA', bg: 'rgba(232,137,18,.14)', color: '#C86A00', photo: '' }].map(withPhoto) },
+{ title: 'ELEKTRİK / ŞARJ / KLİMA & YARDIMCI SİSTEMLER', score: '5 / 5', accent: '#E88912', hasFindings: true, clean: false, findings: [{ label: 'Akü voltajı: 12,0 V', status: 'KÖTÜ', bg: 'rgba(217,39,39,.12)', color: '#C51F1F', photo: batteryReceiptPhoto }, { label: 'V Kayışı Gergi Rulmanı Ses Durumu', status: 'SESLİ ÇALIŞMA', bg: 'rgba(232,137,18,.14)', color: '#C86A00', photo: '' }].map(withPhoto) },
 { title: 'MOTOR ÇALIŞMA / KOMPRESYON & İÇ SAĞLIK', score: '8 / 8', accent: '#E88912', hasFindings: true, clean: false, findings: [{ label: 'Triger Kayışı - Zinciri Ses Durumu', status: 'SERVİS MÜDAHALESİ', bg: 'rgba(38,114,220,.12)', color: '#246DCC', photo: '' }].map(withPhoto) },
 { title: 'YAĞLAMA & SIZDIRMAZLIK', score: '2 / 2', accent: '#E88912', hasFindings: true, clean: false, findings: [{ label: 'Motor Üst Bölge Yağ Sızdırmazlığı', status: 'TERLEME', bg: 'rgba(232,137,18,.14)', color: '#C86A00', photo: '' }].map(withPhoto) },
 { title: 'TURBO / YAKIT / HAVA & EGZOZ', score: '6 / 6', accent: '#35A853', hasFindings: false, clean: true, findings: [] }
