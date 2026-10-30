@@ -48,6 +48,15 @@ No actionable P0, P1, or P2 issues remain in the cover page at the tested target
 
 final result: passed
 
+## Ayrık parça ve işlem etiketleri — 2026-10-30
+
+- Parça adları renkli durum kutularından çıkarılarak kutuların üstüne alındı.
+- Usta girişi durumları renkli kutular içinde korundu.
+- Kaput / Boyalı, Bagaj Kapağı / İşlemli, Ön Tampon / Plastik ve Arka Tampon / Plastik doğrulandı.
+- Açık/koyu tema, bağlantı çizgileri ve 1080 × 1920 görünüm doğrulandı.
+
+final result: passed
+
 ## Kaporta parça adı / durum hiyerarşisi — 2026-10-30
 
 - Üst görünüş açıklamalarında parça adı üst satıra, durum alt satıra alındı.
