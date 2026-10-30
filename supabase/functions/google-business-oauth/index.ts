@@ -316,7 +316,11 @@ async function prepareDraft(db: any, user: any, body: any, connection: any, auth
     const draft = await response.json().catch(() => null);
     if (!response.ok) throw new RequestError(typeof draft?.error === 'string' ? draft.error.slice(0, 800) : 'AI taslağı hazırlanamadı. Yeniden deneyin.', response.status);
     const expectedSignature = identity.branch_id === 'branch-google-nilufer' ? 'OTOTR Bursa Nilüfer Otoekspertiz Ekibi' : `${identity.branch_name} ekibi`;
-    if (!draft || typeof draft.reply !== 'string' || draft.reply.length > 4000 || !draft.reply.endsWith(expectedSignature) || typeof draft.requires_human_review !== 'boolean') throw new RequestError('AI yanıtı doğrulanamadı. Yeniden deneyin.', 502);
+    if (!draft || typeof draft.reply !== 'string' || draft.reply.length > 4000 || typeof draft.requires_human_review !== 'boolean') throw new RequestError('AI yanıtı doğrulanamadı. Yeniden deneyin.', 502);
+    // The AI function owns the canonical signature, but older deployed
+    // versions may return the body without it. Normalize once here instead of
+    // rejecting an otherwise valid draft.
+    if (!draft.reply.trim().endsWith(expectedSignature)) draft.reply = `${draft.reply.trim()}\n\n${expectedSignature}`;
     const current = await verifiedReview(identity, token, signal);
     if (current.expected_reply) { skipped = true; throw new RequestError('Hazırlık sırasında bu yoruma Google’da yanıt verilmiş. Mevcut yanıt korundu.', 409); }
     if (current.snapshot.comment !== snapshot.comment || current.snapshot.rating !== snapshot.rating || current.snapshot.reviewer_name !== snapshot.reviewer_name) throw new RequestError('Yorum hazırlık sırasında değişti. Güncel yorum için taslağı yeniden hazırlayın.', 409);
