@@ -3,7 +3,7 @@
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const fmt=(v,d=0)=>v==null?'—':Number(v).toLocaleString('tr-TR',{minimumFractionDigits:d,maximumFractionDigits:d});
   const DAY=86400000;
-  const state={period:'30',from:'',to:'',star:'all',response:'all',sentiment:'all',topic:'all',query:'',series:{volume:true,rating:true},operations:new Map(),loaded:false,busy:false,error:''};
+  const state={period:'all',from:'',to:'',star:'all',response:'all',sentiment:'all',topic:'all',query:'',series:{volume:true,rating:true},operations:new Map(),loaded:false,busy:false,error:''};
   const statusLabels={new:'Yeni',reviewing:'İnceleniyor',reply_waiting:'Yanıt bekliyor',branch_action:'Şube aksiyonu bekleniyor',resolved:'Çözüldü',follow_up:'Takip gerekiyor'};
   const topics=[
     ['Bekleme süresi',/bekle|gecik|sıra|zaman|süre/iu],['Fiyat algısı',/fiyat|ücret|pahalı|ucuz|indirim/iu],['Rapor açıklaması',/rapor|açıkla|anlat|bilgilendir/iu],['İletişim',/iletişim|dönüş|telefon|ulaş|cevap/iu],['Personel ilgisi',/personel|çalışan|ekip|ilgi|güler yüz|karşıl/iu],['Teknik süreç',/motor|kaporta|şasi|test|kontrol|ekspertiz/iu],['Hizmet kalitesi',/hizmet|kalite|profesyonel|titiz|özen/iu]

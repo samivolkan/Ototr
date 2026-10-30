@@ -4691,15 +4691,15 @@
       return `<p class="google-review-comment">${googleEsc(original)}</p><details class="google-review-translation"><summary>Google çevirisini göster</summary><p class="google-review-comment">${googleEsc(translation)}</p></details>`;
     }
     function GoogleReviewFeed(){
-      const all=googleReputationState.selectedBranchId==='all',branch=all?{id:'all',name:'Tüm şubeler',synced:googleBranches().some(b=>b.synced)}:googleSelectedBranch(),analyticsIds=window.OTOTRGoogleAnalytics?.filtered?.(googleReviews(),branch.id)?.map?.(r=>r.id)||null,rows=googleBranchReviews(branch.id).filter(r=>googleReviewMatchesFilter(r)).filter(r=>!analyticsIds||analyticsIds.includes(r.id));
-      const empty=branch.synced?'Bu filtreye uygun yorum bulunamadı.':googleReputationState.loading?'Google yorumları alınıyor…':'Yorumlar henüz alınmadı. Google Senkronize Et ile şube yorumlarını yükleyin.';
+      const all=googleReputationState.selectedBranchId==='all',branch=all?{id:'all',name:'Tüm şubeler',synced:googleBranches().some(b=>b.synced)}:googleSelectedBranch(),rows=googleBranchReviews(branch.id).filter(r=>googleReviewMatchesFilter(r));
+      const empty=branch.synced?'Bu filtreye uygun yorum bulunamadı.':googleReputationState.loading?'Google yorumları alınıyor…':'Yorumlar henüz alınmadı. Nilüfer Google profilinden yorumları almak için senkronizasyonu başlatın.';
       const list=rows.length?rows.map(r=>{
         const branch=getGoogleBranchById(r.branchId);
         const actionId=googleEsc(JSON.stringify(r.id));
         const fallback=r.isReplied?`<div class="google-reply-heading"><h4>Google’daki yanıt</h4><span class="google-reply-status" data-tone="published">Yayımlandı</span></div><p class="google-reply-text">${googleEsc(r.replyText)}</p>`:`<div class="google-reply-heading"><h4>AI yanıt taslağı</h4><span class="google-reply-status" data-tone="loading">Yükleniyor</span></div><p class="google-reply-note">Yanıt bölümü yükleniyor. Taslak hazır olduğunda burada inceleyip onaylayabilirsiniz.</p>`;
         const reply=window.OTOTRGoogleReviewAI?.renderReplyCard?.(r,branch)||fallback;
         return `<article class="google-review-card premium google-review-pair ${r.riskLevel}" data-review-id="${googleEsc(r.id)}"><div class="google-review-source" data-testid="google-review-left"><div class="google-review-source-label"><span>Müşteri yorumu</span><span class="google-stars" aria-label="5 üzerinden ${r.rating} yıldız">${googleStars(r.rating)} ${r.rating}/5</span></div><div class="google-review-top"><div class="google-review-meta"><div class="google-reviewer">${googleEsc(r.reviewerName)}</div><time class="google-review-date" datetime="${googleEsc(r.reviewDate)}">${new Date(r.reviewDate).toLocaleDateString('tr-TR',{day:'2-digit',month:'long',year:'numeric'})}</time></div></div><div class="google-review-branch">${icon('map-pin')}${googleEsc(branch.name)}</div>${GoogleReviewComment(r.comment)}<div class="google-review-tags"><span class="google-tag ${r.riskLevel}">${googleEsc(r.sentiment)}</span><span class="google-tag neutral">${r.isReplied?'Yanıtlandı':'Cevap bekliyor'}</span></div>${googleReviewOpenLink(r,branch)}</div><div class="google-reply-panel" data-testid="google-review-right">${reply}<details class="google-review-task-menu"><summary>Diğer işlemler</summary><div class="google-review-action-grid"><button type="button" class="google-action-btn" onclick="OTOTRGoogleReputation.assignTaskToBranch(${actionId})">Şubeye görev ata</button><button type="button" class="google-action-btn" onclick="OTOTRGoogleReputation.convertGoogleReviewToComplaint(${actionId})">Müşteri deneyimi</button><button type="button" class="google-action-btn danger" onclick="OTOTRGoogleReputation.sendToLegal(${actionId})">Hukuk incelemesi</button><button type="button" class="google-action-btn" onclick="OTOTRGoogleReputation.openQualityAudit(${actionId})">Kalite incelemesi</button></div></details></div></article>`;
-      }).join(''):`<div class="google-empty">${empty}</div>`;
+      }).join(''):`<div class="google-empty"><strong>${empty}</strong>${!branch.synced&&!googleReputationState.loading?'<button type="button" class="google-action-btn google-reply-primary" onclick="OTOTRGoogleReputation.syncGoogleReviewsForBranch(\'branch-google-nilufer\')">Nilüfer yorumlarını getir</button>':''}</div>`;
       return `<section class="google-premium-card google-review-feed"><div class="google-review-toolbar"><div><h3 class="google-center-section-title">Yorumlar ve yanıtlar</h3><p style="margin:4px 0 0;color:var(--muted);font-size:12px">${googleEsc(branch.name)} · ${branch.synced?`${rows.length} yorum gösteriliyor`:'Veri bekleniyor'}</p></div>${GoogleReviewFilters()}</div><div class="google-review-list">${list}</div></section>`;
     }
     function GoogleManagementSummary(){
@@ -4739,6 +4739,7 @@
         googleBranches().filter(branch=>!branch.synced).forEach(branch=>{
           branch.integrationStatus=status.connected?'Google hesabı bağlı · yorumlar henüz alınmadı':'Google hesabı bağlantısı bekleniyor';
         });
+        if(status.connected && !googleReviews().length) setTimeout(()=>window.OTOTRGoogleReputation?.syncGoogleReviewsForBranch?.('branch-google-nilufer',{quiet:true}),350);
       } catch(error) {
         googleReputationState.error=error?.message||'Google bağlantısı kontrol edilemedi.';
       }
