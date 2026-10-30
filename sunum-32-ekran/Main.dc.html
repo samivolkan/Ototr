@@ -305,7 +305,7 @@ button:focus-visible{outline:3px solid #fff;outline-offset:3px}
 <sc-if value="{{cover}}" hint-placeholder-val="{{ true }}">
 <div style="position: relative; margin-top: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px">
 <sc-for list="{{specs}}" as="s" hint-placeholder-count="4">
-<div style="display: flex; align-items: center; gap: 12px; padding: 11px 14px; border-radius: 22px; {{t.card}}">
+<div style="display: flex; align-items: center; gap: 12px; min-height:90px; box-sizing:border-box; padding: 18px 14px; border-radius: 22px; {{t.card}}">
 <div style="width: 52px; height: 52px; flex: none; filter: {{t.hexShadow}}">
 <div style="width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; clip-path: polygon(25% 2%, 75% 2%, 100% 50%, 75% 98%, 25% 98%, 0 50%); background: {{t.hexRim}}">
 <div style="width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; clip-path: polygon(25% 2%, 75% 2%, 100% 50%, 75% 98%, 25% 98%, 0 50%); background: {{t.hexFace}}">
@@ -319,7 +319,7 @@ button:focus-visible{outline:3px solid #fff;outline-offset:3px}
 </div>
 
 <div style="position: relative; margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px">
-<div style="display: flex; align-items: center; gap: 12px; padding: 11px 14px; border-radius: 22px; {{t.cardHot}}">
+<div style="display: flex; align-items: center; gap: 12px; min-height:90px; box-sizing:border-box; padding: 18px 14px; border-radius: 22px; {{t.cardHot}}">
 <div style="width: 52px; height: 52px; flex: none; border-radius: 50%; display: flex; align-items: center; justify-content: center; filter: {{t.hexShadow}}; background: {{t.hexRim}}">
 <div style="width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: {{t.hexFace}}">
 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="{{t.icon}}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="7.5" cy="15.5" r="4.5"></circle><path d="M10.7 12.3L20 3m-3 3 3 3m-6 0 3 3"></path></svg>
@@ -327,7 +327,7 @@ button:focus-visible{outline:3px solid #fff;outline-offset:3px}
 </div>
 <div style="display: flex; flex-direction: column; gap: 1px"><span style="font-size: 12px; font-weight: 600; color: {{t.sub}}">YEDEK ANAHTAR</span><span style="font-size: 20px; font-weight: 800">{{spareKeyStatus}}</span></div>
 </div>
-<div style="display: flex; align-items: center; gap: 12px; padding: 11px 14px; border-radius: 22px; {{t.card}}">
+<div style="display: flex; align-items: center; gap: 12px; min-height:90px; box-sizing:border-box; padding: 18px 14px; border-radius: 22px; {{t.card}}">
 <div style="width: 52px; height: 52px; flex: none; filter: {{t.hexShadow}}">
 <div style="width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; clip-path: polygon(25% 2%, 75% 2%, 100% 50%, 75% 98%, 25% 98%, 0 50%); background: {{t.hexRim}}">
 <div style="width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; clip-path: polygon(25% 2%, 75% 2%, 100% 50%, 75% 98%, 25% 98%, 0 50%); background: {{t.hexFace}}">
@@ -608,7 +608,7 @@ mechanicalSections: [
 { title: 'ALT TAKIM & MOTOR KULAKLARI', score: '5 / 5' }
 ],
 reportDate, vehiclePlate, testCount, controlPoints, spareKeyStatus, inspectionSummary: testCount + ' TEST · ' + controlPoints + ' KONTROL NOKTASI',
-botH: p === 0 ? 442 : 104,
+botH: p === 0 ? 430 : 104,
 pageTwo: p === 1, legacyQueries: false, tramerPage: p === 2, kmPage: p === 3, debtPage: p === 4, bodyPage: p === 5, bodyDetailsPage: p === 6, chassisPage: p === 7, chassisDetailsPage: p === 8, motorPage: p === 9, mechanicalPage: p === 10, standardPage: false,
   showTramerModal: this.state.modal === 'tramer', showKmModal: this.state.modal === 'km',
   showTestDetail:Boolean(this.state.testDetail), testDetailRows, testDetailDescription, testDetailSummary,
