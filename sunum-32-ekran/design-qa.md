@@ -48,6 +48,15 @@ No actionable P0, P1, or P2 issues remain in the cover page at the tested target
 
 final result: passed
 
+## Ortak üst başlangıç hizası — 2026-10-30
+
+- Tüm sayfalardaki plaka ve tarih üst bilgi satırı kaldırıldı.
+- Kapak ve içerik sayfalarının ana içerik başlangıcı 24 px ortak üst hizaya alındı.
+- Araç Bilgileri, Taraflar & Paket İçeriği ve Kaporta – Boya Görünümleri sayfaları görsel olarak doğrulandı.
+- İçerik taşması ve tarayıcı hatası görülmedi.
+
+final result: passed
+
 ## Ayrık parça ve işlem etiketleri — 2026-10-30
 
 - Parça adları renkli durum kutularından çıkarılarak kutuların üstüne alındı.
