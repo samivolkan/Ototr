@@ -16,7 +16,7 @@
 <style>
 html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#EEF0F4}
 body{position:relative;touch-action:manipulation;overscroll-behavior:none}
-x-dc,body>div:first-of-type{position:absolute!important;left:50%!important;top:50%!important;display:block;width:540px;height:1000px;transform:translate(-50%,-50%) scale(var(--presentation-scale,1));transform-origin:center center}
+x-dc,body>div:first-of-type{position:absolute!important;left:50%!important;top:50%!important;display:block;width:672px;height:1000px;transform:translate(-50%,-50%) scale(var(--presentation-scale,1));transform-origin:center center}
 @keyframes scan{0%{top:18%;opacity:0}15%{opacity:1}85%{opacity:1}100%{top:78%;opacity:0}}
 .scan{position:absolute;left:0;right:0;height:2px;animation:scan 3.6s ease-in-out infinite;display:flex;align-items:center;justify-content:center}
 .scan-label{transform:translateY(-50%);padding:5px 12px;border-radius:999px;background:rgba(14,17,22,.78);border:1px solid rgba(255,255,255,.24);box-shadow:0 5px 14px rgba(0,0,0,.35);color:#fff;font-size:11px;font-weight:800;letter-spacing:1.05px;white-space:nowrap}
@@ -24,7 +24,16 @@ button{cursor:pointer}
 button:focus-visible{outline:3px solid #fff;outline-offset:3px}
 </style>
 </helmet>
-<div style="position: relative; width: 540px; height: 1000px; box-sizing: border-box; overflow: hidden; font-family: 'DM Sans', system-ui, sans-serif; background: {{t.bg}}; color: {{t.text}}">
+<div style="position: relative; width: 672px; height: 1000px; box-sizing: border-box; overflow: hidden; font-family: 'DM Sans', system-ui, sans-serif; background: {{t.bg}}; color: {{t.text}}">
+
+<aside aria-label="Sunum bölümleri" style="position:absolute;left:0;top:0;bottom:0;width:132px;z-index:20;box-sizing:border-box;padding:18px 10px 12px;border-right:1px solid {{t.track}};background:{{t.rowBase}};box-shadow:10px 0 28px rgba(0,0,0,.08);backdrop-filter:blur(18px)">
+<div style="height:66px;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;padding:0 4px;box-sizing:border-box;border-bottom:1px solid {{t.track}}"><img src="{{t.logo}}" alt="OTOTR Ekspertiz" style="width:102px;height:auto;display:block"><strong style="margin-top:6px;font-size:10px;line-height:1;color:{{t.text}};white-space:nowrap">Renault Clio · 2012</strong></div>
+<nav style="position:absolute;left:8px;right:7px;top:94px;bottom:12px;overflow-y:auto;overflow-x:hidden;padding-right:3px;scrollbar-width:thin;scrollbar-color:{{t.track}} transparent">
+<sc-for list="{{menuItems}}" as="item" hint-placeholder-count="19"><button aria-label="{{item.label}} bölümüne git" onClick="{{item.go}}" style="width:100%;min-height:42px;margin:0 0 4px;padding:6px 7px;border:0;border-radius:11px;display:grid;grid-template-columns:24px minmax(0,1fr) 7px;align-items:center;gap:6px;text-align:left;font-family:inherit;{{item.style}}"><span style="width:22px;height:22px;box-sizing:border-box;border:1px solid {{item.numberBorder}};border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;{{item.numberStyle}}">{{item.number}}</span><span style="min-width:0;font-size:10px;font-weight:{{item.weight}};line-height:1.18;white-space:normal;color:{{item.textColor}}">{{item.label}}</span><span style="width:7px;height:7px;border-radius:2px;background:{{item.statusColor}};opacity:{{item.statusOpacity}}"></span></button></sc-for>
+</nav>
+</aside>
+
+<div style="position:absolute;left:132px;top:0;width:540px;height:1000px;overflow:hidden;background:{{t.bg}}">
 
 <div style="position: absolute; left: -120px; top: 80px; width: 520px; height: 520px; border-radius: 50%; background: radial-gradient(circle, {{t.glow}} 0%, rgba(232,40,26,0) 68%)"></div>
 <div style="position: absolute; right: -60px; top: 0; width: 300px; height: 300px; transform: skewX(-24deg); background: {{t.skew}}"></div>
@@ -374,8 +383,9 @@ button:focus-visible{outline:3px solid #fff;outline-offset:3px}
 </sc-if>
 
 </div>
+</div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false},"accent":{"editor":"color","default":"#E8281A"},"hasTramer360":{"editor":"boolean","default":true},"hasKmQuery":{"editor":"boolean","default":true},"hasDebtQuery":{"editor":"boolean","default":true},"$preview":{"width":540,"height":1000}}'>
+<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false},"accent":{"editor":"color","default":"#E8281A"},"hasTramer360":{"editor":"boolean","default":true},"hasKmQuery":{"editor":"boolean","default":true},"hasDebtQuery":{"editor":"boolean","default":true},"$preview":{"width":672,"height":1000}}'>
 const PAGES = [
 { title: 'Araç Bilgileri', d: 'M5 16l1.5-5.5A2 2 0 0 1 8.4 9h7.2a2 2 0 0 1 1.9 1.5L19 16M3 16h18v3H3zM7 19v1.5M17 19v1.5', items: [] },
 { title: 'Taraflar & Paket İçeriği', d: 'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75', items: [] },
@@ -400,6 +410,27 @@ const PAGES = [
 { title: 'Motor Aşınma Testi', d: 'M3 11v5h3l2 3h9l3-3v-5l-2-2h-3V6h-5v3H7l-1 2z', items: ['Kompresyon', 'Silindir dengesi', 'Üfleme kontrolü', 'Yağ basıncı', 'Aşınma sonucu'] },
 { title: 'Mor Işık (UV) Testi', d: 'M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.8.8 1 1.5 1 2.5h6c0-1 .2-1.7 1-2.5A6 6 0 0 0 12 3z', items: ['Boya yüzeyi', 'Sıvı kaçakları', 'Onarım izleri', 'UV bulguları', 'Genel sonuç'] },
 { title: 'Araç Fotoğrafları', d: 'M4 5h4l1.5-2h5L16 5h4v16H4zM12 18a5 5 0 1 0 0-10 5 5 0 0 0 0 10z', items: [] }
+];
+const MENU_GROUPS = [
+{ label:'Araç bilgileri', pages:[0] },
+{ label:'Araç ve taraflar', pages:[1] },
+{ label:'Sorgular', pages:[2,3,4] },
+{ label:'Kaporta - boya', pages:[5,6], status:'#9A6700' },
+{ label:'Şasi / yapısal', pages:[7,8] },
+{ label:'Motor', pages:[9], status:'#C61F2B' },
+{ label:'Mekanik', pages:[10], status:'#9A6700' },
+{ label:'Beyin / OBD', pages:[11], status:'#C61F2B' },
+{ label:'Yol testi / sürüş', pages:[12] },
+{ label:'Fren / süspansiyon', pages:[13], status:'#9A6700' },
+{ label:'Dış ekspertiz', pages:[14], status:'#9A6700' },
+{ label:'İç ekspertiz', pages:[15], status:'#9A6700' },
+{ label:'Airbag & güvenlik', pages:[16] },
+{ label:'Conta kaçak', pages:[17] },
+{ label:"3'lü KM paketi", pages:[18] },
+{ label:'Duman kaçak', pages:[19] },
+{ label:'Motor aşınma', pages:[20] },
+{ label:'Mor ışık (UV)', pages:[21] },
+{ label:'Araç fotoğrafları', pages:[22] }
 ];
 const TEST_RESULT_CONFIG = {
 11: { total: 10, sections: [['MOTOR ECU',2],['ŞANZIMAN ECU',2],['ABS / ESP',2],['ELEKTRONİK SİSTEMLER',2],['SİLİNMİŞ KODLAR',2]] },
@@ -474,8 +505,25 @@ const followingPage = findPage(1);
 const withPhoto = (item) => ({ ...item, hasPhoto: Boolean(item.photo), openPhoto: () => item.photo && this.setState({ findingPhoto: { src: item.photo, title: item.label } }) });
 const resultConfig = TEST_RESULT_CONFIG[p] ?? { total: 0, sections: [] };
 const resultSections = resultConfig.sections.map(([title, count]) => ({ title, score: count + ' / ' + count }));
+const menuItems = MENU_GROUPS.map((item, index) => {
+const active = item.pages.includes(p);
+const targetPage = item.pages.find(pageAvailable) ?? item.pages[0];
+return {
+...item,
+number: index + 1,
+weight: active ? 800 : 600,
+textColor: active ? '#FFFFFF' : t.text,
+numberBorder: active ? 'rgba(255,255,255,.82)' : t.sub,
+numberStyle: active ? 'background:rgba(255,255,255,.08);color:#fff' : 'background:transparent;color:' + t.sub,
+style: active ? 'background:#15171C;box-shadow:0 8px 18px rgba(0,0,0,.16)' : 'background:transparent',
+statusColor: item.status ?? 'transparent',
+statusOpacity: item.status ? 1 : 0,
+go: () => this.setState({ page: targetPage, modal: null, findingPhoto: null })
+};
+});
 return {
 t, accent, pg, cover: p === 0, notCover: p !== 0,
+menuItems,
 showExpertNote: expertNote.length > 0, expertNote,
 showCriticalFinding: p === 5,
 showBodyDetailsFindings: p === 6,
@@ -589,7 +637,7 @@ next: () => this.setState({ page: followingPage, modal: null })
 <script>
 (() => {
   const fitPresentation = () => {
-    const scale = Math.min(window.innerWidth / 540, window.innerHeight / 1000);
+    const scale = Math.min(window.innerWidth / 672, window.innerHeight / 1000);
     document.documentElement.style.setProperty('--presentation-scale', String(scale));
   };
   const clickControl = (label) => {

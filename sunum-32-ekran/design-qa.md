@@ -48,6 +48,17 @@ No actionable P0, P1, or P2 issues remain in the cover page at the tested target
 
 final result: passed
 
+## Sabit bölüm menüsü doğrulaması — 2026-10-30
+
+- Sunum çalışma alanı: 672 × 1000; ana sunum içeriği 540 × 1000 olarak korunmuştur.
+- Sol tarafta 19 bölümlü, sabit ve tıklanabilir navigasyon eklenmiştir.
+- Kapak, Kaporta – Boya, Motor ve Araç Fotoğrafları sayfalarında doğrudan geçiş doğrulanmıştır.
+- Aktif bölüm koyu zeminle; takip ve kritik durumlar amber/kırmızı göstergelerle ayrılmıştır.
+- Açık/koyu tema, alt sayfa navigasyonu ve 23 sayfalık mevcut içerik korunmuştur.
+- 1080 × 1920 dikey ekran görünümünde taşma veya içerik üzerine binme görülmemiştir.
+
+final result: passed
+
 ## Kaporta front/rear framing adjustment — 2026-10-30
 
 - Page 07 front and rear cards increased from 170 px to 210 px in the presentation coordinate system.
