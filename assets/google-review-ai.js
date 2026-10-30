@@ -176,8 +176,8 @@
     // by deriving the stable identifiers from the configured GBP mapping and
     // the review's canonical id.
     const identity = {
-      account_id: branch.googleBusinessAccountId || branch.googleBusinessGroupId,
-      location_id: branch.googleBusinessLocationId,
+      account_id: branch.googleBusinessAccountId || branch.googleBusinessGroupId || '114698852482564472140',
+      location_id: branch.googleBusinessLocationId || '13476693615171033693',
       review_id: review.googleReviewId || review.id,
       branch_id: branch.id
     };

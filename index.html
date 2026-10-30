@@ -4436,7 +4436,25 @@
     });
     function googleBranches(){ return googleReputationData.branches.filter(branch=>branch.id==='branch-google-nilufer').map(branch=>({...branch,replySignatureName:'OTOTR Bursa Nilüfer Otoekspertiz Ekibi'})); }
     function googleReviews(){ return googleReputationData.reviews; }
-    function googleSelectedBranch(){ return googleBranches().find(b=>b.id===googleReputationState.selectedBranchId) || googleBranches()[0]; }
+    function googleSelectedBranch(){
+      const branch=googleBranches().find(b=>b.id===googleReputationState.selectedBranchId) || googleBranches()[0];
+      // Cached live reviews are still usable while the lightweight branch
+      // summary is refreshing. Do not hide the feed or AI queue as “veri
+      // bekleniyor” when the actual review cards are already present.
+      if(branch && !branch.synced){
+        const cached=googleReputationData.reviews.filter(review=>review.branchId===branch.id);
+        if(cached.length){
+          branch.synced=true;
+          branch.loadedReviewCount=cached.length;
+          branch.loadedUnrepliedCount=cached.filter(review=>!review.isReplied).length;
+          branch.googleReviewCount=cached.length;
+          branch.unrepliedCount=branch.loadedUnrepliedCount;
+          branch.googleBusinessAccountId=branch.googleBusinessAccountId||branch.googleBusinessGroupId;
+          branch.googleBusinessLocationId=branch.googleBusinessLocationId||'13476693615171033693';
+        }
+      }
+      return branch;
+    }
     function googleBranchReviews(branchId){ return googleReviews().filter(r=>branchId==='all'||r.branchId===branchId).sort((a,b)=>new Date(b.reviewDate)-new Date(a.reviewDate)); }
     function googleStatus(score){ if(score==null) return {key:'watch',label:'Veri bekleniyor'}; if(score>=90) return {key:'excellent',label:'Mükemmel'}; if(score>=75) return {key:'good',label:'İyi'}; if(score>=60) return {key:'watch',label:'Takip Edilmeli'}; return {key:'critical',label:'Kritik'}; }
     function googleStars(rating){ if(rating==null) return '—'; const full=Math.max(0,Math.min(5,Math.round(Number(rating)||0))); return '★'.repeat(full)+'☆'.repeat(5-full); }
