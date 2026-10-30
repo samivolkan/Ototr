@@ -48,6 +48,20 @@ No actionable P0, P1, or P2 issues remain in the cover page at the tested target
 
 final result: passed
 
+## Sunum etkileşimleri ve final galeri doğrulaması — 2026-10-30
+
+- Tekrarlanan sunum logosu, araç/model satırı, tema alanı ve “Rapor Sunumu” sayacı ana içerik başlığından kaldırıldı.
+- Açık/koyu tema seçimi sabit sol menünün üstüne taşındı; her iki tema da doğrulandı.
+- Sol menüye Türkçe tarayıcı ses motorunu kullanan AI seslendirme düğmesi eklendi; başlat/durdur durumu doğrulandı.
+- Test başlığı simgesi tüm test sayfalarında detay penceresi açıyor; kırmızı halojen vurgu, kapatma ve satır durumları doğrulandı.
+- Son sayfada 4 × 4 kolaj içinde 16 rapor görseli gösteriliyor.
+- Kolaj öğesine tıklama, tam ekran görüntüleme, önceki/sonraki gezinme ve 02 / 16 sayacı doğrulandı.
+- Teşekkür metni ve kullanıcı tıklamasıyla açılan WhatsApp paylaşım seçeneği final sayfasına eklendi.
+- Kapak, Motor ve Araç Fotoğrafları sayfaları 1080 × 1920 dikey görünümde kontrol edildi; tarayıcı konsolunda hata görülmedi.
+- ERP sunum modülünde tekrar eden modül üst başlığı kaldırıldı; iframe yüksekliği genişletildi.
+
+final result: passed
+
 ## Sabit bölüm menüsü doğrulaması — 2026-10-30
 
 - Sunum çalışma alanı: 672 × 1000; ana sunum içeriği 540 × 1000 olarak korunmuştur.

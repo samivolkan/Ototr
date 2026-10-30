@@ -4313,7 +4313,7 @@
       return `<button class="btn primary" data-open-action-modal="${title} aksiyonu">${icon('clipboard-plus')}Aksiyon Oluştur</button><button class="btn" data-open-action-modal="${title} sorumlu atama">${icon('user-check')}Sorumlu Ata</button>`;
     }
     function pageHeader(id){
-      if(id==='dashboard') return '';
+      if(id==='dashboard' || id==='sunum32') return '';
       if(id==='google-reviews') return `<div class="google-center-page-head"><span class="google-center-eyebrow">Genel Merkez / Müşteri deneyimi</span><div class="google-center-page-actions">${GoogleConnectionHeader()}${moduleHeaderActions(id,'Yorum Merkezi')}</div></div>`;
       const plan=departmentPlans[id], baseTitle=titles[id]||id;
       const group=(navGroups.find(([,items])=>items.some(x=>x[0]===id))||['Sistem'])[0];
@@ -4328,7 +4328,7 @@
       }
       return `<div class="module-page-head"><div><h1>${meta[1]}</h1><p>${meta[2]}</p></div><div class="module-page-actions">${moduleHeaderActions(id,meta[1])}</div></div>`;
     }
-    function Sunum32Page(){ return `<div class="card" style="padding:0;overflow:hidden"><iframe title="32 Ekran Ekspertiz Sunumu" src="sunum-32-ekran/" style="display:block;width:100%;height:calc(100vh - 176px);min-height:760px;border:0;background:#eef0f4"></iframe></div>`; }
+    function Sunum32Page(){ return `<div class="card" style="padding:0;overflow:hidden"><iframe title="32 Ekran Ekspertiz Sunumu" src="sunum-32-ekran/" style="display:block;width:100%;height:calc(100vh - 92px);min-height:860px;border:0;background:#eef0f4"></iframe></div>`; }
     function pageShell(id, content){ return `<div class="page ${id===current?'active':''}" id="page-${id}">${pageHeader(id)}${content}${id==='dealer'||id==='sunum32'?'':deptPlan(id)}</div>`; }
     function stat(label,value,trend,color=''){ return `<div class="card stat ${color}"><div class="label">${label}</div><div class="value">${value}</div><div class="trend ${String(trend).startsWith('-')?'down':''}">${trend}</div></div>`; }
     const reputationFilters={source:'',risk:'',sentiment:'',branch:'',status:''};
