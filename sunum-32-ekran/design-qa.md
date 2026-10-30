@@ -48,6 +48,15 @@ No actionable P0, P1, or P2 issues remain in the cover page at the tested target
 
 final result: passed
 
+## Sol menü logo yerleşimi — 2026-10-30
+
+- OTOTR logosu sol navigasyon sütununun en üstüne geri yerleştirildi.
+- Açık/koyu tema seçimi logonun hemen altında korundu.
+- Ana sunum başlığında tekrar eden logo bulunmuyor.
+- Menü kaydırması ve sabit AI seslendirme düğmesi korunmuştur.
+
+final result: passed
+
 ## Sunum etkileşimleri ve final galeri doğrulaması — 2026-10-30
 
 - Tekrarlanan sunum logosu, araç/model satırı, tema alanı ve “Rapor Sunumu” sayacı ana içerik başlığından kaldırıldı.
