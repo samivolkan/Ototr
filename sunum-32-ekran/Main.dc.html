@@ -497,6 +497,14 @@ const spokenModel = String(vehicleModel).replace(/Renault/gi, 'Reno').replace(/C
 const normalizedSpareKey = String(spareKeyStatus).trim().toLocaleLowerCase('tr-TR');
 const hasSpareKey = !/^(false|0)$/.test(normalizedSpareKey) && !/(yok|hayır|bulunamadı|bulunmamakta|mevcut değil)/i.test(normalizedSpareKey);
 const coverNarration = "Merhaba. Oto Te Re Oto Ekspertiz'e hoş geldiniz. Plaka " + spokenPlate + '. Araç modeli ' + spokenModel + '. Araç ' + modelYear + ' modeldir ve ' + spokenMileage + ' kilometrededir. Vites tipi ' + transmission + '. ' + (hasSpareKey ? 'Yedek anahtar mevcuttur.' : 'Yedek anahtar bulunmamaktadır.');
+const selectNaturalTurkishVoice = () => {
+const voices = window.speechSynthesis?.getVoices?.() ?? [];
+const turkishVoices = voices.filter((voice) => /^tr(?:-|_)/i.test(voice.lang));
+return turkishVoices.sort((a, b) => {
+const score = (voice) => (/google/i.test(voice.name) ? 100 : 0) + (/(natural|neural)/i.test(voice.name) ? 90 : 0) + (/(enhanced|premium)/i.test(voice.name) ? 70 : 0) + (/microsoft/i.test(voice.name) ? 35 : 0) + (!voice.localService ? 25 : 0) + (/^tr-TR$/i.test(voice.lang) ? 15 : 0);
+return score(b) - score(a);
+})[0] ?? null;
+};
 const hasTramer360 = this.props.hasTramer360 ?? true;
 const hasKmQuery = this.props.hasKmQuery ?? true;
 const hasDebtQuery = this.props.hasDebtQuery ?? true;
@@ -661,7 +669,7 @@ setLight: () => { document.body.style.background = '#EEF0F4'; this.setState({ da
 setDark: () => { document.body.style.background = '#0A0C10'; this.setState({ dark: true }); },
   aiLabel:this.state.speaking ? 'ANLATIMI DURDUR' : 'AI İLE SESLENDİR',
   aiBackground:this.state.speaking ? 'linear-gradient(145deg,#E8281A,#9E160D)' : 'linear-gradient(145deg,#252A33,#111319)', aiBorder:this.state.speaking ? 'rgba(255,105,88,.9)' : 'rgba(255,255,255,.12)', aiShadow:this.state.speaking ? '0 0 18px rgba(232,40,26,.65),0 10px 20px rgba(0,0,0,.25)' : '0 8px 18px rgba(0,0,0,.22)',
-  speakPage:() => { if (!('speechSynthesis' in window)) return; if (this.state.speaking) { window.speechSynthesis.cancel(); this.setState({ speaking:false }); return; } window.speechSynthesis.cancel(); const text = p === 0 ? coverNarration : pg.title + '. ' + testDetailDescription + ' ' + testDetailSummary; const utterance = new SpeechSynthesisUtterance(text); utterance.lang='tr-TR'; utterance.rate=.92; utterance.onend=() => this.setState({ speaking:false }); utterance.onerror=() => this.setState({ speaking:false }); window.speechSynthesis.speak(utterance); this.setState({ speaking:true }); },
+  speakPage:() => { if (!('speechSynthesis' in window)) return; if (this.state.speaking) { window.speechSynthesis.cancel(); this.setState({ speaking:false }); return; } window.speechSynthesis.cancel(); const text = p === 0 ? coverNarration : pg.title + '. ' + testDetailDescription + ' ' + testDetailSummary; const utterance = new SpeechSynthesisUtterance(text); const naturalVoice = selectNaturalTurkishVoice(); utterance.lang='tr-TR'; if (naturalVoice) utterance.voice=naturalVoice; utterance.rate=.88; utterance.pitch=1.02; utterance.volume=1; utterance.onend=() => this.setState({ speaking:false }); utterance.onerror=() => this.setState({ speaking:false }); window.speechSynthesis.speak(utterance); this.setState({ speaking:true }); },
   shareWhatsapp:() => { const text='OTOTR ekspertiz raporu: ' + vehiclePlate + ' - ' + window.location.href; window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank', 'noopener,noreferrer'); },
 openTramerOriginal: () => this.setState({ modal: 'tramer' }),
 openKmOriginal: () => this.setState({ modal: 'km' }),
