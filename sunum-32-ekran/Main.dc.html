@@ -235,6 +235,7 @@ button:focus-visible{outline:3px solid #fff;outline-offset:3px}
 <div style="position:absolute;left:8px;top:116px;display:flex;align-items:center;color:#218838"><span style="width:112px;overflow:hidden;border-radius:7px;box-shadow:0 5px 12px rgba(0,0,0,.12)"><b style="display:block;padding:4px 6px;background:#2EA043;color:#fff;font-size:8px;text-align:center">ORİJİNAL</b><span style="display:block;padding:4px 6px;background:{{t.rowBase}};color:{{t.text}};font-size:8px;font-weight:800;text-align:center">Ön Şasi</span></span><span style="width:68px;border-top:1.5px solid #2EA043;transform:rotate(-17deg);transform-origin:right center"></span><span style="width:8px;height:8px;border:2px solid {{t.bg}};border-radius:50%;background:#2EA043;box-shadow:0 0 0 1px #2EA043"></span></div>
 <div style="position:absolute;right:8px;top:304px;display:flex;flex-direction:row-reverse;align-items:center;color:#218838"><span style="width:112px;overflow:hidden;border-radius:7px;box-shadow:0 5px 12px rgba(0,0,0,.12)"><b style="display:block;padding:4px 6px;background:#2EA043;color:#fff;font-size:8px;text-align:center">ORİJİNAL</b><span style="display:block;padding:4px 6px;background:{{t.rowBase}};color:{{t.text}};font-size:8px;font-weight:800;text-align:center">Orta / Taban Şasi</span></span><span style="width:67px;border-top:1.5px solid #2EA043"></span><span style="width:8px;height:8px;border:2px solid {{t.bg}};border-radius:50%;background:#2EA043;box-shadow:0 0 0 1px #2EA043"></span></div>
 <div style="position:absolute;left:8px;top:500px;display:flex;align-items:center;color:#218838"><span style="width:112px;overflow:hidden;border-radius:7px;box-shadow:0 5px 12px rgba(0,0,0,.12)"><b style="display:block;padding:4px 6px;background:#2EA043;color:#fff;font-size:8px;text-align:center">ORİJİNAL</b><span style="display:block;padding:4px 6px;background:{{t.rowBase}};color:{{t.text}};font-size:8px;font-weight:800;text-align:center">Arka Şasi</span></span><span style="width:68px;border-top:1.5px solid #2EA043;transform:rotate(17deg);transform-origin:right center"></span><span style="width:8px;height:8px;border:2px solid {{t.bg}};border-radius:50%;background:#2EA043;box-shadow:0 0 0 1px #2EA043"></span></div>
+<sc-if value="{{chassisHasFindings}}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:10px;right:10px;bottom:8px;padding:11px 13px;border:1px solid rgba(217,39,39,.30);border-radius:14px;background:{{t.rowAlt}};color:{{t.text}};box-shadow:0 8px 20px rgba(0,0,0,.08)"><div style="padding-bottom:6px;border-bottom:1px solid rgba(217,39,39,.20);font-size:9px;font-weight:900;color:#D92727">ŞASİ BULGULARI</div><sc-for list="{{chassisFindings}}" as="finding" hint-placeholder-count="2"><div style="padding-top:6px;font-size:10px;line-height:1.35"><b>{{finding.part}}</b> — {{finding.detail}}</div></sc-for></div></sc-if>
 </figure>
 </div>
 </sc-if>
@@ -556,6 +557,8 @@ const rawPhotoTiles = [
 ];
 const activePhotoIndex = Number.isInteger(this.state.activePhoto) ? this.state.activePhoto : 0;
 const photoTiles = rawPhotoTiles.map(([src,label,position], index) => ({ src,label,position,number:pad(index + 1),thumbBorder:index === activePhotoIndex ? accent : 'rgba(255,255,255,.10)',thumbOpacity:index === activePhotoIndex ? 1 : .62,thumbShadow:index === activePhotoIndex ? '0 0 0 2px rgba(232,40,26,.22),0 7px 16px rgba(0,0,0,.35)' : 'none',open:() => this.setState({ activePhoto:index }) }));
+const chassisFindings = [];
+const chassisHasFindings = chassisFindings.length > 0;
 const photoCategories = [
   { label:'Ön görünüm', count:3, start:0 },
   { label:'Arka görünüm', count:3, start:5 },
@@ -587,7 +590,7 @@ statusOpacity: item.status ? 1 : 0,
 });
 return {
 t, accent, pg, cover: p === 0, notCover: p !== 0,
-  menuItems, photoTiles, photoCategories, queryRows,
+  menuItems, photoTiles, photoCategories, queryRows, chassisFindings, chassisHasFindings,
 showExpertNote: expertNote.length > 0, expertNote,
 showCriticalFinding: p === 5,
 showBodyDetailsFindings: p === 6,
