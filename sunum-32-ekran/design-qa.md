@@ -48,6 +48,15 @@ No actionable P0, P1, or P2 issues remain in the cover page at the tested target
 
 final result: passed
 
+## Kaporta parça adı / durum hiyerarşisi — 2026-10-30
+
+- Üst görünüş açıklamalarında parça adı üst satıra, durum alt satıra alındı.
+- Kaput / Boyalı, Bagaj Kapağı / İşlemli, Ön Tampon / Plastik ve Arka Tampon / Plastik gösterimleri doğrulandı.
+- Araç üzerindeki bağlantı çizgileri ve işaret noktaları korunmuştur.
+- 1080 × 1920 görünümde taşma ve konsol hatası görülmemiştir.
+
+final result: passed
+
 ## Resmî vektörel logo kullanımı — 2026-10-30
 
 - Kaynak: OTOTR ana vektörel logo PDF, iki sayfa.
