@@ -171,7 +171,16 @@
   }
 
   function identityFor(review, branch) {
-    const identity = { account_id: branch.googleBusinessAccountId, location_id: branch.googleBusinessLocationId, review_id: review.googleReviewId, branch_id: branch.id };
+    // Cached review cards can be rendered before the latest sync metadata is
+    // applied to the branch object. Keep the AI workflow usable in that case
+    // by deriving the stable identifiers from the configured GBP mapping and
+    // the review's canonical id.
+    const identity = {
+      account_id: branch.googleBusinessAccountId || branch.googleBusinessGroupId,
+      location_id: branch.googleBusinessLocationId,
+      review_id: review.googleReviewId || review.id,
+      branch_id: branch.id
+    };
     if (!identity.account_id || !identity.location_id || !identity.review_id) throw new Error('Önce bu şubenin gerçek Google yorumlarını senkronize edin.');
     return identity;
   }
