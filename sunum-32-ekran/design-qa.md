@@ -48,6 +48,15 @@ No actionable P0, P1, or P2 issues remain in the cover page at the tested target
 
 final result: passed
 
+## Resmî vektörel logo kullanımı — 2026-10-30
+
+- Kaynak: OTOTR ana vektörel logo PDF, iki sayfa.
+- Açık tema için siyah/kırmızı, koyu tema için beyaz/kırmızı sürüm kullanılmıştır.
+- Her iki logo yüksek çözünürlüklü, şeffaf zeminli PNG olarak hazırlanmıştır.
+- Logo oranı korunmuş; sol menüde açık ve koyu tema görünümü doğrulanmıştır.
+
+final result: passed
+
 ## Sol menü logo yerleşimi — 2026-10-30
 
 - OTOTR logosu sol navigasyon sütununun en üstüne geri yerleştirildi.
