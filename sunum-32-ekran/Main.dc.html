@@ -277,7 +277,7 @@ button:focus-visible{outline:3px solid #fff;outline-offset:3px}
 
 <sc-if value="{{vehiclePhotosPage}}" hint-placeholder-val="{{ false }}">
 <div style="margin:12px -12px 0;display:flex;flex-direction:column;gap:10px">
-<div style="padding:10px;border-radius:20px;{{t.card}}"><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:7px"><sc-for list="{{photoTiles}}" as="photo" hint-placeholder-count="16"><button aria-label="{{photo.label}} fotoğrafını aç" onClick="{{photo.open}}" style="position:relative;height:104px;padding:0;overflow:hidden;border:1px solid {{t.track}};border-radius:11px;background:{{t.photoBg}}"><img src="{{photo.src}}" alt="{{photo.label}}" style="display:block;width:100%;height:100%;object-fit:cover;object-position:{{photo.position}}"><span style="position:absolute;left:5px;right:5px;bottom:5px;padding:4px 5px;border-radius:6px;background:rgba(8,10,14,.72);color:#fff;font-size:7px;font-weight:800;line-height:1.1;text-align:left">{{photo.number}} · {{photo.label}}</span></button></sc-for></div></div>
+<div style="padding:12px;border-radius:20px;{{t.card}}"><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px"><sc-for list="{{photoCategories}}" as="category" hint-placeholder-count="6"><button aria-label="{{category.label}} fotoğraflarını aç" onClick="{{category.open}}" style="position:relative;height:146px;padding:0 8px;border:1px dashed {{t.track}};border-radius:17px;background:{{t.rowBase}};color:{{t.text}};font-family:inherit;box-shadow:0 7px 15px rgba(0,0,0,.08)"><span style="position:absolute;right:9px;top:9px;min-width:23px;height:23px;padding:0 6px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;border-radius:999px;background:rgba(232,40,26,.10);color:{{accent}};font-size:9px;font-weight:900">{{category.count}}</span><svg width="29" height="29" viewBox="0 0 24 24" fill="none" stroke="{{accent}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h4l1.5-2h5L16 7h4v12H4z"></path><circle cx="12" cy="13" r="3.5"></circle></svg><strong style="display:block;margin-top:13px;font-size:12px;line-height:1.25">{{category.label}}</strong><span style="display:block;margin-top:5px;font-size:9px;font-weight:700;color:{{t.sub}}">Galeriyi aç</span></button></sc-for></div><div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:11px;color:{{t.sub}};font-size:10px;font-weight:800"><span style="width:7px;height:7px;border-radius:50%;background:{{accent}}"></span>Toplam 16 araç ve ekspertiz fotoğrafı</div></div>
 <div style="padding:12px 14px;border-radius:18px;text-align:center;{{t.card}}"><strong style="display:block;font-size:16px">Bizi tercih ettiğiniz için teşekkür ederiz.</strong><span style="display:block;margin-top:3px;font-size:11px;color:{{t.sub}}">Bir üst modelde tekrar bekleriz.</span><button aria-label="Raporu WhatsApp'tan ilet" onClick="{{shareWhatsapp}}" style="min-height:44px;margin-top:10px;padding:0 17px;border:0;border-radius:13px;background:#20A95A;color:#fff;font-family:inherit;font-size:12px;font-weight:900;box-shadow:0 9px 18px rgba(32,169,90,.28)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:7px" aria-hidden="true"><path d="M21 11.5a8.5 8.5 0 0 1-12.6 7.4L3 21l2.1-5.2A8.5 8.5 0 1 1 21 11.5zM8.5 8.5c.5 3 2 4.5 5 5"></path></svg>Raporu WhatsApp'tan ilet</button></div>
 </div>
 </sc-if>
@@ -560,6 +560,14 @@ const rawPhotoTiles = [
 ];
 const activePhotoIndex = Number.isInteger(this.state.activePhoto) ? this.state.activePhoto : 0;
 const photoTiles = rawPhotoTiles.map(([src,label,position], index) => ({ src,label,position,number:pad(index + 1),thumbBorder:index === activePhotoIndex ? accent : 'rgba(255,255,255,.10)',thumbOpacity:index === activePhotoIndex ? 1 : .62,thumbShadow:index === activePhotoIndex ? '0 0 0 2px rgba(232,40,26,.22),0 7px 16px rgba(0,0,0,.35)' : 'none',open:() => this.setState({ activePhoto:index }) }));
+const photoCategories = [
+  { label:'Ön görünüm', count:3, start:0 },
+  { label:'Arka görünüm', count:3, start:5 },
+  { label:'Sol yan', count:3, start:2 },
+  { label:'Sağ yan', count:3, start:3 },
+  { label:'Motor bölümü', count:2, start:11 },
+  { label:'İç mekân', count:2, start:15 }
+].map((category) => ({ ...category, open:() => this.setState({ activePhoto:category.start }) }));
 const activePhoto = photoTiles[activePhotoIndex] ?? photoTiles[0];
 const baseDetailLabels = pg.items.length ? pg.items : (resultSections.length ? resultSections.map((item) => item.title) : ['Kontrol yöntemi', 'Değerlendirilen kayıtlar', 'Sonuç doğrulaması']);
 const testDetailRows = baseDetailLabels.slice(0, 6).map((label, index) => ({ label, value: index === baseDetailLabels.length - 1 ? 'UYGUN' : 'KONTROL EDİLDİ', color:'#218838', bg:index % 2 ? t.rowAlt : t.rowBase }));
@@ -583,7 +591,7 @@ statusOpacity: item.status ? 1 : 0,
 });
 return {
 t, accent, pg, cover: p === 0, notCover: p !== 0,
-  menuItems, photoTiles, queryRows,
+  menuItems, photoTiles, photoCategories, queryRows,
 showExpertNote: expertNote.length > 0, expertNote,
 showCriticalFinding: p === 5,
 showBodyDetailsFindings: p === 6,
