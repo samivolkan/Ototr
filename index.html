@@ -982,14 +982,6 @@
     .report-studio-file-row input[type=file]{width:100%;font-size:11px}
     .report-studio-note{font-size:10px;line-height:1.45;color:#64748b;margin:0}
     .report-letterhead-master .report-letterhead-field,.expertise-page>.report-page-count{display:none!important}
-    body:has(#page-report2.active) .wrap{padding:18px 6px 42px}
-    body:has(#page-report2.active) .ototr-report{margin:0}
-    body:has(#page-report2.active) .ototr-report-preview{justify-items:center}
-    @media(min-width:1181px){body:has(#page-report2.active) .ototr-report-shell{grid-template-columns:minmax(0,1fr)}body:has(#page-report2.active) .ototr-report-preview{padding-right:218px;justify-items:center}body:has(#page-report2.active) .report-page{max-width:min(1180px,calc(100vw - var(--side-w) - 222px));margin-inline:auto}}
-    @media print{.page.active#page-report2{display:block!important}}
-    .report2-final .ototr-report-toolbar{border-top:3px solid #e30613;background:linear-gradient(135deg,#fff,#f8fafc 64%,#fff7f8)}
-    .report2-final-note{display:flex;gap:7px;align-items:center;margin-top:7px;color:#334155;font-size:11px;font-weight:850}
-    .report2-final-note i{width:16px;height:16px;color:#e30613;flex:0 0 auto}
     .final-sequence-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:8px}
     .final-sequence-card{border:1px solid #dbe3ee;border-radius:9px;background:#fff;padding:7px;display:grid;grid-template-columns:22px minmax(0,1fr);gap:6px;align-items:start}
     .final-sequence-card b{width:20px;height:20px;border-radius:6px;background:#07182d;color:#fff;display:grid;place-items:center;font-size:8px}
@@ -3099,13 +3091,13 @@
     const navGroups = [
       ['Genel Merkez', [['dashboard','Yönetim Kokpiti','layout-dashboard'],['intelligence','İş Zekası','chart-no-axes-column'],['isler-v24','Kokpit · İşler v24','list-checks'],['kokpit-isler','Kokpit · İşler','list-checks'],['actions','Aksiyon & Görev','target'],['crisis','Kriz Merkezi','siren'],['ai','AI Öneri','sparkles']]],
       ['Bayi & Şube Yönetimi', [['branches','Bayiler & Şubeler','building-2'],['dealer','Bayi Portalı','tablet-smartphone'],['ototr-web','OTOTR Web','globe'],['operations','Operasyon','workflow'],['quality','Kalite & Denetim','shield-check']]],
-      ['Ekspertiz & Rapor', [['ruhsat','Ruhsat Oku','scan-line'],['report-design','Ekspertiz Rapor Tasarımı','file-check-2'],['report2','Rapor 2','files'],['kaporta-design','Kaporta Tasarım','panels-top-left'],['kaporta-360','Kaporta 360','rotate-3d']]],
+      ['Ekspertiz & Rapor', [['ruhsat','Ruhsat Oku','scan-line'],['report-design','Ekspertiz Rapor Tasarımı','file-check-2'],['sunum32','32 Ekran Sunumu','presentation'],['kaporta-design','Kaporta Tasarım','panels-top-left'],['kaporta-360','Kaporta 360','rotate-3d']]],
       ['Müşteri & Satış', [['crm','CRM & Randevu','users'],['saha-satis','Saha Satış','map-pinned'],['chronic-issues','Kronik Sorunlar','car-front'],['complaints','Müşteri Şikayetleri','message-circle-warning'],['google-reviews','Google Yorumlar','star'],['reputation','Sosyal Medya İtibar Radar','radar'],['marketing','Pazarlama','megaphone']]],
       ['Franchise Yönetimi', [['franchise','Franchise Satış','handshake'],['growth','Bayii Büyüme','map'],['finance','Finans & Royalty','banknote']]],
       ['Kurumsal Yönetim', [['academy','OTOTR Academy','graduation-cap'],['hr','İnsan Kaynakları','badge-check'],['legal','Hukuk & Risk','scale']]],
       ['Ayarlar', [['architecture','Sistem Mimarisi','network'],['settings','Ayarlar','settings'],['legacy','Legacy Room','landmark']]]
     ];
-    const titles = {ruhsat:'Ruhsat Oku',dashboard:'Yönetim Kokpiti',intelligence:'İş Zekası',branches:'Bayiler & Şubeler',dealer:'Bayi Portalı','ototr-web':'OTOTR Web',operations:'Operasyon',franchise:'Franchise Satış',crm:'CRM & Randevu','chronic-issues':'Kronik Sorunlar',complaints:'Müşteri Şikayetleri','google-reviews':'Google Haritalar İtibar Merkezi',reputation:'İtibar Radar',finance:'Finans & Royalty',marketing:'Pazarlama',quality:'Kalite & Denetim','report-design':'Ekspertiz Rapor Tasarımı',report2:'Rapor 2','vehicle-passport':'Dijital Araç Karnesi',academy:'OTOTR Academy',hr:'İnsan Kaynakları',legal:'Hukuk & Risk',crisis:'Kriz Merkezi',actions:'Aksiyon & Görev',ai:'AI Öneri',growth:'Bayii Büyüme',legacy:'Legacy Room',architecture:'Sistem Mimarisi',settings:'Ayarlar',branchProfile:'Şube Profili',franchiseProfile:'Aday Değerlendirme',customerProfile:'Müşteri 360'};
+    const titles = {ruhsat:'Ruhsat Oku',dashboard:'Yönetim Kokpiti',intelligence:'İş Zekası',branches:'Bayiler & Şubeler',dealer:'Bayi Portalı','ototr-web':'OTOTR Web',operations:'Operasyon',franchise:'Franchise Satış',crm:'CRM & Randevu','chronic-issues':'Kronik Sorunlar',complaints:'Müşteri Şikayetleri','google-reviews':'Google Haritalar İtibar Merkezi',reputation:'İtibar Radar',finance:'Finans & Royalty',marketing:'Pazarlama',quality:'Kalite & Denetim','report-design':'Ekspertiz Rapor Tasarımı',sunum32:'32 Ekran Sunumu','vehicle-passport':'Dijital Araç Karnesi',academy:'OTOTR Academy',hr:'İnsan Kaynakları',legal:'Hukuk & Risk',crisis:'Kriz Merkezi',actions:'Aksiyon & Görev',ai:'AI Öneri',growth:'Bayii Büyüme',legacy:'Legacy Room',architecture:'Sistem Mimarisi',settings:'Ayarlar',branchProfile:'Şube Profili',franchiseProfile:'Aday Değerlendirme',customerProfile:'Müşteri 360'};
     function dealerPortalUrl(){
       const path=decodeURIComponent(location.pathname||'').replace(/\\/g,'/').toLowerCase();
       return path.includes('/bayi-portal/') ? 'index.html#dealer' : 'bayi-portal/index.html#dealer';
@@ -3154,7 +3146,7 @@
         'google-reviews':'kalite',
         reputation:'kalite',
         'report-design':'rapor',
-        report2:'rapor',
+        sunum32:'rapor',
         'vehicle-passport':'rapor'
       }[id] || '';
     }
@@ -4285,7 +4277,7 @@
       marketing:['Pazarlama · Growth','Pazarlama / Lead Üretim Room','Google, Meta, WhatsApp, SEO, CPL, ROAS ve şehir/şube bazlı kampanya katkısını izleyin; leadleri CRM veya Franchise Satışa aktarın.'],
       quality:['Kontrol · Kalite Güvence','Kalite & Müşteri Deneyimi Merkezi','Şube denetimi, rapor kalitesi, gizli müşteri, şikayet, ISO 10002 ve düzeltici faaliyetleri kalite sistemi altında yönetin.'],
       'report-design':['Kontrol · Ekspertiz Raporu','OTOTR Ekspertiz Rapor Tasarımı','Premium kurumsal A4 rapor prototipi; müşteri karar özeti, teknik detay, kanıt arşivi, QR doğrulama ve hukuki onayları tek rapor standardında gösterir.'],
-      report2:['Kontrol · Ekspertiz Raporu','Rapor 2','Yeni antetli A4 rapor tasarımı ayrı kopya olarak korunur; eski rapor ekranı ve taslak kayıtları değiştirilmeden düzenlenebilir.'],
+      sunum32:['Kontrol · Sunum Ekranı','32 Ekran Sunumu','32 inç dikey dokunmatik ekran ve uzaktan kumanda kullanımı için hazırlanan canlı ekspertiz sunumu.'],
       'vehicle-passport':['Kontrol · Dijital Araç Karnesi','Dijital Araç Karnesi','Plaka/şasi bazlı OTOTR geçmiş hafızası; önceki ekspertizlerle güncel bulguları, kilometreyi, kaporta-boya değişimini ve kanıt arşivini karşılaştırır.'],
       academy:['Kontrol · Academy','OTOTR Academy / Eğitim Room','Kişi, şube, bölge ve genel merkez seviyesinde eğitim ataması, deadline, başarı oranı ve sertifika skorlarını yönetin.'],
       hr:['Kontrol · İnsan Kaynakları','İnsan Kaynakları / HR Room','Genel merkez, franchise şubeler, Academy, performans, prim simülasyonu ve personel giderlerini tek merkezden yönetin.'],
@@ -4303,7 +4295,8 @@
       if(id==='legal') return `<button class="btn primary" data-open-action-modal="Hukuk & Risk aksiyonu">${icon('clipboard-plus')}Aksiyon Oluştur</button><button class="btn" data-route="actions">${icon('target')}Görev motoru</button><button class="btn" data-route="crisis">${icon('siren')}Kriz merkezi</button>`;
       if(id==='hr') return `<button class="btn primary" data-hr-quick="action">${icon('clipboard-plus')}Aksiyon Oluştur</button><button class="btn" data-hr-room="employee360">${icon('users')}Personel 360</button><button class="btn" data-hr-room="recruitment">${icon('user-plus')}Talep Aç</button>`;
       if(id==='quality') return `<button class="btn primary" data-quality-open-audit>${icon('plus')}Yeni Denetim Oluştur</button><button class="btn" data-action="Kritik kalite bulguları filtrelendi.">${icon('siren')}Kritik Bulgular</button><button class="btn" data-route="academy">${icon('graduation-cap')}Academy Açıkları</button>`;
-      if(id==='report-design'||id==='report2'){const passport=id==='report2'?'report-page-21':'report-page-18',evidence=id==='report2'?'report-page-24':'report-page-19';return `<button class="btn primary" onclick="window.print()">${icon('printer')}Yazdır</button><button class="btn" data-report-scroll="report-page-1">${icon('file-text')}PDF Önizleme</button><button class="btn" data-report-scroll="${passport}">${icon('badge-check')}Araç Karnesi</button><button class="btn" data-report-scroll="${evidence}">${icon('image')}Kanıt Arşivi</button>${id==='report2'?`<button class="btn" data-route="report-design">${icon('history')}Eski Rapor</button>`:`<button class="btn" data-route="report2">${icon('files')}Rapor 2</button>`}`;}
+      if(id==='report-design') return `<button class="btn primary" onclick="window.print()">${icon('printer')}Yazdır</button><button class="btn" data-report-scroll="report-page-1">${icon('file-text')}PDF Önizleme</button><button class="btn" data-report-scroll="report-page-18">${icon('badge-check')}Araç Karnesi</button><button class="btn" data-report-scroll="report-page-19">${icon('image')}Kanıt Arşivi</button>`;
+      if(id==='sunum32') return `<button class="btn primary" onclick="window.open('sunum-32-ekran/','_blank','noopener,noreferrer')">${icon('external-link')}Tam Ekran Aç</button>`;
       if(id==='vehicle-passport') return `<button class="btn primary" onclick="window.print()">${icon('printer')}Yazdır</button><button class="btn" data-route="report-design">${icon('file-check-2')}Tam Rapor</button><button class="btn" data-route="dealer">${icon('tablet-smartphone')}Bayi Portalı</button>`;
       if(id==='operations') return `<button class="btn primary" data-operation-action="SLA-001:delayed-report">${icon('clipboard-plus')}Geciken Rapor Aksiyonu</button><button class="btn" data-operation-action="CAP-001:capacity-warning">${icon('alert-triangle')}Kapasite Uyarısı</button><button class="btn" data-operation-scroll>${icon('list-checks')}Gün Sonu Özeti</button>`;
       if(id==='dealer') return `<button class="btn dealer-theme-switch" type="button" data-theme-toggle title="Açık / koyu geçiş">${icon('sun-moon')}<span>Tema</span></button><button class="btn primary" data-action="Tablet ekspertiz oturumu başlatıldı.">${icon('tablet-smartphone')}Tablet Başlat</button><button class="btn" data-dealer-prepare-report onclick="event.preventDefault();event.stopPropagation();dealerPrepareActiveReportPreview();">${icon('file-pen-line')}Raporu Hazırla</button><button class="btn" data-route="branches">${icon('building-2')}Şube 360</button>`;
@@ -4335,7 +4328,8 @@
       }
       return `<div class="module-page-head"><div><h1>${meta[1]}</h1><p>${meta[2]}</p></div><div class="module-page-actions">${moduleHeaderActions(id,meta[1])}</div></div>`;
     }
-    function pageShell(id, content){ return `<div class="page ${id===current?'active':''}" id="page-${id}">${pageHeader(id)}${content}${id==='dealer'?'':deptPlan(id)}</div>`; }
+    function Sunum32Page(){ return `<div class="card" style="padding:0;overflow:hidden"><iframe title="32 Ekran Ekspertiz Sunumu" src="sunum-32-ekran/" style="display:block;width:100%;height:calc(100vh - 176px);min-height:760px;border:0;background:#eef0f4"></iframe></div>`; }
+    function pageShell(id, content){ return `<div class="page ${id===current?'active':''}" id="page-${id}">${pageHeader(id)}${content}${id==='dealer'||id==='sunum32'?'':deptPlan(id)}</div>`; }
     function stat(label,value,trend,color=''){ return `<div class="card stat ${color}"><div class="label">${label}</div><div class="value">${value}</div><div class="trend ${String(trend).startsWith('-')?'down':''}">${trend}</div></div>`; }
     const reputationFilters={source:'',risk:'',sentiment:'',branch:'',status:''};
     let reputationSelectedId='REP-1003', reputationDuplicateWarning=null, reputationDetailOpen=false;
@@ -4920,7 +4914,7 @@
         pageShell('ototr-web', OtotrWebManagementPage())+
         pageShell('ruhsat', OtotrRuhsatERP.page())+
         pageShell('report-design', ExpertiseReportDesignPage())+
-        pageShell('report2', ExpertiseReportDesignPage({routeId:'report2'}))+
+        pageShell('sunum32', Sunum32Page())+
         pageShell('vehicle-passport', VehiclePassportStandalonePage())+
         pageShell('branchProfile', BranchProfilePage())+
         pageShell('operations', OperationsCenterPage())+
@@ -7156,11 +7150,6 @@
       return `<div class="ototr-report vehicle-passport-standalone"><div class="ototr-report-shell"><div class="ototr-report-toolbar"><div><h2>Dijital Araç Karnesi</h2><p>Plaka/şasi bazlı geçmiş kartı; önceki OTOTR raporlarıyla güncel ekspertiz bulgularını karşılaştırır.</p></div><div class="ototr-report-actions"><button class="btn primary" onclick="window.print()">${icon('printer')}Yazdır</button><button class="btn" data-route="report-design">${icon('file-check-2')}Tam Rapor</button></div></div><div class="ototr-report-preview">${VehiclePassportSection(1,1)}</div></div></div>`;
     }
     function VehiclePassportCondensedSection(page,total){const d=reportData,p=d.vehiclePassport;return ReportPage(page,total,'Dijital Araç Karnesi','Plaka/şasi bazlı OTOTR geçmiş kartı; rapor hafızası, KM, hasar ve kaporta değişim özeti tek A4 sayfada gösterilir.',p?`<section class="passport-hero"><div><span class="passport-active">Dijital Araç Karnesi Aktif</span><h4>${rpEsc(d.plate)} · ${rpEsc(d.vin)}</h4><p>OTOTR raporu aracın plaka/şasi bazlı geçmiş hafızası olarak saklanır. Bu sayfada önceki rapor, güncel bulgu ve değişim sinyali özetlenir.</p><div class="passport-id-grid">${[['Passport ID',p.passportId],['Oluşturulma',p.createdAt],['Son güncelleme',p.lastUpdatedAt],['Toplam rapor',p.totalReports],['Plaka',d.plate],['Şasi',d.vin]].map(x=>`<div class="passport-id-cell"><span>${rpEsc(x[0])}</span><b>${rpEsc(x[1])}</b></div>`).join('')}</div></div><div class="passport-qr-card">${ReportQrCard()}<b>QR doğrulama</b></div></section>${PreviousReportsTimeline(p)}<div class="passport-grid">${MileageHistoryCard(p)}${DamageRecordHistory(p)}</div>${BodyPaintComparisonTable(p)}${PassportSystemComment()}<div class="passport-legal-note">Detaylı fotoğraf, OBD, mekanik geçmiş ve revizyon kayıtları dijital araç karnesi ekranında ayrıca izlenir. Bu özet resmi sicil, kriminal inceleme veya bilirkişi raporu yerine geçmez.</div>`:passportEmptyState(),'vehicle-passport-page passport-condensed-page');}
-    function Report2FinalFlowPage(page,total){
-      const flow=[['Karar','Yönetici özeti, kritik bulgular, satın alma dili'],['Kimlik','Araç, taraf, paket, kabul ve iş emri'],['Kaporta','Görsel analiz, harita, mikron ve 28 nokta'],['Şasi','Yapısal görsel, 22 nokta ve kanıt planı'],['Teknik','Motor, conta, alt mekanik, OBD, airbag'],['Cihaz','Fren, süspansiyon, dyno, yol ve lastik'],['Hafıza','Araç karnesi, hasar/KM ve kayıt sorguları'],['Final','Onay, kapsam ve fotoğraf kanıt arşivi']];
-      const findings=(reportData.findings||[]).slice(0,6);
-      return ReportPage(page,total,'Final Rapor Akışı','25 sayfayı geçmeyen nihai sıralama; kaporta ve şasi hazırlığı merkeze alınarak kurgulandı.',`<div class="final-sequence-grid">${flow.map((x,i)=>`<div class="final-sequence-card"><b>${String(i+1).padStart(2,'0')}</b><div><span>${rpEsc(x[0])}</span><small>${rpEsc(x[1])}</small></div></div>`).join('')}</div><div class="final-risk-ledger">${findings.map(f=>`<article class="final-risk-card" style="--tone:${f.risk==='critical'?'#e30613':f.risk==='service'?'#f97316':f.risk==='maintenance'?'#f7bd24':'#22c55e'}"><span>${rpEsc(f.module||'Rapor bulgusu')}</span><b>${rpEsc(f.title||f.text||'Bulgu')}</b><p>${rpEsc(f.text||f.note||'Detay ilgili teknik sayfada gösterilir.')}</p></article>`).join('')}</div><div class="report-note report-warning" style="margin-top:8px">Bu sayfa raporun müşteri okuma sırasını belirler. Canlı veriler değişse bile bölüm mantığı korunur: önce karar, sonra kanıt, en sonda fotoğraf arşivi.</div>`,'optimized-combined-page report2-flow-page');
-    }
     function BodyPaintMapSummary(page,total){
       const d=reportData;
       const rows=bodyPaintDisplayRows(d.bodyPaintRows||[]);
@@ -7190,44 +7179,15 @@
     function MarketServicePlan(page,total){const d=reportData;return ReportPage(page,total,'Pazar Değeri / Masraf ve Bakım Planı','Piyasa değeri, tahmini masraf ve bakım takvimi aynı karar sayfasında birleştirildi.',`<div class="report-grid-3">${ReportPanel('Ortalama piyasa değeri','1.215.000 TL','İlan bandı 1.150.000 - 1.280.000 TL','blue')}${ReportPanel('Tahmini bakım/onarım','42.850 TL','Kozmetik + bakım','orange')}${ReportPanel('Pazarlık avantajı','48.000 TL','Tahmini indirim fırsatı','green')}</div><div class="service-cost-layout"><section><div class="combined-section-title">Tahmini masraf listesi</div>${ReportTable(['Masraf kalemi','Tahmin'],d.costs)}<div class="report-note report-warning" style="margin-top:8px">Masraf kalemleri karar destek amaçlıdır; kesin fiyatlandırma servis ve parça tedarik teyidiyle netleşir.</div></section><section><div class="combined-section-title">Servis geçmişi / bakım takvimi</div><div class="service-mini-timeline">${d.serviceTimeline.map((x,i)=>`<div class="timeline-item"><div class="timeline-dot">${i+1}</div><div class="report-card"><span>${rpEsc(x[0])}</span><b>${rpEsc(x[1])}</b><p class="card-sub">${rpEsc(x[2])}</p></div></div>`).join('')}</div></section></div><div class="report-panel" style="margin-top:0"><span>Piyasa trend grafiği</span><div class="mini-bars" style="margin-top:8px">${['Ocak','Şubat','Mart','Nisan','Mayıs'].map((m,i)=>`<div class="mini-bar"><span>${m}</span><i style="width:${55+i*9}%"></i><b>${(1.08+i*.03).toFixed(2)}M</b></div>`).join('')}</div></div>`,'optimized-combined-page');}
     function PurchaseAiRecommendation(page,total){const d=reportData;return ReportPage(page,total,'Usta Kanaati ve AI Karar Desteği','Usta kanaati, satın alma skoru ve yapay zeka faktörleri tek karar destek sayfasında okunur.',`<div class="report-grid-3">${ReportScoreCard('Satın alma karar skoru',d.purchaseScore,'Olumlu','Servis kontrolü şartıyla','green')}${ReportPanel('Tahmini masraf','42.850 TL','Pazarlıkta dikkate alınabilir','orange')}${ReportPanel('Piyasa değeri','1.215.000 TL','Pazar bandı uyumlu','blue')}</div><div class="report-note">Mevcut ekspertiz bulgularına göre araçta kritik güvenlik riski tespit edilmemiştir. Satın alma öncesi servis kontrolü önerilen noktalar bulunmaktadır. Bu rapor aracın ekspertiz anındaki durumunu gösterir.</div><div class="compact-decision-grid">${['Neden değerlendirilebilir?','Dikkat edilecek öncelikler','Pazarlık avantajı','Piyasa değeri'].map((x,i)=>`<div class="finding-card report-card tone-${i===1?'orange':'green'}"><h4>${x}</h4><ul><li>${rpEsc(d.recommendation)}</li></ul></div>`).join('')}</div><section class="ai-wide"><div class="ai-badge">AI</div><div><b>Yapay zeka destekli uzman yorumu</b><p>Yapay zeka analizimize göre bu BMW 320i M Sport için genel durum iyi seviyededir. Kritik güvenlik bulgusu tespit edilmemiştir; önerilen işlemler aracın güvenliğini ve değerini korumaya yardımcı olacaktır.</p><b>Bu yorum karar destek amaçlıdır. Nihai satın alma kararı kullanıcıya aittir.</b></div><ul>${[['Motor',25],['Kaporta & boya',20],['Elektronik & OBD',15],['Fren & bakım',15],['Piyasa değeri',15],['Kullanıcı profili',10]].map(x=>`<li>${rpEsc(x[0])}: %${x[1]}</li>`).join('')}</ul></section>`,'optimized-combined-page');}
     function ComplianceApprovals(page,total){const d=reportData;return ReportPage(page,total,'Dijital Doğrulama / Yasal Kapsam / Onaylar','Rapor güvenliği, hukuki kapsam ve dijital onay zinciri final sayfasında birleştirildi.',`<div class="digital-warning">${icon('triangle-alert')}<div><b>Dikkat! Raporlar dijital olarak üretilmektedir.</b><span>Hiçbir raporumuzda el yazısı kullanılmamaktadır. El yazısı ile eklenti yapılan raporlar geçersizdir.</span></div></div><div class="compliance-grid"><section class="verify-panel"><div class="verify-panel-title"><b>01</b>Dijital doğrulama</div><div class="verify-security" style="margin-top:8px"><div>${ReportQrCard()}<b style="display:block;margin-top:6px;font-size:8px">A7B9-2Y1C-3D6E</b></div><div class="verify-cards">${[['Oluşturulma',d.reportDate],['Son görüntüleme','24.05.2026 - 15:22'],['Veri bütünlüğü','Doğrulandı'],['Zaman damgası','24.05.2026 / 14:35:22']].map(x=>`<div class="verify-mini"><span>${rpEsc(x[0])}</span><b>${rpEsc(x[1])}</b></div>`).join('')}</div></div></section><section class="verify-panel"><div class="verify-panel-title"><b>02</b>Yasal kapsam</div><div class="legal-mini-grid compact-legal-grid" style="margin-top:8px">${[['Rapor kapsamı',d.legal[0]],['Adli inceleme değildir',d.legal[1]],['Paket kapsamı dışı',d.legal[3]],['Kişisel veri gizliliği',d.legal[5]]].map(x=>`<div class="legal-mini"><b>${rpEsc(x[0])}</b><span>${rpEsc(x[1])}</span></div>`).join('')}</div></section></div><section class="verify-panel"><div class="verify-panel-title"><b>03</b>Onaylar ve dijital kayıt</div><div class="approval-cards" style="margin-top:8px">${[['Ekspertiz uzmanı',d.technician],['Kalite kontrol',d.qualityController],['Şube sorumlusu',d.approver],['Müşteri onayı',d.buyer],['Satıcı onayı',d.seller],['Sistem onayı','OTOTR Sistem']].map(x=>`<div class="approval-card"><b>${rpEsc(x[0])}</b><span>${rpEsc(x[1])}</span><div class="mini-sign">Dijital onay</div></div>`).join('')}</div></section><div class="report-grid-4">${ReportPanel('Şube',d.branch,d.branchPhone,'blue')}${ReportPanel('Paket',d.packageName,d.selectedExpertiseAmount,'orange')}${ReportPanel('Rapor no',d.reportNo,d.reportDate,'blue')}${ReportPanel('HYB / Kalite',d.tseHybNo,'Dijital onay zinciri','green')}</div><div class="report-note">Bu rapor OTOTR sisteminde rapor numarası, plaka, şasi, zaman damgası ve dijital onay zinciriyle eşleştirilerek saklanır. Baskı kopyası dijital doğrulama ile birlikte geçerlidir.</div>`,'optimized-combined-page final-compliance-page');}
-    function ExpertiseReportDesignPage(options={}){
-      const routeId=typeof options==='string'?options:(options.routeId||'report-design');
-      const isReport2=routeId==='report2';
+    function ExpertiseReportDesignPage(){
+      const routeId='report-design';
       syncDealerReportData();
       startReportLiveRefresh();
       const legacyPages=[['Özet','Kapak','Araç güven paneli',ReportCover],['Özet','Yönetici Özeti','Karar destek paneli',ExecutiveSummary],['Özet','Hasar / KM / Kayıt','Dosya ekspertiz sorguları',DamageMileageRecords],['Kabul ve İş Emri','Araç Kabul / İş Emri','Araç ve taraf kimliği',VehicleIdentity],['Kabul ve İş Emri','Kabul Noktaları','5 nokta iş emri kabul',WorkOrderAcceptancePoints],['Kabul ve İş Emri','Canlı Girişler','Kabul ve usta kaynakları',WorkOrderSourceInputs],['Teknik Testler','Kaporta Görsel Analiz','Kaynak görsel rapor sayfası',BodyPaintAnalysis],['Teknik Testler','Kaporta Detayları','59 nokta, mikron ve kanıt',BodyPaintDetailAnalysis],['Teknik Testler','Şasi Görsel Analiz','Taşıyıcı risk haritası',ChassisInteriorAnalysis],['Teknik Testler','Şasi Detayları','22 nokta durum ve kanıt',ChassisDetailAnalysis],['Teknik Testler','Motor Üst Mekanik','37 nokta check-up',MechanicalInspection],['Teknik Testler','Conta Kaçak Testi','1 kritik motor testi',HeadGasketLeakSection],['Teknik Testler','Alt / Ön Mekanik','40 nokta lift kontrolü',MechanicalUnderbodyInspection],['Teknik Testler','OBD / Beyin Test','10 nokta modül tarama',ObdSection],['Teknik Testler','Airbag / SRS','9 nokta kontrol yöntemi',AirbagSection],['Teknik Testler','Fren / Süspansiyon','Cihaz ölçümü',BrakeSuspensionTyreSection],['Teknik Testler','Dyno / Yol / Lastik','Test ve skor çıktıları',TechnicalDashboard],['Kanıt ve Hafıza','Dijital Araç Karnesi','Plaka/şasi geçmiş kartı',VehiclePassportSection],['Kanıt ve Hafıza','Fotoğraf Kanıt Arşivi','Zaman çizelgesi',EvidenceTimeline],['Karar ve Onay','İç / Dış Kondisyon','Trim ve donanım',VehicleConditionEquipment],['Karar ve Onay','Pazar / Masraf / Bakım','Karar ve servis planı',MarketServicePlan],['Karar ve Onay','Doğrulama / Onaylar','Yasal ve dijital kayıt',ComplianceApprovals]];
-      const report2Pages=[
-        ['Final Akış','Kapak','Rapor kimliği ve araç özeti',ReportCover],
-        ['Final Akış','Final Rapor Akışı','Sayfa ve içerik sıralaması',Report2FinalFlowPage],
-        ['Karar','Yönetici Özeti','Karar destek paneli',ExecutiveSummary],
-        ['Kimlik ve Kabul','Araç ve Taraf Bilgileri','Araç, müşteri, paket ve iş emri',VehicleIdentity],
-        ['Kimlik ve Kabul','Araç Kabul Noktaları','Sekreterya ve mobil kabul',WorkOrderAcceptancePoints],
-        ['Kimlik ve Kabul','Canlı İş Emri ve Usta Girişleri','Rapor veri kaynakları',WorkOrderSourceInputs],
-        ['Kaporta & Boya','Kaporta / Boya Görsel Analiz','Kaynak kaporta tasarım sayfası',BodyPaintAnalysis],
-        ['Kaporta & Boya','Kaporta / Boya Harita','Mikron ve durum özeti',BodyPaintMapSummary],
-        ['Kaporta & Boya','Kaporta / Boya Detayları','28 nokta ve kanıt',BodyPaintDetailAnalysis],
-        ['Şasi & Yapısal Gövde','Şasi / İç Aksam Görsel Analiz','Kaynak şasi tasarım sayfası',ChassisInteriorAnalysis],
-        ['Şasi & Yapısal Gövde','Şasi / Yapısal Gövde Detayları','22 nokta ve eksper notu',ChassisDetailAnalysis],
-        ['Şasi & Yapısal Gövde','Yapısal Kanıt ve Risk Özeti','3 kanıt görevi ve hesaplanan sonuç',StructuralEvidenceSummary],
-        ['Teknik Testler','Motor Üst Mekanik','37 nokta check-up',MechanicalInspection],
-        ['Teknik Testler','Conta Kaçak Testi','Kritik motor testi',HeadGasketLeakSection],
-        ['Teknik Testler','Alt / Ön Mekanik','Lift altı ve aktarma',MechanicalUnderbodyInspection],
-        ['Elektronik & Güvenlik','Elektronik / OBD','Modül tarama',ObdSection],
-        ['Elektronik & Güvenlik','Airbag / SRS','Kontrol yöntemi',AirbagSection],
-        ['Cihaz & Yol','Fren / Süspansiyon / Lastik','Cihaz ölçümleri',BrakeSuspensionTyreSection],
-        ['Cihaz & Yol','Dyno / Yol Testi','Teknik dashboard',TechnicalDashboard],
-        ['Kondisyon','İç / Dış Kondisyon','Trim ve kozmetik durum',InteriorTrimSection],
-        ['Araç Hafızası','Dijital Araç Karnesi','Plaka/şasi geçmiş özeti',VehiclePassportCondensedSection],
-        ['Araç Hafızası','Hasar / KM / Kayıt','Sorgu ve veri sınırı',DamageMileageRecords],
-        ['Final','Rapor Onay ve Kapsam','Dijital doğrulama ve kapsam',FinalApprovalScope],
-        ['Final','Fotoğraf ve Kanıt Arşivi','Zaman çizelgesi ve kanıtlar',EvidenceTimeline]
-      ];
-      const pages=isReport2?report2Pages:legacyPages;
+      const pages=legacyPages;
       const total=pages.length;
       const navHtml=pages.map((p,i)=>`${i===0||p[0]!==pages[i-1][0]?`<div class="ototr-report-nav-section">${rpEsc(p[0])}</div>`:''}<a href="#${routeId}" data-report-scroll="report-page-${i+1}" class="${i===0?'active':''}"><strong>${i+1}</strong><span><b>${rpEsc(p[1])}</b></span></a>`).join('');
-      const passportTarget=isReport2?'report-page-21':'report-page-18';
-      const report2FinalNote=isReport2?`<div class="report2-final-note">${icon('layout-template')}<span>Final akış 24 A4 sayfa olarak sınırlandı; fotoğraf kanıt arşivi son sayfada, kaporta ve şasi bölümleri raporun merkezinde yer alır.</span></div>`:'';
-      return `<div class="ototr-report ${isReport2?'report2-final':''}" data-report-route="${routeId}"><div class="ototr-report-shell"><div class="ototr-report-toolbar"><div><h2>${isReport2?'OTOTR Ekspertiz Raporu 2 · Final Tasarım':'OTOTR Ekspertiz Rapor Tasarımı'}</h2><p>${isReport2?'Yeni antetli A4 tasarım ayrı rapor kopyası olarak ERP içinde tutulur; eski rapor tasarım ekranı ve kayıtları korunur.':'Rapor akışı 5 ana bölümde düzenlendi: özet, kabul/iş emri, teknik testler, kanıt/hafıza, karar/onay. Kaporta ve şasi görsel analizleri kaynak tasarım sayfası olarak, detayları ise ayrı teknik sayfa olarak canlı girişe yansır.'}</p>${report2FinalNote}</div><div class="ototr-report-actions"><button class="btn primary" data-report-scroll="report-page-1">${icon('file-text')}PDF Önizleme</button><button class="btn" onclick="window.print()">${icon('printer')}Yazdır</button><button class="btn" data-report-mobile-view>${icon('smartphone')}Dijital Rapor</button><button class="btn" data-report-toggle-technical>${icon('list-checks')}Teknik Detay</button><button class="btn" data-report-scroll="${passportTarget}">${icon('history')}Araç Karnesi</button>${isReport2?`<button class="btn" data-route="report-design">${icon('history')}Eski Rapor</button>`:`<button class="btn" data-route="report2">${icon('files')}Rapor 2</button>`}</div><div class="ototr-report-filters">${[['all','Tüm bulgular'],['critical','Kritik'],['service','Servis kontrolü'],['maintenance','Bakım gerekli'],['ok','Sorunsuz']].map((f,i)=>`<button class="micro-btn ${i===0?'active':''}" data-report-filter="${f[0]}">${f[1]}</button>`).join('')}</div></div><aside class="ototr-report-nav expertise-report-nav"><div class="ototr-report-nav-title">${isReport2?'Final Rapor Akışı / 24 Sayfa':'Rapor Akışı / Hızlı Menü'}</div>${navHtml}</aside><div class="ototr-report-preview">${pages.map((p,i)=>p[3](i+1,total)).join('')}</div></div></div>`;
+      return `<div class="ototr-report" data-report-route="${routeId}"><div class="ototr-report-shell"><div class="ototr-report-toolbar"><div><h2>OTOTR Ekspertiz Rapor Tasarımı</h2><p>Rapor akışı 5 ana bölümde düzenlendi: özet, kabul/iş emri, teknik testler, kanıt/hafıza, karar/onay. Kaporta ve şasi görsel analizleri kaynak tasarım sayfası olarak, detayları ise ayrı teknik sayfa olarak canlı girişe yansır.</p></div><div class="ototr-report-actions"><button class="btn primary" data-report-scroll="report-page-1">${icon('file-text')}PDF Önizleme</button><button class="btn" onclick="window.print()">${icon('printer')}Yazdır</button><button class="btn" data-report-mobile-view>${icon('smartphone')}Dijital Rapor</button><button class="btn" data-report-toggle-technical>${icon('list-checks')}Teknik Detay</button><button class="btn" data-report-scroll="report-page-18">${icon('history')}Araç Karnesi</button></div><div class="ototr-report-filters">${[['all','Tüm bulgular'],['critical','Kritik'],['service','Servis kontrolü'],['maintenance','Bakım gerekli'],['ok','Sorunsuz']].map((f,i)=>`<button class="micro-btn ${i===0?'active':''}" data-report-filter="${f[0]}">${f[1]}</button>`).join('')}</div></div><aside class="ototr-report-nav expertise-report-nav"><div class="ototr-report-nav-title">Rapor Akışı / Hızlı Menü</div>${navHtml}</aside><div class="ototr-report-preview">${pages.map((p,i)=>p[3](i+1,total)).join('')}</div></div></div>`;
     }
     const REPORT_LAYOUT_KEY='ototr-report-layout-designer-v2';
     const REPORT_LAYOUT_LEGACY_KEY='ototr-report-layout-designer-v1';
@@ -7236,14 +7196,13 @@
     const REPORT_LETTERHEAD_KEY='ototr-report-letterhead';
     const REPORT_DATA_BINDINGS={none:'Veri bağlantısı yok',reportNo:'Rapor no',reportDate:'Rapor tarihi',plate:'Plaka',vin:'Şasi / VIN',branch:'Şube',packageName:'Paket',mileage:'Kilometre',brandModel:'Marka / model'};
     const reportLayoutSession={selected:null,drag:null,resize:null,undo:[],redo:[],preview:false,leftTab:'pages',inspectorTab:'design',selection:null};
-    function isReportRoute(id=current){return id==='report-design'||id==='report2';}
-    function activeReportShell(){return document.querySelector(`#page-${current}.active`)||document.querySelector('#page-report2.active,#page-report-design.active');}
+    function isReportRoute(id=current){return id==='report-design';}
+    function activeReportShell(){return document.querySelector(`#page-${current}.active`)||document.querySelector('#page-report-design.active');}
     function activeReportRoot(){return activeReportShell()?.querySelector('.ototr-report')||document.querySelector('.ototr-report.report-studio-active')||document.querySelector('.ototr-report');}
     function activeReportTarget(id){const shell=activeReportShell();return shell?.querySelector(`#${id}`)||document.getElementById(id);}
-    function isReport2Context(){return current==='report2'||activeReportShell()?.id==='page-report2';}
-    function reportLayoutStorageKey(){return isReport2Context()?'ototr-report2-layout-designer-v2':REPORT_LAYOUT_KEY;}
-    function reportLayoutLegacyStorageKey(){return isReport2Context()?'ototr-report2-layout-designer-v1':REPORT_LAYOUT_LEGACY_KEY;}
-    function reportLetterheadStorageKey(){return isReport2Context()?'ototr-report2-letterhead':REPORT_LETTERHEAD_KEY;}
+    function reportLayoutStorageKey(){return REPORT_LAYOUT_KEY;}
+    function reportLayoutLegacyStorageKey(){return REPORT_LAYOUT_LEGACY_KEY;}
+    function reportLetterheadStorageKey(){return REPORT_LETTERHEAD_KEY;}
     function reportLayoutDefaultState(){return {version:2,enabled:true,grid:true,snap:true,rulers:true,zoom:.72,activePage:'report-page-1',letterhead:{src:'docs/ototr-a4-master-locked-300dpi.png',name:'OTOTR_A4_MASTER_LOCKED_300DPI.png',locked:true},items:{},custom:{},updatedAt:null};}
     function getReportLayoutState(){
       try{
@@ -7515,7 +7474,7 @@
     function restoreReportStudioState(){const root=activeReportRoot();if(!root)return;const state=getReportLayoutState();markReportEditableBlocks(root,state);reportStudioRefresh();}
     function initReportLayoutDesigner(){
       const root=activeReportRoot();if(!root)return;const state=getReportLayoutState();renderReportLayoutPanel(root,state);markReportEditableBlocks(root,state);reportStudioRefresh();
-      const loadedFlag=isReport2Context()?'__ototrReport2LetterheadLoaded':'__ototrReportLetterheadLoaded';
+      const loadedFlag='__ototrReportLetterheadLoaded';
       if(!window[loadedFlag]){window[loadedFlag]=true;reportLoadStoredLetterhead().then(loaded=>{if(loaded)reportStudioRefresh();}).catch(()=>{});}
       if(!window.__ototrReportLayoutDesignerBound){window.__ototrReportLayoutDesignerBound=true;document.addEventListener('click',handleReportLayoutClick,true);document.addEventListener('input',handleReportLayoutInput,true);document.addEventListener('change',handleReportLayoutChange,true);document.addEventListener('pointerdown',handleReportLayoutPointerDown,true);document.addEventListener('dblclick',handleReportLayoutDoubleClick,true);document.addEventListener('keydown',handleReportLayoutKeyDown,true);}
     }
@@ -17011,7 +16970,7 @@
     document.addEventListener('click',e=>{ if(!e.target.closest('.search')) closeSearchResults(); });
 
     function ensureInspectionSchemaForRoute(resolved){
-      const schemaRoutes=['dealer','report-design','report2','vehicle-passport'];
+      const schemaRoutes=['dealer','report-design','vehicle-passport'];
       if(!schemaRoutes.includes(resolved) || window.OTOTR_INSPECTION_SCHEMA || window.__OTOTR_SCHEMA_LOAD_PENDING__) return;
       window.__OTOTR_SCHEMA_LOAD_PENDING__ = true;
       window.OTOTR_ASSET_LOADER?.loadInspectionSchema?.().then(()=>{
@@ -17169,7 +17128,7 @@
       initTheme({skipRender:true});
       dealerScrubSensitiveUrlParams();
       syncDealerStandaloneMode(current);
-      if(['dealer','report-design','report2','vehicle-passport'].includes(current)){
+      if(['dealer','report-design','vehicle-passport'].includes(current)){
         await window.OTOTR_ASSET_LOADER?.loadInspectionSchema?.().catch(()=>null);
         if(typeof applyInspectionSchemaToReportData === 'function') applyInspectionSchemaToReportData();
       }
