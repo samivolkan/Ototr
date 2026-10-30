@@ -64,13 +64,13 @@ button:focus-visible{outline:3px solid #fff;outline-offset:3px}
 </div>
 
 <div style="position: relative; margin-top: 14px; display: flex; flex-direction: column; align-items: center; gap: 2px">
-<div style="font-size: 50px; font-weight: 800; letter-spacing: -2.2px; line-height: 1.05">Renault Clio</div>
-<div style="font-size: 18px; font-weight: 400; letter-spacing: 0.3px; color: {{t.sub}}">1.2 16V Expression BVR</div>
+<div style="font-size: 50px; font-weight: 800; letter-spacing: -2.2px; line-height: 1.05">{{vehicleModel}}</div>
+<div style="font-size: 18px; font-weight: 400; letter-spacing: 0.3px; color: {{t.sub}}">{{vehicleTrim}}</div>
 </div>
 
 <div style="position: relative; margin-top: 12px; align-self: center; display: flex; align-items: stretch; height: 52px; border-radius: 12px; overflow: hidden; background: #FFFFFF; color: #0A0C10; box-shadow: 0 14px 26px rgba(14,17,22,0.28), 0 0 0 2px {{t.plateRing}}">
 <div style="width: 34px; background: #0B3FB8; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 6px; font-size: 11px; font-weight: 800; color: #FFFFFF">TR</div>
-<div style="display: flex; align-items: center; padding: 0 22px 0 16px; font-size: 32px; font-weight: 800; letter-spacing: 1px">16 CEC 623</div>
+<div style="display: flex; align-items: center; padding: 0 22px 0 16px; font-size: 32px; font-weight: 800; letter-spacing: 1px">{{vehiclePlate}}</div>
 </div>
 
 
@@ -382,7 +382,7 @@ button:focus-visible{outline:3px solid #fff;outline-offset:3px}
 </div>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false},"accent":{"editor":"color","default":"#E8281A"},"hasTramer360":{"editor":"boolean","default":true},"hasKmQuery":{"editor":"boolean","default":true},"hasDebtQuery":{"editor":"boolean","default":true},"$preview":{"width":672,"height":1000}}'>
+<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false},"accent":{"editor":"color","default":"#E8281A"},"vehiclePlate":{"editor":"string","default":"16 CEC 623"},"vehicleModel":{"editor":"string","default":"Renault Clio"},"vehicleTrim":{"editor":"string","default":"1.2 16V Expression BVR"},"modelYear":{"editor":"string","default":"2012"},"mileage":{"editor":"string","default":"82.473 km"},"transmission":{"editor":"string","default":"Manuel"},"spareKeyStatus":{"editor":"string","default":"Mevcut"},"hasTramer360":{"editor":"boolean","default":true},"hasKmQuery":{"editor":"boolean","default":true},"hasDebtQuery":{"editor":"boolean","default":true},"$preview":{"width":672,"height":1000}}'>
 const PAGES = [
 { title: 'Araç Bilgileri', d: 'M5 16l1.5-5.5A2 2 0 0 1 8.4 9h7.2a2 2 0 0 1 1.9 1.5L19 16M3 16h18v3H3zM7 19v1.5M17 19v1.5', items: [] },
 { title: 'Taraflar & Paket İçeriği', d: 'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75', items: [] },
@@ -485,6 +485,13 @@ const testCount = Number(this.props.testCount ?? 14);
 const controlPoints = Number(this.props.controlPoints ?? 270);
 const spareKeyStatus = this.props.spareKeyStatus ?? 'Mevcut';
 const vehiclePlate = this.props.vehiclePlate ?? '16 CEC 623';
+const vehicleModel = this.props.vehicleModel ?? 'Renault Clio';
+const vehicleTrim = this.props.vehicleTrim ?? '1.2 16V Expression BVR';
+const modelYear = String(this.props.modelYear ?? '2012');
+const mileage = String(this.props.mileage ?? '82.473 km');
+const transmission = String(this.props.transmission ?? 'Manuel');
+const hasSpareKey = !/(yok|bulunmamakta|mevcut değil)/i.test(String(spareKeyStatus));
+const coverNarration = 'Merhaba, Oto Te Re Oto Ekspertiz e hoş geldiniz. Plaka ' + vehiclePlate + '. Araç modeli ' + vehicleModel + '. Araç ' + modelYear + ' model ve ' + mileage + ' kilometrededir. Vites tipi ' + transmission + '. ' + (hasSpareKey ? 'Yedek anahtar mevcuttur.' : 'Yedek anahtar bulunmamaktadır.');
 const hasTramer360 = this.props.hasTramer360 ?? true;
 const hasKmQuery = this.props.hasKmQuery ?? true;
 const hasDebtQuery = this.props.hasDebtQuery ?? true;
@@ -630,9 +637,9 @@ packageGroups: [
 ] }
 ].map((group) => ({ ...group, items: group.items.map((item, index) => ({ ...item, bg: index % 2 ? t.rowAlt : 'rgba(255,255,255,0.18)' })) })),
 specs: [
-{ label: 'MODEL YILI', value: '2012', d: 'M5 6h14a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2zM3 11h18M8 3v5M16 3v5M8 15h.01M12 15h.01M16 15h.01' },
-{ label: 'KİLOMETRE', value: '82.473 km', d: 'M4.9 19.1a9 9 0 1 1 14.2 0M12 15l4-5M7 12h.01M12 7.5h.01M17 12h.01' },
-{ label: 'VİTES', value: 'Manuel', d: 'M6 5v14M12 5v14M18 5v6a2 2 0 0 1-2 2H6M6 5h.01M12 5h.01M18 5h.01' },
+{ label: 'MODEL YILI', value: modelYear, d: 'M5 6h14a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2zM3 11h18M8 3v5M16 3v5M8 15h.01M12 15h.01M16 15h.01' },
+{ label: 'KİLOMETRE', value: mileage, d: 'M4.9 19.1a9 9 0 1 1 14.2 0M12 15l4-5M7 12h.01M12 7.5h.01M17 12h.01' },
+{ label: 'VİTES', value: transmission, d: 'M6 5v14M12 5v14M18 5v6a2 2 0 0 1-2 2H6M6 5h.01M12 5h.01M18 5h.01' },
 { label: 'YAKIT', value: 'Benzin', d: 'M3 11v5h3l2 3h9l3-3v-5l-2-2h-3V6h-5v3H7l-1 2z' }
 ],
 pageNo: pad(p + 1), pageLabel: pad(p + 1) + ' / ' + PAGES.length,
@@ -649,7 +656,7 @@ setLight: () => { document.body.style.background = '#EEF0F4'; this.setState({ da
 setDark: () => { document.body.style.background = '#0A0C10'; this.setState({ dark: true }); },
   aiLabel:this.state.speaking ? 'ANLATIMI DURDUR' : 'AI İLE SESLENDİR',
   aiBackground:this.state.speaking ? 'linear-gradient(145deg,#E8281A,#9E160D)' : 'linear-gradient(145deg,#252A33,#111319)', aiBorder:this.state.speaking ? 'rgba(255,105,88,.9)' : 'rgba(255,255,255,.12)', aiShadow:this.state.speaking ? '0 0 18px rgba(232,40,26,.65),0 10px 20px rgba(0,0,0,.25)' : '0 8px 18px rgba(0,0,0,.22)',
-  speakPage:() => { if (!('speechSynthesis' in window)) return; if (this.state.speaking) { window.speechSynthesis.cancel(); this.setState({ speaking:false }); return; } window.speechSynthesis.cancel(); const text = pg.title + '. ' + testDetailDescription + ' ' + testDetailSummary; const utterance = new SpeechSynthesisUtterance(text); utterance.lang='tr-TR'; utterance.rate=.92; utterance.onend=() => this.setState({ speaking:false }); window.speechSynthesis.speak(utterance); this.setState({ speaking:true }); },
+  speakPage:() => { if (!('speechSynthesis' in window)) return; if (this.state.speaking) { window.speechSynthesis.cancel(); this.setState({ speaking:false }); return; } window.speechSynthesis.cancel(); const text = p === 0 ? coverNarration : pg.title + '. ' + testDetailDescription + ' ' + testDetailSummary; const utterance = new SpeechSynthesisUtterance(text); utterance.lang='tr-TR'; utterance.rate=.92; utterance.onend=() => this.setState({ speaking:false }); utterance.onerror=() => this.setState({ speaking:false }); window.speechSynthesis.speak(utterance); this.setState({ speaking:true }); },
   shareWhatsapp:() => { const text='OTOTR ekspertiz raporu: ' + vehiclePlate + ' - ' + window.location.href; window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank', 'noopener,noreferrer'); },
 openTramerOriginal: () => this.setState({ modal: 'tramer' }),
 openKmOriginal: () => this.setState({ modal: 'km' }),
