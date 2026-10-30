@@ -118,7 +118,7 @@ const branches: Record<string, { name: string; storeCode: string; locationId: st
   'branch-google-inegol': { name: 'OTOTR Bursa İnegöl Şube', storeCode: '03710924650104046695', locationId: '16859471132010192752' },
 };
 function syncBranchIds(value: unknown): string[] {
-  if (value === undefined) return Object.keys(branches);
+  if (value === undefined) return ['branch-google-nilufer'];
   if (!Array.isArray(value) || !value.length || value.length > 3 || value.some(id => typeof id !== 'string' || !Object.hasOwn(branches, id))) {
     throw new RequestError('Geçersiz senkronizasyon şubesi.', 400);
   }
@@ -315,7 +315,8 @@ async function prepareDraft(db: any, user: any, body: any, connection: any, auth
     const response = await fetch(`${env('SUPABASE_URL')}/functions/v1/google-review-ai`, { method: 'POST', signal, headers: { Authorization: authorization, apikey: injectedSupabaseKey('SUPABASE_ANON_KEY', 'SUPABASE_PUBLISHABLE_KEYS'), 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'generate', branch: { id: identity.branch_id }, review: { rating: snapshot.rating, comment: snapshot.comment, reviewerName: snapshot.reviewer_name } }) });
     const draft = await response.json().catch(() => null);
     if (!response.ok) throw new RequestError(typeof draft?.error === 'string' ? draft.error.slice(0, 800) : 'AI taslağı hazırlanamadı. Yeniden deneyin.', response.status);
-    if (!draft || typeof draft.reply !== 'string' || draft.reply.length > 4000 || !draft.reply.endsWith(`${identity.branch_name} ekibi`) || typeof draft.requires_human_review !== 'boolean') throw new RequestError('AI yanıtı doğrulanamadı. Yeniden deneyin.', 502);
+    const expectedSignature = identity.branch_id === 'branch-google-nilufer' ? 'OTOTR Bursa Nilüfer Otoekspertiz Ekibi' : `${identity.branch_name} ekibi`;
+    if (!draft || typeof draft.reply !== 'string' || draft.reply.length > 4000 || !draft.reply.endsWith(expectedSignature) || typeof draft.requires_human_review !== 'boolean') throw new RequestError('AI yanıtı doğrulanamadı. Yeniden deneyin.', 502);
     const current = await verifiedReview(identity, token, signal);
     if (current.expected_reply) { skipped = true; throw new RequestError('Hazırlık sırasında bu yoruma Google’da yanıt verilmiş. Mevcut yanıt korundu.', 409); }
     if (current.snapshot.comment !== snapshot.comment || current.snapshot.rating !== snapshot.rating || current.snapshot.reviewer_name !== snapshot.reviewer_name) throw new RequestError('Yorum hazırlık sırasında değişti. Güncel yorum için taslağı yeniden hazırlayın.', 409);
@@ -513,7 +514,7 @@ Deno.serve(async (req) => {
     }
     if (body.action === 'operation_save') {
       const { review_id, branch_id, status, expected_version } = body;
-      if (typeof review_id !== 'string' || !review_id || review_id.length > 512 || !['branch-google-nilufer','branch-google-gebze'].includes(branch_id) || !['new','reviewing','reply_waiting','branch_action','resolved','follow_up'].includes(status) || !Number.isSafeInteger(expected_version) || expected_version < 0) throw new RequestError('Yorum, şube, durum ve sürüm bilgisi geçerli olmalı.', 400);
+      if (typeof review_id !== 'string' || !review_id || review_id.length > 512 || branch_id !== 'branch-google-nilufer' || !['new','reviewing','reply_waiting','branch_action','resolved','follow_up'].includes(status) || !Number.isSafeInteger(expected_version) || expected_version < 0) throw new RequestError('Yorum, şube, durum ve sürüm bilgisi geçerli olmalı.', 400);
       const row = { connection_id: connectionId, review_id, branch_id, status, version: expected_version + 1, updated_by: user.id, updated_at: new Date().toISOString() };
       const result = expected_version === 0
         ? await db.from('google_review_operations').insert(row).select('review_id,branch_id,status,version,updated_at').maybeSingle()
@@ -527,7 +528,7 @@ Deno.serve(async (req) => {
     }
     if (body.action === 'target_save') {
       const { branch_id, month, target, expected_version } = body;
-      if (!['branch-google-nilufer','branch-google-gebze'].includes(branch_id) || typeof month !== 'string' || !/^20\d{2}-(0[1-9]|1[0-2])-01$/.test(month) || !Number.isSafeInteger(target) || target < 1 || target > 10000 || !Number.isSafeInteger(expected_version) || expected_version < 0) throw new RequestError('Şube, ay ve 1–10000 arası tam sayı hedef gerekli.', 400);
+      if (branch_id !== 'branch-google-nilufer' || typeof month !== 'string' || !/^20\d{2}-(0[1-9]|1[0-2])-01$/.test(month) || !Number.isSafeInteger(target) || target < 1 || target > 10000 || !Number.isSafeInteger(expected_version) || expected_version < 0) throw new RequestError('Şube, ay ve 1–10000 arası tam sayı hedef gerekli.', 400);
       const row = { connection_id: connectionId, branch_id, month, target, version: expected_version + 1, updated_by: user.id, updated_at: new Date().toISOString() };
       const result = expected_version === 0
         ? await db.from('google_review_targets').insert(row).select('branch_id,month,target,version,updated_at').maybeSingle()

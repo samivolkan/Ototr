@@ -12,6 +12,8 @@
   const publicationLocks = new Set(), verificationChecks = new Map(), pendingPublicationRefreshes = new Set();
   const automaticVerification = { busy: false, due: 0, failures: 0 };
   let automaticPumpScheduled = false;
+  const AUTO_REPLY_AFTER_MS = 20 * 60 * 60 * 1000;
+  const automaticPublish = { busy: false };
   const rerender = () => {
     const focused = document.activeElement, reviewId = focused?.dataset?.googleCardText;
     const selection = reviewId ? { start: focused.selectionStart, end: focused.selectionEnd, scroll: focused.scrollTop } : null;
@@ -471,6 +473,21 @@
     automaticPumpScheduled = true;
     setTimeout(() => { automaticPumpScheduled = false; preparePendingDrafts(); }, 0);
   }
+  async function autoPublishDue() {
+    if (automaticPublish.busy || !automaticViewAllowed() || !workflow.loaded || workflow.loading) return;
+    const now = Date.now(), reviews = window.OTOTRGoogleReputation?.demoReviews || [];
+    const candidate = workflow.items.map(item => {
+      const review = reviews.find(row => row.googleReviewId === item.review_id || row.id === item.review_id);
+      return { item, review };
+    }).find(({ item, review }) => item.kind === 'reply' && item.branch_id === 'branch-google-nilufer' && item.status === 'approval_pending' && review && !review.isReplied && now - new Date(review.reviewDate).getTime() >= AUTO_REPLY_AFTER_MS && item.review_snapshot?.ai_analysis?.requires_human_review === false && item.reply_text?.trim());
+    if (!candidate) return;
+    automaticPublish.busy = true;
+    try {
+      const data = await googleBusinessRequest('publish_reply', { item_id: candidate.item.id, expected_version: candidate.item.version, approved: true });
+      if (data.item) remember(data.item);
+    } catch (_) { /* Existing workflow status exposes the retry state. */ }
+    finally { automaticPublish.busy = false; rerender(); }
+  }
   function preparePendingDrafts() {
     if (!autoPreparationAllowed()) return;
     const reviews = window.OTOTRGoogleReputation?.demoReviews || [];
@@ -645,4 +662,5 @@
   }
 
   install();
+  if (typeof window !== 'undefined') setInterval(() => { void autoPublishDue(); }, 60000);
 })();
