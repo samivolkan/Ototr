@@ -4,9 +4,14 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>OTOTR Rapor Sunumu</title>
-  <meta http-equiv="refresh" content="0; url=./Main.dc.html">
+  <script>
+    location.replace('./Main.dc.html' + location.search + location.hash);
+  </script>
 </head>
 <body>
-  <p><a href="./Main.dc.html">Sunumu aç</a></p>
+  <p><a id="sunum-link" href="./Main.dc.html">Sunumu aç</a></p>
+  <script>
+    document.getElementById('sunum-link').href = './Main.dc.html' + location.search + location.hash;
+  </script>
 </body>
 </html>
