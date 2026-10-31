@@ -1,0 +1,865 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>OTOTR Rapor Sunumu (Beyaz)</title>
+<script src="./vendor/react.js"></script>
+<script src="./vendor/react-dom.js"></script>
+<script src="./support.js"></script>
+<script src="https://mcp.figma.com/mcp/html-to-design/capture.js" async></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,800;1,9..40,900&amp;display=swap" rel="stylesheet">
+<style>
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#EEF0F4}
+body{position:relative;touch-action:manipulation;overscroll-behavior:none}
+x-dc,body>div:first-of-type{position:absolute!important;left:50%!important;top:50%!important;display:block;width:672px;height:1000px;transform:translate(-50%,-50%) scale(var(--presentation-scale,1));transform-origin:center center}
+@keyframes scan{0%{top:18%;opacity:0}15%{opacity:1}85%{opacity:1}100%{top:78%;opacity:0}}
+@keyframes detailGlow{0%,100%{filter:drop-shadow(0 5px 7px rgba(14,17,22,.22))}50%{filter:drop-shadow(0 0 15px rgba(232,40,26,.95)) drop-shadow(0 10px 12px rgba(232,40,26,.38))}}
+@keyframes originalPulse{0%,100%{transform:translateY(0);box-shadow:0 8px 16px rgba(179,21,12,.26),0 0 0 0 rgba(232,40,26,.28)}50%{transform:translateY(-1px);box-shadow:0 12px 24px rgba(179,21,12,.38),0 0 0 8px rgba(232,40,26,0)}}
+@keyframes pageSlideNext{from{opacity:.2;transform:translateX(24px)}to{opacity:1;transform:translateX(0)}}
+@keyframes pageSlidePrev{from{opacity:.2;transform:translateX(-24px)}to{opacity:1;transform:translateX(0)}}
+.scan{position:absolute;left:0;right:0;height:2px;animation:scan 3.6s ease-in-out infinite;display:flex;align-items:center;justify-content:center}
+.scan-label{transform:translateY(-50%);padding:5px 12px;border-radius:999px;background:rgba(14,17,22,.78);border:1px solid rgba(255,255,255,.24);box-shadow:0 5px 14px rgba(0,0,0,.35);color:#fff;font-size:11px;font-weight:800;letter-spacing:1.05px;white-space:nowrap}
+button{cursor:pointer}
+button[aria-label="Tramer 360 orijinal sonucunu aç"]{font-weight:900!important;animation:originalPulse 1.45s ease-in-out infinite}
+button:focus-visible{outline:3px solid #fff;outline-offset:3px}
+</style>
+</helmet>
+<div style="position: relative; width: 672px; height: 1000px; box-sizing: border-box; overflow: hidden; font-family: 'DM Sans', system-ui, sans-serif; background: {{t.bg}}; color: {{t.text}}">
+
+<aside aria-label="Sunum bölümleri" style="position:absolute;left:0;top:0;bottom:0;width:132px;z-index:20;box-sizing:border-box;padding:18px 10px 12px;border-right:1px solid {{t.track}};background:{{t.rowBase}};box-shadow:10px 0 28px rgba(0,0,0,.08);backdrop-filter:blur(18px)">
+<div style="height:104px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:8px;box-sizing:border-box;padding:8px 0 9px;border-bottom:1px solid {{t.track}}"><img src="{{t.logo}}" alt="OTOTR Ekspertiz" style="display:block;width:104px;height:38px;object-fit:contain"><div role="group" aria-label="Tema seçimi" style="display:flex;width:108px;padding:2px;border-radius:999px;{{t.card}}"><button aria-label="Açık temayı seç" onClick="{{setLight}}" style="flex:1;min-height:34px;border:0;border-radius:999px;padding:3px 5px;font-family:inherit;font-size:10px;font-weight:800;{{lightBtn}}">Açık</button><button aria-label="Koyu temayı seç" onClick="{{setDark}}" style="flex:1;min-height:34px;border:0;border-radius:999px;padding:3px 5px;font-family:inherit;font-size:10px;font-weight:800;{{darkBtn}}">Koyu</button></div></div>
+<nav aria-label="Rapor ilerleme menüsü" style="position:absolute;left:8px;right:7px;top:114px;bottom:76px;overflow-y:auto;overflow-x:hidden;padding-right:3px;scrollbar-width:thin;scrollbar-color:{{t.track}} transparent"><span style="position:absolute;left:2px;top:0;width:3px;height:{{menuProgress}}%;border-radius:999px;background:{{accent}};opacity:.75"></span>
+<sc-for list="{{menuItems}}" as="item" hint-placeholder-count="20"><button data-menu-active="{{item.active}}" aria-label="{{item.label}} bölümüne git" onClick="{{item.go}}" style="position:relative;width:100%;min-height:46px;margin:0 0 4px;padding:6px 7px;border:0;border-radius:11px;display:grid;grid-template-columns:24px minmax(0,1fr) 7px;align-items:center;gap:6px;text-align:left;font-family:inherit;{{item.style}}"><span style="width:22px;height:22px;box-sizing:border-box;border:1px solid {{item.numberBorder}};border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;{{item.numberStyle}}">{{item.number}}</span><span style="min-width:0;font-size:11px;font-weight:{{item.weight}};line-height:1.2;white-space:normal;overflow-wrap:anywhere;color:{{item.textColor}}">{{item.label}}</span><span style="width:7px;height:7px;border-radius:2px;background:{{item.statusColor}};opacity:{{item.statusOpacity}}"></span></button></sc-for>
+</nav>
+<button aria-label="Yapay zeka ile bu sayfayı seslendir" onClick="{{speakPage}}" style="position:absolute;left:10px;right:10px;bottom:13px;min-height:50px;border:1px solid {{aiBorder}};border-radius:14px;display:flex;align-items:center;justify-content:center;gap:8px;padding:6px 8px;color:#fff;background:{{aiBackground}};box-shadow:{{aiShadow}};font-family:inherit"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3v-7a4 4 0 0 1-1-2.6V7a4 4 0 0 1 4-4h11a4 4 0 0 1 4 4zM8 9h.01M12 9h.01M16 9h.01"></path></svg><span style="font-size:9px;font-weight:900;line-height:1.1;text-align:left">{{aiLabel}}</span></button>
+</aside>
+
+<div style="position:absolute;left:132px;top:0;width:540px;height:1000px;overflow:hidden;background:{{t.bg}}">
+
+<div style="position: absolute; left: -120px; top: 80px; width: 520px; height: 520px; border-radius: 50%; background: radial-gradient(circle, {{t.glow}} 0%, rgba(232,40,26,0) 68%)"></div>
+<div style="position: absolute; right: -60px; top: 0; width: 300px; height: 300px; transform: skewX(-24deg); background: {{t.skew}}"></div>
+
+<div style="position: absolute; left: 0; right: 0; top: 24px; bottom: {{botH}}px; box-sizing: border-box; padding: 0 32px; display: flex; flex-direction: column; overflow: hidden;animation:{{pageAnimation}} .28s cubic-bezier(.22,.75,.2,1) both">
+
+<sc-if value="{{cover}}" hint-placeholder-val="{{ true }}">
+<div style="position: relative; margin-top: 0; display: flex; flex-direction: column; gap: 9px">
+<div style="width: 100%; display: flex; justify-content: center; align-items: baseline; white-space: nowrap; font-size: 28px; font-weight: 800; letter-spacing: -1.35px; line-height: 1.1; text-align: center">
+<span style="color: {{accent}}; margin-right: 2px">“</span><span>Tarafsız Rapor,</span><span style="color: {{accent}}; margin-left: 6px">Gerçek Güvence</span><span style="color: {{accent}}; margin-left: 2px">”</span>
+</div>
+<span style="width: 56px; height: 3px; margin-left: 28px; border-radius: 2px; background: {{accent}}"></span>
+</div>
+
+<div style="position: relative; margin-top: 14px; width: 476px; height: 295px; border-radius: 26px; overflow: hidden; background: {{t.photoBg}}; box-shadow: {{t.photoShadow}}">
+<img src="./assets/5238979de9c534657e296a988fb9f894.jpg" alt="Renault Clio ön görünüm" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover">
+<div style="position: absolute; inset: 0; background: {{t.photoFade}}"></div>
+<div class="scan" style="background: linear-gradient(90deg, rgba(232,40,26,0), rgba(255,90,70,0.95), rgba(232,40,26,0)); box-shadow: 0 0 18px 4px rgba(232,40,26,0.55)"><span class="scan-label">{{inspectionSummary}}</span></div>
+<span style="position: absolute; left: 14px; top: 14px; width: 26px; height: 26px; border-left: 3px solid {{accent}}; border-top: 3px solid {{accent}}; border-radius: 8px 0 0 0"></span>
+<span style="position: absolute; right: 14px; top: 14px; width: 26px; height: 26px; border-right: 3px solid {{accent}}; border-top: 3px solid {{accent}}; border-radius: 0 8px 0 0"></span>
+<span style="position: absolute; left: 14px; bottom: 14px; width: 26px; height: 26px; border-left: 3px solid {{accent}}; border-bottom: 3px solid {{accent}}; border-radius: 0 0 0 8px"></span>
+<span style="position: absolute; right: 14px; bottom: 14px; width: 26px; height: 26px; border-right: 3px solid {{accent}}; border-bottom: 3px solid {{accent}}; border-radius: 0 0 8px 0"></span>
+<div style="position: absolute; left: 52px; top: 20px; display: flex; align-items: center; gap: 7px; padding: 6px 12px; border-radius: 999px; font-size: 11px; font-weight: 800; letter-spacing: 1.4px; {{t.chip}}">
+<span style="width: 7px; height: 7px; border-radius: 50%; background: {{accent}}"></span>CANLI EKSPERTİZ
+</div>
+</div>
+
+<div style="position: relative; margin-top: 14px; display: flex; flex-direction: column; align-items: center; gap: 2px">
+<div style="font-size: 50px; font-weight: 800; letter-spacing: -2.2px; line-height: 1.05">{{vehicleModel}}</div>
+<div style="font-size: 18px; font-weight: 400; letter-spacing: 0.3px; color: {{t.sub}}">{{vehicleTrim}}</div>
+</div>
+
+<div style="position: relative; margin-top: 12px; align-self: center; display: flex; align-items: stretch; height: 52px; border-radius: 12px; overflow: hidden; background: #FFFFFF; color: #0A0C10; box-shadow: 0 14px 26px rgba(14,17,22,0.28), 0 0 0 2px {{t.plateRing}}">
+<div style="width: 34px; background: #0B3FB8; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 6px; font-size: 11px; font-weight: 800; color: #FFFFFF">TR</div>
+<div style="display: flex; align-items: center; padding: 0 22px 0 16px; font-size: 32px; font-weight: 800; letter-spacing: 1px">{{vehiclePlate}}</div>
+</div>
+
+
+</sc-if>
+
+<sc-if value="{{notCover}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; align-items: center; gap: 14px; margin-top: 0">
+<button aria-label="{{pg.title}} test detaylarını aç" onClick="{{openTestDetail}}" style="width:52px;height:52px;flex:none;padding:0;border:0;background:transparent;animation:{{detailIconAnimation}}">
+<div style="width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; clip-path: polygon(25% 2%, 75% 2%, 100% 50%, 75% 98%, 25% 98%, 0 50%); background: {{t.hexRim}}">
+<div style="width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; clip-path: polygon(25% 2%, 75% 2%, 100% 50%, 75% 98%, 25% 98%, 0 50%); background: {{t.hexFace}}">
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="{{t.icon}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{pg.d}}"></path></svg>
+</div></div></button>
+<div style="display: flex; flex-direction: column; gap: 1px"><span style="font-size: 30px; font-weight: 800; letter-spacing: -1px; line-height: 1.1">{{pg.title}}</span></div>
+</div>
+<span style="width: 56px; height: 3px; border-radius: 2px; margin-top: 12px; background: {{accent}}"></span>
+
+<sc-if value="{{decisionPage}}" hint-placeholder-val="{{ false }}">
+<div style="margin:18px -12px 0;display:flex;flex-direction:column;gap:12px">
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px"><sc-for list="{{decisionStats}}" as="stat" hint-placeholder-count="3"><div style="min-height:118px;padding:15px 12px;box-sizing:border-box;border-radius:20px;text-align:center;{{t.card}}"><span style="display:flex;width:42px;height:42px;margin:0 auto 9px;align-items:center;justify-content:center;border-radius:50%;background:{{stat.bg}};color:{{stat.color}};font-size:21px;font-weight:900">{{stat.value}}</span><strong style="display:block;font-size:13px">{{stat.label}}</strong><small style="display:block;margin-top:3px;font-size:9px;color:{{t.sub}}">{{stat.sub}}</small></div></sc-for></div>
+<div style="padding:15px;border-radius:20px;{{t.card}}"><div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:10px;border-bottom:1px solid {{t.track}}"><strong style="font-size:15px">Öne çıkan 3 bulgu</strong><span style="padding:5px 9px;border-radius:999px;background:rgba(232,137,18,.14);color:#B86700;font-size:9px;font-weight:900">ÖNCELİKLİ</span></div><div style="display:flex;flex-direction:column;gap:7px;margin-top:10px"><sc-for list="{{decisionFindings}}" as="finding" hint-placeholder-count="3"><div style="min-height:55px;padding:8px 10px;box-sizing:border-box;display:flex;align-items:center;gap:10px;border-radius:13px;background:{{finding.bg}}"><b style="width:28px;height:28px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:50%;background:{{finding.color}};color:#fff;font-size:13px">{{finding.number}}</b><span style="flex:1;min-width:0"><strong style="display:block;font-size:11px;line-height:1.25">{{finding.title}}</strong><small style="display:block;margin-top:2px;font-size:9px;color:{{t.sub}}">{{finding.detail}}</small></span><em style="flex:none;color:{{finding.color}};font-size:8px;font-style:normal;font-weight:900">{{finding.level}}</em></div></sc-for></div></div>
+<div style="min-height:92px;padding:14px 16px;box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;gap:14px;border-radius:20px;background:rgba(232,137,18,.11);border:1px solid rgba(232,137,18,.34);box-shadow:0 10px 24px rgba(184,103,0,.12)"><span><small style="display:block;font-size:9px;font-weight:900;letter-spacing:1px;color:#B86700">GENEL SONUÇ</small><strong style="display:block;margin-top:3px;font-size:21px;color:#B86700">TAKİP EDİLMELİ</strong></span><span style="max-width:245px;font-size:10px;line-height:1.4;color:{{t.sub}}">Kritik ve takip gerektiren bulgular ilgili test sayfalarında ayrıntılı gösterilir.</span></div>
+</div>
+</sc-if>
+
+<sc-if value="{{pageTwo}}" hint-placeholder-val="{{ false }}">
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 16px -12px 0">
+<sc-for list="{{parties}}" as="party" hint-placeholder-count="2">
+<div style="overflow: hidden; border-radius: 20px; {{t.card}}">
+<div style="display: flex; align-items: center; gap: 8px; height: 38px; padding: 0 14px; box-sizing: border-box; border-bottom: 1px solid {{t.track}}">
+<span style="width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(232,40,26,0.12)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="{{t.icon}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21a8 8 0 0 0-16 0M12 13a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"></path></svg></span>
+<span style="font-size: 12px; font-weight: 800; letter-spacing: 0.7px">{{party.title}}</span>
+</div>
+<div style="display: flex; flex-direction: column; padding: 8px 12px 10px; gap: 2px">
+<sc-for list="{{party.rows}}" as="info" hint-placeholder-count="4">
+<div style="display: grid; grid-template-columns: 76px minmax(0,1fr); align-items: center; min-height: 28px; padding: 0 8px; border-radius: 8px; background: {{info.bg}}">
+<span style="font-size: 10.2px; line-height: 1.05; color: {{t.sub}}">{{info.label}}</span><span style="font-size: 12.2px; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{info.value}}</span>
+</div>
+</sc-for>
+</div>
+</div>
+</sc-for>
+</div>
+
+<div style="margin: 12px -12px 0; overflow: hidden; border-radius: 22px; {{t.card}}">
+<div style="height: 42px; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid {{t.track}}">
+<div style="display: flex; align-items: center; gap: 9px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="{{t.icon}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h10M4 18h7"></path></svg><span style="font-size: 13px; font-weight: 800; letter-spacing: 0.8px">PAKET İÇERİĞİ</span></div>
+<span style="font-size: 11px; font-weight: 800; color: {{t.sub}}">14 TEST · 270 NOKTA</span>
+</div>
+<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; padding: 10px 12px 8px">
+<sc-for list="{{packageGroups}}" as="group" hint-placeholder-count="3">
+<div style="display: flex; flex-direction: column; padding: 0 7px; border-right: {{group.border}}">
+<div style="display: grid; grid-template-columns: 1fr 34px; padding: 0 6px 7px; font-size: 10.5px; font-weight: 900; letter-spacing: 0.75px; color: {{t.text}}"><span>TEST ADI</span><span style="text-align: right">NOKTA</span></div>
+<sc-for list="{{group.items}}" as="test" hint-placeholder-count="5">
+<div style="display: grid; grid-template-columns: minmax(0,1fr) 30px; align-items: center; min-height: 34px; padding: 2px 6px; box-sizing: border-box; border-radius: 8px; background: {{test.bg}}">
+<span style="font-size: 10px; line-height: 1.1">{{test.name}}</span><span style="font-size: 12px; font-weight: 800; text-align: right">{{test.points}}</span>
+</div>
+</sc-for>
+</div>
+</sc-for>
+</div>
+</div>
+<div style="margin:10px -12px 0;overflow:hidden;border-radius:20px;{{t.card}}"><div style="min-height:42px;padding:0 16px;display:flex;align-items:center;justify-content:space-between;gap:9px;border-bottom:1px solid {{t.track}}"><div style="display:flex;align-items:center;gap:9px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="{{t.icon}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM20 20l-4-4M8 11h6M8 15h4"></path></svg><span style="font-size:13px;font-weight:900;letter-spacing:.8px">SORGULAR</span></div><span style="font-size:9px;font-weight:800;color:{{t.sub}}">PAKET DURUMU</span></div><div style="padding:9px 12px 12px"><div style="display:grid;grid-template-columns:minmax(0,1fr) 88px;padding:0 10px 7px;font-size:10px;font-weight:900;letter-spacing:.7px;color:{{t.text}}"><span>SORGU ADI</span><span style="text-align:center">DURUM</span></div><div style="display:flex;flex-direction:column;gap:3px"><sc-for list="{{queryRows}}" as="query" hint-placeholder-count="5"><div style="display:grid;grid-template-columns:minmax(0,1fr) 88px;align-items:center;min-height:32px;padding:0 8px 0 10px;border-radius:9px;background:{{query.bg}}"><span style="font-size:11px;font-weight:700">{{query.name}}</span><span style="justify-self:center;min-width:66px;box-sizing:border-box;padding:5px 8px;border-radius:999px;background:{{query.statusBg}};color:{{query.statusColor}};font-size:8.5px;font-weight:900;letter-spacing:.45px;text-align:center">{{query.status}}</span></div></sc-for></div></div></div>
+</sc-if>
+
+<sc-if value="{{legacyQueries}}" hint-placeholder-val="{{ false }}">
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 14px -12px 0">
+
+<div style="min-height: 178px; overflow: hidden; border-radius: 22px; {{t.card}}">
+<div style="display: flex; align-items: center; justify-content: space-between; height: 42px; padding: 0 14px; border-bottom: 1px solid {{t.track}}"><span style="font-size: 14px; font-weight: 800">TRAMER SORGUSU</span><span style="padding: 4px 8px; border-radius: 999px; color: #218838; background: rgba(46,160,67,0.13); font-size: 9px; font-weight: 800">TAMAMLANDI</span></div>
+<div style="display: grid; grid-template-columns: repeat(3,1fr); gap: 6px; padding: 10px 10px 8px">
+<div style="padding: 8px; border-radius: 10px; background: {{t.glow}}"><span style="display:block;font-size:8.5px;color:{{t.sub}}">TRAMER KAYDI</span><strong style="font-size:12px">Kayıt yok</strong></div>
+<div style="padding: 8px; border-radius: 10px; background: {{t.glow}}"><span style="display:block;font-size:8.5px;color:{{t.sub}}">TOPLAM HASAR</span><strong style="font-size:12px">0 TL</strong></div>
+<div style="padding: 8px; border-radius: 10px; background: {{t.glow}}"><span style="display:block;font-size:8.5px;color:{{t.sub}}">AĞIR HASAR</span><strong style="font-size:12px">Yok</strong></div>
+</div>
+<div style="padding: 0 14px 12px; font-size: 10px; line-height: 1.35; color: {{t.sub}}">Hasar kaydı bulunamadı. Son sorgu: 29.10.2026 14:00</div>
+</div>
+
+<div style="min-height: 178px; overflow: hidden; border-radius: 22px; {{t.card}}">
+<div style="display: flex; align-items: center; justify-content: space-between; height: 42px; padding: 0 14px; border-bottom: 1px solid {{t.track}}"><span style="font-size: 14px; font-weight: 800">TRAMER 360</span><span style="padding: 4px 8px; border-radius: 999px; color: #218838; background: rgba(46,160,67,0.13); font-size: 9px; font-weight: 800">TAMAMLANDI</span></div>
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 10px">
+<div style="padding: 7px 8px; border-radius: 10px; background: {{t.glow}}"><span style="display:block;font-size:8.5px;color:{{t.sub}}">SAHİP SAYISI</span><strong style="font-size:12px">6</strong></div>
+<div style="padding: 7px 8px; border-radius: 10px; background: {{t.glow}}"><span style="display:block;font-size:8.5px;color:{{t.sub}}">PLAKA DEĞİŞİMİ</span><strong style="font-size:12px">Var (43 &gt; 34)</strong></div>
+<div style="padding: 7px 8px; border-radius: 10px; background: {{t.glow}}"><span style="display:block;font-size:8.5px;color:{{t.sub}}">TRAFİĞE ÇIKIŞ</span><strong style="font-size:12px">03.11.2011</strong></div>
+<div style="padding: 7px 8px; border-radius: 10px; background: {{t.glow}}"><span style="display:block;font-size:8.5px;color:{{t.sub}}">KASKO</span><strong style="font-size:11px">Yürürlükte değil</strong></div>
+</div>
+</div>
+
+<div style="min-height: 214px; overflow: hidden; border-radius: 22px; {{t.card}}">
+<div style="display: flex; align-items: center; justify-content: space-between; height: 42px; padding: 0 14px; border-bottom: 1px solid {{t.track}}"><span style="font-size: 14px; font-weight: 800">KM SORGUSU</span><span style="padding: 4px 8px; border-radius: 999px; color: #218838; background: rgba(46,160,67,0.13); font-size: 9px; font-weight: 800">TAMAMLANDI</span></div>
+<div style="display: flex; align-items: flex-end; justify-content: space-between; padding: 10px 14px 6px"><span style="font-size: 25px; font-weight: 800; letter-spacing: -1px">82.473 km</span><span style="font-size: 10px; font-weight: 800; color: #218838">DÜŞÜŞ YOK</span></div>
+<div style="padding: 0 12px 12px; display: flex; flex-direction: column; gap: 4px">
+<sc-for list="{{kmRows}}" as="km" hint-placeholder-count="3"><div style="display: grid; grid-template-columns: 78px 1fr; padding: 6px 8px; border-radius: 9px; background: {{km.bg}}"><span style="font-size: 10px; color: {{t.sub}}">{{km.date}}</span><span style="font-size: 11px; font-weight: 800">{{km.value}}</span></div></sc-for>
+</div>
+</div>
+
+<div style="min-height: 214px; overflow: hidden; border-radius: 22px; {{t.card}}">
+<div style="display: flex; align-items: center; justify-content: space-between; height: 42px; padding: 0 14px; border-bottom: 1px solid {{t.track}}"><span style="font-size: 14px; font-weight: 800">BORÇ SORGUSU</span><span style="padding: 4px 8px; border-radius: 999px; color: #218838; background: rgba(46,160,67,0.13); font-size: 9px; font-weight: 800">KAYIT YOK</span></div>
+<div style="padding: 14px">
+<span style="display:block;font-size:10px;color:{{t.sub}}">VERGİ BORCU (MTV)</span><span style="display:block;margin-top:2px;font-size:28px;font-weight:800;letter-spacing:-1px">0,00 ₺</span>
+<div style="margin-top: 12px; padding: 10px 12px; border-radius: 12px; background: rgba(46,160,67,0.12); color: #218838; font-size: 12px; font-weight: 800">Borç kaydı bulunamadı</div>
+<div style="margin-top: 10px; font-size: 10px; color: {{t.sub}}">Son sorgu: 29.10.2026 13:49</div>
+</div>
+</div>
+
+</div>
+</sc-if>
+
+<sc-if value="{{tramerPage}}" hint-placeholder-val="{{ false }}">
+<div style="position: relative; margin: 14px -12px 0; overflow: hidden; border-radius: 22px; {{t.card}}">
+<div style="padding: 14px 16px 10px; display: flex; flex-direction: column">
+<sc-for list="{{tramerRows}}" as="item" hint-placeholder-count="13"><div style="display:grid;grid-template-columns:145px minmax(0,1fr);align-items:center;min-height:36px;padding:0 8px;border-radius:7px;background:{{item.bg}}"><span style="font-size:12px;color:{{t.sub}}">{{item.label}}</span><span style="justify-self:start;padding:{{item.valuePad}};border-radius:999px;background:{{item.valueBg}};color:{{item.valueColor}};font-size:14px;font-weight:900">{{item.value}}</span></div></sc-for>
+</div>
+<div style="margin:0 16px 14px;padding:8px 10px;display:flex;align-items:center;justify-content:space-between;border:1px solid {{t.track}};border-radius:14px;background:{{t.rowBase}}"><button aria-label="Tramer 360 orijinal sonucunu aç" onClick="{{openTramerOriginal}}" style="min-height:42px;padding:0 14px;border:0;border-radius:12px;font-family:inherit;font-size:11px;font-weight:800;color:#FFFFFF;background:{{accent}};box-shadow:0 8px 16px rgba(179,21,12,0.26)">↗ Orijinal sonucu aç</button><div style="display:flex;align-items:center;gap:9px"><div style="display:flex;flex-direction:column;align-items:flex-start;gap:4px"><span style="font-size:8px;font-weight:800;letter-spacing:.55px;color:{{t.sub}}">SORGU SONUCUNUN ORİJİNALİ</span><span style="display:flex;align-items:center;gap:5px;font-size:10px;font-weight:800"><b style="display:inline-flex;width:16px;height:16px;align-items:center;justify-content:center;border-radius:50%;background:#172033;color:#fff;font-size:9px">1</b>TRAMER 360</span></div><svg aria-label="Tramer 360 QR kodu" width="66" height="66" viewBox="0 0 21 21" style="padding:4px;background:#fff;border:1px solid rgba(14,17,22,.12);border-radius:7px"><rect width="21" height="21" fill="#fff"/><path fill="#0E1116" d="M1 1h7v7H1zm2 2v3h3V3zm10-2h7v7h-7zm2 2v3h3V3zM1 13h7v7H1zm2 2v3h3v-3zM9 1h2v2H9zm0 4h3v2H9zm1 3h2v2h-2zm3 1h2v2h-2zm3 1h4v2h-4zM9 12h2v3H9zm3 1h2v2h-2zm3 1h2v2h-2zm3-1h2v3h-2zM9 17h3v3H9zm4-1h2v4h-2zm3 2h4v2h-4z"/></svg></div></div>
+</div>
+</sc-if>
+
+<sc-if value="{{kmPage}}" hint-placeholder-val="{{ false }}">
+<div style="position: relative; margin: 14px -12px 0; overflow: hidden; border-radius: 22px; {{t.card}}">
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 14px 16px 8px">
+<div style="padding: 8px 10px; border-radius: 11px; background: {{t.glow}}"><span style="display:block;font-size:11px;color:{{t.sub}}">ARAÇ</span><strong style="font-size:13px">RENAULT CLIO GRAND TOUR EXT EDİ 1.2</strong></div>
+<div style="padding: 8px 10px; border-radius: 11px; background: {{t.glow}}"><span style="display:block;font-size:11px;color:{{t.sub}}">MODEL / KM DURUMU</span><strong style="font-size:14px">2012 · Düşüş yok</strong></div>
+</div>
+<div style="margin: 0 16px; border: 1px solid {{t.track}}; border-radius: 14px; overflow: hidden">
+<div style="display:grid;grid-template-columns:130px 130px 1fr;padding:8px 10px;background:{{t.glow}};font-size:11px;font-weight:800;color:{{t.sub}}"><span>TARİH</span><span>KİLOMETRE</span><span>PLAKA</span></div>
+<sc-for list="{{kmFullRows}}" as="km" hint-placeholder-count="7"><div style="display:grid;grid-template-columns:130px 130px 1fr;align-items:center;min-height:36px;padding:0 10px;border-top:1px solid {{t.track}};font-size:13px;background:{{km.bg}}"><span>{{km.date}}</span><strong>{{km.value}}</strong><span>{{km.plate}}</span></div></sc-for>
+</div>
+<div style="margin:12px 16px 14px;padding:8px 10px;display:flex;align-items:center;justify-content:space-between;border:1px solid {{t.track}};border-radius:14px;background:{{t.rowBase}}"><button aria-label="KM sorgusu orijinal sonucunu aç" onClick="{{openKmOriginal}}" style="min-height:42px;padding:0 14px;border:0;border-radius:12px;font-family:inherit;font-size:11px;font-weight:800;color:#FFFFFF;background:{{accent}};box-shadow:0 8px 16px rgba(179,21,12,0.26)">↗ Orijinal sonucu aç</button><div style="display:flex;align-items:center;gap:9px"><div style="display:flex;flex-direction:column;align-items:flex-start;gap:4px"><span style="font-size:8px;font-weight:800;letter-spacing:.55px;color:{{t.sub}}">SORGU SONUCUNUN ORİJİNALİ</span><span style="display:flex;align-items:center;gap:5px;font-size:10px;font-weight:800"><b style="display:inline-flex;width:16px;height:16px;align-items:center;justify-content:center;border-radius:50%;background:#172033;color:#fff;font-size:9px">2</b>KM SORGU</span></div><svg aria-label="KM sorgusu QR kodu" width="66" height="66" viewBox="0 0 21 21" style="padding:4px;background:#fff;border:1px solid rgba(14,17,22,.12);border-radius:7px"><rect width="21" height="21" fill="#fff"/><path fill="#0E1116" d="M1 1h7v7H1zm2 2v3h3V3zm10-2h7v7h-7zm2 2v3h3V3zM1 13h7v7H1zm2 2v3h3v-3zM9 1h2v4H9zm3 2h2v2h-2zm-3 4h4v2H9zm5 1h2v3h-2zm3 1h3v2h-3zM9 11h2v2H9zm3 1h3v2h-3zm4 1h4v2h-4zM9 15h2v5H9zm3 1h2v2h-2zm3 1h2v3h-2zm3-1h2v4h-2z"/></svg></div></div>
+</div>
+</sc-if>
+
+<sc-if value="{{debtPage}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 12px; margin: 14px -12px 0">
+<div style="position:relative;overflow:hidden;border-radius:22px;{{t.card}}"><div style="display:grid;grid-template-columns:150px 1fr;align-items:center;padding:18px 16px"><span style="font-size:12px;color:{{t.sub}}">Vergi borcu (MTV)</span><strong style="font-size:26px">0,00 ₺</strong><span style="margin-top:8px;font-size:12px;color:{{t.sub}}">Borç kaydı bulunamadı.</span></div></div>
+<div style="overflow: hidden; border-radius: 22px; {{t.card}}"><div style="height: 48px; padding: 0 16px; display:flex;align-items:center;border-bottom:1px solid {{t.track}}"><span style="font-size:17px;font-weight:800">Araç Dosya Ekspertiz Raporu</span></div><div style="padding: 8px 16px 14px"><sc-for list="{{debtRows}}" as="item" hint-placeholder-count="4"><div style="display:grid;grid-template-columns:170px 1fr;align-items:center;min-height:42px;padding:0 8px;border-radius:8px;background:{{item.bg}}"><span style="font-size:12px;color:{{t.sub}}">{{item.label}}</span><strong style="font-size:14px">{{item.value}}</strong></div></sc-for></div></div>
+</div>
+</sc-if>
+
+<sc-if value="{{bodyPage}}" hint-placeholder-val="{{ false }}">
+<div style="margin:6px -12px 0;position:relative;height:680px;overflow:hidden">
+<div style="position:absolute;left:0;top:4px;font-size:10px;font-weight:800;letter-spacing:.3px;color:{{t.sub}}">ÜSTTEN GÖRÜNÜŞ · PARÇA DURUMLARI</div>
+<img src="./assets/inspection/body-top-marked-transparent.png" alt="Boyalı, işlemli, ön tampon ve arka tampon durumlarını gösteren şeffaf araç üst görünüşü" style="position:absolute;left:50%;top:47%;width:500px;height:900px;object-fit:contain;transform:translate(-50%,-50%) rotate(90deg)">
+<div style="position:absolute;left:8px;top:62px;z-index:4;display:flex;align-items:flex-end"><span style="min-width:78px;display:flex;flex-direction:column;align-items:center;gap:6px"><b style="font-size:9px;letter-spacing:.6px;color:{{t.text}};background:none;border:0;box-shadow:none">KAPUT</b><span style="min-width:78px;box-sizing:border-box;padding:6px 10px;border-radius:999px;background:#D92727;color:#fff;font-size:9px;font-weight:900;text-align:center">BOYALI</span></span><span style="width:96px;margin-bottom:11px;border-top:2px solid #D92727"></span><span style="width:7px;height:7px;margin-bottom:8px;border-radius:50%;background:#D92727;box-shadow:0 0 0 3px #fff"></span></div>
+<div style="position:absolute;right:8px;bottom:100px;z-index:4;display:flex;align-items:flex-end"><span style="width:7px;height:7px;margin-bottom:8px;border-radius:50%;background:#7B34C8;box-shadow:0 0 0 3px #fff"></span><span style="width:88px;margin-bottom:11px;border-top:2px solid #7B34C8"></span><span style="min-width:92px;display:flex;flex-direction:column;align-items:center;gap:6px"><b style="font-size:9px;letter-spacing:.3px;color:{{t.text}};background:none;border:0;box-shadow:none">BAGAJ KAPAĞI</b><span style="min-width:92px;box-sizing:border-box;padding:6px 10px;border-radius:999px;background:#7B34C8;color:#fff;font-size:9px;font-weight:900;text-align:center">İŞLEMLİ</span></span></div>
+<div style="position:absolute;right:8px;top:26px;z-index:4;display:flex;align-items:flex-end"><span style="width:6px;height:6px;margin-bottom:7px;border-radius:50%;background:#465264"></span><span style="width:74px;margin-bottom:10px;border-top:1px solid #465264"></span><span style="min-width:70px;display:flex;flex-direction:column;align-items:center;gap:6px"><b style="font-size:9px;color:{{t.text}};background:none;border:0;box-shadow:none">ÖN TAMPON</b><span style="min-width:70px;box-sizing:border-box;padding:5px 9px;border-radius:999px;background:#465264;color:#fff;font-size:8px;font-weight:900;text-align:center">PLASTİK</span></span></div>
+<div style="position:absolute;left:8px;bottom:65px;z-index:4;display:flex;align-items:flex-end"><span style="min-width:76px;display:flex;flex-direction:column;align-items:center;gap:6px"><b style="font-size:9px;color:{{t.text}};background:none;border:0;box-shadow:none">ARKA TAMPON</b><span style="min-width:76px;box-sizing:border-box;padding:5px 9px;border-radius:999px;background:#465264;color:#fff;font-size:8px;font-weight:900">PLASTİK</span></span><span style="width:74px;margin-bottom:10px;border-top:1px solid #465264"></span><span style="width:6px;height:6px;margin-bottom:7px;border-radius:50%;background:#465264"></span></div>
+<div style="position:absolute;left:8px;top:300px;z-index:4;display:flex;align-items:flex-end"><span style="min-width:86px;display:flex;flex-direction:column;align-items:center;gap:6px"><b style="font-size:9px;color:{{t.text}};background:none;border:0;box-shadow:none">TAVAN</b><span style="min-width:86px;box-sizing:border-box;padding:5px 9px;border-radius:999px;background:#C28400;color:#fff;font-size:8px;font-weight:900;text-align:center">EZİK / ÇİZİK</span></span><span style="width:102px;margin-bottom:10px;border-top:2px solid #C28400"></span><span style="width:7px;height:7px;margin-bottom:7px;border-radius:50%;background:#C28400;box-shadow:0 0 0 3px #fff"></span></div>
+</div>
+</sc-if>
+
+<sc-if value="{{showCriticalFinding}}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;left:32px;right:32px;bottom:14px;z-index:5;box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 14px;border-radius:18px;background:rgba(194,132,0,.12);border:1px solid rgba(194,132,0,.32);box-shadow:0 8px 20px rgba(0,0,0,.08)"><div style="display:flex;align-items:center;gap:10px"><span style="width:9px;height:9px;flex:none;border-radius:50%;background:#C28400;box-shadow:0 0 0 5px rgba(194,132,0,.12)"></span><strong style="font-size:13px;line-height:1.3;color:{{t.text}}">46 maddeden 1 takip gerektiren bulgu var</strong></div><span style="flex:none;padding:6px 10px;border-radius:999px;background:#C28400;color:#fff;font-size:9px;font-weight:900;letter-spacing:.6px">TAKİP EDİLMELİ</span></div>
+</sc-if>
+
+<sc-if value="{{bodyDetailsPage}}" hint-placeholder-val="{{ false }}">
+<style>.body-detail-views figcaption{display:none!important}</style>
+<div class="body-detail-views" style="margin:8px -12px 0;display:flex;flex-direction:column;gap:8px">
+<figure style="margin:0;position:relative;height:184px;border-radius:15px;overflow:hidden;background:#fff;{{t.card}}"><figcaption style="position:absolute;left:10px;top:8px;z-index:3;font-size:9px;font-weight:800;color:#303846">SOLDAN GÖRÜNÜŞ · SOL KAPORTA AKSAMLARI</figcaption><img src="./assets/inspection/body-left.webp" alt="Araç soldan görünüş" style="display:block;width:100%;height:100%;box-sizing:border-box;padding:25px 28px 12px;object-fit:contain"></figure>
+<figure style="margin:0;position:relative;height:184px;border-radius:15px;overflow:hidden;background:#fff;{{t.card}}"><figcaption style="position:absolute;left:10px;top:8px;z-index:3;font-size:9px;font-weight:800;color:#303846">SAĞDAN GÖRÜNÜŞ · SAĞ KAPORTA AKSAMLARI</figcaption><img src="./assets/inspection/body-right.webp" alt="Araç sağdan görünüş" style="display:block;width:100%;height:100%;box-sizing:border-box;padding:25px 28px 12px;object-fit:contain"></figure>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><figure style="margin:0;position:relative;height:248px;border-radius:15px;overflow:hidden;background:#fff;{{t.card}}"><figcaption style="position:absolute;left:9px;top:7px;z-index:3;font-size:9px;font-weight:800;color:#303846">ÖNDEN GÖRÜNÜŞ · KAPUT / ÖN TAMPON</figcaption><img src="./assets/inspection/body-front.webp" alt="Araç önden görünüş" style="display:block;width:100%;height:100%;box-sizing:border-box;padding:22px 10px 5px;object-fit:contain;object-position:center bottom"><div style="position:absolute;left:50%;top:44px;z-index:4;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:3px"><b style="font-size:8px;color:#303846">KAPUT</b><span style="padding:4px 8px;border-radius:999px;background:#D92727;color:#fff;font-size:8px;font-weight:900">BOYALI</span><span style="height:34px;border-left:2px solid #D92727"></span><span style="width:7px;height:7px;border-radius:50%;background:#D92727;box-shadow:0 0 0 3px #fff"></span></div><div style="position:absolute;left:8px;top:158px;z-index:4;display:flex;align-items:center"><span style="display:flex;flex-direction:column;align-items:center;gap:3px"><b style="font-size:8px;color:#303846">ÖN TAMPON</b><span style="padding:4px 7px;border-radius:999px;background:#465264;color:#fff;font-size:8px;font-weight:900">PLASTİK</span></span><span style="width:34px;border-top:2px solid #465264"></span><span style="width:7px;height:7px;border-radius:50%;background:#465264;box-shadow:0 0 0 3px #fff"></span></div></figure><figure style="margin:0;position:relative;height:248px;border-radius:15px;overflow:hidden;background:#fff;{{t.card}}"><figcaption style="position:absolute;left:9px;top:7px;z-index:3;font-size:9px;font-weight:800;color:#303846">ARKADAN GÖRÜNÜŞ · BAGAJ / ARKA TAMPON</figcaption><img src="./assets/inspection/body-rear.webp" alt="Araç arkadan görünüş" style="display:block;width:100%;height:100%;box-sizing:border-box;padding:22px 10px 5px;object-fit:contain;object-position:center bottom;border-radius:15px"><div style="position:absolute;right:5px;top:52px;z-index:4;display:flex;align-items:center"><span style="width:7px;height:7px;border-radius:50%;background:#7B34C8;box-shadow:0 0 0 3px #fff"></span><span style="width:32px;border-top:2px solid #7B34C8"></span><span style="display:flex;flex-direction:column;align-items:center;gap:3px"><b style="font-size:8px;color:#303846">BAGAJ</b><span style="padding:4px 7px;border-radius:999px;background:#7B34C8;color:#fff;font-size:8px;font-weight:900">İŞLEMLİ</span></span></div><div style="position:absolute;left:7px;top:158px;z-index:4;display:flex;align-items:center"><span style="display:flex;flex-direction:column;align-items:center;gap:3px"><b style="font-size:8px;color:#303846">ARKA TAMPON</b><span style="padding:4px 7px;border-radius:999px;background:#465264;color:#fff;font-size:8px;font-weight:900">PLASTİK</span></span><span style="width:30px;border-top:2px solid #465264"></span><span style="width:7px;height:7px;border-radius:50%;background:#465264;box-shadow:0 0 0 3px #fff"></span></div></figure></div>
+</div>
+</sc-if>
+
+<sc-if value="{{showBodyDetailsFindings}}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:32px;right:32px;bottom:14px;z-index:5;box-sizing:border-box;padding:10px 14px;border-radius:18px;background:{{t.rowAlt}};border:1px solid rgba(216,32,15,.24);box-shadow:0 8px 20px rgba(0,0,0,.08)"><div style="margin-bottom:4px;font-size:9px;font-weight:900;letter-spacing:.9px;color:{{t.sub}}">KUSURLU PARÇALAR</div><sc-for list="{{bodyDefects}}" as="defect" hint-placeholder-count="2"><div style="font-size:11px;line-height:1.45"><b>{{defect.part}}</b> — {{defect.detail}}</div></sc-for></div></sc-if>
+
+<sc-if value="{{chassisPage}}" hint-placeholder-val="{{ false }}">
+<div style="margin:4px -12px 0">
+<figure style="margin:0;position:relative;height:720px;overflow:visible">
+<img src="./assets/inspection/chassis-top-transparent.png" alt="Referans noktalarıyla ana şasi üst ve taban görünümü" style="position:absolute;left:50%;top:350px;width:720px;height:360px;object-fit:contain;transform:translate(-50%,-50%) rotate(90deg);filter:drop-shadow(0 16px 22px rgba(0,0,0,.18))">
+<div style="position:absolute;left:8px;top:104px;display:flex;align-items:center;color:#218838"><span style="width:108px;overflow:hidden;border-radius:7px;box-shadow:0 5px 12px rgba(0,0,0,.12)"><b style="display:block;padding:4px 6px;background:#2EA043;color:#fff;font-size:8px;text-align:center">ORİJİNAL</b><span style="display:block;padding:4px 6px;background:{{t.rowBase}};color:{{t.text}};font-size:8px;font-weight:800;text-align:center">Sol Ön Şasi</span></span><span style="width:59px;border-top:1.5px solid #2EA043;transform:rotate(-22deg);transform-origin:right center"></span><span style="width:8px;height:8px;border:2px solid {{t.bg}};border-radius:50%;background:#2EA043;box-shadow:0 0 0 1px #2EA043"></span></div>
+<div style="position:absolute;right:8px;top:104px;display:flex;flex-direction:row-reverse;align-items:center;color:#218838"><span style="width:108px;overflow:hidden;border-radius:7px;box-shadow:0 5px 12px rgba(0,0,0,.12)"><b style="display:block;padding:4px 6px;background:#2EA043;color:#fff;font-size:8px;text-align:center">ORİJİNAL</b><span style="display:block;padding:4px 6px;background:{{t.rowBase}};color:{{t.text}};font-size:8px;font-weight:800;text-align:center">Sağ Ön Şasi</span></span><span style="width:59px;border-top:1.5px solid #2EA043;transform:rotate(22deg);transform-origin:left center"></span><span style="width:8px;height:8px;border:2px solid {{t.bg}};border-radius:50%;background:#2EA043;box-shadow:0 0 0 1px #2EA043"></span></div>
+<div style="position:absolute;left:8px;top:486px;display:flex;align-items:center;color:#218838"><span style="width:108px;overflow:hidden;border-radius:7px;box-shadow:0 5px 12px rgba(0,0,0,.12)"><b style="display:block;padding:4px 6px;background:#2EA043;color:#fff;font-size:8px;text-align:center">ORİJİNAL</b><span style="display:block;padding:4px 6px;background:{{t.rowBase}};color:{{t.text}};font-size:8px;font-weight:800;text-align:center">Arka Sol Şasi</span></span><span style="width:59px;border-top:1.5px solid #2EA043;transform:rotate(22deg);transform-origin:right center"></span><span style="width:8px;height:8px;border:2px solid {{t.bg}};border-radius:50%;background:#2EA043;box-shadow:0 0 0 1px #2EA043"></span></div>
+<div style="position:absolute;right:8px;top:486px;display:flex;flex-direction:row-reverse;align-items:center;color:#218838"><span style="width:108px;overflow:hidden;border-radius:7px;box-shadow:0 5px 12px rgba(0,0,0,.12)"><b style="display:block;padding:4px 6px;background:#2EA043;color:#fff;font-size:8px;text-align:center">ORİJİNAL</b><span style="display:block;padding:4px 6px;background:{{t.rowBase}};color:{{t.text}};font-size:8px;font-weight:800;text-align:center">Arka Sağ Şasi</span></span><span style="width:59px;border-top:1.5px solid #2EA043;transform:rotate(-22deg);transform-origin:left center"></span><span style="width:8px;height:8px;border:2px solid {{t.bg}};border-radius:50%;background:#2EA043;box-shadow:0 0 0 1px #2EA043"></span></div>
+<sc-if value="{{chassisHasFindings}}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:10px;right:10px;bottom:8px;padding:11px 13px;border:1px solid rgba(217,39,39,.30);border-radius:14px;background:{{t.rowAlt}};color:{{t.text}};box-shadow:0 8px 20px rgba(0,0,0,.08)"><div style="padding-bottom:6px;border-bottom:1px solid rgba(217,39,39,.20);font-size:9px;font-weight:900;color:#D92727">ŞASİ BULGULARI</div><sc-for list="{{chassisFindings}}" as="finding" hint-placeholder-count="2"><div style="padding-top:6px;font-size:10px;line-height:1.35"><b>{{finding.part}}</b> — {{finding.detail}}</div></sc-for></div></sc-if>
+</figure>
+</div>
+</sc-if>
+
+<sc-if value="{{legacyChassisDetailsPage}}" hint-placeholder-val="{{ false }}">
+<style>.chassis-detail-grid figure{border:0!important;background:transparent!important;box-shadow:none!important;overflow:visible!important}.chassis-detail-grid figure>img{box-sizing:border-box;background:#fff;border:1px solid rgba(20,28,40,.14);border-radius:14px;box-shadow:0 8px 18px rgba(0,0,0,.08)}.chassis-detail-grid table{border:1px solid rgba(20,28,40,.14);border-collapse:separate!important;border-spacing:0;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 6px 14px rgba(0,0,0,.07)}.chassis-detail-grid table td:first-child{display:none}.chassis-detail-grid table td:nth-child(2){padding-left:6px}.chassis-detail-grid figure:nth-child(1){grid-area:front;height:210px!important}.chassis-detail-grid figure:nth-child(2){grid-area:rear;height:180px!important}.chassis-detail-grid figure:nth-child(3){grid-area:left;height:225px!important}.chassis-detail-grid figure:nth-child(4){grid-area:right;height:225px!important}.chassis-detail-grid figure:nth-child(1)>img{position:absolute;left:50%;top:0;width:58%!important;height:112px!important;margin:0!important;padding:21px 4px 3px;object-fit:contain;transform:translateX(-50%)}.chassis-detail-grid figure:nth-child(2)>img{position:absolute;left:50%;top:0;width:54%!important;height:105px!important;margin:0!important;padding:21px 4px 3px;object-fit:contain;transform:translateX(-50%)}.chassis-detail-grid figure:nth-child(1)>figcaption,.chassis-detail-grid figure:nth-child(2)>figcaption{left:50%!important;transform:translateX(-50%)}.chassis-detail-grid figure:nth-child(1)>table,.chassis-detail-grid figure:nth-child(2)>table{left:10%!important;right:10%!important;top:auto!important;bottom:3px!important;width:80%!important}.chassis-detail-grid img[alt="Sol yan yapısal görünüm"],.chassis-detail-grid img[alt="Sağ yan yapısal görünüm"]{height:120px!important}</style>
+<div class="chassis-detail-grid" style="margin:8px -12px 0;display:grid;grid-template-columns:1fr 1fr;grid-template-areas:'left right' 'front front' 'rear rear';gap:10px">
+<figure style="margin:0;position:relative;height:278px;border:1px solid {{t.track}};border-radius:16px;overflow:hidden;background:#fff;box-shadow:0 8px 18px rgba(0,0,0,.08)"><figcaption style="position:absolute;left:9px;top:8px;z-index:2;padding:4px 7px;border-radius:6px;background:rgba(15,20,28,.76);color:#fff;font-size:8px;font-weight:900">ÖN GÖRÜNÜŞ</figcaption><img src="./assets/inspection/chassis-front.webp" alt="Ön yapısal görünüm" style="display:block;width:100%;height:125px;margin-top:23px;object-fit:contain"><table style="position:absolute;left:7px;right:7px;bottom:7px;width:calc(100% - 14px);border-collapse:collapse;color:#18202C;font-size:6.5px;font-weight:800"><tbody><tr style="background:#F5F7FA"><td style="width:14px;padding:3px">2</td><td>Sağ Ön Şasi Ucu</td><td style="text-align:right"><b style="padding:1px 4px;border-radius:999px;background:#E6F6EA;color:#218838;font-size:5.5px">ORİJİNAL</b></td></tr><tr><td style="padding:3px">3</td><td>Sol Ön Şasi Ucu</td><td style="text-align:right"><b style="padding:1px 4px;border-radius:999px;background:#E6F6EA;color:#218838;font-size:5.5px">ORİJİNAL</b></td></tr><tr style="background:#F5F7FA"><td style="padding:3px">4</td><td>Sağ Ön Şasi</td><td style="text-align:right"><b style="padding:1px 4px;border-radius:999px;background:#E6F6EA;color:#218838;font-size:5.5px">ORİJİNAL</b></td></tr><tr><td style="padding:3px">5</td><td>Sol Ön Şasi</td><td style="text-align:right"><b style="padding:1px 4px;border-radius:999px;background:#E6F6EA;color:#218838;font-size:5.5px">ORİJİNAL</b></td></tr><tr style="background:#F5F7FA"><td style="padding:3px">6</td><td>Sağ Ön Podye</td><td style="text-align:right"><b style="padding:1px 4px;border-radius:999px;background:#E6F6EA;color:#218838;font-size:5.5px">ORİJİNAL</b></td></tr><tr><td style="padding:3px">7</td><td>Sol Ön Podye</td><td style="text-align:right"><b style="padding:1px 4px;border-radius:999px;background:#E6F6EA;color:#218838;font-size:5.5px">ORİJİNAL</b></td></tr></tbody></table></figure>
+<figure style="margin:0;position:relative;height:278px;border:1px solid {{t.track}};border-radius:16px;overflow:hidden;background:#fff;box-shadow:0 8px 18px rgba(0,0,0,.08)"><figcaption style="position:absolute;left:9px;top:8px;z-index:2;padding:4px 7px;border-radius:6px;background:rgba(15,20,28,.76);color:#fff;font-size:8px;font-weight:900">ARKA GÖRÜNÜŞ</figcaption><img src="./assets/inspection/chassis-rear.webp" alt="Arka yapısal görünüm" style="display:block;width:100%;height:145px;margin-top:25px;object-fit:contain"><table style="position:absolute;left:7px;right:7px;bottom:7px;width:calc(100% - 14px);border-collapse:collapse;color:#18202C;font-size:6.8px;font-weight:800"><tbody><tr style="background:#F5F7FA"><td style="width:14px;padding:4px 3px">19</td><td>Arka Sağ Şasi</td><td style="text-align:right"><b style="padding:1px 4px;border-radius:999px;background:#E6F6EA;color:#218838;font-size:5.5px">ORİJİNAL</b></td></tr><tr><td style="padding:4px 3px">20</td><td>Arka Sol Şasi</td><td style="text-align:right"><b style="padding:1px 4px;border-radius:999px;background:#E6F6EA;color:#218838;font-size:5.5px">ORİJİNAL</b></td></tr><tr style="background:#F5F7FA"><td style="padding:4px 3px">21</td><td>Arka Havuz İçi</td><td style="text-align:right"><b style="padding:1px 4px;border-radius:999px;background:#E6F6EA;color:#218838;font-size:5.5px">ORİJİNAL</b></td></tr><tr><td style="padding:4px 3px">22</td><td>Arka İç Panel</td><td style="text-align:right"><b style="padding:1px 4px;border-radius:999px;background:#E6F6EA;color:#218838;font-size:5.5px">ORİJİNAL</b></td></tr></tbody></table></figure>
+<figure style="margin:0;position:relative;height:240px;border:1px solid {{t.track}};border-radius:16px;overflow:hidden;background:#fff;box-shadow:0 8px 18px rgba(0,0,0,.08)"><figcaption style="position:absolute;left:9px;top:8px;z-index:2;padding:4px 7px;border-radius:6px;background:rgba(15,20,28,.76);color:#fff;font-size:8px;font-weight:900">SOL YAN</figcaption><img src="./assets/inspection/chassis-left.webp" alt="Sol yan yapısal görünüm" style="display:block;width:100%;height:120px;margin-top:24px;object-fit:contain"><table style="position:absolute;left:7px;right:7px;bottom:7px;width:calc(100% - 14px);border-collapse:collapse;color:#18202C;font-size:6.4px;font-weight:800"><tbody><tr style="background:#F5F7FA"><td style="width:14px;padding:3px">9</td><td>Sol Ön Amortisör Kulesi</td><td style="text-align:right"><b style="padding:1px 4px;border-radius:999px;background:#E6F6EA;color:#218838;font-size:5.3px">ORİJİNAL</b></td></tr><tr><td style="padding:3px">10</td><td>Sol Frangart / Üst Direk</td><td style="text-align:right"><b style="padding:1px 4px;border-radius:999px;background:#E6F6EA;color:#218838;font-size:5.3px">ORİJİNAL</b></td></tr><tr style="background:#F5F7FA"><td style="padding:3px">12</td><td>Sol Ön İç Direk</td><td style="text-align:right"><b style="padding:1px 4px;border-radius:999px;background:#E6F6EA;color:#218838;font-size:5.3px">ORİJİNAL</b></td></tr><tr><td style="padding:3px">14</td><td>Sol Orta İç Direk</td><td style="text-align:right"><b style="padding:1px 4px;border-radius:999px;background:#E6F6EA;color:#218838;font-size:5.3px">ORİJİNAL</b></td></tr><tr style="background:#F5F7FA"><td style="padding:3px">17</td><td>Sol Marşpiyel</td><td style="text-align:right"><b style="padding:1px 4px;border-radius:999px;background:#E6F6EA;color:#218838;font-size:5.3px">ORİJİNAL</b></td></tr></tbody></table></figure>
+<figure style="margin:0;position:relative;height:240px;border:1px solid {{t.track}};border-radius:16px;overflow:hidden;background:#fff;box-shadow:0 8px 18px rgba(0,0,0,.08)"><figcaption style="position:absolute;left:9px;top:8px;z-index:2;padding:4px 7px;border-radius:6px;background:rgba(15,20,28,.76);color:#fff;font-size:8px;font-weight:900">SAĞ YAN</figcaption><img src="./assets/inspection/chassis-right.webp" alt="Sağ yan yapısal görünüm" style="display:block;width:100%;height:120px;margin-top:24px;object-fit:contain"><table style="position:absolute;left:7px;right:7px;bottom:7px;width:calc(100% - 14px);border-collapse:collapse;color:#18202C;font-size:6.4px;font-weight:800"><tbody><tr style="background:#F5F7FA"><td style="width:14px;padding:3px">8</td><td>Sağ Ön Amortisör Kulesi</td><td style="text-align:right"><b style="padding:1px 4px;border-radius:999px;background:#E6F6EA;color:#218838;font-size:5.3px">ORİJİNAL</b></td></tr><tr><td style="padding:3px">11</td><td>Sağ Frangart / Üst Direk</td><td style="text-align:right"><b style="padding:1px 4px;border-radius:999px;background:#E6F6EA;color:#218838;font-size:5.3px">ORİJİNAL</b></td></tr><tr style="background:#F5F7FA"><td style="padding:3px">13</td><td>Sağ Ön İç Direk</td><td style="text-align:right"><b style="padding:1px 4px;border-radius:999px;background:#E6F6EA;color:#218838;font-size:5.3px">ORİJİNAL</b></td></tr><tr><td style="padding:3px">15</td><td>Sağ Orta İç Direk</td><td style="text-align:right"><b style="padding:1px 4px;border-radius:999px;background:#E6F6EA;color:#218838;font-size:5.3px">ORİJİNAL</b></td></tr><tr style="background:#F5F7FA"><td style="padding:3px">16</td><td>Sağ Marşpiyel</td><td style="text-align:right"><b style="padding:1px 4px;border-radius:999px;background:#E6F6EA;color:#218838;font-size:5.3px">ORİJİNAL</b></td></tr></tbody></table></figure>
+</div>
+<div style="position:absolute;left:32px;right:32px;bottom:14px;z-index:5;box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;padding:12px 15px;border-radius:16px;background:rgba(46,160,67,.10);border:1px solid rgba(46,160,67,.28);color:#218838;box-shadow:0 8px 20px rgba(0,0,0,.08);font-size:11px;font-weight:900"><span>● Orijinal 22</span><span>Yapısal noktalarda bulgu yok</span></div>
+</sc-if>
+
+<sc-if value="{{chassisDetailsPage}}" hint-placeholder-val="{{ false }}">
+<div style="margin:8px -12px 0;display:flex;flex-direction:column;gap:8px">
+<div style="min-height:58px;box-sizing:border-box;display:flex;align-items:center;gap:12px;padding:10px 13px;border-radius:17px;background:{{chassisSummaryBg}};border:1px solid {{chassisSummaryBorder}};box-shadow:0 8px 18px rgba(0,0,0,.08)"><span style="width:34px;height:34px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:50%;background:{{chassisSummaryColor}};color:#fff;font-size:22px;font-weight:900">✓</span><span><strong style="display:block;font-size:16px;line-height:1.1;color:{{chassisSummaryColor}}">{{chassisSummaryTitle}}</strong><span style="display:block;margin-top:3px;font-size:9px;font-weight:700;color:{{t.sub}}">{{chassisSummarySub}}</span></span></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><sc-for list="{{chassisViewCards}}" as="view" hint-placeholder-count="4"><button aria-label="{{view.title}} detaylarını göster" onClick="{{view.select}}" style="height:220px;padding:9px;display:flex;flex-direction:column;align-items:stretch;border:{{view.border}};border-radius:16px;background:#fff;color:#111827;font-family:inherit;box-shadow:{{view.shadow}}"><strong style="display:block;text-align:left;font-size:14px;line-height:1.1">{{view.title}}</strong><img src="{{view.image}}" alt="{{view.title}} şasi görünümü" style="display:block;width:100%;height:125px;margin-top:2px;object-fit:contain"><span style="height:32px;display:flex;align-items:center;gap:8px;padding:0 9px;border-radius:11px;background:{{view.statusBg}};color:{{view.statusColor}};font-size:10px;font-weight:900"><b style="width:18px;height:18px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:{{view.statusColor}};color:#fff;font-size:12px">{{view.statusIcon}}</b>{{view.statusLabel}}</span></button></sc-for></div>
+<button aria-label="Alt taban detaylarını göster" onClick="{{chassisTop.select}}" style="height:38px;padding:0 11px;display:flex;align-items:center;justify-content:space-between;border:{{chassisTop.border}};border-radius:11px;background:{{t.rowBase}};color:{{t.text}};font-family:inherit;box-shadow:{{chassisTop.shadow}}"><span><strong style="font-size:10px">Alt taban</strong><small style="margin-left:8px;color:{{t.sub}}">1 nokta</small></span><b style="font-size:9px;color:{{chassisTop.statusColor}}">● {{chassisTop.statusLabel}} ›</b></button>
+<div style="height:185px;box-sizing:border-box;padding:11px 13px;border-radius:16px;{{t.card}}"><div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding-bottom:7px;border-bottom:1px solid {{t.track}}"><div><strong style="display:block;font-size:15px">{{selectedChassis.title}} detayları</strong><span style="font-size:9px;color:{{t.sub}}">{{selectedChassis.count}} nokta</span></div><button aria-label="{{selectedChassis.title}} görselini büyüt" onClick="{{openChassisZoom}}" style="width:34px;height:34px;border:1px solid {{t.track}};border-radius:50%;background:{{t.rowBase}};color:{{t.text}};font-size:17px">⌕</button></div><div style="max-height:132px;overflow-y:auto;overscroll-behavior:contain"><sc-for list="{{selectedChassis.points}}" as="point" hint-placeholder-count="5"><div style="min-height:29px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid {{t.track}};font-size:10px"><span style="font-weight:700">{{point.name}}</span><b style="flex:none;color:{{point.color}}">● {{point.label}}</b></div></sc-for></div></div>
+</div>
+<sc-if value="{{showChassisZoom}}" hint-placeholder-val="{{ false }}"><div role="dialog" aria-label="Şasi görünümünü büyüt" style="position:absolute;inset:0;z-index:75;display:flex;align-items:center;justify-content:center;padding:24px;box-sizing:border-box;background:rgba(5,7,10,.88);backdrop-filter:blur(10px)"><div style="width:100%;overflow:hidden;border-radius:24px;{{t.card}}"><div style="height:56px;padding:0 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid {{t.track}}"><div><strong style="display:block;font-size:16px">{{selectedChassis.title}}</strong><span style="font-size:9px;color:{{t.sub}}">Renkler parça bölgelerini gösterir. Kontrol sonuçları parça listesindedir.</span></div><button aria-label="Şasi büyütme penceresini kapat" onClick="{{closeChassisZoom}}" style="width:38px;height:38px;border:0;border-radius:50%;font-size:21px;color:{{t.text}};{{t.card}}">×</button></div><div style="height:620px;padding:14px;box-sizing:border-box;background:#fff"><img src="{{selectedChassis.image}}" alt="Büyütülmüş {{selectedChassis.title}} şasi görünümü" style="display:block;width:100%;height:100%;object-fit:contain"></div></div></div></sc-if>
+</sc-if>
+
+<sc-if value="{{motorPage}}" hint-placeholder-val="{{ false }}">
+<style>@keyframes motorAccordionReveal{from{opacity:0;transform:translateY(-9px)}to{opacity:1;transform:translateY(0)}}</style>
+<div style="margin:12px -12px 0;max-height:705px;padding-right:3px;display:flex;flex-direction:column;gap:7px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin">
+<figure style="flex:none;margin:0 0 2px;aspect-ratio:3/1;overflow:hidden;border:1px solid {{t.track}};border-radius:16px;background:{{t.rowBase}};box-shadow:0 10px 24px rgba(0,0,0,.12)"><img src="./assets/inspection/section-banners/06-motor.png?v=20261031-2" alt="Motor bölümü ekspertiz görseli" width="2172" height="724" style="display:block;width:100%;height:100%;object-fit:cover;object-position:center"></figure>
+<sc-for list="{{motorSections}}" as="section" hint-placeholder-count="6">
+<div style="flex:none;overflow:hidden;border-radius:16px;{{t.card}}">
+<button aria-label="{{section.title}} detaylarını aç veya kapat" aria-expanded="{{section.expanded}}" onClick="{{section.toggle}}" style="width:100%;min-height:48px;padding:5px 11px 5px 13px;display:flex;align-items:center;justify-content:space-between;gap:10px;border:0;border-left:4px solid {{section.accent}};background:transparent;color:{{t.text}};font-family:inherit;text-align:left;cursor:pointer"><strong style="max-width:350px;font-size:12px;line-height:1.18">{{section.title}}</strong><span style="flex:none;display:flex;align-items:center;gap:8px"><b style="font-size:11px;color:{{t.sub}}">{{section.score}}</b><i style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:{{t.rowAlt}};color:{{section.accent}};font-size:17px;font-style:normal;font-weight:900">{{section.chevron}}</i></span></button>
+<sc-if value="{{section.showCollapsedFindings}}" hint-placeholder-val="{{ false }}"><div style="padding:0 10px 8px;display:flex;flex-direction:column;gap:4px"><sc-for list="{{section.findings}}" as="finding" hint-placeholder-count="2"><div style="display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:34px;padding:3px 5px 3px 8px;border-radius:10px;background:{{t.rowAlt}}"><span style="flex:1;min-width:0;font-size:11px;line-height:1.25">{{finding.label}}</span><span style="flex:none;max-width:135px;padding:5px 8px;border-radius:999px;background:{{finding.bg}};color:{{finding.color}};font-size:9px;font-weight:900;text-align:center">{{finding.status}}</span><sc-if value="{{finding.hasPhoto}}" hint-placeholder-val="{{ false }}"><button aria-label="Bulgu fotoğrafını büyüt" onClick="{{finding.openPhoto}}" style="width:48px;height:38px;flex:none;padding:0;overflow:hidden;border:2px solid {{finding.color}};border-radius:9px;background:{{t.rowBase}};box-shadow:0 3px 8px rgba(0,0,0,.16)"><img src="{{finding.photo}}" alt="{{finding.label}} bulgu fotoğrafı" style="display:block;width:100%;height:100%;object-fit:cover"></button></sc-if></div></sc-for></div></sc-if>
+<sc-if value="{{section.showCollapsedClean}}" hint-placeholder-val="{{ true }}"><div style="margin:0 10px 8px;padding:7px 9px;border-radius:10px;background:rgba(46,160,67,.10);color:#218838;font-size:10px;font-weight:800">Kusurlu alan tespit edilmemiştir.</div></sc-if>
+<sc-if value="{{section.expanded}}" hint-placeholder-val="{{ false }}"><div style="padding:0 10px 9px;display:flex;flex-direction:column;gap:3px;animation:motorAccordionReveal .22s ease-out both"><sc-for list="{{section.details}}" as="detail" hint-placeholder-count="6"><div style="min-height:35px;padding:4px 6px 4px 9px;display:flex;align-items:center;justify-content:space-between;gap:9px;border-radius:9px;background:{{detail.rowBg}}"><span style="flex:1;min-width:0;font-size:10.5px;line-height:1.22;font-weight:700">{{detail.label}}</span><b style="flex:none;max-width:145px;padding:5px 8px;border-radius:999px;background:{{detail.bg}};color:{{detail.color}};font-size:8.5px;line-height:1.1;text-align:center">{{detail.status}}</b></div></sc-for></div></sc-if>
+</div>
+</sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{mechanicalPage}}" hint-placeholder-val="{{ false }}">
+<div style="margin:12px -12px 0;max-height:705px;padding-right:3px;display:flex;flex-direction:column;gap:7px;overflow-y:auto;scrollbar-width:thin">
+<figure style="flex:none;margin:0 0 2px;aspect-ratio:3/1;overflow:hidden;border:1px solid {{t.track}};border-radius:16px;background:{{t.rowBase}};box-shadow:0 10px 24px rgba(0,0,0,.12)"><img src="./assets/inspection/section-banners/07-mekanik.png?v=20261031-2" alt="Mekanik bölümü ekspertiz görseli" width="2172" height="724" style="display:block;width:100%;height:100%;object-fit:cover;object-position:center"></figure>
+<div style="flex:none;padding:9px 12px;border-radius:14px;background:rgba(46,160,67,.10);color:#218838;font-size:11px;font-weight:900">Tümü uygun (19/19)</div>
+<sc-for list="{{mechanicalSections}}" as="section" hint-placeholder-count="5"><div style="flex:none;overflow:hidden;border-radius:16px;{{t.card}}"><button aria-label="{{section.title}} detaylarını aç veya kapat" aria-expanded="{{section.expanded}}" onClick="{{section.toggle}}" style="width:100%;min-height:48px;padding:5px 11px 5px 13px;display:flex;align-items:center;justify-content:space-between;gap:10px;border:0;border-left:4px solid #35A853;background:transparent;color:{{t.text}};font-family:inherit;text-align:left"><strong style="font-size:13px">{{section.title}}</strong><span style="display:flex;align-items:center;gap:8px"><b style="font-size:11px;color:{{t.sub}}">{{section.score}}</b><i style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:{{t.rowAlt}};color:#218838;font-size:17px;font-style:normal">{{section.chevron}}</i></span></button><sc-if value="{{section.expanded}}" hint-placeholder-val="{{ false }}"><div style="padding:0 10px 9px;display:flex;flex-direction:column;gap:3px;animation:motorAccordionReveal .22s ease-out both"><sc-for list="{{section.details}}" as="detail" hint-placeholder-count="5"><div style="min-height:35px;padding:4px 7px 4px 9px;display:flex;align-items:center;justify-content:space-between;gap:8px;border-radius:9px;background:{{detail.rowBg}}"><span style="font-size:10.5px;font-weight:700">{{detail.label}}</span><b style="padding:5px 8px;border-radius:999px;background:{{detail.bg}};color:{{detail.color}};font-size:8.5px">{{detail.status}}</b></div></sc-for></div></sc-if></div></sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{showMechanicalSummary}}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:32px;right:32px;bottom:14px;z-index:5;box-sizing:border-box;display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:18px;background:rgba(46,160,67,.10);border:1px solid rgba(46,160,67,.28);box-shadow:0 8px 20px rgba(0,0,0,.08)"><span style="width:9px;height:9px;flex:none;border-radius:50%;background:#2EA043;box-shadow:0 0 0 5px rgba(46,160,67,.12)"></span><strong style="font-size:12px;line-height:1.3;color:#218838">19 kontrol noktasında kritik mekanik bulgu tespit edilmedi.</strong></div></sc-if>
+
+<sc-if value="{{resultPage}}" hint-placeholder-val="{{ false }}">
+<div style="margin:12px -12px 0;max-height:705px;padding-right:3px;display:flex;flex-direction:column;gap:7px;overflow-y:auto;scrollbar-width:thin">
+<figure style="flex:none;margin:0 0 2px;aspect-ratio:3/1;overflow:hidden;border:1px solid {{t.track}};border-radius:16px;background:{{t.rowBase}};box-shadow:0 10px 24px rgba(0,0,0,.12)"><img src="{{resultBanner}}" alt="{{pg.title}} bölümü ekspertiz görseli" width="2172" height="724" style="display:block;width:100%;height:100%;object-fit:cover;object-position:center"></figure>
+<sc-if value="{{resultAllClean}}" hint-placeholder-val="{{ true }}"><div style="flex:none;padding:9px 12px;border-radius:14px;background:rgba(46,160,67,.10);color:#218838;font-size:11px;font-weight:900">Tümü uygun ({{resultConfigTotal}}/{{resultConfigTotal}})</div></sc-if>
+<sc-for list="{{resultSections}}" as="section" hint-placeholder-count="5"><div style="flex:none;overflow:hidden;border-radius:16px;{{t.card}}"><button aria-label="{{section.title}} detaylarını aç veya kapat" aria-expanded="{{section.expanded}}" onClick="{{section.toggle}}" style="width:100%;min-height:48px;padding:5px 11px 5px 13px;display:flex;align-items:center;justify-content:space-between;gap:10px;border:0;border-left:4px solid {{section.accent}};background:transparent;color:{{t.text}};font-family:inherit;text-align:left"><strong style="font-size:13px;line-height:1.2">{{section.title}}</strong><span style="display:flex;align-items:center;gap:8px"><b style="font-size:11px;color:{{t.sub}}">{{section.score}}</b><i style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:{{t.rowAlt}};color:{{section.accent}};font-size:17px;font-style:normal">{{section.chevron}}</i></span></button><sc-if value="{{section.showCollapsedFindings}}" hint-placeholder-val="{{ false }}"><div style="padding:0 10px 8px;display:flex;flex-direction:column;gap:4px"><sc-for list="{{section.findings}}" as="finding" hint-placeholder-count="1"><div style="display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:40px;padding:3px 5px 3px 8px;border-radius:10px;background:{{t.rowAlt}}"><span style="flex:1;font-size:11px">{{finding.label}}</span><b style="padding:5px 8px;border-radius:999px;background:{{finding.bg}};color:{{finding.color}};font-size:9px">{{finding.status}}</b><sc-if value="{{finding.hasPhoto}}" hint-placeholder-val="{{ false }}"><button aria-label="{{finding.label}} fotoğrafını büyüt" onClick="{{finding.openPhoto}}" style="width:54px;height:42px;padding:0;overflow:hidden;border:2px solid {{finding.color}};border-radius:9px"><img src="{{finding.photo}}" alt="{{finding.label}} bulgu fotoğrafı" style="width:100%;height:100%;object-fit:cover"></button></sc-if></div></sc-for></div></sc-if><sc-if value="{{section.expanded}}" hint-placeholder-val="{{ false }}"><div style="padding:0 10px 9px;display:flex;flex-direction:column;gap:3px;animation:motorAccordionReveal .22s ease-out both"><sc-for list="{{section.details}}" as="detail" hint-placeholder-count="6"><div style="min-height:35px;padding:4px 7px 4px 9px;display:flex;align-items:center;justify-content:space-between;gap:8px;border-radius:9px;background:{{detail.rowBg}}"><span style="font-size:10.5px;font-weight:700">{{detail.label}}</span><b style="padding:5px 8px;border-radius:999px;background:{{detail.bg}};color:{{detail.color}};font-size:8.5px">{{detail.status}}</b></div></sc-for></div></sc-if></div></sc-for>
+<sc-if value="{{showGasketEvidence}}" hint-placeholder-val="{{ false }}"><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><sc-for list="{{gasketEvidence}}" as="evidence" hint-placeholder-count="2"><button aria-label="{{evidence.label}} fotoğrafını büyüt" onClick="{{evidence.open}}" style="height:110px;padding:0;display:flex;flex-direction:column;align-items:center;gap:5px;border:0;background:transparent;color:{{t.text}};font-family:inherit"><strong style="font-size:9px">{{evidence.label}}</strong><span style="display:block;width:74px;height:91px;overflow:hidden;border-radius:22px;box-shadow:0 7px 16px rgba(0,0,0,.18)"><img src="{{evidence.src}}" alt="{{evidence.label}}" style="display:block;width:100%;height:100%;object-fit:cover"></span></button></sc-for></div></sc-if>
+<sc-if value="{{showGasketReference}}" hint-placeholder-val="{{ false }}"><div style="height:108px;display:grid;grid-template-columns:1fr 1fr;gap:8px"><div style="display:flex;flex-direction:column;align-items:center;gap:5px;color:{{t.text}}"><strong style="font-size:9px">Test Öncesi Görsel</strong><span style="position:relative;display:block;width:74px;height:91px;overflow:hidden;border-radius:22px;box-shadow:0 7px 16px rgba(0,0,0,.18)"><img src="./assets/inspection/evidence/gasket-before-after-reference.png?v=20261031-2" alt="Test öncesi conta kaçak görseli" style="position:absolute;left:-82px;top:-19px;width:456px;height:123px;max-width:none"></span></div><div style="display:flex;flex-direction:column;align-items:center;gap:5px;color:{{t.text}}"><strong style="font-size:9px">Test Sonrası Görsel</strong><span style="position:relative;display:block;width:74px;height:91px;overflow:hidden;border-radius:22px;box-shadow:0 7px 16px rgba(0,0,0,.18)"><img src="./assets/inspection/evidence/gasket-before-after-reference.png?v=20261031-2" alt="Test sonrası conta kaçak görseli" style="position:absolute;left:-304px;top:-19px;width:456px;height:123px;max-width:none"></span></div></div></sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{showResultSummary}}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:32px;right:32px;bottom:14px;z-index:5;box-sizing:border-box;display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:18px;background:{{resultSummaryBg}};border:1px solid {{resultSummaryBorder}};box-shadow:0 8px 20px rgba(0,0,0,.08)"><span style="width:9px;height:9px;flex:none;border-radius:50%;background:{{resultSummaryColor}};box-shadow:0 0 0 5px {{resultSummaryGlow}}"></span><strong style="font-size:12px;line-height:1.3;color:{{resultSummaryColor}}">{{resultSummary}}</strong></div></sc-if>
+
+<sc-if value="{{vehiclePhotosPage}}" hint-placeholder-val="{{ false }}">
+<div style="margin:10px -12px 0;display:flex;flex-direction:column;gap:8px">
+<div style="padding:10px;border-radius:20px;{{t.card}}"><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px"><sc-for list="{{photoPreviewTiles}}" as="photo" hint-placeholder-count="12"><button aria-label="{{photo.label}} fotoğrafını galeride aç" onClick="{{photo.open}}" style="position:relative;height:111px;padding:0;overflow:hidden;border:1px solid {{t.track}};border-radius:13px;background:{{t.rowBase}};color:#fff;font-family:inherit;box-shadow:0 6px 13px rgba(0,0,0,.12)"><img src="{{photo.src}}" alt="{{photo.label}}" style="display:block;width:100%;height:100%;object-fit:cover;object-position:{{photo.position}}"><span style="position:absolute;inset:auto 0 0;padding:16px 7px 6px;background:linear-gradient(180deg,transparent,rgba(5,7,10,.78));font-size:8px;font-weight:900;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{photo.label}}</span><b style="position:absolute;right:6px;top:6px;min-width:21px;height:21px;padding:0 5px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;border-radius:999px;background:rgba(232,40,26,.92);color:#fff;font-size:8px">{{photo.number}}</b></button></sc-for></div><div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px;color:{{t.sub}};font-size:9px;font-weight:800"><span><i style="display:inline-block;width:7px;height:7px;margin-right:6px;border-radius:50%;background:{{accent}}"></i>12 fotoğraf ön izlemede</span><span>Galeride toplam {{photoTotal}} fotoğraf ›</span></div></div>
+<div style="min-height:68px;padding:8px 10px;box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;gap:8px;border-radius:18px;{{t.card}}"><span style="min-width:0"><strong style="display:block;font-size:13px">Bizi tercih ettiğiniz için teşekkür ederiz.</strong><small style="display:block;margin-top:2px;font-size:9px;color:{{t.sub}}">Bir üst modelde tekrar bekleriz.</small></span><span style="display:flex;align-items:center;gap:7px"><svg aria-label="Rapor doğrulama QR kodu" width="42" height="42" viewBox="0 0 21 21" style="padding:3px;background:#fff;border-radius:7px"><rect width="21" height="21" fill="#fff"/><path fill="#0E1116" d="M1 1h7v7H1zm2 2v3h3V3zm10-2h7v7h-7zm2 2v3h3V3zM1 13h7v7H1zm2 2v3h3v-3zM9 1h2v2H9zm0 4h3v2H9zm1 3h2v2h-2zm3 1h2v2h-2zm3 1h4v2h-4zM9 12h2v3H9zm3 1h2v2h-2zm3 1h2v2h-2zm3-1h2v3h-2zM9 17h3v3H9zm4-1h2v4h-2zm3 2h4v2h-4z"/></svg><button aria-label="Raporu WhatsApp'tan ilet" title="Raporu WhatsApp'tan ilet" onClick="{{shareWhatsapp}}" style="width:38px;height:38px;flex:none;padding:0;display:flex;align-items:center;justify-content:center;border:0;border-radius:12px;background:#20A95A;color:#fff;box-shadow:0 7px 15px rgba(32,169,90,.26)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.5 8.5 0 0 1-12.6 7.4L3 21l2.1-5.2A8.5 8.5 0 1 1 21 11.5zM8.5 8.5c.5 3 2 4.5 5 5"></path></svg></button></span></div>
+</div>
+</sc-if>
+
+<sc-if value="{{showVehiclePhotoSummary}}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:32px;right:32px;bottom:14px;z-index:5;box-sizing:border-box;display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:18px;background:{{t.rowAlt}};border:1px solid {{t.track}}"><span style="width:9px;height:9px;flex:none;border-radius:50%;background:{{accent}}"></span><strong style="font-size:11px;line-height:1.3">16 araç ve ekspertiz fotoğrafı rapora eklendi.</strong></div></sc-if>
+
+<sc-if value="{{standardPage}}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-direction: column; gap: 8px; margin-top: 16px">
+<sc-for list="{{rows}}" as="r" hint-placeholder-count="5">
+<div style="display: flex; align-items: center; justify-content: space-between; height: 44px; box-sizing: border-box; padding: 0 10px 0 18px; border-radius: 18px; {{t.card}}">
+<span style="font-size: 16px; font-weight: 600">{{r.label}}</span>
+<span style="padding: 6px 12px; border-radius: 999px; font-size: 11px; font-weight: 800; letter-spacing: 1.2px; color: {{t.sub}}; border: 1px dashed {{t.track}}">DURUM</span>
+</div>
+</sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{showExpertNote}}" hint-placeholder-val="{{ false }}">
+<div style="position: absolute; left: 32px; right: 32px; bottom: 14px; box-sizing: border-box; display: flex; flex-direction: column; gap: 4px; padding: 12px 18px; border-radius: 20px; {{t.cardHot}}"><span style="font-size: 11px; font-weight: 800; letter-spacing: 1.4px; color: {{t.sub}}">UZMAN NOTU</span><span style="font-size: 15px; line-height: 1.4; color: {{t.sub}}">{{expertNote}}</span></div>
+</sc-if>
+</sc-if>
+
+</div>
+
+<div style="position: absolute; left: 0; right: 0; bottom: 0; height: {{botH}}px; box-sizing: border-box; padding: 0 32px; display: flex; flex-direction: column">
+<sc-if value="{{cover}}" hint-placeholder-val="{{ true }}">
+<div style="position: relative; margin-top: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px">
+<sc-for list="{{specs}}" as="s" hint-placeholder-count="4">
+<div style="display: flex; align-items: center; gap: 12px; min-height:90px; box-sizing:border-box; padding: 18px 14px; border-radius: 22px; {{t.card}}">
+<div style="width: 52px; height: 52px; flex: none; filter: {{t.hexShadow}}">
+<div style="width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; clip-path: polygon(25% 2%, 75% 2%, 100% 50%, 75% 98%, 25% 98%, 0 50%); background: {{t.hexRim}}">
+<div style="width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; clip-path: polygon(25% 2%, 75% 2%, 100% 50%, 75% 98%, 25% 98%, 0 50%); background: {{t.hexFace}}">
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="{{t.icon}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{s.d}}"></path></svg>
+</div>
+</div>
+</div>
+<div style="display: flex; flex-direction: column"><span style="font-size: 11px; font-weight: 600; letter-spacing: 1.2px; color: {{t.sub}}">{{s.label}}</span><span style="font-size: 20px; font-weight: 800">{{s.value}}</span></div>
+</div>
+</sc-for>
+</div>
+
+<div style="position: relative; margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px">
+<div style="display: flex; align-items: center; gap: 12px; min-height:90px; box-sizing:border-box; padding: 18px 14px; border-radius: 22px; {{t.cardHot}}">
+<div style="width: 52px; height: 52px; flex: none; border-radius: 50%; display: flex; align-items: center; justify-content: center; filter: {{t.hexShadow}}; background: {{t.hexRim}}">
+<div style="width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: {{t.hexFace}}">
+<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="{{t.icon}}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="7.5" cy="15.5" r="4.5"></circle><path d="M10.7 12.3L20 3m-3 3 3 3m-6 0 3 3"></path></svg>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 1px"><span style="font-size: 12px; font-weight: 600; color: {{t.sub}}">YEDEK ANAHTAR</span><span style="font-size: 20px; font-weight: 800">{{spareKeyStatus}}</span></div>
+</div>
+<div style="display: flex; align-items: center; gap: 12px; min-height:90px; box-sizing:border-box; padding: 18px 14px; border-radius: 22px; {{t.card}}">
+<div style="width: 52px; height: 52px; flex: none; filter: {{t.hexShadow}}">
+<div style="width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; clip-path: polygon(25% 2%, 75% 2%, 100% 50%, 75% 98%, 25% 98%, 0 50%); background: {{t.hexRim}}">
+<div style="width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; clip-path: polygon(25% 2%, 75% 2%, 100% 50%, 75% 98%, 25% 98%, 0 50%); background: {{t.hexFace}}">
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="{{t.icon}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM12 14l2.5-3M9.5 3h5M12 3v4M18.5 6l1.2-1.2"></path></svg>
+</div>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; flex: 1; min-width: 0; gap: 1px">
+<span style="font-size: 12px; font-weight: 600; color: {{t.sub}}">Ekspertiz Süresi:</span>
+<span style="font-size: 20px; font-weight: 800">45 Dk</span>
+<span style="display: block; height: 5px; border-radius: 3px; margin-top: 3px; background: {{t.track}}"><span style="display: block; width: 58%; height: 5px; border-radius: 3px; background: {{accent}}"></span></span>
+</div>
+</div>
+</div>
+<div style="position: relative; margin-top: 8px; font-size: 14px; font-weight: 600; color: {{t.sub}}">Bu pakette garanti kapsamı yok.</div>
+</sc-if>
+<div style="position: absolute; left: 32px; right: 32px; bottom: 0; height: 104px; box-sizing: border-box; padding-top: 14px">
+<div style="display: flex; gap: 4px; margin-bottom: 14px">
+<sc-for list="{{segs}}" as="g" hint-placeholder-count="24">
+<span style="flex: 1; border-radius: 3px; {{g.style}}"></span>
+</sc-for>
+</div>
+<div style="display: flex; align-items: center; justify-content: space-between">
+<button aria-label="Önceki sayfa" onClick="{{prev}}" style="display: flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 20px 0 14px; border: 0; border-radius: 15px; font-family: inherit; font-size: 16px; font-weight: 800; color: {{t.text}}; opacity: 1; {{t.card}}">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="{{t.icon}}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg>Önceki</button>
+<div style="min-width:0;max-width:180px;display:flex;flex-direction:column;align-items:center;gap:1px"><span title="{{pg.title}}" style="display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px;font-weight:600">{{footerTitle}}</span><span style="font-size:12px;color:{{t.sub}}">{{pageLabel}}</span></div>
+<sc-if value="{{notLastPage}}" hint-placeholder-val="{{ true }}">
+<button aria-label="Sonraki sayfa" onClick="{{next}}" style="display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 0 18px 0 22px; border: 1px solid rgba(0,0,0,0.25); border-radius: 15px; color: #FFFFFF; font-family: inherit; font-size: 16px; font-weight: 800; opacity: {{nextOp}}; background: linear-gradient(180deg, rgba(255,255,255,0.30) 0%, rgba(255,255,255,0) 52%), {{accent}}; box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), inset 0 -3px 0 rgba(0,0,0,0.18), 0 10px 22px rgba(179,21,12,0.45)">{{nextLabel}}
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg>
+</button>
+</sc-if><sc-if value="{{lastPage}}" hint-placeholder-val="{{ false }}"><div style="display:flex;gap:6px"><button aria-label="Raporu paylaş" onClick="{{shareReport}}" style="width:48px;height:48px;padding:0;border:0;border-radius:14px;background:#20A95A;color:#fff;font-size:20px;box-shadow:0 8px 18px rgba(32,169,90,.28)">↗</button><button aria-label="Başa dön" onClick="{{restart}}" style="min-height:48px;padding:0 13px;border:0;border-radius:14px;background:{{accent}};color:#fff;font-family:inherit;font-size:12px;font-weight:900">Başa dön</button></div></sc-if>
+</div>
+</div>
+</div>
+
+<sc-if value="{{showTramerModal}}" hint-placeholder-val="{{ false }}">
+<div role="dialog" aria-label="Tramer 360 orijinal sonucu" style="position:absolute;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:24px;box-sizing:border-box;background:rgba(5,7,10,0.74);backdrop-filter:blur(8px)">
+<div style="width:100%;max-height:920px;overflow:hidden;border-radius:24px;{{t.card}}">
+<div style="height:54px;padding:0 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid {{t.track}}"><div><span style="display:block;font-size:16px;font-weight:800">TRAMER 360 · ORİJİNAL SONUÇ</span><span style="font-size:10px;color:{{t.sub}}">Kaynak kaydının sunum görünümü</span></div><button aria-label="Orijinal sonucu kapat" onClick="{{closeOriginal}}" style="width:38px;height:38px;border:0;border-radius:50%;font-size:20px;color:{{t.text}};{{t.card}}">×</button></div>
+<div style="padding:8px 18px 16px"><sc-for list="{{tramerRows}}" as="item" hint-placeholder-count="13"><div style="display:grid;grid-template-columns:155px 1fr;align-items:center;min-height:38px;padding:0 8px;border-radius:8px;background:{{item.bg}}"><span style="font-size:11px;color:{{t.sub}}">{{item.label}}</span><strong style="justify-self:start;padding:{{item.valuePad}};border-radius:999px;background:{{item.valueBg}};color:{{item.valueColor}};font-size:12px">{{item.value}}</strong></div></sc-for></div>
+</div></div>
+</sc-if>
+
+<sc-if value="{{showKmModal}}" hint-placeholder-val="{{ false }}">
+<div role="dialog" aria-label="KM sorgusu orijinal sonucu" style="position:absolute;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:24px;box-sizing:border-box;background:rgba(5,7,10,0.74);backdrop-filter:blur(8px)">
+<div style="width:100%;overflow:hidden;border-radius:24px;{{t.card}}">
+<div style="height:54px;padding:0 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid {{t.track}}"><div><span style="display:block;font-size:16px;font-weight:800">KM SORGU · ORİJİNAL SONUÇ</span><span style="font-size:10px;color:{{t.sub}}">RENAULT CLIO GRAND TOUR EXT EDİ 1.2</span></div><button aria-label="Orijinal sonucu kapat" onClick="{{closeOriginal}}" style="width:38px;height:38px;border:0;border-radius:50%;font-size:20px;color:{{t.text}};{{t.card}}">×</button></div>
+<div style="padding:14px 18px"><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px"><div style="padding:10px;border-radius:12px;background:{{t.glow}}"><span style="display:block;font-size:9px;color:{{t.sub}}">MODEL YILI</span><strong>2012</strong></div><div style="padding:10px;border-radius:12px;background:{{t.glow}}"><span style="display:block;font-size:9px;color:{{t.sub}}">KİLOMETRE DÜŞÜŞÜ</span><strong>Yok</strong></div></div><div style="border:1px solid {{t.track}};border-radius:14px;overflow:hidden"><div style="display:grid;grid-template-columns:1fr 1fr 1fr;padding:9px 10px;background:{{t.glow}};font-size:9px;font-weight:800"><span>TARİH</span><span>KM</span><span>PLAKA</span></div><sc-for list="{{kmFullRows}}" as="km" hint-placeholder-count="7"><div style="display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;min-height:42px;padding:0 10px;border-top:1px solid {{t.track}};font-size:10px;background:{{km.bg}}"><span>{{km.date}}</span><strong>{{km.value}}</strong><span>{{km.plate}}</span></div></sc-for></div></div>
+</div></div>
+</sc-if>
+
+<sc-if value="{{showFindingPhoto}}" hint-placeholder-val="{{ false }}">
+<div role="dialog" aria-label="Bulgu fotoğrafı" style="position:absolute;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;padding:28px;box-sizing:border-box;background:rgba(5,7,10,.82);backdrop-filter:blur(8px)"><div style="width:100%;overflow:hidden;border-radius:24px;{{t.card}}"><div style="height:54px;padding:0 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid {{t.track}}"><div><span style="display:block;font-size:15px;font-weight:800">BULGU FOTOĞRAFI</span><span style="font-size:10px;color:{{t.sub}}">{{findingPhotoTitle}}</span></div><button aria-label="Bulgu fotoğrafını kapat" onClick="{{closeFindingPhoto}}" style="width:38px;height:38px;border:0;border-radius:50%;font-size:20px;color:{{t.text}};{{t.card}}">×</button></div><div style="padding:12px"><img src="{{findingPhotoSrc}}" alt="Büyütülmüş bulgu fotoğrafı" style="display:block;width:100%;max-height:720px;object-fit:contain;border-radius:16px;background:#111"></div></div></div>
+</sc-if>
+
+<sc-if value="{{showBodySketch}}" hint-placeholder-val="{{ false }}"><div role="dialog" aria-label="Kaporta karalama kağıdı" style="position:absolute;inset:0;z-index:72;display:flex;align-items:center;justify-content:center;padding:24px;box-sizing:border-box;background:rgba(5,7,10,.84);backdrop-filter:blur(10px)"><div style="width:100%;overflow:hidden;border-radius:25px;{{t.card}}"><div style="height:62px;padding:0 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid {{t.track}}"><div><span style="display:block;font-size:9px;font-weight:900;letter-spacing:1.1px;color:{{accent}}">KAPORTA KONTROL FORMU</span><strong style="display:block;margin-top:3px;font-size:18px">Karalama Kağıdı</strong></div><button aria-label="Kaporta karalama kağıdını kapat" onClick="{{closeBodySketch}}" style="width:40px;height:40px;border:0;border-radius:50%;font-size:22px;color:{{t.text}};{{t.card}}">×</button></div><div style="padding:14px"><div style="position:relative;height:650px;overflow:hidden;border:1px solid {{t.track}};border-radius:17px;background:#fff"><img src="./assets/inspection/body-top-marked.png" alt="Kaporta karalama kağıdı üstten araç görünümü" style="display:block;width:100%;height:100%;object-fit:contain"><div style="position:absolute;left:12px;right:12px;bottom:12px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.94);box-shadow:0 8px 20px rgba(0,0,0,.14);color:#18202C"><b style="display:block;font-size:10px;color:#D92727">İŞARETLİ PARÇALAR</b><span style="display:block;margin-top:5px;font-size:10px;line-height:1.45">Kaput — Boyalı &nbsp;·&nbsp; Tavan — Ezik / çizik &nbsp;·&nbsp; Bagaj kapağı — İşlemli &nbsp;·&nbsp; Ön/arka tampon — Plastik</span></div></div></div></div></div></sc-if>
+
+<sc-if value="{{showTestDetail}}" hint-placeholder-val="{{ false }}"><div role="dialog" aria-label="Test detay ekranı" style="position:absolute;inset:0;z-index:70;display:flex;align-items:center;justify-content:center;padding:32px;box-sizing:border-box;background:rgba(5,7,10,.80);backdrop-filter:blur(9px)"><div style="width:100%;max-height:900px;overflow:hidden;border-radius:25px;{{t.card}}"><div style="min-height:66px;padding:0 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid {{t.track}}"><div style="display:flex;align-items:center;gap:12px"><span style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;border-radius:13px;background:{{accent}};box-shadow:0 0 8px rgba(232,40,26,.9),0 9px 22px rgba(232,40,26,.58);animation:detailGlow 1.15s ease-in-out infinite"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{pg.d}}"></path></svg></span><div><span style="display:block;font-size:10px;font-weight:900;letter-spacing:1.2px;color:{{accent}}">TEST DETAYI</span><strong style="display:block;margin-top:3px;font-size:18px">{{pg.title}}</strong></div></div><button aria-label="Test detayını kapat" onClick="{{closeTestDetail}}" style="width:40px;height:40px;border:0;border-radius:50%;font-size:22px;color:{{t.text}};{{t.card}}">×</button></div><div style="padding:16px 18px 18px"><p style="margin:0 0 13px;font-size:12px;line-height:1.5;color:{{t.sub}}">{{testDetailDescription}}</p><div style="display:flex;flex-direction:column;gap:6px"><sc-for list="{{testDetailRows}}" as="detail" hint-placeholder-count="5"><div style="min-height:44px;padding:0 12px;border-radius:11px;display:flex;align-items:center;justify-content:space-between;gap:12px;background:{{detail.bg}}"><span style="font-size:12px;font-weight:700">{{detail.label}}</span><strong style="font-size:11px;color:{{detail.color}}">{{detail.value}}</strong></div></sc-for></div><div style="margin-top:14px;padding:10px 12px;border-radius:12px;background:rgba(46,160,67,.10);color:#218838;font-size:11px;font-weight:800">{{testDetailSummary}}</div></div></div></div></sc-if>
+
+<sc-if value="{{showPhotoViewer}}" hint-placeholder-val="{{ false }}"><div role="dialog" aria-label="Araç fotoğraf galerisi" style="position:absolute;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;padding:18px;box-sizing:border-box;background:rgba(5,7,10,.93);backdrop-filter:blur(12px)"><div style="width:100%;overflow:hidden;border:1px solid rgba(255,255,255,.12);border-radius:26px;background:#101318;box-shadow:0 28px 80px rgba(0,0,0,.62)"><div style="height:60px;padding:0 16px;display:flex;align-items:center;justify-content:space-between;color:#fff"><div><span style="display:block;font-size:9px;font-weight:900;letter-spacing:1.2px;color:#FF6A5F">ARAÇ FOTOĞRAFLARI</span><strong style="display:block;margin-top:2px;font-size:16px">{{activePhotoLabel}}</strong></div><div style="display:flex;align-items:center;gap:10px"><span style="padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.09);font-size:11px;font-weight:800;color:#DCE1E8">{{activePhotoCounter}}</span><button aria-label="Fotoğraf galerisini kapat" onClick="{{closePhotoViewer}}" style="width:40px;height:40px;border:1px solid rgba(255,255,255,.16);border-radius:50%;background:rgba(255,255,255,.08);color:#fff;font-size:22px">×</button></div></div><div style="position:relative;height:678px;background:radial-gradient(circle at 50% 44%,#20252D 0%,#090B0E 72%)"><img src="{{activePhotoSrc}}" alt="{{activePhotoLabel}}" style="display:block;width:100%;height:100%;object-fit:contain"><button aria-label="Önceki fotoğraf" onClick="{{previousPhoto}}" style="position:absolute;left:13px;top:50%;width:52px;height:52px;margin-top:-26px;border:1px solid rgba(255,255,255,.24);border-radius:50%;background:rgba(8,10,14,.78);color:#fff;font-size:31px;box-shadow:0 8px 22px rgba(0,0,0,.35)">‹</button><button aria-label="Sonraki fotoğraf" onClick="{{nextPhoto}}" style="position:absolute;right:13px;top:50%;width:52px;height:52px;margin-top:-26px;border:1px solid rgba(255,255,255,.24);border-radius:50%;background:rgba(8,10,14,.78);color:#fff;font-size:31px;box-shadow:0 8px 22px rgba(0,0,0,.35)">›</button></div><div style="padding:12px 12px 14px;background:#15191F"><div style="display:grid;grid-template-columns:repeat(8,1fr);gap:6px"><sc-for list="{{photoTiles}}" as="photo" hint-placeholder-count="16"><button aria-label="{{photo.label}} fotoğrafına geç" onClick="{{photo.open}}" style="height:55px;padding:0;overflow:hidden;border:2px solid {{photo.thumbBorder}};border-radius:9px;background:#090B0E;opacity:{{photo.thumbOpacity}};box-shadow:{{photo.thumbShadow}}"><img src="{{photo.src}}" alt="" style="display:block;width:100%;height:100%;object-fit:cover;object-position:{{photo.position}}"></button></sc-for></div><div style="margin-top:8px;text-align:center;font-size:9px;font-weight:700;color:#8F99A8">Oklarla ilerleyin veya doğrudan bir küçük fotoğraf seçin.</div></div></div></div></sc-if>
+
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false},"accent":{"editor":"color","default":"#E8281A"},"vehiclePlate":{"editor":"string","default":"16 CEC 623"},"vehicleModel":{"editor":"string","default":"Renault Clio"},"vehicleTrim":{"editor":"string","default":"1.2 16V Expression BVR"},"modelYear":{"editor":"string","default":"2012"},"mileage":{"editor":"string","default":"82.473 km"},"transmission":{"editor":"string","default":"Manuel"},"spareKeyStatus":{"editor":"string","default":"Mevcut"},"hasTramer360":{"editor":"boolean","default":true},"hasKmQuery":{"editor":"boolean","default":true},"hasDebtQuery":{"editor":"boolean","default":true},"$preview":{"width":672,"height":1000}}'>
+const PAGES = [
+{ title: 'Araç Bilgileri', d: 'M5 16l1.5-5.5A2 2 0 0 1 8.4 9h7.2a2 2 0 0 1 1.9 1.5L19 16M3 16h18v3H3zM7 19v1.5M17 19v1.5', items: [] },
+{ title: 'Karar Özeti', d: 'M4 4h16v16H4zM8 9h8M8 13h5M8 17h7', items: [] },
+{ title: 'Taraflar & Paket İçeriği', d: 'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75', items: [] },
+{ title: 'Tramer 360', d: 'M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM20 20l-4-4M8 11h6M8 15h4', items: [] },
+{ title: 'KM Sorgusu', d: 'M4.9 19.1a9 9 0 1 1 14.2 0M12 15l4-5M7 12h.01M12 7.5h.01M17 12h.01', items: [] },
+{ title: 'Borç Sorgusu', d: 'M4 5h16v14H4zM7 9h10M7 13h6M7 17h4', items: [] },
+{ title: 'Kaporta – Boya Görünümleri', d: 'M4 8h3l2-3h6l2 3h3v12H4zM12 17a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z', items: [] },
+{ title: 'Kaporta – Boya Bulguları', d: 'M4 8h3l2-3h6l2 3h3v12H4zM12 17a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z', items: [] },
+{ title: 'Şasi / Yapısal Gövde', d: 'M14.7 6.3a4 4 0 0 1 5 5l-9.5 9.5a2.1 2.1 0 0 1-3-3l9.5-9.5zM7.5 18.5h.01', items: [] },
+{ title: 'Şasi ve Yapısal Kontrol', d: 'M14.7 6.3a4 4 0 0 1 5 5l-9.5 9.5a2.1 2.1 0 0 1-3-3l9.5-9.5zM7.5 18.5h.01', items: [] },
+{ title: 'Motor Ekspertiz', d: 'M3 11v5h3l2 3h9l3-3v-5l-2-2h-3V6h-5v3H7l-1 2z', items: ['Motor sesi', 'Yağ kaçağı', 'Triger / kayış', 'Egzoz', 'Soğutma sistemi'] },
+{ title: 'Mekanik Ekspertiz', d: 'M6 5v14M12 5v14M18 5v6a2 2 0 0 1-2 2H6M6 5h.01M12 5h.01M18 5h.01', items: ['Şanzıman', 'Debriyaj', 'Aktarma organları', 'Alt takım', 'Mekanik kaçaklar'] },
+{ title: 'Beyin / OBD / Elektronik', d: 'M13 3L5 14h6l-1 7 8-11h-6z', items: ['Motor arıza kodları', 'Şanzıman kodları', 'ABS / ESP kodları', 'Elektronik sistemler', 'Silinmiş kodlar'] },
+{ title: 'Yol Testi / Sürüş', d: 'M5 16l1.5-5.5A2 2 0 0 1 8.4 9h7.2a2 2 0 0 1 1.9 1.5L19 16M3 16h18v3H3z', items: ['Motor performansı', 'Vites geçişleri', 'Frenleme', 'Yol tutuşu', 'Sürüş sesi'] },
+{ title: 'Fren / Süspansiyon', d: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM12 12h.01', items: ['Fren kuvveti', 'Fren dengesi', 'Ön süspansiyon', 'Arka süspansiyon', 'Amortisörler'] },
+{ title: 'Dış Ekspertiz & Check-up', d: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM12 3v6M12 15v6', items: ['Lastik ve jant', 'Aydınlatma', 'Camlar', 'Aynalar', 'Dış donanım'] },
+{ title: 'İç Ekspertiz & Check-up', d: 'M8 4h5a2 2 0 0 1 2 2l1 7h3v4H9a3 3 0 0 1-3-3V6a2 2 0 0 1 2-2zM9 21h9', items: ['Koltuklar', 'Döşeme ve tavan', 'Göstergeler', 'Klima', 'Multimedya'] },
+{ title: 'Airbag & Pasif Güvenlik', d: 'M12 3l8 4v5c0 5-3.4 8.5-8 9-4.6-.5-8-4-8-9V7zM9 12l2 2 4-5', items: ['Airbag beyni', 'Airbag lambası', 'Emniyet kemerleri', 'Gergi sistemleri', 'Pasif güvenlik'] },
+{ title: 'Conta Kaçak Testi', d: 'M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z', items: ['Silindir kapak contası', 'Yanma gazı kontrolü', 'Soğutma suyu', 'Basınç kontrolü', 'Kaçak sonucu'] },
+{ title: "3'lü KM Paketi", d: 'M4.9 19.1a9 9 0 1 1 14.2 0M12 15l4-5M7 12h.01M12 7.5h.01M17 12h.01', items: ['Muayene KM kaydı', 'Beyin KM verisi', 'Gösterge KM verisi', 'Geçmiş kayıtlar', 'Uyumluluk sonucu'] },
+{ title: 'Duman Kaçak Testi', d: 'M5 19c0-4 3-5 3-8 0-2-1-3-1-5M12 19c0-3 3-4 3-7 0-2-1-3-1-5M18 19c0-2 2-3 2-6', items: ['Emme hattı', 'Turbo hattı', 'Vakum sistemi', 'Bağlantılar', 'Kaçak sonucu'] },
+{ title: 'Motor Aşınma Testi', d: 'M3 11v5h3l2 3h9l3-3v-5l-2-2h-3V6h-5v3H7l-1 2z', items: ['Kompresyon', 'Silindir dengesi', 'Üfleme kontrolü', 'Yağ basıncı', 'Aşınma sonucu'] },
+{ title: 'Mor Işık (UV) Testi', d: 'M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.8.8 1 1.5 1 2.5h6c0-1 .2-1.7 1-2.5A6 6 0 0 0 12 3z', items: ['Boya yüzeyi', 'Sıvı kaçakları', 'Onarım izleri', 'UV bulguları', 'Genel sonuç'] },
+{ title: 'Araç Fotoğrafları', d: 'M4 5h4l1.5-2h5L16 5h4v16H4zM12 18a5 5 0 1 0 0-10 5 5 0 0 0 0 10z', items: [] }
+];
+const MENU_GROUPS = [
+{ label:'Araç bilgileri', pages:[0] },
+{ label:'Karar özeti', pages:[1], status:'#9A6700' },
+{ label:'Araç ve taraflar', pages:[2] },
+{ label:'Sorgular', pages:[3,4,5] },
+{ label:'Kaporta - boya', pages:[6,7], status:'#9A6700' },
+{ label:'Şasi / yapısal', pages:[8,9] },
+{ label:'Motor', pages:[10], status:'#C61F2B' },
+{ label:'Mekanik', pages:[11], status:'#9A6700' },
+{ label:'Beyin / OBD', pages:[12], status:'#C61F2B' },
+{ label:'Yol testi / sürüş', pages:[13] },
+{ label:'Fren / süspansiyon', pages:[14], status:'#9A6700' },
+{ label:'Dış ekspertiz', pages:[15], status:'#9A6700' },
+{ label:'İç ekspertiz', pages:[16], status:'#9A6700' },
+{ label:'Airbag & güvenlik', pages:[17] },
+{ label:'Conta kaçak', pages:[18] },
+{ label:"3'lü KM paketi", pages:[19] },
+{ label:'Duman kaçak', pages:[20] },
+{ label:'Motor aşınma', pages:[21] },
+{ label:'Mor ışık (UV)', pages:[22] },
+{ label:'Araç fotoğrafları', pages:[23] }
+];
+const TEST_RESULT_CONFIG = {
+11: { total: 10, sections: [['MOTOR ECU',2],['ŞANZIMAN ECU',2],['ABS / ESP',2],['ELEKTRONİK SİSTEMLER',2],['SİLİNMİŞ KODLAR',2]] },
+12: { total: 20, sections: [['MOTOR PERFORMANSI',4],['VİTES GEÇİŞLERİ',4],['FRENLEME',4],['YOL TUTUŞU',4],['SÜRÜŞ SESİ',4]] },
+13: { total: 26, sections: [['FREN KUVVETİ',6],['FREN DENGESİ',5],['ÖN SÜSPANSİYON',5],['ARKA SÜSPANSİYON',5],['AMORTİSÖRLER',5]] },
+14: { total: 26, sections: [['LASTİK & JANT',6],['AYDINLATMA',5],['CAMLAR',5],['AYNALAR',5],['DIŞ DONANIM',5]] },
+15: { total: 44, sections: [['KOLTUKLAR',10],['DÖŞEME & TAVAN',8],['GÖSTERGELER',8],['KLİMA',9],['MULTİMEDYA',9]] },
+16: { total: 12, sections: [['AIRBAG BEYNİ',3],['AIRBAG LAMBASI',2],['EMNİYET KEMERLERİ',3],['GERGİ SİSTEMLERİ',2],['PASİF GÜVENLİK',2]] },
+17: { total: 6, sections: [['SİLİNDİR KAPAK CONTASI',2],['YANMA GAZI',1],['SOĞUTMA SUYU',1],['BASINÇ',1],['KAÇAK SONUCU',1]] },
+18: { total: 3, sections: [['MUAYENE KM KAYDI',1],['BEYİN KM VERİSİ',1],['GÖSTERGE KM VERİSİ',1]] },
+19: { total: 7, sections: [['EMME HATTI',2],['TURBO HATTI',2],['VAKUM SİSTEMİ',1],['BAĞLANTILAR',1],['KAÇAK SONUCU',1]] },
+20: { total: 5, sections: [['KOMPRESYON',1],['SİLİNDİR DENGESİ',1],['ÜFLEME',1],['YAĞ BASINCI',1],['AŞINMA SONUCU',1]] },
+21: { total: 16, sections: [['BOYA YÜZEYİ',4],['SIVI KAÇAKLARI',4],['ONARIM İZLERİ',3],['UV BULGULARI',3],['GENEL SONUÇ',2]] }
+};
+const CHASSIS_POINTS = [
+{id:'1',name:'Ön Panel',view:'front'},{id:'2',name:'Sağ Ön Şasi Ucu',view:'front'},{id:'3',name:'Sol Ön Şasi Ucu',view:'front'},{id:'4',name:'Sağ Ön Şasi',view:'front'},{id:'5',name:'Sol Ön Şasi',view:'front'},{id:'6',name:'Sağ Ön Podye',view:'front'},{id:'7',name:'Sol Ön Podye',view:'front'},{id:'8',name:'Sağ Ön Amortisör Kulesi',view:'front'},{id:'9',name:'Sol Ön Amortisör Kulesi',view:'front'},
+{id:'10',name:'Sol Frangart / Üst Direk',view:'sideLeft'},{id:'11',name:'Sağ Frangart / Üst Direk',view:'sideRight'},{id:'12',name:'Sol Ön İç Direk',view:'sideLeft'},{id:'13',name:'Sağ Ön İç Direk',view:'sideRight'},{id:'14',name:'Sol Orta İç Direk',view:'sideLeft'},{id:'15',name:'Sağ Orta İç Direk',view:'sideRight'},{id:'16',name:'Sağ Marşpiyel',view:'sideRight'},{id:'17',name:'Sol Marşpiyel',view:'sideLeft'},{id:'18',name:'Araç Alt Tabanı / Taban Sacı',view:'top'},
+{id:'19',name:'Arka Sağ Şasi',view:'rear'},{id:'20',name:'Arka Sol Şasi',view:'rear'},{id:'21',name:'Arka Havuz İçi',view:'rear'},{id:'22',name:'Arka İç Panel',view:'rear'}
+];
+const CHASSIS_VIEWS = [
+{id:'sideLeft',title:'Sol yan',image:'side-left.png'},{id:'sideRight',title:'Sağ yan',image:'side-right.png'},{id:'front',title:'Ön görünüş',image:'front.png'},{id:'rear',title:'Arka görünüş',image:'rear.png'}
+];
+class Component extends DCLogic {
+constructor(props) { super(props); const query = new URLSearchParams(window.location.search); const requestedPage = Number(query.get('page') ?? 1); const requestedModal = query.get('modal'); this.state = { page: Math.min(PAGES.length - 1, Math.max(0, requestedPage - 1)), modal: requestedModal === 'tramer' || requestedModal === 'km' ? requestedModal : null, findingPhoto: null, testDetail: false, bodySketch:false, activePhoto: null, speaking: false, chassisView:'sideLeft', chassisZoom:false, motorExpanded:{}, sectionExpanded:{}, transitionDir:'next' }; }
+componentDidMount(){ this.scrollActiveMenu(); }
+scrollActiveMenu(){ setTimeout(()=>document.querySelector('[data-menu-active="true"]')?.scrollIntoView?.({block:'nearest',behavior:'smooth'}),30); }
+renderVals() {
+const accent = this.props.accent ?? '#E8281A';
+const dark = this.state.dark ?? this.props.dark ?? false;
+const L = {
+  logo: './assets/ototr-logo-official-light.png', bg: '#EEF0F4', text: '#0E1116', sub: '#566070', glow: 'rgba(232,40,26,0.13)',
+skew: 'linear-gradient(135deg, rgba(14,17,22,0.05), rgba(14,17,22,0))',
+card: 'background: linear-gradient(160deg, #FFFFFF 0%, #E9ECF2 100%); box-shadow: inset 0 1px 0 #FFFFFF, inset 0 -1px 0 rgba(14,17,22,0.06), 0 0 0 1px rgba(14,17,22,0.09), 0 14px 26px -12px rgba(14,17,22,0.30)',
+cardHot: 'background: linear-gradient(135deg, rgba(232,40,26,0.20) 0%, #FFFFFF 75%); box-shadow: inset 0 1px 0 #FFFFFF, 0 0 0 1px rgba(232,40,26,0.45), 0 14px 26px -12px rgba(232,40,26,0.50)',
+hexRim: 'linear-gradient(145deg, #FFFFFF, #BFC5D0)', hexFace: 'linear-gradient(145deg, #F8F9FC, #D9DDE6)',
+hexShadow: 'drop-shadow(0 6px 7px rgba(14,17,22,0.25))', icon: '#D8200F', track: 'rgba(14,17,22,0.14)',
+photoBg: '#E3E6EC', photoShadow: '0 30px 60px -22px rgba(232,40,26,0.30), 0 0 0 1px rgba(14,17,22,0.09)',
+photoFade: 'linear-gradient(180deg, rgba(238,240,244,0.30) 0%, rgba(238,240,244,0) 30%, rgba(238,240,244,0) 65%, rgba(238,240,244,0.45) 100%)',
+chip: 'background: rgba(255,255,255,0.88); border: 1px solid rgba(14,17,22,0.10); color: #0E1116',
+plateRing: '#0E1116',
+tray: 'background: linear-gradient(180deg, #F7F8FB, #E2E5EC); border-top: 1px solid #FFFFFF; box-shadow: 0 -10px 30px rgba(14,17,22,0.08)',
+seg: 'rgba(14,17,22,0.13)', rowBase: 'rgba(255,255,255,0.72)', rowAlt: 'rgba(232,40,26,0.065)'
+};
+const D = {
+  logo: './assets/ototr-logo-official-dark.png', bg: '#0A0C10', text: '#FFFFFF', sub: '#A3ACBA', glow: 'rgba(232,40,26,0.30)',
+skew: 'linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0))',
+card: 'background: linear-gradient(160deg, #262A33 0%, #15171C 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 0 0 1px rgba(255,255,255,0.08), 0 16px 28px -12px rgba(0,0,0,0.7)',
+cardHot: 'background: linear-gradient(135deg, rgba(232,40,26,0.38) 0%, #15171C 78%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.14), 0 0 0 1px rgba(232,40,26,0.60), 0 16px 28px -12px rgba(232,40,26,0.45)',
+hexRim: 'linear-gradient(145deg, #5A6070, #1A1D24)', hexFace: 'linear-gradient(145deg, #333844, #16181E)',
+hexShadow: 'drop-shadow(0 6px 7px rgba(0,0,0,0.6))', icon: '#FF5A48', track: 'rgba(255,255,255,0.16)',
+photoBg: '#14171D', photoShadow: '0 30px 60px -20px rgba(232,40,26,0.35), 0 0 0 1px rgba(255,255,255,0.10)',
+photoFade: 'linear-gradient(180deg, rgba(10,12,16,0.35) 0%, rgba(10,12,16,0) 30%, rgba(10,12,16,0) 55%, rgba(10,12,16,0.85) 100%)',
+chip: 'background: rgba(10,12,16,0.62); border: 1px solid rgba(255,255,255,0.18); color: #FFFFFF',
+plateRing: '#14171D',
+tray: 'background: linear-gradient(180deg, #1B1E25, #101216); border-top: 1px solid rgba(255,255,255,0.10); box-shadow: 0 -10px 30px rgba(0,0,0,0.5)',
+seg: 'rgba(255,255,255,0.16)', rowBase: 'rgba(255,255,255,0.015)', rowAlt: 'rgba(255,255,255,0.055)'
+};
+
+const t = dark ? D : L;
+const p = this.state.page ?? 0;
+const last = PAGES.length - 1;
+const pg = PAGES[p];
+const pad = (n) => (n < 10 ? '0' : '') + n;
+const chassisStatusSource = this.props.chassisStatuses;
+const hasChassisData = chassisStatusSource && typeof chassisStatusSource === 'object';
+const chassisStatusMeta = {
+original:{label:'Orijinal',color:'#218838',bg:'rgba(46,160,67,.10)',icon:'✓',tone:'good'},
+processed:{label:'İşlemli',color:'#B86700',bg:'rgba(232,137,18,.12)',icon:'!',tone:'finding'},
+replaced:{label:'Değişen',color:'#C51F1F',bg:'rgba(217,39,39,.12)',icon:'!',tone:'finding'},
+damaged:{label:'Hasarlı / Deforme',color:'#C51F1F',bg:'rgba(217,39,39,.12)',icon:'!',tone:'finding'},
+unavailable:{label:'Görülemedi',color:'#657080',bg:'rgba(101,112,128,.12)',icon:'?',tone:'pending'},
+pending:{label:'Kontrol bekliyor',color:'#657080',bg:'rgba(101,112,128,.12)',icon:'?',tone:'pending'}
+};
+const normalizeChassisStatus = (value) => { const raw=String(value?.condition ?? value ?? (hasChassisData ? 'pending' : 'original')).toLocaleLowerCase('tr-TR'); if(/orijinal|original/.test(raw)) return 'original'; if(/işlem|processed/.test(raw)) return 'processed'; if(/değiş|replaced/.test(raw)) return 'replaced'; if(/hasar|deform|damaged/.test(raw)) return 'damaged'; if(/görülemedi|unavailable/.test(raw)) return 'unavailable'; return 'pending'; };
+const chassisPoints = CHASSIS_POINTS.map((point) => { const status=normalizeChassisStatus(hasChassisData ? (chassisStatusSource[point.id] ?? chassisStatusSource[point.name]) : 'original'); return {...point,status,...chassisStatusMeta[status]}; });
+const chassisGroup = (id) => chassisPoints.filter((point) => point.view === id);
+const chassisGroupMeta = (id) => { const points=chassisGroup(id), finding=points.filter((point)=>point.tone==='finding').length, pending=points.filter((point)=>point.tone==='pending').length; return finding ? {label:finding + ' noktada bulgu',color:'#B86700',bg:'rgba(232,137,18,.12)',icon:'!'} : pending ? {label:'Kontrol bekliyor',color:'#657080',bg:'rgba(101,112,128,.12)',icon:'?'} : {label:'Bulgu yok',color:'#218838',bg:'rgba(46,160,67,.10)',icon:'✓'}; };
+const selectedChassisId = this.state.chassisView ?? 'sideLeft';
+const chassisViewCards = CHASSIS_VIEWS.map((view) => { const status=chassisGroupMeta(view.id), active=selectedChassisId===view.id; return {...view,image:'./assets/inspection/chassis-v2/'+view.image+'?v=20261031-1',statusLabel:status.label,statusColor:status.color,statusBg:status.bg,statusIcon:status.icon,border:active?'2px solid #252A33':'1px solid rgba(20,28,40,.12)',shadow:active?'0 10px 22px rgba(0,0,0,.16)':'0 7px 16px rgba(0,0,0,.08)',select:()=>this.setState({chassisView:view.id,chassisZoom:false})}; });
+const topStatus = chassisGroupMeta('top');
+const chassisTop = {...topStatus,statusLabel:topStatus.label,statusColor:topStatus.color,border:selectedChassisId==='top'?'2px solid '+topStatus.color:'1px solid '+t.track,shadow:selectedChassisId==='top'?'0 7px 16px rgba(0,0,0,.14)':'none',select:()=>this.setState({chassisView:'top',chassisZoom:false})};
+const selectedChassisView = selectedChassisId === 'top' ? {id:'top',title:'Alt taban',image:'top.png'} : (CHASSIS_VIEWS.find((view)=>view.id===selectedChassisId) ?? CHASSIS_VIEWS[0]);
+const selectedChassis = {...selectedChassisView,image:'./assets/inspection/chassis-v2/'+selectedChassisView.image+'?v=20261031-1',points:chassisGroup(selectedChassisId),count:chassisGroup(selectedChassisId).length};
+const chassisOriginalCount = chassisPoints.filter((point)=>point.status==='original').length;
+const chassisFindingCount = chassisPoints.filter((point)=>point.tone==='finding').length;
+const chassisPendingCount = chassisPoints.filter((point)=>point.tone==='pending').length;
+const chassisSummaryTitle = chassisFindingCount ? chassisFindingCount + ' noktada bulgu var' : chassisPendingCount ? chassisOriginalCount + ' / 22 nokta tamamlandı' : '22 nokta orijinal';
+const chassisSummarySub = chassisFindingCount ? 'Yapısal bulgular detay listesinde gösteriliyor' : chassisPendingCount ? 'Eksik kontroller tamamlanmayı bekliyor' : 'İncelenen yapısal noktalarda bulgu yok';
+const chassisSummaryColor = chassisFindingCount ? '#B86700' : chassisPendingCount ? '#657080' : '#218838';
+const chassisSummaryBg = chassisFindingCount ? 'rgba(232,137,18,.10)' : chassisPendingCount ? 'rgba(101,112,128,.10)' : 'rgba(46,160,67,.10)';
+const chassisSummaryBorder = chassisFindingCount ? 'rgba(232,137,18,.28)' : chassisPendingCount ? 'rgba(101,112,128,.25)' : 'rgba(46,160,67,.25)';
+const testCount = Number(this.props.testCount ?? 14);
+const controlPoints = Number(this.props.controlPoints ?? 270);
+const spareKeyStatus = this.props.spareKeyStatus ?? 'Mevcut';
+const vehiclePlate = this.props.vehiclePlate ?? '16 CEC 623';
+const vehicleModel = this.props.vehicleModel ?? 'Renault Clio';
+const vehicleTrim = this.props.vehicleTrim ?? '1.2 16V Expression BVR';
+const modelYear = String(this.props.modelYear ?? '2012');
+const mileage = String(this.props.mileage ?? '82.473 km');
+const transmission = String(this.props.transmission ?? 'Manuel');
+const plateLetterNames = { A:'a', B:'be', C:'ce', Ç:'çe', D:'de', E:'e', F:'fe', G:'ge', Ğ:'yumuşak ge', H:'he', I:'ı', İ:'i', J:'je', K:'ke', L:'le', M:'me', N:'ne', O:'o', Ö:'ö', P:'pe', R:'re', S:'se', Ş:'şe', T:'te', U:'u', Ü:'ü', V:'ve', Y:'ye', Z:'ze' };
+const spokenPlate = String(vehiclePlate).trim().split(/\s+/).map((part) => /^\d+$/.test(part) ? part : part.toLocaleUpperCase('tr-TR').split('').map((letter) => plateLetterNames[letter] ?? letter).join(', ')).join('. ');
+const spokenMileage = String(mileage).replace(/[^0-9]/g, '') || String(mileage);
+const spokenModel = String(vehicleModel).replace(/Renault/gi, 'Reno').replace(/Clio/gi, 'Kliyo');
+const normalizedSpareKey = String(spareKeyStatus).trim().toLocaleLowerCase('tr-TR');
+const hasSpareKey = !/^(false|0)$/.test(normalizedSpareKey) && !/(yok|hayır|bulunamadı|bulunmamakta|mevcut değil)/i.test(normalizedSpareKey);
+const coverNarration = "Merhaba. Oto Te Re Oto Ekspertiz'e hoş geldiniz. Plaka " + spokenPlate + '. Araç modeli ' + spokenModel + '. Araç ' + modelYear + ' modeldir ve ' + spokenMileage + ' kilometrededir. Vites tipi ' + transmission + '. ' + (hasSpareKey ? 'Yedek anahtar mevcuttur.' : 'Yedek anahtar bulunmamaktadır.');
+const selectNaturalTurkishVoice = () => {
+const voices = window.speechSynthesis?.getVoices?.() ?? [];
+const turkishVoices = voices.filter((voice) => /^tr(?:-|_)/i.test(voice.lang));
+return turkishVoices.sort((a, b) => {
+const score = (voice) => (/google/i.test(voice.name) ? 100 : 0) + (/(natural|neural)/i.test(voice.name) ? 90 : 0) + (/(enhanced|premium)/i.test(voice.name) ? 70 : 0) + (/microsoft/i.test(voice.name) ? 35 : 0) + (!voice.localService ? 25 : 0) + (/^tr-TR$/i.test(voice.lang) ? 15 : 0);
+return score(b) - score(a);
+})[0] ?? null;
+};
+const hasTramer360 = this.props.hasTramer360 ?? true;
+const hasKmQuery = this.props.hasKmQuery ?? true;
+const hasDebtQuery = this.props.hasDebtQuery ?? true;
+const hasTramer = this.props.hasTramer ?? false;
+const hasThreeKmPackage = this.props.hasThreeKmPackage ?? true;
+const expertNote = typeof this.props.expertNote === 'string' ? this.props.expertNote.trim() : '';
+const bodyDefects = Array.isArray(this.props.bodyDefects) ? this.props.bodyDefects : [
+{ part: 'Arka bagaj', detail: 'Kuru çekiç / boya bozmadan doğrultma' },
+{ part: 'Tavan', detail: 'Ezik ve çizikler mevcut' }
+];
+const reportDateValue = this.props.reportDate ? new Date(this.props.reportDate) : new Date();
+const reportDate = new Intl.DateTimeFormat('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }).format(reportDateValue).replace(' ', ' · ');
+const pageAvailable = (index) => (index !== 3 || hasTramer360) && (index !== 4 || hasKmQuery) && (index !== 5 || hasDebtQuery);
+const findPage = (direction) => { let candidate = p + direction; while (candidate >= 0 && candidate <= last && !pageAvailable(candidate)) candidate += direction; return Math.min(last, Math.max(0, candidate)); };
+const previousPage = findPage(-1);
+const followingPage = findPage(1);
+const withPhoto = (item) => ({ ...item, hasPhoto: Boolean(item.photo), openPhoto: () => item.photo && this.setState({ findingPhoto: { src: item.photo, title: item.label } }) });
+const resultConfig = TEST_RESULT_CONFIG[p - 1] ?? { total: 0, sections: [] };
+const reportEvidence = this.props.reportEvidence ?? {};
+const rawResultFindings = Array.isArray(reportEvidence.findings) ? reportEvidence.findings : [];
+const pageResultFindings = rawResultFindings.filter((finding) => Number(finding.page) === p - 1);
+const sectionExpanded = this.state.sectionExpanded ?? {};
+const resultSections = resultConfig.sections.map(([title, count]) => {
+const findings = pageResultFindings.filter((finding) => finding.section === title).map((finding) => withPhoto({ label:finding.label, status:finding.status ?? 'TAKİP EDİLMELİ', bg:finding.bg ?? 'rgba(232,137,18,.14)', color:finding.color ?? '#C86A00', photo:finding.photo ?? '' }));
+const key='result-'+p+'-'+title, expanded=Boolean(sectionExpanded[key]);
+const details=Array.from({length:count},(_,index)=>{ const finding=findings[index]; return finding ? {label:finding.label,status:finding.status,bg:finding.bg,color:finding.color,rowBg:index%2?t.rowAlt:t.rowBase} : {label:title+' · kontrol noktası '+(index+1),status:'UYGUN',bg:'rgba(46,160,67,.12)',color:'#218838',rowBg:index%2?t.rowAlt:t.rowBase}; });
+return { title, score: count + ' / ' + count, accent:findings.length ? '#E88912' : '#35A853', hasFindings:findings.length > 0, clean:findings.length === 0, findings, details, expanded, chevron:expanded?'⌃':'⌄', showCollapsedFindings:!expanded&&findings.length>0, toggle:()=>this.setState({sectionExpanded:{...sectionExpanded,[key]:!expanded}}) };
+});
+const gasketEvidence = [{ label:'ÖNCESİ', src:reportEvidence.gasketBefore }, { label:'SONRASI', src:reportEvidence.gasketAfter }].filter((item) => Boolean(item.src)).map((item) => ({ ...item, open:() => this.setState({ findingPhoto:{ src:item.src, title:'Conta kaçak testi · ' + item.label } }) }));
+const batteryReceiptPhoto = reportEvidence.batteryReceipt ?? '';
+const motorExpanded = this.state.motorExpanded ?? {};
+const motorTone = {
+  good:{ bg:'rgba(46,160,67,.12)', color:'#218838' },
+  warning:{ bg:'rgba(232,137,18,.15)', color:'#B86700' },
+  critical:{ bg:'rgba(217,39,39,.13)', color:'#C51F1F' },
+  info:{ bg:'rgba(38,114,220,.13)', color:'#246DCC' }
+};
+const motorDetail = (label, status, tone='good', index=0) => ({ label, status, ...motorTone[tone], rowBg:index % 2 ? t.rowAlt : t.rowBase });
+const makeMotorSection = (id, config) => {
+  const expanded = Boolean(motorExpanded[id]);
+  return { ...config, id, expanded, chevron:expanded ? '⌃' : '⌄', showCollapsedFindings:!expanded && config.hasFindings, showCollapsedClean:!expanded && config.clean, toggle:() => this.setState({ motorExpanded:{ ...motorExpanded, [id]:!expanded } }) };
+};
+const motorSections = [
+  makeMotorSection('general', { title:'MOTOR ÜST BÖLGE & GENEL DURUM', score:'3 / 3', accent:'#D92727', hasFindings:true, clean:false, findings:[{ label:'Araçta Motor - Mekanik Olarak İşlem Mevcut', status:'EVET', bg:'rgba(217,39,39,.12)', color:'#C51F1F', photo:'' }].map(withPhoto), details:[motorDetail('Motor Koruyucu Kapağı / Hava Filtresi ve Boruları','İYİ','good',0),motorDetail('Motor Isı ve Ses İzolasyonu','İYİ','good',1),motorDetail('Araçta Motor - Mekanik Olarak İşlem Mevcut','EVET','critical',2)] }),
+  makeMotorSection('electrical', { title:'ELEKTRİK / ŞARJ / KLİMA & YARDIMCI SİSTEMLER', score:'4 / 4', accent:'#E88912', hasFindings:true, clean:false, findings:[{ label:'Akü voltajı: 12,0 V', status:'KÖTÜ', bg:'rgba(217,39,39,.12)', color:'#C51F1F', photo:batteryReceiptPhoto },{ label:'V Kayışı Gergi Rulmanı Ses Durumu', status:'SESLİ ÇALIŞMA', bg:'rgba(232,137,18,.14)', color:'#C86A00', photo:'' }].map(withPhoto), details:[motorDetail('Akü voltajı: 12,0 V','KÖTÜ','critical',0),motorDetail('V Kayışı Gergi Rulmanı Ses Durumu','SESLİ ÇALIŞMA','warning',1),motorDetail('Klima Kompresörü Genel Durumu','İYİ','good',2),motorDetail('Motor Elektrik Tesisatı ve Kabloları','İYİ','good',3)] }),
+  makeMotorSection('cooling', { title:'SOĞUTMA SİSTEMİ', score:'6 / 6', accent:'#35A853', hasFindings:false, clean:true, findings:[], details:[motorDetail('Antifriz','İYİ','good',0),motorDetail('Radyatör Genel Durumu','İYİ','good',1),motorDetail('Soğutma Fanları','İYİ','good',2),motorDetail('Soğutma Suyu Hortumları ve Sızdırmazlık','İYİ','good',3),motorDetail('Motor Suyunda Yağ Var mı?','YOK','good',4),motorDetail('Motor Yağında Soğutma Suyu Var mı?','HAYIR','good',5)] }),
+  makeMotorSection('health', { title:'MOTOR ÇALIŞMA / KOMPRESYON & İÇ SAĞLIK', score:'7 / 7', accent:'#E88912', hasFindings:true, clean:false, findings:[{ label:'Triger Kayışı - Zinciri Ses Durumu', status:'SERVİS MÜDAHALESİ', bg:'rgba(38,114,220,.12)', color:'#246DCC', photo:'' }].map(withPhoto), details:[motorDetail('Triger Kayışı - Zinciri Ses Durumu','SERVİS MÜDAHALESİ','info',0),motorDetail('Motor Piston Kompresör Testi Gerekli mi?','HAYIR','good',1),motorDetail('Egzoz Bölgesinde Siyah Duman Var mı?','HAYIR','good',2),motorDetail('Egzoz Bölgesinde Yağ Dumanı Mevcut mu?','HAYIR','good',3),motorDetail('Motorda Vuruntulu Çalışma Mevcut mu?','HAYIR','good',4),motorDetail('Motorda Üfleme Mevcut mu?','HAYIR','good',5),motorDetail('Araca Acil Servis Bakımı Gerekli mi?','HAYIR','good',6)] }),
+  makeMotorSection('turbo', { title:'TURBO / YAKIT / HAVA & EGZOZ', score:'5 / 5', accent:'#35A853', hasFindings:false, clean:true, findings:[], details:[motorDetail('Yakıt Sistemi ve Sızdırmazlık','İYİ','good',0),motorDetail('Intercooler Genel Durumu','YOK','good',1),motorDetail('Turbo Yağ Sızdırmazlığı - Üst Bölge','YOK','good',2),motorDetail('Turbo Boruları Genel Durumu','YOK','good',3),motorDetail('Egzoz Manifoldunda Gaz Kaçağı Var mı?','HAYIR','good',4)] }),
+  makeMotorSection('lubrication', { title:'YAĞLAMA & SIZDIRMAZLIK', score:'2 / 2', accent:'#E88912', hasFindings:true, clean:false, findings:[{ label:'Motor Üst Bölge Yağ Sızdırmazlığı', status:'TERLEME', bg:'rgba(232,137,18,.14)', color:'#C86A00', photo:'' }].map(withPhoto), details:[motorDetail('Motor Yağ Seviyesi','İYİ DÜZEYDE','good',0),motorDetail('Motor Üst Bölge Yağ Sızdırmazlığı','TERLEME','warning',1)] })
+];
+const mechanicalSections = [['ŞANZIMAN & DEBRİYAJ',4],['DİREKSİYON SİSTEMİ',3],['AKSLAR & AKTARMA',4],['EGZOZ & BAĞLANTILAR',3],['ALT TAKIM & MOTOR KULAKLARI',5]].map(([title,count])=>{ const key='mechanical-'+title,expanded=Boolean(sectionExpanded[key]); return {title,score:count+' / '+count,expanded,chevron:expanded?'⌃':'⌄',details:Array.from({length:count},(_,i)=>({label:title+' · kontrol noktası '+(i+1),status:'UYGUN',bg:'rgba(46,160,67,.12)',color:'#218838',rowBg:i%2?t.rowAlt:t.rowBase})),toggle:()=>this.setState({sectionExpanded:{...sectionExpanded,[key]:!expanded}})}; });
+const resultFindingCount = pageResultFindings.length;
+const resultBannerNames = { 11:'08-beyin-obd.png', 12:'09-yol-testi.png', 13:'10-fren-suspansiyon.png', 14:'11-dis-ekspertiz.png', 15:'12-ic-ekspertiz.png', 16:'13-airbag-guvenlik.png', 17:'14-conta-kacak.png', 18:'15-uclu-km-kontrolu.png', 19:'16-duman-kacak.png', 20:'17-motor-asinma.png', 21:'18-mor-isik.png' };
+const resultBanner = './assets/inspection/section-banners/' + (resultBannerNames[p - 1] ?? '08-beyin-obd.png') + '?v=20261031-2';
+const queryRows = [
+  { name:'Tramer', done:hasTramer },
+  { name:'Tramer 360', done:hasTramer360 },
+  { name:'KM Sorgusu', done:hasKmQuery },
+  { name:"3'lü KM Kontrol Paketi", done:hasThreeKmPackage },
+  { name:'Dosya Borç Sorgusu', done:hasDebtQuery }
+].map((item,index) => ({ ...item, status:item.done ? 'YAPILDI' : 'ALINMADI', statusBg:item.done ? 'rgba(46,160,67,.13)' : 'rgba(86,96,112,.13)', statusColor:item.done ? '#218838' : t.sub, bg:index % 2 ? t.rowAlt : t.rowBase }));
+const rawPhotoTiles = [
+['./assets/5238979de9c534657e296a988fb9f894.jpg','Ön görünüm','center'],
+['./assets/inspection/body-top.webp','Üst görünüm','center'],
+['./assets/inspection/body-left.webp','Sol görünüm','center'],
+['./assets/inspection/body-right.webp','Sağ görünüm','center'],
+['./assets/inspection/body-front.webp','Kaporta ön','center'],
+['./assets/inspection/body-rear.webp','Kaporta arka','center'],
+['./assets/inspection/chassis-top.webp','Şasi üst','center'],
+['./assets/inspection/chassis-front.webp','Şasi ön','center'],
+['./assets/inspection/chassis-rear.webp','Şasi arka','center'],
+['./assets/inspection/chassis-left.webp','Şasi sol','center'],
+['./assets/inspection/chassis-right.webp','Şasi sağ','center'],
+['./assets/5238979de9c534657e296a988fb9f894.jpg','Kaput detayı','center top'],
+['./assets/5238979de9c534657e296a988fb9f894.jpg','Ön panel detayı','center center'],
+['./assets/5238979de9c534657e296a988fb9f894.jpg','Sol ön detay','left center'],
+['./assets/5238979de9c534657e296a988fb9f894.jpg','Sağ ön detay','right center'],
+['./assets/5238979de9c534657e296a988fb9f894.jpg','Plaka detayı','center bottom']
+];
+const activePhotoIndex = Number.isInteger(this.state.activePhoto) ? this.state.activePhoto : 0;
+const photoTiles = rawPhotoTiles.map(([src,label,position], index) => ({ src,label,position,number:pad(index + 1),thumbBorder:index === activePhotoIndex ? accent : 'rgba(255,255,255,.10)',thumbOpacity:index === activePhotoIndex ? 1 : .62,thumbShadow:index === activePhotoIndex ? '0 0 0 2px rgba(232,40,26,.22),0 7px 16px rgba(0,0,0,.35)' : 'none',open:() => this.setState({ activePhoto:index }) }));
+const photoPreviewTiles = photoTiles.slice(0, 12);
+const chassisFindings = [];
+const chassisHasFindings = chassisFindings.length > 0;
+const photoCategories = [
+  { label:'Ön görünüm', count:3, start:0 },
+  { label:'Arka görünüm', count:3, start:5 },
+  { label:'Sol yan', count:3, start:2 },
+  { label:'Sağ yan', count:3, start:3 },
+  { label:'Motor bölümü', count:2, start:11 },
+  { label:'İç mekân', count:2, start:15 }
+].map((category) => ({ ...category, open:() => this.setState({ activePhoto:category.start }) }));
+const activePhoto = photoTiles[activePhotoIndex] ?? photoTiles[0];
+const baseDetailLabels = pg.items.length ? pg.items : (resultSections.length ? resultSections.map((item) => item.title) : ['Kontrol yöntemi', 'Değerlendirilen kayıtlar', 'Sonuç doğrulaması']);
+const testDetailRows = baseDetailLabels.slice(0, 6).map((label, index) => ({ label, value: index === baseDetailLabels.length - 1 ? 'UYGUN' : 'KONTROL EDİLDİ', color:'#218838', bg:index % 2 ? t.rowAlt : t.rowBase }));
+const testDetailDescription = pg.title + ' kapsamında kullanılan kontrol yöntemi, değerlendirilen noktalar ve sonuç özeti bu ekranda gösterilir.';
+const testDetailSummary = resultConfig.total ? resultConfig.total + ' kontrol noktası değerlendirilmiştir.' : 'Test verileri rapor kayıtlarıyla birlikte değerlendirilmiştir.';
+const menuItems = MENU_GROUPS.map((item, index) => {
+const active = item.pages.includes(p);
+const targetPage = item.pages.find(pageAvailable) ?? item.pages[0];
+return {
+...item,
+active,
+number: index + 1,
+weight: active ? 800 : 600,
+textColor: active ? '#FFFFFF' : t.text,
+numberBorder: active ? 'rgba(255,255,255,.82)' : t.sub,
+numberStyle: active ? 'background:rgba(255,255,255,.08);color:#fff' : 'background:transparent;color:' + t.sub,
+style: active ? 'background:#15171C;box-shadow:0 8px 18px rgba(0,0,0,.16)' : 'background:transparent',
+statusColor: item.status ?? 'transparent',
+statusOpacity: item.status ? 1 : 0,
+  go: () => { window.speechSynthesis?.cancel(); this.setState({ page: targetPage, modal: null, findingPhoto: null, testDetail:false, bodySketch:false, activePhoto:null, speaking:false, transitionDir:targetPage>=p?'next':'prev' },()=>this.scrollActiveMenu()); }
+};
+});
+const decisionStats=[{label:'Uygun',value:9,sub:'Sorunsuz test',bg:'rgba(46,160,67,.12)',color:'#218838'},{label:'Takip',value:3,sub:'İzlenmeli',bg:'rgba(232,137,18,.14)',color:'#B86700'},{label:'Kritik',value:2,sub:'Öncelikli',bg:'rgba(217,39,39,.13)',color:'#C51F1F'}];
+const decisionFindings=[{number:1,title:'Akü voltajı düşük',detail:'Ölçüm 12,0 V · kontrol edilmeli',level:'KRİTİK',color:'#C51F1F',bg:'rgba(217,39,39,.09)'},{number:2,title:'Motor / mekanik işlem kaydı',detail:'Motor üst bölge değerlendirmesi',level:'KRİTİK',color:'#C51F1F',bg:'rgba(217,39,39,.09)'},{number:3,title:'Yağ sızdırmazlığında terleme',detail:'Motor üst bölge · takip edilmeli',level:'TAKİP',color:'#B86700',bg:'rgba(232,137,18,.09)'}];
+return {
+t, accent, pg, cover: p === 0, notCover: p !== 0, decisionPage:p===1, decisionStats, decisionFindings,
+  menuItems, photoTiles, photoPreviewTiles, photoTotal:rawPhotoTiles.length, photoCategories, queryRows, chassisFindings, chassisHasFindings,
+menuProgress:Math.max(4,((p+1)/PAGES.length)*100), pageAnimation:this.state.transitionDir==='prev'?'pageSlidePrev':'pageSlideNext',
+showExpertNote: expertNote.length > 0, expertNote,
+showCriticalFinding: p === 6,
+showBodyDetailsFindings: p === 7,
+showMechanicalSummary: p === 11,
+resultPage: p >= 12 && p <= 22,
+showResultSummary: p >= 12 && p <= 22,
+resultSections,
+resultAllClean:resultFindingCount===0,resultConfigTotal:resultConfig.total,
+resultBanner,
+gasketEvidence, showGasketEvidence:p === 18 && gasketEvidence.length > 0, showGasketReference:p === 18 && gasketEvidence.length === 0,
+resultSummary: resultFindingCount ? resultConfig.total + ' kontrol noktasında ' + resultFindingCount + ' takip gerektiren bulgu var.' : resultConfig.total + ' kontrol noktasında kritik bulgu tespit edilmedi.',
+resultSummaryBg:resultFindingCount ? 'rgba(232,137,18,.10)' : 'rgba(46,160,67,.10)', resultSummaryBorder:resultFindingCount ? 'rgba(232,137,18,.34)' : 'rgba(46,160,67,.28)', resultSummaryColor:resultFindingCount ? '#B86700' : '#218838', resultSummaryGlow:resultFindingCount ? 'rgba(232,137,18,.14)' : 'rgba(46,160,67,.12)',
+vehiclePhotosPage: p === 23,
+  showVehiclePhotoSummary: false,
+bodyDefects, showBodyDefects: bodyDefects.length > 0,
+motorSections,
+mechanicalSections,
+reportDate, vehiclePlate, testCount, controlPoints, spareKeyStatus, inspectionSummary: testCount + ' TEST · ' + controlPoints + ' KONTROL NOKTASI',
+botH: p === 0 ? 430 : 104,
+chassisViewCards, chassisTop, selectedChassis, chassisSummaryTitle, chassisSummarySub, chassisSummaryColor, chassisSummaryBg, chassisSummaryBorder, showChassisZoom:Boolean(this.state.chassisZoom), openChassisZoom:()=>this.setState({chassisZoom:true}), closeChassisZoom:()=>this.setState({chassisZoom:false}),
+pageTwo: p === 2, legacyQueries: false, legacyChassisDetailsPage:false, tramerPage: p === 3, kmPage: p === 4, debtPage: p === 5, bodyPage: p === 6, bodyDetailsPage: p === 7, chassisPage: p === 8, chassisDetailsPage: p === 9, motorPage: p === 10, mechanicalPage: p === 11, standardPage: false,
+  showTramerModal: this.state.modal === 'tramer', showKmModal: this.state.modal === 'km',
+  showTestDetail:Boolean(this.state.testDetail), showBodySketch:Boolean(this.state.bodySketch), testDetailRows, testDetailDescription, testDetailSummary,
+  openTestDetail:() => (p === 6 || p === 7) ? this.setState({ bodySketch:true }) : this.setState({ testDetail:true }), closeTestDetail:() => this.setState({ testDetail:false }), closeBodySketch:() => this.setState({ bodySketch:false }), detailIconAnimation:(this.state.testDetail || this.state.bodySketch) ? 'detailGlow 1.15s ease-in-out infinite' : 'none',
+  showPhotoViewer:Number.isInteger(this.state.activePhoto), activePhotoSrc:activePhoto.src, activePhotoLabel:activePhoto.label, activePhotoCounter:pad(activePhotoIndex + 1) + ' / ' + rawPhotoTiles.length,
+  closePhotoViewer:() => this.setState({ activePhoto:null }), previousPhoto:() => this.setState({ activePhoto:(activePhotoIndex - 1 + rawPhotoTiles.length) % rawPhotoTiles.length }), nextPhoto:() => this.setState({ activePhoto:(activePhotoIndex + 1) % rawPhotoTiles.length }),
+showFindingPhoto: Boolean(this.state.findingPhoto), findingPhotoSrc: this.state.findingPhoto?.src ?? '', findingPhotoTitle: this.state.findingPhoto?.title ?? '', closeFindingPhoto: () => this.setState({ findingPhoto: null }),
+tramerRows: [
+{ label: 'Tramer kaydı', value: 'Kayıt yok' }, { label: 'Toplam hasar tutarı', value: '0 TL' }, { label: 'Ağır hasar kaydı', value: 'Yok' }, { label: 'Sahip sayısı', value: '6' }, { label: 'Kasko', value: 'Yürürlükte değil' }, { label: 'Plaka değişimi', value: 'Var (43 → 34)' }, { label: 'Araç', value: 'RENAULT (OYAK) CLIO GRAND TOUR EXTREME 1.2' }, { label: 'Trafiğe çıkış', value: '03.11.2011' }, { label: 'Kaskolu süre', value: '5.136 gün' }, { label: 'Kaskosuz süre', value: '337 gün' }, { label: 'Sahip türü', value: '4 şahıs, 2 firma' }, { label: 'Araç tür değişimi', value: 'Yok' }, { label: 'Tramer sorgu tarihi', value: '29.10.2026 14:00' }
+].map((item, index) => { const risk=['Sahip sayısı','Plaka değişimi','Kaskosuz süre'].includes(item.label); return { ...item, bg:index%2?t.rowAlt:t.rowBase, valuePad:risk?'5px 9px':'0', valueBg:risk?'rgba(232,137,18,.15)':'transparent', valueColor:risk?'#B86700':t.text }; }),
+kmFullRows: [
+{ date: '18.08.2026', value: '81.418', source: 'Araç muayenesi', plate: '34***58' }, { date: '10.07.2024', value: '63.511', source: 'Araç muayenesi', plate: '43***25' }, { date: '14.07.2022', value: '56.821', source: 'Araç muayenesi', plate: '43***25' }, { date: '06.07.2020', value: '51.600', source: 'Araç muayenesi', plate: '43***25' }, { date: '26.06.2018', value: '46.814', source: 'Araç muayenesi', plate: '43***25' }, { date: '27.06.2016', value: '41.010', source: 'Araç muayenesi', plate: '43***25' }, { date: '27.06.2014', value: '26.509', source: 'Araç muayenesi', plate: '43***25' }
+].map((item, index) => ({ ...item, bg: index % 2 ? t.rowAlt : t.rowBase })),
+debtRows: [ { label: 'Vergi borcu (MTV)', value: 'Yok' }, { label: 'Toplam borç', value: 'Yok' }, { label: 'Ağır hasar kaydı', value: 'Yok' }, { label: 'Muayene bitiş tarihi', value: '18.08.2028' } ].map((item, index) => ({ ...item, bg: index % 2 ? t.rowAlt : t.rowBase })),
+kmRows: [
+{ date: '18.08.2026', value: '81.418 km · Araç muayenesi', bg: t.rowAlt },
+{ date: '10.07.2024', value: '63.511 km · Araç muayenesi', bg: 'transparent' },
+{ date: '14.07.2022', value: '56.821 km · Araç muayenesi', bg: t.rowAlt }
+],
+parties: [
+{ title: 'ALICI BİLGİLERİ', rows: [
+{ label: 'Ad Soyad', value: 'Hüseyin Kahraman', bg: 'transparent' },
+{ label: 'Tür', value: 'Bireysel', bg: t.rowAlt },
+{ label: 'T.C. / Vergi No', value: '38********02', bg: 'transparent' },
+{ label: 'Telefon', value: '0536 *** ** 02', bg: t.rowAlt }
+] },
+{ title: 'SATICI / VEKİL', rows: [
+{ label: 'Ad Soyad / Ünvan', value: 'Halit Devrin', bg: 'transparent' },
+{ label: 'Tür', value: 'Bireysel', bg: t.rowAlt },
+{ label: 'T.C. / Vergi No', value: '3********08', bg: 'transparent' },
+{ label: 'Telefon', value: '0545 *** ** 81', bg: t.rowAlt }
+] }
+].map((party) => ({ ...party, rows: party.rows })),
+packageGroups: [
+{ border: '1px solid ' + t.track, items: [
+{ name: 'Kaporta - Boya Ekspertiz', points: 46 },
+{ name: 'Motor Ekspertiz', points: 30 },
+{ name: 'Mekanik Ekspertiz', points: 19 },
+{ name: 'Beyin / OBD / Elektronik', points: 10 },
+{ name: 'Yol Testi / Sürüş', points: 20 }
+] },
+{ border: '1px solid ' + t.track, items: [
+{ name: 'Fren / Süspansiyon', points: 26 },
+{ name: 'Dış Ekspertiz & Check-up', points: 26 },
+{ name: 'İç Ekspertiz & Check-up', points: 44 },
+{ name: 'Airbag & Pasif Güvenlik', points: 12 },
+{ name: 'Conta Kaçak Testi', points: 6 }
+] },
+{ border: '0', items: [
+{ name: "3'lü KM Paketi", points: 3 },
+{ name: 'Duman Kaçak Testi', points: 7 },
+{ name: 'Motor Aşınma Testi', points: 5 },
+{ name: 'Mor Işık (UV) Testi', points: 16 }
+] }
+].map((group) => ({ ...group, items: group.items.map((item, index) => ({ ...item, bg: index % 2 ? t.rowAlt : 'rgba(255,255,255,0.18)' })) })),
+specs: [
+{ label: 'MODEL YILI', value: modelYear, d: 'M5 6h14a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2zM3 11h18M8 3v5M16 3v5M8 15h.01M12 15h.01M16 15h.01' },
+{ label: 'KİLOMETRE', value: mileage, d: 'M4.9 19.1a9 9 0 1 1 14.2 0M12 15l4-5M7 12h.01M12 7.5h.01M17 12h.01' },
+{ label: 'VİTES', value: transmission, d: 'M6 5v14M12 5v14M18 5v6a2 2 0 0 1-2 2H6M6 5h.01M12 5h.01M18 5h.01' },
+{ label: 'YAKIT', value: 'Benzin', d: 'M3 11v5h3l2 3h9l3-3v-5l-2-2h-3V6h-5v3H7l-1 2z' }
+],
+pageNo: pad(p + 1), pageLabel: pad(p + 1) + ' / ' + PAGES.length,
+footerTitle:({ 'Kaporta – Boya Görünümleri':'Kaporta Görünümleri','Kaporta – Boya Bulguları':'Kaporta Bulguları','Beyin / OBD / Elektronik':'Beyin / OBD','Airbag & Pasif Güvenlik':'Airbag & Güvenlik' }[pg.title] ?? pg.title),
+rows: pg.items.map((label) => ({ label })),
+stats: [{ label: 'KONTROL' }, { label: 'UYGUN' }, { label: 'DİKKAT' }],
+segs: PAGES.map((_, i) => ({
+style: i < p
+? 'height: 4px; background: ' + accent + '; opacity: 0.55'
+: i === p
+? 'height: 6px; background: ' + accent + '; box-shadow: 0 0 10px ' + accent + '; transform: translateY(-1px)'
+: 'height: 4px; background: ' + t.seg
+})),
+setLight: () => { document.body.style.background = '#EEF0F4'; this.setState({ dark: false }); },
+setDark: () => { document.body.style.background = '#0A0C10'; this.setState({ dark: true }); },
+  aiLabel:this.state.speaking ? 'ANLATIMI DURDUR' : 'AI İLE SESLENDİR',
+  aiBackground:this.state.speaking ? 'linear-gradient(145deg,#E8281A,#9E160D)' : 'linear-gradient(145deg,#252A33,#111319)', aiBorder:this.state.speaking ? 'rgba(255,105,88,.9)' : 'rgba(255,255,255,.12)', aiShadow:this.state.speaking ? '0 0 18px rgba(232,40,26,.65),0 10px 20px rgba(0,0,0,.25)' : '0 8px 18px rgba(0,0,0,.22)',
+  speakPage:() => { if (!('speechSynthesis' in window)) return; if (this.state.speaking) { window.speechSynthesis.cancel(); this.setState({ speaking:false }); return; } window.speechSynthesis.cancel(); const text = p === 0 ? coverNarration : pg.title + '. ' + testDetailDescription + ' ' + testDetailSummary; const utterance = new SpeechSynthesisUtterance(text); const naturalVoice = selectNaturalTurkishVoice(); utterance.lang='tr-TR'; if (naturalVoice) utterance.voice=naturalVoice; utterance.rate=.88; utterance.pitch=1.02; utterance.volume=1; utterance.onend=() => this.setState({ speaking:false }); utterance.onerror=() => this.setState({ speaking:false }); window.speechSynthesis.speak(utterance); this.setState({ speaking:true }); },
+  shareWhatsapp:() => { const text='OTOTR ekspertiz raporu: ' + vehiclePlate + ' - ' + window.location.href; window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank', 'noopener,noreferrer'); },
+openTramerOriginal: () => this.setState({ modal: 'tramer' }),
+openKmOriginal: () => this.setState({ modal: 'km' }),
+closeOriginal: () => this.setState({ modal: null }),
+lightBtn: dark ? 'background: transparent; color: ' + t.sub : 'background: ' + accent + '; color: #FFFFFF',
+darkBtn: dark ? 'background: ' + accent + '; color: #FFFFFF' : 'background: transparent; color: ' + t.sub,
+prevOp: 1, nextOp:1,lastPage:p===last,notLastPage:p!==last,
+nextLabel: p === 0 ? 'Sunuma başla' : 'Sonraki',
+  prev: () => { window.speechSynthesis?.cancel(); this.setState({ page: previousPage, modal: null, testDetail:false, bodySketch:false, activePhoto:null, speaking:false,transitionDir:'prev' },()=>this.scrollActiveMenu()); },
+  next: () => { window.speechSynthesis?.cancel(); this.setState({ page: followingPage, modal: null, testDetail:false, bodySketch:false, activePhoto:null, speaking:false,transitionDir:'next' },()=>this.scrollActiveMenu()); },
+  restart:()=>this.setState({page:0,activePhoto:null,transitionDir:'prev'},()=>this.scrollActiveMenu()),
+  shareReport:async()=>{ const data={title:'OTOTR Ekspertiz Raporu',text:vehiclePlate+' ekspertiz raporu',url:window.location.href}; if(navigator.share){ try{await navigator.share(data);}catch(_){ } } else { window.open('https://wa.me/?text='+encodeURIComponent(data.text+' '+data.url),'_blank','noopener,noreferrer'); } }
+};
+}
+}
+</script>
+<script>
+(() => {
+  const fitPresentation = () => {
+    const scale = Math.min(window.innerWidth / 672, window.innerHeight / 1000);
+    document.documentElement.style.setProperty('--presentation-scale', String(scale));
+  };
+  const clickControl = (label) => {
+    const button = Array.from(document.querySelectorAll('button')).find((item) => item.getAttribute('aria-label') === label);
+    if (button) button.click();
+  };
+  window.addEventListener('resize', fitPresentation, { passive: true });
+  window.addEventListener('orientationchange', fitPresentation, { passive: true });
+  document.addEventListener('keydown', (event) => {
+    const tag = event.target && event.target.tagName;
+    if (event.key === 'ArrowLeft' || event.key === 'PageUp') {
+      event.preventDefault();
+      clickControl('Önceki sayfa');
+    } else if (event.key === 'ArrowRight' || event.key === 'PageDown') {
+      event.preventDefault();
+      clickControl('Sonraki sayfa');
+    } else if ((event.key === ' ' || event.key === 'Enter') && tag !== 'BUTTON') {
+      event.preventDefault();
+      clickControl('Sonraki sayfa');
+    }
+  });
+  let touchStartX = 0;
+  document.addEventListener('touchstart', (event) => {
+    touchStartX = event.changedTouches[0].clientX;
+  }, { passive: true });
+  document.addEventListener('touchend', (event) => {
+    const delta = event.changedTouches[0].clientX - touchStartX;
+    if (Math.abs(delta) < 70) return;
+    clickControl(delta < 0 ? 'Sonraki sayfa' : 'Önceki sayfa');
+  }, { passive: true });
+  fitPresentation();
+})();
+</script>
+</body>
+</html>
