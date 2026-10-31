@@ -705,8 +705,14 @@ statusOpacity: item.status ? 1 : 0,
   go: () => { window.speechSynthesis?.cancel(); this.setState({ page: targetPage, modal: null, findingPhoto: null, testDetail:false, bodySketch:false, activePhoto:null, speaking:false, transitionDir:targetPage>=p?'next':'prev' },()=>this.scrollActiveMenu()); }
 };
 });
-const decisionStats=[{label:'Uygun',value:9,sub:'Sorunsuz test',bg:'rgba(46,160,67,.12)',color:'#218838'},{label:'Takip',value:3,sub:'İzlenmeli',bg:'rgba(232,137,18,.14)',color:'#B86700'},{label:'Kritik',value:2,sub:'Öncelikli',bg:'rgba(217,39,39,.13)',color:'#C51F1F'}];
-const decisionFindings=[{number:1,title:'Akü voltajı düşük',detail:'Ölçüm 12,0 V · kontrol edilmeli',level:'KRİTİK',color:'#C51F1F',bg:'rgba(217,39,39,.09)'},{number:2,title:'Motor / mekanik işlem kaydı',detail:'Motor üst bölge değerlendirmesi',level:'KRİTİK',color:'#C51F1F',bg:'rgba(217,39,39,.09)'},{number:3,title:'Yağ sızdırmazlığında terleme',detail:'Motor üst bölge · takip edilmeli',level:'TAKİP',color:'#B86700',bg:'rgba(232,137,18,.09)'}];
+const defaultDecisionFindings=[{title:'Akü voltajı düşük',detail:'Ölçüm 12,0 V · kontrol edilmeli',level:'KRİTİK'},{title:'Motor / mekanik işlem kaydı',detail:'Motor üst bölge değerlendirmesi',level:'KRİTİK'},{title:'Yağ sızdırmazlığında terleme',detail:'Motor üst bölge · takip edilmeli',level:'TAKİP'},{title:'V kayışı rulman sesi',detail:'Sesli çalışma · takip edilmeli',level:'TAKİP'},{title:'Triger / zincir sesi',detail:'Servis müdahalesi önerilir',level:'TAKİP'}];
+const evidenceDecisionFindings=rawResultFindings.map((finding)=>{ const raw=String(finding.status??finding.level??'TAKİP').toLocaleUpperCase('tr-TR'),critical=/KRİTİK|KÖTÜ|ACİL/.test(raw); return {title:finding.label??finding.section??'Test bulgusu',detail:finding.detail??finding.section??'İlgili test sayfasında gösterilir',level:critical?'KRİTİK':'TAKİP'}; });
+const decisionSource=evidenceDecisionFindings.length?evidenceDecisionFindings:defaultDecisionFindings;
+const decisionCritical=decisionSource.filter((finding)=>finding.level==='KRİTİK').length;
+const decisionFollow=decisionSource.length-decisionCritical;
+const decisionSuitable=Math.max(0,testCount-decisionCritical-decisionFollow);
+const decisionStats=[{label:'Uygun',value:decisionSuitable,sub:'Sorunsuz test',bg:'rgba(46,160,67,.12)',color:'#218838'},{label:'Takip',value:decisionFollow,sub:'İzlenmeli',bg:'rgba(232,137,18,.14)',color:'#B86700'},{label:'Kritik',value:decisionCritical,sub:'Öncelikli',bg:'rgba(217,39,39,.13)',color:'#C51F1F'}];
+const decisionFindings=decisionSource.slice(0,3).map((finding,index)=>{ const critical=finding.level==='KRİTİK'; return {...finding,number:index+1,color:critical?'#C51F1F':'#B86700',bg:critical?'rgba(217,39,39,.09)':'rgba(232,137,18,.09)'}; });
 return {
 t, accent, pg, cover: p === 0, notCover: p !== 0, decisionPage:p===1, decisionStats, decisionFindings,
   menuItems, photoTiles, photoPreviewTiles, photoTotal:rawPhotoTiles.length, photoCategories, queryRows, chassisFindings, chassisHasFindings,
