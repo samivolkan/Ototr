@@ -4308,7 +4308,7 @@
       if(id==='quality') return `<button class="btn primary" data-quality-open-audit>${icon('plus')}Yeni Denetim Oluştur</button><button class="btn" data-action="Kritik kalite bulguları filtrelendi.">${icon('siren')}Kritik Bulgular</button><button class="btn" data-route="academy">${icon('graduation-cap')}Academy Açıkları</button>`;
       if(id==='report-design') return `<button class="btn primary" onclick="window.print()">${icon('printer')}Yazdır</button><button class="btn" data-report-scroll="report-page-1">${icon('file-text')}PDF Önizleme</button><button class="btn" data-report-scroll="report-page-18">${icon('badge-check')}Araç Karnesi</button><button class="btn" data-report-scroll="report-page-19">${icon('image')}Kanıt Arşivi</button>`;
       if(id==='sunum32') return `<button class="btn primary" onclick="window.open('sunum-32-ekran/?v=20261031-16','_blank','noopener,noreferrer')">${icon('external-link')}Tam Ekran Aç</button>`;
-      if(id==='sunum32v2') return `<button class="btn primary" onclick="window.open('sunum-32-ekran-v2/?v=20261031-1','_blank','noopener,noreferrer')">${icon('external-link')}V2 Tam Ekran Aç</button>`;
+      if(id==='sunum32v2') return `<button class="btn primary" onclick="openSunum32V2FullScreen()">${icon('external-link')}V2 Tam Ekran Aç</button>`;
       if(id==='vehicle-passport') return `<button class="btn primary" onclick="window.print()">${icon('printer')}Yazdır</button><button class="btn" data-route="report-design">${icon('file-check-2')}Tam Rapor</button><button class="btn" data-route="dealer">${icon('tablet-smartphone')}Bayi Portalı</button>`;
       if(id==='operations') return `<button class="btn primary" data-operation-action="SLA-001:delayed-report">${icon('clipboard-plus')}Geciken Rapor Aksiyonu</button><button class="btn" data-operation-action="CAP-001:capacity-warning">${icon('alert-triangle')}Kapasite Uyarısı</button><button class="btn" data-operation-scroll>${icon('list-checks')}Gün Sonu Özeti</button>`;
       if(id==='dealer') return `<button class="btn dealer-theme-switch" type="button" data-theme-toggle title="Açık / koyu geçiş">${icon('sun-moon')}<span>Tema</span></button><button class="btn primary" data-action="Tablet ekspertiz oturumu başlatıldı.">${icon('tablet-smartphone')}Tablet Başlat</button><button class="btn" data-dealer-prepare-report onclick="event.preventDefault();event.stopPropagation();dealerPrepareActiveReportPreview();">${icon('file-pen-line')}Raporu Hazırla</button><button class="btn" data-route="branches">${icon('building-2')}Şube 360</button>`;
@@ -4341,7 +4341,46 @@
       return `<div class="module-page-head"><div><h1>${meta[1]}</h1><p>${meta[2]}</p></div><div class="module-page-actions">${moduleHeaderActions(id,meta[1])}</div></div>`;
     }
     function Sunum32Page(){ return `<div class="card" style="padding:0;overflow:hidden"><iframe title="32 Ekran Ekspertiz Sunumu" src="sunum-32-ekran/?v=20261031-16" style="display:block;width:100%;height:calc(100vh - 92px);min-height:860px;border:0;background:#eef0f4"></iframe></div>`; }
-    function Sunum32V2Page(){ return `<div class="card" style="padding:0;overflow:hidden"><iframe title="32 Ekran Ekspertiz Sunumu V2" src="sunum-32-ekran-v2/?v=20261031-1" style="display:block;width:100%;height:calc(100vh - 92px);min-height:860px;border:0;background:#eef0f4"></iframe></div>`; }
+    function sunum32V2PageForGroup(title){
+      const text=String(title||'').toLocaleLowerCase('tr-TR');
+      if(/mekanik|şanzıman|direksiyon|aks|alt takım|egzoz/.test(text)) return 10;
+      if(/obd|beyin|elektronik/.test(text)) return 11;
+      if(/yol|sürüş/.test(text)) return 12;
+      if(/fren|süspansiyon|amortisör/.test(text)) return 13;
+      if(/dış ekspertiz|lastik|jant|aydınlatma|cam|ayna/.test(text)) return 14;
+      if(/iç ekspertiz|koltuk|döşeme|klima|multimedya|gösterge/.test(text)) return 15;
+      if(/airbag|pasif güvenlik|emniyet kemer/.test(text)) return 16;
+      if(/conta|yanma gazı|soğutma suyu/.test(text)) return 17;
+      if(/3.?lü km|kilometre|km kontrol/.test(text)) return 18;
+      if(/duman|kaçak/.test(text)) return 19;
+      if(/aşınma|kompresyon/.test(text)) return 20;
+      if(/mor ışık|uv/.test(text)) return 21;
+      return 0;
+    }
+    function sunum32V2Payload(){
+      const wo=dealerReportPreviewWorkOrder();
+      if(!wo) return {};
+      const testSections=[];
+      try{
+        dealerReportSchemaGroups(wo).forEach(group=>{
+          const page=sunum32V2PageForGroup(group.title||group.name||group.taskTypeCode);
+          if(!page) return;
+          const items=(group.items||[]).map(item=>{
+            const value=dealerReportPointValue(wo,item), option=dealerReportPointOption(item,value), images=Array.isArray(value?.imageUrls)?value.imageUrls:[];
+            const photo=images.find(url=>/^(https?:|data:image\/|blob:)/i.test(String(url||'')))||'';
+            return {label:item.title||item.name||item.label||item.id,status:option?.label||value?.optionLabel||value?.status||'UYGUN',note:value?.note||'',photo};
+          });
+          if(items.length) testSections.push({page,title:group.title||group.name||'',items});
+        });
+      }catch(err){ console.warn('V2 sunum test verisi hazırlanamadı',err); }
+      const verificationToken=wo.reportVerificationToken||wo.verificationToken||wo.signedReportToken||'';
+      const verificationUrl=wo.verificationUrl||(verificationToken&&wo.reportNo?'https://kokpit.ototr.com/rapor-dogrula/'+encodeURIComponent(wo.reportNo)+'?token='+encodeURIComponent(verificationToken):'');
+      return {reportId:wo.id||'',reportNo:wo.reportNo||'',verificationUrl,vehiclePlate:wo.plate||'',vehicleModel:wo.vehicle||[wo.vehicleMake,wo.vehicleModel].filter(Boolean).join(' '),vehicleTrim:wo.vehicleVariant||'',modelYear:wo.year||'',mileage:wo.mileage||'',transmission:wo.transmission||'',spareKeyStatus:wo.spareKey||'',reportEvidence:{testSections}};
+    }
+    function syncSunum32V2Target(target){ const receiver=target?.contentWindow||target; if(receiver&&receiver.postMessage) receiver.postMessage({type:'ototr-report-data',payload:sunum32V2Payload()},location.origin); }
+    function openSunum32V2FullScreen(){ const popup=window.open('sunum-32-ekran-v2/?v=20261031-3','_blank'); if(popup) setTimeout(()=>syncSunum32V2Target(popup),700); }
+    function Sunum32V2Page(){ return `<div class="card" style="padding:0;overflow:hidden"><iframe title="32 Ekran Ekspertiz Sunumu V2" src="sunum-32-ekran-v2/?v=20261031-3" onload="syncSunum32V2Target(this)" style="display:block;width:100%;height:calc(100vh - 92px);min-height:860px;border:0;background:#eef0f4"></iframe></div>`; }
+    window.addEventListener('message',event=>{ if(event.origin===location.origin&&event.data?.type==='ototr-report-ready'){ const frame=document.querySelector('iframe[title="32 Ekran Ekspertiz Sunumu V2"]'); if(frame) syncSunum32V2Target(frame); } });
     function pageShell(id, content){ return `<div class="page ${id===current?'active':''}" id="page-${id}">${pageHeader(id)}${content}${id==='dealer'||id==='sunum32'||id==='sunum32v2'?'':deptPlan(id)}</div>`; }
     function stat(label,value,trend,color=''){ return `<div class="card stat ${color}"><div class="label">${label}</div><div class="value">${value}</div><div class="trend ${String(trend).startsWith('-')?'down':''}">${trend}</div></div>`; }
     const reputationFilters={source:'',risk:'',sentiment:'',branch:'',status:''};
