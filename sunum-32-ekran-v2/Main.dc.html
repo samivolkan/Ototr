@@ -20,8 +20,11 @@ x-dc,body>div:first-of-type{position:absolute!important;left:50%!important;top:5
 @keyframes scan{0%{top:18%;opacity:0}15%{opacity:1}85%{opacity:1}100%{top:78%;opacity:0}}
 @keyframes detailGlow{0%,100%{filter:drop-shadow(0 5px 7px rgba(14,17,22,.22))}50%{filter:drop-shadow(0 0 15px rgba(232,40,26,.95)) drop-shadow(0 10px 12px rgba(232,40,26,.38))}}
 @keyframes originalPulse{0%,100%{transform:translateY(0);box-shadow:0 8px 16px rgba(179,21,12,.26),0 0 0 0 rgba(232,40,26,.28)}50%{transform:translateY(-1px);box-shadow:0 12px 24px rgba(179,21,12,.38),0 0 0 8px rgba(232,40,26,0)}}
-@keyframes pageSlideNext{from{opacity:.2;transform:translateX(24px)}to{opacity:1;transform:translateX(0)}}
-@keyframes pageSlidePrev{from{opacity:.2;transform:translateX(-24px)}to{opacity:1;transform:translateX(0)}}
+@keyframes pageSlideNextA{from{opacity:.05;transform:translate3d(76px,0,0) scale(.985);filter:blur(2px)}to{opacity:1;transform:translate3d(0,0,0) scale(1);filter:blur(0)}}
+@keyframes pageSlideNextB{from{opacity:.05;transform:translate3d(76px,0,0) scale(.985);filter:blur(2px)}to{opacity:1;transform:translate3d(0,0,0) scale(1);filter:blur(0)}}
+@keyframes pageSlidePrevA{from{opacity:.05;transform:translate3d(-76px,0,0) scale(.985);filter:blur(2px)}to{opacity:1;transform:translate3d(0,0,0) scale(1);filter:blur(0)}}
+@keyframes pageSlidePrevB{from{opacity:.05;transform:translate3d(-76px,0,0) scale(.985);filter:blur(2px)}to{opacity:1;transform:translate3d(0,0,0) scale(1);filter:blur(0)}}
+@keyframes accordionDrop{0%{opacity:0;transform:translateY(-14px) scaleY(.82);clip-path:inset(0 0 100% 0)}100%{opacity:1;transform:translateY(0) scaleY(1);clip-path:inset(0 0 0 0)}}
 .scan{position:absolute;left:0;right:0;height:2px;animation:scan 3.6s ease-in-out infinite;display:flex;align-items:center;justify-content:center}
 .scan-label{transform:translateY(-50%);padding:5px 12px;border-radius:999px;background:rgba(14,17,22,.78);border:1px solid rgba(255,255,255,.24);box-shadow:0 5px 14px rgba(0,0,0,.35);color:#fff;font-size:11px;font-weight:800;letter-spacing:1.05px;white-space:nowrap}
 button{cursor:pointer}
@@ -44,7 +47,7 @@ button:focus-visible{outline:3px solid #fff;outline-offset:3px}
 <div style="position: absolute; left: -120px; top: 80px; width: 520px; height: 520px; border-radius: 50%; background: radial-gradient(circle, {{t.glow}} 0%, rgba(232,40,26,0) 68%)"></div>
 <div style="position: absolute; right: -60px; top: 0; width: 300px; height: 300px; transform: skewX(-24deg); background: {{t.skew}}"></div>
 
-<div style="position: absolute; left: 0; right: 0; top: 24px; bottom: {{botH}}px; box-sizing: border-box; padding: 0 32px; display: flex; flex-direction: column; overflow: hidden;animation:{{pageAnimation}} .28s cubic-bezier(.22,.75,.2,1) both">
+<div style="position: absolute; left: 0; right: 0; top: 24px; bottom: {{botH}}px; box-sizing: border-box; padding: 0 32px; display: flex; flex-direction: column; overflow: hidden;will-change:transform,opacity;animation:{{pageAnimation}} .42s cubic-bezier(.2,.82,.24,1) both">
 
 <sc-if value="{{cover}}" hint-placeholder-val="{{ true }}">
 <div style="position: relative; margin-top: 0; display: flex; flex-direction: column; gap: 9px">
@@ -274,7 +277,7 @@ button:focus-visible{outline:3px solid #fff;outline-offset:3px}
 </sc-if>
 
 <sc-if value="{{motorPage}}" hint-placeholder-val="{{ false }}">
-<style>@keyframes motorAccordionReveal{from{opacity:0;transform:translateY(-9px)}to{opacity:1;transform:translateY(0)}}</style>
+<style>@keyframes motorAccordionReveal{0%{opacity:0;transform:translateY(-14px) scaleY(.82);clip-path:inset(0 0 100% 0)}100%{opacity:1;transform:translateY(0) scaleY(1);clip-path:inset(0 0 0 0)}}</style>
 <div style="margin:12px -12px 0;max-height:705px;padding-right:3px;display:flex;flex-direction:column;gap:7px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin">
 <figure style="flex:none;margin:0 0 2px;aspect-ratio:3/1;overflow:hidden;border:1px solid {{t.track}};border-radius:16px;background:{{t.rowBase}};box-shadow:0 10px 24px rgba(0,0,0,.12)"><img src="./assets/inspection/section-banners/06-motor.png?v=20261031-2" alt="Motor bölümü ekspertiz görseli" width="2172" height="724" style="display:block;width:100%;height:100%;object-fit:cover;object-position:center"></figure>
 <sc-for list="{{motorSections}}" as="section" hint-placeholder-count="6">
@@ -499,7 +502,7 @@ const CHASSIS_VIEWS = [
 {id:'sideLeft',title:'Sol yan',image:'side-left.png'},{id:'sideRight',title:'Sağ yan',image:'side-right.png'},{id:'front',title:'Ön görünüş',image:'front.png'},{id:'rear',title:'Arka görünüş',image:'rear.png'}
 ];
 class Component extends DCLogic {
-constructor(props) { super(props); const query = new URLSearchParams(window.location.search); const requestedPage = Number(query.get('page') ?? 1); const requestedModal = query.get('modal'); this.state = { page: Math.min(PAGES.length - 1, Math.max(0, requestedPage - 1)), modal: requestedModal === 'tramer' || requestedModal === 'km' ? requestedModal : null, findingPhoto: null, testDetail: false, bodySketch:false, activePhoto: null, speaking: false, chassisView:'sideLeft', chassisZoom:false, motorExpanded:{}, sectionExpanded:{}, transitionDir:'next' }; }
+constructor(props) { super(props); const query = new URLSearchParams(window.location.search); const requestedPage = Number(query.get('page') ?? 1); const requestedModal = query.get('modal'); this.state = { page: Math.min(PAGES.length - 1, Math.max(0, requestedPage - 1)), modal: requestedModal === 'tramer' || requestedModal === 'km' ? requestedModal : null, findingPhoto: null, testDetail: false, bodySketch:false, activePhoto: null, speaking: false, chassisView:'sideLeft', chassisZoom:false, motorExpanded:{}, sectionExpanded:{}, transitionDir:'next', transitionTick:0 }; }
 componentDidMount(){ this.scrollActiveMenu(); }
 scrollActiveMenu(){ setTimeout(()=>document.querySelector('[data-menu-active="true"]')?.scrollIntoView?.({block:'nearest',behavior:'smooth'}),30); }
 renderVals() {
@@ -702,7 +705,7 @@ numberStyle: active ? 'background:rgba(255,255,255,.08);color:#fff' : 'backgroun
 style: active ? 'background:#15171C;box-shadow:0 8px 18px rgba(0,0,0,.16)' : 'background:transparent',
 statusColor: item.status ?? 'transparent',
 statusOpacity: item.status ? 1 : 0,
-  go: () => { window.speechSynthesis?.cancel(); this.setState({ page: targetPage, modal: null, findingPhoto: null, testDetail:false, bodySketch:false, activePhoto:null, speaking:false, transitionDir:targetPage>=p?'next':'prev' },()=>this.scrollActiveMenu()); }
+  go: () => { window.speechSynthesis?.cancel(); this.setState((state)=>({ page: targetPage, modal: null, findingPhoto: null, testDetail:false, bodySketch:false, activePhoto:null, speaking:false, transitionDir:targetPage>=p?'next':'prev', transitionTick:state.transitionTick+1 }),()=>this.scrollActiveMenu()); }
 };
 });
 const defaultDecisionFindings=[{title:'Akü voltajı düşük',detail:'Ölçüm 12,0 V · kontrol edilmeli',level:'KRİTİK'},{title:'Motor / mekanik işlem kaydı',detail:'Motor üst bölge değerlendirmesi',level:'KRİTİK'},{title:'Yağ sızdırmazlığında terleme',detail:'Motor üst bölge · takip edilmeli',level:'TAKİP'},{title:'V kayışı rulman sesi',detail:'Sesli çalışma · takip edilmeli',level:'TAKİP'},{title:'Triger / zincir sesi',detail:'Servis müdahalesi önerilir',level:'TAKİP'}];
@@ -716,7 +719,7 @@ const decisionFindings=decisionSource.slice(0,3).map((finding,index)=>{ const cr
 return {
 t, accent, pg, cover: p === 0, notCover: p !== 0, decisionPage:p===1, decisionStats, decisionFindings,
   menuItems, photoTiles, photoPreviewTiles, photoTotal:rawPhotoTiles.length, photoCategories, queryRows, chassisFindings, chassisHasFindings,
-menuProgress:Math.max(4,((p+1)/PAGES.length)*100), pageAnimation:this.state.transitionDir==='prev'?'pageSlidePrev':'pageSlideNext',
+menuProgress:Math.max(4,((p+1)/PAGES.length)*100), pageAnimation:(this.state.transitionDir==='prev'?'pageSlidePrev':'pageSlideNext')+(this.state.transitionTick%2?'B':'A'),
 showExpertNote: expertNote.length > 0, expertNote,
 showCriticalFinding: p === 6,
 showBodyDetailsFindings: p === 7,
@@ -822,9 +825,9 @@ lightBtn: dark ? 'background: transparent; color: ' + t.sub : 'background: ' + a
 darkBtn: dark ? 'background: ' + accent + '; color: #FFFFFF' : 'background: transparent; color: ' + t.sub,
 prevOp: 1, nextOp:1,lastPage:p===last,notLastPage:p!==last,
 nextLabel: p === 0 ? 'Sunuma başla' : 'Sonraki',
-  prev: () => { window.speechSynthesis?.cancel(); this.setState({ page: previousPage, modal: null, testDetail:false, bodySketch:false, activePhoto:null, speaking:false,transitionDir:'prev' },()=>this.scrollActiveMenu()); },
-  next: () => { window.speechSynthesis?.cancel(); this.setState({ page: followingPage, modal: null, testDetail:false, bodySketch:false, activePhoto:null, speaking:false,transitionDir:'next' },()=>this.scrollActiveMenu()); },
-  restart:()=>this.setState({page:0,activePhoto:null,transitionDir:'prev'},()=>this.scrollActiveMenu()),
+  prev: () => { window.speechSynthesis?.cancel(); this.setState((state)=>({ page: previousPage, modal: null, testDetail:false, bodySketch:false, activePhoto:null, speaking:false,transitionDir:'prev',transitionTick:state.transitionTick+1 }),()=>this.scrollActiveMenu()); },
+  next: () => { window.speechSynthesis?.cancel(); this.setState((state)=>({ page: followingPage, modal: null, testDetail:false, bodySketch:false, activePhoto:null, speaking:false,transitionDir:'next',transitionTick:state.transitionTick+1 }),()=>this.scrollActiveMenu()); },
+  restart:()=>this.setState((state)=>({page:0,activePhoto:null,transitionDir:'prev',transitionTick:state.transitionTick+1}),()=>this.scrollActiveMenu()),
   shareReport:async()=>{ const data={title:'OTOTR Ekspertiz Raporu',text:vehiclePlate+' ekspertiz raporu',url:window.location.href}; if(navigator.share){ try{await navigator.share(data);}catch(_){ } } else { window.open('https://wa.me/?text='+encodeURIComponent(data.text+' '+data.url),'_blank','noopener,noreferrer'); } }
 };
 }
