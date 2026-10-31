@@ -85,11 +85,11 @@ button:focus-visible{outline:3px solid #fff;outline-offset:3px}
 
 <sc-if value="{{notCover}}" hint-placeholder-val="{{ false }}">
 <div style="display: flex; align-items: center; gap: 14px; margin-top: 0">
-<button aria-label="{{pg.title}} test detaylarını aç" onClick="{{openTestDetail}}" style="width:52px;height:52px;flex:none;padding:0;border:0;background:transparent;animation:{{detailIconAnimation}}">
+<button aria-label="{{headerIconLabel}}" title="{{headerIconLabel}}" aria-expanded="{{headerIconExpanded}}" onClick="{{headerIconAction}}" style="position:relative;width:52px;height:52px;flex:none;padding:0;border:0;background:transparent;animation:{{headerIconAnimation}}">
 <div style="width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; clip-path: polygon(25% 2%, 75% 2%, 100% 50%, 75% 98%, 25% 98%, 0 50%); background: {{t.hexRim}}">
 <div style="width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; clip-path: polygon(25% 2%, 75% 2%, 100% 50%, 75% 98%, 25% 98%, 0 50%); background: {{t.hexFace}}">
 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="{{t.icon}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{pg.d}}"></path></svg>
-</div></div></button>
+</div></div><sc-if value="{{accordionPage}}" hint-placeholder-val="{{ false }}"><span style="position:absolute;right:-7px;bottom:-5px;min-width:27px;height:17px;box-sizing:border-box;padding:0 5px;display:flex;align-items:center;justify-content:center;border:2px solid {{t.bg}};border-radius:999px;background:{{accent}};color:#fff;font-size:6.5px;font-weight:900;letter-spacing:.2px;box-shadow:0 4px 9px rgba(0,0,0,.18)">{{accordionActionLabel}}</span></sc-if></button>
 <div style="display: flex; flex-direction: column; gap: 1px"><span style="font-size: 30px; font-weight: 800; letter-spacing: -1px; line-height: 1.1">{{pg.title}}</span></div>
 </div>
 <span style="width: 56px; height: 3px; border-radius: 2px; margin-top: 12px; background: {{accent}}"></span>
@@ -676,6 +676,28 @@ const motorSections = [
 ];
 const mechanicalConfig = [['ŞANZIMAN & DEBRİYAJ',4],['DİREKSİYON SİSTEMİ',3],['AKSLAR & AKTARMA',4],['EGZOZ & BAĞLANTILAR',3],['ALT TAKIM & MOTOR KULAKLARI',5]], mechanicalLiveItems=liveTestSections.filter((section)=>Number(section.page)===10).flatMap((section)=>Array.isArray(section.items)?section.items:[]);
 const mechanicalSections = mechanicalConfig.map(([title,count],sectionIndex)=>{ const key='mechanical-'+title,expanded=Boolean(sectionExpanded[key]),itemOffset=mechanicalConfig.slice(0,sectionIndex).reduce((sum,entry)=>sum+entry[1],0),liveItems=liveSectionFor(10,title)?.items??mechanicalLiveItems.slice(itemOffset,itemOffset+count),catalogItems=TEST_ITEM_CATALOG.mechanical[title]??[]; const details=Array.from({length:Math.max(count,liveItems.length)},(_,i)=>{const item=liveItems[i],status=item?.status??'UYGUN',tone=detailTone(status),photo=item?.photo??'';return {label:item?.label??catalogItems[i]??title,status,bg:tone.bg,color:tone.color,rowBg:i%2?t.rowAlt:t.rowBase,photo,hasPhoto:Boolean(photo),openPhoto:()=>photo&&this.setState({findingPhoto:{src:photo,title:item?.label??catalogItems[i]??title}})}}); return {title,score:count+' / '+count,expanded,chevron:expanded?'⌃':'⌄',details,toggle:()=>this.setState({sectionExpanded:{...sectionExpanded,[key]:!expanded}})}; });
+const accordionPage = p >= 10 && p <= 22;
+const currentAccordionSections = p === 10 ? motorSections : p === 11 ? mechanicalSections : resultSections;
+const allAccordionExpanded = accordionPage && currentAccordionSections.length > 0 && currentAccordionSections.every((section)=>section.expanded);
+const toggleAllAccordions = () => {
+  const nextExpanded = !allAccordionExpanded;
+  if (p === 10) {
+    const nextMotorExpanded = { ...motorExpanded };
+    motorSections.forEach((section)=>{ nextMotorExpanded[section.id] = nextExpanded; });
+    this.setState({ motorExpanded:nextMotorExpanded });
+    return;
+  }
+  const nextSectionExpanded = { ...sectionExpanded };
+  if (p === 11) mechanicalConfig.forEach(([title])=>{ nextSectionExpanded['mechanical-'+title] = nextExpanded; });
+  else resultConfig.sections.forEach(([title])=>{ nextSectionExpanded['result-'+p+'-'+title] = nextExpanded; });
+  this.setState({ sectionExpanded:nextSectionExpanded });
+};
+const openPageDetail = () => (p === 6 || p === 7) ? this.setState({ bodySketch:true }) : this.setState({ testDetail:true });
+const headerIconAction = accordionPage ? toggleAllAccordions : openPageDetail;
+const headerIconLabel = accordionPage ? (allAccordionExpanded ? 'Tüm alt maddeleri kapat' : 'Tüm alt maddeleri aç') : pg.title + ' test detaylarını aç';
+const headerIconExpanded = accordionPage ? allAccordionExpanded : false;
+const accordionActionLabel = allAccordionExpanded ? 'KAPAT' : 'AÇ';
+const headerIconAnimation = accordionPage && allAccordionExpanded ? 'detailGlow 1.15s ease-in-out infinite' : ((this.state.testDetail || this.state.bodySketch) ? 'detailGlow 1.15s ease-in-out infinite' : 'none');
 const resultFindingCount = resultSections.reduce((sum,section)=>sum+section.findings.length,0);
 const resultBannerNames = { 11:'08-beyin-obd.png', 12:'09-yol-testi.png', 13:'10-fren-suspansiyon.png', 14:'11-dis-ekspertiz.png', 15:'12-ic-ekspertiz.png', 16:'13-airbag-guvenlik.png', 17:'14-conta-kacak.png', 18:'15-uclu-km-kontrolu.png', 19:'16-duman-kacak.png', 20:'17-motor-asinma.png', 21:'18-mor-isik.png' };
 const resultBanner = './assets/inspection/section-banners/' + (resultBannerNames[p - 1] ?? '08-beyin-obd.png') + '?v=20261031-2';
@@ -778,7 +800,8 @@ chassisViewCards, chassisTop, selectedChassis, frontLeftChassis, frontRightChass
 pageTwo: p === 2, legacyQueries: false, legacyChassisDetailsPage:false, tramerPage: p === 3, kmPage: p === 4, debtPage: p === 5, bodyPage: p === 6, bodyDetailsPage: p === 7, chassisPage: p === 8, chassisDetailsPage: p === 9, motorPage: p === 10, mechanicalPage: p === 11, standardPage: false,
   showTramerModal: this.state.modal === 'tramer', showKmModal: this.state.modal === 'km',
   showTestDetail:Boolean(this.state.testDetail), showBodySketch:Boolean(this.state.bodySketch), testDetailRows, testDetailDescription, testDetailSummary,
-  openTestDetail:() => (p === 6 || p === 7) ? this.setState({ bodySketch:true }) : this.setState({ testDetail:true }), closeTestDetail:() => this.setState({ testDetail:false }), closeBodySketch:() => this.setState({ bodySketch:false }), detailIconAnimation:(this.state.testDetail || this.state.bodySketch) ? 'detailGlow 1.15s ease-in-out infinite' : 'none',
+  accordionPage, allAccordionExpanded, accordionActionLabel, headerIconAction, headerIconLabel, headerIconExpanded, headerIconAnimation,
+  closeTestDetail:() => this.setState({ testDetail:false }), closeBodySketch:() => this.setState({ bodySketch:false }),
   showPhotoViewer:Number.isInteger(this.state.activePhoto), activePhotoSrc:activePhoto.src, activePhotoLabel:activePhoto.label, activePhotoCounter:pad(activePhotoIndex + 1) + ' / ' + rawPhotoTiles.length,
   closePhotoViewer:() => this.setState({ activePhoto:null }), previousPhoto:() => this.setState({ activePhoto:(activePhotoIndex - 1 + rawPhotoTiles.length) % rawPhotoTiles.length }), nextPhoto:() => this.setState({ activePhoto:(activePhotoIndex + 1) % rawPhotoTiles.length }),
 showFindingPhoto: Boolean(this.state.findingPhoto), findingPhotoSrc: this.state.findingPhoto?.src ?? '', findingPhotoTitle: this.state.findingPhoto?.title ?? '', closeFindingPhoto: () => this.setState({ findingPhoto: null }),
