@@ -4999,6 +4999,7 @@
       const page=document.getElementById('page-google-reviews');
       if(page) {
         page.innerHTML=GoogleReputationPremiumDashboard();
+        const nav=page.querySelector?.('.review-center-nav'); if(nav&&!nav.querySelector('[data-google-center-scroll="google-connections"]')) nav.insertAdjacentHTML('beforeend',`<button data-google-center-scroll="google-connections">${icon('link-2')}<span>Google Bağlantı Ayarları</span></button>`);
         page.classList?.remove('review-view-overview','review-view-comments','review-view-replies','review-view-inbox','review-view-goals');
         page.classList?.add(`review-view-${googleReputationState.centerView||'overview'}`);
         const shell=page.querySelector?.('.review-center-shell'), main=shell?.querySelector?.('.review-center-main'), reply=page.querySelector?.('.google-reply-workspace');
@@ -5022,6 +5023,7 @@
           page.querySelector('.google-goals-demo-board .google-goal-demo-side article:nth-child(2)')?.remove();
           if(!page.querySelector('.google-branch-settings-panel')){ const operations=page.querySelector('.review-operations'); if(operations) operations.insertAdjacentHTML('beforebegin',googleBranchSettingsPanel()); }
         }
+        if(googleReputationState.centerView==='connections'){ const content=page.querySelector('.review-center-content'); if(content){ content.querySelectorAll(':scope > *').forEach(node=>node.style.display='none'); if(!content.querySelector('.google-branch-settings-panel')) content.insertAdjacentHTML('afterbegin',googleBranchSettingsPanel()); } }
         // Yorumlar ve yanıtlar tek çalışma alanında; eski ayrı Yorumlar menüsünü kaldır.
         page.querySelector?.('.review-center-nav button[data-google-center-scroll="review-list"]')?.remove();
         page.querySelector?.('.review-center-nav button[data-google-center-scroll="review-branches"]')?.remove();
@@ -5036,7 +5038,7 @@
           if(googleReputationState.centerView==='goals') periodButton?.remove();
         }
         applyGoogleDashboardFilterView(page);
-        const activeTarget=googleReputationState.centerView==='goals'?'review-targets':googleReputationState.centerView==='inbox'?'google-reply-workspace':'review-overview';
+        const activeTarget=googleReputationState.centerView==='goals'?'review-targets':googleReputationState.centerView==='inbox'?'google-reply-workspace':googleReputationState.centerView==='connections'?'google-connections':'review-overview';
         page.querySelectorAll?.('.review-center-nav button')?.forEach(button=>button.classList.toggle('active',button.dataset.googleCenterScroll===activeTarget));
       }
       if(window.lucide) lucide.createIcons();
@@ -5050,7 +5052,7 @@
       try { const store=googleGoalStore();store[key]={...next,scope,branchId,region:googleReputationState.goalRegion,month,updatedAt:new Date().toISOString()};localStorage.setItem(GOOGLE_GOALS_STORAGE_KEY,JSON.stringify(store));googleReputationState.goalMessage='Hedefler kaydedildi ve sayfa yenilense de korunacak.'; } catch(_) { googleReputationState.goalMessage='Tarayıcı kaydı yapılamadı. Gizli mod veya depolama iznini kontrol edin.'; }
       refreshGoogleReputationPage();
     }
-    document.addEventListener?.('click',e=>{const link=e.target.closest('[data-google-center-scroll]');if(!link)return;const targetId=link.dataset.googleCenterScroll; if(targetId==='review-list'){e.preventDefault();window.OTOTRGoogleReputation?.setCenterView?.('inbox','new');return;} if(targetId==='google-reply-workspace'){e.preventDefault();window.OTOTRGoogleReputation?.setCenterView?.('inbox','waiting');return;} if(targetId==='review-overview'){e.preventDefault();window.OTOTRGoogleReputation?.setCenterView?.('overview');return;} if(targetId==='review-targets'){e.preventDefault();window.OTOTRGoogleReputation?.setCenterView?.('goals');return;} if(['review-branches','review-reports'].includes(targetId)&&googleReputationState.centerView!=='overview'){e.preventDefault();window.OTOTRGoogleReputation?.setCenterView?.('overview');} const target=document.getElementById(targetId);if(target){e.preventDefault();target.scrollIntoView({behavior:'smooth',block:'start'});document.querySelectorAll('.review-center-nav button').forEach(btn=>btn.classList.toggle('active',btn===link));}});
+    document.addEventListener?.('click',e=>{const link=e.target.closest('[data-google-center-scroll]');if(!link)return;const targetId=link.dataset.googleCenterScroll; if(targetId==='review-list'){e.preventDefault();window.OTOTRGoogleReputation?.setCenterView?.('inbox','new');return;} if(targetId==='google-reply-workspace'){e.preventDefault();window.OTOTRGoogleReputation?.setCenterView?.('inbox','waiting');return;} if(targetId==='review-overview'){e.preventDefault();window.OTOTRGoogleReputation?.setCenterView?.('overview');return;} if(targetId==='review-targets'){e.preventDefault();window.OTOTRGoogleReputation?.setCenterView?.('goals');return;} if(targetId==='google-connections'){e.preventDefault();window.OTOTRGoogleReputation?.setCenterView?.('connections');return;} if(['review-branches','review-reports'].includes(targetId)&&googleReputationState.centerView!=='overview'){e.preventDefault();window.OTOTRGoogleReputation?.setCenterView?.('overview');} const target=document.getElementById(targetId);if(target){e.preventDefault();target.scrollIntoView({behavior:'smooth',block:'start'});document.querySelectorAll('.review-center-nav button').forEach(btn=>btn.classList.toggle('active',btn===link));}});
     document.addEventListener?.('click',e=>{
       const choice=e.target.closest?.('[data-google-dashboard-choice]'),periodButton=e.target.closest?.('[data-google-dashboard-period]'),branchButton=e.target.closest?.('[data-google-dashboard-branch]'),exportButton=e.target.closest?.('[data-google-dashboard-export]');
       if(choice){ const kind=choice.dataset.googleDashboardChoiceKind,value=choice.dataset.googleDashboardChoice; if(kind==='period') googleDashboardState.period=value; else { googleDashboardState.branchId=value; googleDashboardState.region=String(value).startsWith('region:')?String(value).slice(7):''; if(!String(value).startsWith('region:')) googleReputationState.selectedBranchId=value; } googleDashboardCloseMenu(); refreshGoogleReputationPage(); return; }
@@ -5129,6 +5131,7 @@
       get demoReviews(){ return googleReviews(); }
     };
     window.OTOTRGoogleReputation.setCenterView=function(view,tab){ const normalized=view==='comments'||view==='replies'?'inbox':view,allowed=['overview','inbox','goals']; googleReputationState.centerView=allowed.includes(normalized)?normalized:'overview'; googleReputationState.filter='all'; if(normalized==='inbox'){if(googleReputationState.selectedBranchId==='all')googleReputationState.selectedBranchId='branch-google-nilufer';googleReputationState.inboxTab=tab|| (view==='replies'?'waiting':'new');googleReputationState.inboxExpanded=false;googleReputationState.inboxSelectedReviewId='';} if(normalized==='goals'){googleReputationState.goalMessage='';} refreshGoogleReputationPage(); };
+    const googleOriginalSetCenterView=window.OTOTRGoogleReputation.setCenterView; window.OTOTRGoogleReputation.setCenterView=function(view,tab){ if(view==='connections'){googleReputationState.centerView='connections';googleReputationState.filter='all';refreshGoogleReputationPage();return;} return googleOriginalSetCenterView(view,tab); };
     window.OTOTRGetLiveSession=dealerSupabaseActiveSession;
     window.OTOTRGetSupabaseKey=()=>DEALER_SUPABASE_KEY;
     setTimeout(refreshGoogleBusinessConnectionStatus, 250);
