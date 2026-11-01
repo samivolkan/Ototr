@@ -1,30 +1,56 @@
-# Design QA - Ekspertiz Arsiv Detayi
+# Google Bağlantı Ayarları — Design QA
 
-## Reference
+## Source of truth
 
-- Existing OtoTR archive presentation and published ERP shell were used as the visual baseline.
-- Dealer archive review speed, evidence traceability, and honest operational states were the priority.
+- Referans: `C:\Users\SAMIVO~1\AppData\Local\Temp\codex-clipboard-dee86c70-4cf8-426b-89c9-34c74abf2c3b.png`
+- Uygulama ekranı: `google-connections-implementation.png`
+- Yan yana karşılaştırma: `design-qa-comparison.png`
+- Test görünümü: `1488 × 1058` CSS piksel, DPR `1`
+- Test durumu: Google Bağlantı Ayarları açık, 5 şube aktif, filtre yok, seçim yok
 
-## Validated Views
+## Full-page comparison
 
-- Desktop: six test cards in one row, independent selection/completion states, finding summary, quick actions.
-- Mobile 390 x 844: two-column test cards, single-column evidence gallery, no horizontal overflow.
-- Evidence: anonymous demo photos, zoom controls, metadata, and linked checklist item.
-- Revisions: immutable v1.0 compared with a separate v1.1 draft.
-- Sharing: link creation, send, delivery, and open states remain distinct.
-- Operational states: approved, approval pending, missing evidence, empty, unauthorized, service error, and legacy transfer.
+Referanstaki yoğun tek tablo yapısı; başlık ve durum satırı, dört KPI, bilgi kartı, yeni şube formu, filtre çubuğu, dokuz tablo kolonu, beş şube satırı, sayfalama ve iki alt bilgi kartıyla yeniden kuruldu. Eski iki sütunlu kart görünümü kaldırıldı.
 
-## Findings Resolved
+Mevcut OTOTR Google Yorum Merkezi yan menüsü ve OTOTR Ekspertiz logosu bilinçli olarak korundu. Referanstaki tüm ERP menüsünü kopyalamak bu modülün gezinme yapısını bozacağı için yalnızca sayfa gövdesi ve işlevsel tablo düzeni eşleştirildi.
 
-- P1: Missing-photo report gate previously showed legacy-transfer wording. It now explains the missing required evidence and links back to the gallery.
-- P1: Evidence E01 initially showed no linked checklist item. The evidence detail now resolves its primary checklist relation.
-- P2: Mobile result tables and evidence cards were too dense. They now reflow into readable stacked layouts.
-- P2: Share status previously risked implying delivery. Unverified send, delivery, and open states are now explicit.
+## Focused evidence
 
-## Verification
+- Tablo satırları kompakt tek listede ve referansla aynı içerik sırasındadır.
+- Google hesap/grup ID ve mağaza kodları maskeli gösterilir; kopyalama düğmeleri bulunur.
+- Nilüfer satırında kimlik doğrulama çağrısı, demo satırlarda düzenleme ve üç nokta işlem menüsü bulunur.
+- Üç nokta menüsünde `Düzenle` ve `Kaldır` seçenekleri çalışır.
+- Demo şubelerde son eşitleme metni doğru biçimde `Senkronizasyon bekliyor` gösterilir.
+- Toplu seçim sonrası `Aktif yap`, `Pasif yap` ve `Kaldır` çubuğu açılır.
 
-- Browser console errors/warnings: none.
-- Automated archive tests: 8 passed.
-- Responsive overflow check: passed at 390 x 844.
+## Interaction verification
 
-final result: passed
+- Arama: `Gebze` sorgusunda görünür kayıt ve sayaç `1` oldu.
+- Kaynak filtresi: `Demo` seçiminde `4` kayıt gösterildi.
+- Aktif filtresi: Gebze pasife alındığında aktif-only görünümünden çıktı; pasifler açıldığında geri göründü; tekrar aktifleştirildi ve son durumda 5 aktif şube korundu.
+- Filtre kalıcılığı: tam yeniden çizim sonrası `Gebze` araması ve aktif/pasif tercihi korundu.
+- Seçim modeli: 1 satır seçildiğinde sayaç `1` ve toplu işlem çubuğu görünür oldu.
+- Satır menüsü: `Kaldır` işlemi görünür ve erişilebilir olarak doğrulandı; veri silinmemesi için onay penceresi kabul edilmedi.
+- Düzenleme iptali: Gebze hesap ID alanı geçici olarak değiştirildi; `İptal` sonrası özgün değer eksiksiz geri yüklendi.
+- Eski kart renderer sayısı `0`, yeni tablo renderer sayısı `1`, görünür satır sayısı `5` olarak doğrulandı.
+- Yürütülebilir 7 inline script sözdizimi kontrolünden geçti; `git diff --check` temiz geçti.
+
+## Comparison history
+
+1. İlk yapıdaki iki sütunlu şube kartları kaldırıldı.
+2. Tek tablo renderer, filtreler ve toplu işlemler eklendi.
+3. Eski CSS'in tabloyu yeniden kartlara bölmesi engellendi.
+4. Aktif-only filtresinin ilk açılışta uygulanmaması düzeltildi.
+5. Pasif şubenin senkronize olabilmesi engellendi.
+6. OAuth bağlı olduğu halde şube eşitlemesi başarısızsa yanlış `Bağlı` gösterimi engellendi.
+7. Gizlenen seçili satırların toplu işlemden etkilenmesi engellendi.
+8. Kayıt hatalarında yanlış başarı bildirimi kaldırıldı.
+9. Referans ölçüsünde son görsel karşılaştırma yapıldı.
+
+## Known environment note
+
+Tarayıcı konsolunda sayfanın bu özelliğine ait olmayan `MutationObserver` kaynaklı ortam hataları görüldü. Google bağlantı renderer veya olay kodunda `MutationObserver` kullanılmıyor; yukarıdaki etkileşim testleri bu hatalardan etkilenmedi.
+
+## Final result
+
+passed
