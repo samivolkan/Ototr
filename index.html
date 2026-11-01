@@ -4496,6 +4496,7 @@
     googleReputationData.branches.forEach(branch=>{
       branch.synced=Boolean(branch.demo);
       branch.replySignatureName=branch.replySignatureName.replace(/Şubesi$/, 'Şube');
+      if(branch.demo&&!branch.publicProfileUrl){ const profileUrl=`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(branch.name)}`; branch.mapsUrl=profileUrl; branch.publicProfileUrl=profileUrl; }
       if(!branch.demo) ['googleRating','googleReviewCount','previousRating','reputationScore','last30DaysReviewCount','negativeReviewRate','unrepliedCount','criticalCount'].forEach(key=>{branch[key]=null;});
     });
     function googleBranches(){ return googleReputationData.branches.filter(branch=>branch.id!=='branch-google-inegol').map(branch=>({...branch,replySignatureName:branch.id==='branch-google-nilufer'?'OTOTR Bursa Nilüfer Otoekspertiz Ekibi':branch.replySignatureName})); }
@@ -4630,6 +4631,29 @@
         suggestedReply:''
       };
     }
+    const googleDemoReviewSeeds=[
+      ['branch-google-gebze','demo-gebze-1','Ayşe Demir','FIVE','İşlem boyunca her adım açıklanarak ilerledi. Raporu anlaşılır ve düzenli teslim aldım; ekibin ilgisinden memnun kaldım.','2026-10-31T10:20:00Z',''],
+      ['branch-google-gebze','demo-gebze-2','Mehmet Kaya','FOUR','Randevu saatimize uygun şekilde karşılandık. Özellikle ölçümlerin fotoğraflarla desteklenmesi karar vermemi kolaylaştırdı.','2026-10-30T14:05:00Z','Geri bildiriminiz için teşekkür ederiz Mehmet Bey. Gebze ekibimizin süreci şeffaf ve anlaşılır yürütmesi bizi çok mutlu etti. Sizi tekrar ağırlamaktan memnuniyet duyarız.\n\nOTOTR Gebze Şube'],
+      ['branch-google-gebze','demo-gebze-3','Burcu Aydın','TWO','Bekleme süresi planladığımdan uzun sürdü ve teslim sırasında birkaç noktayı yeniden sormam gerekti.','2026-10-29T09:15:00Z',''],
+      ['branch-google-ankara','demo-ankara-1','Caner Şahin','FIVE','Karşılama çok ilgiliydi; aracın mevcut durumu ve riskleri sakin bir dille anlatıldı. Güven veren bir ekspertiz deneyimi yaşadım.','2026-10-31T08:40:00Z',''],
+      ['branch-google-ankara','demo-ankara-2','Derya Koç','THREE','Rapor kapsamlıydı ancak sonuçların üzerinden geçmek için biraz daha fazla zaman ayrılmasını beklerdim.','2026-10-30T12:30:00Z',''],
+      ['branch-google-ankara','demo-ankara-3','Hakan Öz','ONE','İletişim sırasında beklediğim açıklığı bulamadım; konu hakkında dönüş ve çözüm bekliyorum.','2026-10-28T16:10:00Z',''],
+      ['branch-google-izmir','demo-izmir-1','Selin Yılmaz','FIVE','Ekip zamanında hazırdı ve araç başındaki kontrolleri tek tek gösterdi. Raporun dili oldukça net ve faydalıydı.','2026-10-31T11:45:00Z',''],
+      ['branch-google-izmir','demo-izmir-2','Oğuz Kılıç','FOUR','Ekspertiz süreci düzenli ilerledi. Özellikle satın alma öncesi riskleri önceliklendirerek anlatmaları çok işime yaradı.','2026-10-30T15:25:00Z',''],
+      ['branch-google-izmir','demo-izmir-3','Nehir Arslan','TWO','Sonuçları beklerken yeterli bilgilendirme alamadım; iletişim tarafında daha hızlı bir akış bekliyorum.','2026-10-27T13:00:00Z',''],
+      ['branch-google-istanbul','demo-istanbul-1','Murat Erdem','FOUR','Raporu teslim alırken önemli noktaları kısa ve anlaşılır biçimde özetlediler. Profesyonel ve düzenli bir ekip.','2026-10-31T09:50:00Z',''],
+      ['branch-google-istanbul','demo-istanbul-2','İpek Öztürk','THREE','Kontroller detaylıydı fakat yoğunluk nedeniyle süreç beklediğimden daha yavaş tamamlandı.','2026-10-29T17:20:00Z',''],
+      ['branch-google-istanbul','demo-istanbul-3','Tolga Keskin','ONE','Yaşadığım sorunun çözümü için tekrar iletişim kurulmasını istiyorum; hizmet deneyimim beklentimi karşılamadı.','2026-10-28T10:35:00Z','']
+    ];
+    function seedGoogleDemoReviews(){
+      if(googleReputationData.reviews.some(review=>review.demo)) return;
+      googleDemoReviewSeeds.forEach(([branchId,reviewId,reviewerName,starRating,comment,createTime,replyText])=>{
+        const branch=googleReputationData.branches.find(item=>item.id===branchId); if(!branch) return;
+        const model=googleLiveReviewModel({reviewId,starRating,comment,reviewer:{displayName:reviewerName},createTime,...(replyText?{reviewReply:{comment:replyText}}:{})},branch);
+        googleReputationData.reviews.push({...model,demo:true,source:'Demo Google'});
+      });
+    }
+    seedGoogleDemoReviews();
     function googleLiveLocationId(location){ return String(location?.name||'').match(/locations\/(\d+)/)?.[1]||''; }
     function googleLiveAccountId(account){ return String(account?.name||account||'').match(/accounts\/(\d+)/)?.[1]||''; }
     function googleLiveLocationForBranch(branch,locations){
@@ -4911,6 +4935,12 @@
     document.addEventListener?.('click',e=>{const scope=e.target.closest('[data-google-goal-scope]');if(scope){googleReputationState.goalScope=scope.dataset.googleGoalScope==='branch'?'branch':'hq';googleReputationState.goalMessage='';refreshGoogleReputationPage();return;}if(e.target.closest('[data-google-goals-save]')){googleSaveGoalsFromForm();return;}if(e.target.closest('[data-google-goals-reset]')){const scopeValue=googleReputationState.goalScope==='branch'?'branch':'hq',key=googleGoalKey(scopeValue,googleReputationState.goalBranchId,googleReputationState.goalMonth);try{const store=googleGoalStore();delete store[key];localStorage.setItem(GOOGLE_GOALS_STORAGE_KEY,JSON.stringify(store));}catch(_){}googleReputationState.goalMessage='Varsayılan hedefler yüklendi; kaydetmek için formu onaylayın.';refreshGoogleReputationPage();}});
     document.addEventListener?.('input',e=>{if(e.target.matches('[data-google-inbox-query]')){googleReputationState.inboxQuery=e.target.value||'';clearTimeout(window.__ototrInboxSearchTimer);window.__ototrInboxSearchTimer=setTimeout(refreshGoogleReputationPage,160);}});
     document.addEventListener?.('change',e=>{if(e.target.matches('[data-google-goal-month]')){googleReputationState.goalMonth=e.target.value||googleReputationState.goalMonth;googleReputationState.goalMessage='';refreshGoogleReputationPage();}if(e.target.matches('[data-google-goal-branch]')){googleReputationState.goalBranchId=e.target.value;googleReputationState.goalMessage='';refreshGoogleReputationPage();}});
+    document.addEventListener?.('click',e=>{
+      const link=e.target.closest?.('[data-google-center-scroll="google-reply-workspace"]');
+      if(!link||window.__OTOTR_DEMO_INBOX_FALLBACK_USED||googleReputationState.selectedBranchId!=='branch-google-nilufer'||googleReviews().some(review=>review.branchId==='branch-google-nilufer')||!googleReviews().some(review=>review.demo)) return;
+      window.__OTOTR_DEMO_INBOX_FALLBACK_USED=true;
+      setTimeout(()=>{ if(googleReputationState.centerView==='inbox'&&googleReputationState.selectedBranchId==='branch-google-nilufer'){googleReputationState.selectedBranchId='all';googleReputationState.inboxSelectedReviewId='';refreshGoogleReputationPage();} },0);
+    });
     async function refreshGoogleBusinessConnectionStatus(retry=0){
       if(googleReputationState.loading) return;
       if(!window.OTOTRGoogleReviewAI?.googleBusinessStatus){
