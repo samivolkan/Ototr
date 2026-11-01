@@ -4,15 +4,15 @@
   // Refreshing and verification never publish. The separate preparation hook
   // creates drafts only. Loading this asset twice must not add timers.
   if (window.OTOTRGoogleReviewRefresh) return;
-  const POLL_MS = 5000, MAX_BACKOFF_MS = 15 * 60 * 1000;
+  const POLL_MS = 60 * 1000, HOURLY_MS = 60 * 60 * 1000, MAX_BACKOFF_MS = HOURLY_MS;
   const jobs = {
-    reviews: { interval: 5 * 60 * 1000, due: 0, failures: 0, seenSuccess: 0 },
-    workflow: { interval: 60 * 1000, due: 0, failures: 0, seenSuccess: 0 },
+    reviews: { interval: HOURLY_MS, due: 0, failures: 0, seenSuccess: 0 },
+    workflow: { interval: HOURLY_MS, due: 0, failures: 0, seenSuccess: 0 },
   };
   let running = false;
 
   function allowed() {
-    if (location.hash !== '#google-reviews' || document.visibilityState !== 'visible' || navigator.onLine === false) return false;
+    if (location.hash !== '#google-reviews' || navigator.onLine === false) return false;
     if (document.documentElement.classList.contains('ototr-access-locked')) return false;
     if (document.getElementById('googleReviewAiModal')?.classList.contains('open')) return false;
     const reviews = window.OTOTRGoogleReputation, ai = window.OTOTRGoogleReviewAI;
