@@ -5036,9 +5036,10 @@
         const shell=page.querySelector?.('.review-center-shell'), main=shell?.querySelector?.('.review-center-main'), reply=page.querySelector?.('.google-reply-workspace');
         if(main&&reply) main.appendChild(reply);
         page.querySelector?.('.review-goal-panel')?.setAttribute('id','review-targets');
-        page.querySelectorAll?.('.review-page-title .review-kicker,.review-page-title > div > p')?.forEach(node=>node.remove());
+        page.querySelectorAll?.('.review-page-title .review-kicker,.review-page-title > div > p,.review-page-title h1')?.forEach(node=>node.remove());
         const top=page.querySelector?.('.review-center-top'), search=top?.querySelector?.('.review-search'), topActions=top?.querySelector?.('.review-top-actions'), connect=page.querySelector?.('.review-page-title .review-connect-btn');
         if(top&&search&&topActions&&connect){ connect.classList.add('review-top-sync'); top.insertBefore(connect,topActions); }
+        page.querySelector?.('.review-page-title')?.remove();
         if(top&&!top.querySelector('.review-api-connect')){ const apiButton=document.createElement('button'); apiButton.type='button'; apiButton.className='review-api-connect'; apiButton.dataset.googleConnect='1'; apiButton.textContent=googleReputationState.connected===true?'Google hesabı bağlı':'Google Hesabını Bağla'; top.insertBefore(apiButton,topActions||null); }
         const brand=page.querySelector?.('.review-brand');
         if(brand) brand.innerHTML='<img src="sunum-32-ekran/assets/ototr-logo-official-light.png" alt="OTOTR Oto Ekspertiz" loading="eager">';
