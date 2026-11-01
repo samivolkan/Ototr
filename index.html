@@ -4719,6 +4719,8 @@
       const ratings=liveReviews.map(review=>review.rating).filter(Boolean);
       const average=Number(payload.averageRating)||(ratings.length?ratings.reduce((sum,r)=>sum+r,0)/ratings.length:null);
       const reported=Number(payload.totalReviewCount),total=payload.totalReviewCount!=null&&Number.isFinite(reported)&&reported>=0?reported:liveReviews.length;
+      const previousRows=googleReputationData.reviews.filter(review=>review.branchId===branch.id&&!review.demo);
+      if(!liveReviews.length&&previousRows.length) throw new Error('Google boş yorum yanıtı döndürdü; önceki veriler korundu.');
       const complete=liveReviews.length===total;
       const negative=liveReviews.filter(review=>['negative','critical'].includes(review.riskLevel)).length;
       const critical=liveReviews.filter(review=>review.riskLevel==='critical'||review.legalRisk==='Yüksek').length;
