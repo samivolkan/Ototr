@@ -574,3 +574,14 @@ body.dark-mode #page-google-reviews .google-premium-kpi:nth-child(4){background:
 #google-chart-tooltip{position:fixed;z-index:9999;max-width:250px;padding:8px 10px;border:1px solid #d7e0ec;border-radius:8px;background:#10213c;color:#fff;box-shadow:0 8px 22px rgba(15,32,58,.22);font-size:11px;font-weight:700;line-height:1.35;pointer-events:none;opacity:0;transform:translateY(4px);transition:opacity .12s ease,transform .12s ease}
 #google-chart-tooltip.visible{opacity:1;transform:translateY(0)}
 #page-google-reviews .review-trend-chart svg circle[data-chart-tooltip],#page-google-reviews .review-op-row[data-chart-tooltip]{cursor:help}
+/* Dashboard filters and compact action hierarchy */
+#page-google-reviews .review-center-top{justify-content:flex-start;position:relative}
+#page-google-reviews .review-center-top .review-top-sync{height:36px;margin-left:10px;flex:0 0 auto;white-space:nowrap}
+#page-google-reviews .review-center-top .review-top-actions{position:relative;margin-left:auto}
+#page-google-reviews .review-filter-popover{position:absolute;top:calc(100% + 7px);right:0;z-index:40;display:grid;gap:3px;min-width:168px;padding:6px;border:1px solid #d7e0ec;border-radius:9px;background:#fff;box-shadow:0 14px 30px rgba(15,32,58,.16)}
+#page-google-reviews .review-filter-popover.branch{min-width:230px}
+#page-google-reviews .review-filter-popover button{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:32px;border:0;border-radius:6px;background:#fff;color:#344765;padding:0 9px;text-align:left;font:inherit;font-size:11px;font-weight:700;cursor:pointer}
+#page-google-reviews .review-filter-popover button:hover,#page-google-reviews .review-filter-popover button[aria-selected="true"]{background:#f1f6fd;color:#1457a6}
+#page-google-reviews .google-inbox-detail-actions{flex-wrap:wrap;overflow:visible}
+#page-google-reviews .google-inbox-detail-actions .google-review-open{order:-1;flex:0 0 100%;width:100%;max-width:100%;justify-content:flex-start}
+@media(max-width:700px){#page-google-reviews .review-center-top .review-top-sync{margin-left:0}.review-center-top .review-top-actions{margin-left:0}.review-filter-popover{position:fixed!important;left:12px;right:12px!important;top:112px!important}.review-center-top .review-top-sync{justify-self:start}}
