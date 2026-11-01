@@ -8006,7 +8006,8 @@
     }
     function dealerStoredSupabaseSession(){
       try{
-        const session=JSON.parse(localStorage.getItem(DEALER_SUPABASE_SESSION_KEY)||'null');
+        const raw=localStorage.getItem(DEALER_SUPABASE_SESSION_KEY)||sessionStorage.getItem(DEALER_SUPABASE_SESSION_KEY)||'null';
+        const session=JSON.parse(raw);
         if(!session?.access_token&&!session?.refresh_token) return null;
         return session;
       }catch(err){return null;}
@@ -8014,15 +8015,18 @@
     function dealerSupabaseSession(){
       const session=dealerStoredSupabaseSession();
       try{
-        if(!session?.access_token||!session?.expires_at) return null;
-        if(Number(session.expires_at)<Date.now()+60000) return null;
+        if(!session?.access_token) return null;
+        // Older ERP builds did not persist expires_at. The access token is
+        // still valid until Supabase rejects it, so do not discard it here.
+        if(session.expires_at && Number(session.expires_at)<Date.now()+60000) return null;
         return session;
       }catch(err){return null;}
     }
     function dealerNativeSupabaseSession(){
       try{
         const ref=new URL(DEALER_SUPABASE_URL).hostname.split('.')[0];
-        const parsed=JSON.parse(localStorage.getItem(`sb-${ref}-auth-token`)||'null');
+        const raw=localStorage.getItem(`sb-${ref}-auth-token`)||sessionStorage.getItem(`sb-${ref}-auth-token`)||'null';
+        const parsed=JSON.parse(raw);
         const live=parsed?.currentSession||parsed?.session||parsed;
         if(!live?.access_token) return null;
         const expires=Number(live.expires_at)||0;
