@@ -604,6 +604,8 @@ body.dark-mode #page-google-reviews .google-premium-kpi:nth-child(4){background:
 #page-google-reviews .google-goal-form-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:12px}
 #page-google-reviews .google-goals-form-card,#page-google-reviews .google-goals-side-card{padding:14px}
 #page-google-reviews .google-goals-side-card ul{gap:7px;margin:10px 0}
+#page-google-reviews .google-goals-side-card .google-goal-history{margin-top:16px;padding:12px;border:0;border-top:1px solid #e5ebf3;border-radius:0;box-shadow:none}
+#page-google-reviews .google-goals-side-card .google-goal-history-grid{grid-template-columns:1fr}
 @media(max-width:1100px){#page-google-reviews .google-goal-form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:700px){#page-google-reviews .google-goal-form-grid{grid-template-columns:1fr}}
 #page-google-reviews .review-center-top .review-top-actions{position:relative;margin-left:auto}
