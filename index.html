@@ -4574,7 +4574,7 @@
     function googleGoalMetrics(scope,branchId){
       const branches=scope==='hq'?googleBranches():googleBranches().filter(b=>b.id===branchId),allReviews=googleReviews();
       const rows=branches.map(branch=>{
-        const liveRows=allReviews.filter(r=>r.branchId===branch.id),live=Boolean(branch.synced||liveRows.length);
+        const liveRows=allReviews.filter(r=>r.branchId===branch.id),live=Boolean(!branch.demo&&(branch.synced||liveRows.length));
         const count=live?liveRows.length:(branch.demo?Number(branch.demoReviewCount||0):null),rating=live&&liveRows.length?liveRows.reduce((n,r)=>n+Number(r.starRating||r.rating||0),0)/liveRows.length:(branch.demo?Number(branch.demoRating||branch.googleRating||0):null),pending=live?liveRows.filter(r=>!r.isReplied).length:(branch.demo?Number(branch.demoUnrepliedCount||branch.unrepliedCount||0):null),critical=live&&liveRows.length?liveRows.filter(r=>Number(r.starRating||r.rating||0)<=2).length:(branch.demo?Math.round(Number(branch.demoReviewCount||0)*Number(branch.negativeReviewRate||0)/100):null),recent=live?liveRows.filter(r=>(Date.now()-new Date(r.reviewDate).getTime())<=7*86400000).length:(branch.demo?Number(branch.last30DaysReviewCount||0):null);
         return {branch,count,rating,pending,critical,recent,live};
       }).filter(row=>row.count!=null);
