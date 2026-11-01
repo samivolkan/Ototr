@@ -4502,6 +4502,9 @@
     });
     function googleBranches(){ return googleReputationData.branches.filter(branch=>branch.id!=='branch-google-inegol').map(branch=>({...branch,replySignatureName:branch.id==='branch-google-nilufer'?'OTOTR Bursa Nilüfer Otoekspertiz Ekibi':branch.replySignatureName})); }
     function googleReviews(){ return googleReputationData.reviews; }
+    const GOOGLE_LIVE_CACHE_KEY='ototr.google.live.reviews.v1';
+    function googlePersistLiveCache(){ try { const branches=googleReputationData.branches.filter(branch=>!branch.demo).map(branch=>({...branch})),reviews=googleReputationData.reviews.filter(review=>!review.demo); localStorage.setItem(GOOGLE_LIVE_CACHE_KEY,JSON.stringify({version:1,savedAt:new Date().toISOString(),branches,reviews})); } catch(_) {} }
+    function googleLoadLiveCache(){ try { const raw=localStorage.getItem(GOOGLE_LIVE_CACHE_KEY); if(!raw)return; const cache=JSON.parse(raw); if(cache?.version!==1||!Array.isArray(cache.branches)||!Array.isArray(cache.reviews))return; cache.branches.forEach(saved=>{ const branch=googleReputationData.branches.find(item=>item.id===saved.id&&!item.demo); if(branch) Object.assign(branch,saved); }); const demoReviews=googleReputationData.reviews.filter(review=>review.demo); googleReputationData.reviews.splice(0,googleReputationData.reviews.length,...demoReviews,...cache.reviews.filter(review=>!review.demo)); } catch(_) {} }
     function googleSelectedBranch(){
       const branch=googleBranches().find(b=>b.id===googleReputationState.selectedBranchId) || googleBranches()[0];
       // Cached live reviews are still usable while the lightweight branch
@@ -4655,6 +4658,7 @@
       });
     }
     seedGoogleDemoReviews();
+    googleLoadLiveCache();
     function googleLiveLocationId(location){ return String(location?.name||'').match(/locations\/(\d+)/)?.[1]||''; }
     function googleLiveAccountId(account){ return String(account?.name||account||'').match(/accounts\/(\d+)/)?.[1]||''; }
     function googleLiveLocationForBranch(branch,locations){
@@ -4733,6 +4737,7 @@
       if(location.metadata?.mapsUri) branch.publicProfileUrl=location.metadata.mapsUri;
       branch.recommendedAction=branch.loadedUnrepliedCount?'Cevap bekleyen yorumları insan onaylı AI taslağıyla yönetin.':'Yeni yorumları izleyin.';
       branch.syncError=''; branch.synced=true; branch.lastSyncedAt=new Date().toLocaleString('tr-TR');
+      googlePersistLiveCache();
       return {count:liveReviews.length,complete};
     }
     async function syncLiveGoogleReviews(branchId='',options={}){
