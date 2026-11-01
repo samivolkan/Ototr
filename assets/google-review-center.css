@@ -575,6 +575,7 @@ body.dark-mode #page-google-reviews .google-premium-kpi:nth-child(4){background:
 #google-chart-tooltip.visible{opacity:1;transform:translateY(0)}
 #page-google-reviews .review-trend-chart svg circle[data-chart-tooltip],#page-google-reviews .review-op-row[data-chart-tooltip]{cursor:help}
 /* Dashboard filters and compact action hierarchy */
+#page-google-reviews .review-brand img{display:block;width:94px;height:auto;max-height:42px;object-fit:contain;object-position:center}
 #page-google-reviews .review-center-top{justify-content:flex-start;position:relative}
 #page-google-reviews .review-center-top .review-top-sync{height:36px;margin-left:10px;flex:0 0 auto;white-space:nowrap}
 #page-google-reviews .review-center-top .review-top-actions{position:relative;margin-left:auto}
