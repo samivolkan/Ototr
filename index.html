@@ -1521,7 +1521,7 @@
     @media(max-width:1280px){.google-reviews-page .google-reviews-layout{grid-template-columns:1fr}.google-reviews-page .google-branch-list{grid-template-columns:repeat(3,minmax(0,1fr))}}
     @media(max-width:760px){.google-review-card.premium.google-review-pair{grid-template-columns:1fr}.google-review-source,.google-reply-panel{padding:18px}.google-reply-panel{border-left:0;border-top:1px solid #e2e8f0}.google-reviews-page .google-branch-list{grid-template-columns:1fr}.google-review-source .google-review-top{flex-direction:row}.google-reply-actions .google-reply-primary{width:100%}}
   </style>
-  <link rel="stylesheet" href="assets/google-review-center.css?v=review-center-13">
+  <link rel="stylesheet" href="assets/google-review-center.css?v=review-center-14">
   <style id="google-review-center-interactions">
     #page-google-reviews .google-reply-workspace{display:none}
     #page-google-reviews.review-view-comments .review-center-content,#page-google-reviews.review-view-replies .review-center-content{display:none}
@@ -4979,6 +4979,7 @@
         page.querySelectorAll?.('.review-page-title .review-kicker,.review-page-title > div > p')?.forEach(node=>node.remove());
         const top=page.querySelector?.('.review-center-top'), search=top?.querySelector?.('.review-search'), topActions=top?.querySelector?.('.review-top-actions'), connect=page.querySelector?.('.review-page-title .review-connect-btn');
         if(top&&search&&topActions&&connect){ connect.classList.add('review-top-sync'); top.insertBefore(connect,topActions); }
+        if(top&&!top.querySelector('.review-api-connect')){ const apiButton=document.createElement('button'); apiButton.type='button'; apiButton.className='review-api-connect'; apiButton.dataset.googleConnect='1'; apiButton.textContent=googleReputationState.connected===true?'Google hesabı bağlı':'Google Hesabını Bağla'; top.insertBefore(apiButton,topActions||null); }
         const brand=page.querySelector?.('.review-brand');
         if(brand) brand.innerHTML='<img src="sunum-32-ekran/assets/ototr-logo-official-light.png" alt="OTOTR Oto Ekspertiz" loading="eager">';
         const inboxHead=page.querySelector?.('.google-inbox-page-head'), inboxActions=inboxHead?.querySelector?.('.google-inbox-head-actions');
@@ -5023,6 +5024,7 @@
       if(exportButton){ e.preventDefault(); googleDashboardCloseMenu(); googleDashboardExport(); return; }
       if(!e.target.closest?.('.review-filter-popover')) googleDashboardCloseMenu();
     });
+    document.addEventListener?.('click',e=>{ const connectButton=e.target.closest?.('[data-google-connect]'); if(connectButton){ e.preventDefault(); window.OTOTRGoogleReviewAI?.connectGoogleBusiness?.(); } });
     document.addEventListener?.('click',e=>{const scope=e.target.closest('[data-google-goal-scope]');if(scope){googleReputationState.goalScope=scope.dataset.googleGoalScope==='branch'?'branch':'hq';googleReputationState.goalMessage='';refreshGoogleReputationPage();return;}if(e.target.closest('[data-google-goals-save]')){googleSaveGoalsFromForm();return;}if(e.target.closest('[data-google-goals-reset]')){const scopeValue=googleReputationState.goalScope==='branch'?'branch':'hq',key=googleGoalKey(scopeValue,googleReputationState.goalBranchId,googleReputationState.goalMonth);try{const store=googleGoalStore();delete store[key];localStorage.setItem(GOOGLE_GOALS_STORAGE_KEY,JSON.stringify(store));}catch(_){}googleReputationState.goalMessage='Varsayılan hedefler yüklendi; kaydetmek için formu onaylayın.';refreshGoogleReputationPage();}});
     document.addEventListener?.('input',e=>{if(e.target.matches('[data-google-inbox-query]')){googleReputationState.inboxQuery=e.target.value||'';clearTimeout(window.__ototrInboxSearchTimer);window.__ototrInboxSearchTimer=setTimeout(refreshGoogleReputationPage,160);}});
     document.addEventListener?.('change',e=>{if(e.target.matches('[data-google-goal-month]')){googleReputationState.goalMonth=e.target.value||googleReputationState.goalMonth;googleReputationState.goalMessage='';refreshGoogleReputationPage();}if(e.target.matches('[data-google-goal-branch]')){googleReputationState.goalBranchId=e.target.value;googleReputationState.goalMessage='';refreshGoogleReputationPage();}});
