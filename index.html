@@ -1521,7 +1521,7 @@
     @media(max-width:1280px){.google-reviews-page .google-reviews-layout{grid-template-columns:1fr}.google-reviews-page .google-branch-list{grid-template-columns:repeat(3,minmax(0,1fr))}}
     @media(max-width:760px){.google-review-card.premium.google-review-pair{grid-template-columns:1fr}.google-review-source,.google-reply-panel{padding:18px}.google-reply-panel{border-left:0;border-top:1px solid #e2e8f0}.google-reviews-page .google-branch-list{grid-template-columns:1fr}.google-review-source .google-review-top{flex-direction:row}.google-reply-actions .google-reply-primary{width:100%}}
   </style>
-  <link rel="stylesheet" href="assets/google-review-center.css?v=review-center-14">
+  <link rel="stylesheet" href="assets/google-review-center.css?v=review-center-15">
   <style id="google-review-center-interactions">
     #page-google-reviews .google-reply-workspace{display:none}
     #page-google-reviews.review-view-comments .review-center-content,#page-google-reviews.review-view-replies .review-center-content{display:none}
@@ -4986,7 +4986,7 @@
         if(inboxHead){ inboxHead.querySelector?.('.review-kicker')?.remove(); inboxHead.querySelector?.('p')?.remove(); inboxHead.classList.add('google-inbox-page-head-compact'); }
         if(top&&inboxActions){ inboxActions.classList.add('review-inbox-top-actions'); top.insertBefore(inboxActions,topActions||null); }
         const goals=page.querySelector?.('.google-goals-workspace'), goalsHead=goals?.querySelector?.('.google-goals-head'), goalsMeta=goalsHead?.querySelector?.('.google-goals-head-meta'), goalsScope=goals?.querySelector?.('.google-goals-scope');
-        if(goals&&goalsHead&&goalsMeta&&goalsScope){ goalsHead.querySelector?.(':scope > div:first-child')?.remove(); goalsScope.querySelectorAll?.('button,label').forEach(control=>goalsMeta.appendChild(control)); goalsScope.remove(); goalsHead.classList.add('google-goals-head-compact'); }
+        if(goals&&goalsHead&&goalsMeta&&goalsScope){ goalsHead.querySelector?.(':scope > div:first-child')?.remove(); goalsScope.querySelectorAll?.('button,label').forEach(control=>goalsMeta.appendChild(control)); goalsScope.remove(); goalsHead.classList.add('google-goals-head-compact'); if(!goals.querySelector('.google-goals-hero')){ const hero=document.createElement('div'); hero.className='google-goals-hero'; hero.innerHTML='<div class="google-goals-breadcrumb">Google Yorum Merkezi <span>›</span> Hedefler</div><h1>Hedef Yönetimi</h1><p>Ağ ve şube hedeflerini belirleyin, gerçekleşmeyi aynı ekrandan izleyin.</p>'; goals.insertBefore(hero,goalsHead); } if(!goals.querySelector('.google-goals-status')){ const status=document.createElement('div'); status.className='google-goals-status'; status.innerHTML='<span class="google-goals-status-dot"></span><strong>Bursa Nilüfer</strong><b>Canlı bağlantı açık</b><span>· Son eşitleme senkronizasyon sonrası güncellenecek</span><small>ⓘ Nilüfer verisi canlı bağlantıdan gelir. Diğer şubeler demo veridir.</small>'; goals.insertBefore(status,goalsHead.nextSibling); } }
         // Yorumlar ve yanıtlar tek çalışma alanında; eski ayrı Yorumlar menüsünü kaldır.
         page.querySelector?.('.review-center-nav button[data-google-center-scroll="review-list"]')?.remove();
         page.querySelector?.('.review-center-nav button[data-google-center-scroll="review-branches"]')?.remove();

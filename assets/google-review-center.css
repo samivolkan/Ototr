@@ -590,6 +590,16 @@ body.dark-mode #page-google-reviews .google-premium-kpi:nth-child(4){background:
 #page-google-reviews .google-goals-head-compact .google-goals-head-meta>label input,#page-google-reviews .google-goals-head-compact .google-goals-head-meta>label select{min-height:34px}
 #page-google-reviews .google-goals-head-compact .google-goals-head-meta>button{min-height:34px;padding:7px 11px;border:1px solid var(--gc-line);border-radius:8px;background:var(--gc-panel);color:var(--gc-ink);font:inherit;font-size:12px;font-weight:700}
 #page-google-reviews .google-goals-head-compact .google-goals-head-meta>button.active{background:#10213c;color:#fff;border-color:#10213c}
+#page-google-reviews .google-goals-hero{padding:2px 0 10px}
+#page-google-reviews .google-goals-breadcrumb{color:#64748b;font-size:12px;margin-bottom:10px}
+#page-google-reviews .google-goals-breadcrumb span{padding:0 7px;color:#9aa8ba}
+#page-google-reviews .google-goals-hero h1{margin:0;color:#0b1730;font-size:30px;letter-spacing:-.04em}
+#page-google-reviews .google-goals-hero p{margin:5px 0 0;color:#64748b;font-size:13px}
+#page-google-reviews .google-goals-status{display:flex;align-items:center;gap:8px;min-height:38px;margin:2px 0 10px;padding:9px 13px;border:1px solid #cdebdc;border-radius:9px;background:#f1fbf5;color:#59756a;font-size:11px}
+#page-google-reviews .google-goals-status-dot{width:9px;height:9px;border-radius:50%;background:#22a765;box-shadow:0 0 0 3px #d5f2e0}
+#page-google-reviews .google-goals-status strong{color:#17334d;font-size:12px}
+#page-google-reviews .google-goals-status b{color:#15945a}
+#page-google-reviews .google-goals-status small{margin-left:auto;color:#59756a;font-size:10px}
 #page-google-reviews .google-goals-grid{align-items:start}
 #page-google-reviews .google-goal-form-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:12px}
 #page-google-reviews .google-goals-form-card,#page-google-reviews .google-goals-side-card{padding:14px}
