@@ -588,6 +588,12 @@ body.dark-mode #page-google-reviews .google-premium-kpi:nth-child(4){background:
 #page-google-reviews .google-goals-head-compact .google-goals-head-meta>label input,#page-google-reviews .google-goals-head-compact .google-goals-head-meta>label select{min-height:34px}
 #page-google-reviews .google-goals-head-compact .google-goals-head-meta>button{min-height:34px;padding:7px 11px;border:1px solid var(--gc-line);border-radius:8px;background:var(--gc-panel);color:var(--gc-ink);font:inherit;font-size:12px;font-weight:700}
 #page-google-reviews .google-goals-head-compact .google-goals-head-meta>button.active{background:#10213c;color:#fff;border-color:#10213c}
+#page-google-reviews .google-goals-grid{align-items:start}
+#page-google-reviews .google-goal-form-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:12px}
+#page-google-reviews .google-goals-form-card,#page-google-reviews .google-goals-side-card{padding:14px}
+#page-google-reviews .google-goals-side-card ul{gap:7px;margin:10px 0}
+@media(max-width:1100px){#page-google-reviews .google-goal-form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){#page-google-reviews .google-goal-form-grid{grid-template-columns:1fr}}
 #page-google-reviews .review-center-top .review-top-actions{position:relative;margin-left:auto}
 #page-google-reviews .review-filter-popover{position:absolute;top:calc(100% + 7px);right:0;z-index:40;display:grid;gap:3px;min-width:168px;padding:6px;border:1px solid #d7e0ec;border-radius:9px;background:#fff;box-shadow:0 14px 30px rgba(15,32,58,.16)}
 #page-google-reviews .review-filter-popover.branch{min-width:230px}
