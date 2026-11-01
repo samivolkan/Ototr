@@ -4481,7 +4481,7 @@
       document.querySelectorAll('[data-rep-create-first]').forEach(el=>{if(el.dataset.repBound==='1')return;el.dataset.repBound='1';el.addEventListener('click',e=>{e.preventDefault();reputationCreateCrmCase(reputationSelectedMention().id);});});
     }
     const googleReputationState={selectedBranchId:'branch-google-nilufer',filter:'all',centerView:'overview',inboxTab:'new',inboxSelectedReviewId:'',inboxQuery:'',inboxExpanded:false,connected:null,loading:false,error:'',progress:'',lastAllSyncAt:0,lastSync:'Henüz yorum alınmadı',goalScope:'hq',goalRegion:'Marmara',goalBranchId:'branch-google-nilufer',goalMonth:new Date().toISOString().slice(0,7),goalMessage:''};
-    const googleDashboardState={period:'2026-11',branchId:'all',openMenu:''};
+    const googleDashboardState={period:'2026-11',branchId:'all',region:'',openMenu:''};
     const googleTransferQueues={dashboard:[],branches:[],crisis:[],complaints:[],legal:[],quality:[]};
     const googleReputationData={
       branches:[
@@ -4925,11 +4925,13 @@
     }
     function googleDashboardBranchLabel(branchId=googleDashboardState.branchId){
       if(branchId==='all') return 'Tüm şubeler';
+      if(String(branchId).startsWith('region:')) return `Bölge · ${String(branchId).slice(7)}`;
       const branch=googleBranches().find(item=>item.id===branchId);
       return branch?.name?.replace('OTOTR Oto Ekspertiz ','')||'Tüm şubeler';
     }
     function googleDashboardSnapshot(){
       const liveRows=googleReviews().filter(review=>review.branchId==='branch-google-nilufer'&&!review.demo),liveTotal=liveRows.length,livePending=liveRows.filter(review=>!review.isReplied).length,liveCritical=liveRows.filter(review=>['critical','negative'].includes(review.riskLevel)||Number(review.starRating||review.rating)<=2).length,liveRating=liveTotal?liveRows.reduce((sum,review)=>sum+Number(review.starRating||review.rating||0),0)/liveTotal:null,demoBranches=googleBranches().filter(branch=>branch.demo),demoTotal=demoBranches.reduce((sum,branch)=>sum+Number(branch.demoReviewCount||0),0),demoPending=demoBranches.reduce((sum,branch)=>sum+Number(branch.demoUnrepliedCount||branch.unrepliedCount||0),0),demoCritical=demoBranches.reduce((sum,branch)=>sum+Number(branch.demoCriticalCount||branch.criticalCount||0),0),demoWeightedRating=demoBranches.reduce((sum,branch)=>sum+Number(branch.demoReviewCount||0)*Number(branch.demoRating||branch.googleRating||0),0),branchId=googleDashboardState.branchId||'all',branch=googleBranches().find(item=>item.id===branchId);
+      if(String(branchId).startsWith('region:')){ const region=String(branchId).slice(7),rows=googleBranches().filter(item=>item.region===region),total=rows.reduce((n,item)=>n+Number(item.demoReviewCount||item.googleReviewCount||0),0),pending=rows.reduce((n,item)=>n+Number(item.demoUnrepliedCount||item.unrepliedCount||0),0),critical=rows.reduce((n,item)=>n+Number(item.demoCriticalCount||item.criticalCount||0),0),weighted=rows.reduce((n,item)=>n+Number(item.demoReviewCount||item.googleReviewCount||0)*Number(item.demoRating||item.googleRating||0),0); return {total,rating:total?weighted/total:null,pending,critical,sla:total?Math.round((total-pending)/total*100):null,label:`${region} demo verisi`}; }
       if(branchId!=='all'&&branch?.demo) return {total:Number(branch.demoReviewCount||0),rating:Number(branch.demoRating||branch.googleRating||0),pending:Number(branch.demoUnrepliedCount||branch.unrepliedCount||0),critical:Number(branch.demoCriticalCount||branch.criticalCount||0),sla:Number(branch.demoResponseRate||0),label:'Demo veri'};
       if(branchId!=='all') return liveTotal?{total:liveTotal,rating:liveRating,pending:livePending,critical:liveCritical,sla:Math.round((liveTotal-livePending)/liveTotal*100),label:'Nilüfer canlı'}:{total:null,rating:null,pending:null,critical:null,sla:null,label:'Nilüfer canlı · veri bekleniyor'};
       return {total:liveTotal?liveTotal+demoTotal:1247,rating:liveTotal?((demoWeightedRating+(liveRating*liveTotal))/Math.max(1,liveTotal+demoTotal)):4.3,pending:liveTotal?livePending+demoPending:392,critical:liveTotal?liveCritical+demoCritical:157,sla:liveTotal?Math.round((liveTotal+demoTotal-(livePending+demoPending))/Math.max(1,liveTotal+demoTotal)*100):78,label:liveTotal?'Canlı + demo':'Örnek veri'};
@@ -4973,7 +4975,7 @@
     function googleDashboardOpenMenu(kind,anchor){
       googleDashboardCloseMenu();
       const popover=document.createElement('div'); popover.className=`review-filter-popover ${kind}`; popover.setAttribute('role','listbox');
-      const options=kind==='period'?[['2026-01','Ocak 2026'],['2026-02','Şubat 2026'],['2026-03','Mart 2026'],['2026-04','Nisan 2026'],['2026-05','Mayıs 2026'],['2026-06','Haziran 2026'],['2026-07','Temmuz 2026'],['2026-08','Ağustos 2026'],['2026-09','Eylül 2026'],['2026-10','Ekim 2026'],['2026-11','Kasım 2026'],['2026-12','Aralık 2026'],['last30','Son 30 gün']]:[['all','Tüm şubeler'],...googleBranches().map(branch=>[branch.id,`${branch.name.replace('OTOTR Oto Ekspertiz ','')}${branch.demo?' · Demo':' · Canlı'}`])];
+      const options=kind==='period'?[['2026-01','Ocak 2026'],['2026-02','Şubat 2026'],['2026-03','Mart 2026'],['2026-04','Nisan 2026'],['2026-05','Mayıs 2026'],['2026-06','Haziran 2026'],['2026-07','Temmuz 2026'],['2026-08','Ağustos 2026'],['2026-09','Eylül 2026'],['2026-10','Ekim 2026'],['2026-11','Kasım 2026'],['2026-12','Aralık 2026'],['last30','Son 30 gün']]:[['all','Tüm şubeler'],...[...new Set(googleBranches().map(branch=>branch.region).filter(Boolean))].map(region=>[`region:${region}`,`Bölge · ${region}`]),...googleBranches().map(branch=>[branch.id,`${branch.name.replace('OTOTR Oto Ekspertiz ','')}${branch.demo?' · Demo':' · Canlı'}`])];
       const selected=kind==='period'?googleDashboardState.period:googleDashboardState.branchId;
       popover.innerHTML=options.map(([value,label])=>`<button type="button" role="option" aria-selected="${value===selected}" data-google-dashboard-choice="${googleEsc(value)}" data-google-dashboard-choice-kind="${kind}">${googleEsc(label)}${value===selected?' ✓':''}</button>`).join('');
       anchor.parentElement?.appendChild(popover); googleDashboardState.openMenu=kind;
@@ -5051,7 +5053,7 @@
     document.addEventListener?.('click',e=>{const link=e.target.closest('[data-google-center-scroll]');if(!link)return;const targetId=link.dataset.googleCenterScroll; if(targetId==='review-list'){e.preventDefault();window.OTOTRGoogleReputation?.setCenterView?.('inbox','new');return;} if(targetId==='google-reply-workspace'){e.preventDefault();window.OTOTRGoogleReputation?.setCenterView?.('inbox','waiting');return;} if(targetId==='review-overview'){e.preventDefault();window.OTOTRGoogleReputation?.setCenterView?.('overview');return;} if(targetId==='review-targets'){e.preventDefault();window.OTOTRGoogleReputation?.setCenterView?.('goals');return;} if(['review-branches','review-reports'].includes(targetId)&&googleReputationState.centerView!=='overview'){e.preventDefault();window.OTOTRGoogleReputation?.setCenterView?.('overview');} const target=document.getElementById(targetId);if(target){e.preventDefault();target.scrollIntoView({behavior:'smooth',block:'start'});document.querySelectorAll('.review-center-nav button').forEach(btn=>btn.classList.toggle('active',btn===link));}});
     document.addEventListener?.('click',e=>{
       const choice=e.target.closest?.('[data-google-dashboard-choice]'),periodButton=e.target.closest?.('[data-google-dashboard-period]'),branchButton=e.target.closest?.('[data-google-dashboard-branch]'),exportButton=e.target.closest?.('[data-google-dashboard-export]');
-      if(choice){ const kind=choice.dataset.googleDashboardChoiceKind,value=choice.dataset.googleDashboardChoice; if(kind==='period') googleDashboardState.period=value; else { googleDashboardState.branchId=value; googleReputationState.selectedBranchId=value; } googleDashboardCloseMenu(); refreshGoogleReputationPage(); return; }
+      if(choice){ const kind=choice.dataset.googleDashboardChoiceKind,value=choice.dataset.googleDashboardChoice; if(kind==='period') googleDashboardState.period=value; else { googleDashboardState.branchId=value; googleDashboardState.region=String(value).startsWith('region:')?String(value).slice(7):''; if(!String(value).startsWith('region:')) googleReputationState.selectedBranchId=value; } googleDashboardCloseMenu(); refreshGoogleReputationPage(); return; }
       if(periodButton){ e.preventDefault(); googleDashboardOpenMenu('period',periodButton); return; }
       if(branchButton){ e.preventDefault(); googleDashboardOpenMenu('branch',branchButton); return; }
       if(exportButton){ e.preventDefault(); googleDashboardCloseMenu(); googleDashboardExport(); return; }
@@ -5085,7 +5087,7 @@
         googleBranches().filter(branch=>!branch.synced).forEach(branch=>{
           branch.integrationStatus=status.connected?'Google hesabı bağlı · yorumlar henüz alınmadı':'Google hesabı bağlantısı bekleniyor';
         });
-        if(status.connected && !googleReviews().length) setTimeout(()=>window.OTOTRGoogleReputation?.syncGoogleReviewsForBranch?.('branch-google-nilufer',{quiet:true}),350);
+        if(status.connected && !googleReviews().some(review=>review.branchId==='branch-google-nilufer'&&!review.demo)) setTimeout(()=>window.OTOTRGoogleReputation?.syncGoogleReviewsForBranch?.('branch-google-nilufer',{quiet:true}),350);
       } catch(error) {
         googleReputationState.error=error?.message||'Google bağlantısı kontrol edilemedi.';
       }
