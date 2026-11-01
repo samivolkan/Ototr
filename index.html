@@ -4990,6 +4990,7 @@
           if(periodButton){ periodButton.dataset.googleDashboardPeriod='1'; periodButton.innerHTML=`${icon('calendar-days')}${googleDashboardPeriodLabel()}${icon('chevron-down')}`; }
           if(branchButton){ branchButton.dataset.googleDashboardBranch='1'; branchButton.innerHTML=`${icon('building-2')}${googleEsc(googleDashboardBranchLabel())}${icon('chevron-down')}`; }
           if(exportButton){ exportButton.dataset.googleDashboardExport='1'; }
+          if(googleReputationState.centerView==='goals') periodButton?.remove();
         }
         applyGoogleDashboardFilterView(page);
         const activeTarget=googleReputationState.centerView==='goals'?'review-targets':googleReputationState.centerView==='inbox'?'google-reply-workspace':'review-overview';
