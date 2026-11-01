@@ -4733,13 +4733,15 @@
       const complete=liveReviews.length===total;
       const negative=liveReviews.filter(review=>['negative','critical'].includes(review.riskLevel)).length;
       const critical=liveReviews.filter(review=>review.riskLevel==='critical'||review.legalRisk==='Yüksek').length;
-      const retained=googleReputationData.reviews.filter(review=>review.branchId!==branch.id);
-      googleReputationData.reviews.splice(0,googleReputationData.reviews.length,...retained,...liveReviews);
+      const retained=googleReputationData.reviews.filter(review=>review.branchId!==branch.id),previousById=new Map(previousRows.map(review=>[String(review.googleReviewId||review.id),review]));
+      if(payload.incremental===true) liveReviews.forEach(review=>previousById.set(String(review.googleReviewId||review.id),review));
+      const mergedReviews=payload.incremental===true?[...previousById.values()]:liveReviews;
+      googleReputationData.reviews.splice(0,googleReputationData.reviews.length,...retained,...mergedReviews);
       branch.previousRating=branch.googleRating||average; branch.googleRating=average==null?null:Number(average.toFixed(2)); branch.googleReviewCount=total;
-      branch.loadedReviewCount=liveReviews.length; branch.loadedUnrepliedCount=liveReviews.filter(review=>!review.isReplied).length; branch.reviewListComplete=complete;
-      branch.loadedCriticalCount=critical; branch.loadedLast30DaysReviewCount=liveReviews.filter(review=>(Date.now()-new Date(review.reviewDate))/(86400000)<=30).length;
-      branch.unrepliedCount=complete?branch.loadedUnrepliedCount:null; branch.criticalCount=complete?critical:null;
-      branch.last30DaysReviewCount=complete?branch.loadedLast30DaysReviewCount:null;
+      branch.loadedReviewCount=mergedReviews.length; branch.loadedUnrepliedCount=mergedReviews.filter(review=>!review.isReplied).length; branch.reviewListComplete=payload.incremental===true?false:complete;
+      branch.loadedCriticalCount=mergedReviews.filter(review=>review.riskLevel==='critical'||review.legalRisk==='Yüksek').length; branch.loadedLast30DaysReviewCount=mergedReviews.filter(review=>(Date.now()-new Date(review.reviewDate))/(86400000)<=30).length;
+      branch.unrepliedCount=payload.incremental===true?branch.loadedUnrepliedCount:(complete?branch.loadedUnrepliedCount:null); branch.criticalCount=payload.incremental===true?branch.loadedCriticalCount:(complete?critical:null);
+      branch.last30DaysReviewCount=payload.incremental===true?branch.loadedLast30DaysReviewCount:(complete?branch.loadedLast30DaysReviewCount:null);
       branch.negativeReviewRate=complete&&total?Math.round(negative/total*100):null;
       branch.reputationScore=complete&&average!=null?Math.max(0,Math.min(100,Math.round((average/5)*80+(100-(branch.negativeReviewRate||0))*.2))):null;
       branch.responseSlaStatus=branch.loadedUnrepliedCount?'İlk yanıt bekleniyor':'İçinde';
@@ -4747,7 +4749,7 @@
       branch.googleBusinessAccountId=accountId; branch.googleBusinessLocationId=locationId;
       if(location.metadata?.mapsUri) branch.publicProfileUrl=location.metadata.mapsUri;
       branch.recommendedAction=branch.loadedUnrepliedCount?'Cevap bekleyen yorumları insan onaylı AI taslağıyla yönetin.':'Yeni yorumları izleyin.';
-      branch.syncError=''; branch.synced=true; branch.lastSyncedAt=new Date().toLocaleString('tr-TR');
+      branch.syncError=''; branch.synced=true; branch.lastSyncedAt=new Date().toLocaleString('tr-TR'); branch.lastSyncEpoch=Date.now();
       googlePersistLiveCache();
       return {count:liveReviews.length,complete};
     }
@@ -4761,7 +4763,7 @@
         if(!targets.length) throw new Error('Google şubesi bulunamadı.');
         let payload;
         try {
-          payload=await api.googleBusinessRequest('sync_reviews',{branch_ids:targets.map(branch=>branch.id)});
+          payload=await api.googleBusinessRequest('sync_reviews',{branch_ids:targets.map(branch=>branch.id),since_by_branch:Object.fromEntries(targets.filter(branch=>Number(branch.lastSyncEpoch)>0).map(branch=>[branch.id,Number(branch.lastSyncEpoch)]))});
         } catch(error) {
           // Only an explicit unsupported action permits the old read path during rollout.
           if(error.status===400&&(error.code==='UNSUPPORTED_ACTION'||error.message==='Geçersiz işlem.')) payload=await googleLegacyReviewBatch(targets);

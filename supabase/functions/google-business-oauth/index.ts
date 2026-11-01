@@ -124,7 +124,7 @@ function syncBranchIds(value: unknown): string[] {
   }
   return [...new Set(value)];
 }
-async function googlePages(base: string, field: string, token: string, signal: AbortSignal) {
+async function googlePages(base: string, field: string, token: string, signal: AbortSignal, stopBefore = 0) {
   const items: any[] = [], seen = new Set<string>();
   let pageToken = '', first: any;
   do {
@@ -133,7 +133,9 @@ async function googlePages(base: string, field: string, token: string, signal: A
       throw new GoogleApiError('Google veri yanıtı okunamadı. Tam veri alınamadı.', 502, 'INVALID_GOOGLE_RESPONSE');
     }
     first ||= page;
-    items.push(...(page[field] || []));
+    const pageItems = page[field] || [];
+    items.push(...pageItems);
+    if (stopBefore && field === 'reviews' && pageItems.length && pageItems.every((item: any) => Math.max(Date.parse(item?.updateTime || item?.createTime || '') || 0, Date.parse(item?.reviewReply?.updateTime || '') || 0) <= stopBefore)) break;
     const next = page.nextPageToken;
     if (next != null && (typeof next !== 'string' || next.length > 8192)) throw new GoogleApiError('Google sayfalama anahtarı geçersiz.', 502, 'INVALID_GOOGLE_RESPONSE');
     pageToken = next || '';
@@ -153,7 +155,7 @@ async function mapThree<T, R>(items: T[], request: (item: T) => Promise<R>): Pro
   }));
   return results;
 }
-async function syncReviews(targets: string[], token: string, signal: AbortSignal) {
+async function syncReviews(targets: string[], token: string, signal: AbortSignal, sinceByBranch: Record<string, number> = {}) {
   // One request-scoped token; no global token or customer-data cache. Reads only.
   const accountPage = await googlePages('https://mybusinessaccountmanagement.googleapis.com/v1/accounts?pageSize=20', 'accounts', token, signal);
   const accounts = [...new Set<string>(accountPage.accounts.map((account: any) => String(account?.name || '')))];
@@ -187,7 +189,8 @@ async function syncReviews(targets: string[], token: string, signal: AbortSignal
       const selected: any = matching.find(location => location.accountName === 'accounts/114698852482564472140') || matching.sort((a, b) => a.accountName.localeCompare(b.accountName))[0];
       const account_id = selected.accountName.slice('accounts/'.length), location_id = selected.name.slice('locations/'.length);
       const base = `https://mybusiness.googleapis.com/v4/accounts/${account_id}/locations/${location_id}/reviews`;
-      const page = await googlePages(`${base}?pageSize=50&orderBy=updateTime%20desc`, 'reviews', token, signal);
+      const since = Number(sinceByBranch[branch_id] || 0);
+      const page = await googlePages(`${base}?pageSize=50&orderBy=updateTime%20desc`, 'reviews', token, signal, since);
       const unique = new Map<string, any>();
       for (const review of page.reviews) {
         const id = typeof review?.reviewId === 'string' && review.reviewId ? review.reviewId : String(review?.name || '').split('/').at(-1);
@@ -199,7 +202,7 @@ async function syncReviews(targets: string[], token: string, signal: AbortSignal
       const reviews = [...unique.values()];
       const totalReviewCount = Number.isSafeInteger(page.totalReviewCount) && page.totalReviewCount >= 0 ? page.totalReviewCount : null;
       const { accountName: _, ...location } = selected;
-      return { branch: { branch_id, account_id, location_id, location, reviews, averageRating: page.averageRating ?? null, totalReviewCount, pagination_complete: true, review_count_matches: totalReviewCount === null ? null : totalReviewCount === reviews.length } };
+      return { branch: { branch_id, account_id, location_id, location, reviews, averageRating: page.averageRating ?? null, totalReviewCount, pagination_complete: true, incremental: since > 0, since, review_count_matches: totalReviewCount === null ? null : totalReviewCount === reviews.length } };
     } catch (error) {
       const timedOut = signal.aborted;
       return { error: { branch_id, error: timedOut ? 'Google senkronizasyonu zaman aşımına uğradı. Önceki veriler korunuyor.' : error instanceof Error ? error.message : 'Google yorumları alınamadı.', status: timedOut ? 504 : error instanceof GoogleApiError ? error.status : 502, code: timedOut ? 'GOOGLE_SYNC_TIMEOUT' : error instanceof GoogleApiError ? error.code : 'GOOGLE_SYNC_FAILED', source: 'google' } };
@@ -561,7 +564,8 @@ Deno.serve(async (req) => {
       const signal = AbortSignal.timeout(25_000);
       try {
         const token = await accessToken(await decrypt(connection.refresh_token_encrypted), signal);
-        return json(await syncReviews(syncTargets, token, signal));
+        const sinceByBranch = body.since_by_branch && typeof body.since_by_branch === 'object' ? body.since_by_branch : {};
+        return json(await syncReviews(syncTargets, token, signal, sinceByBranch));
       } catch (error) {
         if (signal.aborted) throw new GoogleApiError('Google senkronizasyonu zaman aşımına uğradı. Önceki veriler korunuyor.', 504, 'GOOGLE_SYNC_TIMEOUT');
         throw error;
