@@ -3116,7 +3116,7 @@
     }
 
     const navGroups = [
-      ['Genel Merkez', [['dashboard','Yönetim Kokpiti','layout-dashboard'],['intelligence','İş Zekası','chart-no-axes-column'],['isler-v24','Kokpit · İşler v24','list-checks'],['kokpit-isler','Kokpit · İşler','list-checks'],['actions','Aksiyon & Görev','target'],['crisis','Kriz Merkezi','siren'],['ai','AI Öneri','sparkles']]],
+      ['Genel Merkez', [['dashboard','Yönetim Kokpiti','layout-dashboard'],['project-roadmap','Proje Yol Haritası','map'],['intelligence','İş Zekası','chart-no-axes-column'],['isler-v24','Kokpit · İşler v24','list-checks'],['kokpit-isler','Kokpit · İşler','list-checks'],['actions','Aksiyon & Görev','target'],['crisis','Kriz Merkezi','siren'],['ai','AI Öneri','sparkles']]],
       ['Bayi & Şube Yönetimi', [['branches','Bayiler & Şubeler','building-2'],['dealer','Bayi Portalı','tablet-smartphone'],['ototr-web','OTOTR Web','globe'],['operations','Operasyon','workflow'],['quality','Kalite & Denetim','shield-check']]],
       ['Ekspertiz & Rapor', [['ruhsat','Ruhsat Oku','scan-line'],['report-design','Ekspertiz Rapor Tasarımı','file-check-2'],['sunum32','32 Ekran Sunumu','presentation'],['sunum32v2','32 Ekran Sunumu V2','monitor-up'],['kaporta-design','Kaporta Tasarım','panels-top-left'],['kaporta-360','Kaporta 360','rotate-3d']]],
       ['Müşteri & Satış', [['crm','CRM & Randevu','users'],['saha-satis','Saha Satış','map-pinned'],['chronic-issues','Kronik Sorunlar','car-front'],['complaints','Müşteri Şikayetleri','message-circle-warning'],['google-reviews','Google Yorumlar','star'],['reputation','Sosyal Medya İtibar Radar','radar'],['marketing','Pazarlama','megaphone']]],
@@ -3124,7 +3124,7 @@
       ['Kurumsal Yönetim', [['academy','OTOTR Academy','graduation-cap'],['hr','İnsan Kaynakları','badge-check'],['legal','Hukuk & Risk','scale']]],
       ['Ayarlar', [['architecture','Sistem Mimarisi','network'],['settings','Ayarlar','settings'],['legacy','Legacy Room','landmark']]]
     ];
-    const titles = {ruhsat:'Ruhsat Oku',dashboard:'Yönetim Kokpiti',intelligence:'İş Zekası',branches:'Bayiler & Şubeler',dealer:'Bayi Portalı','ototr-web':'OTOTR Web',operations:'Operasyon',franchise:'Franchise Satış',crm:'CRM & Randevu','chronic-issues':'Kronik Sorunlar',complaints:'Müşteri Şikayetleri','google-reviews':'Google Haritalar İtibar Merkezi',reputation:'İtibar Radar',finance:'Finans & Royalty',marketing:'Pazarlama',quality:'Kalite & Denetim','report-design':'Ekspertiz Rapor Tasarımı',sunum32:'32 Ekran Sunumu',sunum32v2:'32 Ekran Sunumu V2','vehicle-passport':'Dijital Araç Karnesi',academy:'OTOTR Academy',hr:'İnsan Kaynakları',legal:'Hukuk & Risk',crisis:'Kriz Merkezi',actions:'Aksiyon & Görev',ai:'AI Öneri',growth:'Bayii Büyüme',legacy:'Legacy Room',architecture:'Sistem Mimarisi',settings:'Ayarlar',branchProfile:'Şube Profili',franchiseProfile:'Aday Değerlendirme',customerProfile:'Müşteri 360'};
+    const titles = {ruhsat:'Ruhsat Oku',dashboard:'Yönetim Kokpiti','project-roadmap':'Proje Yol Haritası',intelligence:'İş Zekası',branches:'Bayiler & Şubeler',dealer:'Bayi Portalı','ototr-web':'OTOTR Web',operations:'Operasyon',franchise:'Franchise Satış',crm:'CRM & Randevu','chronic-issues':'Kronik Sorunlar',complaints:'Müşteri Şikayetleri','google-reviews':'Google Haritalar İtibar Merkezi',reputation:'İtibar Radar',finance:'Finans & Royalty',marketing:'Pazarlama',quality:'Kalite & Denetim','report-design':'Ekspertiz Rapor Tasarımı',sunum32:'32 Ekran Sunumu',sunum32v2:'32 Ekran Sunumu V2','vehicle-passport':'Dijital Araç Karnesi',academy:'OTOTR Academy',hr:'İnsan Kaynakları',legal:'Hukuk & Risk',crisis:'Kriz Merkezi',actions:'Aksiyon & Görev',ai:'AI Öneri',growth:'Bayii Büyüme',legacy:'Legacy Room',architecture:'Sistem Mimarisi',settings:'Ayarlar',branchProfile:'Şube Profili',franchiseProfile:'Aday Değerlendirme',customerProfile:'Müşteri 360'};
     function dealerPortalUrl(){
       const path=decodeURIComponent(location.pathname||'').replace(/\\/g,'/').toLowerCase();
       return path.includes('/bayi-portal/') ? 'index.html#dealer' : 'bayi-portal/index.html#dealer';
@@ -4107,7 +4107,7 @@
       const overall=planRoomPercent(doneAll,all.length), viewPct=planRoomPercent(doneVisible,visibleItems.length);
       return `
         <div class="plan-room-hero">
-          <div><h2>Sistem Mimarisi / Plan Room</h2><p>OTOTR ERP/CRM sisteminin canlı veri öncesi ve canlı veri sonrası geliştirme yol haritası. Yapılan maddeler tiklenerek takip edilir; ilerleme tarayıcıda saklanır.</p></div>
+          <div><h2>OTOTR ERP · Proje Yol Haritası</h2><p>OTOTR ERP/CRM sisteminin uzun soluklu geliştirme yol haritası. Canlı veri öncesi ve sonrası işler fazlara ayrılır; tamamlanan maddeler işaretlenir ve ilerleme tarayıcıda saklanır.</p></div>
           <div class="plan-room-actions">
             <button class="btn" data-plan-open-all>${icon('panel-top-open')}Tümünü Aç</button>
             <button class="btn" data-plan-close-all>${icon('panel-top-close')}Tümünü Kapat</button>
@@ -4289,6 +4289,7 @@
     }
 
     const moduleHeaderMeta={
+      'project-roadmap':['Genel Merkez · Program Yönetimi','Proje Yol Haritası','ERP, CRM, mobil, rapor, franchise, finans, kalite ve entegrasyon işlerini fazlar halinde yürütün; ilerlemeyi tamamlandıkça işaretleyin.'],
       intelligence:['Komuta · İş Zekası','İş Zekası / Analiz Room','Dashboard karar sinyallerinin derin analizini; trend, dönem, bölge, şube ve performans kırılımlarında inceleyin.'],
       branches:['İş Zekası · Bayiler & Şubeler','Bayiler & Şubeler / Network Room','Aktif bayi ve şubeleri; sahip, müdür, ciro, EBITDA, royalty, kalite, SLA, Academy ve hukuk riskiyle yönetin.'],
       dealer:['Operasyon · Bayi Kullanımı','OTOTR Bayi Portalı / Şube İşletim Sistemi','Bayi sahibi, şube müdürü, müşteri kabul, usta ve kasa personeli aynı şube verisini rol bazlı kullanır.'],
@@ -5320,6 +5321,7 @@
       window.__OTOTR_FULL_ADMIN_PAGES_RENDERED__ = true;
       document.getElementById('pages').innerHTML =
         dashboardPage+
+        pageShell('project-roadmap', PlanRoomPage())+
         pageShell('franchise', franchiseDashboard())+
         pageShell('crm', crmDashboard())+
         pageShell('chronic-issues', ChronicIssuesPage())+
