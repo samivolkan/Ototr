@@ -2872,7 +2872,7 @@ function googleOperationalBranches(){ return googleBranches().filter(branch=>bra
 function googleReviews(){ return googleReputationData.reviews; }
 const GOOGLE_LIVE_CACHE_KEY='ototr.google.live.reviews.v1';
 function googlePersistLiveCache(){ try { const branches=googleReputationData.branches.filter(branch=>!branch.demo).map(branch=>({...branch})),reviews=googleReputationData.reviews.filter(review=>!review.demo); localStorage.setItem(GOOGLE_LIVE_CACHE_KEY,JSON.stringify({version:1,savedAt:new Date().toISOString(),branches,reviews})); } catch(_) {} }
-function googleLoadLiveCache(){ try { const raw=localStorage.getItem(GOOGLE_LIVE_CACHE_KEY); if(!raw)return; const cache=JSON.parse(raw); if(cache?.version!==1||!Array.isArray(cache.branches)||!Array.isArray(cache.reviews))return; cache.branches.forEach(saved=>{ const branch=googleReputationData.branches.find(item=>item.id===saved.id&&!item.demo); if(branch) Object.assign(branch,saved); }); const demoReviews=googleReputationData.reviews.filter(review=>review.demo); googleReputationData.reviews.splice(0,googleReputationData.reviews.length,...demoReviews,...cache.reviews.filter(review=>!review.demo)); } catch(_) {} }
+function googleLoadLiveCache(){ try { const raw=localStorage.getItem(GOOGLE_LIVE_CACHE_KEY); if(!raw)return; const cache=JSON.parse(raw); if(cache?.version!==1||!Array.isArray(cache.branches)||!Array.isArray(cache.reviews))return; cache.branches.forEach(saved=>{ const branch=googleReputationData.branches.find(item=>item.id===saved.id&&!item.demo); if(branch) Object.assign(branch,saved); }); const demoReviews=googleReputationData.reviews.filter(review=>review.demo); googleReputationData.reviews.splice(0,googleReputationData.reviews.length,...demoReviews,...cache.reviews.filter(review=>!review.demo)); googleReputationData.branches.filter(branch=>!branch.demo&&!branch.monthlyTrend).forEach(branch=>googleRefreshBranchMonthlyTrend(branch.id)); } catch(_) {} }
 function googleSelectedBranch(){
   const branch=googleBranches().find(b=>b.id===googleReputationState.selectedBranchId) || googleBranches()[0];
   // Cached live reviews are still usable while the lightweight branch
@@ -3027,7 +3027,7 @@ function googleLiveReviewModel(review,branch){
     googleReviewId:String(review.reviewId||review.name?.split('/').pop()||''),
     reviewReplyUrl:googleSafeReviewUrl(review.reviewReplyUrl),
     source:'Google',branchId:branch.id,reviewerName:String(review.reviewer?.displayName||review.reviewer?.displayName||'Google kullanıcısı'),
-    rating:risk.rating,comment:risk.text||'Yorum metni paylaşılmamış.',reviewDate:review.createTime||review.updateTime||new Date().toISOString(),
+    rating:risk.rating,comment:risk.text||'Yorum metni paylaşılmamış.',reviewDate:review.createTime||review.updateTime||new Date().toISOString(),updatedAt:review.updateTime||review.createTime||'',replyUpdatedAt:review.reviewReply?.updateTime||review.reply?.updateTime||'',
     isReplied,replyText:review.reviewReply?.comment||review.reply?.comment||'',riskLevel:risk.riskLevel,
     sentiment:risk.rating>=4?'Olumlu':risk.rating===3?'Nötr':'Negatif',legalRisk:risk.legal?'Yüksek':'Düşük',
     brandRisk:risk.critical||risk.rating<=2?'Yüksek':risk.rating===3?'Orta':'Düşük',operationalRisk:risk.rating<=2?'Yüksek':risk.rating===3?'Orta':'Düşük',
@@ -3140,7 +3140,9 @@ function googleApplyLiveBranch(branch,payload){
   branch.googleBusinessAccountId=accountId; branch.googleBusinessLocationId=locationId;
   if(location.metadata?.mapsUri) branch.publicProfileUrl=location.metadata.mapsUri;
   branch.recommendedAction=branch.loadedUnrepliedCount?'Cevap bekleyen yorumları insan onaylı AI taslağıyla yönetin.':'Yeni yorumları izleyin.';
-  branch.syncError=''; branch.synced=true; branch.lastSyncedAt=new Date().toLocaleString('tr-TR'); branch.lastSyncEpoch=Date.now();
+  const serverUpdateEpoch=rawReviews.reduce((latest,review)=>Math.max(latest,Date.parse(review?.updateTime||review?.createTime||'')||0,Date.parse(review?.reviewReply?.updateTime||'')||0),0);
+  branch.syncError=''; branch.synced=true; branch.lastSyncedAt=new Date().toLocaleString('tr-TR'); branch.lastSyncEpoch=serverUpdateEpoch?Math.max(0,serverUpdateEpoch-120000):(branch.lastSyncEpoch||Date.now());
+  googleRefreshBranchMonthlyTrend(branch.id);
   googlePersistLiveCache();
   return {count:liveReviews.length,complete};
 }
@@ -3301,10 +3303,10 @@ function wireGoogleReviewChartTooltips(){
   if(!page||typeof page.querySelectorAll!=='function') return;
   let tooltip=document.getElementById('google-chart-tooltip');
   if(!tooltip){ tooltip=document.createElement('div'); tooltip.id='google-chart-tooltip'; tooltip.className='review-chart-tooltip'; document.body.appendChild(tooltip); }
-  const svg=page.querySelector('.review-trend-chart svg'),volumes=(svg?.dataset.googleVolume||'560,820,1000,920,1310,1740').split(',').map(Number),ratings=(svg?.dataset.googleRating||'3.2,3.7,3.8,3.6,4.1,4.5').split(',').map(Number),months=(svg?.dataset.googleLabels||'Nis 2026|May 2026|Haz 2026|Tem 2026|Ağu 2026|Eyl 2026').split('|'),seriesLength=months.length;
+  const svg=page.querySelector('.review-trend-chart svg'),volumes=(svg?.dataset.googleVolume||'560,820,1000,920,1310,1740').split(',').map(Number),ratings=(svg?.dataset.googleRating||'3.2,3.7,3.8,3.6,4.1,4.5').split(',').map(value=>value===''?null:Number(value)),months=(svg?.dataset.googleLabels||'Nis 2026|May 2026|Haz 2026|Tem 2026|Ağu 2026|Eyl 2026').split('|'),seriesLength=months.length;
   let guide=svg?.querySelector('.chart-hover-line');
   if(svg&&!guide){ guide=document.createElementNS('http://www.w3.org/2000/svg','line'); guide.setAttribute('class','chart-hover-line'); guide.setAttribute('x1','20'); guide.setAttribute('x2','20'); guide.setAttribute('y1','12'); guide.setAttribute('y2','166'); guide.setAttribute('stroke','#64748b'); guide.setAttribute('stroke-width','1.5'); guide.setAttribute('stroke-dasharray','4 4'); guide.setAttribute('opacity','0'); svg.insertBefore(guide,svg.firstChild); }
-  page.querySelectorAll('.review-trend-chart svg circle').forEach((point,index)=>{ const i=index%seriesLength, series=index<seriesLength?'Yorum hacmi':'Ortalama puan'; point.dataset.chartTooltip=`${months[i]} · ${series}: ${series==='Yorum hacmi'?volumes[i].toLocaleString('tr-TR')+' yorum':ratings[i].toLocaleString('tr-TR',{minimumFractionDigits:1})+' / 5'}`; point.setAttribute('title',point.dataset.chartTooltip); point.setAttribute('tabindex','0'); });
+  page.querySelectorAll('.review-trend-chart svg circle').forEach((point,index)=>{ const series=point.dataset.chartSeries==='rating'?'Ortalama puan':'Yorum hacmi',i=Number.isSafeInteger(Number(point.dataset.chartIndex))?Number(point.dataset.chartIndex):index%seriesLength,value=series==='Yorum hacmi'?`${(volumes[i]||0).toLocaleString('tr-TR')} yorum`:ratings[i]==null?'Puan verisi yok':`${ratings[i].toLocaleString('tr-TR',{minimumFractionDigits:1,maximumFractionDigits:2})} / 5`; point.dataset.chartTooltip=`${months[i]||''} · ${series}: ${value}`; point.setAttribute('title',point.dataset.chartTooltip); point.setAttribute('tabindex','0'); });
   page.querySelectorAll('.review-op-row').forEach(row=>{ const name=row.querySelector('b')?.textContent?.trim()||'Şube'; const values=[...row.querySelectorAll('i')].map(item=>item.textContent.trim()); row.dataset.chartTooltip=`${name} · Yanıtlandı: ${values[0]||0} · Bekleyen: ${values[1]||0} · Kritik: ${values[2]||0}`; row.setAttribute('title',row.dataset.chartTooltip); row.setAttribute('tabindex','0'); });
   if(window.__OTOTR_REVIEW_TOOLTIP_BOUND__) return;
   const show=(target,x,y)=>{ const text=target?.dataset?.chartTooltip; if(!text) return; tooltip.textContent=text; tooltip.classList.add('visible'); tooltip.style.left=`${Math.min(window.innerWidth-280,Math.max(8,x+14))}px`; tooltip.style.top=`${Math.max(8,y-42)}px`; const pointSvg=target?.closest?.('svg'),line=pointSvg?.querySelector?.('.chart-hover-line'); if(line){ const cx=target.getAttribute('cx')||'20'; line.setAttribute('x1',cx); line.setAttribute('x2',cx); line.setAttribute('opacity','1'); } };
@@ -3325,6 +3327,27 @@ function googleDashboardBranchLabel(branchId=googleDashboardState.branchId){
   const branch=googleBranches().find(item=>item.id===branchId);
   return branch?.name?.replace('OTOTR Oto Ekspertiz ','')||'Tüm şubeler';
 }
+function googleReviewMonthKey(value){
+  const date=new Date(value); if(!Number.isFinite(date.getTime())) return '';
+  const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Istanbul',year:'numeric',month:'2-digit'}).formatToParts(date),read=type=>parts.find(part=>part.type===type)?.value||'';
+  return `${read('year')}-${read('month')}`;
+}
+function googleTrendMonthsEnding(month,count=6){
+  const valid=/^\d{4}-(0[1-9]|1[0-2])$/.test(month)?month:googleReviewMonthKey(new Date()),[year,number]=valid.split('-').map(Number);
+  return Array.from({length:count},(_,index)=>new Date(Date.UTC(year,number-count+index,1)).toISOString().slice(0,7));
+}
+function googleRefreshBranchMonthlyTrend(branchId){
+  const branch=googleReputationData.branches.find(item=>item.id===branchId); if(!branch||branch.demo)return {};
+  const buckets={},seen=new Set();
+  googleReviews().forEach(review=>{ if(review.demo||review.branchId!==branchId)return; const identity=String(review.googleReviewId||review.id||''); if(!identity||seen.has(identity))return; seen.add(identity); const month=googleReviewMonthKey(review.reviewDate); if(!month)return; const bucket=buckets[month]||(buckets[month]={count:0,ratingTotal:0,ratingCount:0}); bucket.count++; const rating=Number(review.starRating||review.rating); if(rating>=1&&rating<=5){bucket.ratingTotal+=rating;bucket.ratingCount++;} });
+  Object.values(buckets).forEach(bucket=>{bucket.averageRating=bucket.ratingCount?Number((bucket.ratingTotal/bucket.ratingCount).toFixed(2)):null;});
+  branch.monthlyTrend=buckets; branch.monthlyTrendUpdatedAt=new Date().toISOString(); return buckets;
+}
+function googleLiveMonthlyTrend(branchId,period=googleDashboardState.period){
+  const endMonth=period==='last30'?googleReviewMonthKey(new Date()):period,months=googleTrendMonthsEnding(endMonth,6),branch=googleReputationData.branches.find(item=>item.id===branchId),buckets=branch?.monthlyTrend||googleRefreshBranchMonthlyTrend(branchId);
+  const volume=months.map(month=>Number(buckets?.[month]?.count||0)),rating=months.map(month=>buckets?.[month]?.averageRating??null),previous=volume.at(-2)||0,current=volume.at(-1)||0,growth=previous?Math.round((current-previous)/previous*100):(current?100:0);
+  return {labels:months.map(month=>new Date(`${month}-01T12:00:00Z`).toLocaleDateString('tr-TR',{month:'short',year:'numeric',timeZone:'Europe/Istanbul'})),months,volume,rating,growth,live:true,selectedIndex:months.length-1};
+}
 function googleDashboardSnapshot(){
   const liveRows=googleReviews().filter(review=>review.branchId==='branch-google-nilufer'&&!review.demo),liveTotal=liveRows.length,livePending=liveRows.filter(review=>!review.isReplied).length,liveCritical=liveRows.filter(review=>['critical','negative'].includes(review.riskLevel)||Number(review.starRating||review.rating)<=2).length,liveRating=liveTotal?liveRows.reduce((sum,review)=>sum+Number(review.starRating||review.rating||0),0)/liveTotal:null,demoBranches=googleBranches().filter(branch=>branch.demo),demoTotal=demoBranches.reduce((sum,branch)=>sum+Number(branch.demoReviewCount||0),0),demoPending=demoBranches.reduce((sum,branch)=>sum+Number(branch.demoUnrepliedCount||branch.unrepliedCount||0),0),demoCritical=demoBranches.reduce((sum,branch)=>sum+Number(branch.demoCriticalCount||branch.criticalCount||0),0),demoWeightedRating=demoBranches.reduce((sum,branch)=>sum+Number(branch.demoReviewCount||0)*Number(branch.demoRating||branch.googleRating||0),0),branchId=googleDashboardState.branchId||'all',branch=googleBranches().find(item=>item.id===branchId);
   if(String(branchId).startsWith('region:')||String(branchId).startsWith('city:')){ const isCity=String(branchId).startsWith('city:'),value=String(branchId).slice(isCity?5:7),rows=googleBranches().filter(item=>(isCity?item.city:item.region)===value),total=rows.reduce((n,item)=>n+Number(item.demoReviewCount||item.googleReviewCount||0),0),pending=rows.reduce((n,item)=>n+Number(item.demoUnrepliedCount||item.unrepliedCount||0),0),critical=rows.reduce((n,item)=>n+Number(item.demoCriticalCount||item.criticalCount||0),0),weighted=rows.reduce((n,item)=>n+Number(item.demoReviewCount||item.googleReviewCount||0)*Number(item.demoRating||item.googleRating||0),0); return {total,rating:total?weighted/total:null,pending,critical,sla:total?Math.round((total-pending)/total*100):null,label:`${value} demo verisi`}; }
@@ -3333,16 +3356,19 @@ function googleDashboardSnapshot(){
   return {total:liveTotal?liveTotal+demoTotal:1247,rating:liveTotal?((demoWeightedRating+(liveRating*liveTotal))/Math.max(1,liveTotal+demoTotal)):4.3,pending:liveTotal?livePending+demoPending:392,critical:liveTotal?liveCritical+demoCritical:157,sla:liveTotal?Math.round((liveTotal+demoTotal-(livePending+demoPending))/Math.max(1,liveTotal+demoTotal)*100):78,label:liveTotal?'Canlı + demo':'Örnek veri'};
 }
 function googleDashboardTrend(){
+  const branchId=googleDashboardState.branchId||'all',branch=googleBranches().find(item=>item.id===branchId);
+  if(branchId!=='all'&&!branch?.demo) return googleLiveMonthlyTrend(branchId);
   const labels=['Oca 2026','Şub 2026','Mar 2026','Nis 2026','May 2026','Haz 2026','Tem 2026','Ağu 2026','Eyl 2026','Eki 2026','Kas 2026','Ara 2026'];
-  const branchId=googleDashboardState.branchId||'all', branch=googleBranches().find(item=>item.id===branchId), base=branch?.demo?Number(branch.demoReviewCount||branch.googleReviewCount||100):branchId==='all'?1247:Math.max(80,googleDashboardSnapshot().total||120), seed=branchId==='all'?7:[...String(branchId)].reduce((n,char)=>n+char.charCodeAt(0),0)%17;
+  const base=branch?.demo?Number(branch.demoReviewCount||branch.googleReviewCount||100):1247, seed=branchId==='all'?7:[...String(branchId)].reduce((n,char)=>n+char.charCodeAt(0),0)%17;
   const volume=labels.map((_,index)=>Math.max(12,Math.round(base*(.48+index*.045+((index+seed)%4)*.025))));
   const rating=labels.map((_,index)=>Math.max(3.2,Math.min(4.9,(branch?.demoRating||4.3)+((index+seed)%5-2)*.08)));
   const period=googleDashboardState.period, selectedIndex=period==='last30'?11:Math.max(0,labels.findIndex(label=>label.toLocaleLowerCase('tr-TR').includes(String(period).slice(-2))));
-  return {labels,volume,rating,selectedIndex};
+  const previous=volume.at(-2)||0,current=volume.at(-1)||0,growth=previous?Math.round((current-previous)/previous*100):0;
+  return {labels,volume,rating,selectedIndex,growth,live:false};
 }
 function googleDashboardTrendMarkup(){
-  const trend=googleDashboardTrend(),max=Math.max(...trend.volume,1),width=920,step=width/(trend.labels.length-1),volumePoints=trend.volume.map((value,index)=>`${Math.round(index*step+20)},${Math.round(150-value/max*105)}`).join(' '),ratingPoints=trend.rating.map((value,index)=>`${Math.round(index*step+20)},${Math.round(140-(value-3)*48)}`).join(' ');
-  return {trend,volumePoints,ratingPoints,area:`M20 150 ${volumePoints} L940 150 Z`};
+  const trend=googleDashboardTrend(),rawMax=Math.max(...trend.volume,1),max=Math.max(5,Math.ceil(rawMax/5)*5),width=920,step=width/Math.max(1,trend.labels.length-1),volumePoints=trend.volume.map((value,index)=>`${Math.round(index*step+20)},${Math.round(150-value/max*105)}`).join(' '),ratingPoints=trend.rating.map((value,index)=>value==null?'':`${Math.round(index*step+20)},${Math.round(150-(value-1)/4*110)}`).filter(Boolean).join(' ');
+  return {trend,max,volumePoints,ratingPoints,area:`M20 150 ${volumePoints} L940 150 Z`};
 }
 function googleGoalsDemoBoard(){
   const rows=[['Bursa Nilüfer','Marmara','Senkronizasyon bekliyor','—','Canlı'],['Gebze','Marmara','126 / 300','%42','Demo'],['Ankara Merkez','İç Anadolu','142 / 300','%47','Demo'],['İzmir Bornova','Ege','128 / 300','%43','Demo'],['İstanbul Kadıköy','Marmara','122 / 300','%41','Demo']];
@@ -3389,7 +3415,7 @@ function applyGoogleDashboardFilterView(page){
   if(goalPanel){ const title=goalPanel.querySelector('h2'),desc=goalPanel.querySelector('.review-panel-head p'),number=goalPanel.querySelector('.review-goal-number'),track=goalPanel.querySelector('.review-goal-track i'),cards=goalPanel.querySelectorAll('.review-goal-cards b'); if(title) title.textContent=`${googleDashboardPeriodLabel(goal.month)} hedefi`; if(desc) desc.textContent=`Hedef ay: ${googleDashboardPeriodLabel(goal.month)} · ${goal.scope==='hq'?'Genel merkez':'Şube hedefi'}`; if(number) number.innerHTML=`${googleDashboardFormat(goal.actual)} <small>/ ${googleDashboardFormat(goal.entry.reviewTarget)}</small><b>%${goal.pct}<small>Hedef tamamlama</small></b>`; if(track) track.style.width=`${goal.pct}%`; if(cards[0]) cards[0].firstChild.textContent=googleDashboardFormat(Math.round(goal.actual/Math.max(1,new Date().getDate()))); if(cards[1]) cards[1].firstChild.textContent=googleDashboardFormat(goal.needed); }
   applyGoogleGoalsDemoBoard(page);
   const chart=page.querySelector?.('.review-trend-chart'),svg=chart?.querySelector?.('svg'),xAxis=chart?.querySelector?.('.review-x-axis');
-  if(chart&&svg&&xAxis){ const built=googleDashboardTrendMarkup(),max=Math.max(...built.trend.volume,1); svg.dataset.googleVolume=built.trend.volume.join(','); svg.dataset.googleRating=built.trend.rating.join(','); svg.dataset.googleLabels=built.trend.labels.join('|'); svg.setAttribute('viewBox','0 0 960 210'); svg.innerHTML=`<path d="${built.area}" fill="#f5aeb7" opacity=".42"/><polyline points="${built.volumePoints}" fill="none" stroke="#f02d3e" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>${built.trend.volume.map((value,index)=>`<circle cx="${Math.round(index*920/(built.trend.labels.length-1)+20)}" cy="${Math.round(150-value/max*105)}" r="5" fill="#f02d3e"/>`).join('')}<polyline points="${built.ratingPoints}" fill="none" stroke="#287bf2" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>${built.trend.rating.map((value,index)=>`<circle cx="${Math.round(index*920/(built.trend.labels.length-1)+20)}" cy="${Math.round(140-(value-3)*48)}" r="5" fill="#287bf2"/>`).join('')}`; xAxis.innerHTML=built.trend.labels.map(label=>`<span>${label}</span>`).join(''); }
+  if(chart&&svg&&xAxis){ const built=googleDashboardTrendMarkup(),max=built.max,step=920/Math.max(1,built.trend.labels.length-1),yAxis=chart.querySelector('.review-y-axis'); svg.dataset.googleVolume=built.trend.volume.join(','); svg.dataset.googleRating=built.trend.rating.map(value=>value==null?'':value).join(','); svg.dataset.googleLabels=built.trend.labels.join('|'); svg.setAttribute('viewBox','0 0 960 210'); svg.innerHTML=`<path d="${built.area}" fill="#f5aeb7" opacity=".42"/><polyline points="${built.volumePoints}" fill="none" stroke="#f02d3e" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>${built.trend.volume.map((value,index)=>`<circle cx="${Math.round(index*step+20)}" cy="${Math.round(150-value/max*105)}" r="5" fill="#f02d3e" data-chart-series="volume" data-chart-index="${index}"/>`).join('')}<polyline points="${built.ratingPoints}" fill="none" stroke="#287bf2" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>${built.trend.rating.map((value,index)=>value==null?'':`<circle cx="${Math.round(index*step+20)}" cy="${Math.round(150-(value-1)/4*110)}" r="5" fill="#287bf2" data-chart-series="rating" data-chart-index="${index}"/>`).join('')}`; xAxis.innerHTML=built.trend.labels.map(label=>`<span>${label}</span>`).join(''); if(yAxis)yAxis.innerHTML=Array.from({length:6},(_,index)=>`<span>${googleDashboardFormat(Math.round(max*(5-index)/5))}</span>`).join(''); if(mini[1])mini[1].firstChild.textContent=`${built.trend.growth>0?'+':built.trend.growth<0?'-':''}%${Math.abs(built.trend.growth)}`; }
 }
 function refreshGoogleReputationPage(){
   const page=document.getElementById('page-google-reviews');
