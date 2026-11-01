@@ -653,6 +653,9 @@ body.dark-mode #page-google-reviews .google-premium-kpi:nth-child(4){background:
 #page-google-reviews .google-connection-title>div:last-child{display:flex;align-items:center;gap:14px;white-space:nowrap;color:#63738c;font-size:10px}
 #page-google-reviews .google-connection-title>div:last-child>b{padding:5px 9px;border-radius:999px;background:#eaf0f7;color:#60708a;font-size:9px}
 #page-google-reviews .google-connection-title>div:last-child>button{border:0;background:transparent;color:#155aa6;text-decoration:underline;font:inherit;font-weight:800;cursor:pointer}
+#page-google-reviews .google-connection-meta{display:flex;align-items:center;justify-content:flex-end;gap:14px;margin:0 0 10px;white-space:nowrap;color:#63738c;font-size:10px}
+#page-google-reviews .google-connection-meta>b{padding:5px 9px;border-radius:999px;background:#eaf0f7;color:#60708a;font-size:9px}
+#page-google-reviews .google-connection-meta>button{border:0;background:transparent;color:#155aa6;text-decoration:underline;font:inherit;font-weight:800;cursor:pointer}
 #page-google-reviews .google-connection-online{display:flex;align-items:center;gap:7px}.google-connection-online i{width:8px;height:8px;border-radius:50%;background:#18a05e;box-shadow:0 0 0 3px #e8f8ef}
 #page-google-reviews .google-connection-overview{display:grid;grid-template-columns:minmax(0,1fr) 270px;gap:12px;height:104px;margin-bottom:12px}
 #page-google-reviews .google-connection-stats{display:grid;grid-template-columns:repeat(4,1fr);height:104px;border:1px solid #dce5f0;border-radius:10px;background:#fff}
