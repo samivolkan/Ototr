@@ -4815,7 +4815,9 @@
       if(googleReputationState.selectedBranchId==='all') googleReputationState.selectedBranchId='branch-google-nilufer';
       const branchId=googleReputationState.selectedBranchId;
       const tasks=window.OTOTRGoogleReviewAI?.renderWorkflow?.(branchId,{tasksOnly:true})||'';
-      return `<div class="google-reviews-page premium google-center">${GoogleScreenshotDashboard()}<section class="google-reply-workspace" id="google-reply-workspace"><div class="review-reply-head"><div><span class="review-kicker">OTOTR · YANIT OPERASYONU</span><h2>Yanıtlar</h2><p>Yapay zekâ taslakları Nilüfer canlı yorumları için hazırlanır; hiçbir yanıt onayınız olmadan Google’a gönderilmez.</p></div><button class="review-connect-btn" onclick="OTOTRGoogleReputation.selectBranch('branch-google-nilufer')">${icon('message-square-reply')}Nilüfer yanıt kuyruğu</button></div><div class="google-inbox-view">${GoogleSelectedBranchPanel()}${tasks?`<details class="google-branch-tasks"><summary>Şube görevleri ve incelemeler</summary>${tasks}</details>`:''}${GoogleReviewFeed()}</div></section></div>`;
+      const view=googleReputationState.centerView||'overview';
+      const workspace=view==='overview'?'':`<section class="google-reply-workspace" id="google-reply-workspace"><div class="review-reply-head"><div><span class="review-kicker">OTOTR · YANIT OPERASYONU</span><h2>Yanıtlar</h2><p>Yapay zekâ taslakları Nilüfer canlı yorumları için hazırlanır; hiçbir yanıt onayınız olmadan Google’a gönderilmez.</p></div><button class="review-connect-btn" onclick="OTOTRGoogleReputation.selectBranch('branch-google-nilufer')">${icon('message-square-reply')}Nilüfer yanıt kuyruğu</button></div><div class="google-inbox-view">${GoogleSelectedBranchPanel()}${tasks?`<details class="google-branch-tasks"><summary>Şube görevleri ve incelemeler</summary>${tasks}</details>`:''}${GoogleReviewFeed()}</div></section>`;
+      return `<div class="google-reviews-page premium google-center">${GoogleScreenshotDashboard()}${workspace}</div>`;
     }
     function wireGoogleReviewChartTooltips(){
       const page=document.getElementById('page-google-reviews');
