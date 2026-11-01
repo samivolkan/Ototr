@@ -581,6 +581,13 @@ body.dark-mode #page-google-reviews .google-premium-kpi:nth-child(4){background:
 #page-google-reviews .review-center-top .review-inbox-top-actions{display:flex;align-items:center;gap:8px;margin-left:10px;flex:0 0 auto;white-space:nowrap}
 #page-google-reviews .review-center-top .review-inbox-top-actions .google-action-btn{min-height:36px;padding:8px 11px}
 #page-google-reviews .google-inbox-page-head-compact>div:first-child p,#page-google-reviews .google-inbox-page-head-compact>div:first-child .review-kicker{display:none}
+#page-google-reviews .google-goals-head-compact{display:flex;align-items:center;justify-content:flex-end;min-height:52px;padding:8px 0;border-bottom:1px solid var(--gc-line);margin-bottom:14px}
+#page-google-reviews .google-goals-head-compact .google-goals-head-meta{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin:0}
+#page-google-reviews .google-goals-head-compact .google-goal-save-note{display:none}
+#page-google-reviews .google-goals-head-compact .google-goals-head-meta>label,#page-google-reviews .google-goals-head-compact .google-goals-scope label{display:flex;align-items:center;gap:6px;color:var(--gc-muted);font-size:11px;font-weight:700}
+#page-google-reviews .google-goals-head-compact .google-goals-head-meta>label input,#page-google-reviews .google-goals-head-compact .google-goals-head-meta>label select{min-height:34px}
+#page-google-reviews .google-goals-head-compact .google-goals-head-meta>button{min-height:34px;padding:7px 11px;border:1px solid var(--gc-line);border-radius:8px;background:var(--gc-panel);color:var(--gc-ink);font:inherit;font-size:12px;font-weight:700}
+#page-google-reviews .google-goals-head-compact .google-goals-head-meta>button.active{background:#10213c;color:#fff;border-color:#10213c}
 #page-google-reviews .review-center-top .review-top-actions{position:relative;margin-left:auto}
 #page-google-reviews .review-filter-popover{position:absolute;top:calc(100% + 7px);right:0;z-index:40;display:grid;gap:3px;min-width:168px;padding:6px;border:1px solid #d7e0ec;border-radius:9px;background:#fff;box-shadow:0 14px 30px rgba(15,32,58,.16)}
 #page-google-reviews .review-filter-popover.branch{min-width:230px}
