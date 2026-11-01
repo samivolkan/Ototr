@@ -1521,7 +1521,7 @@
     @media(max-width:1280px){.google-reviews-page .google-reviews-layout{grid-template-columns:1fr}.google-reviews-page .google-branch-list{grid-template-columns:repeat(3,minmax(0,1fr))}}
     @media(max-width:760px){.google-review-card.premium.google-review-pair{grid-template-columns:1fr}.google-review-source,.google-reply-panel{padding:18px}.google-reply-panel{border-left:0;border-top:1px solid #e2e8f0}.google-reviews-page .google-branch-list{grid-template-columns:1fr}.google-review-source .google-review-top{flex-direction:row}.google-reply-actions .google-reply-primary{width:100%}}
   </style>
-  <link rel="stylesheet" href="assets/google-review-center.css?v=review-center-10">
+  <link rel="stylesheet" href="assets/google-review-center.css?v=review-center-11">
   <style id="google-review-center-interactions">
     #page-google-reviews .google-reply-workspace{display:none}
     #page-google-reviews.review-view-comments .review-center-content,#page-google-reviews.review-view-replies .review-center-content{display:none}
@@ -4968,6 +4968,9 @@
         if(top&&search&&topActions&&connect){ connect.classList.add('review-top-sync'); top.insertBefore(connect,topActions); }
         const brand=page.querySelector?.('.review-brand');
         if(brand) brand.innerHTML='<img src="sunum-32-ekran/assets/ototr-logo-official-light.png" alt="OTOTR Oto Ekspertiz" loading="eager">';
+        const inboxHead=page.querySelector?.('.google-inbox-page-head'), inboxActions=inboxHead?.querySelector?.('.google-inbox-head-actions');
+        if(inboxHead){ inboxHead.querySelector?.('.review-kicker')?.remove(); inboxHead.querySelector?.('p')?.remove(); inboxHead.classList.add('google-inbox-page-head-compact'); }
+        if(top&&inboxActions){ inboxActions.classList.add('review-inbox-top-actions'); top.insertBefore(inboxActions,topActions||null); }
         // Yorumlar ve yanıtlar tek çalışma alanında; eski ayrı Yorumlar menüsünü kaldır.
         page.querySelector?.('.review-center-nav button[data-google-center-scroll="review-list"]')?.remove();
         page.querySelector?.('.review-center-nav button[data-google-center-scroll="review-branches"]')?.remove();
