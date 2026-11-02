@@ -47,14 +47,16 @@
   }
 
   function fallbackReply(review, branch) {
-    const team = String(branch.replySignatureName || branch.name || 'OTOTR').replace(/ Test Şube$/i, '').trim().replace(/\s+ekibi$/iu, ' Ekibi');
+    const team = branch.id === 'branch-google-nilufer'
+      ? 'OTOTR Bursa Nilüfer Otoekspertiz Ekibi'
+      : String(branch.replySignatureName || branch.name || 'OTOTR').replace(/ Test Şube$/i, '').trim().replace(/\s+ekibi$/iu, ' Ekibi');
     const rawName = String(review?.reviewerName || '').trim().replace(/\s+/g, ' ');
     const name = /^(?!Google kullanıc(?:ı|i)|Google User$)[\p{L}][\p{L}'’.-]*(?:\s+[\p{L}][\p{L}'’.-]*){1,3}$/iu.test(rawName) ? rawName : '';
     const greeting = `Sayın ${name || 'Değerli müşterimiz'},`;
     if (Number(review.rating) >= 4) {
-      return `${greeting}\n\nBizi tercih ettiğiniz için teşekkür ederiz. Memnuniyetinizi paylaşmanız ekibimize güç veriyor; sizi yeniden ağırlamaktan mutluluk duyarız.\n\n${team}`;
+      return `${greeting}\n\nDeneyiminizin sizde güzel bir iz bırakmasına çok sevindik. Bunu birkaç cümleyle bizimle paylaşmanız, Nilüfer’deki ekibimiz için gerçekten kıymetli; yolunuz yeniden düştüğünde sizi aynı özenle karşılamak isteriz.\n\n${team}`;
     }
-    return `${greeting}\n\nYaşadığınız deneyimi önemsiyoruz. Konuyu şube yönetimimizle değerlendirerek hizmetimizi geliştirmek için gerekli adımları atacağız; ayrıntıları paylaşmanız hâlinde size yardımcı olmaktan memnuniyet duyarız.\n\n${team}`;
+    return `${greeting}\n\nBeklentinizin karşılanmadığını duymak bizi üzdü. Geri bildiriminizi savunmaya geçmeden değerlendiriyor, hizmetimizi daha iyi hâle getirmek için ekibimizle birlikte ele alıyoruz; ayrıntıları paylaşırsanız size yardımcı olmak isteriz.\n\n${team}`;
   }
 
   function ensureModal() {

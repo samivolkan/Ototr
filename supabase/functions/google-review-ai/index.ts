@@ -118,10 +118,27 @@ function validatePersonalization(reply: string, name: string, previousReply: str
   }
 }
 
+function signatureVariants(signature: string) {
+  const variants = [signature];
+  const expected = normalizeIdentity(signature);
+  // Older Nilüfer drafts used the former branch signature. Treat those
+  // exact trailing lines as legacy metadata and never publish them again.
+  if (expected === normalizeIdentity('OTOTR Bursa Nilüfer Otoekspertiz Ekibi')) {
+    variants.push(
+      'OTOTR Bursa Nilüfer Şube ekibi',
+      'OTOTR Bursa Nilüfer Şubesi ekibi',
+      'OTOTR Bursa Nilüfer Şube',
+      'OTOTR Bursa Nilüfer Şubesi',
+    );
+  }
+  return new Set(variants.map(normalizeIdentity));
+}
+
 function finalizeReply(value: string, signature: string) {
   let body = value.trim();
   const identity = normalizeIdentity(body);
   const expected = normalizeIdentity(signature);
+  const knownSignatures = signatureVariants(signature);
   // Model text is untrusted. A formatted signature may be repaired, but another
   // brand or another managed branch must never become a publishable draft.
   const otherBranch = ['nilufer', 'gebze', 'inegol'].some(name => !expected.includes(name) &&
@@ -133,7 +150,7 @@ function finalizeReply(value: string, signature: string) {
     const start = body.toLowerCase().lastIndexOf('ototr');
     if (start < 0) break;
     const suffix = normalizeIdentity(body.slice(start));
-    if (suffix !== expected && suffix !== expected.replace('subeekibi', 'subesiekibi')) {
+    if (!knownSignatures.has(suffix) && suffix !== expected.replace('subeekibi', 'subesiekibi')) {
       if (/sube|ekibi/.test(suffix)) throw new RequestError('AI yanıtındaki şube imzası doğrulanamadı. Yeniden üretin.', 502);
       break;
     }
@@ -141,6 +158,16 @@ function finalizeReply(value: string, signature: string) {
     // Preserve sentence punctuation in the customer's reply body.
     body = body.slice(0, start).replace(/[\s*_~`'"“”‘’>–—-]+$/gu, '').trim();
   }
+  // Also remove legacy signatures when they were returned on their own line
+  // (for example, after a model-generated signature followed by the canonical
+  // server signature). This keeps old templates from appearing twice.
+  const lines = body.split(/\r?\n/gu);
+  while (lines.length) {
+    while (lines.length && !lines.at(-1)?.trim()) lines.pop();
+    if (!lines.length || !knownSignatures.has(normalizeIdentity(lines.at(-1) || ''))) break;
+    lines.pop();
+  }
+  body = lines.join('\n').trim();
   if (body.length < 10 || body.length > maxReplyBodyLength) throw new RequestError('AI yanıt gövdesi doğrulanamadı. Yeniden üretin.', 502);
   return `${body}\n\n${signature}`;
 }
@@ -214,7 +241,7 @@ Olumlu veya yalnız yıldız verilmiş bir değerlendirmeye kendiliğinden arama
 hitap_adi yalnızca ad-soyad biçimine uyan bir adaydır, doğrulanmış kimlik değildir. Açıkça bir kişinin ad ve soyadıysa bunu yazıldığı biçimiyle, yanıtın başında doğal bir "Sayın Ad Soyad," hitabında tam bir kez kullan; bunu doğrulanmış kimlik olarak sunma. Adayın bir takma ad, genel hesap veya işletme adı olma ihtimali belirginse (örneğin Tatlı Hayat) isim kullanma ve "Sayın Değerli müşterimiz," ile başla. Bey/Hanım gibi cinsiyetli unvanlar ekleme. Yorumdan ya da önceki yanıttan başka bir müşteri adı çıkarma.
 4–5 yıldızda sıcak ve özgün teşekkür, somut memnuniyete karşılık; 3 yıldızda ölçülü teşekkür ve iyileştirme niyeti; 1–2 yıldızda savunmaya geçmeden empati ve inceleme daveti kullan. Olumsuz değerlendirmeyi olumluya çevirme, suç kabul etme veya müşteriyi tartışmaya çekme. Hukuk, dava, dolandırıcılık, güvenlik, ayrımcılık, kişisel veri, ücret iadesi veya ciddi teknik hata iddiasında requires_human_review=true ve uygun route seç.
 Normal, ayrıntılı yorumlarda 60–110; çok kısa yorumlarda 35–60; yalnız yıldız verilen değerlendirmelerde 25–45 kelime hedefle. Girdideki hedef_kelime_araligi yol göstericidir; sırf uzatmak için ayrıntı, tekrar veya dolgu ekleme. Yalnız yıldız verilmişse yorum metni varmış gibi davranma ve hizmet deneyimi uydurma. Genellikle iki kısa paragraf yeterlidir; yanıt gövdesi en fazla 1200 karakter olsun.
-Yerel bağlam doğal biçimde uygunsa, özellikle olumlu ve metinli yorumlarda, sağlanan şehir/ilçe ile oto ekspertiz ifadesini bir kez akıcı bir cümlede kullanabilirsin. Anahtar kelime listesi, tekrar, en iyi/en ucuz iddiası, SEO veya sıralama garantisi yazma. Yıldız-only ya da hassas şikâyette sırf arama görünürlüğü için yer adı ekleme. Açılışı ve kapanışı yorumun ayrıntısına göre değiştir; her yanıta aynı teşekkür cümlesiyle başlama. Kapanışı yoruma uygun, sıcak tek bir cümleyle yap. Samimiyeti "gerçekten çok değerli", "motivasyonumuzu her gün artırıyor" gibi genel övgülerle, taahhütlerle veya dolgu cümleleriyle kurma.
+Yerel bağlam doğal biçimde uygunsa, özellikle olumlu ve metinli yorumlarda, sağlanan şehir/ilçe ile oto ekspertiz ifadesini bir kez akıcı bir cümlede kullanabilirsin. Anahtar kelime listesi, tekrar, en iyi/en ucuz iddiası, SEO veya sıralama garantisi yazma. Yıldız-only ya da hassas şikâyette sırf arama görünürlüğü için yer adı ekleme. Açılışı ve kapanışı yorumun ayrıntısına göre değiştir; her yanıta aynı teşekkür cümlesiyle başlama. Kapanışı yoruma uygun, sıcak tek bir cümleyle yap. Yanıt müşteri hizmetleri botu gibi değil, o yorumu gerçekten okumuş bir ekip arkadaşının içten notu gibi duyulsun; kısa, doğal ve ölçülü ol. Samimiyeti "gerçekten çok değerli", "motivasyonumuzu her gün artırıyor" gibi genel övgülerle, taahhütlerle veya dolgu cümleleriyle kurma.
 Her yanıtın ilk satırı mutlaka "Sayın ...," biçiminde bir hitap olsun; hitap_adi geçerli bir ad-soyad ise "Sayın Ad Soyad," yaz, değilse "Sayın Değerli müşterimiz," kullan. Metinli yorumda hitaptan sonraki ilk cümleyi, yalnızca yorumda gerçekten bulunan ayırt edici ayrıntıya karşılık vererek kur; müşteri cümlelerini alıntılama, yeniden söyleme veya aynı anlamı peş peşe tekrar etme. "güzel yorumunuz/geri bildiriminiz/değerli yorumunuz için teşekkür" gibi genel bir girişle başlama, teşekkürü sonraya veya kapanışa bırak; yalnız yıldız verilmişse ayrıntı uydurmadan puana teşekkürle başlayabilirsin ve onceki_yanit verilmişse yeni açılış önceki taslaktan açıkça farklı olmalıdır. Cümle yapısını, vurgu sırasını ve kapanışı yorumdan yoruma değiştir; her yanıtta aynı şablonu kullanma.
 onceki_yanit varsa yeni bir anlatım kur: açılışı, cümle düzenini, vurguyu ve kapanışı anlamlı biçimde değiştir. Önceki taslağı aynen verme; yalnız isim, birkaç eş anlamlı kelime veya noktalama değiştirerek yeniden üretmiş sayma. Aynı doğrulanabilir yoruma dayan ve daha iyi, özgün bir seçenek sun.
 reply alanında yalnızca yanıt gövdesini üret. Marka, şube adı veya ekip imzası ekleme; doğru şube imzasını sunucu ekleyecek. Şehir/ilçe ifadesi bu imzanın yerine geçmez.`,
