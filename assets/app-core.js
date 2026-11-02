@@ -2867,12 +2867,12 @@ googleReputationData.branches.forEach(branch=>{
   if(branch.demo&&!branch.publicProfileUrl){ const profileUrl=`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(branch.name)}`; branch.mapsUrl=profileUrl; branch.publicProfileUrl=profileUrl; }
   if(!branch.demo) ['googleRating','googleReviewCount','previousRating','reputationScore','last30DaysReviewCount','negativeReviewRate','unrepliedCount','criticalCount'].forEach(key=>{branch[key]=null;});
 });
-function googleBranches(){ const settings=googleBranchSettings?.()||{},base=googleReputationData.branches.filter(branch=>branch.id!=='branch-google-inegol'),custom=googleCustomBranches(); return [...base,...custom].filter(branch=>settings[branch.id]?.removed!==true).map(branch=>{const s=settings[branch.id]||{};Object.assign(branch,{googleBusinessGroupId:s.accountId||branch.googleBusinessGroupId,storeCode:s.storeCode||branch.storeCode,configuredActive:s.active!==false,custom:branch.custom===true,replySignatureName:branch.id==='branch-google-nilufer'?'OTOTR Bursa Nilüfer Otoekspertiz Ekibi':branch.replySignatureName});return branch;}); }
+function googleBranches(){ const settings=googleBranchSettings?.()||{},base=googleReputationData.branches.filter(branch=>branch.id!=='branch-google-inegol'),custom=googleCustomBranches(); return [...base,...custom].filter(branch=>settings[branch.id]?.removed!==true).map(branch=>{const s=settings[branch.id]||{};Object.assign(branch,{googleBusinessGroupId:s.accountId||branch.googleBusinessGroupId,storeCode:s.storeCode||branch.storeCode,googleBusinessLocationId:s.locationId||branch.googleBusinessLocationId,configuredActive:s.active!==false,custom:branch.custom===true,replySignatureName:branch.id==='branch-google-nilufer'?'OTOTR Bursa Nilüfer Otoekspertiz Ekibi':branch.replySignatureName});return branch;}); }
 function googleOperationalBranches(){ return googleBranches().filter(branch=>branch.configuredActive!==false); }
 function googleReviews(){ return googleReputationData.reviews; }
 const GOOGLE_LIVE_CACHE_KEY='ototr.google.live.reviews.v1';
-function googlePersistLiveCache(){ try { const branches=googleReputationData.branches.filter(branch=>!branch.demo).map(branch=>({...branch})),reviews=googleReputationData.reviews.filter(review=>!review.demo); localStorage.setItem(GOOGLE_LIVE_CACHE_KEY,JSON.stringify({version:1,savedAt:new Date().toISOString(),branches,reviews})); } catch(_) {} }
-function googleLoadLiveCache(){ try { const raw=localStorage.getItem(GOOGLE_LIVE_CACHE_KEY); if(!raw)return; const cache=JSON.parse(raw); if(cache?.version!==1||!Array.isArray(cache.branches)||!Array.isArray(cache.reviews))return; cache.branches.forEach(saved=>{ const branch=googleReputationData.branches.find(item=>item.id===saved.id&&!item.demo); if(branch) Object.assign(branch,saved); }); const demoReviews=googleReputationData.reviews.filter(review=>review.demo); googleReputationData.reviews.splice(0,googleReputationData.reviews.length,...demoReviews,...cache.reviews.filter(review=>!review.demo)); googleReputationData.branches.filter(branch=>!branch.demo&&!branch.monthlyTrend).forEach(branch=>googleRefreshBranchMonthlyTrend(branch.id)); } catch(_) {} }
+function googlePersistLiveCache(){ try { const branches=googleReputationData.branches.filter(branch=>!branch.demo).map(branch=>({...branch})),reviews=googleReputationData.reviews.filter(review=>!review.demo); localStorage.setItem(GOOGLE_LIVE_CACHE_KEY,JSON.stringify({version:2,savedAt:new Date().toISOString(),lastSync:googleReputationState.lastSync,lastAllSyncAt:googleReputationState.lastAllSyncAt,branches,reviews})); } catch(_) {} }
+function googleLoadLiveCache(){ try { const raw=localStorage.getItem(GOOGLE_LIVE_CACHE_KEY); if(!raw)return; const cache=JSON.parse(raw); if(!cache||![1,2].includes(cache.version)||!Array.isArray(cache.branches)||!Array.isArray(cache.reviews))return; cache.branches.forEach(saved=>{ const branch=googleReputationData.branches.find(item=>item.id===saved.id&&!item.demo); if(branch) Object.assign(branch,saved); }); const demoReviews=googleReputationData.reviews.filter(review=>review.demo); googleReputationData.reviews.splice(0,googleReputationData.reviews.length,...demoReviews,...cache.reviews.filter(review=>!review.demo)); if(cache.lastSync) googleReputationState.lastSync=String(cache.lastSync); if(Number(cache.lastAllSyncAt)>0) googleReputationState.lastAllSyncAt=Number(cache.lastAllSyncAt); googleReputationData.branches.filter(branch=>!branch.demo&&!branch.monthlyTrend).forEach(branch=>googleRefreshBranchMonthlyTrend(branch.id)); } catch(_) {} }
 function googleSelectedBranch(){
   const branch=googleBranches().find(b=>b.id===googleReputationState.selectedBranchId) || googleBranches()[0];
   // Cached live reviews are still usable while the lightweight branch
@@ -2964,7 +2964,7 @@ function googleBranchSettingsPanel(){
   </div>`;}).join('');
   return `<section class="google-branch-settings-panel">
     <div class="google-connection-overview"><div class="google-connection-stats"><article>${icon('building-2')}<b>${branches.length}<span>Şube</span><small>Toplam şube sayısı</small></b></article><article>${icon('link-2')}<b>${live}<span>Canlı bağlantı adayı</span><small>${googleReputationState.connected===true?'Doğrulandı':'Doğrulama bekliyor'}</small></b></article><article>${icon('file-text')}<b>${demo}<span>Demo yapılandırma</span><small>Gerçek veri çekmez</small></b></article><article>${icon('circle-check')}<b>${active}<span>Aktif</span><small>Aktif durumda olan şubeler</small></b></article></div><aside>${icon('info')}<b>Bilgi</b><p>Şubelerin Google bağlantıları yapılandırılmıştır. Canlı veri çekebilmek için kimlik doğrulaması ve API erişimi gereklidir.</p></aside></div>
-    <form class="google-branch-add-form" data-google-branch-add><div class="google-add-head"><strong>Yeni şube ekle</strong><span>Yeni bir şube ekleyin ve Google işletme bilgilerini tanımlayın.</span></div><button type="button" class="google-advanced-settings">Gelişmiş bağlantı ayarları (isteğe bağlı) ${icon('chevron-down')}</button><label>Şube adı *<input name="name" required placeholder="Şube adı girin"></label><label>İl *<select name="city" required><option value="">İl seçin</option><option>Bursa</option><option>Kocaeli</option><option>Ankara</option><option>İzmir</option><option>İstanbul</option><option>Diğer</option></select></label><label>Bölge<select name="region"><option value="">Bölge seçin</option><option>Marmara</option><option>İç Anadolu</option><option>Ege</option><option>Akdeniz</option><option>Karadeniz</option><option>Doğu Anadolu</option><option>Güneydoğu Anadolu</option></select></label><label>Google hesap / grup ID<input name="accountId" inputmode="numeric" placeholder="Örn. 11469••••••••••2140"></label><label>Google mağaza kodu<input name="storeCode" inputmode="numeric" placeholder="Örn. 136748••••••••3129"></label><button type="submit" class="google-reply-primary">＋ Şube ekle</button></form>
+    <form class="google-branch-add-form" data-google-branch-add><div class="google-add-head"><strong>Yeni şube ekle</strong><span>Yeni bir şube ekleyin ve Google işletme bilgilerini tanımlayın.</span></div><details class="google-advanced-settings"><summary>Gelişmiş bağlantı ayarları (isteğe bağlı) ${icon('chevron-down')}</summary><div class="google-advanced-fields"><label>Google konum ID<input name="locationId" inputmode="numeric" placeholder="Örn. 13476693615171033693"></label><label>Bağlantı modu<select name="connectionMode"><option value="Google Business Profile">Google Business Profile</option><option value="Demo">Demo</option></select></label></div></details><label>Şube adı *<input name="name" required placeholder="Şube adı girin"></label><label>İl *<select name="city" required><option value="">İl seçin</option><option>Bursa</option><option>Kocaeli</option><option>Ankara</option><option>İzmir</option><option>İstanbul</option><option>Diğer</option></select></label><label>Bölge<select name="region"><option value="">Bölge seçin</option><option>Marmara</option><option>İç Anadolu</option><option>Ege</option><option>Akdeniz</option><option>Karadeniz</option><option>Doğu Anadolu</option><option>Güneydoğu Anadolu</option></select></label><label>Google hesap / grup ID<input name="accountId" inputmode="numeric" placeholder="Örn. 11469••••••••••2140"></label><label>Google mağaza kodu<input name="storeCode" inputmode="numeric" placeholder="Örn. 136748••••••••3129"></label><button type="submit" class="google-reply-primary">＋ Şube ekle</button></form>
     <div class="google-connection-table-card"><div class="google-connection-toolbar"><div><strong>Şube bağlantıları (${branches.length})</strong><label>${icon('search')}<input type="search" data-google-connection-search-input value="${googleEsc(googleConnectionUiState.query)}" placeholder="Şube adı, il veya mağaza kodu ile ara..."></label></div><select data-google-connection-status-filter><option value="all" ${googleConnectionUiState.status==='all'?'selected':''}>Tüm durumlar</option><option value="connected" ${googleConnectionUiState.status==='connected'?'selected':''}>Bağlı</option><option value="pending" ${googleConnectionUiState.status==='pending'?'selected':''}>Bağlantı bekliyor</option></select><select data-google-connection-source-filter><option value="all" ${googleConnectionUiState.source==='all'?'selected':''}>Canlı / demo</option><option value="live" ${googleConnectionUiState.source==='live'?'selected':''}>Canlı</option><option value="demo" ${googleConnectionUiState.source==='demo'?'selected':''}>Demo</option></select><label class="google-active-only"><input type="checkbox" data-google-connection-active-only ${googleConnectionUiState.activeOnly?'checked':''}><i></i><span>Sadece aktif şubeleri göster</span></label><button type="button" class="google-connection-gear" data-google-sync-logs aria-label="Bağlantı ayarları">${icon('settings')}</button></div>
       <div class="google-branch-bulkbar"><strong><span data-google-selected-count>0</span> şube seçili</strong><button type="button" data-google-bulk="active">Aktif yap</button><button type="button" data-google-bulk="inactive">Pasif yap</button><button type="button" data-google-bulk="remove">Kaldır</button></div>
       <div class="google-connection-table"><div class="google-connection-row google-connection-head"><label><input type="checkbox" data-google-branch-select-all aria-label="Tüm şubeleri seç"></label><span>Şube / Bölge</span><span>Veri kaynağı</span><span>Google hesap / grup ID</span><span>Mağaza kodu</span><span>Bağlantı durumu</span><span>Aktif</span><span>Son başarılı eşitleme</span><span>İşlemler</span></div><div class="google-branch-settings-list">${rows||'<div class="google-connection-empty">Henüz şube eklenmedi.</div>'}</div></div>
@@ -3111,40 +3111,46 @@ async function googleLegacyReviewBatch(targets){
 }
 function googleApplyLiveBranch(branch,payload){
   const location=payload.location,accountId=String(payload.account_id||''),locationId=String(payload.location_id||'');
-  if(payload.pagination_complete!==true||!Array.isArray(payload.reviews)) throw new Error('Google yorum listesi tamamlanamadı. Önceki veriler korunuyor.');
+  const incremental=payload.incremental===true;
+  if((!incremental&&payload.pagination_complete!==true)||!Array.isArray(payload.reviews)) throw new Error('Google yorum listesi tamamlanamadı. Önceki veriler korunuyor.');
   if(!/^\d+$/.test(accountId)||!/^\d+$/.test(locationId)||googleLiveLocationId(location)!==locationId||!googleLiveLocationForBranch(branch,[location])) throw new Error('Google şube kimliği doğrulanamadı. Önceki veriler korunuyor.');
   const rawReviews=payload.reviews;
   if(rawReviews.some(review=>!review.reviewId&&!review.name)) throw new Error('Google yorum kimliği eksik.');
   const liveReviews=[...new Map(rawReviews.map(review=>{const item=googleLiveReviewModel(review,branch);return [item.id,item];})).values()];
-  const ratings=liveReviews.map(review=>review.rating).filter(Boolean);
-  const average=Number(payload.averageRating)||(ratings.length?ratings.reduce((sum,r)=>sum+r,0)/ratings.length:null);
-  const reported=Number(payload.totalReviewCount),total=payload.totalReviewCount!=null&&Number.isFinite(reported)&&reported>=0?reported:liveReviews.length;
   const previousRows=googleReputationData.reviews.filter(review=>review.branchId===branch.id&&!review.demo);
-  if(!liveReviews.length&&previousRows.length) throw new Error('Google boş yorum yanıtı döndürdü; önceki veriler korundu.');
-  const complete=liveReviews.length===total;
-  const negative=liveReviews.filter(review=>['negative','critical'].includes(review.riskLevel)).length;
-  const critical=liveReviews.filter(review=>review.riskLevel==='critical'||review.legalRisk==='Yüksek').length;
-  const retained=googleReputationData.reviews.filter(review=>review.branchId!==branch.id),previousById=new Map(previousRows.map(review=>[String(review.googleReviewId||review.id),review]));
-  if(payload.incremental===true) liveReviews.forEach(review=>previousById.set(String(review.googleReviewId||review.id),review));
-  const mergedReviews=payload.incremental===true?[...previousById.values()]:liveReviews;
+  const previousById=new Map(previousRows.map(review=>[String(review.googleReviewId||review.id),review]));
+  if(incremental) liveReviews.forEach(review=>previousById.set(String(review.googleReviewId||review.id),review));
+  const mergedReviews=incremental?[...previousById.values()]:liveReviews;
+  const ratings=mergedReviews.map(review=>Number(review.rating)).filter(value=>value>=1&&value<=5);
+  const incomingAverage=Number(payload.averageRating);
+  const mergedAverage=ratings.length?ratings.reduce((sum,r)=>sum+r,0)/ratings.length:null;
+  const average=Number.isFinite(incomingAverage)&&incomingAverage>0?incomingAverage:(mergedAverage!=null?mergedAverage:(Number(branch.googleRating)||null));
+  const reported=Number(payload.totalReviewCount),total=payload.totalReviewCount!=null&&Number.isFinite(reported)&&reported>=0?reported:mergedReviews.length;
+  if(!liveReviews.length&&previousRows.length&&!incremental) throw new Error('Google boş yorum yanıtı döndürdü; önceki veriler korundu.');
+  if(!liveReviews.length&&!previousRows.length&&!incremental&&total>0) throw new Error('Google yorum yanıtı boş döndü; önceki veriler korunuyor.');
+  const complete=payload.pagination_complete===true&&mergedReviews.length===total;
+  const listWasComplete=branch.reviewListComplete===true;
+  const listComplete=incremental?(listWasComplete||complete):complete;
+  const negative=mergedReviews.filter(review=>['negative','critical'].includes(review.riskLevel)).length;
+  const critical=mergedReviews.filter(review=>review.riskLevel==='critical'||review.legalRisk==='Yüksek').length;
+  const retained=googleReputationData.reviews.filter(review=>review.branchId!==branch.id);
   googleReputationData.reviews.splice(0,googleReputationData.reviews.length,...retained,...mergedReviews);
   branch.previousRating=branch.googleRating||average; branch.googleRating=average==null?null:Number(average.toFixed(2)); branch.googleReviewCount=total;
-  branch.loadedReviewCount=mergedReviews.length; branch.loadedUnrepliedCount=mergedReviews.filter(review=>!review.isReplied).length; branch.reviewListComplete=payload.incremental===true?false:complete;
+  branch.loadedReviewCount=mergedReviews.length; branch.loadedUnrepliedCount=mergedReviews.filter(review=>!review.isReplied).length; branch.reviewListComplete=listComplete;
   branch.loadedCriticalCount=mergedReviews.filter(review=>review.riskLevel==='critical'||review.legalRisk==='Yüksek').length; branch.loadedLast30DaysReviewCount=mergedReviews.filter(review=>(Date.now()-new Date(review.reviewDate))/(86400000)<=30).length;
-  branch.unrepliedCount=payload.incremental===true?branch.loadedUnrepliedCount:(complete?branch.loadedUnrepliedCount:null); branch.criticalCount=payload.incremental===true?branch.loadedCriticalCount:(complete?critical:null);
-  branch.last30DaysReviewCount=payload.incremental===true?branch.loadedLast30DaysReviewCount:(complete?branch.loadedLast30DaysReviewCount:null);
-  branch.negativeReviewRate=complete&&total?Math.round(negative/total*100):null;
-  branch.reputationScore=complete&&average!=null?Math.max(0,Math.min(100,Math.round((average/5)*80+(100-(branch.negativeReviewRate||0))*.2))):null;
+  branch.unrepliedCount=branch.loadedUnrepliedCount; branch.criticalCount=branch.loadedCriticalCount;
+  branch.last30DaysReviewCount=branch.loadedLast30DaysReviewCount;
+  branch.negativeReviewRate=listComplete&&total?Math.round(negative/total*100):branch.negativeReviewRate??null;
+  branch.reputationScore=listComplete&&average!=null?Math.max(0,Math.min(100,Math.round((average/5)*80+(100-(branch.negativeReviewRate||0))*.2))):branch.reputationScore??null;
   branch.responseSlaStatus=branch.loadedUnrepliedCount?'İlk yanıt bekleniyor':'İçinde';
   branch.integrationStatus='Google Business Profile bağlı'; branch.dataMode='Google Business Profile canlı';
   branch.googleBusinessAccountId=accountId; branch.googleBusinessLocationId=locationId;
   if(location.metadata?.mapsUri) branch.publicProfileUrl=location.metadata.mapsUri;
   branch.recommendedAction=branch.loadedUnrepliedCount?'Cevap bekleyen yorumları insan onaylı AI taslağıyla yönetin.':'Yeni yorumları izleyin.';
   const serverUpdateEpoch=rawReviews.reduce((latest,review)=>Math.max(latest,Date.parse(review?.updateTime||review?.createTime||'')||0,Date.parse(review?.reviewReply?.updateTime||'')||0),0);
-  branch.syncError=''; branch.synced=true; branch.lastSyncedAt=new Date().toLocaleString('tr-TR'); branch.lastSyncEpoch=serverUpdateEpoch?Math.max(0,serverUpdateEpoch-120000):(branch.lastSyncEpoch||Date.now());
+  branch.syncError=''; branch.synced=true; branch.lastSyncedAt=new Date().toLocaleString('tr-TR'); branch.lastSyncEpoch=serverUpdateEpoch?Math.max(Number(branch.lastSyncEpoch)||0,serverUpdateEpoch-120000):(branch.lastSyncEpoch||Date.now());
   googleRefreshBranchMonthlyTrend(branch.id);
-  googlePersistLiveCache();
-  return {count:liveReviews.length,complete};
+  return {count:liveReviews.length,complete:listComplete};
 }
 async function syncLiveGoogleReviews(branchId='',options={}){
   if(googleReputationState.loading) return null;
@@ -3156,7 +3162,7 @@ async function syncLiveGoogleReviews(branchId='',options={}){
     if(!targets.length) throw new Error('Aktif ve canlı Google şubesi bulunamadı. Şube bağlantı ayarlarını kontrol edin.');
     let payload;
     try {
-      payload=await api.googleBusinessRequest('sync_reviews',{branch_ids:targets.map(branch=>branch.id),since_by_branch:Object.fromEntries(targets.filter(branch=>Number(branch.lastSyncEpoch)>0).map(branch=>[branch.id,Number(branch.lastSyncEpoch)]))});
+      payload=await api.googleBusinessRequest('sync_reviews',{branch_ids:targets.map(branch=>branch.id),since_by_branch:Object.fromEntries(targets.filter(branch=>Number(branch.lastSyncEpoch)>0).map(branch=>[branch.id,Number(branch.lastSyncEpoch)])),branch_configs:Object.fromEntries(targets.map(branch=>[branch.id,{account_id:branch.googleBusinessGroupId||'',store_code:branch.storeCode||'',location_id:branch.googleBusinessLocationId||''}]))});
     } catch(error) {
       // Only an explicit unsupported action permits the old read path during rollout.
       if(error.status===400&&(error.code==='UNSUPPORTED_ACTION'||error.message==='Geçersiz işlem.')) payload=await googleLegacyReviewBatch(targets);
@@ -3179,7 +3185,8 @@ async function syncLiveGoogleReviews(branchId='',options={}){
     if(!syncedBranches) throw new Error(googleReputationState.error||'Google yorumları alınamadı.');
     googleReputationState.lastSync=`Son Google veri alımı · ${new Date().toLocaleString('tr-TR')}`;
     if(!branchId&&!missing.length) googleReputationState.lastAllSyncAt=Date.now();
-    if(!options.quiet) toast(`${syncedBranches} şubeden ${receivedReviews} yorum alındı.${missing.length?' Bazı şubeler alınamadı.':''}${incomplete.length?' Google toplamı ile yorum listesi henüz eşleşmiyor.':''}`);
+    googlePersistLiveCache();
+    if(!options.quiet) toast(`${syncedBranches} şubeden ${receivedReviews} yeni veya güncellenmiş yorum alındı.${missing.length?' Bazı şubeler alınamadı.':''}${incomplete.length?' Önceki yorum cache’i korunarak devam ediliyor.':''}`);
     return {syncedBranches,receivedReviews,missing,incomplete};
   } catch(error) {
     if(error.reconnection_required||error.message==='Google Business Profile bağlantısı kurulmamış.') googleReputationState.connected=false;
@@ -3343,21 +3350,44 @@ function googleRefreshBranchMonthlyTrend(branchId){
   Object.values(buckets).forEach(bucket=>{bucket.averageRating=bucket.ratingCount?Number((bucket.ratingTotal/bucket.ratingCount).toFixed(2)):null;});
   branch.monthlyTrend=buckets; branch.monthlyTrendUpdatedAt=new Date().toISOString(); return buckets;
 }
+function googleDashboardScopeBranches(branchId=googleDashboardState.branchId||'all'){
+  const value=String(branchId||'all');
+  if(value.startsWith('region:')) return googleBranches().filter(branch=>branch.region===value.slice(7));
+  if(value.startsWith('city:')) return googleBranches().filter(branch=>branch.city===value.slice(5));
+  if(value==='all') return googleBranches();
+  return googleBranches().filter(branch=>branch.id===value);
+}
+function googleDashboardBranchMetrics(branch){
+  const liveRows=googleReviews().filter(review=>review.branchId===branch.id&&!review.demo),isLive=!branch.demo;
+  const total=isLive?Math.max(liveRows.length,Number(branch.googleReviewCount)||0):Number(branch.demoReviewCount||branch.googleReviewCount||0);
+  const rating=liveRows.length?liveRows.reduce((sum,review)=>sum+Number(review.starRating||review.rating||0),0)/liveRows.length:Number(branch.demoRating||branch.googleRating||0)||null;
+  const pending=liveRows.length?liveRows.filter(review=>!review.isReplied).length:Number(isLive?branch.loadedUnrepliedCount??branch.unrepliedCount:branch.demoUnrepliedCount||branch.unrepliedCount||0);
+  const critical=liveRows.length?liveRows.filter(review=>['critical','negative'].includes(review.riskLevel)||Number(review.starRating||review.rating)<=2).length:Number(isLive?branch.loadedCriticalCount??branch.criticalCount:branch.demoCriticalCount||branch.criticalCount||0);
+  const hasData=Boolean(total||liveRows.length||(!isLive&&branch.demo));
+  return {branch,total,rating,pending,critical,hasData,live:isLive};
+}
 function googleLiveMonthlyTrend(branchId,period=googleDashboardState.period){
   const endMonth=period==='last30'?googleReviewMonthKey(new Date()):period,months=googleTrendMonthsEnding(endMonth,6),branch=googleReputationData.branches.find(item=>item.id===branchId),buckets=branch?.monthlyTrend||googleRefreshBranchMonthlyTrend(branchId);
   const volume=months.map(month=>Number(buckets?.[month]?.count||0)),rating=months.map(month=>buckets?.[month]?.averageRating??null),previous=volume.at(-2)||0,current=volume.at(-1)||0,growth=previous?Math.round((current-previous)/previous*100):(current?100:0);
   return {labels:months.map(month=>new Date(`${month}-01T12:00:00Z`).toLocaleDateString('tr-TR',{month:'short',year:'numeric',timeZone:'Europe/Istanbul'})),months,volume,rating,growth,live:true,selectedIndex:months.length-1};
 }
 function googleDashboardSnapshot(){
-  const liveRows=googleReviews().filter(review=>review.branchId==='branch-google-nilufer'&&!review.demo),liveTotal=liveRows.length,livePending=liveRows.filter(review=>!review.isReplied).length,liveCritical=liveRows.filter(review=>['critical','negative'].includes(review.riskLevel)||Number(review.starRating||review.rating)<=2).length,liveRating=liveTotal?liveRows.reduce((sum,review)=>sum+Number(review.starRating||review.rating||0),0)/liveTotal:null,demoBranches=googleBranches().filter(branch=>branch.demo),demoTotal=demoBranches.reduce((sum,branch)=>sum+Number(branch.demoReviewCount||0),0),demoPending=demoBranches.reduce((sum,branch)=>sum+Number(branch.demoUnrepliedCount||branch.unrepliedCount||0),0),demoCritical=demoBranches.reduce((sum,branch)=>sum+Number(branch.demoCriticalCount||branch.criticalCount||0),0),demoWeightedRating=demoBranches.reduce((sum,branch)=>sum+Number(branch.demoReviewCount||0)*Number(branch.demoRating||branch.googleRating||0),0),branchId=googleDashboardState.branchId||'all',branch=googleBranches().find(item=>item.id===branchId);
-  if(String(branchId).startsWith('region:')||String(branchId).startsWith('city:')){ const isCity=String(branchId).startsWith('city:'),value=String(branchId).slice(isCity?5:7),rows=googleBranches().filter(item=>(isCity?item.city:item.region)===value),total=rows.reduce((n,item)=>n+Number(item.demoReviewCount||item.googleReviewCount||0),0),pending=rows.reduce((n,item)=>n+Number(item.demoUnrepliedCount||item.unrepliedCount||0),0),critical=rows.reduce((n,item)=>n+Number(item.demoCriticalCount||item.criticalCount||0),0),weighted=rows.reduce((n,item)=>n+Number(item.demoReviewCount||item.googleReviewCount||0)*Number(item.demoRating||item.googleRating||0),0); return {total,rating:total?weighted/total:null,pending,critical,sla:total?Math.round((total-pending)/total*100):null,label:`${value} demo verisi`}; }
-  if(branchId!=='all'&&branch?.demo) return {total:Number(branch.demoReviewCount||0),rating:Number(branch.demoRating||branch.googleRating||0),pending:Number(branch.demoUnrepliedCount||branch.unrepliedCount||0),critical:Number(branch.demoCriticalCount||branch.criticalCount||0),sla:Number(branch.demoResponseRate||0),label:'Demo veri'};
-  if(branchId!=='all') return liveTotal?{total:liveTotal,rating:liveRating,pending:livePending,critical:liveCritical,sla:Math.round((liveTotal-livePending)/liveTotal*100),label:'Nilüfer canlı'}:{total:null,rating:null,pending:null,critical:null,sla:null,label:'Nilüfer canlı · veri bekleniyor'};
-  return {total:liveTotal?liveTotal+demoTotal:1247,rating:liveTotal?((demoWeightedRating+(liveRating*liveTotal))/Math.max(1,liveTotal+demoTotal)):4.3,pending:liveTotal?livePending+demoPending:392,critical:liveTotal?liveCritical+demoCritical:157,sla:liveTotal?Math.round((liveTotal+demoTotal-(livePending+demoPending))/Math.max(1,liveTotal+demoTotal)*100):78,label:liveTotal?'Canlı + demo':'Örnek veri'};
+  const branchId=googleDashboardState.branchId||'all',rows=googleDashboardScopeBranches(branchId),metrics=rows.map(googleDashboardBranchMetrics),liveMetrics=metrics.filter(item=>item.live&&item.hasData),demoMetrics=metrics.filter(item=>!item.live&&item.hasData);
+  if(branchId!=='all'){
+    const total=metrics.reduce((sum,item)=>sum+item.total,0),weighted=metrics.reduce((sum,item)=>sum+item.total*(item.rating||0),0),pending=metrics.reduce((sum,item)=>sum+item.pending,0),critical=metrics.reduce((sum,item)=>sum+item.critical,0),isScoped=String(branchId).startsWith('region:')||String(branchId).startsWith('city:'),value=isScoped?String(branchId).slice(String(branchId).startsWith('city:')?5:7):'';
+    return {total:total||null,rating:total?weighted/total:null,pending:total?pending:null,critical:total?critical:null,sla:total?Math.round((total-pending)/total*100):null,label:isScoped?`${value} · ${liveMetrics.length?'canlı + demo':'demo veri'}`:liveMetrics.length?'Nilüfer canlı':'Veri bekleniyor'};
+  }
+  const demoTotal=demoMetrics.reduce((sum,item)=>sum+item.total,0),demoPending=demoMetrics.reduce((sum,item)=>sum+item.pending,0),demoCritical=demoMetrics.reduce((sum,item)=>sum+item.critical,0),demoWeighted=demoMetrics.reduce((sum,item)=>sum+item.total*(item.rating||0),0),liveTotal=liveMetrics.reduce((sum,item)=>sum+item.total,0),livePending=liveMetrics.reduce((sum,item)=>sum+item.pending,0),liveCritical=liveMetrics.reduce((sum,item)=>sum+item.critical,0),liveWeighted=liveMetrics.reduce((sum,item)=>sum+item.total*(item.rating||0),0);
+  if(liveTotal) return {total:liveTotal+demoTotal,rating:(liveWeighted+demoWeighted)/Math.max(1,liveTotal+demoTotal),pending:livePending+demoPending,critical:liveCritical+demoCritical,sla:Math.round((liveTotal+demoTotal-(livePending+demoPending))/Math.max(1,liveTotal+demoTotal)*100),label:'Canlı + demo'};
+  return {total:1247,rating:4.3,pending:392,critical:157,sla:78,label:'Örnek veri'};
 }
 function googleDashboardTrend(){
-  const branchId=googleDashboardState.branchId||'all',branch=googleBranches().find(item=>item.id===branchId);
-  if(branchId!=='all'&&!branch?.demo) return googleLiveMonthlyTrend(branchId);
+  const branchId=googleDashboardState.branchId||'all',branch=googleBranches().find(item=>item.id===branchId),scopeRows=googleDashboardScopeBranches(branchId),hasLive=scopeRows.some(item=>!item.demo&&(item.synced||googleReviews().some(review=>review.branchId===item.id&&!review.demo)));
+  if(branchId!=='all'&&!branch?.demo&&scopeRows.length===1) return googleLiveMonthlyTrend(branchId);
+  if(hasLive || String(branchId).startsWith('region:') || String(branchId).startsWith('city:')){
+    const months=googleTrendMonthsEnding(googleDashboardState.period==='last30'?googleReviewMonthKey(new Date()):googleDashboardState.period,6),volume=months.map((month,index)=>scopeRows.reduce((sum,item)=>{ if(item.demo){const trend=item.trend||[];return sum+Number(trend[Math.max(0,trend.length-months.length)+index]||0);} googleRefreshBranchMonthlyTrend(item.id); return sum+Number(item.monthlyTrend?.[month]?.count||0); },0)),rating=months.map((month,index)=>{let total=0,weighted=0;scopeRows.forEach(item=>{const count=item.demo?Number((item.trend||[])[Math.max(0,(item.trend||[]).length-months.length)+index]||0):Number(item.monthlyTrend?.[month]?.count||0),value=item.demo?Number(item.demoRating||item.googleRating||0):Number(item.monthlyTrend?.[month]?.averageRating||0);if(count&&value){total+=count;weighted+=count*value;}});return total?Number((weighted/total).toFixed(2)):null;}),previous=volume.at(-2)||0,current=volume.at(-1)||0,growth=previous?Math.round((current-previous)/previous*100):(current?100:0);
+    return {labels:months.map(month=>new Date(`${month}-01T12:00:00Z`).toLocaleDateString('tr-TR',{month:'short',year:'numeric',timeZone:'Europe/Istanbul'})),volume,rating,selectedIndex:months.length-1,growth,live:hasLive};
+  }
   const labels=['Oca 2026','Şub 2026','Mar 2026','Nis 2026','May 2026','Haz 2026','Tem 2026','Ağu 2026','Eyl 2026','Eki 2026','Kas 2026','Ara 2026'];
   const base=branch?.demo?Number(branch.demoReviewCount||branch.googleReviewCount||100):1247, seed=branchId==='all'?7:[...String(branchId)].reduce((n,char)=>n+char.charCodeAt(0),0)%17;
   const volume=labels.map((_,index)=>Math.max(12,Math.round(base*(.48+index*.045+((index+seed)%4)*.025))));
@@ -3511,7 +3541,7 @@ document.addEventListener?.('click',e=>{const bulk=e.target.closest?.('[data-goo
 document.addEventListener?.('input',e=>{if(e.target.matches('[data-google-connection-search-input]'))googleApplyConnectionFilters(e.target.closest('.google-branch-settings-panel'));});
 document.addEventListener?.('change',e=>{if(e.target.matches('[data-google-connection-status-filter],[data-google-connection-source-filter],[data-google-connection-active-only]'))googleApplyConnectionFilters(e.target.closest('.google-branch-settings-panel'));});
 document.addEventListener?.('click',e=>{if(e.target.closest?.('[data-google-sync-logs]'))toast?.(`Son Google senkronizasyon durumu: ${googleReputationState.lastSync}`);});
-document.addEventListener?.('submit',e=>{const form=e.target.closest?.('[data-google-branch-add]');if(!form)return;e.preventDefault();const data=new FormData(form),name=String(data.get('name')||'').trim();if(!name)return;const id='branch-custom-'+Date.now();const branch={id,name:`OTOTR Oto Ekspertiz ${name}`,city:String(data.get('city')||'').trim(),region:String(data.get('region')||'').trim()||'Diğer',googleBusinessGroupId:String(data.get('accountId')||'').trim(),storeCode:String(data.get('storeCode')||'').trim(),custom:true,demo:true,demoReviewCount:0,demoRating:0,demoUnrepliedCount:0,demoCriticalCount:0,googleRating:0,googleReviewCount:0,unrepliedCount:0,criticalCount:0};try{localStorage.setItem(GOOGLE_CUSTOM_BRANCHES_KEY,JSON.stringify([...googleCustomBranches(),branch]));toast?.('Şube eklendi.');refreshGoogleReputationPage();}catch(_){toast?.('Şube eklenemedi. Tarayıcı depolama iznini kontrol edin.');}});
+document.addEventListener?.('submit',e=>{const form=e.target.closest?.('[data-google-branch-add]');if(!form)return;e.preventDefault();const data=new FormData(form),name=String(data.get('name')||'').trim(),accountId=String(data.get('accountId')||'').trim(),storeCode=String(data.get('storeCode')||'').trim(),locationId=String(data.get('locationId')||'').trim();if(!name)return;const id='branch-custom-'+Date.now(),configuredLive=Boolean(accountId&&storeCode),branch={id,name:`OTOTR Oto Ekspertiz ${name}`,city:String(data.get('city')||'').trim(),region:String(data.get('region')||'').trim()||'Diğer',googleBusinessGroupId:accountId,storeCode,googleBusinessLocationId:locationId,connectionMode:String(data.get('connectionMode')||'Google Business Profile'),custom:true,demo:!configuredLive,demoReviewCount:0,demoRating:0,demoUnrepliedCount:0,demoCriticalCount:0,googleRating:configuredLive?null:0,googleReviewCount:configuredLive?null:0,unrepliedCount:configuredLive?null:0,criticalCount:configuredLive?null:0,integrationStatus:configuredLive?'Canlı bağlantı adayı':'Demo veri · bağlantı bilgisi bekleniyor',dataMode:configuredLive?'Canlı bağlantı adayı':'Demo şube'};try{localStorage.setItem(GOOGLE_CUSTOM_BRANCHES_KEY,JSON.stringify([...googleCustomBranches(),branch]));toast?.(configuredLive?'Şube canlı senkronizasyon kuyruğuna eklendi.':'Şube demo olarak eklendi; hesap ve mağaza kodunu sonra tamamlayabilirsiniz.');refreshGoogleReputationPage();}catch(_){toast?.('Şube eklenemedi. Tarayıcı depolama iznini kontrol edin.');}});
 document.addEventListener?.('click',e=>{
   const link=e.target.closest?.('[data-google-center-scroll="google-reply-workspace"]');
   if(!link||window.__OTOTR_DEMO_INBOX_FALLBACK_USED||googleReputationState.selectedBranchId!=='branch-google-nilufer'||googleReviews().some(review=>review.branchId==='branch-google-nilufer')||!googleReviews().some(review=>review.demo)) return;
@@ -3548,7 +3578,7 @@ function createGoogleWorkTask(reviewId,kind){
 }
 window.OTOTRGoogleReputation={
   render:refreshGoogleReputationPage,
-  getRefreshState(){ return {busy:googleReputationState.loading,lastSuccessAt:googleReputationState.lastAllSyncAt||Math.max(0,...googleBranches().map(branch=>Number(branch.lastSyncEpoch)||0))}; },
+  getRefreshState(){ return {busy:googleReputationState.loading,connected:googleReputationState.connected===true,lastSuccessAt:googleReputationState.lastAllSyncAt||Math.max(0,...googleBranches().map(branch=>Number(branch.lastSyncEpoch)||0))}; },
   setError(message){ googleReputationState.error=String(message||''); refreshGoogleReputationPage(); },
   getReviewById:getGoogleReviewById,
   getBranchById:getGoogleBranchById,
@@ -3644,6 +3674,14 @@ function bindChronicIssuesPage(){
   renderChronicList();
 }
 function renderPages(){
+  // Google Review Center is an independent workspace. Render only that page
+  // on a direct deep-link; the rest of the ERP pages are materialized lazily
+  // when the user navigates away. This keeps the live review screen fast.
+  if(current==='google-reviews' && !window.__OTOTR_FULL_ADMIN_PAGES_RENDERED__ && !window.__OTOTR_DEALER_STANDALONE__){
+    const pages=document.getElementById('pages');
+    if(pages){ pages.innerHTML=pageShell('google-reviews',GoogleReputationPremiumDashboard()); if(window.lucide) lucide.createIcons(); }
+    return;
+  }
   const branches=(DB.branches||seed.branches||[]);
   const appointments=(DB.appointments||seed.appointments||[]);
   const tickets=(DB.tickets||seed.tickets||[]);
@@ -15904,6 +15942,16 @@ function renderDealerPageOnly(){
   }
 }
 function renderAll(){
+  // A direct Google Review Center deep-link should not eagerly build every
+  // unrelated ERP module before the first paint.
+  if((current==='google-reviews'||location.hash==='#google-reviews')&&!window.__OTOTR_FULL_ADMIN_PAGES_RENDERED__&&!window.__OTOTR_DEALER_STANDALONE__){
+    renderHero();
+    renderNav();
+    const pages=document.getElementById('pages');
+    if(pages) pages.innerHTML=pageShell('google-reviews',GoogleReputationPremiumDashboard());
+    if(window.lucide) lucide.createIcons();
+    return;
+  }
   renderHero();
   renderNav();
   renderPages();

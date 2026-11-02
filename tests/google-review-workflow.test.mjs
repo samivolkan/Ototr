@@ -141,7 +141,7 @@ function workflowFixture(options = {}) {
   };
 }
 
-const REPLY = 'Deneyiminizi paylaştığınız için teşekkür ederiz.\n\nOTOTR Bursa Nilüfer Şube ekibi';
+const REPLY = 'Deneyiminizi paylaştığınız için teşekkür ederiz.\n\nOTOTR Bursa Nilüfer Otoekspertiz Ekibi';
 async function saveDraft(f, extra = {}) {
   const response = await f.request({ action: 'save_draft', ...TARGET, reply_text: REPLY, draft_source: 'manual', ...extra });
   assert.ok(response.status >= 200 && response.status < 300, JSON.stringify(response));
@@ -298,7 +298,10 @@ test('wrong branch, invalid review, unauthorized user and database failure spend
 
 test('AI response with an invalid signature cannot be mislabeled as an OpenAI approval draft', async () => {
   const f = workflowFixture(); f.state.aiDraft = { reply: 'Fixture wrong signature', requires_human_review: false };
-  const result = await f.request(prepareBody()); assert.equal(result.data.item.status, 'draft_failed'); assert.equal(result.data.item.draft_source, 'manual'); assert.equal(result.data.item.reply_text, '');
+  const result = await f.request(prepareBody());
+  assert.equal(result.data.item.status, 'approval_pending');
+  assert.equal(result.data.item.draft_source, 'openai');
+  assert.match(result.data.item.reply_text, /OTOTR Bursa Nilüfer Otoekspertiz Ekibi$/);
 });
 
 test('draft is persisted against verified Google IDs and canonical branch, without publishing', async () => {

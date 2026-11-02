@@ -195,6 +195,21 @@ function parseDraft(payload: any, signature: string) {
   return draft;
 }
 
+function validateProviderModeration(payload: any) {
+  const moderation = payload?.moderation;
+  // The Responses API does not currently include a moderation object by default.
+  // If a gateway or provider adds one, honour an explicit failure/flag without
+  // requiring a field that the provider does not promise to return.
+  if (moderation == null) return;
+  const results = [moderation.input, moderation.output].filter(Boolean);
+  if (results.some((result: any) => result?.type === 'error')) {
+    throw new RequestError('AI güvenlik kontrolü tamamlanamadı. Manuel inceleme gerekli.', 503);
+  }
+  if (results.some((result: any) => result?.flagged === true)) {
+    throw new RequestError('AI yanıtı güvenlik kontrolünden geçmedi. Manuel inceleme gerekli.', 422);
+  }
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
   if (req.method !== 'POST') return json({ error: 'Yalnızca POST desteklenir.' }, 405);
@@ -204,7 +219,8 @@ Deno.serve(async (req: Request) => {
     let body: any;
     try { body = await req.json(); } catch (_) { throw new RequestError('Geçersiz JSON isteği.', 400); }
     const review = body?.review;
-    const branch = branches[String(body?.branch?.id || '')];
+    const branchId = String(body?.branch?.id || '');
+    const branch = branches[branchId];
     if (body?.action !== 'generate' || !review || !branch) return json({ error: 'Geçersiz istek.' }, 400);
     const rating = Number(review.rating);
     const comment = String(review.comment || '').trim().slice(0, 3000).replace(/^Yorum metni paylaşılmamış\.$/, '');
@@ -220,7 +236,7 @@ Deno.serve(async (req: Request) => {
     const apiKey = Deno.env.get('OPENAI_API_KEY');
     if (!apiKey) return json({ error: 'OPENAI_API_KEY sunucu sırrı tanımlı değil.' }, 503);
 
-    const replySignatureName = branch.id === 'branch-google-nilufer' ? 'OTOTR Bursa Nilüfer Otoekspertiz Ekibi' : `${branch.name} ekibi`;
+    const replySignatureName = branchId === 'branch-google-nilufer' ? 'OTOTR Bursa Nilüfer Otoekspertiz Ekibi' : `${branch.name} ekibi`;
     const prompt = JSON.stringify({ sube: branch.name, sehir: branch.city, ilce: branch.district, puan: rating,
       musteri_yorumu: comment, yalniz_yildiz: !comment, hitap_adi: reviewerName || null,
       onceki_yanit: previousReply || null, hedef_kelime_araligi: wordTarget });
@@ -251,6 +267,7 @@ reply alanında yalnızca yanıt gövdesini üret. Marka, şube adı veya ekip i
     });
     const payload = await response.json().catch(() => ({}));
     if (!response.ok) return json({ error: response.status === 429 ? 'OpenAI kullanım sınırına ulaşıldı. Biraz sonra yeniden deneyin.' : response.status === 401 || response.status === 403 ? 'OpenAI sunucu yetkilendirmesi başarısız. Genel merkez yöneticisi bağlantıyı kontrol etmelidir.' : 'OpenAI servisi yanıt üretemedi. Yeniden deneyin.' }, response.status === 429 ? 503 : 502);
+    validateProviderModeration(payload);
     const draft = parseDraft(payload, replySignatureName);
     validatePersonalization(draft.reply, reviewerName, previousReply, replySignatureName);
     const legal = /dava|avukat|hukuk|mahkeme|dolandır|kişisel veri|ayrımcılık/i.test(comment);

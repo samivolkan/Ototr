@@ -119,13 +119,40 @@ const branches: Record<string, { name: string; storeCode: string; locationId: st
 };
 function syncBranchIds(value: unknown): string[] {
   if (value === undefined) return ['branch-google-nilufer'];
-  if (!Array.isArray(value) || !value.length || value.length > 3 || value.some(id => typeof id !== 'string' || !Object.hasOwn(branches, id))) {
+  if (!Array.isArray(value) || !value.length || value.length > 3 || value.some(id => typeof id !== 'string' || (!Object.hasOwn(branches, id) && !/^branch-custom-[A-Za-z0-9-]{8,80}$/.test(id)))) {
     throw new RequestError('Geçersiz senkronizasyon şubesi.', 400);
   }
   return [...new Set(value)];
 }
+function syncBranchConfigs(value: unknown, targets: string[]) {
+  if (value === undefined) return {} as Record<string, { account_id?: string; store_code?: string; location_id?: string }>;
+  if (!value || typeof value !== 'object' || Array.isArray(value)) throw new RequestError('Geçersiz şube bağlantı ayarları.', 400);
+  const source = value as Record<string, unknown>;
+  const result: Record<string, { account_id?: string; store_code?: string; location_id?: string }> = {};
+  for (const branchId of targets) {
+    const raw = source[branchId];
+    if (raw === undefined) continue;
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) throw new RequestError('Geçersiz şube bağlantı ayarı.', 400);
+    const config = raw as Record<string, unknown>;
+    const account_id = String(config.account_id || '').trim();
+    const store_code = String(config.store_code || '').trim();
+    const location_id = String(config.location_id || '').trim();
+    if ((account_id && !/^\d{1,32}$/.test(account_id)) || (store_code && !/^\d{1,64}$/.test(store_code)) || (location_id && !/^\d{1,32}$/.test(location_id))) {
+      throw new RequestError('Google hesap, mağaza ve konum kimlikleri yalnızca sayılardan oluşmalı.', 400);
+    }
+    if (!Object.hasOwn(branches, branchId) && (!account_id || !store_code)) throw new RequestError('Yeni şube senkronizasyonu için Google hesap ID ve mağaza kodu gerekli.', 400);
+    result[branchId] = { ...(account_id ? { account_id } : {}), ...(store_code ? { store_code } : {}), ...(location_id ? { location_id } : {}) };
+  }
+  return result;
+}
+function reviewUpdateEpoch(review: any) {
+  return Math.max(
+    Date.parse(review?.updateTime || review?.createTime || '') || 0,
+    Date.parse(review?.reviewReply?.updateTime || '') || 0,
+  );
+}
 async function googlePages(base: string, field: string, token: string, signal: AbortSignal, stopBefore = 0) {
-  const items: any[] = [], seen = new Set<string>();
+  const items: any[] = [], seen = new Set<string>(); let stoppedEarly = false;
   let pageToken = '', first: any;
   do {
     const page = await googleJson(paginatedUrl(base, pageToken), token, { signal }, true);
@@ -135,14 +162,14 @@ async function googlePages(base: string, field: string, token: string, signal: A
     first ||= page;
     const pageItems = page[field] || [];
     items.push(...pageItems);
-    if (stopBefore && field === 'reviews' && pageItems.length && pageItems.every((item: any) => Math.max(Date.parse(item?.updateTime || item?.createTime || '') || 0, Date.parse(item?.reviewReply?.updateTime || '') || 0) <= stopBefore)) break;
+    if (stopBefore && field === 'reviews' && pageItems.length && pageItems.every((item: any) => reviewUpdateEpoch(item) <= stopBefore)) { stoppedEarly = true; break; }
     const next = page.nextPageToken;
     if (next != null && (typeof next !== 'string' || next.length > 8192)) throw new GoogleApiError('Google sayfalama anahtarı geçersiz.', 502, 'INVALID_GOOGLE_RESPONSE');
     pageToken = next || '';
     if (pageToken && (seen.has(pageToken) || seen.size >= 500)) throw new GoogleApiError('Google sayfalaması tamamlanamadı. Önceki veriler korunuyor.', 502, 'INCOMPLETE_PAGINATION');
     if (pageToken) seen.add(pageToken);
   } while (pageToken);
-  return { ...first, [field]: items };
+  return { ...first, [field]: items, ...(field === 'reviews' ? { pagination_complete: !stoppedEarly } : {}) };
 }
 async function mapThree<T, R>(items: T[], request: (item: T) => Promise<R>): Promise<R[]> {
   const results: R[] = new Array(items.length);
@@ -155,30 +182,66 @@ async function mapThree<T, R>(items: T[], request: (item: T) => Promise<R>): Pro
   }));
   return results;
 }
-async function syncReviews(targets: string[], token: string, signal: AbortSignal, sinceByBranch: Record<string, number> = {}) {
+async function syncReviews(targets: string[], token: string, signal: AbortSignal, sinceByBranch: Record<string, number> = {}, branchConfigs: Record<string, { account_id?: string; store_code?: string; location_id?: string }> = {}) {
   // One request-scoped token; no global token or customer-data cache. Reads only.
-  const accountPage = await googlePages('https://mybusinessaccountmanagement.googleapis.com/v1/accounts?pageSize=20', 'accounts', token, signal);
-  const accounts = [...new Set<string>(accountPage.accounts.map((account: any) => String(account?.name || '')))];
-  if (accounts.some(name => !/^accounts\/\d+$/.test(name))) throw new GoogleApiError('Google hesap kimliği okunamadı.', 502, 'INVALID_GOOGLE_RESPONSE');
-  const groups = await mapThree(accounts, async accountName => {
-    const page = await googlePages(`https://mybusinessbusinessinformation.googleapis.com/v1/${accountName}/locations?readMask=name,title,storeCode,metadata&pageSize=100`, 'locations', token, signal);
-    return page.locations.map((location: any) => ({ ...location, accountName }));
-  });
-  const locations = groups.flat();
+  // An advanced connection with account + location IDs is an exact resource
+  // reference. Do not enumerate every account/location on every refresh in
+  // that case; it is both faster and avoids a false “store code not found”
+  // result when the profile is visible only through the configured account.
+  const exactConfigs = new Map<string, { account_id: string; location_id: string; store_code?: string }>();
+  for (const branchId of targets) {
+    const configured = branchConfigs[branchId] || {};
+    if (configured.account_id && configured.location_id) {
+      exactConfigs.set(branchId, { account_id: configured.account_id, location_id: configured.location_id, ...(configured.store_code ? { store_code: configured.store_code } : {}) });
+    }
+  }
+  const needsDiscovery = targets.some(branchId => !exactConfigs.has(branchId));
+  let accounts: string[] = [];
+  let locations: any[] = [];
+  if (needsDiscovery) {
+    const accountPage = await googlePages('https://mybusinessaccountmanagement.googleapis.com/v1/accounts?pageSize=20', 'accounts', token, signal);
+    accounts = [...new Set<string>(accountPage.accounts.map((account: any) => String(account?.name || '')))];
+    if (accounts.some(name => !/^accounts\/\d+$/.test(name))) throw new GoogleApiError('Google hesap kimliği okunamadı.', 502, 'INVALID_GOOGLE_RESPONSE');
+    const configuredAccountNames = new Set(targets.map(branchId => branchConfigs[branchId]?.account_id ? `accounts/${branchConfigs[branchId].account_id}` : '').filter(Boolean));
+    const accountsToDiscover = configuredAccountNames.size ? accounts.filter(account => configuredAccountNames.has(account)) : accounts;
+    const groups = await mapThree(accountsToDiscover, async accountName => {
+      const page = await googlePages(`https://mybusinessbusinessinformation.googleapis.com/v1/${accountName}/locations?readMask=name,title,storeCode,metadata&pageSize=100`, 'locations', token, signal);
+      return page.locations.map((location: any) => ({ ...location, accountName }));
+    });
+    locations = groups.flat();
+  }
   const results = await mapThree(targets, async branch_id => {
     try {
-      const expected = branches[branch_id];
+      const configured = branchConfigs[branch_id] || {};
+      const baseBranch = branches[branch_id] || { name: branch_id, storeCode: '', locationId: '' };
+      const expected = { ...baseBranch, ...(configured.store_code ? { storeCode: configured.store_code } : {}), ...(configured.location_id ? { locationId: configured.location_id } : {}) };
+      const accountHint = configured.account_id ? `accounts/${configured.account_id}` : '';
+      let matching: any[] = [];
+      if (exactConfigs.has(branch_id)) {
+        const exact = exactConfigs.get(branch_id)!;
+        let direct: any;
+        try {
+          direct = await googleJson(`https://mybusinessbusinessinformation.googleapis.com/v1/locations/${exact.location_id}?readMask=name,title,storeCode,metadata`, token, { signal }, true);
+        } catch (error) {
+          if (error instanceof GoogleApiError && error.status === 404) throw new GoogleApiError('Bağlı Google hesabı bu şubenin kayıtlı işletme profiline erişemiyor (Google: kayıt bulunamadı). Gelişmiş bağlantı ayarlarındaki hesap/konum kimliklerini kontrol edin. Önceki veriler korunuyor.', 404, 'LOCATION_UNAVAILABLE');
+          throw error;
+        }
+        if (direct?.name !== `locations/${exact.location_id}`) throw new GoogleApiError('Google konum kimliği doğrulanamadı. Önceki veriler korunuyor.', 502, 'INVALID_GOOGLE_RESPONSE');
+        if (exact.store_code && String(direct.storeCode || '') !== exact.store_code) throw new GoogleApiError('Gelişmiş bağlantı ayarlarındaki mağaza kodu Google konumuyla eşleşmiyor. Önceki veriler korunuyor.', 409, 'STORE_CODE_MISMATCH');
+        matching = [{ ...direct, accountName: accountHint }];
+      }
       // Store codes are editable. A pinned Google resource ID is also an exact identity.
       // Never infer a branch from its title; reject conflicting known branch codes.
-      const matching = locations.filter(location => location.storeCode === expected.storeCode || location.name === `locations/${expected.locationId}`);
-      if (!matching.length && accounts.includes('accounts/114698852482564472140')) {
+      if (!matching.length) matching = locations.filter(location => (location.storeCode === expected.storeCode || location.name === `locations/${expected.locationId}`) && (!accountHint || location.accountName === accountHint));
+      const directAccount = accountHint || (accounts.includes('accounts/114698852482564472140') ? 'accounts/114698852482564472140' : '');
+      if (!matching.length && expected.locationId && directAccount && accounts.includes(directAccount)) {
         let direct;
         try { direct = await googleJson(`https://mybusinessbusinessinformation.googleapis.com/v1/locations/${expected.locationId}?readMask=name,title,storeCode,metadata`, token, { signal }, true); }
         catch (error) {
           if (error instanceof GoogleApiError && error.status === 404) throw new GoogleApiError('Bağlı Google hesabı bu şubenin kayıtlı işletme profiline erişemiyor (Google: kayıt bulunamadı). İşletme erişimi, taşınma veya profil birleştirme durumu kontrol edilmeli. Önceki veriler korunuyor.', 404, 'LOCATION_UNAVAILABLE');
           throw error;
         }
-        if (direct?.name === `locations/${expected.locationId}`) matching.push({ ...direct, accountName: 'accounts/114698852482564472140' });
+        if (direct?.name === `locations/${expected.locationId}`) matching.push({ ...direct, accountName: directAccount });
       }
       if (matching.some(location => Object.entries(branches).some(([id, branch]) => id !== branch_id && (location.storeCode === branch.storeCode || location.name === `locations/${branch.locationId}`)))) throw new GoogleApiError('Google konum eşleşmesi başka bir şubeyle çakışıyor.', 409, 'AMBIGUOUS_LOCATION');
       if (matching.some(location => !/^locations\/\d+$/.test(String(location.name || '')))) throw new GoogleApiError('Google konum kimliği okunamadı.', 502, 'INVALID_GOOGLE_RESPONSE');
@@ -186,23 +249,25 @@ async function syncReviews(targets: string[], token: string, signal: AbortSignal
       // Keep the wrapper and location together; never match by a similar title.
       const distinct = new Map(matching.map(location => [location.name, location]));
       if (distinct.size !== 1) throw new GoogleApiError(distinct.size ? 'Mağaza kodu birden fazla Google konumuyla eşleşiyor.' : 'Şubenin mağaza kodu Google hesabında bulunamadı.', 409, distinct.size ? 'AMBIGUOUS_LOCATION' : 'LOCATION_NOT_FOUND');
-      const selected: any = matching.find(location => location.accountName === 'accounts/114698852482564472140') || matching.sort((a, b) => a.accountName.localeCompare(b.accountName))[0];
+      const selected: any = matching.find(location => location.accountName === accountHint) || matching.find(location => location.accountName === 'accounts/114698852482564472140') || matching.sort((a, b) => a.accountName.localeCompare(b.accountName))[0];
       const account_id = selected.accountName.slice('accounts/'.length), location_id = selected.name.slice('locations/'.length);
       const base = `https://mybusiness.googleapis.com/v4/accounts/${account_id}/locations/${location_id}/reviews`;
       const since = Number(sinceByBranch[branch_id] || 0);
       const page = await googlePages(`${base}?pageSize=50&orderBy=updateTime%20desc`, 'reviews', token, signal, since);
+      const candidateReviews = since > 0 ? page.reviews.filter((review: any) => reviewUpdateEpoch(review) > since) : page.reviews;
       const unique = new Map<string, any>();
-      for (const review of page.reviews) {
+      for (const review of candidateReviews) {
         const id = typeof review?.reviewId === 'string' && review.reviewId ? review.reviewId : String(review?.name || '').split('/').at(-1);
         if (!id || id.length > 512 || (review.name && review.name !== `accounts/${account_id}/locations/${location_id}/reviews/${id}`)) throw new GoogleApiError('Google yorum kimliği okunamadı.', 502, 'INVALID_GOOGLE_RESPONSE');
         const current = unique.get(id);
-        const updated = (item: any) => Math.max(Date.parse(item?.updateTime || item?.createTime || '') || 0, Date.parse(item?.reviewReply?.updateTime || '') || 0);
+        const updated = (item: any) => reviewUpdateEpoch(item);
         if (!current || updated(review) > updated(current)) unique.set(id, review);
       }
       const reviews = [...unique.values()];
       const totalReviewCount = Number.isSafeInteger(page.totalReviewCount) && page.totalReviewCount >= 0 ? page.totalReviewCount : null;
       const { accountName: _, ...location } = selected;
-      return { branch: { branch_id, account_id, location_id, location, reviews, averageRating: page.averageRating ?? null, totalReviewCount, pagination_complete: true, incremental: since > 0, since, review_count_matches: totalReviewCount === null ? null : totalReviewCount === reviews.length } };
+      const pagination_complete = page.pagination_complete !== false;
+      return { branch: { branch_id, account_id, location_id, location, reviews, averageRating: page.averageRating ?? null, totalReviewCount, pagination_complete, incremental: since > 0, since, review_count_matches: totalReviewCount === null || !pagination_complete ? null : totalReviewCount === reviews.length } };
     } catch (error) {
       const timedOut = signal.aborted;
       return { error: { branch_id, error: timedOut ? 'Google senkronizasyonu zaman aşımına uğradı. Önceki veriler korunuyor.' : error instanceof Error ? error.message : 'Google yorumları alınamadı.', status: timedOut ? 504 : error instanceof GoogleApiError ? error.status : 502, code: timedOut ? 'GOOGLE_SYNC_TIMEOUT' : error instanceof GoogleApiError ? error.code : 'GOOGLE_SYNC_FAILED', source: 'google' } };
@@ -565,7 +630,8 @@ Deno.serve(async (req) => {
       try {
         const token = await accessToken(await decrypt(connection.refresh_token_encrypted), signal);
         const sinceByBranch = body.since_by_branch && typeof body.since_by_branch === 'object' ? body.since_by_branch : {};
-        return json(await syncReviews(syncTargets, token, signal, sinceByBranch));
+        const branchConfigs = syncBranchConfigs(body.branch_configs, syncTargets);
+        return json(await syncReviews(syncTargets, token, signal, sinceByBranch, branchConfigs));
       } catch (error) {
         if (signal.aborted) throw new GoogleApiError('Google senkronizasyonu zaman aşımına uğradı. Önceki veriler korunuyor.', 504, 'GOOGLE_SYNC_TIMEOUT');
         throw error;

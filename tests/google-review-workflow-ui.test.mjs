@@ -24,7 +24,7 @@ function server() {
       const body = JSON.parse(options.body); state.calls.push(body);
       if (String(url).endsWith('/google-review-ai')) {
         if (state.aiHold) await new Promise(resolve => { state.releaseAI = resolve; });
-        return state.aiFails ? Response.json({ error: 'Fixture OpenAI unavailable' }, { status: 502 }) : Response.json({ reply: state.aiReply ?? 'Özenli hizmetimizi değerlendirmeniz bizi mutlu etti.\n\nOTOTR Bursa Nilüfer Şube ekibi', tone: 'samimi', risk_reason: '' });
+        return state.aiFails ? Response.json({ error: 'Fixture OpenAI unavailable' }, { status: 502 }) : Response.json({ reply: state.aiReply ?? 'Özenli hizmetimizi değerlendirmeniz bizi mutlu etti.\n\nOTOTR Bursa Nilüfer Otoekspertiz Ekibi', tone: 'samimi', risk_reason: '' });
       }
       if (body.action === 'workflow_list') return state.listFails ? Response.json({ error: 'Fixture storage unavailable' }, { status: 503 }) : Response.json({ items: state.items, next_offset: null });
       if (body.action === 'save_draft' || body.action === 'create_task') {

@@ -676,5 +676,5 @@
   }
 
   install();
-  if (typeof window !== 'undefined') setInterval(() => { void autoPublishDue(); }, 60000);
+  if (typeof window !== 'undefined' && typeof setInterval === 'function') setInterval(() => { void autoPublishDue(); }, 60000);
 })();

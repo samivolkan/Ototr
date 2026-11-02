@@ -4,15 +4,19 @@
   // Refreshing and verification never publish. The separate preparation hook
   // creates drafts only. Loading this asset twice must not add timers.
   if (window.OTOTRGoogleReviewRefresh) return;
-  const POLL_MS = 60 * 1000, HOURLY_MS = 60 * 60 * 1000, MAX_BACKOFF_MS = HOURLY_MS;
+  // The timer is intentionally lightweight: the UI keeps the last good cache
+  // visible, while reviews are checked every five minutes and the approval
+  // queue every minute. Errors back off to fifteen minutes rather than making
+  // the user wait an hour for a transient Google/API failure.
+  const POLL_MS = 60 * 1000, REVIEW_MS = 5 * 60 * 1000, MAX_BACKOFF_MS = 15 * 60 * 1000;
   const jobs = {
-    reviews: { interval: HOURLY_MS, due: 0, failures: 0, seenSuccess: 0 },
-    workflow: { interval: HOURLY_MS, due: 0, failures: 0, seenSuccess: 0 },
+    reviews: { interval: REVIEW_MS, due: 0, failures: 0, seenSuccess: 0, lastConnected: null },
+    workflow: { interval: POLL_MS, due: 0, failures: 0, seenSuccess: 0 },
   };
   let running = false;
 
   function allowed() {
-    if (location.hash !== '#google-reviews' || navigator.onLine === false) return false;
+    if (location.hash !== '#google-reviews' || document.visibilityState === 'hidden' || navigator.onLine === false) return false;
     if (document.documentElement.classList.contains('ototr-access-locked')) return false;
     if (document.getElementById('googleReviewAiModal')?.classList.contains('open')) return false;
     const reviews = window.OTOTRGoogleReputation, ai = window.OTOTRGoogleReviewAI;
@@ -48,6 +52,12 @@
     running = true;
     try {
       observeSuccess(jobs.reviews, window.OTOTRGoogleReputation.getRefreshState());
+      const connectionState = window.OTOTRGoogleReputation.getRefreshState();
+      // A failed unauthenticated first check can schedule a long backoff. Once
+      // OAuth becomes available, immediately retry once so cached data can be
+      // refreshed without waiting for the hourly timer.
+      if (connectionState.connected === true && jobs.reviews.failures > 0 && jobs.reviews.lastConnected !== true) jobs.reviews.due = Date.now();
+      jobs.reviews.lastConnected = connectionState.connected;
       observeSuccess(jobs.workflow, window.OTOTRGoogleReviewAI.getRefreshState());
       if (Date.now() >= jobs.reviews.due) {
         await run(jobs.reviews, () => window.OTOTRGoogleReputation.syncAllGoogleReviews({ quiet: true }));
