@@ -50,11 +50,14 @@
     const team = branch.id === 'branch-google-nilufer'
       ? 'OTOTR Bursa Nilüfer Otoekspertiz Ekibi'
       : String(branch.replySignatureName || branch.name || 'OTOTR').replace(/ Test Şube$/i, '').trim().replace(/\s+ekibi$/iu, ' Ekibi');
+    const comment = String(review?.comment || '');
+    const mentionedDiyarbakir = /diyarbakır(?:'|’)?dan|diyarbakir(?:'|’)?dan/iu.test(comment);
     const rawName = String(review?.reviewerName || '').trim().replace(/\s+/g, ' ');
     const name = /^(?!Google kullanıc(?:ı|i)|Google User$)[\p{L}][\p{L}'’.-]*(?:\s+[\p{L}][\p{L}'’.-]*){1,3}$/iu.test(rawName) ? rawName : '';
     const greeting = `Sayın ${name || 'Değerli müşterimiz'},`;
     if (Number(review.rating) >= 4) {
-      return `${greeting}\n\nDeneyiminizin sizde güzel bir iz bırakmasına çok sevindik. Bunu birkaç cümleyle bizimle paylaşmanız, Nilüfer’deki ekibimiz için gerçekten kıymetli; yolunuz yeniden düştüğünde sizi aynı özenle karşılamak isteriz.\n\n${team}`;
+      const localLine = mentionedDiyarbakir ? 'Diyarbakır’dan gelen misafirlerimize de gönül rahatlığıyla eşlik etmekten mutluluk duyarız; güzel sözlerinizi oradaki herkese sevgilerimizle iletin.' : 'Güveninizi ve güzel sözlerinizi ekibimizle paylaşmak bizim için çok kıymetli.';
+      return `${greeting}\n\nDeneyiminizin sizde güzel bir iz bırakmasına çok sevindik. ${localLine} Memnuniyetiniz, her gün aynı özenle çalışmamız için en güçlü motivasyonumuz; yolunuz yeniden düştüğünde sizi içtenlikle karşılamak isteriz.\n\n${team}`;
     }
     return `${greeting}\n\nBeklentinizin karşılanmadığını duymak bizi üzdü. Geri bildiriminizi savunmaya geçmeden değerlendiriyor, hizmetimizi daha iyi hâle getirmek için ekibimizle birlikte ele alıyoruz; ayrıntıları paylaşırsanız size yardımcı olmak isteriz.\n\n${team}`;
   }
