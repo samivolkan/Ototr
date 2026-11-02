@@ -15964,9 +15964,6 @@ function renderAll(){
 }
 (async function init(){
   const apiStatus=document.getElementById('apiStatus');
-  if(apiStatus) apiStatus.textContent='Mock API bağlanıyor';
-  DB=await Backend.connect();
-  if(apiStatus) apiStatus.textContent='Mock API bağlı';
   const params = new URLSearchParams(location.search);
   // Eski OAuth callback'lerinde hash #dealer kalmış olabilir. Google dönüşünü
   // her durumda genel merkezdeki temiz yorum ekranına sabitle.
@@ -15991,6 +15988,32 @@ function renderAll(){
   initTheme({skipRender:true});
   dealerScrubSensitiveUrlParams();
   syncDealerStandaloneMode(current);
+
+  // Google Review Center can render from its local cache without waiting for
+  // the full ERP demo backend to hydrate.  This keeps the first paint fast;
+  // the backend is connected immediately after the cached screen is visible.
+  const googleFirstPaint=current==='google-reviews' && !window.__OTOTR_FULL_ADMIN_PAGES_RENDERED__ && !window.__OTOTR_DEALER_STANDALONE__;
+  if(googleFirstPaint){
+    try{ DB=Backend.db(); }catch(_){ DB=null; }
+    if(apiStatus) apiStatus.textContent='Google yorum merkezi açılıyor';
+    renderAll();
+    route(initialHR||initialAcademy?initialCanonical:current,{skipShellRender:true,skipDeferredEnhancements:true,skipIcons:true,preserveScroll:true});
+    const hydrate=async()=>{
+      if(apiStatus) apiStatus.textContent='Mock API bağlanıyor';
+      DB=await Backend.connect();
+      if(apiStatus) apiStatus.textContent='Mock API bağlı';
+      if(current==='google-reviews'){
+        if(typeof refreshGoogleReputationPage==='function') refreshGoogleReputationPage();
+        if(window.lucide) requestAnimationFrame(()=>lucide.createIcons());
+      }
+    };
+    if(window.requestIdleCallback) requestIdleCallback(hydrate,{timeout:900});
+    else setTimeout(hydrate,80);
+    return;
+  }
+  if(apiStatus) apiStatus.textContent='Mock API bağlanıyor';
+  DB=await Backend.connect();
+  if(apiStatus) apiStatus.textContent='Mock API bağlı';
   if(['dealer','report-design','vehicle-passport'].includes(current)){
     await window.OTOTR_ASSET_LOADER?.loadInspectionSchema?.().catch(()=>null);
     if(typeof applyInspectionSchemaToReportData === 'function') applyInspectionSchemaToReportData();
