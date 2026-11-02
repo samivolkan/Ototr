@@ -3024,10 +3024,22 @@
   .google-workflow-row{padding:14px 0;border-bottom:1px solid var(--line,#dbe3ee)}.google-workflow-row:last-child{border-bottom:0}.google-workflow-row p{white-space:pre-wrap;overflow-wrap:anywhere}.google-workflow-head{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}.google-ai-warning{border:1px solid #f8d49b;background:#fff8eb;border-radius:10px;padding:10px 12px;color:#805100;font-size:12px;margin:12px 0}
 </style>
 <link rel="stylesheet" href="assets/google-review-analytics.css?v=1">
-<script src="assets/google-review-ai.js?v=google-workflow-17"></script>
-<script src="assets/google-review-analytics.js?v=1"></script>
-<script src="assets/google-review-dashboard.js?v=1"></script>
-<script src="assets/google-review-refresh.js?v=google-refresh-5"></script>
+<script>
+  // Google review helpers are not needed to paint the cached first screen.
+  // Load them after the initial frame so the parser is not blocked by these
+  // optional modules; the AI/status retry in app-core waits for their arrival.
+  (function(){
+    const modules=[
+      'assets/google-review-ai.js?v=google-workflow-17',
+      'assets/google-review-analytics.js?v=1',
+      'assets/google-review-dashboard.js?v=1',
+      'assets/google-review-refresh.js?v=google-refresh-5'
+    ];
+    const loadNext=(i)=>{ if(i>=modules.length)return; const s=document.createElement('script'); s.src=modules[i]; s.onload=()=>loadNext(i+1); s.onerror=()=>loadNext(i+1); document.head.appendChild(s); };
+    const start=()=>loadNext(0);
+    if(window.requestIdleCallback) requestIdleCallback(start,{timeout:700}); else setTimeout(start,80);
+  })();
+</script>
 <script type="text/plain" id="google-backend-service-sample">
 /**
  * Google Haritalar İtibar Merkezi backend servis iskeleti
