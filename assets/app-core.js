@@ -1483,11 +1483,12 @@ function parseAcademyRoute(id){
 const navGroups = [
   ['Genel Merkez', [['dashboard','Yönetim Kokpiti','layout-dashboard'],['project-roadmap','Proje Yol Haritası','map'],['intelligence','İş Zekası','chart-no-axes-column'],['isler-v24','Kokpit · İşler v24','list-checks'],['actions','Aksiyon & Görev','target'],['crisis','Kriz Merkezi','siren'],['ai','AI Öneri','sparkles']]],
   ['Bayi & Şube Yönetimi', [['branches','Bayiler & Şubeler','building-2'],['dealer','Bayi Portalı','tablet-smartphone'],['ototr-web','OTOTR Web','globe'],['operations','Operasyon','workflow'],['quality','Kalite & Denetim','shield-check']]],
-  ['Ekspertiz & Rapor', [['ruhsat','Ruhsat Oku','scan-line'],['report-design','Ekspertiz Rapor Tasarımı','file-check-2'],['sunum32v2','32 Ekran Sunumu V2','monitor-up'],['kaporta-design','Kaporta Tasarım','panels-top-left'],['kaporta-360','Kaporta 360','rotate-3d']]],
+  ['Ekspertiz & Rapor', [['ruhsat','Ruhsat Oku','scan-line'],['sunum32v2','32 Ekran Sunumu V2','monitor-up'],['kaporta-design','Kaporta Tasarım','panels-top-left'],['kaporta-360','Kaporta 360','rotate-3d']]],
   ['Müşteri & Satış', [['crm','CRM & Randevu','users'],['saha-satis','Saha Satış','map-pinned'],['chronic-issues','Kronik Sorunlar','car-front'],['complaints','Müşteri Şikayetleri','message-circle-warning'],['google-reviews','Google Yorumlar','star'],['reputation','Sosyal Medya İtibar Radar','radar'],['marketing','Pazarlama','megaphone']]],
-  ['Franchise Yönetimi', [['franchise','Franchise Satış','handshake'],['growth','Bayii Büyüme','map'],['finance','GM Finans','banknote']]],
+  ['Franchise Yönetimi', [['franchise','Franchise Satış','handshake'],['growth','Bayii Büyüme','map']]],
   ['Kurumsal Yönetim', [['academy','OTOTR Academy','graduation-cap'],['hr','İnsan Kaynakları','badge-check'],['legal','Hukuk & Risk','scale']]],
-  ['Ayarlar', [['architecture','Sistem Mimarisi','network'],['settings','Ayarlar','settings'],['legacy','Legacy Room','landmark']]]
+  ['Ayarlar', [['architecture','Sistem Mimarisi','network'],['settings','Ayarlar','settings'],['legacy','Legacy Room','landmark']]],
+  ['Finans', [['finance','GM Finans','banknote']]]
 ];
 const titles = {ruhsat:'Ruhsat Oku',dashboard:'Yönetim Kokpiti','project-roadmap':'Proje Yol Haritası',intelligence:'İş Zekası',branches:'Bayiler & Şubeler',dealer:'Bayi Portalı','ototr-web':'OTOTR Web',operations:'Operasyon',franchise:'Franchise Satış',crm:'CRM & Randevu','chronic-issues':'Kronik Sorunlar',complaints:'Müşteri Şikayetleri','google-reviews':'Google Haritalar İtibar Merkezi',reputation:'İtibar Radar',finance:'GM Finans',marketing:'Pazarlama',quality:'Kalite & Denetim','report-design':'Ekspertiz Rapor Tasarımı',sunum32:'32 Ekran Sunumu',sunum32v2:'32 Ekran Sunumu V2','vehicle-passport':'Dijital Araç Karnesi',academy:'OTOTR Academy',hr:'İnsan Kaynakları',legal:'Hukuk & Risk',crisis:'Kriz Merkezi',actions:'Aksiyon & Görev',ai:'AI Öneri',growth:'Bayii Büyüme',legacy:'Legacy Room',architecture:'Sistem Mimarisi',settings:'Ayarlar',branchProfile:'Şube Profili',franchiseProfile:'Aday Değerlendirme',customerProfile:'Müşteri 360'};
 function dealerPortalUrl(){
