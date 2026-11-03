@@ -56,10 +56,11 @@ ul.chk{margin:0;padding-left:18px}ul.chk li{margin:3px 0}
 textarea{font:inherit;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:7px 10px;width:100%}
 .frm{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0}button:disabled{opacity:.45;cursor:not-allowed}
 .pilot-banner{grid-column:1/-1;min-width:0;position:sticky;top:0;z-index:30;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;background:#7f1d1d;color:#fff;padding:9px 16px;text-align:center;font-size:13px;box-shadow:0 4px 16px rgba(0,0,0,.15)}
-.pilot-banner strong{letter-spacing:.04em}.pilot-banner a{color:#fff;font-weight:700;text-underline-offset:3px}
+.pilot-banner strong{letter-spacing:.04em;max-width:100%;overflow-wrap:anywhere}.pilot-banner a{color:#fff;font-weight:700;text-underline-offset:3px}
 .top-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.erp-link{display:inline-flex;align-items:center;gap:6px;color:var(--ink);border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:7px 10px;text-decoration:none;font-weight:700}.erp-link:hover{border-color:var(--red);color:var(--red)}
-.readiness-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}.readiness-card{border:1px solid var(--line);border-left:4px solid var(--warn);border-radius:10px;background:var(--panel);padding:14px}.readiness-card.ok{border-left-color:var(--ok)}.readiness-card.block{border-left-color:var(--red)}.readiness-card b{display:block;margin-bottom:5px}.readiness-card span{color:var(--mut);font-size:13px}
-@media(max-width:760px){.pilot-banner{position:static}.top-actions{width:100%}.top-actions label{display:grid;width:100%;gap:6px}.top-actions select{width:100%;max-width:100%}}
+.readiness-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}.readiness-card{min-width:0;border:1px solid var(--line);border-left:4px solid var(--warn);border-radius:10px;background:var(--panel);padding:14px;overflow-wrap:anywhere}.readiness-card.ok{border-left-color:var(--ok)}.readiness-card.block{border-left-color:var(--red)}.readiness-card b{display:block;margin-bottom:5px}.readiness-card span{color:var(--mut);font-size:13px}
+.backend-status{display:inline-flex;align-items:center;min-width:0;border:1px solid var(--line);border-radius:999px;padding:5px 10px;font-size:12px;font-weight:700;background:var(--panel);max-width:min(520px,100%);white-space:normal;overflow-wrap:anywhere}.backend-status.loading,.backend-status.pilot{color:var(--warn)}.backend-status.ready{color:var(--ok)}.backend-status.blocked{color:var(--red)}
+@media(max-width:760px){.pilot-banner{position:static;font-size:12px}.pilot-banner strong{display:block;width:100%}.top-actions{width:100%;min-width:0}.top-actions>*{min-width:0}.top-actions .backend-status{width:100%;border-radius:10px}.top-actions label{display:grid;width:100%;gap:6px}.top-actions select{width:100%;max-width:100%}}
 </style>
 </head>
 <body>
@@ -69,7 +70,7 @@ textarea{font:inherit;background:var(--panel);color:var(--ink);border:1px solid 
 <main>
 <header class="top">
 <h1 id="title"></h1>
-<div class="top-actions"><a class="erp-link" href="../index.html#dashboard">← ERP ana paneli</a><label>Demo görüntüleme rolü: <select id="role">
+<div class="top-actions"><span id="hr-backend-status" class="backend-status loading" role="status" aria-live="polite">İK sunucu sınırı doğrulanıyor…</span><a class="erp-link" href="../index.html#dashboard">← ERP ana paneli</a><label>Demo görüntüleme rolü: <select id="role">
 <option value="gm">Genel Müdür / Merkez İK</option>
 <option value="fr">Franchise sahibi (Demo Franchise 1)</option>
 <option value="sm">Şube müdürü (Nilüfer)</option>
@@ -142,7 +143,7 @@ ayrilis:["İşten ayrılış süreci",["Ayrılış nedeni, ihbar ve son çalış
 rapor:["Raporlar",["Şube bazlı personel sayısı ve maliyetleri","İş gücü devir oranı","Devamsızlık ve geç kalma","İzin bakiyeleri ve fazla mesai","Belge ve sertifika eksikleri","Eğitim/yetkinlik matrisi","Şubelerin kadro ihtiyacı","İşe alım süresi"],"İkinci aşama: gelişmiş raporlar."]
 };
 const NAV=[["dash","İK Dashboard",1],["hazirlik","Canlıya hazırlık",1],["fyd","Franchise yaşam döngüsü",1],["gym","Görev ve yetki matrisi",1],["gyp","Ekspertiz yetki kuralları",1],["agac","Organizasyon ağacı (düzenle)",1],["gorev","Şubeler arası görevlendirme",1],["wf","İş akışı ve yetki motoru",0],["skor","Şube performans ve royalti",0],["analitik","İK analitiği ve planlama",0],["lms","Akademi (LMS)",0],["mobil","Mobil self-servis",0],["dept","Departmanlar ve kadro",1],["org","Organizasyon ve şube",1],["kisi","Personel ve özlük",1],["izin","İzin yönetimi",1],["vardiya","Vardiya ve puantaj",1],["yet","Yetkinlik ve sertifika",0],["ise_alim","İşe alım",0],["oryantasyon","İşe giriş / oryantasyon",1],["performans","Performans ve kalite",0],["bordro","Bordro ve yan haklar",0],["talep","Talep ve onay merkezi",1],["ayrilis","İşten ayrılış",1],["rapor","Raporlar",0],["puantaj","Puantaj ve mesai",1],["belge","Belge, zimmet, disiplin",1],["akademi","Akademi ve atama kontrolü",0],["acilis","Şube açılışı",0],["model","Veri modeli ve kontroller",0],["yetki","Yetki yapısı",1]];
-let cur="dash",sel=null;
+const initialView=location.hash.slice(1);let cur=NAV.some(n=>n[0]===initialView)?initialView:"dash",sel=null;
 
 const V={
 dept(){const gm=role()==="gm",DD=gm?D:D.filter(x=>x.id==="sube");if(!DD.some(x=>x.id===dsel))dsel=DD[0].id;
@@ -177,13 +178,13 @@ return `${warn}<div class="card scroll"><table><tr><th>Personel</th><th>Şube</t
 yet(){const L=list().filter(p=>p[7].some(x=>x));return `<div class="card scroll"><table><tr><th>Usta</th>${SK.map(s=>`<th>${s}</th>`).join("")}<th>Sertifika</th></tr>${L.map(p=>`<tr><td>${p[1]}</td>${p[7].map(n=>`<td>${dots(n)}</td>`).join("")}<td>${p[8]?(days(p[8])<=45?`<span class="bad">${days(p[8])} gün kaldı</span>`:p[8]):"—"}</td></tr>`).join("")}</table></div><p class="note">Yetkinlik seviyesi 1–3; eğitim, sınav ve sertifikaları OTOTR Akademi verir ve yeniler. Gerekli yetkinliği olmayan personel ilgili işe atanamaz; sertifika yenileme uyarıları otomatik gelir.</p>`},
 yetki(){return `<div class="cols"><div class="card"><h2>Roller</h2><ul class="chk"><li>Genel Müdür</li><li>Merkez İK</li><li>Bölge yöneticisi</li><li>Franchise sahibi (yalnızca kendi şirketi/şubeleri)</li><li>Şube müdürü</li><li>Sekreterya</li><li>Usta / teknisyen</li><li>Bordro / muhasebe</li><li>İş yeri hekimi veya yetkili sağlık personeli</li><li>Sistem yöneticisi</li><li>Çalışan self-servis</li></ul></div><div class="card"><h2>Güvenlik ilkeleri</h2><ul class="chk"><li>İK pozisyonu ile uygulama erişim rolü ayrı tutulur</li><li>Pozisyon değişince erişim otomatik değişmez; onaylı yetki değişikliği süreci başlar</li><li>Sağlık, kimlik, maaş, disiplin ve biyometrik veri alan bazlı yetkilendirilir</li><li>Şube veri izolasyonu</li><li>Şifreli belge saklama</li><li>Değiştirilemez işlem günlüğü ve KVKK kontrolleri</li></ul></div></div>`}
 };
-V.hazirlik=()=>`<div class="card"><h2>Üretim geçiş kapıları</h2><p>Bu ekran tasarım ve iş akışı kabulü içindir. Aşağıdaki blokajlar kapanmadan gerçek çalışan verisiyle kullanıma açılamaz.</p><div class="readiness-grid">
+V.hazirlik=()=>`<div id="hr-backend-readiness" aria-live="polite"></div><div class="card"><h2>Üretim geçiş kapıları</h2><p>Veritabanı paketi sentetik kabul testlerinden geçmiştir. 2. madde kapsam dışı olduğu için gerçek çalışan verisi üretim kapısında kilitlidir.</p><div class="readiness-grid">
 <div class="readiness-card ok"><b>Arayüz ve iş akışı kapsamı</b><span>Personel yaşam döngüsü, izin, puantaj, yetkinlik, işe alım, bordro girdisi, talep/onay, görev ayrılığı ve rapor ekranları pilotta mevcut.</span></div>
-<div class="readiness-card block"><b>Kimlik doğrulama ve RLS</b><span>Supabase Auth, veritabanı rolleri, şirket/şube izolasyonu ve alan bazlı yetki sunucu tarafında uygulanmalı.</span></div>
-<div class="readiness-card block"><b>Özlük ve özel nitelikli veri</b><span>Şifreli belge deposu, sağlık verisi için ayrı erişim katmanı, anahtar yönetimi ve erişim kayıtları gerekli.</span></div>
-<div class="readiness-card block"><b>KVKK ve hukuk onayı</b><span>Aydınlatma/rıza, aday saklama, çalışan dosyası saklama-imha, veri sahibi başvurusu ve hukuki dayanak matrisi onaylanmalı.</span></div>
-<div class="readiness-card block"><b>Bordro, SGK ve mali kontrol</b><span>Bu pilot hesap motoru değildir. Bordro sağlayıcısı/mali müşavir entegrasyonu, dönem kilidi ve dört göz onayı kurulmalı.</span></div>
-<div class="readiness-card block"><b>Denetim ve operasyon</b><span>Değiştirilemez audit log, yedekleme/geri yükleme, izleme, olay müdahalesi, UAT ve felaket kurtarma kanıtları tamamlanmalı.</span></div>
+<div class="readiness-card ok"><b>Kimlik doğrulama ve RLS</b><span>Supabase Auth eşlemesi, özel hr şeması, şirket/şube kapsamı, RLS ve yalnızca izinli RPC erişimi migration paketinde uygulanıp sentetik PostgreSQL kabul testinden geçti.</span></div>
+<div class="readiness-card block"><b>Özlük ve özel nitelikli veri</b><span>Gerçek kişi ve kimlik/sağlık/disiplin belgesi verisi veritabanı tetikleyicileriyle engellenir; bu sınır 2. madde tamamlanmadan açılamaz.</span></div>
+<div class="readiness-card block"><b>KVKK ve hukuk onayı — kapsam dışı</b><span>Kullanıcı talebiyle 2. madde bu teslimin dışındadır. Bu nedenle üretim onayı otomatik olarak BLOCKED kalır.</span></div>
+<div class="readiness-card ok"><b>Bordro, SGK ve mali kontrol</b><span>SGK kanıt kapısı, dönem kilidi, görev ayrılığı ve iki dönem sentetik gölge bordro mutabakatı kabul testinden geçti; ödeme veya gerçek bordro üretmez.</span></div>
+<div class="readiness-card ok"><b>Denetim ve operasyon</b><span>Hash zincirli değiştirilemez audit, özel belge kovası politikaları, sentetik yedek/geri yükleme ve uçtan uca UAT otomatik doğrulanır.</span></div>
 </div><p class="note">Ayrıntılı boşluk ve kabul kriterleri: kanonik kaynak depodaki <b>docs/hr/GM_HR_SYSTEM_ANALYSIS_2026-11-03.md</b>.</p></div>`;
 const RN={gm:"Genel Müdür / Merkez İK",fr:"Franchise sahibi",sm:"Şube müdürü",us:"Usta (self-servis)",mu:"Muhasebe / Bordro",ak:"Akademi"};
 const ALLM=NAV.map(n=>n[0]);
@@ -360,7 +361,7 @@ tpadd(){const x=D.find(y=>y.id===TSEL);snap();x.pos.push(Q("Yeni pozisyon",1,0,"
 tpdel(s){const x=D.find(y=>y.id===TSEL),q=x.pos[+s.i];if(!q||q.d>0||isProt(x,q))return;snap();x.pos.splice(+s.i,1);render()},
 tundo(){if(HIST.length){restore(HIST.pop());log("Son düzenleme geri alındı");render()}},
 tjson(){TJ=!TJ;TMSG="";render()},
-tjapply(){try{const a=JSON.parse(document.getElementById("tj").value);if(!Array.isArray(a)||!a.length)throw new Error("Liste boş");const ids=new Set(a.map(x=>x.id));if(ids.size!==a.length)throw new Error("Tekrarlı id var");if(a.some(x=>!x.id||!x.ad||!Array.isArray(x.pozisyonlar)))throw new Error("id, ad ve pozisyonlar zorunlu");if(a.some(x=>x.ust&&!ids.has(x.ust)))throw new Error("Bilinmeyen üst birim");if(!a.some(x=>!x.ust))throw new Error("Kök birim yok");if(a.some(x=>x.id==="sube")===false)throw new Error("“sube” birimi gerekli");snap();D.length=0;Object.keys(DG).forEach(k=>delete DG[k]);Object.keys(DMA).forEach(k=>delete DMA[k]);a.forEach(x=>{D.push({id:x.id,ad:x.ad,ust:x.ust||null,tur:x.tur||"Merkez",pos:x.pozisyonlar.map(p=>Q(p.t||"Pozisyon",+p.k||0,+p.d||0,p.r||"Uzman",p.s||"Departman"))});DG[x.id]=x.gorev||[];DMA[x.id]=(x.yetki||MZ).padEnd(14,"-").slice(0,14)});if(!D.some(x=>x.id===TSEL))TSEL=D[0].id;TMSG="Uygulandı";log("Yapı JSON’dan yüklendi");render()}catch(e){TMSG="Hata: "+e.message;render()}}});
+tjapply(){try{const a=JSON.parse(document.getElementById("tj").value);if(!Array.isArray(a)||!a.length)throw new Error("Liste boş");const ids=new Set(a.map(x=>x.id));if(ids.size!==a.length)throw new Error("Tekrarlı id var");if(a.some(x=>!x.id||!x.ad||!Array.isArray(x.pozisyonlar)))throw new Error("id, ad ve pozisyonlar zorunlu");if(a.some(x=>typeof x.id!=="string"||!/^[a-z0-9_-]{1,40}$/i.test(x.id)))throw new Error("Geçersiz birim id");scrubTree(a);if(a.some(x=>x.ust&&!ids.has(x.ust)))throw new Error("Bilinmeyen üst birim");if(!a.some(x=>!x.ust))throw new Error("Kök birim yok");if(a.some(x=>x.id==="sube")===false)throw new Error("“sube” birimi gerekli");snap();D.length=0;Object.keys(DG).forEach(k=>delete DG[k]);Object.keys(DMA).forEach(k=>delete DMA[k]);a.forEach(x=>{D.push({id:x.id,ad:x.ad,ust:x.ust||null,tur:x.tur||"Merkez",pos:x.pozisyonlar.map(p=>Q(p.t||"Pozisyon",+p.k||0,+p.d||0,p.r||"Uzman",p.s||"Departman"))});DG[x.id]=x.gorev||[];DMA[x.id]=(x.yetki||MZ).padEnd(14,"-").slice(0,14)});if(!D.some(x=>x.id===TSEL))TSEL=D[0].id;TMSG="Uygulandı";log("Yapı JSON’dan yüklendi");render()}catch(e){TMSG="Hata: JSON doğrulanamadı";render()}}});
 const vw=document.getElementById("view");
 vw.addEventListener("change",e=>{const t=e.target;if(!t.dataset.ed)return;const x=D.find(y=>y.id===TSEL);if(!x)return;snap();TED[t.dataset.ed](x,t.value,+t.dataset.i);log("Organizasyon düzenlendi: "+x.ad);render()});
 vw.addEventListener("dragstart",e=>{const n=e.target.closest&&e.target.closest("[data-node]");if(n){DRAG=n.dataset.node;if(e.dataTransfer){e.dataTransfer.setData("text/plain",DRAG);e.dataTransfer.effectAllowed="move"}}});
@@ -474,11 +475,13 @@ Object.assign(ACT,{
 adadd(){const n=document.getElementById("an").value.trim(),v=document.getElementById("ap").value;if(!n||!v)return;const[d,i]=v.split("|"),q=D.find(x=>x.id===d).pos[+i];AD.push({id:Date.now(),ad:n,dep:d,poz:q.t,st:0,rej:"",br:+document.getElementById("ab2").value});log("Aday eklendi: "+n);render()},
 adnext(s){const a=AD.find(x=>x.id==s.i);if(a.st<3){a.st++;log(a.ad+" → "+ST[a.st])}else{const q=D.find(x=>x.id===a.dep).pos.find(q=>q.t===a.poz&&q.k>q.d);if(!q){log("Kadro dolu: "+a.poz);render();return}q.d++;a.st=4;const hq=a.dep!=="sube",b=hq?0:(a.br||1),c=hq?0:(P.find(p=>p[4]===b)||[0,0,0,0])[3],id=Math.max(...P.map(p=>p[0]))+1;P.push([id,a.ad,a.poz,c,b,hq?"Demo GM":brMgr(b),"Çalışıyor",[0,0,0,0,0],"",14,"—","SSSSSİ"]);DOCS[id]=new Set([0,1]);ON.push({ad:a.ad,poz:a.poz,done:new Set()});log("Kadroya alındı: "+a.ad+" ("+(hq?"Merkez":B[b])+")")}render()}});
 // ---- Yerel kalıcılık
+const scrubText=v=>v.replace(/[<>&"'`]/g,c=>({"<":"‹",">":"›","&":"＆",'"':"”","'":"’","`":"ˋ"}[c]));
+function scrubTree(v,seen=new WeakSet()){if(typeof v==="string")return scrubText(v);if(!v||typeof v!=="object"||seen.has(v))return v;seen.add(v);if(v instanceof Set){const x=[...v].map(n=>scrubTree(n,seen));v.clear();x.forEach(n=>v.add(n));return v}Object.keys(v).forEach(k=>{v[k]=scrubTree(v[k],seen)});return v}
 const PKEY="ototr-gm-ik-safe-pilot-v2",PN=["P","D","DG","DMA","C","B","ILCE","DOCS","ZIM","DISC","EX","CERT","PUN","PRIM","PERM","WF","VK","SEED","BST","ROYL","GOR","LOG","PEND","OFF","RPT","CIH","DM","EXC","BG","REV","ADIM"];
 const PGET=()=>({P,D,DG,DMA,C,B,ILCE,DOCS,ZIM,DISC,EX,CERT,PUN,PRIM,PERM,WF,VK,SEED,BST,ROYL,GOR,LOG,PEND,OFF,RPT,CIH,DM,EXC,BG,REV,ADIM,REQ,LV,AD,ON,FR:FR.map(f=>Object.assign({},f,{on:f.on?ON.indexOf(f.on):null})),m:{ROY,DON}});
 const pfill=(t,s)=>{if(Array.isArray(t)){t.length=0;s.forEach(x=>t.push(x))}else{Object.keys(t).forEach(k=>delete t[k]);Object.assign(t,s)}};
 function SAVE(){try{localStorage.setItem(PKEY,JSON.stringify(PGET(),(k,v)=>v instanceof Set?{__s:[...v]}:v))}catch(e){}}
-function LOAD(){try{const j=localStorage.getItem(PKEY);if(!j)return;const o=JSON.parse(j,(k,v)=>v&&typeof v==="object"&&v.__s?new Set(v.__s):v),g=PGET();if(!["P","D","REQ","LV","AD","ON","FR","m"].every(k=>o[k]!==undefined))return;PN.forEach(n=>{if(o[n]!==undefined)pfill(g[n],o[n])});REQ=o.REQ;LV=o.LV;AD=o.AD;ON=o.ON;FR=o.FR.map(f=>{f.on=f.on==null?null:ON[f.on];return f});ROY=o.m.ROY;DON=o.m.DON}catch(e){}}
+function LOAD(){try{const j=localStorage.getItem(PKEY);if(!j)return;const o=scrubTree(JSON.parse(j,(k,v)=>v&&typeof v==="object"&&v.__s?new Set(v.__s):v)),g=PGET();if(!["P","D","REQ","LV","AD","ON","FR","m"].every(k=>o[k]!==undefined))return;PN.forEach(n=>{if(o[n]!==undefined)pfill(g[n],o[n])});REQ=o.REQ;LV=o.LV;AD=o.AD;ON=o.ON;FR=o.FR.map(f=>{f.on=f.on==null?null:ON[f.on];return f});ROY=o.m.ROY;DON=o.m.DON}catch(e){}}
 // ---- Ekspertiz yetki kuralları
 ROLEOPT.push("Pazarlama Direktörü","Satış Direktörü","Teknik Kalite");
 RT.push("Paket iskontosu","İade / iptal","Reklam bütçesi","Prim ödemesi");
@@ -536,7 +539,8 @@ function render(){if(!PERM[role()].has(cur))cur=[...PERM[role()]][0];const n=NAV
 document.getElementById("view").innerHTML=V[cur]?V[cur]():generic(cur);
 document.querySelectorAll("#nav button").forEach(b=>{b.classList.toggle("on",b.dataset.k===cur);b.style.display=PERM[role()].has(b.dataset.k)?"":"none"})}
 const nav=document.getElementById("nav");
-NAV.forEach(n=>{const b=document.createElement("button");b.dataset.k=n[0];b.innerHTML=`<span>${n[1]}</span>${n[2]?'<span class="tag" title="İlk sürüm (MVP)">MVP</span>':""}`;b.onclick=()=>{cur=n[0];sel=null;render()};nav.appendChild(b)});
+NAV.forEach(n=>{const b=document.createElement("button");b.dataset.k=n[0];b.innerHTML=`<span>${n[1]}</span>${n[2]?'<span class="tag" title="İlk sürüm (MVP)">MVP</span>':""}`;b.onclick=()=>{cur=n[0];sel=null;history.replaceState(null,"","#"+n[0]);render()};nav.appendChild(b)});
+addEventListener("hashchange",()=>{const k=location.hash.slice(1);if(NAV.some(n=>n[0]===k)&&PERM[role()].has(k)){cur=k;sel=null;render()}});
 document.getElementById("role").onchange=()=>{sel=null;render()};
 document.getElementById("view").addEventListener("click",e=>{
 const ac=e.target.closest("[data-act]");if(ac){ACT[ac.dataset.act](ac.dataset);return}
@@ -547,8 +551,10 @@ const r=e.target.closest("tr.row");if(r){sel=+r.dataset.id;render();return}
 const a=e.target.closest("[data-a]");if(a){LV.find(l=>l.id===+a.dataset.i).d=a.dataset.a;render()}});
 document.getElementById("view").addEventListener("input",e=>{if(e.target.id==="q"){const v=e.target.value.toLowerCase();document.querySelectorAll("#tb tr.row").forEach(r=>r.style.display=r.textContent.toLowerCase().includes(v)?"":"none")}});
 document.getElementById("rst").onclick=()=>{try{localStorage.removeItem(PKEY)}catch(e){}location.reload()};
-LOAD();{const R0=render;render=function(){R0();SAVE()}}
+LOAD();{const R0=render;render=function(){scrubTree(PGET());R0();SAVE()}}
 render();
 </script>
+<script src="hr-runtime-config.js?v=20261103"></script>
+<script type="module" src="hr-live-controller.mjs?v=20261103"></script>
 </body>
 </html>
