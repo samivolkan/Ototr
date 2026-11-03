@@ -1481,7 +1481,7 @@ function parseAcademyRoute(id){
 }
 
 const navGroups = [
-  ['Genel Merkez', [['dashboard','Yönetim Kokpiti','layout-dashboard'],['project-roadmap','Proje Yol Haritası','map'],['intelligence','İş Zekası','chart-no-axes-column'],['isler-v24','Kokpit · İşler v24','list-checks'],['kokpit-isler','Kokpit · İşler','list-checks'],['actions','Aksiyon & Görev','target'],['crisis','Kriz Merkezi','siren'],['ai','AI Öneri','sparkles']]],
+  ['Genel Merkez', [['dashboard','Yönetim Kokpiti','layout-dashboard'],['project-roadmap','Proje Yol Haritası','map'],['intelligence','İş Zekası','chart-no-axes-column'],['isler-v24','Kokpit · İşler v24','list-checks'],['actions','Aksiyon & Görev','target'],['crisis','Kriz Merkezi','siren'],['ai','AI Öneri','sparkles']]],
   ['Bayi & Şube Yönetimi', [['branches','Bayiler & Şubeler','building-2'],['dealer','Bayi Portalı','tablet-smartphone'],['ototr-web','OTOTR Web','globe'],['operations','Operasyon','workflow'],['quality','Kalite & Denetim','shield-check']]],
   ['Ekspertiz & Rapor', [['ruhsat','Ruhsat Oku','scan-line'],['report-design','Ekspertiz Rapor Tasarımı','file-check-2'],['sunum32','32 Ekran Sunumu','presentation'],['sunum32v2','32 Ekran Sunumu V2','monitor-up'],['kaporta-design','Kaporta Tasarım','panels-top-left'],['kaporta-360','Kaporta 360','rotate-3d']]],
   ['Müşteri & Satış', [['crm','CRM & Randevu','users'],['saha-satis','Saha Satış','map-pinned'],['chronic-issues','Kronik Sorunlar','car-front'],['complaints','Müşteri Şikayetleri','message-circle-warning'],['google-reviews','Google Yorumlar','star'],['reputation','Sosyal Medya İtibar Radar','radar'],['marketing','Pazarlama','megaphone']]],
@@ -2609,10 +2609,6 @@ function renderNav(){
     }
     if(b.dataset.navRoute==='isler-v24'){
       window.location.assign('isler/');
-      return;
-    }
-    if(b.dataset.navRoute==='kokpit-isler'){
-      window.location.assign('kokpit/');
       return;
     }
     if(b.dataset.navRoute==='saha-satis'){
