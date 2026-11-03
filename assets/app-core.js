@@ -2759,11 +2759,16 @@ function sunum32V2Payload(){
   }catch(err){ console.warn('V2 sunum test verisi hazırlanamadı',err); }
   const verificationToken=wo.reportVerificationToken||wo.verificationToken||wo.signedReportToken||'';
   const verificationUrl=wo.verificationUrl||(verificationToken&&wo.reportNo?'https://kokpit.ototr.com/rapor-dogrula/'+encodeURIComponent(wo.reportNo)+'?token='+encodeURIComponent(verificationToken):'');
-  return {reportId:wo.id||'',reportNo:wo.reportNo||'',verificationUrl,vehiclePlate:wo.plate||'',vehicleModel:wo.vehicle||[wo.vehicleMake,wo.vehicleModel].filter(Boolean).join(' '),vehicleTrim:wo.vehicleVariant||'',modelYear:wo.year||'',mileage:wo.mileage||'',transmission:wo.transmission||'',spareKeyStatus:wo.spareKey||'',reportEvidence:{testSections}};
+  const tramer360=(wo.tramer360&&typeof wo.tramer360==='object'?wo.tramer360:null)||(wo.queryResults?.tramer360&&typeof wo.queryResults.tramer360==='object'?wo.queryResults.tramer360:{});
+  const tramer360OriginalUrl=wo.tramer360OriginalUrl||wo.tramer360PdfUrl||tramer360.originalUrl||tramer360.pdfUrl||tramer360.documentUrl||'';
+  const tramer360Rows=Array.isArray(wo.tramer360Rows)?wo.tramer360Rows:(Array.isArray(tramer360.rows)?tramer360.rows:undefined);
+  const hasTramer360=typeof wo.hasTramer360==='boolean'?wo.hasTramer360:(typeof tramer360.completed==='boolean'?tramer360.completed:undefined);
+  const hasTramer=typeof wo.hasTramer==='boolean'?wo.hasTramer:undefined;
+  return {reportId:wo.id||'',reportNo:wo.reportNo||'',verificationUrl,vehiclePlate:wo.plate||'',vehicleModel:wo.vehicle||[wo.vehicleMake,wo.vehicleModel].filter(Boolean).join(' '),vehicleTrim:wo.vehicleVariant||'',modelYear:wo.year||'',mileage:wo.mileage||'',transmission:wo.transmission||'',spareKeyStatus:wo.spareKey||'',hasTramer360,hasTramer,tramer360OriginalUrl,tramer360Rows,reportEvidence:{testSections}};
 }
 function syncSunum32V2Target(target){ const receiver=target?.contentWindow||target; if(receiver&&receiver.postMessage) receiver.postMessage({type:'ototr-report-data',payload:sunum32V2Payload()},location.origin); }
-function openSunum32V2FullScreen(){ const popup=window.open('sunum-32-ekran-v2/?v=20261031-3','_blank'); if(popup) setTimeout(()=>syncSunum32V2Target(popup),700); }
-function Sunum32V2Page(){ return `<div class="card" style="padding:0;overflow:hidden"><iframe title="32 Ekran Ekspertiz Sunumu V2" src="sunum-32-ekran-v2/?v=20261031-3" onload="syncSunum32V2Target(this)" style="display:block;width:100%;height:calc(100vh - 92px);min-height:860px;border:0;background:#eef0f4"></iframe></div>`; }
+function openSunum32V2FullScreen(){ const popup=window.open('sunum-32-ekran-v2/?v=20261103-1','_blank'); if(popup) setTimeout(()=>syncSunum32V2Target(popup),700); }
+function Sunum32V2Page(){ return `<div class="card" style="padding:0;overflow:hidden"><iframe title="32 Ekran Ekspertiz Sunumu V2" src="sunum-32-ekran-v2/?v=20261103-1" onload="syncSunum32V2Target(this)" style="display:block;width:100%;height:calc(100vh - 92px);min-height:860px;border:0;background:#eef0f4"></iframe></div>`; }
 window.addEventListener('message',event=>{ if(event.origin===location.origin&&event.data?.type==='ototr-report-ready'){ const frame=document.querySelector('iframe[title="32 Ekran Ekspertiz Sunumu V2"]'); if(frame) syncSunum32V2Target(frame); } });
 function pageShell(id, content){ const cleanGoogle=id==='google-reviews'; return `<div class="page ${id===current?'active':''}" id="page-${id}">${cleanGoogle?'':pageHeader(id)}${content}${cleanGoogle||id==='dealer'||id==='sunum32'||id==='sunum32v2'?'':deptPlan(id)}</div>`; }
 function stat(label,value,trend,color=''){ return `<div class="card stat ${color}"><div class="label">${label}</div><div class="value">${value}</div><div class="trend ${String(trend).startsWith('-')?'down':''}">${trend}</div></div>`; }
