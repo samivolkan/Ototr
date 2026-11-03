@@ -10,6 +10,8 @@ await page.goto('http://127.0.0.1:43819/index.html');
 await page.locator('[data-nav-route=isler-v24]').waitFor();
 assert.equal(await page.locator('[data-nav-route=kokpit-isler]').count(),0);
 assert.equal(await page.locator('[data-nav-route=isler-v24]').count(),1);
+assert.equal(await page.locator('[data-nav-route=sunum32]').count(),0);
+assert.equal(await page.locator('[data-nav-route=sunum32v2]').count(),1);
 await page.locator('[data-nav-route=isler-v24]').click();
 await page.waitForURL('**/isler/');
 await page.goto('http://127.0.0.1:43819/kokpit/');
