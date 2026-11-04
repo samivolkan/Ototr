@@ -118,19 +118,19 @@ const dots=n=>[1,2,3].map(i=>`<span class="dot ${i<=n?"f":""}"></span>`).join(""
 const Q=(t,k,d,r,s)=>({t,k,d,r,s});
 const ROLES=["Üst yönetim","Departman yöneticisi","Uzman","Franchise sahibi","Şube müdürü","Usta / teknisyen","Self-servis"],SCOPES=["Tüm kuruluş","Departman","Şirket","Şube","Kendi kaydı"];
 const D=[
-{id:"yk",ad:"Yönetim Kurulu",ust:null,tur:"Merkez",pos:[Q("Yönetim Kurulu Başkanı",1,1,"Üst yönetim","Tüm kuruluş"),Q("Yönetim Kurulu Üyesi",4,3,"Üst yönetim","Tüm kuruluş"),Q("Kurul Sekreteri",1,0,"Uzman","Departman")]},
-{id:"ceo",ad:"CEO Ofisi",ust:"yk",tur:"Merkez",pos:[Q("CEO / Genel Müdür",1,1,"Üst yönetim","Tüm kuruluş"),Q("Genel Müdür Yardımcısı",2,1,"Üst yönetim","Tüm kuruluş"),Q("Yönetici Asistanı",1,1,"Uzman","Departman"),Q("Strateji ve PMO Uzmanı",2,0,"Uzman","Departman")]},
-{id:"muh",ad:"Muhasebe ve Finans",ust:"ceo",tur:"Merkez",pos:[Q("Yeminli Müşavir",1,1,"Merkez sorumlusu","Tüm kuruluş"),Q("Muhasebe Müdürü",1,1,"Departman yöneticisi","Departman"),Q("Muhasebe Uzmanı",3,1,"Uzman","Departman"),Q("Bayi Cari Hesap Uzmanı",2,1,"Uzman","Departman"),Q("Bordro Uzmanı",1,0,"Uzman","Tüm kuruluş")]},
-{id:"bt",ad:"Bilgi Teknolojileri",ust:"ceo",tur:"Merkez",pos:[Q("Bilgi Teknolojileri Sorumlusu",1,1,"Merkez sorumlusu","Tüm kuruluş"),Q("Yazılım Geliştirici",4,2,"Uzman","Departman"),Q("Mobil / PWA Geliştirici",2,1,"Uzman","Departman"),Q("Sistem ve Güvenlik Yöneticisi",1,0,"Uzman","Tüm kuruluş"),Q("Veri Analisti",1,0,"Uzman","Departman"),Q("Teknik Destek Uzmanı",2,1,"Uzman","Departman")]},
-{id:"huk",ad:"Hukuk ve Uyum",ust:"ceo",tur:"Merkez",pos:[Q("Sorumlu Avukat",1,1,"Merkez sorumlusu","Tüm kuruluş"),Q("Sözleşme Uzmanı",2,0,"Uzman","Departman"),Q("KVKK ve Uyum Sorumlusu",1,0,"Uzman","Tüm kuruluş")]},
-{id:"fyb",ad:"Franchise Yönetim Birimi",ust:"ceo",tur:"Merkez",pos:[Q("Franchise Direktörü",1,1,"Departman yöneticisi","Tüm kuruluş"),Q("Bayi Geliştirme Uzmanı",3,1,"Uzman","Departman"),Q("Başvuru ve Onay Uzmanı",2,1,"Uzman","Departman"),Q("Şube Açılış Koordinatörü",2,0,"Uzman","Departman"),Q("Bayi Denetim Uzmanı",3,1,"Uzman","Şirket"),Q("Bayi Destek Uzmanı",3,2,"Uzman","Şirket")]},
-{id:"pzr",ad:"Reklam ve Pazarlama",ust:"ceo",tur:"Merkez",pos:[Q("Pazarlama Direktörü",1,0,"Departman yöneticisi","Departman"),Q("Marka Yöneticisi",1,1,"Uzman","Departman"),Q("Google Ads Uzmanı",2,1,"Uzman","Departman"),Q("Performans Pazarlama Uzmanı",2,0,"Uzman","Departman")]},
-{id:"smd",ad:"Sosyal Medya ve İçerik",ust:"ceo",tur:"Merkez",pos:[Q("Sosyal Medya Müdürü",1,0,"Departman yöneticisi","Departman"),Q("İçerik Üreticisi",3,1,"Uzman","Departman"),Q("Grafik Tasarımcı",2,1,"Uzman","Departman"),Q("Video Editörü",2,0,"Uzman","Departman"),Q("Topluluk Yöneticisi",1,0,"Uzman","Departman")]},
-{id:"saha",ad:"Saha Satış",ust:"ceo",tur:"Merkez",pos:[Q("Satış Direktörü",1,0,"Departman yöneticisi","Tüm kuruluş"),Q("Bölge Satış Yöneticisi",3,1,"Departman yöneticisi","Departman"),Q("Saha Satış Temsilcisi",12,5,"Uzman","Kendi kaydı"),Q("Satış Operasyon Uzmanı",2,1,"Uzman","Departman")]},
-{id:"ik",ad:"İK Operasyon Merkezi",ust:"ceo",tur:"Merkez",pos:[Q("İK Operasyon Sorumlusu",1,1,"Merkez sorumlusu","Tüm kuruluş"),Q("İK Uzmanı",2,1,"Uzman","Tüm kuruluş"),Q("Eğitim ve Gelişim Uzmanı",2,0,"Uzman","Tüm kuruluş"),Q("İşe Alım Uzmanı",1,0,"Uzman","Tüm kuruluş")]},
-{id:"tek",ad:"Teknik Kalite ve Eğitim",ust:"ceo",tur:"Merkez",pos:[Q("Teknik Müdür",1,0,"Departman yöneticisi","Tüm kuruluş"),Q("Rapor Onay Uzmanı",4,2,"Uzman","Departman"),Q("Eğitmen",3,1,"Uzman","Departman"),Q("Kalite Denetçisi",2,0,"Uzman","Şirket")]},
-{id:"aka",ad:"OTOTR Akademi",ust:"ceo",tur:"Merkez",pos:[Q("Akademi Direktörü",1,0,"Departman yöneticisi","Tüm kuruluş"),Q("Baş Eğitmen",1,0,"Uzman","Tüm kuruluş"),Q("Ekspertiz Eğitmeni (motor, kaporta, boya, dyno, yol testi)",4,1,"Uzman","Departman"),Q("Müfredat ve İçerik Sorumlusu",1,0,"Uzman","Departman"),Q("Sınav ve Sertifikasyon Sorumlusu",2,0,"Uzman","Tüm kuruluş"),Q("Franchise Sahibi ve Şube Müdürü Eğitmeni",1,0,"Uzman","Şirket")]},
-{id:"sube",ad:"Şube Ağı (Franchise)",ust:"fyb",tur:"Franchise",pos:[Q("Şube Sahibi",3,3,"Franchise sahibi","Şirket"),Q("Şube Müdürü",3,3,"Şube müdürü","Şube"),Q("Kaporta-Boya Ustası",6,3,"Usta / teknisyen","Kendi kaydı"),Q("Motor-Dyno Ustası",6,3,"Usta / teknisyen","Kendi kaydı"),Q("Teknisyen",9,5,"Usta / teknisyen","Kendi kaydı"),Q("Müşteri Danışmanı",3,2,"Self-servis","Kendi kaydı"),Q("Sekreterya",3,1,"Self-servis","Şube")]}
+{id:"yk",ad:"Yönetim Kurulu",ust:null,tur:"Merkez",pos:[Q("Yönetim Kurulu Başkanı",1,1,"Üst yönetim","Tüm kuruluş")]},
+{id:"ceo",ad:"CEO Ofisi",ust:"yk",tur:"Merkez",pos:[Q("CEO / Genel Müdür",1,1,"Üst yönetim","Tüm kuruluş")]},
+{id:"muh",ad:"Muhasebe ve Finans",ust:"ceo",tur:"Merkez",pos:[Q("Yeminli Müşavir",1,1,"Merkez sorumlusu","Tüm kuruluş")]},
+{id:"bt",ad:"Bilgi Teknolojileri",ust:"ceo",tur:"Merkez",pos:[Q("Bilgi Teknolojileri Sorumlusu",1,1,"Merkez sorumlusu","Tüm kuruluş")]},
+{id:"huk",ad:"Hukuk ve Uyum",ust:"ceo",tur:"Merkez",pos:[Q("Sorumlu Avukat",1,1,"Merkez sorumlusu","Tüm kuruluş")]},
+{id:"fyb",ad:"Franchise ve Şube Geliştirme",ust:"ceo",tur:"Merkez",pos:[Q("Franchise ve Şube Geliştirme Sorumlusu",1,1,"Merkez sorumlusu","Tüm kuruluş")]},
+{id:"pzr",ad:"Marka ve Pazarlama",ust:"ceo",tur:"Merkez",pos:[Q("Marka ve Pazarlama Sorumlusu",1,1,"Merkez sorumlusu","Tüm kuruluş")]},
+{id:"smd",ad:"Sosyal Medya ve İçerik",ust:"pzr",tur:"Merkez",pos:[Q("Sosyal Medya ve İçerik Sorumlusu",1,1,"Merkez sorumlusu","Departman")]},
+{id:"saha",ad:"Saha Satış",ust:"fyb",tur:"Merkez",pos:[Q("Saha Satış Sorumlusu",1,1,"Merkez sorumlusu","Tüm kuruluş")]},
+{id:"ik",ad:"İK Operasyon Merkezi",ust:"ceo",tur:"Merkez",pos:[Q("İK Operasyon Sorumlusu",1,1,"Merkez sorumlusu","Tüm kuruluş")]},
+{id:"tek",ad:"Teknik Kalite ve Akademi",ust:"ceo",tur:"Merkez",pos:[Q("Teknik Kalite ve Akademi Sorumlusu",1,1,"Merkez sorumlusu","Tüm kuruluş")]},
+{id:"aka",ad:"Akademi",ust:"tek",tur:"Merkez",pos:[Q("Akademi Sorumlusu",1,1,"Merkez sorumlusu","Departman")]},
+{id:"sube",ad:"Şube Ağı (Franchise)",ust:"fyb",tur:"Franchise",pos:[Q("Şube Ağı Sorumlusu",1,1,"Merkez sorumlusu","Şirket")]}
 ];
 let dsel="muh";
 const info={
