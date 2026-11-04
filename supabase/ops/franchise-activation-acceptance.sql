@@ -37,8 +37,9 @@ select '22222222-2222-4222-8222-222222222222', 'department-'||((n-1)/3+1), 'TASK
 from generate_series(1,36) n;
 
 insert into public.franchise_staff(franchise_case_id,role_key,role_name,person_name,recruitment_status,employment_documents_complete,contract_signed,certification_required,academy_completed,certificate_valid_until,access_status)
-select '22222222-2222-4222-8222-222222222222', 'role-'||n, 'Zorunlu rol '||n, 'Sentetik personel '||n, 'hired', true, true, n<10, n<10, case when n<10 then current_date+365 else null end, 'ready'
-from generate_series(1,10) n;
+select '22222222-2222-4222-8222-222222222222', role_key, role_name, 'Sentetik '||role_name, 'hired', true, true,
+       certification_required, certification_required, case when certification_required then current_date+365 else null end, 'ready'
+from public.franchise_staffing_rules where branch_type='standard' and is_active;
 
 set local role authenticated;
 do $$

@@ -9,7 +9,7 @@ Yerel ve geçici Supabase PostgreSQL konteynerinde migration, güvenlik doğrula
 
 ## Kanıtlanan davranışlar
 
-- Ana migration, sağlayıcı yönetişimi, sağlayıcı worker ve departman RBAC migration'ları gerçek PostgreSQL motorunda hatasız commit edildi.
+- Beş Franchise migration'ı (ana şema, sağlayıcı yönetişimi, sağlayıcı worker, departman RBAC ve kadro kapıları) gerçek PostgreSQL motorunda hatasız commit edildi.
 - 13 public franchise tablosunda RLS açık.
 - `anon`, franchise dosyalarını ve belgeleri okuyamıyor.
 - Özel Storage bucket `public=false`, 20 MB ve MIME sınırlarıyla oluştu.
@@ -26,6 +26,8 @@ Yerel ve geçici Supabase PostgreSQL konteynerinde migration, güvenlik doğrula
 - Sağlayıcı kuyruğu `FOR UPDATE SKIP LOCKED` ile talep edildi, başarılı sonuç işlendi ve 15 dakikayı aşan worker lease'i güvenle geri kazanıldı.
 - Finans rolünün yalnız Finans görevini gördüğü ve tamamlayabildiği, Hukuk görevini güncelleyemediği gerçek RLS oturumunda doğrulandı.
 - Görevin dosya, departman ve görev kodunun güncelleme sırasında değiştirilemediği doğrulandı.
+- Şube tipi için parametrik 10 zorunlu rolün tam seti olmadan şube kaydı reddedildi; tam setle açıldı.
+- İK, Academy ve BT rollerinin yalnız kendi personel alanlarını değiştirebildiği gerçek JWT/RLS oturumlarıyla doğrulandı.
 - Rollback Storage politikalarını önce kaldırdı, tüm franchise tablolarını ve bucket'ı temizledi.
 - Test konteyneri çalışma sonunda kaldırıldı.
 
@@ -35,11 +37,13 @@ Yerel ve geçici Supabase PostgreSQL konteynerinde migration, güvenlik doğrula
 - `supabase/migrations/20261105020000_franchise_provider_governance.sql`
 - `supabase/migrations/20261105030000_franchise_provider_worker.sql`
 - `supabase/migrations/20261105040000_franchise_department_rbac.sql`
+- `supabase/migrations/20261105050000_franchise_staffing_gates.sql`
 - `supabase/ops/franchise-local-contract-stubs.sql`
 - `supabase/ops/franchise-staging-verify.sql`
 - `supabase/ops/franchise-activation-acceptance.sql`
 - `supabase/ops/franchise-provider-acceptance.sql`
 - `supabase/ops/franchise-rbac-acceptance.sql`
+- `supabase/ops/franchise-staffing-acceptance.sql`
 - `supabase/ops/franchise-rollback.sql`
 
 ## Kalan sınır

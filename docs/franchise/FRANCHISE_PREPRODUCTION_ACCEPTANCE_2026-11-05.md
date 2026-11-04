@@ -16,6 +16,7 @@ Karar: **NO_GO**
 - E-posta, SMS, WhatsApp ve e-imza amaç/izin/şablon/idempotency sözleşmesi; sahte sağlayıcı ve log maskeleme testleri
 - 12 ortak UAT senaryosu ve departman bazlı maker-checker imza matrisi
 - Departman görevlerinde en az yetki: çapraz departman okuma/yazma reddi ve değiştirilemez görev kapsamı
+- Şube tipine göre parametrik zorunlu kadro ve İK–Academy–BT ayrık alan sahipliği
 
 ## NO_GO kapıları
 
