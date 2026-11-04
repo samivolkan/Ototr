@@ -93,7 +93,8 @@ ul.ul{margin:0;padding-left:18px}ul.ul li{margin:3px 0}
 </main>
 </div>
 <div class="mo" id="mo" hidden></div>
-<script>
+<script type="module">
+import {createFranchiseCase,hireStaff,updateStaffCompliance,openingBlockers,activateFranchiseCase,staffReadyForAccess} from "./franchise-core.mjs";
 const TODAY=new Date("2026-11-05"),KEY="ototr-franchise-e2e-v1";
 const STAGES=["Yeni","Gorusme","Onay","Sozlesme","Onboarding","Kurulum","Aktif"];
 const RN={gm:"Genel Müdür",fd:"Franchise Direktörü",fu:"Franchise Uzmanı",hk:"Hukuk",fn:"Finans / Muhasebe",ik:"İK",ak:"Akademi",sa:"Saha",bt:"BT",ba:"Bayi Sahibi",dn:"Denetçi",td:"Tedarikçi",ad:"Aday Yatırımcı",op:"Operasyon",pz:"Pazarlama",kl:"Kalite",isg:"İSG",mm:"Mimari / Proje"};
@@ -109,7 +110,7 @@ const RJ=["Finansal yetersizlik","Bölge çakışması","Referans olumsuz","Aday
 const PKT=[{ad:"Standart Ekspertiz",fiyat:2500,grup:"Bireysel"},{ad:"Kapsamlı Ekspertiz",fiyat:3500,grup:"Bireysel"},{ad:"Galeri Paketi 5 Rapor",fiyat:12500,grup:"Galeri"},{ad:"Galeri Paketi 10 Rapor",fiyat:23000,grup:"Galeri"},{ad:"Premium Fleet Aylık",fiyat:35000,grup:"Filo"}];
 const BOLGELER={Kadikoy:"Anadolu",Cankaya:"IC Anadolu",Bornova:"Ege",Nilufer:"Marmara",Muratpasa:"Akdeniz",Selcuklu:"IC Anadolu",Osmangazi:"Marmara",Yesilurt:"Karadeniz",Tepebasi:"Marmara"};
 const NAV=[
-["","E2E","UÇTAN UCA MERKEZ"],["e2e","E2E","Yaşam döngüsü",1],["departman","E2E","Departman kapıları",1],["acilis","E2E","Açılış kurulu",1],["portallar","E2E","Dış kullanıcı portalları",1],
+["","E2E","UÇTAN UCA MERKEZ"],["e2e","E2E","Yaşam döngüsü",1],["departman","E2E","Departman kapıları",1],["personel","E2E","Personel ve yetki",1],["acilis","E2E","Açılış kurulu",1],["takip","E2E","30/60/90 planı",1],["portallar","E2E","Dış kullanıcı portalları",1],
 ["","YON","YÖNETİM"],["dash","YON","Dashboard",1],["hat","YON","Süreç hattı",1],["inbox","YON","Görev merkezi",1],
 ["","ADY","ADAYLAR"],["pipe","ADY","Aday hattı",1],["gor","ADY","Görüşme ve değerlendirme",1],["belge","ADY","Belge yönetimi",1],
 ["","SUB","AKTİF ŞUBELER"],["sube","SUB","Şubeler ve sözleşme",1],["web","SUB","Web ve Google yorum",1],["paket","SUB","Paket ve fiyatlama",1],
@@ -117,15 +118,15 @@ const NAV=[
 ["","SYS","SİSTEM"],["yetki","SYS","Yetki matrisi",0],["denetim","SYS","Denetim kaydı",0],["model","SYS","Veri modeli",0]
 ];
 const PERM={
-gm:"e2e departman acilis portallar dash hat inbox pipe gor belge sube web paket fin rapor yetki denetim model",
-fd:"e2e departman acilis portallar dash hat inbox pipe gor belge sube web paket fin rapor yetki denetim model",
+gm:"e2e departman personel acilis takip portallar dash hat inbox pipe gor belge sube web paket fin rapor yetki denetim model",
+fd:"e2e departman personel acilis takip portallar dash hat inbox pipe gor belge sube web paket fin rapor yetki denetim model",
 fu:"e2e departman portallar dash hat inbox pipe gor belge",
 hk:"e2e departman acilis dash hat inbox pipe gor belge sube",
 fn:"e2e departman acilis dash hat inbox pipe fin rapor sube",
-ik:"e2e departman acilis dash hat inbox pipe gor belge",
-ak:"e2e departman acilis dash hat inbox pipe gor",
+ik:"e2e departman personel acilis dash hat inbox pipe gor belge",
+ak:"e2e departman personel acilis dash hat inbox pipe gor",
 sa:"e2e departman acilis dash hat inbox pipe sube",
-bt:"e2e departman acilis dash hat inbox pipe sube web",
+bt:"e2e departman personel acilis dash hat inbox pipe sube web",
 ba:"portallar sube fin web",
 dn:"portallar departman acilis",
 td:"portallar",
@@ -522,32 +523,36 @@ const E2E_TASKS={
   "Mimari / Proje":["Keşif ve uygulama projesi onaylandı","Tadilat kritik yolu tamamlandı","Açılış teslim tutanağı hazırlandı"]
 };
 const DEPT_ROLE={"Franchise":"fd","Finans / Muhasebe":"fn","Hukuk":"hk","İnsan Kaynakları":"ik","Academy":"ak","Operasyon":"op","Tedarik":"td","Bilgi Teknolojileri":"bt","Pazarlama":"pz","Kalite":"kl","İSG":"isg","Mimari / Proje":"mm"};
-let FLOW={name:"Bursa Nilüfer OTOTR",candidate:"Demo Yatırımcı A.Ş.",stage:8,score:84,days:31,target:60,paid:100,royalty:10,adFund:0,exemption:6,territory:"Nilüfer · 12 km · poligon FR-BRS-01",consents:3,documents:12,documentsTotal:17,exceptions:[],tasks:{},history:["05 Kas 2026 · Hukuk · Sözleşme taslağı kurul incelemesine alındı","04 Kas 2026 · Finans · %100 tahsilat test kaydı doğrulandı","03 Kas 2026 · Operasyon · Lokasyon saha ziyareti tamamlandı"]};
+let FLOW=createFranchiseCase({id:"FR-DEMO-001",applicationId:"APP-DEMO-001",name:"Bursa Nilüfer OTOTR",candidate:"Demo Yatırımcı A.Ş.",city:"Bursa",district:"Nilüfer",stage:8,score:84,days:31,paid:100,royalty:10,exemption:6,territory:"Nilüfer · 12 km · poligon FR-BRS-01",consents:3,documents:12,documentsTotal:17,history:["05 Kas 2026 · Hukuk · Sözleşme taslağı kurul incelemesine alındı","04 Kas 2026 · Finans · %100 tahsilat test kaydı doğrulandı","03 Kas 2026 · Operasyon · Lokasyon saha ziyareti tamamlandı"]});
+let FR_CASES=[FLOW];
 Object.entries(E2E_TASKS).forEach(([d,items],di)=>items.forEach((_,i)=>{if(di<3||i===0)FLOW.tasks[d+"|"+i]=1}));
 const flowTaskCount=()=>Object.keys(FLOW.tasks).length;
 const flowTaskTotal=()=>Object.values(E2E_TASKS).reduce((n,a)=>n+a.length,0);
 const flowDeptPct=d=>Math.round(E2E_TASKS[d].filter((_,i)=>FLOW.tasks[d+"|"+i]).length/E2E_TASKS[d].length*100);
+const flowBlockers=()=>openingBlockers(FLOW,{taskDone:flowTaskCount()===flowTaskTotal(),taskCount:flowTaskCount(),taskTotal:flowTaskTotal(),today:"2026-11-05"});
 const flowStageGate=()=>{
   const s=FLOW.stage;
   if(s===0&&FLOW.consents<3)return"KVKK aydınlatma, veri işleme ve ticari ileti izinleri tamamlanmalı.";
   if(s===2&&FLOW.score<50)return"Skor 50 altında; yönetim incelemesi olmadan ilerleyemez.";
   if(s===4&&flowDeptPct("Finans / Muhasebe")<67)return"Finansal uygunluk görevleri tamamlanmalı.";
   if(s===6&&flowDeptPct("Hukuk")<67)return"Due diligence ve hukuk incelemesi tamamlanmalı.";
-  if(s===8&&(FLOW.paid<100||flowDeptPct("Hukuk")<100))return"Sözleşme ve açılış öncesi %100 tahsilat kapısı tamamlanmalı.";
-  if(s>=9&&s<=11&&flowTaskCount()<flowTaskTotal())return"Tüm departman kurulum görevleri tamamlanmalı ("+flowTaskCount()+"/"+flowTaskTotal()+").";
+  if(s===8&&(FLOW.paid<100||flowDeptPct("Hukuk")<100||FLOW.documents<FLOW.documentsTotal))return"Sözleşme, zorunlu belgeler ve açılış öncesi %100 tahsilat kapısı tamamlanmalı.";
+  if(s>=9&&s<=12&&flowBlockers().length)return flowBlockers()[0]+". Toplam açık: "+flowBlockers().length;
+  if(s===13)return"Aktif şube yaşam döngüsünün son aşamasıdır.";
   if(s===12&&FLOW.exceptions.length)return"Açık istisnalar kapatılmadan açılış kurulu karar veremez.";
   return"";
 };
 function e2e(){
   const gate=flowStageGate(),owner=RN[E2E_STAGE_OWNER[FLOW.stage]],remaining=Math.max(0,FLOW.target-FLOW.days);
   return`<div class="safe-note"><b>Güvenli demo:</b> T.C. kimlik, banka/finans ve sözleşme belgeleri bu ekranda gerçek olarak tutulmaz. Tüm kayıtlar sentetiktir.</div>
+  <div class="card"><div class="row"><b>Franchise dosyası</b><select data-case-select>${FR_CASES.map(x=>`<option value="${H(x.id)}" ${x.id===FLOW.id?'selected':''}>${H(x.applicationId)} · ${H(x.candidate)}</option>`).join("")}</select><span class="stage-chip">${H(FLOW.id)}</span></div></div>
   <div class="g4"><div class="card stat"><b>${FLOW.score}/100</b><s2>Aday skoru</s2></div><div class="card stat"><b>${FLOW.stage+1}/14</b><s2>Yaşam döngüsü</s2></div><div class="card stat"><b>${flowTaskCount()}/${flowTaskTotal()}</b><s2>Departman görevi</s2></div><div class="card stat"><b>${FLOW.paid}%</b><s2>Giriş bedeli tahsilatı</s2></div><div class="card stat"><b>${remaining} gün</b><s2>60 günlük hedefe kalan</s2></div></div>
   <div class="card"><h2>Başvurudan aktif şubeye yaşam döngüsü</h2><div class="journey">${E2E_STAGES.map((x,i)=>`<div class="journey-step ${i<FLOW.stage?'done':i===FLOW.stage?'current':''}"><b>${i+1}. ${x}</b><span>${i<FLOW.stage?'Tamamlandı':i===FLOW.stage?'Sorumlu: '+owner:'Bekliyor'}</span></div>`).join("")}</div></div>
   <div class="split"><div>
     <div class="card"><div class="row" style="justify-content:space-between"><div><h2>${FLOW.name}</h2><p class="nt">${FLOW.candidate} · ${FLOW.territory}</p></div><span class="stage-chip current">${E2E_STAGES[FLOW.stage]}</span></div>
       <div class="cols"><div><h3>Finans</h3><div class="approval"><span>Giriş bedeli tahsilatı</span><b>${FLOW.paid}%</b></div><div class="approval"><span>Royalty</span><b>KDV dahil tahsilat × %${FLOW.royalty}</b></div><div class="approval"><span>Yeni bayi muafiyeti</span><b>${FLOW.exemption} ay</b></div></div><div><h3>Dosya</h3><div class="approval"><span>KVKK izinleri</span><b>${FLOW.consents}/3</b></div><div class="approval"><span>Belge talepleri</span><b>${FLOW.documents}/${FLOW.documentsTotal}</b></div><div class="approval"><span>Açık istisna</span><b>${FLOW.exceptions.length}</b></div></div></div>
       ${gate?`<div class="al r"><b>Kapı kapalı:</b> ${gate}</div>`:`<div class="al ok"><b>Kapı hazır:</b> ${owner} aşamayı ilerletebilir.</div>`}
-      <div class="row"><button class="btn" data-e2e="advance" ${gate||![E2E_STAGE_OWNER[FLOW.stage],"gm"].includes(R())?'disabled':''}>Sonraki aşamaya geçir →</button><button class="btn g" data-e2e="day">1 gün ilerlet</button><button class="btn g" data-e2e="exception">İstisna talebi oluştur</button></div>
+      <div class="row"><button class="btn" data-e2e="advance" ${gate||![E2E_STAGE_OWNER[FLOW.stage],"gm"].includes(R())||FLOW.stage===13?'disabled':''}>Sonraki aşamaya geçir →</button><button class="btn g" data-e2e="docs" ${!["gm","hk"].includes(R())||FLOW.documents===FLOW.documentsTotal?'disabled':''}>Sentetik belgeleri tamamla</button><button class="btn g" data-e2e="day">1 gün ilerlet</button><button class="btn g" data-e2e="exception">İstisna talebi oluştur</button></div>
     </div>
     <div class="card"><h2>Son hareketler · değiştirilemez işlem izi</h2>${FLOW.history.slice(0,8).map(x=>`<div class="al">${H(x)}</div>`).join("")}</div>
   </div><div>
@@ -558,10 +563,25 @@ function e2e(){
 function departman(){
   return`<div class="safe-note"><b>Maker–checker:</b> İstisna talep eden kişi onaylayan olamaz. Zorunlu hukuk, ruhsat ve %100 tahsilat kapıları istisnaya kapalıdır.</div><div class="dept-grid">${Object.entries(E2E_TASKS).map(([d,items])=>{const pct=flowDeptPct(d),role=DEPT_ROLE[d],can=R()===role||R()==="gm";return`<div class="dept-card"><h2>${d}</h2><p>Sorumlu: ${RN[role]} · ${pct}% tamam</p><div class="meter"><i style="width:${pct}%"></i></div>${items.map((t,i)=>`<label class="ck"><input type="checkbox" data-flow-task="${d}|${i}" ${FLOW.tasks[d+"|"+i]?'checked':''} ${can?'':'disabled'}>${t}</label>`).join("")}</div>`}).join("")}</div>`;
 }
+function personel(){
+  const hired=FLOW.staffing.filter(x=>x.recruitmentStatus==="hired").length,ready=FLOW.staffing.filter(x=>staffReadyForAccess(x)).length,active=FLOW.staffing.filter(x=>x.accessStatus==="active").length;
+  return`<div class="safe-note"><b>Yetki kilidi:</b> İşe giriş, özlük/sözleşme ve rol sertifikası tamamlanmadan kullanıcı hesabı açılamaz. Bu ekranda yalnız sentetik ad kullanın.</div>
+  <div class="g4"><div class="card stat"><b>${hired}/${FLOW.staffing.length}</b><s2>İşe alım</s2></div><div class="card stat"><b>${ready}/${FLOW.staffing.length}</b><s2>Yetkiye hazır</s2></div><div class="card stat"><b>${active}/${FLOW.staffing.length}</b><s2>Aktif hesap</s2></div><div class="card stat"><b>${FLOW.branch?H(FLOW.branch.id):"—"}</b><s2>Şube bağlılığı</s2></div></div>
+  <div class="dept-grid">${FLOW.staffing.map(m=>`<div class="dept-card"><h2>${H(m.role)}</h2><p>${m.certificationRequired?'Rol sertifikası zorunlu':'Sertifika zorunlu değil'} · <b>${m.accessStatus==='active'?'Hesap aktif':m.accessStatus==='ready'?'Yetkiye hazır':'Yetki kilitli'}</b></p>
+  <input id="staff-${m.roleKey}" placeholder="Sentetik personel adı" value="${H(m.personName)}" ${m.recruitmentStatus==='hired'?'disabled':''}>
+  <label class="ck"><input type="checkbox" ${m.recruitmentStatus==='hired'?'checked':''} disabled>İşe alım tamamlandı</label>
+  <label class="ck"><input type="checkbox" ${m.employmentDocumentsComplete&&m.contractSigned?'checked':''} disabled>Özlük ve sözleşme tamam</label>
+  <label class="ck"><input type="checkbox" ${(!m.certificationRequired||m.academyCompleted)&&(!m.certificationRequired||m.certificateValidUntil>='2026-11-05')?'checked':''} disabled>Academy / sertifika geçerli</label>
+  <div class="row"><button class="btn g sm" data-staff-action="hire" data-role-key="${m.roleKey}" ${!["gm","ik"].includes(R())||m.recruitmentStatus==='hired'?'disabled':''}>İşe al</button><button class="btn g sm" data-staff-action="docs" data-role-key="${m.roleKey}" ${!["gm","ik"].includes(R())||m.recruitmentStatus!=='hired'||m.employmentDocumentsComplete?'disabled':''}>Özlük tamamla</button><button class="btn g sm" data-staff-action="academy" data-role-key="${m.roleKey}" ${!["gm","ak"].includes(R())||m.recruitmentStatus!=='hired'||m.academyCompleted?'disabled':''}>Eğitim/sertifika</button></div></div>`).join("")}</div>`;
+}
 function acilis(){
   const gates=[['Sözleşme ve hukuk',flowDeptPct('Hukuk')===100],['Finans ve %100 tahsilat',flowDeptPct('Finans / Muhasebe')===100&&FLOW.paid===100],['Kadro ve İK',flowDeptPct('İnsan Kaynakları')===100],['Academy ve sertifikalar',flowDeptPct('Academy')===100],['Fiziki kurulum',flowDeptPct('Mimari / Proje')===100],['Cihaz ve kalibrasyon',flowDeptPct('Tedarik')===100],['BT, POS ve güvenli bağlantı',flowDeptPct('Bilgi Teknolojileri')===100],['Kalite, İSG ve deneme',flowDeptPct('Kalite')===100&&flowDeptPct('İSG')===100&&flowDeptPct('Operasyon')===100]];
-  const ready=gates.every(x=>x[1])&&FLOW.exceptions.length===0&&FLOW.stage>=12;
-  return`<div class="g4"><div class="card stat"><b>${gates.filter(x=>x[1]).length}/8</b><s2>Açılış kapısı</s2></div><div class="card stat"><b>${FLOW.paid}%</b><s2>Tahsilat</s2></div><div class="card stat"><b>${FLOW.exceptions.length}</b><s2>Açık istisna</s2></div><div class="card stat"><b class="${ready?'ok':'wn'}">${ready?'HAZIR':'BEKLİYOR'}</b><s2>Kurul durumu</s2></div></div><div class="gate-grid">${gates.map((g,i)=>`<div class="gate-card"><h2>${g[1]?'<span class="ok">✓</span>':'<span class="rd">✗</span>'} ${i+1}. ${g[0]}</h2><p>${g[1]?'Kanıtlar tamamlandı.':'İlgili departman görevleri bekliyor.'}</p></div>`).join("")}</div><div class="card"><h2>Nihai açılış kararı</h2><p class="nt">Kurul: Genel Müdür, Franchise Direktörü, Finans, Hukuk, Operasyon, Kalite ve İK.</p><button class="btn" data-e2e="activate" ${ready&&R()==='gm'?'':'disabled'}>Aktif şube yap ve 30/60/90 gün planını oluştur</button></div>`;
+  const blockers=flowBlockers(),ready=gates.every(x=>x[1])&&blockers.length===0&&FLOW.stage>=12;
+  return`<div class="g4"><div class="card stat"><b>${gates.filter(x=>x[1]).length}/8</b><s2>Açılış kapısı</s2></div><div class="card stat"><b>${FLOW.paid}%</b><s2>Tahsilat</s2></div><div class="card stat"><b>${blockers.length}</b><s2>Teknik engel</s2></div><div class="card stat"><b class="${ready?'ok':'wn'}">${FLOW.branch?'AKTİF':ready?'HAZIR':'BEKLİYOR'}</b><s2>Kurul durumu</s2></div></div><div class="gate-grid">${gates.map((g,i)=>`<div class="gate-card"><h2>${g[1]?'<span class="ok">✓</span>':'<span class="rd">✗</span>'} ${i+1}. ${g[0]}</h2><p>${g[1]?'Departman kanıtı tamamlandı.':'İlgili departman görevleri bekliyor.'}</p></div>`).join("")}</div>${blockers.length?`<div class="card"><h2>Açılışı engelleyen kayıtlar</h2>${blockers.slice(0,12).map(x=>`<div class="al r">${H(x)}</div>`).join("")}${blockers.length>12?`<p class="nt">+${blockers.length-12} engel daha</p>`:""}</div>`:""}<div class="card"><h2>Nihai açılış kararı</h2><p class="nt">Aktivasyon; şube kartı, personel bağlılığı, kullanıcı kapsamı ve 30/60/90 görevlerini tek işlemde oluşturur.</p><button class="btn" data-e2e="activate" ${ready&&R()==='gm'&&!FLOW.branch?'':'disabled'}>Aktif şube yap ve 30/60/90 gün planını oluştur</button></div>`;
+}
+function takip(){
+  if(!FLOW.followUps.length)return`<div class="card"><h2>30/60/90 gün planı</h2><p class="nt">Şube atomik aktivasyon tamamlandıktan sonra üç takip görevi otomatik oluşur.</p></div>`;
+  return`<div class="g4"><div class="card stat"><b>${FLOW.followUps.length}</b><s2>Takip görevi</s2></div><div class="card stat"><b>${FLOW.followUps.filter(x=>x.status==='done').length}</b><s2>Tamamlanan</s2></div><div class="card stat"><b>${H(FLOW.branch?.id||'—')}</b><s2>Şube</s2></div></div><div class="gate-grid">${FLOW.followUps.map(x=>`<div class="gate-card"><h2>${x.day}. gün · ${H(x.title)}</h2><p>Sorumlu: ${H(x.owner)} · ${x.status==='done'?'Tamamlandı':'Açık görev'}</p><button class="btn g sm" data-followup="${H(x.id)}" ${!["gm","fd"].includes(R())||x.status==='done'?'disabled':''}>Tamamla</button></div>`).join("")}</div>`;
 }
 function portallar(){
   const portals=[['Aday Yatırımcı','Durum, belge talebi, randevu, mesaj, sözleşme/ödeme planı ve eğitim. İç skor ve departman notları gizli.','ad'],['Bayi / Şube','Kurulum, kadro, eğitim, ekipman, sözleşme, royalty ve ilk 90 gün. Yalnızca kendi kapsamı.','ba'],['Denetçi','Atanmış saha ziyareti, konum/ölçüm/fotoğraf kanıtı, bulgu ve yeniden kontrol.','dn'],['Tedarikçi','Yalnızca atanmış sipariş, teslimat, seri no, garanti ve kalibrasyon kaydı.','td']];
@@ -625,7 +645,7 @@ Madde 12: Münhasır bölge ihlali halinde sözleşme feshedilir.</div>
   ${c.hist.slice(0,10).map(x=>`<div class="al">${H(x)}</div>`).join("")}`;
 }
 /* ══ RENDER ══ */
-const VIEWS={e2e,departman,acilis,portallar,dash,hat,inbox,pipe,gor,belge,sube,web,paket,fin,rapor,yetki,denetim,model};
+const VIEWS={e2e,departman,personel,acilis,takip,portallar,dash,hat,inbox,pipe,gor,belge,sube,web,paket,fin,rapor,yetki,denetim,model};
 function render(){
   const perm=PERM[R()].split(" ");
   if(!perm.includes(CUR))CUR=perm[0]||"portallar";
@@ -638,7 +658,7 @@ function render(){
   const c=gC(SEL),mo=$("mo");
   mo.hidden=!c;
   if(c){try{mo.innerHTML=`<div class="dr">${panel(c)}</div>`;}catch(e){mo.hidden=true;}}
-  try{localStorage.setItem(KEY,JSON.stringify({C,LOG,UID,FB,CUR,FLOW}))}catch(x){}
+  try{localStorage.setItem(KEY,JSON.stringify({C,LOG,UID,FB,CUR,FLOW,FR_CASES}))}catch(x){}
 }
 /* ══ AKSİYONLAR ══ */
 const A={
@@ -651,7 +671,7 @@ const A={
   add:()=>{
     const n=$("na")?.value.trim();if(!n)return;
     const c=mkC(n,$("ni")?.value||"-",$("ny")?.value||"-",0,{kaynak:$("nk")?.value||"Web"});
-    C.push(c);LOG_ADD("Yeni aday: "+n,c);render();
+    C.push(c);const f=createFranchiseCase({id:`FR-${String(c.id).padStart(4,"0")}`,applicationId:`APP-${String(c.id).padStart(4,"0")}`,candidate:n,name:`${$("ni")?.value||"Yeni"} OTOTR`,district:$("ni")?.value||"Belirlenmedi",consents:3,documents:0,documentsTotal:17});FR_CASES.push(f);FLOW=f;LOG_ADD("Yeni aday ve franchise dosyası: "+n,c);CUR="e2e";render();
   },
   nxt:s=>{
     const c=gC(+s.i);if(!adv(c)||gate(c))return;
@@ -678,16 +698,21 @@ document.addEventListener("click",ev=>{
   if(flowAction){
     const action=flowAction.dataset.e2e;
     if(action==="advance"&&!flowStageGate()&&[E2E_STAGE_OWNER[FLOW.stage],"gm"].includes(R())){FLOW.history.unshift(DL()+" · "+RN[R()]+" · "+E2E_STAGES[FLOW.stage]+" tamamlandı; "+(E2E_STAGES[FLOW.stage+1]||"ilk 90 gün")+" başladı");FLOW.stage=Math.min(E2E_STAGES.length-1,FLOW.stage+1)}
+    if(action==="docs"&&["gm","hk"].includes(R())){FLOW.documents=FLOW.documentsTotal;FLOW.history.unshift(DL()+" · "+RN[R()]+" · Zorunlu sentetik belge seti tamamlandı")}
     if(action==="day"){FLOW.days++;FLOW.history.unshift(DL()+" · Sistem · Program günü "+FLOW.days+" olarak güncellendi")}
     if(action==="exception"){FLOW.exceptions.push({id:Date.now(),stage:E2E_STAGES[FLOW.stage],requester:RN[R()],status:"İkinci onay bekliyor"});FLOW.history.unshift(DL()+" · "+RN[R()]+" · "+E2E_STAGES[FLOW.stage]+" için istisna talebi açtı")}
-    if(action==="activate"&&R()==="gm"){FLOW.stage=13;FLOW.history.unshift(DL()+" · Genel Müdür · Şube aktif edildi; 30/60/90 gün görevleri oluşturuldu")}
+    if(action==="activate"&&R()==="gm"){const result=activateFranchiseCase(FLOW,{taskDone:flowTaskCount()===flowTaskTotal(),taskCount:flowTaskCount(),taskTotal:flowTaskTotal(),today:"2026-11-05",activatedAt:"2026-11-05"});if(!result.ok)FLOW.history.unshift(DL()+" · Sistem · Aktivasyon reddedildi: "+result.blockers[0])}
     render();return;
   }
+  const staffAction=ev.target.closest("[data-staff-action]");
+  if(staffAction){const key=staffAction.dataset.roleKey,action=staffAction.dataset.staffAction;try{if(action==="hire"&&["gm","ik"].includes(R()))hireStaff(FLOW,key,$("staff-"+key)?.value);if(action==="docs"&&["gm","ik"].includes(R()))updateStaffCompliance(FLOW,key,{employmentDocumentsComplete:true,contractSigned:true});if(action==="academy"&&["gm","ak"].includes(R()))updateStaffCompliance(FLOW,key,{academyAssigned:true,academyCompleted:true,certificateValidUntil:"2027-11-05"});FLOW.history.unshift(DL()+" · "+RN[R()]+" · Personel kapısı güncellendi: "+key)}catch(e){FLOW.history.unshift(DL()+" · Sistem · "+e.message)}render();return}
+  const follow=ev.target.closest("[data-followup]");if(follow&&["gm","fd"].includes(R())){const item=FLOW.followUps.find(x=>x.id===follow.dataset.followup);if(item)item.status="done";render();return}
   const el=ev.target.closest("[data-a]");
   if(el&&A[el.dataset.a])A[el.dataset.a](el.dataset);
 });
 document.addEventListener("change",ev=>{
   const t=ev.target,d=t.dataset,c=gC(SEL);
+  if(d.caseSelect!==undefined){const selected=FR_CASES.find(x=>x.id===t.value);if(selected)FLOW=selected;render();return}
   if(d.flowTask){const role=DEPT_ROLE[d.flowTask.split("|")[0]];if(R()===role||R()==="gm"){t.checked?FLOW.tasks[d.flowTask]=1:delete FLOW.tasks[d.flowTask];FLOW.history.unshift(DL()+" · "+RN[R()]+" · Görev "+(t.checked?"tamamlandı: ":"geri açıldı: ")+d.flowTask);render()}return}
   if("fb" in d){FB=+t.value;render();return}
   if(d.f){const x=gC(+d.i);if(x){x[d.f]=Math.max(0,+t.value||0);LOG_ADD("Royalty güncellendi: "+x.ad+" "+d.f,x);render();}return}
@@ -726,7 +751,7 @@ NAV.forEach(n=>{
 });
 $("role").addEventListener("change",()=>{SEL=null;render()});
 $("rst").addEventListener("click",()=>{try{localStorage.removeItem(KEY)}catch(e){}location.reload()});
-try{const j=JSON.parse(localStorage.getItem(KEY)||"null");if(j?.C){C=j.C;LOG=j.LOG||[];UID=j.UID||UID;FB=j.FB||1;if(j.CUR&&VIEWS[j.CUR])CUR=j.CUR;if(j.FLOW)FLOW=j.FLOW}}catch(e){}
+try{const j=JSON.parse(localStorage.getItem(KEY)||"null");if(j?.C){C=j.C;LOG=j.LOG||[];UID=j.UID||UID;FB=j.FB||1;if(j.CUR&&VIEWS[j.CUR])CUR=j.CUR;if(Array.isArray(j.FR_CASES)&&j.FR_CASES.length){FR_CASES=j.FR_CASES;FLOW=FR_CASES.find(x=>x.id===j.FLOW?.id)||FR_CASES[0]}else if(j.FLOW?.staffing){FLOW=j.FLOW;FR_CASES=[FLOW]}}}catch(e){}
 render();
 </script>
 </body>

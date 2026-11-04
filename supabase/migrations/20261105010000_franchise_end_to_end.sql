@@ -1,0 +1,192 @@
+begin;
+
+create table if not exists public.franchise_cases (
+  id uuid primary key default gen_random_uuid(),
+  application_no text not null unique,
+  applicant_user_id uuid references auth.users(id) on delete set null,
+  candidate_name text not null,
+  city text not null,
+  district text not null,
+  branch_type text not null default 'standard',
+  stage smallint not null default 0 check (stage between 0 and 13),
+  score numeric(5,2) not null default 0 check (score between 0 and 100),
+  consent_count smallint not null default 0 check (consent_count between 0 and 3),
+  document_count integer not null default 0 check (document_count >= 0),
+  document_total integer not null default 17 check (document_total > 0),
+  paid_percent numeric(5,2) not null default 0 check (paid_percent between 0 and 100),
+  status text not null default 'in_review' check (status in ('in_review','conditionally_approved','approved','opening','active','rejected','closed')),
+  created_by uuid references auth.users(id) on delete set null default auth.uid(),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.franchise_department_tasks (
+  id uuid primary key default gen_random_uuid(),
+  franchise_case_id uuid not null references public.franchise_cases(id) on delete cascade,
+  department text not null,
+  task_code text not null,
+  title text not null,
+  status text not null default 'open' check (status in ('open','completed','waived')),
+  completed_by uuid references auth.users(id) on delete set null,
+  completed_at timestamptz,
+  evidence_path text,
+  unique (franchise_case_id, task_code)
+);
+
+create table if not exists public.franchise_staff (
+  id uuid primary key default gen_random_uuid(),
+  franchise_case_id uuid not null references public.franchise_cases(id) on delete cascade,
+  role_key text not null,
+  role_name text not null,
+  person_name text,
+  contact_email text,
+  auth_user_id uuid references auth.users(id) on delete set null,
+  recruitment_status text not null default 'open' check (recruitment_status in ('open','candidate','offered','hired','cancelled')),
+  employment_documents_complete boolean not null default false,
+  contract_signed boolean not null default false,
+  certification_required boolean not null default true,
+  academy_completed boolean not null default false,
+  certificate_valid_until date,
+  access_status text not null default 'blocked' check (access_status in ('blocked','ready','provisioning','active','failed','revoked')),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (franchise_case_id, role_key)
+);
+
+create table if not exists public.franchise_branches (
+  id uuid primary key default gen_random_uuid(),
+  franchise_case_id uuid not null unique references public.franchise_cases(id) on delete restrict,
+  branch_code text not null unique,
+  name text not null,
+  city text not null,
+  district text not null,
+  status text not null default 'active' check (status in ('opening','active','suspended','closed')),
+  activated_at timestamptz not null default now(),
+  activated_by uuid not null references auth.users(id) on delete restrict
+);
+
+create table if not exists public.franchise_access_accounts (
+  id uuid primary key default gen_random_uuid(),
+  franchise_case_id uuid not null references public.franchise_cases(id) on delete cascade,
+  branch_id uuid not null references public.franchise_branches(id) on delete cascade,
+  staff_id uuid not null unique references public.franchise_staff(id) on delete cascade,
+  auth_user_id uuid references auth.users(id) on delete set null,
+  role_key text not null,
+  status text not null default 'pending_provisioning' check (status in ('pending_provisioning','active','failed','revoked')),
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.franchise_followup_tasks (
+  id uuid primary key default gen_random_uuid(),
+  franchise_case_id uuid not null references public.franchise_cases(id) on delete cascade,
+  branch_id uuid not null references public.franchise_branches(id) on delete cascade,
+  day_no smallint not null check (day_no in (30,60,90)),
+  title text not null,
+  owner_department text not null,
+  due_at timestamptz not null,
+  status text not null default 'open' check (status in ('open','completed','cancelled')),
+  completed_at timestamptz,
+  unique (franchise_case_id, day_no)
+);
+
+create index if not exists franchise_cases_applicant_idx on public.franchise_cases (applicant_user_id, status);
+create index if not exists franchise_tasks_case_status_idx on public.franchise_department_tasks (franchise_case_id, status);
+create index if not exists franchise_staff_case_status_idx on public.franchise_staff (franchise_case_id, recruitment_status, access_status);
+create index if not exists franchise_followups_branch_due_idx on public.franchise_followup_tasks (branch_id, status, due_at);
+
+alter table public.franchise_cases enable row level security;
+alter table public.franchise_department_tasks enable row level security;
+alter table public.franchise_staff enable row level security;
+alter table public.franchise_branches enable row level security;
+alter table public.franchise_access_accounts enable row level security;
+alter table public.franchise_followup_tasks enable row level security;
+
+revoke all on public.franchise_cases, public.franchise_department_tasks, public.franchise_staff, public.franchise_branches, public.franchise_access_accounts, public.franchise_followup_tasks from anon;
+revoke all on public.franchise_cases, public.franchise_department_tasks, public.franchise_staff, public.franchise_branches, public.franchise_access_accounts, public.franchise_followup_tasks from authenticated;
+grant select, insert, update on public.franchise_cases, public.franchise_department_tasks, public.franchise_staff, public.franchise_branches, public.franchise_access_accounts, public.franchise_followup_tasks to authenticated;
+
+create policy franchise_case_select on public.franchise_cases for select to authenticated
+using (
+  applicant_user_id = (select auth.uid())
+  or (select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director','franchise_specialist','finance','legal','hr','academy','operations','it','quality','ohs','architecture')
+);
+create policy franchise_case_manage on public.franchise_cases for all to authenticated
+using ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director','franchise_specialist'))
+with check ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director','franchise_specialist'));
+
+create policy franchise_task_select on public.franchise_department_tasks for select to authenticated
+using ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director','franchise_specialist','finance','legal','hr','academy','operations','it','quality','ohs','architecture'));
+create policy franchise_task_manage on public.franchise_department_tasks for all to authenticated
+using ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director','franchise_specialist','finance','legal','hr','academy','operations','it','quality','ohs','architecture'))
+with check ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director','franchise_specialist','finance','legal','hr','academy','operations','it','quality','ohs','architecture'));
+
+create policy franchise_staff_select on public.franchise_staff for select to authenticated
+using (auth_user_id = (select auth.uid()) or (select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director','hr','academy','it'));
+create policy franchise_staff_manage on public.franchise_staff for all to authenticated
+using ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director','hr','academy','it'))
+with check ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director','hr','academy','it'));
+
+create policy franchise_branch_select on public.franchise_branches for select to authenticated
+using ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director','franchise_specialist','finance','legal','hr','academy','operations','it','quality','ohs','architecture') or id::text = any(array(select jsonb_array_elements_text(coalesce((select auth.jwt() -> 'app_metadata' -> 'branch_ids'),'[]'::jsonb)))));
+create policy franchise_branch_manage on public.franchise_branches for all to authenticated
+using ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director'))
+with check ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director'));
+
+create policy franchise_account_select on public.franchise_access_accounts for select to authenticated
+using (auth_user_id = (select auth.uid()) or (select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director','it'));
+create policy franchise_account_manage on public.franchise_access_accounts for all to authenticated
+using ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director','it'))
+with check ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director','it'));
+
+create policy franchise_followup_select on public.franchise_followup_tasks for select to authenticated
+using ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director','finance','hr','operations') or branch_id::text = any(array(select jsonb_array_elements_text(coalesce((select auth.jwt() -> 'app_metadata' -> 'branch_ids'),'[]'::jsonb)))));
+create policy franchise_followup_manage on public.franchise_followup_tasks for all to authenticated
+using ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director','finance','hr','operations'))
+with check ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director','finance','hr','operations'));
+
+create or replace function public.activate_franchise_case(p_case_id uuid)
+returns jsonb
+language plpgsql
+security invoker
+set search_path = public, pg_temp
+as $$
+declare
+  v_case public.franchise_cases%rowtype;
+  v_branch public.franchise_branches%rowtype;
+  v_role text := auth.jwt() -> 'app_metadata' ->> 'role';
+  v_missing integer;
+begin
+  if v_role not in ('gm','franchise_director') then raise exception 'Yetkisiz aktivasyon'; end if;
+  select * into v_case from public.franchise_cases where id = p_case_id for update;
+  if not found then raise exception 'Franchise dosyası bulunamadı'; end if;
+  if v_case.status = 'active' then raise exception 'Şube zaten aktif'; end if;
+  if v_case.consent_count < 3 or v_case.document_count < v_case.document_total or v_case.paid_percent < 100 then raise exception 'Dosya, izin veya tahsilat kapısı eksik'; end if;
+  select count(*) into v_missing from public.franchise_department_tasks where franchise_case_id=p_case_id and status <> 'completed';
+  if v_missing > 0 then raise exception 'Departman görevleri eksik: %', v_missing; end if;
+  select count(*) into v_missing from public.franchise_staff where franchise_case_id=p_case_id and (recruitment_status <> 'hired' or not employment_documents_complete or not contract_signed or (certification_required and (not academy_completed or certificate_valid_until < current_date)));
+  if v_missing > 0 then raise exception 'Personel kapıları eksik: %', v_missing; end if;
+  if (select count(*) from public.franchise_staff where franchise_case_id=p_case_id) < 10 then raise exception 'Minimum kadro eksik'; end if;
+
+  insert into public.franchise_branches(franchise_case_id,branch_code,name,city,district,activated_by)
+  values(p_case_id,'BR-'||upper(substr(replace(p_case_id::text,'-',''),1,10)),v_case.district||' OTOTR',v_case.city,v_case.district,auth.uid())
+  returning * into v_branch;
+
+  insert into public.franchise_access_accounts(franchise_case_id,branch_id,staff_id,auth_user_id,role_key,status)
+  select p_case_id,v_branch.id,s.id,s.auth_user_id,s.role_key,case when s.auth_user_id is null then 'pending_provisioning' else 'active' end
+  from public.franchise_staff s where s.franchise_case_id=p_case_id;
+
+  update public.franchise_staff set access_status=case when auth_user_id is null then 'provisioning' else 'active' end,updated_at=now() where franchise_case_id=p_case_id;
+  insert into public.franchise_followup_tasks(franchise_case_id,branch_id,day_no,title,owner_department,due_at)
+  values
+    (p_case_id,v_branch.id,30,'İlk ay operasyon ve kalite kontrolü','operations',now()+interval '30 days'),
+    (p_case_id,v_branch.id,60,'Finans, royalty ve kadro değerlendirmesi','finance_hr',now()+interval '60 days'),
+    (p_case_id,v_branch.id,90,'Franchise performans kurulu','franchise',now()+interval '90 days');
+  update public.franchise_cases set stage=13,status='active',updated_at=now() where id=p_case_id;
+  return jsonb_build_object('ok',true,'branch_id',v_branch.id,'branch_code',v_branch.branch_code);
+end;
+$$;
+
+revoke all on function public.activate_franchise_case(uuid) from public, anon;
+grant execute on function public.activate_franchise_case(uuid) to authenticated;
+
+commit;
