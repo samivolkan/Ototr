@@ -9,7 +9,7 @@ Yerel ve geçici Supabase PostgreSQL konteynerinde migration, güvenlik doğrula
 
 ## Kanıtlanan davranışlar
 
-- Ana migration ve sağlayıcı yönetişim migration'ı gerçek PostgreSQL motorunda hatasız commit edildi.
+- Ana migration, sağlayıcı yönetişimi ve sağlayıcı worker migration'ı gerçek PostgreSQL motorunda hatasız commit edildi.
 - 13 public franchise tablosunda RLS açık.
 - `anon`, franchise dosyalarını ve belgeleri okuyamıyor.
 - Özel Storage bucket `public=false`, 20 MB ve MIME sınırlarıyla oluştu.
@@ -23,6 +23,7 @@ Yerel ve geçici Supabase PostgreSQL konteynerinde migration, güvenlik doğrula
 - İzin makbuzu, onaylı/sürümlü şablon ve sağlayıcı talebi bağları gerçek PostgreSQL üzerinde oluşturuldu.
 - Aynı idempotency anahtarıyla ikinci sağlayıcı talebi veritabanı tarafından reddedildi.
 - E-posta, SMS, WhatsApp ve e-imza ortak sözleşmesi sahte sağlayıcıyla test edildi; kişisel veri ve token logları maskelendi.
+- Sağlayıcı kuyruğu `FOR UPDATE SKIP LOCKED` ile talep edildi, başarılı sonuç işlendi ve 15 dakikayı aşan worker lease'i güvenle geri kazanıldı.
 - Rollback Storage politikalarını önce kaldırdı, tüm franchise tablolarını ve bucket'ı temizledi.
 - Test konteyneri çalışma sonunda kaldırıldı.
 
@@ -30,6 +31,7 @@ Yerel ve geçici Supabase PostgreSQL konteynerinde migration, güvenlik doğrula
 
 - `supabase/migrations/20261105010000_franchise_end_to_end.sql`
 - `supabase/migrations/20261105020000_franchise_provider_governance.sql`
+- `supabase/migrations/20261105030000_franchise_provider_worker.sql`
 - `supabase/ops/franchise-local-contract-stubs.sql`
 - `supabase/ops/franchise-staging-verify.sql`
 - `supabase/ops/franchise-activation-acceptance.sql`

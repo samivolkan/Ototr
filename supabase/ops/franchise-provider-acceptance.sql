@@ -28,4 +28,18 @@ select count(*)=1 as provider_request_created_once from public.franchise_provide
 select count(*)=1 as approved_template_version_bound from public.franchise_message_templates where code='APPLICATION_STATUS' and version=1 and status='approved';
 select count(*)=1 as consent_evidence_bound from public.franchise_consent_receipts where purpose='data_processing' and status='granted' and length(evidence_sha256)=64;
 
+select count(*)=1 as provider_request_claimed
+from public.claim_franchise_provider_requests(25)
+where id='60000000-0000-0000-0000-000000000001' and status='processing' and attempt_count=1;
+
+select public.finish_franchise_provider_request('60000000-0000-0000-0000-000000000001',true,'accepted','FAKE-PROVIDER-1',null);
+select count(*)=1 as provider_request_finished
+from public.franchise_provider_requests
+where id='60000000-0000-0000-0000-000000000001' and status='accepted' and provider_message_id='FAKE-PROVIDER-1' and processing_started_at is null;
+
+insert into public.franchise_provider_requests(id, franchise_case_id, consent_receipt_id, template_id, channel, purpose, recipient_ref, idempotency_key, variables, requested_by, status, attempt_count, processing_started_at)
+values ('60000000-0000-0000-0000-000000000002','10000000-0000-0000-0000-000000000001','20000000-0000-0000-0000-000000000001','40000000-0000-0000-0000-000000000001','sms','application_status','70000000-0000-0000-0000-000000000001','franchise:FR-1:application_status:sms:2','{}','80000000-0000-0000-0000-000000000001','processing',2,now()-interval '16 minutes');
+select count(*)=0 as stale_lease_not_double_claimed from public.claim_franchise_provider_requests(25) where id='60000000-0000-0000-0000-000000000002';
+select count(*)=1 as stale_lease_recovered from public.claim_franchise_provider_requests(25) where id='60000000-0000-0000-0000-000000000002' and attempt_count=3;
+
 rollback;
