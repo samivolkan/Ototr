@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 1,
+  "module": "OTOTR_FRANCHISE_FINANCE",
+  "projection": "COMMERCIAL_DECISION_STATUS_PUBLIC",
+  "status": "PENDING_DECISIONS",
+  "productionValuesExposed": false,
+  "approvalIdentitiesExposed": false,
+  "evidenceMetadataExposed": false,
+  "feeFamilies": [
+    {
+      "code": "ROYALTY",
+      "decisionStatus": "PARTIALLY_CONFIRMED",
+      "confirmedBehavior": "Varsayılan oran güvenli backend yapılandırmasında onaylıdır; matrah müşteriden tahsil edilen KDV dahil brüt tutarın tamamıdır ve gider/kart komisyonu düşülmez; hesaplanan bedele ayrıca %20 KDV uygulanır. Şube açılışında ticari değer, süre ve günlük/haftalık/aylık fatura periyodu manuel seçilir; değişiklikler yalnız ileriye uygulanır. Dönem tahakkukları faturada Royalty Hizmet Bedeli adıyla tek satırda toplanır; müşteri iadesi ters kayıtları sonraki aynı satırda eksi mahsup edilir. Fazla eksi bakiye aynı şubenin sonraki dönemlerine süresiz kredi olarak devreder; şubeler arasında aktarılamaz ve alt hesaplama izi korunur. Fatura ertesi gün kredi kartıyla ödenir; doğrulanmış tam ödeme yoksa operasyon erişimi kilitlenir, ödeme ve destek erişimi açık kalır. 6/12 ay yeni şube ve onaylı mali zorluk muafiyeti desteklenir.",
+      "pendingFields": [
+        "taxCode"
+      ]
+    },
+    {
+      "code": "ENTRY_FRANCHISE",
+      "decisionStatus": "PARTIALLY_CONFIRMED",
+      "confirmedBehavior": "Giriş franchise bedeli şube açılışında, açılış referansıyla şube başına yalnız bir kez tahakkuk eder; tekrar tahakkuk reddedilir ve geriye dönük oluşturulmaz.",
+      "pendingFields": [
+        "calculationMethod",
+        "amountOrRate",
+        "effectiveFrom",
+        "dueRule",
+        "taxCode",
+        "invoiceLineCode"
+      ]
+    },
+    {
+      "code": "QUERY",
+      "decisionStatus": "PENDING",
+      "confirmedBehavior": "Başarılı ve ücretlendirilebilir sorgu tetikleyicisi tanımlı.",
+      "pendingFields": [
+        "calculationMethod",
+        "amountOrRate",
+        "freeEntitlementPolicy",
+        "technicalRepeatPolicy",
+        "effectiveFrom",
+        "dueRule",
+        "taxCode",
+        "invoiceLineCode"
+      ]
+    },
+    {
+      "code": "EXTERNAL_SERVICE",
+      "decisionStatus": "PENDING",
+      "confirmedBehavior": "Başarılı hizmet teslimi tetikleyicisi tanımlı.",
+      "pendingFields": [
+        "calculationMethod",
+        "amountOrRate",
+        "providerMarginPolicy",
+        "effectiveFrom",
+        "dueRule",
+        "taxCode",
+        "invoiceLineCode"
+      ]
+    },
+    {
+      "code": "OPTIONAL_PRODUCT_SERVICE",
+      "decisionStatus": "PENDING",
+      "confirmedBehavior": "Ürün veya hizmet aktivasyonu tetikleyicisi tanımlı.",
+      "pendingFields": [
+        "calculationMethod",
+        "amountOrRate",
+        "effectiveFrom",
+        "dueRule",
+        "taxCode",
+        "invoiceLineCode"
+      ]
+    },
+    {
+      "code": "PASS_THROUGH_EXPENSE",
+      "decisionStatus": "PENDING",
+      "confirmedBehavior": "Onaylı kaynak masraf ve maker-checker akışı tanımlı.",
+      "pendingFields": [
+        "calculationMethod",
+        "allocationPolicy",
+        "effectiveFrom",
+        "dueRule",
+        "taxCode",
+        "invoiceLineCode"
+      ]
+    },
+    {
+      "code": "DEDUCTION_CREDIT",
+      "decisionStatus": "PENDING",
+      "confirmedBehavior": "Onaylı karar üzerinden kredi; doğrudan bakiye düzenleme yasak.",
+      "pendingFields": [
+        "calculationMethod",
+        "amountOrRate",
+        "effectiveFrom",
+        "taxCode",
+        "invoiceLineCode"
+      ]
+    }
+  ]
+}

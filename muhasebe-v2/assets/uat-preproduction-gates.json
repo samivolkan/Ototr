@@ -1,0 +1,152 @@
+{
+  "schemaVersion": 1,
+  "module": "OTOTR_FRANCHISE_FINANCE",
+  "target": "PREPRODUCTION",
+  "updatedAtUtc": "2026-11-03T05:45:00Z",
+  "policy": {
+    "defaultDecision": "NO_GO",
+    "allGatesMustPass": true,
+    "passedGateRequiresEvidenceHashAndSignoff": true,
+    "productionDataAllowed": false
+  },
+  "gates": [
+    {
+      "id": "FIN-G01",
+      "name": "Ticari parametre onayı",
+      "owner": "Finans Direktörü",
+      "approvers": [
+        "Franchise Yönetimi",
+        "Hukuk"
+      ],
+      "status": "PENDING",
+      "evidence": [],
+      "blockingReason": "Royalty, giriş franchise, sorgu, hizmet, opsiyon, kesinti ve masraf yansıtma oran/vade/KDV matrisi imzalanmadı."
+    },
+    {
+      "id": "FIN-G02",
+      "name": "Vergi ve muhasebe görüşü",
+      "owner": "Mali Müşavir",
+      "approvers": [
+        "Finans Direktörü"
+      ],
+      "status": "PENDING",
+      "evidence": [],
+      "blockingReason": "KDV, belge tipi, hesap planı ve ters kayıt muhasebe görüşü bekleniyor."
+    },
+    {
+      "id": "FIN-G03",
+      "name": "ERP ana veri eşlemesi",
+      "owner": "ERP Ürün Sahibi",
+      "approvers": [
+        "Finans Operasyon"
+      ],
+      "status": "PENDING",
+      "evidence": [],
+      "blockingReason": "Tüzel kişi, bayi, şube, sözleşme, hizmet ve muhasebe kodlarının staging eşlemesi yapılmadı."
+    },
+    {
+      "id": "FIN-G04",
+      "name": "Kimlik, rol ve şube kapsamı",
+      "owner": "Bilgi Güvenliği",
+      "approvers": [
+        "ERP Teknik Lideri"
+      ],
+      "status": "PENDING",
+      "evidence": [],
+      "blockingReason": "Staging kullanıcılarıyla rol matrisi, maker-checker ve çapraz şube red testleri imzalanmadı."
+    },
+    {
+      "id": "FIN-G05",
+      "name": "Gerçek ERP adaptörleri",
+      "owner": "Entegrasyon Lideri",
+      "approvers": [
+        "ERP Teknik Lideri"
+      ],
+      "status": "PENDING",
+      "evidence": [],
+      "blockingReason": "Müşteri cirosu, GM ödeme, royalty iadesi, sorgu/hizmet, fatura callback, muhasebe export ve retry adaptörlerinin tamamı yerelde doğrulandı; gerçek staging endpoint'leri, kimlik bilgileri ve worker deploymentları henüz doğrulanmadı."
+    },
+    {
+      "id": "FIN-G06",
+      "name": "Veri geçişi ve mutabakat",
+      "owner": "Veri Lideri",
+      "approvers": [
+        "Finans Kontrol"
+      ],
+      "status": "PENDING",
+      "evidence": [],
+      "blockingReason": "Maskeli pilot veri yükleme, açılış bakiyesi ve kaynak-hedef kontrol toplamları çalıştırılmadı."
+    },
+    {
+      "id": "FIN-G07",
+      "name": "Finans UAT senaryoları",
+      "owner": "Finans Operasyon",
+      "approvers": [
+        "Pilot Bayi Yetkilisi",
+        "Franchise Yönetimi"
+      ],
+      "status": "PENDING",
+      "evidence": [],
+      "blockingReason": "UAT senaryo matrisi gerçek kullanıcılar tarafından tamamlanıp imzalanmadı."
+    },
+    {
+      "id": "FIN-G08",
+      "name": "Güvenlik ve izolasyon testleri",
+      "owner": "Bilgi Güvenliği",
+      "approvers": [
+        "KVKK Sorumlusu"
+      ],
+      "status": "PENDING",
+      "evidence": [],
+      "blockingReason": "RLS, IDOR, export yetkisi, log maskeleme ve veri minimizasyonu pre-production ortamında doğrulanmadı."
+    },
+    {
+      "id": "FIN-G09",
+      "name": "Performans ve dayanıklılık",
+      "owner": "Platform Lideri",
+      "approvers": [
+        "ERP Teknik Lideri"
+      ],
+      "status": "PENDING",
+      "evidence": [],
+      "blockingReason": "Yerel 2.000 kayıt sayfalama, retry ve idempotency kontrolleri geçti; staging hedef hacmi, eşzamanlı kullanıcı, P95/P99 ve timeout bütçesi doğrulanmadı."
+    },
+    {
+      "id": "FIN-G10",
+      "name": "İzleme ve destek hazırlığı",
+      "owner": "Operasyon Lideri",
+      "approvers": [
+        "Finans Operasyon"
+      ],
+      "status": "PENDING",
+      "evidence": [],
+      "blockingReason": "Runbook ve yerel GM Finans sağlık dashboardu hazır; gerçek alarm hedefleri, destek SLA, iletişim kanalı ve nöbet sahipleri doğrulanmadı."
+    },
+    {
+      "id": "FIN-G11",
+      "name": "Yedekleme, geri dönüş ve tatbikat",
+      "owner": "Platform Lideri",
+      "approvers": [
+        "Finans Direktörü",
+        "Bilgi Güvenliği"
+      ],
+      "status": "PENDING",
+      "evidence": [],
+      "blockingReason": "Ayrı hedefe yerel finans backup/restore doğrulaması geçti; pre-production restore, uygulama rollback/forward-fix tatbikatı ve yetkili imzaları yapılmadı."
+    },
+    {
+      "id": "FIN-G12",
+      "name": "Pre-production nihai onay",
+      "owner": "Proje Yöneticisi",
+      "approvers": [
+        "Finans Direktörü",
+        "ERP Ürün Sahibi",
+        "Bilgi Güvenliği",
+        "Franchise Yönetimi"
+      ],
+      "status": "PENDING",
+      "evidence": [],
+      "blockingReason": "Önceki kapılar tamamlanmadığı için go-live karar tutanağı açılamaz."
+    }
+  ]
+}

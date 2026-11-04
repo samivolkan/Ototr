@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "module": "OTOTR_FRANCHISE_FINANCE",
+  "target": "PREPRODUCTION_DECISION",
+  "decision": "NOT_READY",
+  "productionDataUsed": false,
+  "decisionRecordId": null,
+  "releaseCommit": null,
+  "changeWindowStartUtc": null,
+  "changeWindowEndUtc": null,
+  "deploymentOwnerIdentitySha256": null,
+  "releaseManifestPath": null,
+  "releaseManifestSha256": null,
+  "rollbackEvidencePath": null,
+  "rollbackEvidenceSha256": null,
+  "signoffs": [
+    {
+      "role": "Proje Yöneticisi",
+      "identitySha256": null,
+      "signedAtUtc": null
+    },
+    {
+      "role": "Finans Direktörü",
+      "identitySha256": null,
+      "signedAtUtc": null
+    },
+    {
+      "role": "ERP Ürün Sahibi",
+      "identitySha256": null,
+      "signedAtUtc": null
+    },
+    {
+      "role": "Bilgi Güvenliği",
+      "identitySha256": null,
+      "signedAtUtc": null
+    },
+    {
+      "role": "Franchise Yönetimi",
+      "identitySha256": null,
+      "signedAtUtc": null
+    }
+  ],
+  "productionDecision": "NO_GO"
+}
