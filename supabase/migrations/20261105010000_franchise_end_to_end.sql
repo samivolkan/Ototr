@@ -89,10 +89,42 @@ create table if not exists public.franchise_followup_tasks (
   unique (franchise_case_id, day_no)
 );
 
+create table if not exists public.franchise_exceptions (
+  id uuid primary key default gen_random_uuid(),
+  franchise_case_id uuid not null references public.franchise_cases(id) on delete cascade,
+  exception_type text not null check (exception_type not in ('legal','license','payment')),
+  reason text not null check (length(trim(reason)) between 5 and 2000),
+  requester_id uuid not null references auth.users(id) on delete restrict,
+  requester_role text not null,
+  status text not null default 'pending_second_approval' check (status in ('pending_second_approval','approved','rejected')),
+  reviewer_id uuid references auth.users(id) on delete restrict,
+  reviewer_role text,
+  review_note text,
+  created_at timestamptz not null default now(),
+  reviewed_at timestamptz,
+  check (reviewer_id is null or reviewer_id <> requester_id)
+);
+
+create table if not exists public.franchise_integration_outbox (
+  id uuid primary key default gen_random_uuid(),
+  franchise_case_id uuid not null references public.franchise_cases(id) on delete cascade,
+  source text not null,
+  event_type text not null,
+  payload jsonb not null default '{}'::jsonb,
+  status text not null default 'pending' check (status in ('pending','processing','processed','failed','dead_letter')),
+  attempts integer not null default 0 check (attempts between 0 and 20),
+  next_attempt_at timestamptz not null default now(),
+  last_error text,
+  created_at timestamptz not null default now(),
+  processed_at timestamptz
+);
+
 create index if not exists franchise_cases_applicant_idx on public.franchise_cases (applicant_user_id, status);
 create index if not exists franchise_tasks_case_status_idx on public.franchise_department_tasks (franchise_case_id, status);
 create index if not exists franchise_staff_case_status_idx on public.franchise_staff (franchise_case_id, recruitment_status, access_status);
 create index if not exists franchise_followups_branch_due_idx on public.franchise_followup_tasks (branch_id, status, due_at);
+create index if not exists franchise_exceptions_case_status_idx on public.franchise_exceptions (franchise_case_id, status);
+create index if not exists franchise_outbox_pending_idx on public.franchise_integration_outbox (status, next_attempt_at) where status in ('pending','failed');
 
 alter table public.franchise_cases enable row level security;
 alter table public.franchise_department_tasks enable row level security;
@@ -100,10 +132,13 @@ alter table public.franchise_staff enable row level security;
 alter table public.franchise_branches enable row level security;
 alter table public.franchise_access_accounts enable row level security;
 alter table public.franchise_followup_tasks enable row level security;
+alter table public.franchise_exceptions enable row level security;
+alter table public.franchise_integration_outbox enable row level security;
 
-revoke all on public.franchise_cases, public.franchise_department_tasks, public.franchise_staff, public.franchise_branches, public.franchise_access_accounts, public.franchise_followup_tasks from anon;
-revoke all on public.franchise_cases, public.franchise_department_tasks, public.franchise_staff, public.franchise_branches, public.franchise_access_accounts, public.franchise_followup_tasks from authenticated;
-grant select, insert, update on public.franchise_cases, public.franchise_department_tasks, public.franchise_staff, public.franchise_branches, public.franchise_access_accounts, public.franchise_followup_tasks to authenticated;
+revoke all on public.franchise_cases, public.franchise_department_tasks, public.franchise_staff, public.franchise_branches, public.franchise_access_accounts, public.franchise_followup_tasks, public.franchise_exceptions, public.franchise_integration_outbox from anon;
+revoke all on public.franchise_cases, public.franchise_department_tasks, public.franchise_staff, public.franchise_branches, public.franchise_access_accounts, public.franchise_followup_tasks, public.franchise_exceptions, public.franchise_integration_outbox from authenticated;
+grant select, insert, update on public.franchise_cases, public.franchise_department_tasks, public.franchise_staff, public.franchise_branches, public.franchise_access_accounts, public.franchise_followup_tasks, public.franchise_exceptions to authenticated;
+grant select, insert on public.franchise_integration_outbox to authenticated;
 
 create policy franchise_case_select on public.franchise_cases for select to authenticated
 using (
@@ -144,6 +179,19 @@ create policy franchise_followup_manage on public.franchise_followup_tasks for a
 using ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director','finance','hr','operations'))
 with check ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director','finance','hr','operations'));
 
+create policy franchise_exception_select on public.franchise_exceptions for select to authenticated
+using ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director','franchise_specialist','finance','legal','hr','academy','operations','it','quality','ohs','architecture'));
+create policy franchise_exception_insert on public.franchise_exceptions for insert to authenticated
+with check (requester_id=(select auth.uid()) and status='pending_second_approval' and reviewer_id is null);
+create policy franchise_exception_review on public.franchise_exceptions for update to authenticated
+using ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director') and requester_id<>(select auth.uid()))
+with check ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director') and requester_id<>(select auth.uid()) and reviewer_id=(select auth.uid()) and status in ('approved','rejected'));
+
+create policy franchise_outbox_select on public.franchise_integration_outbox for select to authenticated
+using ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director','it'));
+create policy franchise_outbox_insert on public.franchise_integration_outbox for insert to authenticated
+with check ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director'));
+
 create or replace function public.activate_franchise_case(p_case_id uuid)
 returns jsonb
 language plpgsql
@@ -166,6 +214,7 @@ begin
   select count(*) into v_missing from public.franchise_staff where franchise_case_id=p_case_id and (recruitment_status <> 'hired' or not employment_documents_complete or not contract_signed or (certification_required and (not academy_completed or certificate_valid_until < current_date)));
   if v_missing > 0 then raise exception 'Personel kapıları eksik: %', v_missing; end if;
   if (select count(*) from public.franchise_staff where franchise_case_id=p_case_id) < 10 then raise exception 'Minimum kadro eksik'; end if;
+  if exists(select 1 from public.franchise_exceptions where franchise_case_id=p_case_id and status='pending_second_approval') then raise exception 'İkinci onay bekleyen istisna var'; end if;
 
   insert into public.franchise_branches(franchise_case_id,branch_code,name,city,district,activated_by)
   values(p_case_id,'BR-'||upper(substr(replace(p_case_id::text,'-',''),1,10)),v_case.district||' OTOTR',v_case.city,v_case.district,auth.uid())
@@ -181,6 +230,12 @@ begin
     (p_case_id,v_branch.id,30,'İlk ay operasyon ve kalite kontrolü','operations',now()+interval '30 days'),
     (p_case_id,v_branch.id,60,'Finans, royalty ve kadro değerlendirmesi','finance_hr',now()+interval '60 days'),
     (p_case_id,v_branch.id,90,'Franchise performans kurulu','franchise',now()+interval '90 days');
+  insert into public.franchise_integration_outbox(franchise_case_id,source,event_type,payload)
+  values
+    (p_case_id,'finance','royalty_profile.created',jsonb_build_object('branch_id',v_branch.id)),
+    (p_case_id,'hr','staffing_plan.created',jsonb_build_object('branch_id',v_branch.id)),
+    (p_case_id,'it','account.provisioning_requested',jsonb_build_object('branch_id',v_branch.id)),
+    (p_case_id,'tasks','followup_tasks.created',jsonb_build_object('branch_id',v_branch.id));
   update public.franchise_cases set stage=13,status='active',updated_at=now() where id=p_case_id;
   return jsonb_build_object('ok',true,'branch_id',v_branch.id,'branch_code',v_branch.branch_code);
 end;

@@ -1,0 +1,19 @@
+{
+  "module": "OTOTR Franchise",
+  "releaseStatus": "NO_GO",
+  "evaluatedAt": "2026-11-05",
+  "gates": [
+    { "id": "G01", "name": "Canonical franchise case", "status": "PASS", "evidence": "gm-franchise/franchise-core.mjs" },
+    { "id": "G02", "name": "Staffing, Academy and access locks", "status": "PASS", "evidence": "tests/gm-franchise-core.test.mjs" },
+    { "id": "G03", "name": "Maker-checker exceptions", "status": "PASS", "evidence": "tests/gm-franchise-core.test.mjs" },
+    { "id": "G04", "name": "Postgres schema and RLS static review", "status": "PASS", "evidence": "tests/gm-franchise-migration.test.mjs" },
+    { "id": "G05", "name": "Staging migration execution and rollback", "status": "BLOCKED", "evidence": null },
+    { "id": "G06", "name": "ERP identity and app_metadata role binding", "status": "BLOCKED", "evidence": null },
+    { "id": "G07", "name": "Private Storage buckets and retention policy", "status": "BLOCKED", "evidence": null },
+    { "id": "G08", "name": "Finance, HR, Academy, Legal and IT real adapters", "status": "BLOCKED", "evidence": "gm-franchise/integration-adapters.mjs" },
+    { "id": "G09", "name": "E-sign, SMS, email and WhatsApp providers", "status": "BLOCKED", "evidence": null },
+    { "id": "G10", "name": "Security, concurrency and recovery tests", "status": "BLOCKED", "evidence": null },
+    { "id": "G11", "name": "Business UAT sign-off", "status": "BLOCKED", "evidence": null },
+    { "id": "G12", "name": "Production rollout and rollback approval", "status": "BLOCKED", "evidence": null }
+  ]
+}

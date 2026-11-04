@@ -94,7 +94,7 @@ ul.ul{margin:0;padding-left:18px}ul.ul li{margin:3px 0}
 </div>
 <div class="mo" id="mo" hidden></div>
 <script type="module">
-import {createFranchiseCase,hireStaff,updateStaffCompliance,openingBlockers,activateFranchiseCase,staffReadyForAccess} from "./franchise-core.mjs";
+import {createFranchiseCase,hireStaff,updateStaffCompliance,openingBlockers,activateFranchiseCase,staffReadyForAccess,requestException,reviewException} from "./franchise-core.mjs";
 const TODAY=new Date("2026-11-05"),KEY="ototr-franchise-e2e-v1";
 const STAGES=["Yeni","Gorusme","Onay","Sozlesme","Onboarding","Kurulum","Aktif"];
 const RN={gm:"Genel Müdür",fd:"Franchise Direktörü",fu:"Franchise Uzmanı",hk:"Hukuk",fn:"Finans / Muhasebe",ik:"İK",ak:"Akademi",sa:"Saha",bt:"BT",ba:"Bayi Sahibi",dn:"Denetçi",td:"Tedarikçi",ad:"Aday Yatırımcı",op:"Operasyon",pz:"Pazarlama",kl:"Kalite",isg:"İSG",mm:"Mimari / Proje"};
@@ -529,6 +529,7 @@ Object.entries(E2E_TASKS).forEach(([d,items],di)=>items.forEach((_,i)=>{if(di<3|
 const flowTaskCount=()=>Object.keys(FLOW.tasks).length;
 const flowTaskTotal=()=>Object.values(E2E_TASKS).reduce((n,a)=>n+a.length,0);
 const flowDeptPct=d=>Math.round(E2E_TASKS[d].filter((_,i)=>FLOW.tasks[d+"|"+i]).length/E2E_TASKS[d].length*100);
+const pendingExceptions=()=>FLOW.exceptions.filter(x=>x.status==="pending_second_approval");
 const flowBlockers=()=>openingBlockers(FLOW,{taskDone:flowTaskCount()===flowTaskTotal(),taskCount:flowTaskCount(),taskTotal:flowTaskTotal(),today:"2026-11-05"});
 const flowStageGate=()=>{
   const s=FLOW.stage;
@@ -539,7 +540,7 @@ const flowStageGate=()=>{
   if(s===8&&(FLOW.paid<100||flowDeptPct("Hukuk")<100||FLOW.documents<FLOW.documentsTotal))return"Sözleşme, zorunlu belgeler ve açılış öncesi %100 tahsilat kapısı tamamlanmalı.";
   if(s>=9&&s<=12&&flowBlockers().length)return flowBlockers()[0]+". Toplam açık: "+flowBlockers().length;
   if(s===13)return"Aktif şube yaşam döngüsünün son aşamasıdır.";
-  if(s===12&&FLOW.exceptions.length)return"Açık istisnalar kapatılmadan açılış kurulu karar veremez.";
+  if(s===12&&pendingExceptions().length)return"Açık istisnalar kapatılmadan açılış kurulu karar veremez.";
   return"";
 };
 function e2e(){
@@ -550,7 +551,7 @@ function e2e(){
   <div class="card"><h2>Başvurudan aktif şubeye yaşam döngüsü</h2><div class="journey">${E2E_STAGES.map((x,i)=>`<div class="journey-step ${i<FLOW.stage?'done':i===FLOW.stage?'current':''}"><b>${i+1}. ${x}</b><span>${i<FLOW.stage?'Tamamlandı':i===FLOW.stage?'Sorumlu: '+owner:'Bekliyor'}</span></div>`).join("")}</div></div>
   <div class="split"><div>
     <div class="card"><div class="row" style="justify-content:space-between"><div><h2>${FLOW.name}</h2><p class="nt">${FLOW.candidate} · ${FLOW.territory}</p></div><span class="stage-chip current">${E2E_STAGES[FLOW.stage]}</span></div>
-      <div class="cols"><div><h3>Finans</h3><div class="approval"><span>Giriş bedeli tahsilatı</span><b>${FLOW.paid}%</b></div><div class="approval"><span>Royalty</span><b>KDV dahil tahsilat × %${FLOW.royalty}</b></div><div class="approval"><span>Yeni bayi muafiyeti</span><b>${FLOW.exemption} ay</b></div></div><div><h3>Dosya</h3><div class="approval"><span>KVKK izinleri</span><b>${FLOW.consents}/3</b></div><div class="approval"><span>Belge talepleri</span><b>${FLOW.documents}/${FLOW.documentsTotal}</b></div><div class="approval"><span>Açık istisna</span><b>${FLOW.exceptions.length}</b></div></div></div>
+      <div class="cols"><div><h3>Finans</h3><div class="approval"><span>Giriş bedeli tahsilatı</span><b>${FLOW.paid}%</b></div><div class="approval"><span>Royalty</span><b>KDV dahil tahsilat × %${FLOW.royalty}</b></div><div class="approval"><span>Yeni bayi muafiyeti</span><b>${FLOW.exemption} ay</b></div></div><div><h3>Dosya</h3><div class="approval"><span>KVKK izinleri</span><b>${FLOW.consents}/3</b></div><div class="approval"><span>Belge talepleri</span><b>${FLOW.documents}/${FLOW.documentsTotal}</b></div><div class="approval"><span>İkinci onay bekleyen</span><b>${pendingExceptions().length}</b></div></div></div>
       ${gate?`<div class="al r"><b>Kapı kapalı:</b> ${gate}</div>`:`<div class="al ok"><b>Kapı hazır:</b> ${owner} aşamayı ilerletebilir.</div>`}
       <div class="row"><button class="btn" data-e2e="advance" ${gate||![E2E_STAGE_OWNER[FLOW.stage],"gm"].includes(R())||FLOW.stage===13?'disabled':''}>Sonraki aşamaya geçir →</button><button class="btn g" data-e2e="docs" ${!["gm","hk"].includes(R())||FLOW.documents===FLOW.documentsTotal?'disabled':''}>Sentetik belgeleri tamamla</button><button class="btn g" data-e2e="day">1 gün ilerlet</button><button class="btn g" data-e2e="exception">İstisna talebi oluştur</button></div>
     </div>
@@ -577,7 +578,7 @@ function personel(){
 function acilis(){
   const gates=[['Sözleşme ve hukuk',flowDeptPct('Hukuk')===100],['Finans ve %100 tahsilat',flowDeptPct('Finans / Muhasebe')===100&&FLOW.paid===100],['Kadro ve İK',flowDeptPct('İnsan Kaynakları')===100],['Academy ve sertifikalar',flowDeptPct('Academy')===100],['Fiziki kurulum',flowDeptPct('Mimari / Proje')===100],['Cihaz ve kalibrasyon',flowDeptPct('Tedarik')===100],['BT, POS ve güvenli bağlantı',flowDeptPct('Bilgi Teknolojileri')===100],['Kalite, İSG ve deneme',flowDeptPct('Kalite')===100&&flowDeptPct('İSG')===100&&flowDeptPct('Operasyon')===100]];
   const blockers=flowBlockers(),ready=gates.every(x=>x[1])&&blockers.length===0&&FLOW.stage>=12;
-  return`<div class="g4"><div class="card stat"><b>${gates.filter(x=>x[1]).length}/8</b><s2>Açılış kapısı</s2></div><div class="card stat"><b>${FLOW.paid}%</b><s2>Tahsilat</s2></div><div class="card stat"><b>${blockers.length}</b><s2>Teknik engel</s2></div><div class="card stat"><b class="${ready?'ok':'wn'}">${FLOW.branch?'AKTİF':ready?'HAZIR':'BEKLİYOR'}</b><s2>Kurul durumu</s2></div></div><div class="gate-grid">${gates.map((g,i)=>`<div class="gate-card"><h2>${g[1]?'<span class="ok">✓</span>':'<span class="rd">✗</span>'} ${i+1}. ${g[0]}</h2><p>${g[1]?'Departman kanıtı tamamlandı.':'İlgili departman görevleri bekliyor.'}</p></div>`).join("")}</div>${blockers.length?`<div class="card"><h2>Açılışı engelleyen kayıtlar</h2>${blockers.slice(0,12).map(x=>`<div class="al r">${H(x)}</div>`).join("")}${blockers.length>12?`<p class="nt">+${blockers.length-12} engel daha</p>`:""}</div>`:""}<div class="card"><h2>Nihai açılış kararı</h2><p class="nt">Aktivasyon; şube kartı, personel bağlılığı, kullanıcı kapsamı ve 30/60/90 görevlerini tek işlemde oluşturur.</p><button class="btn" data-e2e="activate" ${ready&&R()==='gm'&&!FLOW.branch?'':'disabled'}>Aktif şube yap ve 30/60/90 gün planını oluştur</button></div>`;
+  return`<div class="g4"><div class="card stat"><b>${gates.filter(x=>x[1]).length}/8</b><s2>Açılış kapısı</s2></div><div class="card stat"><b>${FLOW.paid}%</b><s2>Tahsilat</s2></div><div class="card stat"><b>${blockers.length}</b><s2>Teknik engel</s2></div><div class="card stat"><b class="${ready?'ok':'wn'}">${FLOW.branch?'AKTİF':ready?'HAZIR':'BEKLİYOR'}</b><s2>Kurul durumu</s2></div></div><div class="gate-grid">${gates.map((g,i)=>`<div class="gate-card"><h2>${g[1]?'<span class="ok">✓</span>':'<span class="rd">✗</span>'} ${i+1}. ${g[0]}</h2><p>${g[1]?'Departman kanıtı tamamlandı.':'İlgili departman görevleri bekliyor.'}</p></div>`).join("")}</div>${FLOW.exceptions.length?`<div class="card"><h2>Maker–checker istisnaları</h2>${FLOW.exceptions.map(x=>`<div class="al"><b>${H(x.type)}</b> · ${H(x.reason)} · ${H(x.requesterRole)} · ${H(x.status)} ${x.status==='pending_second_approval'?`<button class="btn g sm" data-exception-review="approved" data-exception-id="${H(x.id)}" ${!["gm","fd"].includes(R())||x.requesterId===R()+':demo-user'?'disabled':''}>İkinci onay</button><button class="btn g sm" data-exception-review="rejected" data-exception-id="${H(x.id)}" ${!["gm","fd"].includes(R())||x.requesterId===R()+':demo-user'?'disabled':''}>Reddet</button>`:""}</div>`).join("")}</div>`:""}${blockers.length?`<div class="card"><h2>Açılışı engelleyen kayıtlar</h2>${blockers.slice(0,12).map(x=>`<div class="al r">${H(x)}</div>`).join("")}${blockers.length>12?`<p class="nt">+${blockers.length-12} engel daha</p>`:""}</div>`:""}<div class="card"><h2>Nihai açılış kararı</h2><p class="nt">Aktivasyon; şube kartı, personel bağlılığı, kullanıcı kapsamı ve 30/60/90 görevlerini tek işlemde oluşturur.</p><button class="btn" data-e2e="activate" ${ready&&R()==='gm'&&!FLOW.branch?'':'disabled'}>Aktif şube yap ve 30/60/90 gün planını oluştur</button></div>`;
 }
 function takip(){
   if(!FLOW.followUps.length)return`<div class="card"><h2>30/60/90 gün planı</h2><p class="nt">Şube atomik aktivasyon tamamlandıktan sonra üç takip görevi otomatik oluşur.</p></div>`;
@@ -700,13 +701,14 @@ document.addEventListener("click",ev=>{
     if(action==="advance"&&!flowStageGate()&&[E2E_STAGE_OWNER[FLOW.stage],"gm"].includes(R())){FLOW.history.unshift(DL()+" · "+RN[R()]+" · "+E2E_STAGES[FLOW.stage]+" tamamlandı; "+(E2E_STAGES[FLOW.stage+1]||"ilk 90 gün")+" başladı");FLOW.stage=Math.min(E2E_STAGES.length-1,FLOW.stage+1)}
     if(action==="docs"&&["gm","hk"].includes(R())){FLOW.documents=FLOW.documentsTotal;FLOW.history.unshift(DL()+" · "+RN[R()]+" · Zorunlu sentetik belge seti tamamlandı")}
     if(action==="day"){FLOW.days++;FLOW.history.unshift(DL()+" · Sistem · Program günü "+FLOW.days+" olarak güncellendi")}
-    if(action==="exception"){FLOW.exceptions.push({id:Date.now(),stage:E2E_STAGES[FLOW.stage],requester:RN[R()],status:"İkinci onay bekliyor"});FLOW.history.unshift(DL()+" · "+RN[R()]+" · "+E2E_STAGES[FLOW.stage]+" için istisna talebi açtı")}
+    if(action==="exception"){try{requestException(FLOW,{type:"non_critical_schedule",stage:FLOW.stage,reason:E2E_STAGES[FLOW.stage]+" için süre/plan istisnası",requesterId:R()+":demo-user",requesterRole:R()});FLOW.history.unshift(DL()+" · "+RN[R()]+" · "+E2E_STAGES[FLOW.stage]+" için ikinci onaylı istisna talebi açtı")}catch(e){FLOW.history.unshift(DL()+" · Sistem · "+e.message)}}
     if(action==="activate"&&R()==="gm"){const result=activateFranchiseCase(FLOW,{taskDone:flowTaskCount()===flowTaskTotal(),taskCount:flowTaskCount(),taskTotal:flowTaskTotal(),today:"2026-11-05",activatedAt:"2026-11-05"});if(!result.ok)FLOW.history.unshift(DL()+" · Sistem · Aktivasyon reddedildi: "+result.blockers[0])}
     render();return;
   }
   const staffAction=ev.target.closest("[data-staff-action]");
   if(staffAction){const key=staffAction.dataset.roleKey,action=staffAction.dataset.staffAction;try{if(action==="hire"&&["gm","ik"].includes(R()))hireStaff(FLOW,key,$("staff-"+key)?.value);if(action==="docs"&&["gm","ik"].includes(R()))updateStaffCompliance(FLOW,key,{employmentDocumentsComplete:true,contractSigned:true});if(action==="academy"&&["gm","ak"].includes(R()))updateStaffCompliance(FLOW,key,{academyAssigned:true,academyCompleted:true,certificateValidUntil:"2027-11-05"});FLOW.history.unshift(DL()+" · "+RN[R()]+" · Personel kapısı güncellendi: "+key)}catch(e){FLOW.history.unshift(DL()+" · Sistem · "+e.message)}render();return}
   const follow=ev.target.closest("[data-followup]");if(follow&&["gm","fd"].includes(R())){const item=FLOW.followUps.find(x=>x.id===follow.dataset.followup);if(item)item.status="done";render();return}
+  const exceptionReview=ev.target.closest("[data-exception-review]");if(exceptionReview){try{reviewException(FLOW,exceptionReview.dataset.exceptionId,{reviewerId:R()+":demo-user",reviewerRole:R(),decision:exceptionReview.dataset.exceptionReview,note:"Demo ikinci onay"});FLOW.history.unshift(DL()+" · "+RN[R()]+" · İstisna "+exceptionReview.dataset.exceptionReview)}catch(e){FLOW.history.unshift(DL()+" · Sistem · "+e.message)}render();return}
   const el=ev.target.closest("[data-a]");
   if(el&&A[el.dataset.a])A[el.dataset.a](el.dataset);
 });

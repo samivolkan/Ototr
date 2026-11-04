@@ -6,6 +6,8 @@ import {
   createFranchiseCase,
   hireStaff,
   openingBlockers,
+  requestException,
+  reviewException,
   updateStaffCompliance
 } from '../gm-franchise/franchise-core.mjs';
 
@@ -58,4 +60,14 @@ test('atomic activation creates branch, ten scoped accounts and 30/60/90 tasks',
   assert.equal(c.accessAccounts.length, 10);
   assert.deepEqual(c.followUps.map((x) => x.day), [30, 60, 90]);
   assert.ok(c.staffing.every((x) => x.branchId === 'BR-TEST-4' && x.accessStatus === 'active'));
+});
+
+test('maker-checker rejects self approval and protects non-waivable gates', () => {
+  const c = createFranchiseCase({ id: 'FR-TEST-5' });
+  assert.throws(() => requestException(c, { type: 'payment', reason: 'Tahsilat kapısı', requesterId: 'u1', requesterRole: 'fd' }), /istisnaya kapalıdır/);
+  const ex = requestException(c, { id: 'EX-1', reason: 'Kritik olmayan takvim sapması', requesterId: 'u1', requesterRole: 'fd' });
+  assert.throws(() => reviewException(c, ex.id, { reviewerId: 'u1', reviewerRole: 'gm', decision: 'approved' }), /kendi istisnasını/);
+  reviewException(c, ex.id, { reviewerId: 'u2', reviewerRole: 'gm', decision: 'approved' });
+  assert.equal(ex.status, 'approved');
+  assert.equal(openingBlockers(c).includes('İkinci onay bekleyen istisna bulunuyor'), false);
 });

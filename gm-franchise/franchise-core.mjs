@@ -17,6 +17,8 @@ export const FOLLOW_UP_TEMPLATES = [
   { day: 90, title: "Franchise performans kurulu", owner: "Franchise Direktörü" }
 ];
 
+export const NON_WAIVABLE_EXCEPTION_TYPES = new Set(["legal", "license", "payment"]);
+
 export function createStaffingPlan() {
   return REQUIRED_ROLES.map((role, index) => ({
     id: `staff-${index + 1}`,
@@ -96,6 +98,40 @@ export function staffReadyForAccess(member, today = "2026-11-05") {
   return member.recruitmentStatus === "hired" && member.employmentDocumentsComplete && member.contractSigned && hasValidCertificate(member, today);
 }
 
+export function requestException(franchiseCase, input = {}) {
+  const type = input.type || "non_critical_schedule";
+  if (NON_WAIVABLE_EXCEPTION_TYPES.has(type)) throw new Error("Hukuk, ruhsat ve %100 tahsilat kapıları istisnaya kapalıdır.");
+  if (!String(input.reason || "").trim()) throw new Error("İstisna gerekçesi zorunludur.");
+  const exception = {
+    id: input.id || `EX-${Date.now()}`,
+    type,
+    stage: input.stage ?? franchiseCase.stage,
+    reason: String(input.reason).trim(),
+    requesterId: input.requesterId,
+    requesterRole: input.requesterRole,
+    status: "pending_second_approval",
+    reviewerId: null,
+    reviewerRole: null,
+    reviewNote: null
+  };
+  franchiseCase.exceptions.push(exception);
+  return exception;
+}
+
+export function reviewException(franchiseCase, exceptionId, review = {}) {
+  const exception = franchiseCase.exceptions.find((item) => item.id === exceptionId);
+  if (!exception) throw new Error("İstisna talebi bulunamadı.");
+  if (exception.status !== "pending_second_approval") throw new Error("İstisna daha önce karara bağlandı.");
+  if (!review.reviewerId || review.reviewerId === exception.requesterId) throw new Error("Talep eden kişi kendi istisnasını onaylayamaz.");
+  if (!new Set(["gm", "fd"]).has(review.reviewerRole)) throw new Error("İkinci onay yalnız GM veya Franchise Direktörü tarafından verilebilir.");
+  if (!new Set(["approved", "rejected"]).has(review.decision)) throw new Error("Geçersiz istisna kararı.");
+  exception.status = review.decision;
+  exception.reviewerId = review.reviewerId;
+  exception.reviewerRole = review.reviewerRole;
+  exception.reviewNote = String(review.note || "").trim() || null;
+  return exception;
+}
+
 export function openingBlockers(franchiseCase, options = {}) {
   const blockers = [];
   const taskDone = options.taskDone ?? true;
@@ -104,7 +140,7 @@ export function openingBlockers(franchiseCase, options = {}) {
   if (franchiseCase.documents < franchiseCase.documentsTotal) blockers.push(`Zorunlu belgeler eksik (${franchiseCase.documents}/${franchiseCase.documentsTotal})`);
   if (franchiseCase.paid < 100) blockers.push("Açılış öncesi tahsilat %100 değil");
   if (!taskDone) blockers.push(`Departman görevleri eksik (${options.taskCount || 0}/${taskTotal})`);
-  if (franchiseCase.exceptions.length) blockers.push("Açık istisna bulunuyor");
+  if (franchiseCase.exceptions.some((item) => item.status === "pending_second_approval")) blockers.push("İkinci onay bekleyen istisna bulunuyor");
   for (const member of franchiseCase.staffing) {
     if (member.recruitmentStatus !== "hired") blockers.push(`${member.role}: işe alım tamamlanmadı`);
     else if (!member.employmentDocumentsComplete || !member.contractSigned) blockers.push(`${member.role}: özlük veya sözleşme eksik`);
