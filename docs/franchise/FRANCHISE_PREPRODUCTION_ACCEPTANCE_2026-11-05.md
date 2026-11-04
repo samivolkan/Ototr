@@ -13,15 +13,17 @@ Karar: **NO_GO**
 - Supabase/PostgreSQL şeması, RLS, indeksler ve entegrasyon outbox tasarımı
 - Departman adaptör sözleşmeleri ve yapılandırılmamış adaptörlerin görünür hata vermesi
 - Supabase PostgreSQL 17 üzerinde migration, atomik aktivasyon, idempotency, outbox ve rollback yerel kabul testi
+- E-posta, SMS, WhatsApp ve e-imza amaç/izin/şablon/idempotency sözleşmesi; sahte sağlayıcı ve log maskeleme testleri
+- 12 ortak UAT senaryosu ve departman bazlı maker-checker imza matrisi
 
 ## NO_GO kapıları
 
 1. Migration ve rollback yerel Supabase PostgreSQL 17 üzerinde geçti; hosted staging projesinde henüz çalıştırılmadı.
-2. ERP kimliği ile `app_metadata.role` ve `branch_ids` bağlanmadı.
-3. Özel Storage bucket, saklama süresi ve imzalı URL politikası kurulmadı.
+2. ERP kimliği ile `app_metadata.franchise_role` ve `franchise_branch_ids` hosted staging kullanıcılarına bağlanmadı.
+3. Özel Storage bucket ve saklama politikası yerelde geçti; hosted staging Storage API ve imzalı URL akışı doğrulanmadı.
 4. Finans, Hukuk, İK, Academy, BT ve Görev Merkezi adaptörleri gerçek staging uçlarına bağlanmadı.
-5. E-imza, SMS, e-posta ve WhatsApp sağlayıcıları seçilmedi/test edilmedi.
-6. Eşzamanlı aktivasyon, tekrar deneme, outbox dead-letter ve geri yükleme testleri yapılmadı.
+5. Ortak sağlayıcı sözleşmesi ve sahte sağlayıcı testleri geçti; gerçek e-imza, SMS, e-posta ve WhatsApp sağlayıcıları seçilip staging'de test edilmedi.
+6. Yerel idempotency/outbox/rollback testleri geçti; hosted staging eşzamanlılık, dead-letter ve geri yükleme tatbikatı yapılmadı.
 7. Departman sahiplerinin UAT imzaları alınmadı.
 8. Canlı rollout/rollback kararı onaylanmadı.
 
