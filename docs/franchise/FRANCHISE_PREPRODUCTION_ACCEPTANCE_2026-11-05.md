@@ -17,6 +17,7 @@ Karar: **NO_GO**
 - 12 ortak UAT senaryosu ve departman bazlı maker-checker imza matrisi
 - Departman görevlerinde en az yetki: çapraz departman okuma/yazma reddi ve değiştirilemez görev kapsamı
 - Şube tipine göre parametrik zorunlu kadro ve İK–Academy–BT ayrık alan sahipliği
+- Finans, Hukuk ve Operasyon kaynaklı dört değiştirilemez açılış kanıtı; ayrı maker–checker onayı olmadan şube kaydı reddi
 
 ## NO_GO kapıları
 

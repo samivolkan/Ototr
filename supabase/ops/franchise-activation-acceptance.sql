@@ -4,6 +4,9 @@ begin;
 insert into auth.users(id,email,raw_app_meta_data,created_at,updated_at)
 values('11111111-1111-4111-8111-111111111111','franchise-gm-test@example.invalid','{"role":"gm"}'::jsonb,now(),now())
 on conflict (id) do nothing;
+insert into auth.users(id,email,raw_app_meta_data,created_at,updated_at)
+values('11111111-1111-4111-8111-111111111112','franchise-evidence-test@example.invalid','{}'::jsonb,now(),now())
+on conflict (id) do nothing;
 
 insert into public.franchise_user_scopes(auth_user_id,franchise_role,branch_ids,updated_by)
 values('11111111-1111-4111-8111-111111111111','gm','{}','11111111-1111-4111-8111-111111111111');
@@ -40,6 +43,12 @@ insert into public.franchise_staff(franchise_case_id,role_key,role_name,person_n
 select '22222222-2222-4222-8222-222222222222', role_key, role_name, 'Sentetik '||role_name, 'hired', true, true,
        certification_required, certification_required, case when certification_required then current_date+365 else null end, 'ready'
 from public.franchise_staffing_rules where branch_type='standard' and is_active;
+
+insert into public.franchise_opening_evidence(franchise_case_id,gate_code,status,evidence_sha256,source_reference,details,maker_id,checker_id,reviewed_at) values
+('22222222-2222-4222-8222-222222222222','entry_fee_payment','approved',repeat('a',64),'PAY-UAT','{"paid_percent":"100","payment_reference":"PAY-UAT"}','11111111-1111-4111-8111-111111111112','11111111-1111-4111-8111-111111111111',now()),
+('22222222-2222-4222-8222-222222222222','franchise_contract','approved',repeat('b',64),'CON-UAT','{"signed":true,"contract_no":"CON-UAT","signature_method":"esign"}','11111111-1111-4111-8111-111111111112','11111111-1111-4111-8111-111111111111',now()),
+('22222222-2222-4222-8222-222222222222','site_visit','approved',repeat('c',64),'SITE-UAT','{"inspector_approved":true,"measurements_complete":true,"photo_count":4,"latitude":"40.1","longitude":"29.1"}','11111111-1111-4111-8111-111111111112','11111111-1111-4111-8111-111111111111',now()),
+('22222222-2222-4222-8222-222222222222','operating_license','approved',repeat('d',64),'LIC-UAT','{"valid":true,"license_no":"LIC-UAT"}','11111111-1111-4111-8111-111111111112','11111111-1111-4111-8111-111111111111',now());
 
 set local role authenticated;
 do $$
