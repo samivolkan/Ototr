@@ -192,9 +192,9 @@ const PERM={gm:new Set(ALLM),fr:new Set(["dash","org","kisi","izin","vardiya","y
 const PEND=[],LOG=[],PRIM={},OFF={},YY=2500,DONS=["Taslak","Kontrol edildi","Onaylandı","Muhasebeye aktarıldı"];let DON=0;
 const log=a=>{LOG.unshift(new Date().toLocaleTimeString("tr-TR")+" · "+RN[role()]+" · "+a);LOG.length=Math.min(LOG.length,15)};
 const ST=["Başvuru","Görüşme","Teklif","İşe kabul"];
-let AD=[{id:1,ad:"Demo Aday 01",dep:"sube",poz:"Kaporta-Boya Ustası",st:1,rej:""},{id:2,ad:"Demo Aday 02",dep:"muh",poz:"Muhasebe Uzmanı",st:0,rej:""},{id:3,ad:"Demo Aday 03",dep:"bt",poz:"Yazılım Geliştirici",st:2,rej:""},{id:4,ad:"Demo Aday 04",dep:"sube",poz:"Teknisyen",st:3,rej:""}];
+let AD=[{id:1,ad:"Demo Aday 01",dep:"sube",poz:"Şube Ağı Sorumlusu",st:1,rej:""},{id:2,ad:"Demo Aday 02",dep:"muh",poz:"Yeminli Müşavir",st:0,rej:""},{id:3,ad:"Demo Aday 03",dep:"bt",poz:"Bilgi Teknolojileri Sorumlusu",st:2,rej:""},{id:4,ad:"Demo Aday 04",dep:"sube",poz:"Şube Ağı Sorumlusu",st:3,rej:""}];
 const openPos=()=>{const o=[];D.forEach(x=>{if(role()!=="gm"&&x.id!=="sube")return;x.pos.forEach((q,i)=>{if(q.k>q.d)o.push([x.id+"|"+i,x.ad+" · "+q.t+" ("+(q.k-q.d)+" açık)"])})});return o};
-let ON=[{ad:"Yeni usta (örnek)",poz:"Motor-Dyno Ustası",done:new Set([0,1])}];
+let ON=[{ad:"Yeni şube sorumlusu (örnek)",poz:"Şube Ağı Sorumlusu",done:new Set([0,1])}];
 const ONL=["Evrakların tamamlanması","İş sözleşmesi imzası","SGK işe giriş durumu doğrulandı","KVKK aydınlatma ve uygulanabilir hukuki dayanak kaydı","OTOTR kurumsal eğitimi (Akademi)","Ekspertiz standart eğitimi (Akademi)","İş sağlığı ve güvenliği eğitimi","CRM / bayi portalı ve mobil uygulama yetkisi","Ekipman ve zimmet teslimi","Deneme süresi değerlendirmesi"];
 const OFL=["Ayrılış nedeni ve son çalışma tarihi kaydı","İhbar süresi kontrolü","SGK ayrılış bildirimi kontrolü","Zimmet iadesi","Kullanıcı hesaplarının kapatılması","Açık görevlerin devri","İzin ve bordro mutabakatı","Çıkış görüşmesi"];
 let REQ=[{id:1,p:4,tur:"Avans",tut:5000,not:"Kasım avansı",s:0},{id:2,p:6,tur:"Fazla mesai",tut:6,not:"Cumartesi yoğunluk",s:0},{id:3,p:10,tur:"Masraf",tut:850,not:"Dyno yedek parça",s:1},{id:4,p:5,tur:"Eğitim talebi",tut:0,not:"Elektrikli araç modülü",s:0},{id:5,p:5,tur:"Fazla mesai",tut:8,not:"Kasım başı yoğunluk",s:2},{id:6,p:11,tur:"Avans",tut:3000,not:"Acil ihtiyaç",s:2}];
