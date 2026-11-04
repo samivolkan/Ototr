@@ -12,10 +12,11 @@ Karar: **NO_GO**
 - Atomik şube, kullanıcı kapsamı ve 30/60/90 görev üretimi
 - Supabase/PostgreSQL şeması, RLS, indeksler ve entegrasyon outbox tasarımı
 - Departman adaptör sözleşmeleri ve yapılandırılmamış adaptörlerin görünür hata vermesi
+- Supabase PostgreSQL 17 üzerinde migration, atomik aktivasyon, idempotency, outbox ve rollback yerel kabul testi
 
 ## NO_GO kapıları
 
-1. Migration staging Supabase projesinde çalıştırılmadı; rollback kanıtı yok.
+1. Migration ve rollback yerel Supabase PostgreSQL 17 üzerinde geçti; hosted staging projesinde henüz çalıştırılmadı.
 2. ERP kimliği ile `app_metadata.role` ve `branch_ids` bağlanmadı.
 3. Özel Storage bucket, saklama süresi ve imzalı URL politikası kurulmadı.
 4. Finans, Hukuk, İK, Academy, BT ve Görev Merkezi adaptörleri gerçek staging uçlarına bağlanmadı.

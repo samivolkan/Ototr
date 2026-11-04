@@ -60,6 +60,11 @@ test('atomic activation creates branch, ten scoped accounts and 30/60/90 tasks',
   assert.equal(c.accessAccounts.length, 10);
   assert.deepEqual(c.followUps.map((x) => x.day), [30, 60, 90]);
   assert.ok(c.staffing.every((x) => x.branchId === 'BR-TEST-4' && x.accessStatus === 'active'));
+  const repeated = activateFranchiseCase(c, { taskDone: true, branchId: 'BR-OTHER' });
+  assert.equal(repeated.alreadyActive, true);
+  assert.equal(c.branch.id, 'BR-TEST-4');
+  assert.equal(c.accessAccounts.length, 10);
+  assert.equal(c.followUps.length, 3);
 });
 
 test('maker-checker rejects self approval and protects non-waivable gates', () => {

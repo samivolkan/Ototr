@@ -1,0 +1,57 @@
+-- Local/staging acceptance test. Runs in one transaction and rolls back all fixture data.
+begin;
+
+insert into auth.users(id,email,raw_app_meta_data,created_at,updated_at)
+values('11111111-1111-4111-8111-111111111111','franchise-gm-test@example.invalid','{"role":"gm"}'::jsonb,now(),now())
+on conflict (id) do nothing;
+
+insert into public.franchise_cases(id,application_no,candidate_name,city,district,stage,score,consent_count,document_count,document_total,paid_percent,status,created_by)
+values('22222222-2222-4222-8222-222222222222','APP-STAGING-ACCEPTANCE','Sentetik Kabul Adayı','Bursa','Nilüfer',12,84,3,17,17,100,'approved','11111111-1111-4111-8111-111111111111');
+
+set local role authenticated;
+set local request.jwt.claims='{"sub":"11111111-1111-4111-8111-111111111111","app_metadata":{"role":"gm","branch_ids":[]}}';
+do $$
+begin
+  perform public.activate_franchise_case('22222222-2222-4222-8222-222222222222');
+  raise exception 'Eksik görev/kadro aktivasyonu yanlışlıkla geçti';
+exception when others then
+  if sqlerrm not like 'Departman görev seti eksik%' then raise; end if;
+end $$;
+reset role;
+
+insert into public.franchise_department_tasks(franchise_case_id,department,task_code,title,status,completed_by,completed_at)
+select '22222222-2222-4222-8222-222222222222', 'department-'||((n-1)/3+1), 'TASK-'||lpad(n::text,2,'0'), 'Sentetik görev '||n, 'completed', '11111111-1111-4111-8111-111111111111', now()
+from generate_series(1,36) n;
+
+insert into public.franchise_staff(franchise_case_id,role_key,role_name,person_name,recruitment_status,employment_documents_complete,contract_signed,certification_required,academy_completed,certificate_valid_until,access_status)
+select '22222222-2222-4222-8222-222222222222', 'role-'||n, 'Zorunlu rol '||n, 'Sentetik personel '||n, 'hired', true, true, n<10, n<10, case when n<10 then current_date+365 else null end, 'ready'
+from generate_series(1,10) n;
+
+set local role authenticated;
+do $$
+declare first_result jsonb; repeated_result jsonb;
+begin
+  first_result:=public.activate_franchise_case('22222222-2222-4222-8222-222222222222');
+  if not (first_result->>'ok')::boolean then raise exception 'İlk aktivasyon başarısız'; end if;
+  if (select count(*) from public.franchise_branches where franchise_case_id='22222222-2222-4222-8222-222222222222')<>1 then raise exception 'Şube sayısı yanlış'; end if;
+  if (select count(*) from public.franchise_access_accounts where franchise_case_id='22222222-2222-4222-8222-222222222222')<>10 then raise exception 'Hesap sayısı yanlış'; end if;
+  if (select count(*) from public.franchise_followup_tasks where franchise_case_id='22222222-2222-4222-8222-222222222222')<>3 then raise exception '30/60/90 görev sayısı yanlış'; end if;
+  if (select count(*) from public.franchise_integration_outbox where franchise_case_id='22222222-2222-4222-8222-222222222222')<>4 then raise exception 'Outbox olay sayısı yanlış'; end if;
+  repeated_result:=public.activate_franchise_case('22222222-2222-4222-8222-222222222222');
+  if coalesce((repeated_result->>'already_active')::boolean,false) is not true then raise exception 'Tekrarlı aktivasyon idempotent değil'; end if;
+end $$;
+reset role;
+
+set local role service_role;
+do $$
+declare claimed public.franchise_integration_outbox%rowtype;
+begin
+  select * into claimed from public.claim_franchise_outbox(1) limit 1;
+  if claimed.id is null or claimed.status<>'processing' or claimed.attempts<>1 then raise exception 'Outbox claim başarısız'; end if;
+  perform public.finish_franchise_outbox(claimed.id,true,null);
+  if not exists(select 1 from public.franchise_integration_outbox where id=claimed.id and status='processed' and processed_at is not null) then raise exception 'Outbox finish başarısız'; end if;
+end $$;
+reset role;
+
+select 'PASS' as franchise_activation_acceptance;
+rollback;

@@ -1,0 +1,23 @@
+-- STAGING ONLY. Destructive rollback for the franchise preproduction schema.
+-- Export staging evidence before use. Never run against production without signed approval.
+begin;
+drop policy if exists franchise_storage_select on storage.objects;
+drop policy if exists franchise_storage_insert on storage.objects;
+drop policy if exists franchise_storage_update on storage.objects;
+drop policy if exists franchise_storage_delete on storage.objects;
+drop function if exists public.finish_franchise_outbox(uuid,boolean,text);
+drop function if exists public.claim_franchise_outbox(integer);
+drop function if exists public.activate_franchise_case(uuid);
+drop table if exists public.franchise_integration_outbox;
+drop table if exists public.franchise_documents;
+drop table if exists public.franchise_document_retention;
+drop table if exists public.franchise_exceptions;
+drop table if exists public.franchise_followup_tasks;
+drop table if exists public.franchise_access_accounts;
+drop table if exists public.franchise_branches;
+drop table if exists public.franchise_staff;
+drop table if exists public.franchise_department_tasks;
+drop table if exists public.franchise_cases;
+delete from storage.objects where bucket_id='franchise-private';
+delete from storage.buckets where id='franchise-private';
+commit;

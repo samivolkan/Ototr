@@ -150,6 +150,9 @@ export function openingBlockers(franchiseCase, options = {}) {
 }
 
 export function activateFranchiseCase(franchiseCase, options = {}) {
+  if (franchiseCase.branch?.status === "active") {
+    return { ok: true, alreadyActive: true, branch: franchiseCase.branch, accounts: franchiseCase.accessAccounts, followUps: franchiseCase.followUps };
+  }
   const blockers = openingBlockers(franchiseCase, options);
   if (blockers.length) return { ok: false, blockers };
   const branchId = options.branchId || `BR-${franchiseCase.id}`;

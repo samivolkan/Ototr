@@ -116,8 +116,37 @@ create table if not exists public.franchise_integration_outbox (
   next_attempt_at timestamptz not null default now(),
   last_error text,
   created_at timestamptz not null default now(),
-  processed_at timestamptz
+  processed_at timestamptz,
+  unique (franchise_case_id, source, event_type)
 );
+
+create table if not exists public.franchise_documents (
+  id uuid primary key default gen_random_uuid(),
+  franchise_case_id uuid not null references public.franchise_cases(id) on delete cascade,
+  storage_path text not null unique,
+  category text not null check (category in ('identity','financial','legal','location','employment','certificate','other')),
+  classification text not null default 'confidential' check (classification in ('internal','confidential','restricted')),
+  uploaded_by uuid not null references auth.users(id) on delete restrict,
+  mime_type text not null,
+  size_bytes bigint not null check (size_bytes between 1 and 20971520),
+  expires_at timestamptz,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.franchise_document_retention (
+  category text primary key,
+  retention_days integer not null check (retention_days between 30 and 3650),
+  legal_hold boolean not null default false,
+  updated_at timestamptz not null default now()
+);
+
+insert into public.franchise_document_retention(category,retention_days) values
+  ('identity',730),('financial',1825),('legal',3650),('location',1825),('employment',3650),('certificate',1825),('other',730)
+on conflict (category) do nothing;
+
+insert into storage.buckets(id,name,public,file_size_limit,allowed_mime_types)
+values('franchise-private','franchise-private',false,20971520,array['application/pdf','image/jpeg','image/png','image/webp'])
+on conflict (id) do update set public=false,file_size_limit=excluded.file_size_limit,allowed_mime_types=excluded.allowed_mime_types;
 
 create index if not exists franchise_cases_applicant_idx on public.franchise_cases (applicant_user_id, status);
 create index if not exists franchise_tasks_case_status_idx on public.franchise_department_tasks (franchise_case_id, status);
@@ -125,6 +154,7 @@ create index if not exists franchise_staff_case_status_idx on public.franchise_s
 create index if not exists franchise_followups_branch_due_idx on public.franchise_followup_tasks (branch_id, status, due_at);
 create index if not exists franchise_exceptions_case_status_idx on public.franchise_exceptions (franchise_case_id, status);
 create index if not exists franchise_outbox_pending_idx on public.franchise_integration_outbox (status, next_attempt_at) where status in ('pending','failed');
+create index if not exists franchise_documents_case_category_idx on public.franchise_documents (franchise_case_id, category, created_at desc);
 
 alter table public.franchise_cases enable row level security;
 alter table public.franchise_department_tasks enable row level security;
@@ -134,10 +164,13 @@ alter table public.franchise_access_accounts enable row level security;
 alter table public.franchise_followup_tasks enable row level security;
 alter table public.franchise_exceptions enable row level security;
 alter table public.franchise_integration_outbox enable row level security;
+alter table public.franchise_documents enable row level security;
+alter table public.franchise_document_retention enable row level security;
 
-revoke all on public.franchise_cases, public.franchise_department_tasks, public.franchise_staff, public.franchise_branches, public.franchise_access_accounts, public.franchise_followup_tasks, public.franchise_exceptions, public.franchise_integration_outbox from anon;
-revoke all on public.franchise_cases, public.franchise_department_tasks, public.franchise_staff, public.franchise_branches, public.franchise_access_accounts, public.franchise_followup_tasks, public.franchise_exceptions, public.franchise_integration_outbox from authenticated;
-grant select, insert, update on public.franchise_cases, public.franchise_department_tasks, public.franchise_staff, public.franchise_branches, public.franchise_access_accounts, public.franchise_followup_tasks, public.franchise_exceptions to authenticated;
+revoke all on public.franchise_cases, public.franchise_department_tasks, public.franchise_staff, public.franchise_branches, public.franchise_access_accounts, public.franchise_followup_tasks, public.franchise_exceptions, public.franchise_integration_outbox, public.franchise_documents, public.franchise_document_retention from anon;
+revoke all on public.franchise_cases, public.franchise_department_tasks, public.franchise_staff, public.franchise_branches, public.franchise_access_accounts, public.franchise_followup_tasks, public.franchise_exceptions, public.franchise_integration_outbox, public.franchise_documents, public.franchise_document_retention from authenticated;
+grant select, insert, update on public.franchise_cases, public.franchise_department_tasks, public.franchise_staff, public.franchise_branches, public.franchise_access_accounts, public.franchise_followup_tasks, public.franchise_exceptions, public.franchise_documents to authenticated;
+grant select on public.franchise_document_retention to authenticated;
 grant select, insert on public.franchise_integration_outbox to authenticated;
 
 create policy franchise_case_select on public.franchise_cases for select to authenticated
@@ -192,6 +225,43 @@ using ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_dire
 create policy franchise_outbox_insert on public.franchise_integration_outbox for insert to authenticated
 with check ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director'));
 
+create policy franchise_document_select on public.franchise_documents for select to authenticated
+using (
+  exists(select 1 from public.franchise_cases c where c.id=franchise_case_id and c.applicant_user_id=(select auth.uid()))
+  or (select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director','franchise_specialist','finance','legal','hr','academy','operations')
+);
+create policy franchise_document_insert on public.franchise_documents for insert to authenticated
+with check (
+  uploaded_by=(select auth.uid()) and (
+    exists(select 1 from public.franchise_cases c where c.id=franchise_case_id and c.applicant_user_id=(select auth.uid()))
+    or (select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director','franchise_specialist','finance','legal','hr','academy','operations')
+  )
+);
+create policy franchise_document_update on public.franchise_documents for update to authenticated
+using ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director','legal'))
+with check ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director','legal'));
+create policy franchise_retention_select on public.franchise_document_retention for select to authenticated using (true);
+
+create policy franchise_storage_select on storage.objects for select to authenticated
+using (
+  bucket_id='franchise-private' and (
+    exists(select 1 from public.franchise_cases c where c.id::text=(storage.foldername(name))[1] and c.applicant_user_id=(select auth.uid()))
+    or (select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director','franchise_specialist','finance','legal','hr','academy','operations')
+  )
+);
+create policy franchise_storage_insert on storage.objects for insert to authenticated
+with check (
+  bucket_id='franchise-private' and owner_id=(select auth.jwt()->>'sub') and (
+    exists(select 1 from public.franchise_cases c where c.id::text=(storage.foldername(name))[1] and c.applicant_user_id=(select auth.uid()))
+    or (select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director','franchise_specialist','finance','legal','hr','academy','operations')
+  )
+);
+create policy franchise_storage_update on storage.objects for update to authenticated
+using (bucket_id='franchise-private' and owner_id=(select auth.jwt()->>'sub'))
+with check (bucket_id='franchise-private' and owner_id=(select auth.jwt()->>'sub'));
+create policy franchise_storage_delete on storage.objects for delete to authenticated
+using (bucket_id='franchise-private' and (select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director','legal'));
+
 create or replace function public.activate_franchise_case(p_case_id uuid)
 returns jsonb
 language plpgsql
@@ -207,8 +277,12 @@ begin
   if v_role not in ('gm','franchise_director') then raise exception 'Yetkisiz aktivasyon'; end if;
   select * into v_case from public.franchise_cases where id = p_case_id for update;
   if not found then raise exception 'Franchise dosyası bulunamadı'; end if;
-  if v_case.status = 'active' then raise exception 'Şube zaten aktif'; end if;
+  if v_case.status = 'active' then
+    select * into v_branch from public.franchise_branches where franchise_case_id=p_case_id;
+    return jsonb_build_object('ok',true,'already_active',true,'branch_id',v_branch.id,'branch_code',v_branch.branch_code);
+  end if;
   if v_case.consent_count < 3 or v_case.document_count < v_case.document_total or v_case.paid_percent < 100 then raise exception 'Dosya, izin veya tahsilat kapısı eksik'; end if;
+  if (select count(*) from public.franchise_department_tasks where franchise_case_id=p_case_id) <> 36 then raise exception 'Departman görev seti eksik; 36 görev zorunlu'; end if;
   select count(*) into v_missing from public.franchise_department_tasks where franchise_case_id=p_case_id and status <> 'completed';
   if v_missing > 0 then raise exception 'Departman görevleri eksik: %', v_missing; end if;
   select count(*) into v_missing from public.franchise_staff where franchise_case_id=p_case_id and (recruitment_status <> 'hired' or not employment_documents_complete or not contract_signed or (certification_required and (not academy_completed or certificate_valid_until < current_date)));
@@ -243,5 +317,46 @@ $$;
 
 revoke all on function public.activate_franchise_case(uuid) from public, anon;
 grant execute on function public.activate_franchise_case(uuid) to authenticated;
+
+create or replace function public.claim_franchise_outbox(p_limit integer default 25)
+returns setof public.franchise_integration_outbox
+language sql
+security invoker
+set search_path = public, pg_temp
+as $$
+  with claimed as (
+    select id from public.franchise_integration_outbox
+    where status in ('pending','failed') and next_attempt_at<=now() and attempts<10
+    order by created_at
+    for update skip locked
+    limit least(greatest(p_limit,1),100)
+  )
+  update public.franchise_integration_outbox o
+  set status='processing',attempts=o.attempts+1
+  from claimed c where o.id=c.id
+  returning o.*;
+$$;
+
+create or replace function public.finish_franchise_outbox(p_event_id uuid,p_success boolean,p_error text default null)
+returns void
+language plpgsql
+security invoker
+set search_path = public, pg_temp
+as $$
+begin
+  update public.franchise_integration_outbox
+  set status=case when p_success then 'processed' when attempts>=10 then 'dead_letter' else 'failed' end,
+      processed_at=case when p_success then now() else null end,
+      next_attempt_at=case when p_success then next_attempt_at else now()+make_interval(secs=>least(3600,30*power(2,greatest(attempts-1,0))::integer)) end,
+      last_error=case when p_success then null else left(coalesce(p_error,'Bilinmeyen adaptör hatası'),2000) end
+  where id=p_event_id and status='processing';
+  if not found then raise exception 'İşlenmekte olan outbox olayı bulunamadı'; end if;
+end;
+$$;
+
+revoke all on function public.claim_franchise_outbox(integer) from public, anon, authenticated;
+revoke all on function public.finish_franchise_outbox(uuid,boolean,text) from public, anon, authenticated;
+grant execute on function public.claim_franchise_outbox(integer) to service_role;
+grant execute on function public.finish_franchise_outbox(uuid,boolean,text) to service_role;
 
 commit;
