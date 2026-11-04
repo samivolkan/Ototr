@@ -9,7 +9,7 @@ Yerel ve geçici Supabase PostgreSQL konteynerinde migration, güvenlik doğrula
 
 ## Kanıtlanan davranışlar
 
-- Ana migration, sağlayıcı yönetişimi ve sağlayıcı worker migration'ı gerçek PostgreSQL motorunda hatasız commit edildi.
+- Ana migration, sağlayıcı yönetişimi, sağlayıcı worker ve departman RBAC migration'ları gerçek PostgreSQL motorunda hatasız commit edildi.
 - 13 public franchise tablosunda RLS açık.
 - `anon`, franchise dosyalarını ve belgeleri okuyamıyor.
 - Özel Storage bucket `public=false`, 20 MB ve MIME sınırlarıyla oluştu.
@@ -24,6 +24,8 @@ Yerel ve geçici Supabase PostgreSQL konteynerinde migration, güvenlik doğrula
 - Aynı idempotency anahtarıyla ikinci sağlayıcı talebi veritabanı tarafından reddedildi.
 - E-posta, SMS, WhatsApp ve e-imza ortak sözleşmesi sahte sağlayıcıyla test edildi; kişisel veri ve token logları maskelendi.
 - Sağlayıcı kuyruğu `FOR UPDATE SKIP LOCKED` ile talep edildi, başarılı sonuç işlendi ve 15 dakikayı aşan worker lease'i güvenle geri kazanıldı.
+- Finans rolünün yalnız Finans görevini gördüğü ve tamamlayabildiği, Hukuk görevini güncelleyemediği gerçek RLS oturumunda doğrulandı.
+- Görevin dosya, departman ve görev kodunun güncelleme sırasında değiştirilemediği doğrulandı.
 - Rollback Storage politikalarını önce kaldırdı, tüm franchise tablolarını ve bucket'ı temizledi.
 - Test konteyneri çalışma sonunda kaldırıldı.
 
@@ -32,10 +34,12 @@ Yerel ve geçici Supabase PostgreSQL konteynerinde migration, güvenlik doğrula
 - `supabase/migrations/20261105010000_franchise_end_to_end.sql`
 - `supabase/migrations/20261105020000_franchise_provider_governance.sql`
 - `supabase/migrations/20261105030000_franchise_provider_worker.sql`
+- `supabase/migrations/20261105040000_franchise_department_rbac.sql`
 - `supabase/ops/franchise-local-contract-stubs.sql`
 - `supabase/ops/franchise-staging-verify.sql`
 - `supabase/ops/franchise-activation-acceptance.sql`
 - `supabase/ops/franchise-provider-acceptance.sql`
+- `supabase/ops/franchise-rbac-acceptance.sql`
 - `supabase/ops/franchise-rollback.sql`
 
 ## Kalan sınır

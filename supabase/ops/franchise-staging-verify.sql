@@ -33,6 +33,7 @@ select to_regprocedure('public.finish_franchise_outbox(uuid,boolean,text)') is n
 select to_regprocedure('public.franchise_custom_access_token_hook(jsonb)') is not null as identity_hook_exists;
 select to_regprocedure('public.claim_franchise_provider_requests(integer)') is not null as provider_claim_rpc_exists;
 select to_regprocedure('public.finish_franchise_provider_request(uuid,boolean,text,text,text)') is not null as provider_finish_rpc_exists;
+select to_regprocedure('public.franchise_role_can_manage_department(text)') is not null as department_scope_function_exists;
 
 select not has_function_privilege('authenticated','public.claim_franchise_outbox(integer)','EXECUTE') as authenticated_cannot_claim_outbox;
 select has_function_privilege('service_role','public.claim_franchise_outbox(integer)','EXECUTE') as service_role_can_claim_outbox;
@@ -43,5 +44,6 @@ select has_function_privilege('supabase_auth_admin','public.franchise_custom_acc
 select not has_function_privilege('authenticated','public.franchise_custom_access_token_hook(jsonb)','EXECUTE') as authenticated_cannot_run_identity_hook;
 select not has_function_privilege('authenticated','public.claim_franchise_provider_requests(integer)','EXECUTE') as authenticated_cannot_claim_provider_queue;
 select has_function_privilege('service_role','public.claim_franchise_provider_requests(integer)','EXECUTE') as service_role_can_claim_provider_queue;
+select not has_function_privilege('anon','public.franchise_role_can_manage_department(text)','EXECUTE') as anon_cannot_test_department_scope;
 
 select count(*)=7 as retention_categories_complete from public.franchise_document_retention;

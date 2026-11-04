@@ -15,6 +15,7 @@ Karar: **NO_GO**
 - Supabase PostgreSQL 17 üzerinde migration, atomik aktivasyon, idempotency, outbox ve rollback yerel kabul testi
 - E-posta, SMS, WhatsApp ve e-imza amaç/izin/şablon/idempotency sözleşmesi; sahte sağlayıcı ve log maskeleme testleri
 - 12 ortak UAT senaryosu ve departman bazlı maker-checker imza matrisi
+- Departman görevlerinde en az yetki: çapraz departman okuma/yazma reddi ve değiştirilemez görev kapsamı
 
 ## NO_GO kapıları
 

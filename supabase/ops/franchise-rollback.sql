@@ -1,6 +1,12 @@
 -- STAGING ONLY. Destructive rollback for the franchise preproduction schema.
 -- Export staging evidence before use. Never run against production without signed approval.
 begin;
+drop trigger if exists franchise_task_immutable_scope_trigger on public.franchise_department_tasks;
+drop function if exists public.franchise_task_immutable_scope();
+drop policy if exists franchise_task_select on public.franchise_department_tasks;
+drop policy if exists franchise_task_insert on public.franchise_department_tasks;
+drop policy if exists franchise_task_update on public.franchise_department_tasks;
+drop function if exists public.franchise_role_can_manage_department(text);
 drop function if exists public.finish_franchise_provider_request(uuid,boolean,text,text,text);
 drop function if exists public.claim_franchise_provider_requests(integer);
 drop table if exists public.franchise_provider_requests;

@@ -5,10 +5,11 @@ Bu rehber yalnız hosted staging Supabase projesi içindir. Üretimde kullanıc�
 ## 1. Migration
 
 1. Staging yedeğini ve migration listesini kaydet.
-2. Sırasıyla `20261105010000_franchise_end_to_end.sql`, `20261105020000_franchise_provider_governance.sql` ve `20261105030000_franchise_provider_worker.sql` migration'larını staging'e uygula.
+2. Sırasıyla `20261105010000_franchise_end_to_end.sql`, `20261105020000_franchise_provider_governance.sql`, `20261105030000_franchise_provider_worker.sql` ve `20261105040000_franchise_department_rbac.sql` migration'larını staging'e uygula.
 3. `franchise-staging-verify.sql` içindeki bütün sorguların `true` döndürdüğünü kanıt olarak kaydet.
 4. `franchise-activation-acceptance.sql` sonucunun `PASS` olduğunu kaydet.
 5. `franchise-provider-acceptance.sql` içindeki üç kontrolün `true` olduğunu kaydet.
+6. `franchise-rbac-acceptance.sql` ile Finans kullanıcısının yalnız Finans görevini gördüğünü, Hukuk görevini güncelleyemediğini ve görev kapsamının değiştirilemediğini kaydet.
 
 ## 2. Kimlik hook'u
 
