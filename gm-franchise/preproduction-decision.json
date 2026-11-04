@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "module": "OTOTR_FRANCHISE",
+  "target": "PREPRODUCTION_DECISION",
+  "decision": "NOT_READY",
+  "productionDataUsed": false,
+  "releaseCommit": null,
+  "releaseManifestSha256": null,
+  "stagingEvidenceSha256": null,
+  "rollbackEvidenceSha256": null,
+  "changeWindowStartUtc": null,
+  "changeWindowEndUtc": null,
+  "signoffs": [
+    { "role": "Proje Yöneticisi", "identitySha256": null, "signedAtUtc": null },
+    { "role": "Franchise Yönetimi", "identitySha256": null, "signedAtUtc": null },
+    { "role": "ERP Ürün Sahibi", "identitySha256": null, "signedAtUtc": null },
+    { "role": "Bilgi Güvenliği", "identitySha256": null, "signedAtUtc": null },
+    { "role": "Hukuk/KVKK", "identitySha256": null, "signedAtUtc": null },
+    { "role": "Finans Direktörü", "identitySha256": null, "signedAtUtc": null }
+  ],
+  "productionDecision": "NO_GO"
+}

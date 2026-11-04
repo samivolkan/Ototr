@@ -5,9 +5,10 @@ Bu rehber yalnız hosted staging Supabase projesi içindir. Üretimde kullanıc�
 ## 1. Migration
 
 1. Staging yedeğini ve migration listesini kaydet.
-2. `20261105010000_franchise_end_to_end.sql` migration'ını staging'e uygula.
+2. Sırasıyla `20261105010000_franchise_end_to_end.sql` ve `20261105020000_franchise_provider_governance.sql` migration'larını staging'e uygula.
 3. `franchise-staging-verify.sql` içindeki bütün sorguların `true` döndürdüğünü kanıt olarak kaydet.
 4. `franchise-activation-acceptance.sql` sonucunun `PASS` olduğunu kaydet.
+5. `franchise-provider-acceptance.sql` içindeki üç kontrolün `true` olduğunu kaydet.
 
 ## 2. Kimlik hook'u
 
@@ -37,7 +38,10 @@ Worker yalnız POST ve doğru `x-franchise-worker-secret` başlığıyla çağr�
 - Storage aday/GM/departman erişim ayrımı
 - Pasif kullanıcı ve yanlış şube kapsamıyla RLS reddi
 - Rollback sonrası franchise tabloları ve bucket'ın kaldırılması
+- Geri çekilmiş ticari ileti izniyle SMS/WhatsApp/e-posta talebinin reddi
+- Onaysız veya eski şablon sürümüyle gönderim talebinin reddi
+- Aynı sağlayıcı idempotency anahtarının yalnız bir talep üretmesi
 
 ## 5. Kanıt ve karar
 
-Her senaryo için sorgu çıktısı, zaman, commit SHA ve testi yapan rol kaydedilir. Tüm sonuçlar geçmeden G05–G10 kapıları `PASS` yapılmaz ve UAT başlatılmaz.
+Her senaryo için sorgu çıktısı, zaman, commit SHA ve testi yapan rol kaydedilir. Tüm sonuçlar geçmeden G05–G10 kapıları `PASS` yapılmaz ve UAT başlatılmaz. Nihai karar `gm-franchise/preproduction-decision.json` içinde kimlik ve kanıt SHA-256 alanları dolmadan `GO` olamaz.
