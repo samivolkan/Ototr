@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>OTOTR Franchise Modülü</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap">
+<style>
+:root{--bg:#f6f5f3;--pn:#fff;--ink:#17181b;--mu:#6b6b66;--ln:#e3e1dd;--rd:#E8281A;--ok:#1f8f55;--wn:#b7791f;--sf:#f0eeea;color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0f1012;--pn:#17181b;--ink:#f2f2f0;--mu:#9a9a95;--ln:#2a2b2f;--ok:#4cc28a;--wn:#e2b04a;--sf:#202125;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "DM Sans",system-ui,sans-serif}
+.app{display:grid;grid-template-columns:320px 1fr;min-height:100vh}
+aside{background:var(--pn);border-right:1px solid var(--ln);padding:16px 14px;position:sticky;top:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column;gap:1px}
+.logo{font-weight:700;font-size:22px;padding:6px 14px 16px}.logo b{color:var(--rd)}.logo small{display:block;font-size:12px;font-weight:400;color:var(--mu);margin-top:3px}
+.ns{font-size:10px;color:var(--mu);padding:18px 14px 4px;text-transform:uppercase;letter-spacing:.9px;font-weight:700;font-size:10.5px}
+.nb{all:unset;display:flex;width:100%;justify-content:space-between;align-items:center;padding:10px 14px;border-radius:10px;cursor:pointer;color:var(--mu);font:inherit;font-size:14.5px}
+.nb:hover{background:var(--sf);color:var(--ink)}.nb.on{background:var(--ink);color:var(--bg)}
+.tg{font-size:10px;border:1px solid currentColor;border-radius:99px;padding:1px 7px}
+main{padding:22px 28px;min-width:0}
+.hd{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center;margin-bottom:18px}
+h1{font-size:23px;margin:0}h2{font-size:15px;margin:0 0 10px}
+h3{font-size:11px;margin:14px 0 4px;color:var(--mu);text-transform:uppercase;letter-spacing:.5px}
+select,input,textarea{font:inherit;background:var(--pn);color:var(--ink);border:1px solid var(--ln);border-radius:8px;padding:7px 10px;min-width:0}
+:focus-visible{outline:2px solid var(--rd);outline-offset:2px}
+.g4{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));margin-bottom:16px}
+.card{background:var(--pn);border:1px solid var(--ln);border-radius:12px;padding:16px;margin-bottom:14px}
+.stat b{display:block;font-size:28px;line-height:1.1}.stat s2{color:var(--mu);font-size:13px}
+.cols{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.scr{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--ln);white-space:nowrap}
+th{color:var(--mu);font-weight:500}tr.rw{cursor:pointer}tr.rw:hover td{background:var(--sf)}
+.pi{display:inline-block;border-radius:99px;padding:1px 9px;font-size:12px;background:var(--sf)}
+.ok{color:var(--ok)}.wn{color:var(--wn)}.rd{color:var(--rd)}.mu{color:var(--mu)}
+.al{border-left:3px solid var(--wn);background:var(--sf);padding:8px 12px;border-radius:6px;margin:5px 0;font-size:14px}
+.al.r{border-color:var(--rd)}.al.ok{border-color:var(--ok)}
+.btn{background:var(--ink);color:var(--bg);border:0;border-radius:8px;padding:6px 13px;font:inherit;cursor:pointer}
+.btn.g{background:none;color:var(--ink);border:1px solid var(--ln)}.btn.r{background:var(--rd);color:#fff}
+button:disabled{opacity:.4;cursor:not-allowed}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0}
+.bar{height:6px;background:var(--ln);border-radius:9px;overflow:hidden;min-width:60px;flex:1}.bar i{display:block;height:100%;background:var(--rd)}
+.fr{display:flex;align-items:center;gap:10px;margin:6px 0}.fr>span:first-child{width:120px;color:var(--mu);flex:none}
+.kb{display:flex;gap:10px;overflow-x:auto;padding-bottom:8px}
+.kc{min-width:180px;flex:1}.kc h4{margin:0 0 8px;font-size:11px;color:var(--mu);text-transform:uppercase}
+.it{background:var(--pn);border:1px solid var(--ln);border-radius:10px;padding:10px;margin-bottom:8px;cursor:pointer}
+.it:hover{border-color:var(--rd)}.it b{display:block}.it small{color:var(--mu)}
+.mo[hidden]{display:none}.mo{position:fixed;inset:0;background:#0009;display:flex;justify-content:flex-end;z-index:9}
+.dr{background:var(--pn);width:min(560px,100%);height:100%;overflow-y:auto;padding:20px;padding-top:calc(20px + env(safe-area-inset-top,0px))}
+.sp{display:flex;gap:3px;margin:10px 0 14px}.sp i{flex:1;height:4px;border-radius:3px;background:var(--ln)}.sp i.d{background:var(--ok)}.sp i.c{background:var(--rd)}
+.ck{display:flex;gap:9px;align-items:flex-start;padding:5px 0;cursor:pointer}.ck input{margin-top:4px;accent-color:var(--rd)}
+.ct{background:var(--sf);border:1px dashed var(--ln);border-radius:8px;padding:10px;font-size:13px;white-space:pre-wrap;line-height:1.6}
+.pl td,.pl th{vertical-align:top}.pl td.cu{white-space:normal;min-width:170px}
+.nt{color:var(--mu);font-size:13px;margin:8px 0}
+ul.ul{margin:0;padding-left:18px}ul.ul li{margin:3px 0}
+.bdg{display:inline-flex;align-items:center;justify-content:center;width:19px;height:19px;border-radius:99px;background:var(--rd);color:#fff;font-size:11px;font-weight:700;margin-left:3px}
+.pilot{position:sticky;top:0;z-index:20;background:#8d1b1b;color:#fff;text-align:center;padding:8px 14px;font-size:12px;font-weight:700}.pilot a{color:#fff;margin-left:12px}.app{min-height:calc(100vh - 34px)}aside{top:34px;height:calc(100vh - 34px)}
+.journey{display:flex;gap:8px;overflow:auto;padding:4px 0 12px}.journey-step{min-width:132px;border:1px solid var(--ln);border-radius:10px;background:var(--pn);padding:10px}.journey-step.done{border-color:#b8dfca;background:#f2fbf6}.journey-step.current{border-color:var(--rd);box-shadow:inset 0 0 0 1px var(--rd)}.journey-step b,.journey-step span{display:block}.journey-step span{font-size:11px;color:var(--mu);margin-top:3px}
+.dept-grid,.portal-grid,.gate-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}.dept-card,.portal-card,.gate-card{border:1px solid var(--ln);border-radius:11px;background:var(--pn);padding:13px}.dept-card h2,.portal-card h2,.gate-card h2{margin-bottom:4px}.dept-card p,.portal-card p,.gate-card p{color:var(--mu);font-size:12px;margin:3px 0 9px}.meter{height:7px;background:var(--ln);border-radius:99px;overflow:hidden;margin:8px 0}.meter i{display:block;height:100%;background:var(--ok)}
+.safe-note{border:1px solid #e7c56e;background:#fff9e9;color:#6e4c00;border-radius:10px;padding:10px 12px;margin-bottom:14px}.stage-chip{display:inline-flex;border-radius:99px;padding:3px 9px;background:var(--sf);font-size:11px}.stage-chip.current{background:#ffe7e5;color:#9a1811}.split{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(280px,.5fr);gap:14px}.approval{display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid var(--ln);padding:8px 0}.approval:last-child{border-bottom:0}.approval small{color:var(--mu)}
+@media(max-width:900px){.split{grid-template-columns:1fr}}
+@media(max-width:760px){.app{grid-template-columns:1fr}aside{position:static;height:auto;flex-direction:row;overflow-x:auto;border-right:0;border-bottom:1px solid var(--ln);padding:6px}aside .logo,.ns{display:none}.nb{white-space:nowrap;width:auto}main{padding:14px}}
+</style>
+</head>
+<body>
+<div class="pilot">GÜVENLİ PİLOT · CANLI FRANCHISE SİSTEMİ DEĞİLDİR — Yalnızca kurgusal test verisi kullanın.<a href="../index.html#franchise">ERP'ye dön</a></div>
+<div class="app">
+<aside id="nav"><div class="logo">OTO<b>TR</b> Franchise<small>ERP · Franchise Yönetim</small></div></aside>
+<main>
+<div class="hd"><h1 id="ttl"></h1>
+<label>Rol: <select id="role">
+<option value="gm">Genel Müdür</option>
+<option value="fd">Franchise Direktörü</option>
+<option value="fu">Franchise Uzmanı</option>
+<option value="hk">Hukuk</option>
+<option value="fn">Finans</option>
+<option value="ik">İK</option>
+<option value="ak">Akademi</option>
+<option value="sa">Saha</option>
+<option value="bt">BT</option>
+<option value="ba">Bayi Sahibi</option>
+<option value="dn">Denetçi</option>
+<option value="td">Tedarikçi</option>
+<option value="ad">Aday Yatırımcı</option>
+<option value="op">Operasyon</option>
+<option value="pz">Pazarlama</option>
+<option value="kl">Kalite</option>
+<option value="isg">İSG</option>
+<option value="mm">Mimari / Proje</option>
+</select></label></div>
+<div id="view"></div>
+<p class="nt"><button class="btn g" id="rst">Demoyu sıfırla</button> — Her adım yalnızca sorumlu rol yapabilir. Zinciri ilerletmek için rolü değiştirin.</p>
+</main>
+</div>
+<div class="mo" id="mo" hidden></div>
+<script>
+const TODAY=new Date("2026-11-05"),KEY="ototr-franchise-e2e-v1";
+const STAGES=["Yeni","Gorusme","Onay","Sozlesme","Onboarding","Kurulum","Aktif"];
+const RN={gm:"Genel Müdür",fd:"Franchise Direktörü",fu:"Franchise Uzmanı",hk:"Hukuk",fn:"Finans / Muhasebe",ik:"İK",ak:"Akademi",sa:"Saha",bt:"BT",ba:"Bayi Sahibi",dn:"Denetçi",td:"Tedarikçi",ad:"Aday Yatırımcı",op:"Operasyon",pz:"Pazarlama",kl:"Kalite",isg:"İSG",mm:"Mimari / Proje"};
+const AP=[["Franchise uzmanı değerlendirmesi","fu"],["Franchise direktörü onayı","fd"],["Hukuk incelemesi","hk"],["Finans uygunluğu","fn"],["CEO onayı","gm"]];
+const CR=[["Finansal güç",.35],["Bölge uygunluğu",.25],["Deneyim",.20],["Vizyon",.20]];
+const GF=["Yatırım kaynağı açık mı?","Bölge rekabeti değerlendirildi mi?","Referans kişilerle görüşüldü mü?","İşletme deneyimi doğrulandı mı?","Birden fazla değerlendirici imzaladı mı?"];
+const BDOC=["Kimlik (TC nüfus cüzdanı)","Vergi levhası","İmza sirküleri","Kira sözleşmesi","Faaliyet belgesi","Banka teminat mektubu","Şirket ana sözleşmesi"];
+const TU={IK:["ik",["Şube kadrosu ve pozisyonlar","Dijital özlük hazırlığı","Personel sözleşmeleri"]],Finans:["fn",["Cari hesap kartı","Teminat tahsilatı","Hesap planı kurulumu"]],Akademi:["ak",["Zorunlu eğitim ataması","Bayi ve usta sınav planı","Sertifika başvuruları"]],Saha:["sa",["Cihaz ve kalibrasyon kaydı","Stajyer ekspertiz onayı","Araç gereç teslimatı"]],BT:["bt",["Kullanıcı hesapları ve yetkiler","Terminal PWA erişimi","VPN / güvenli bağlantı"]]};
+const TL=Object.entries(TU).flatMap(([u,[r,l]])=>l.map((t,i)=>({k:u+"|"+i,u,r,t})));
+const SU=[["Hesap planı ve cari kartı kuruldu","fn"],["Web sayfası yayında (ototr.com/slug)","bt"],["Google işletme profili bağlandı","bt"],["Google yorum takibi kaydı yapıldı","bt"],["Terminal PWA girişi ve test tamam","bt"],["Kalibrasyon kayıtları girildi","sa"],["İlk 30 gün izleme planı başlatıldı","fd"]];
+const KF=[["Cari bakiye sıfırlandı / tahsil edildi","fn"],["Tüm cihazlar iade alındı","sa"],["Kullanıcı erişimleri kapatıldı","bt"],["Bayi defteri kapatıldı ve arşivlendi","fn"],["Web sayfası ve Google profili kapatıldı","bt"],["Rekabet yasağı tebligatı gönderildi","hk"]];
+const RJ=["Finansal yetersizlik","Bölge çakışması","Referans olumsuz","Aday vazgeçti","Kurul kararı","SLA ihlali"];
+const PKT=[{ad:"Standart Ekspertiz",fiyat:2500,grup:"Bireysel"},{ad:"Kapsamlı Ekspertiz",fiyat:3500,grup:"Bireysel"},{ad:"Galeri Paketi 5 Rapor",fiyat:12500,grup:"Galeri"},{ad:"Galeri Paketi 10 Rapor",fiyat:23000,grup:"Galeri"},{ad:"Premium Fleet Aylık",fiyat:35000,grup:"Filo"}];
+const BOLGELER={Kadikoy:"Anadolu",Cankaya:"IC Anadolu",Bornova:"Ege",Nilufer:"Marmara",Muratpasa:"Akdeniz",Selcuklu:"IC Anadolu",Osmangazi:"Marmara",Yesilurt:"Karadeniz",Tepebasi:"Marmara"};
+const NAV=[
+["","E2E","UÇTAN UCA MERKEZ"],["e2e","E2E","Yaşam döngüsü",1],["departman","E2E","Departman kapıları",1],["acilis","E2E","Açılış kurulu",1],["portallar","E2E","Dış kullanıcı portalları",1],
+["","YON","YÖNETİM"],["dash","YON","Dashboard",1],["hat","YON","Süreç hattı",1],["inbox","YON","Görev merkezi",1],
+["","ADY","ADAYLAR"],["pipe","ADY","Aday hattı",1],["gor","ADY","Görüşme ve değerlendirme",1],["belge","ADY","Belge yönetimi",1],
+["","SUB","AKTİF ŞUBELER"],["sube","SUB","Şubeler ve sözleşme",1],["web","SUB","Web ve Google yorum",1],["paket","SUB","Paket ve fiyatlama",1],
+["","FIN","FİNANS"],["fin","FIN","Royalty ve cari",1],["rapor","FIN","Raporlama ve analitik",1],
+["","SYS","SİSTEM"],["yetki","SYS","Yetki matrisi",0],["denetim","SYS","Denetim kaydı",0],["model","SYS","Veri modeli",0]
+];
+const PERM={
+gm:"e2e departman acilis portallar dash hat inbox pipe gor belge sube web paket fin rapor yetki denetim model",
+fd:"e2e departman acilis portallar dash hat inbox pipe gor belge sube web paket fin rapor yetki denetim model",
+fu:"e2e departman portallar dash hat inbox pipe gor belge",
+hk:"e2e departman acilis dash hat inbox pipe gor belge sube",
+fn:"e2e departman acilis dash hat inbox pipe fin rapor sube",
+ik:"e2e departman acilis dash hat inbox pipe gor belge",
+ak:"e2e departman acilis dash hat inbox pipe gor",
+sa:"e2e departman acilis dash hat inbox pipe sube",
+bt:"e2e departman acilis dash hat inbox pipe sube web",
+ba:"portallar sube fin web",
+dn:"portallar departman acilis",
+td:"portallar",
+ad:"portallar",
+op:"e2e departman acilis hat inbox sube",
+pz:"e2e departman acilis",
+kl:"e2e departman acilis",
+isg:"e2e departman acilis",
+mm:"e2e departman acilis"
+};
+const $=id=>document.getElementById(id),R=()=>$("role").value;
+const H=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const TRL=n=>Math.round(n).toLocaleString("tr-TR")+" ₺";
+const SL=s=>s.toLocaleLowerCase("tr").replace(/ç/g,"c").replace(/ğ/g,"g").replace(/ı/g,"i").replace(/ö/g,"o").replace(/ş/g,"s").replace(/ü/g,"u").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+const DL=()=>"04 Kas 2026";
+const PC=d=>`<span class="pi ${d=="Aktif"?"ok":d=="Kapalı"?"rd":"wn"}">${d}</span>`;
+let UID=1,LOG=[],FB=1,CUR="e2e",SEL=null,HF="all",DTAB="bekliyor";
+function mkC(ad,ilce,yat,stage,o={}){
+  const slugIlce=SL(ilce);
+  const c={id:UID++,ad,ilce,bolge:BOLGELER[slugIlce]||"Diğer",yat,kaynak:"Web",stage,
+    sc:[70,70,70,70],gf:{},a:[],t:{},s:{},belge:{},
+    signed:0,paid:0,slug:"",roy:8,giris:250000,r:0,ucret:0,
+    durum:"Aktif",bit:"",led:[],kf:{},fes:0,hist:[],rj:"",sla:3,slaGun:0,wl:0,indirim:0,gnot:""};
+  if(stage>1){GF.forEach((_,i)=>c.gf[i]=1);BDOC.forEach((_,i)=>c.belge[i]=1)}
+  if(stage>2)c.a=[0,1,2,3,4];
+  if(stage>3){c.signed=1;c.paid=1}
+  if(stage>4)TL.forEach(x=>c.t[x.k]=1);
+  if(stage>5){SU.forEach((_,i)=>c.s[i]=1);c.slug=SL(ad);c.bit="2031-11-04"}
+  return Object.assign(c,o);
+}
+let C=[
+  mkC("Kadıköy Oto Ekspertiz","Kadikoy","6.000.000 ₺",6,{r:140,ucret:3200,bit:"2027-02-10",kaynak:"Referans",indirim:5}),
+  mkC("Çankaya Garaj A.Ş.","Cankaya","4.500.000 ₺",6,{r:95,ucret:2900,kaynak:"Google Ads"}),
+  mkC("Bornova Araç Merkezi","Bornova","3.800.000 ₺",6,{r:60,ucret:2700,roy:7}),
+  mkC("Nilüfer Motors","Nilufer","3.000.000 ₺",5,{kaynak:"Fuar"}),
+  mkC("Muratpaşa Ekspertiz","Muratpasa","4.000.000 ₺",4,{t:{"IK|0":1,"Finans|0":1}}),
+  mkC("Selçuklu Oto Grup","Selcuklu","2.500.000 ₺",3,{signed:1}),
+  mkC("Osmangazi Araç","Osmangazi","3.200.000 ₺",2,{a:[0,1]}),
+  mkC("Yeşilyurt Otomotiv","Yesilurt","2.000.000 ₺",1,{kaynak:"Google Ads",sc:[80,65,70,60]}),
+  mkC("Tepebaşı Garaj","Tepebasi","1.500.000 ₺",0,{slaGun:4})
+];
+const roy=c=>Math.round(c.r*c.ucret*c.roy/100);
+const bak=c=>c.led.reduce((s,x)=>s+(x.tip=="T"?x.tt:-x.tt),0);
+const gec=c=>{if(bak(c)<=0)return 0;const days=c.led.filter(x=>x.tip=="T").map(x=>Math.round((TODAY-new Date(x.vd))/864e5));return Math.max(0,...days)};
+const tah=(c,dn,vd)=>({tip:"T",dn,vd,tt:roy(c)});
+{const[k,ç,b]=C;
+ k.led=[tah(k,"2026-10","2026-11-10")];
+ ç.led=[tah(ç,"2026-10","2026-11-10"),{tip:"O",dn:"2026-10",vd:"",tt:roy(ç)}];
+ b.led=[tah(b,"2026-09","2026-10-10"),tah(b,"2026-10","2026-11-10")];
+}
+const scr=c=>Math.round(c.sc.reduce((s,v,i)=>s+v*CR[i][1],0));
+const nT=c=>Object.keys(c.t).length;
+const nB=c=>Object.keys(c.belge).length;
+const vis=c=>R()!="ba"||c.id==1;
+const gC=id=>C.find(x=>x.id==id);
+const adv=c=>["gm","fd"].includes(R())||(c.stage<2&&R()=="fu");
+const okR=ro=>R()==ro||R()=="gm";
+const LOG_ADD=(t,c)=>{LOG.unshift(DL()+" · "+RN[R()]+" · "+t);LOG.length=Math.min(LOG.length,60);if(c)c.hist.unshift(DL()+" · "+RN[R()]+" · "+t)};
+function gate(c){
+  const s=c.stage;
+  if(s==1&&scr(c)<60)return"Ağırlıklı skor en az 60 olmalı (şu an: "+scr(c)+")";
+  if(s==1&&GF.some((_,i)=>!c.gf[i]))return"Görüşme formu eksik maddeler içeriyor";
+  if(s==2&&c.a.length<5)return"5 adımlı onay zinciri tamamlanmalı ("+c.a.length+"/5)";
+  if(s==3&&nB(c)<BDOC.length)return"Tüm belgeler tamamlanmalı ("+nB(c)+"/"+BDOC.length+")";
+  if(s==3&&!(c.signed&&c.paid))return"E-imza ve ilk ödeme gerekli (kapı kuralı)";
+  if(s==4&&nT(c)<TL.length)return"Tüm birim görevleri tamamlanmalı ("+nT(c)+"/"+TL.length+")";
+  if(s==5&&!c.slug)return"Şube web adresi (slug) girilmeli";
+  if(s==5&&C.some(x=>x!==c&&x.slug==c.slug&&c.slug))return"Bu slug başka şubede kullanılıyor";
+  if(s==5&&Object.keys(c.s).length<SU.length)return"Kurulum listesi tamamlanmalı ("+Object.keys(c.s).length+"/"+SU.length+")";
+  return "";
+}
+function todo(){
+  const r=R(),o=[];
+  C.forEach(c=>{
+    if(c.stage<0||!vis(c))return;
+    const s=c.stage,P=t=>o.push([c,t]);
+    if(s==0&&["fu","fd"].includes(r))P("Görüşme planla"+(c.slaGun>c.sla?" ⚠ SLA":""));
+    if(s==1&&["fu","fd"].includes(r))P("Görüşme formunu tamamla ve skorla");
+    if(s==2){const i=[0,1,2,3,4].find(i=>!c.a.includes(i));if(i!=null&&AP[i][1]==r)P("Onay: "+AP[i][0])}
+    if(s==3){if(nB(c)<BDOC.length&&["fu","fd","hk"].includes(r))P("Belge eksik ("+nB(c)+"/"+BDOC.length+")");if(!c.signed&&r=="hk")P("E-imza doğrula");if(!c.paid&&r=="fn")P("İlk ödeme tahsil et")}
+    if(s==4)TL.filter(x=>!c.t[x.k]&&x.r==r).forEach(x=>P(x.u+": "+x.t));
+    if(s==5){SU.forEach((x,i)=>{if(!c.s[i]&&x[1]==r)P("Kurulum: "+x[0])});if(!gate(c)&&r=="fd")P("Şubeyi aktifleştir")}
+    if(s==6&&c.durum!="Kapalı"){
+      if(r=="fn"&&gec(c)>0)P("Gecikmiş cari: "+TRL(bak(c))+" ("+gec(c)+" gün)");
+      const d=Math.round((new Date(c.bit)-TODAY)/864e5);
+      if(r=="fd"&&d<=120&&!c.fes)P("Sözleşme "+d+" gün içinde bitiyor");
+      if(c.fes)KF.forEach((x,i)=>{if(!c.kf[i]&&x[1]==r)P("Kapanış: "+x[0])});
+    }
+  });
+  return o;
+}
+function own(c){
+  const s=c.stage,m={},add=(r,t)=>(m[r]=m[r]||[]).push(t);
+  if(s==0)add("fu","Görüşme planı"+(c.slaGun>c.sla?" ⚠SLA":""));
+  if(s==1)add("fu","Skor ("+scr(c)+")"+(GF.some((_,i)=>!c.gf[i])?" + form":""));
+  if(s==2){const i=[0,1,2,3,4].find(i=>!c.a.includes(i));if(i!=null)add(AP[i][1],AP[i][0]+" ("+(i+1)+"/5)")}
+  if(s==3){if(nB(c)<BDOC.length)add("hk","Belge ("+nB(c)+"/"+BDOC.length+")");if(!c.signed)add("hk","E-imza");if(!c.paid)add("fn","İlk ödeme")}
+  if(s==4)Object.entries(TU).forEach(([u,[r]])=>{const n=TL.filter(x=>x.u==u&&!c.t[x.k]).length;if(n)add(r,u+": "+n+" görev")});
+  if(s==5){SU.forEach((x,i)=>{if(!c.s[i])add(x[1],x[0])});if(!c.slug)add("bt","Slug")}
+  if(s==6){if(c.fes)KF.forEach((x,i)=>{if(!c.kf[i])add(x[1],x[0])});else if(gec(c))add("fn","Gecikme "+gec(c)+"g");else{const d=Math.round((new Date(c.bit)-TODAY)/864e5);if(d<=120)add("fd","Yenileme "+d+"g")}}
+  return m;
+}
+/* ══ EKRANLAR ══ */
+function dash(){
+  if(R()=="ba"){const c=gC(1);return`<div class="g4"><div class="card stat"><b>${PC(c.durum)}</b><s2>Durum</s2></div><div class="card stat"><b>${TRL(roy(c))}</b><s2>Aylık royalty</s2></div><div class="card stat"><b class="${bak(c)>0?"wn":"ok"}">${TRL(bak(c))}</b><s2>Cari bakiye</s2></div><div class="card stat"><b>${c.bit}</b><s2>Sözleşme bitişi</s2></div></div><div class="card"><b>ototr.com/${c.slug}</b> · Royalty %${c.roy}<br><span class="nt">Yalnızca kendi şubenizin verisi görünür.</span></div>`;}
+  const ak=C.filter(c=>c.stage==6&&c.durum=="Aktif"),sr=C.filter(c=>c.stage>=0&&c.stage<6),rj=C.filter(c=>c.stage<0).length,tot=C.length,al=C.filter(c=>c.stage==6).reduce((s,c)=>s+(gec(c)?bak(c):0),0),w=todo().length;
+  return`<div class="g4">
+    <div class="card stat"><b>${sr.length}</b><s2>Süreçteki aday</s2></div>
+    <div class="card stat"><b>${ak.length}</b><s2>Aktif şube</s2></div>
+    <div class="card stat"><b>%${Math.round(C.filter(c=>c.stage==6).length/tot*100)}</b><s2>Dönüşüm</s2></div>
+    <div class="card stat"><b>${TRL(ak.reduce((s,c)=>s+roy(c),0))}</b><s2>Aylık royalty</s2></div>
+    <div class="card stat"><b class="${al?"rd":"ok"}">${TRL(al)}</b><s2>Gecikmiş alacak</s2></div>
+    <div class="card stat"><b>${w}${w?`<span class="bdg">${w}</span>`:""}</b><s2>Bekleyen iş</s2></div>
+  </div>
+  <div class="cols">
+    <div class="card"><h2>Aşama dağılımı</h2>
+      ${STAGES.map((s,i)=>{const n=C.filter(c=>c.stage==i).length;return`<div class="fr"><span>${s}</span><div class="bar"><i style="width:${n/tot*100}%"></i></div><b>${n}</b></div>`}).join("")}
+      <div class="fr"><span class="rd">Reddedilen</span><div class="bar"><i style="width:${rj/tot*100}%"></i></div><b>${rj}</b></div>
+    </div>
+    <div class="card"><h2>Uyarılar</h2>
+      ${C.filter(c=>c.stage==0&&c.slaGun>c.sla).map(c=>`<div class="al r">${H(c.ad)}: SLA ${c.slaGun} gün — görüşme planlanmadı</div>`).join("")}
+      ${C.filter(c=>c.stage==6&&gec(c)>0).map(c=>`<div class="al r">${H(c.ad)}: ${gec(c)} gün gecikmiş cari (${TRL(bak(c))})</div>`).join("")}
+      ${C.filter(c=>c.stage==6&&!c.fes&&Math.round((new Date(c.bit)-TODAY)/864e5)<=120).map(c=>`<div class="al">${H(c.ad)}: sözleşme ${Math.round((new Date(c.bit)-TODAY)/864e5)} gün sonra bitiyor</div>`).join("")}
+      ${!C.some(c=>(c.stage==0&&c.slaGun>c.sla)||(c.stage==6&&gec(c)))?'<p class="nt">Kritik uyarı yok.</p>':""}
+    </div>
+    <div class="card"><h2>Son işlemler</h2>
+      ${LOG.slice(0,8).map(x=>`<div class="al">${H(x)}</div>`).join("")||'<p class="nt">Henüz işlem yok. Bir adayı ilerletin.</p>'}
+    </div>
+  </div>`;
+}
+function hat(){
+  const L=C.filter(c=>c.stage>=0&&vis(c)),cnt={};
+  L.forEach(c=>Object.keys(own(c)).forEach(r=>cnt[r]=(cnt[r]||0)+1));
+  const hf=(!HF||HF=="all"||!cnt[HF])?"all":HF;
+  const F=hf=="all"?L:L.filter(c=>own(c)[hf]);
+  const HDS=["Franchise Uzmanı","Franchise Uzmanı","Uzman → CEO","Hukuk + Finans","İK·Fin·Ak·Saha·BT","BT·Saha·Fin·Dir.","—"];
+  return`<div class="card"><h2>Rol bazlı yük</h2>
+    <div class="row">
+      <button class="btn ${hf=="all"?"":"g"}" data-a="hf" data-r="all">Tümü (${L.length})</button>
+      ${Object.keys(RN).filter(r=>cnt[r]).map(r=>`<button class="btn ${hf==r?"":"g"}" data-a="hf" data-r="${r}">${RN[r]} <span class="bdg">${cnt[r]}</span></button>`).join("")}
+    </div>
+  </div>
+  <div class="card scr"><table class="pl">
+    <tr><th>Aday / Şube</th><th>Bölge</th>${STAGES.map((s,i)=>`<th>${s}<br><small class="mu">${HDS[i]}</small></th>`).join("")}</tr>
+    ${F.map(c=>{const o=Object.entries(own(c));return`<tr class="rw" data-a="open" data-i="${c.id}">
+      <td><b>${H(c.ad)}</b></td><td><span class="pi">${H(c.bolge)}</span></td>
+      ${STAGES.map((_,i)=>i<c.stage?'<td><span class="ok">✓</span></td>':i==c.stage?`<td class="cu">${o.length?o.map(([r,t])=>`<span class="pi rd">${RN[r]}</span> <small>${H(t.join(", "))}</small>`).join("<br>"):PC(c.durum)}</td>`:'<td class="mu">·</td>').join("")}
+    </tr>`}).join("")}
+  </table></div>
+  <p class="nt">✓ tamamlandı · Kırmızı etiket = şu an o rolün üzerinde · Satıra tıkla → panel açılır</p>`;
+}
+function inbox(){
+  const o=todo();
+  return`<div class="card"><h2>${RN[R()]}: bekleyen işler (${o.length})</h2>
+    ${o.length?`<div class="scr"><table>
+      <tr><th>Aday / Şube</th><th>Aşama</th><th>İş</th><th></th></tr>
+      ${o.map(([c,t])=>`<tr class="rw" data-a="open" data-i="${c.id}"><td><b>${H(c.ad)}</b></td><td><span class="pi">${STAGES[c.stage]}</span></td><td>${H(t)}</td><td><button class="btn g">Aç</button></td></tr>`).join("")}
+    </table></div>`:'<p class="nt">Bu rol için bekleyen iş yok. Başka rol seçin.</p>'}
+  </div>`;
+}
+function pipe(){
+  const A=["gm","fd","fu"].includes(R()),rj=C.filter(c=>c.stage<0);
+  return`${A?`<div class="card"><h2>Yeni aday</h2><div class="row">
+    <input id="na" placeholder="Aday / firma adı" style="flex:2;min-width:140px">
+    <input id="ni" placeholder="İlçe" style="flex:1;min-width:80px">
+    <input id="ny" placeholder="Yatırım" style="flex:1;min-width:80px">
+    <select id="nk"><option>Web</option><option>Google Ads</option><option>Referans</option><option>Fuar</option></select>
+    <button class="btn" data-a="add">Ekle</button>
+  </div></div>`:`<p class="nt">Yeni aday eklemek için Franchise Uzmanı, Direktörü veya GM rolünü seçin.</p>`}
+  <div class="kb">${STAGES.map((s,i)=>`<div class="kc">
+    <h4>${s} · ${C.filter(c=>c.stage==i).length}</h4>
+    ${C.filter(c=>c.stage==i).map(c=>`<div class="it" data-a="open" data-i="${c.id}">
+      <b>${H(c.ad)}</b><small>${H(c.ilce)} · ${H(c.yat)}</small>
+      ${i==0&&c.slaGun>c.sla?`<div><span class="pi rd">SLA: ${c.slaGun}g</span></div>`:""}
+      ${i==1?`<div><span class="pi">Skor: ${scr(c)}</span></div>`:""}
+      ${i==2?`<div><span class="pi">Onay: ${c.a.length}/5</span></div>`:""}
+      ${i==3?`<div><span class="pi">Belge: ${nB(c)}/${BDOC.length}</span></div>`:""}
+      ${i==4?`<div class="fr" style="margin:4px 0 0"><div class="bar"><i style="width:${nT(c)/TL.length*100}%"></i></div><small>${nT(c)}/${TL.length}</small></div>`:""}
+      ${i==5?`<div class="fr" style="margin:4px 0 0"><div class="bar"><i style="width:${Object.keys(c.s).length/SU.length*100}%"></i></div><small>${Object.keys(c.s).length}/${SU.length}</small></div>`:""}
+      ${i==6?`<div>${PC(c.durum)}</div>`:""}
+    </div>`).join("")}
+  </div>`).join("")}</div>
+  ${rj.length?`<div class="card"><h2>Reddedilen / Bekleme listesi</h2>
+    ${rj.map(c=>`<div class="fr"><span style="width:auto;color:var(--ink)">${H(c.ad)}</span> <span class="mu">${H(c.rj)}</span>
+      ${A?`<button class="btn g" style="margin-left:auto" data-a="reopen" data-i="${c.id}">Yeniden aç</button>`:""}
+    </div>`).join("")}
+  </div>`:""}`;
+}
+function gor(){
+  const show=C.filter(c=>c.stage>=1&&c.stage<=2&&vis(c));
+  if(!show.length)return`<p class="nt">Görüşme aşamasında (Görüşme veya Onay) aday yok.</p>`;
+  const c=gC(SEL)||show[0];
+  return`<div class="row">${show.map(x=>`<button class="btn ${x.id==c.id?"":"g"}" data-a="gsel" data-i="${x.id}">${H(x.ad)}</button>`).join("")}</div>
+  <div class="cols">
+    <div class="card"><h2>Ağırlıklı Değerlendirme Skoru</h2>
+      ${CR.map((x,i)=>`<div class="fr"><span>${x[0]} (%${Math.round(x[1]*100)})</span>
+        <input type="range" min="0" max="100" value="${c.sc[i]}" data-gsc="${i}" data-i="${c.id}" ${["gm","fd","fu"].includes(R())?"":"disabled"} style="flex:1">
+        <b id="gsv${i}">${c.sc[i]}</b>
+      </div>`).join("")}
+      <div class="card" style="margin-top:8px">Toplam: <b id="gst">${scr(c)}</b> <span class="${scr(c)>=60?"ok":"rd"}">${scr(c)>=60?"✓ Onaya uygun":"✗ Yetersiz (min. 60)"}</span></div>
+    </div>
+    <div class="card"><h2>Görüşme Formu</h2>
+      ${GF.map((q,i)=>`<label class="ck"><input type="checkbox" data-gf="${i}" data-i="${c.id}" ${c.gf[i]?"checked":""} ${["gm","fd","fu"].includes(R())?"":"disabled"}>${q}</label>`).join("")}
+      <h3>Görüşme notu</h3>
+      <textarea data-gnot data-i="${c.id}" placeholder="Görüşme özeti…" ${["gm","fd","fu"].includes(R())?"":"disabled"} style="width:100%;min-height:70px">${H(c.gnot||"")}</textarea>
+    </div>
+    <div class="card"><h2>Münhasır Bölge Kontrolü</h2>
+      ${C.filter(x=>x.stage==6&&x.ilce==c.ilce).length?`<div class="al r">${H(c.ilce)} ilçesinde aktif şube var — bölge çakışması!</div>`:`<div class="al ok">${H(c.ilce)} ilçesi müsait.</div>`}
+      <p>Bölge: <b>${H(c.bolge)}</b></p>
+      ${C.filter(x=>x.stage==6&&x.bolge==c.bolge).map(x=>`<div class="fr"><span>${H(x.ad)}</span><span class="mu">${H(x.ilce)}</span></div>`).join("")||'<p class="nt">Bu bölgede başka aktif şube yok.</p>'}
+    </div>
+  </div>`;
+}
+function belge(){
+  const show=C.filter(c=>c.stage>=1&&c.stage<=4&&vis(c));
+  if(!show.length)return`<p class="nt">Belge gerektiren aşamada aday yok.</p>`;
+  const tabs=[["bekliyor","Eksik"],["tamam","Tamamlanan"],["tumu","Tümü"]];
+  return`<div class="row">${tabs.map(([k,l])=>`<button class="btn ${DTAB==k?"":"g"}" data-a="dtab" data-t="${k}">${l}</button>`).join("")}</div>
+  <div class="card scr"><table>
+    <tr><th>Aday</th><th>Aşama</th>${BDOC.map(b=>`<th style="max-width:85px;white-space:normal;font-size:11px">${b.split("(")[0].trim()}</th>`).join("")}<th>Durum</th></tr>
+    ${show.filter(c=>{const p=nB(c)/BDOC.length;return DTAB=="tumu"||(DTAB=="bekliyor"&&p<1)||(DTAB=="tamam"&&p==1)}).map(c=>`<tr class="rw" data-a="open" data-i="${c.id}">
+      <td><b>${H(c.ad)}</b></td><td><span class="pi">${STAGES[c.stage]}</span></td>
+      ${BDOC.map((_,i)=>`<td>${c.belge[i]?'<span class="ok">✓</span>':(["gm","fd","fu","hk"].includes(R())?`<button class="btn g" style="font-size:11px;padding:2px 6px" data-a="bdoc" data-ci="${c.id}" data-bi="${i}">Yükle</button>`:"-")}</td>`).join("")}
+      <td><span class="pi ${nB(c)==BDOC.length?"ok":"wn"}">${nB(c)}/${BDOC.length}</span></td>
+    </tr>`).join("")}
+  </table></div>`;
+}
+function sube(){
+  const l=C.filter(c=>c.stage==6&&vis(c));
+  return`<div class="card scr"><table>
+    <tr><th>Şube</th><th>İlçe</th><th>Bölge</th><th>Durum</th><th>Royalty</th><th>Sözleşme bitişi</th><th>Cari</th></tr>
+    ${l.map(c=>{const d=Math.round((new Date(c.bit)-TODAY)/864e5);return`<tr class="rw" data-a="open" data-i="${c.id}">
+      <td><b>${H(c.ad)}</b></td><td>${H(c.ilce)}</td><td>${H(c.bolge)}</td><td>${PC(c.durum)}</td><td>%${c.roy}</td>
+      <td class="${d<=120?"wn":""}">${c.bit} (${d}g)</td>
+      <td class="${gec(c)>0?"rd":""}">${TRL(bak(c))}</td>
+    </tr>`}).join("")}
+  </table></div>
+  <p class="nt">Satıra tıklayarak sözleşme uzatma, askıya alma ve fesih işlemlerini yapabilirsiniz.</p>`;
+}
+function web(){
+  const l=C.filter(c=>c.stage==6&&vis(c));
+  const reviews={"Kadikoy Oto":["4.8",112],"Cankaya Garaj":["4.6",87],"Bornova Arac":["4.3",54]};
+  return`<div class="card scr"><h2>Şube Web Sayfaları</h2><table>
+    <tr><th>Şube</th><th>URL</th><th>Web</th><th>Google Profil</th><th>Yorum Takibi</th><th>Puanlama</th></tr>
+    ${l.map((c,idx)=>`<tr>
+      <td><b>${H(c.ad)}</b></td><td>ototr.com/${H(c.slug)}</td>
+      <td>${c.s[1]?'<span class="ok">✓ Yayında</span>':'<span class="rd">✗</span>'}</td>
+      <td>${c.s[2]?'<span class="ok">✓ Bağlı</span>':'<span class="rd">✗</span>'}</td>
+      <td>${c.s[3]?'<span class="ok">✓ Aktif</span>':'<span class="rd">✗</span>'}</td>
+      <td><span class="pi wn">⭐ ${["4.8","4.6","4.3"][idx]||"4.5"} (${[112,87,54][idx]||40} yorum)</span></td>
+    </tr>`).join("")}
+  </table></div>
+  <div class="cols">
+    <div class="card"><h2>Olumsuz Yorum Uyarıları</h2>
+      <div class="al r">Kadıköy Oto Ekspertiz — 3 günlük yanıtsız yorum (⭐1 — "Randevu iptal edildi haber verilmedi")</div>
+      <p class="nt">Google API entegrasyonu canlıya geçişte yapılacak. Demo sabit veri gösterir.</p>
+    </div>
+    <div class="card"><h2>Yorum Yanıt Süresi (ort.)</h2>
+      ${l.map((c,i)=>`<div class="fr"><span>${H(c.ad)}</span><div class="bar"><i style="width:${[75,60,40][i]||50}%"></i></div><small>${[18,24,42][i]||30} sa</small></div>`).join("")}
+    </div>
+  </div>`;
+}
+function paket(){
+  const l=C.filter(c=>c.stage==6&&vis(c));
+  const W=["gm","fd","fn"].includes(R());
+  return`<div class="card scr"><h2>Paket Tanımları</h2><table>
+    <tr><th>Paket</th><th>Grup</th><th>Liste fiyatı</th></tr>
+    ${PKT.map(p=>`<tr><td><b>${p.ad}</b></td><td><span class="pi">${p.grup}</span></td><td>${TRL(p.fiyat)}</td></tr>`).join("")}
+  </table></div>
+  <div class="card scr"><h2>Şube Yetkilendirme ve İndirim Limitleri</h2><table>
+    <tr><th>Şube</th><th>Tüm paketler</th><th>İndirim limiti</th><th>Bölge</th></tr>
+    ${l.map(c=>`<tr>
+      <td><b>${H(c.ad)}</b></td>
+      <td><span class="ok">✓ Yetkilendirildi</span></td>
+      <td>${W?`<input type="number" min="0" max="20" style="width:60px" value="${c.indirim||0}" data-ind data-i="${c.id}"> %`:`%${c.indirim||0}`}</td>
+      <td>${H(c.bolge)}</td>
+    </tr>`).join("")}
+  </table>
+  <p class="nt">Limit aşımı HQ onayı gerektirir. Demo: tüm şubeler tüm paketlere erişebilir.</p></div>`;
+}
+function fin(){
+  const l=C.filter(c=>c.stage==6&&c.durum!="Kapalı"&&vis(c));
+  if(!l.length)return`<p class="nt">Aktif şube yok.</p>`;
+  const W=["gm","fd","fn"].includes(R());
+  const c=gC(FB)||l[0]; FB=c.id;
+  let run=0;
+  const F=(c,k,w)=>W?`<input type="number" style="width:${w}px" data-f="${k}" data-i="${c.id}" value="${c[k]}">`:c[k];
+  return`<div class="card scr"><h2>Royalty hesabı</h2><table>
+    <tr><th>Şube</th><th>Rapor/ay</th><th>Ort.ücret ₺</th><th>Royalty%</th><th>Tahakkuk</th><th>Bakiye</th><th>Durum</th></tr>
+    ${l.map(c=>`<tr><td><b>${H(c.ad)}</b></td><td>${F(c,"r",70)}</td><td>${F(c,"ucret",90)}</td><td>${F(c,"roy",60)}</td><td>${TRL(roy(c))}</td><td>${TRL(bak(c))}</td>
+      <td>${gec(c)?`<span class="pi rd">${gec(c)} gün</span>`:'<span class="pi ok">Güncel</span>'}</td></tr>`).join("")}
+    <tr><td colspan="4"><b>Toplam</b></td><td><b>${TRL(l.reduce((s,c)=>s+roy(c),0))}</b></td><td><b>${TRL(l.reduce((s,c)=>s+bak(c),0))}</b></td><td></td></tr>
+  </table>
+  ${W?`<div class="row"><button class="btn" data-a="donem" ${l.every(x=>x.led.some(y=>y.dn=="2026-11"))?"disabled":""}>Kasım 2026 tahakkuklarını oluştur</button></div>`:""}</div>
+  <div class="card scr"><h2>Cari ekstre</h2>
+    <div class="row"><select data-fb>${l.map(x=>`<option value="${x.id}" ${x.id==c.id?"selected":""}>${H(x.ad)}</option>`).join("")}</select></div>
+    <table>
+      <tr><th>Dönem</th><th>Hareket</th><th>Vade</th><th>Tutar</th><th>Bakiye</th></tr>
+      ${c.led.map(x=>{run+=x.tip=="T"?x.tt:-x.tt;return`<tr><td>${x.dn}</td><td>${x.tip=="T"?"Tahakkuk":"Tahsilat"}</td><td>${x.vd||"-"}</td><td>${TRL(x.tt)}</td><td class="${run>0?"wn":""}">${TRL(run)}</td></tr>`}).join("")||'<tr><td colspan="5" class="mu">Hareket yok</td></tr>'}
+    </table>
+    ${R()=="fn"?`<div class="row"><input id="th" type="number" placeholder="Tahsilat tutarı"><button class="btn" data-a="tahs">Tahsilat gir</button><button class="btn g" data-a="tahall" ${bak(c)>0?"":"disabled"}>Tamamını tahsil et</button></div>`:'<p class="nt">Tahsilat girişini yalnızca Finans yapar.</p>'}
+  </div>`;
+}
+function rapor(){
+  const ak=C.filter(c=>c.stage==6&&c.durum=="Aktif"),rj=C.filter(c=>c.stage<0);
+  const topRoy=ak.reduce((s,c)=>s+roy(c),0),topBak=ak.reduce((s,c)=>s+bak(c),0);
+  return`<div class="g4">
+    <div class="card stat"><b>${C.length}</b><s2>Toplam başvuru</s2></div>
+    <div class="card stat"><b>${ak.length}</b><s2>Aktif şube</s2></div>
+    <div class="card stat"><b>${rj.length}</b><s2>Reddedilen</s2></div>
+    <div class="card stat"><b>%${Math.round(ak.length/C.length*100)}</b><s2>Dönüşüm</s2></div>
+    <div class="card stat"><b>${TRL(topRoy)}</b><s2>Aylık royalty</s2></div>
+    <div class="card stat"><b class="${topBak?"rd":"ok"}">${TRL(topBak)}</b><s2>Tahsilat bekleyen</s2></div>
+  </div>
+  <div class="cols">
+    <div class="card"><h2>Kaynak analizi</h2>
+      ${["Web","Google Ads","Referans","Fuar"].map(k=>{const n=C.filter(c=>c.kaynak==k).length;return n?`<div class="fr"><span>${k}</span><div class="bar"><i style="width:${n/C.length*100}%"></i></div><b>${n}</b></div>`:""}).join("")}
+    </div>
+    <div class="card"><h2>Bölge dağılımı (aktif)</h2>
+      ${[...new Set(ak.map(c=>c.bolge))].map(b=>{const n=ak.filter(c=>c.bolge==b).length;return`<div class="fr"><span>${b}</span><div class="bar"><i style="width:${n/Math.max(ak.length,1)*100}%"></i></div><b>${n}</b></div>`}).join("")||'<p class="nt">Aktif şube yok.</p>'}
+    </div>
+    <div class="card"><h2>Yönetim kurulu özeti</h2>
+      <div class="ct">Tarih: ${DL()}
+Aktif şube: ${ak.length} · Süreçteki: ${C.filter(c=>c.stage>=0&&c.stage<6).length} · Reddedilen: ${rj.length}
+Dönüşüm: %${Math.round(ak.length/C.length*100)}
+Aylık royalty tahakkuku: ${TRL(topRoy)}
+Gecikmiş alacak: ${TRL(C.filter(c=>c.stage==6).reduce((s,c)=>s+(gec(c)?bak(c):0),0))}
+Bölgeler: ${[...new Set(ak.map(c=>c.bolge))].join(", ")||"-"}</div>
+      <p class="nt">Excel/PDF dışa aktarma canlı sistemde uygulanacak.</p>
+    </div>
+  </div>`;
+}
+function yetki(){
+  const ekr=NAV.filter(n=>n[0]&&n[0].length>0&&!n[0].startsWith("_"));
+  return`<div class="cols">
+    <div class="card scr"><h2>Ekran erişimi</h2><table>
+      <tr><th>Rol</th>${ekr.map(n=>`<th style="font-size:10px;white-space:normal">${n[3]||n[2]}</th>`).join("")}</tr>
+      ${Object.keys(RN).map(r=>`<tr><td>${RN[r]}</td>${ekr.map(n=>`<td>${PERM[r].split(" ").includes(n[0])?'<span class="ok">✓</span>':'<span class="mu">·</span>'}</td>`).join("")}</tr>`).join("")}
+    </table></div>
+    <div class="card"><h2>Onay zinciri</h2>
+      ${AP.map((a,i)=>`<div class="fr"><span style="width:20px;color:var(--rd);font-weight:700">${i+1}</span>${a[0]}<b style="margin-left:auto">${RN[a[1]]}</b></div>`).join("")}
+      <h2 style="margin-top:16px">Birim görev sahipleri</h2>
+      ${Object.entries(TU).map(([u,[r]])=>`<div class="fr"><span>${u}</span><b>${RN[r]}</b></div>`).join("")}
+      <p class="nt">Onay zinciri sıralıdır — önceki adım tamamlanmadan bir sonraki açılmaz.</p>
+    </div>
+  </div>`;
+}
+function denetim(){
+  return`<div class="card"><h2>Denetim Kaydı <span class="nt">(salt ekleme — değiştirilemez)</span></h2>
+    ${LOG.length?`<div class="scr"><table>
+      <tr><th>#</th><th>Tarih</th><th>İşlem</th></tr>
+      ${LOG.map((x,i)=>`<tr><td class="mu">${LOG.length-i}</td><td class="mu" style="white-space:nowrap">${H(x.split(" · ")[0])}</td><td>${H(x.split(" · ").slice(1).join(" · "))}</td></tr>`).join("")}
+    </table></div>`:'<p class="nt">Henüz kayıt yok. İşlem yapıldıkça burası dolar.</p>'}
+  </div>`;
+}
+function model(){
+  return`<div class="cols">
+    <div class="card"><h2>Yaşam döngüsü ve kapı kuralları</h2><ul class="ul">
+      <li><b>Yeni → Görüşme:</b> Uzman/Direktör başlatır, SLA 3 gün</li>
+      <li><b>Görüşme → Onay:</b> skor ≥60 + görüşme formu tam</li>
+      <li><b>Onay → Sözleşme:</b> 5 adım sırayla (Uzman→Direktör→Hukuk→Finans→CEO)</li>
+      <li><b>Sözleşme → Onboarding:</b> tüm belgeler + e-imza + ilk ödeme</li>
+      <li><b>Onboarding → Kurulum:</b> İK·Finans·Akademi·Saha·BT görevleri tam</li>
+      <li><b>Kurulum → Aktif:</b> benzersiz slug + ${SU.length} kurulum maddesi</li>
+      <li><b>Fesih → Kapalı:</b> ${KF.length} kapanış maddesi + sıfır cari bakiye</li>
+    </ul></div>
+    <div class="card"><h2>Veri tabloları (canlı DB için)</h2><ul class="ul">
+      <li>franchise_adayi · aday_aktivite · degerlendirme_formu</li>
+      <li>onay_adimi · belge · belge_surum</li>
+      <li>franchise_sirketi · sube (slug, durum, bolge)</li>
+      <li>sozlesme · sozlesme_surum · ek_protokol</li>
+      <li>gorev (birim, rol, durum) · kurulum_maddesi</li>
+      <li>cari_hareket · royalty_donem · paket · bayi_paket_yetkisi</li>
+      <li>denetim_kaydi (append-only)</li>
+    </ul>
+    <p class="nt">sirket_id ile tam veri izolasyonu · soft delete · audit trail zorunlu</p></div>
+  </div>`;
+}
+/* ══ UÇTAN UCA FRANCHISE PROGRAMI ══ */
+const E2E_STAGES=["Başvuru","İlk temas","Ön değerlendirme","Yatırımcı sunumu","Finansal yeterlilik","Lokasyon","Due diligence","Ön onay","Sözleşme","Kurulum","Eğitim","Deneme operasyonu","Açılış kurulu","Aktif şube"];
+const E2E_STAGE_OWNER=["fu","fu","fu","fd","fn","op","hk","fd","hk","mm","ak","kl","gm","fd"];
+const E2E_TASKS={
+  "Franchise":["Başvuru izinleri doğrulandı","İlk temas ve ihtiyaç görüşmesi tamamlandı","Yedi başlıklı aday skoru gerekçelendirildi"],
+  "Finans / Muhasebe":["Öz kaynak ve yatırım planı incelendi","Giriş bedeli planı oluşturuldu","Açılış öncesi tahsilat %100 doğrulandı"],
+  "Hukuk":["Şirket ve ortaklık due diligence tamamlandı","Bölge koruma eki onaylandı","Sözleşme versiyonu ve imza paketi hazır"],
+  "İnsan Kaynakları":["Şube tipine göre kadro planı açıldı","Yasal işveren ve özlük hazırlığı doğrulandı","Zorunlu roller atandı"],
+  "Academy":["Franchise sahibi programı tamamlandı","Şube müdürü programı tamamlandı","Teknik rollerin sertifikaları geçerli"],
+  "Operasyon":["Lokasyon saha ziyareti tamamlandı","Araç akış ve yerleşim planı onaylandı","Deneme araç kabulü başarıyla tamamlandı"],
+  "Tedarik":["Cihaz ve sarf siparişleri teslim edildi","Seri numarası ve garanti kayıtları girildi","Kalibrasyon belgeleri doğrulandı"],
+  "Bilgi Teknolojileri":["Kullanıcı ve şube kapsamları tanımlandı","Ağ, terminal ve rapor sistemi test edildi","POS ve güvenli bağlantı testi tamamlandı"],
+  "Pazarlama":["Tabela ve marka uygulaması onaylandı","Yerel açılış kampanyası hazırlandı","Web ve Google işletme hazırlığı tamamlandı"],
+  "Kalite":["Fiziki kalite denetimi tamamlandı","Örnek ekspertiz raporu geçti","Düzeltici faaliyetler kapatıldı"],
+  "İSG":["Risk değerlendirmesi tamamlandı","Yangın ve atölye güvenliği doğrulandı","Acil durum planı yayımlandı"],
+  "Mimari / Proje":["Keşif ve uygulama projesi onaylandı","Tadilat kritik yolu tamamlandı","Açılış teslim tutanağı hazırlandı"]
+};
+const DEPT_ROLE={"Franchise":"fd","Finans / Muhasebe":"fn","Hukuk":"hk","İnsan Kaynakları":"ik","Academy":"ak","Operasyon":"op","Tedarik":"td","Bilgi Teknolojileri":"bt","Pazarlama":"pz","Kalite":"kl","İSG":"isg","Mimari / Proje":"mm"};
+let FLOW={name:"Bursa Nilüfer OTOTR",candidate:"Demo Yatırımcı A.Ş.",stage:8,score:84,days:31,target:60,paid:100,royalty:10,adFund:0,exemption:6,territory:"Nilüfer · 12 km · poligon FR-BRS-01",consents:3,documents:12,documentsTotal:17,exceptions:[],tasks:{},history:["05 Kas 2026 · Hukuk · Sözleşme taslağı kurul incelemesine alındı","04 Kas 2026 · Finans · %100 tahsilat test kaydı doğrulandı","03 Kas 2026 · Operasyon · Lokasyon saha ziyareti tamamlandı"]};
+Object.entries(E2E_TASKS).forEach(([d,items],di)=>items.forEach((_,i)=>{if(di<3||i===0)FLOW.tasks[d+"|"+i]=1}));
+const flowTaskCount=()=>Object.keys(FLOW.tasks).length;
+const flowTaskTotal=()=>Object.values(E2E_TASKS).reduce((n,a)=>n+a.length,0);
+const flowDeptPct=d=>Math.round(E2E_TASKS[d].filter((_,i)=>FLOW.tasks[d+"|"+i]).length/E2E_TASKS[d].length*100);
+const flowStageGate=()=>{
+  const s=FLOW.stage;
+  if(s===0&&FLOW.consents<3)return"KVKK aydınlatma, veri işleme ve ticari ileti izinleri tamamlanmalı.";
+  if(s===2&&FLOW.score<50)return"Skor 50 altında; yönetim incelemesi olmadan ilerleyemez.";
+  if(s===4&&flowDeptPct("Finans / Muhasebe")<67)return"Finansal uygunluk görevleri tamamlanmalı.";
+  if(s===6&&flowDeptPct("Hukuk")<67)return"Due diligence ve hukuk incelemesi tamamlanmalı.";
+  if(s===8&&(FLOW.paid<100||flowDeptPct("Hukuk")<100))return"Sözleşme ve açılış öncesi %100 tahsilat kapısı tamamlanmalı.";
+  if(s>=9&&s<=11&&flowTaskCount()<flowTaskTotal())return"Tüm departman kurulum görevleri tamamlanmalı ("+flowTaskCount()+"/"+flowTaskTotal()+").";
+  if(s===12&&FLOW.exceptions.length)return"Açık istisnalar kapatılmadan açılış kurulu karar veremez.";
+  return"";
+};
+function e2e(){
+  const gate=flowStageGate(),owner=RN[E2E_STAGE_OWNER[FLOW.stage]],remaining=Math.max(0,FLOW.target-FLOW.days);
+  return`<div class="safe-note"><b>Güvenli demo:</b> T.C. kimlik, banka/finans ve sözleşme belgeleri bu ekranda gerçek olarak tutulmaz. Tüm kayıtlar sentetiktir.</div>
+  <div class="g4"><div class="card stat"><b>${FLOW.score}/100</b><s2>Aday skoru</s2></div><div class="card stat"><b>${FLOW.stage+1}/14</b><s2>Yaşam döngüsü</s2></div><div class="card stat"><b>${flowTaskCount()}/${flowTaskTotal()}</b><s2>Departman görevi</s2></div><div class="card stat"><b>${FLOW.paid}%</b><s2>Giriş bedeli tahsilatı</s2></div><div class="card stat"><b>${remaining} gün</b><s2>60 günlük hedefe kalan</s2></div></div>
+  <div class="card"><h2>Başvurudan aktif şubeye yaşam döngüsü</h2><div class="journey">${E2E_STAGES.map((x,i)=>`<div class="journey-step ${i<FLOW.stage?'done':i===FLOW.stage?'current':''}"><b>${i+1}. ${x}</b><span>${i<FLOW.stage?'Tamamlandı':i===FLOW.stage?'Sorumlu: '+owner:'Bekliyor'}</span></div>`).join("")}</div></div>
+  <div class="split"><div>
+    <div class="card"><div class="row" style="justify-content:space-between"><div><h2>${FLOW.name}</h2><p class="nt">${FLOW.candidate} · ${FLOW.territory}</p></div><span class="stage-chip current">${E2E_STAGES[FLOW.stage]}</span></div>
+      <div class="cols"><div><h3>Finans</h3><div class="approval"><span>Giriş bedeli tahsilatı</span><b>${FLOW.paid}%</b></div><div class="approval"><span>Royalty</span><b>KDV dahil tahsilat × %${FLOW.royalty}</b></div><div class="approval"><span>Yeni bayi muafiyeti</span><b>${FLOW.exemption} ay</b></div></div><div><h3>Dosya</h3><div class="approval"><span>KVKK izinleri</span><b>${FLOW.consents}/3</b></div><div class="approval"><span>Belge talepleri</span><b>${FLOW.documents}/${FLOW.documentsTotal}</b></div><div class="approval"><span>Açık istisna</span><b>${FLOW.exceptions.length}</b></div></div></div>
+      ${gate?`<div class="al r"><b>Kapı kapalı:</b> ${gate}</div>`:`<div class="al ok"><b>Kapı hazır:</b> ${owner} aşamayı ilerletebilir.</div>`}
+      <div class="row"><button class="btn" data-e2e="advance" ${gate||![E2E_STAGE_OWNER[FLOW.stage],"gm"].includes(R())?'disabled':''}>Sonraki aşamaya geçir →</button><button class="btn g" data-e2e="day">1 gün ilerlet</button><button class="btn g" data-e2e="exception">İstisna talebi oluştur</button></div>
+    </div>
+    <div class="card"><h2>Son hareketler · değiştirilemez işlem izi</h2>${FLOW.history.slice(0,8).map(x=>`<div class="al">${H(x)}</div>`).join("")}</div>
+  </div><div>
+    <div class="card"><h2>Şu an kimin üzerinde?</h2><div class="approval"><span>Aşama sahibi</span><b>${owner}</b></div><div class="approval"><span>SLA</span><b>${FLOW.days}/${FLOW.target} gün</b></div><div class="approval"><span>Sonraki aşama</span><b>${E2E_STAGES[FLOW.stage+1]||"İlk 90 gün"}</b></div></div>
+    <div class="card"><h2>ERP bağlantıları</h2><div class="row"><a class="btn g" href="../gm-ik/#fyd">GM İK</a><a class="btn g" href="../index.html#finance">GM Finans</a><a class="btn g" href="../index.html#legal">Hukuk</a><a class="btn g" href="../index.html#academy">Academy</a><a class="btn g" href="../index.html#actions">Görev Merkezi</a></div></div>
+  </div></div>`;
+}
+function departman(){
+  return`<div class="safe-note"><b>Maker–checker:</b> İstisna talep eden kişi onaylayan olamaz. Zorunlu hukuk, ruhsat ve %100 tahsilat kapıları istisnaya kapalıdır.</div><div class="dept-grid">${Object.entries(E2E_TASKS).map(([d,items])=>{const pct=flowDeptPct(d),role=DEPT_ROLE[d],can=R()===role||R()==="gm";return`<div class="dept-card"><h2>${d}</h2><p>Sorumlu: ${RN[role]} · ${pct}% tamam</p><div class="meter"><i style="width:${pct}%"></i></div>${items.map((t,i)=>`<label class="ck"><input type="checkbox" data-flow-task="${d}|${i}" ${FLOW.tasks[d+"|"+i]?'checked':''} ${can?'':'disabled'}>${t}</label>`).join("")}</div>`}).join("")}</div>`;
+}
+function acilis(){
+  const gates=[['Sözleşme ve hukuk',flowDeptPct('Hukuk')===100],['Finans ve %100 tahsilat',flowDeptPct('Finans / Muhasebe')===100&&FLOW.paid===100],['Kadro ve İK',flowDeptPct('İnsan Kaynakları')===100],['Academy ve sertifikalar',flowDeptPct('Academy')===100],['Fiziki kurulum',flowDeptPct('Mimari / Proje')===100],['Cihaz ve kalibrasyon',flowDeptPct('Tedarik')===100],['BT, POS ve güvenli bağlantı',flowDeptPct('Bilgi Teknolojileri')===100],['Kalite, İSG ve deneme',flowDeptPct('Kalite')===100&&flowDeptPct('İSG')===100&&flowDeptPct('Operasyon')===100]];
+  const ready=gates.every(x=>x[1])&&FLOW.exceptions.length===0&&FLOW.stage>=12;
+  return`<div class="g4"><div class="card stat"><b>${gates.filter(x=>x[1]).length}/8</b><s2>Açılış kapısı</s2></div><div class="card stat"><b>${FLOW.paid}%</b><s2>Tahsilat</s2></div><div class="card stat"><b>${FLOW.exceptions.length}</b><s2>Açık istisna</s2></div><div class="card stat"><b class="${ready?'ok':'wn'}">${ready?'HAZIR':'BEKLİYOR'}</b><s2>Kurul durumu</s2></div></div><div class="gate-grid">${gates.map((g,i)=>`<div class="gate-card"><h2>${g[1]?'<span class="ok">✓</span>':'<span class="rd">✗</span>'} ${i+1}. ${g[0]}</h2><p>${g[1]?'Kanıtlar tamamlandı.':'İlgili departman görevleri bekliyor.'}</p></div>`).join("")}</div><div class="card"><h2>Nihai açılış kararı</h2><p class="nt">Kurul: Genel Müdür, Franchise Direktörü, Finans, Hukuk, Operasyon, Kalite ve İK.</p><button class="btn" data-e2e="activate" ${ready&&R()==='gm'?'':'disabled'}>Aktif şube yap ve 30/60/90 gün planını oluştur</button></div>`;
+}
+function portallar(){
+  const portals=[['Aday Yatırımcı','Durum, belge talebi, randevu, mesaj, sözleşme/ödeme planı ve eğitim. İç skor ve departman notları gizli.','ad'],['Bayi / Şube','Kurulum, kadro, eğitim, ekipman, sözleşme, royalty ve ilk 90 gün. Yalnızca kendi kapsamı.','ba'],['Denetçi','Atanmış saha ziyareti, konum/ölçüm/fotoğraf kanıtı, bulgu ve yeniden kontrol.','dn'],['Tedarikçi','Yalnızca atanmış sipariş, teslimat, seri no, garanti ve kalibrasyon kaydı.','td']];
+  return`<div class="portal-grid">${portals.map(p=>`<div class="portal-card"><h2>${p[0]}</h2><p>${p[1]}</p><span class="stage-chip ${R()===p[2]?'current':''}">${R()===p[2]?'Aktif persona':'Rol seçiciden görüntüle'}</span></div>`).join("")}</div><div class="card"><h2>Veri görünürlüğü özeti</h2><table><tr><th>Persona</th><th>Görebilir</th><th>Göremez</th></tr><tr><td>Aday</td><td>Kendi başvurusu ve talepleri</td><td>İç skor, risk, kurul ve departman notları</td></tr><tr><td>Bayi</td><td>Kendi şirketi ve şubeleri</td><td>Diğer bayi ve GM özel verisi</td></tr><tr><td>Denetçi</td><td>Atanmış denetim dosyası</td><td>Finans, sözleşme ve personel özlük verisi</td></tr><tr><td>Tedarikçi</td><td>Kendi sipariş/teslimatları</td><td>Aday, finans, hukuk ve çalışan verisi</td></tr></table></div>`;
+}
+/* ══ PANEL ══ */
+function panel(c){
+  const s=c.stage,gt=s>=0&&s<6?gate(c):"",A=adv(c);
+  let b="";
+  if(s==-1)b=`<div class="al r">Reddedildi: ${H(c.rj)}</div>${["gm","fd","fu"].includes(R())?`<div class="row"><button class="btn" data-a="reopen" data-i="${c.id}">Yeniden aç</button></div>`:""}`;
+  if(s==0)b=`<p>Aday kaydı oluştu (kaynak: ${c.kaynak}).</p><div class="card"><div class="fr"><span>SLA durumu</span><b>${c.slaGun}/${c.sla} gün</b>${c.slaGun>c.sla?'<span class="rd"> ⚠ Aşıldı</span>':""}</div></div>`;
+  if(s==1)b=`<h3>Değerlendirme skoru</h3>
+    ${CR.map((x,i)=>`<div class="fr"><span style="width:130px">${x[0]} (%${Math.round(x[1]*100)})</span><input type="range" min="0" max="100" value="${c.sc[i]}" data-sc="${i}" ${A?"":"disabled"} style="flex:1"><b id="sv${i}">${c.sc[i]}</b></div>`).join("")}
+    <div class="card">Toplam: <b id="st">${scr(c)}</b> <span id="so" class="${scr(c)>=60?"ok":"rd"}">${scr(c)>=60?"✓ Onaya uygun":"✗ Yetersiz"}</span></div>
+    <h3>Görüşme formu</h3>
+    ${GF.map((q,i)=>`<label class="ck"><input type="checkbox" data-gf="${i}" data-i="${c.id}" ${c.gf[i]?"checked":""} ${A?"":"disabled"}>${q}</label>`).join("")}`;
+  if(s==2)b=`<h3>Onay zinciri (sıralı)</h3>
+    ${AP.map((x,i)=>{const d=c.a.includes(i),p=[...Array(i).keys()].every(j=>c.a.includes(j)),can=R()==x[1]&&(d||p);
+    return`<label class="ck"><input type="checkbox" data-ap="${i}" ${d?"checked":""} ${can?"":"disabled"}><span>${x[0]} <small class="mu">· ${RN[x[1]]}</small> ${d?'<span class="ok">✓</span>':""}</span></label>`}).join("")}`;
+  if(s==3)b=`<h3>Sözleşme önizleme</h3>
+    <div class="ct">OTOTR Tarafsız Araç Ekspertizi ile ${H(c.ad)} arasında ${H(c.ilce)} (${H(c.bolge)}) bölgesi için münhasır franchise sözleşmesi.
+Giriş ücreti: ${TRL(c.giris)} · Royalty: %${c.roy} · Süre: 5 yıl
+Madde 7: Bayi muhasebesini OTOTR ERP içinde tutmakla yükümlüdür.
+Madde 12: Münhasır bölge ihlali halinde sözleşme feshedilir.</div>
+    <h3>Belgeler (${nB(c)}/${BDOC.length})</h3>
+    ${BDOC.map((bd,i)=>`<label class="ck"><input type="checkbox" data-bdoc="${i}" data-i="${c.id}" ${c.belge[i]?"checked":""} ${["gm","fd","fu","hk"].includes(R())?"":"disabled"}>${bd}</label>`).join("")}
+    <h3>İmza ve ödeme</h3>
+    <label class="ck"><input type="checkbox" data-sg="signed" ${c.signed?"checked":""} ${okR("hk")?"":"disabled"}>E-imza tamamlandı <small class="mu">· Hukuk</small></label>
+    <label class="ck"><input type="checkbox" data-sg="paid" ${c.paid?"checked":""} ${okR("fn")?"":"disabled"}>İlk ödeme alındı (${TRL(c.giris)}) <small class="mu">· Finans</small></label>`;
+  if(s==4)b=Object.entries(TU).map(([u,[r]])=>`<h3>${u} <small class="mu">· ${RN[r]}</small></h3>
+    ${TL.filter(x=>x.u==u).map(x=>`<label class="ck"><input type="checkbox" data-tk="${x.k}" ${c.t[x.k]?"checked":""} ${okR(r)?"":"disabled"}>${x.t}</label>`).join("")}`).join("");
+  if(s==5)b=`<h3>Şube web adresi</h3>
+    <div class="row">ototr.com / <input data-slug value="${H(c.slug)}" ${["gm","fd","bt"].includes(R())?"":"disabled"} style="max-width:200px"></div>
+    <h3>Kurulum listesi (${Object.keys(c.s).length}/${SU.length})</h3>
+    ${SU.map((x,i)=>`<label class="ck"><input type="checkbox" data-su="${i}" ${c.s[i]?"checked":""} ${okR(x[1])?"":"disabled"}>${x[0]} <small class="mu">· ${RN[x[1]]}</small></label>`).join("")}`;
+  if(s==6){
+    const d=Math.round((new Date(c.bit)-TODAY)/864e5),F=["gm","fd"].includes(R()),k=c.durum=="Kapalı";
+    b=`<div class="card">ototr.com/${H(c.slug)} · ${PC(c.durum)}<br>Royalty %${c.roy} · Sözleşme: ${c.bit} <span class="${d<=120?"wn":""}">(${d}g)</span><br>Cari: <b class="${bak(c)>0?"wn":"ok"}">${TRL(bak(c))}</b>${gec(c)?` <span class="rd">· ${gec(c)} gün gecikme</span>`:""}</div>
+    ${k?`<p class="nt">Franchise ilişkisi sona erdi.</p>`:c.fes?
+      `<h3>Kapanış kontrol listesi (${Object.keys(c.kf).length}/${KF.length})</h3>
+      ${KF.map((x,i)=>`<label class="ck"><input type="checkbox" data-kf="${i}" ${c.kf[i]?"checked":""} ${okR(x[1])?"":"disabled"}>${x[0]} <small class="mu">· ${RN[x[1]]}</small></label>`).join("")}
+      <div class="row" style="margin-top:12px"><button class="btn r" data-a="kapat" data-i="${c.id}" ${F&&KF.every((_,i)=>c.kf[i])&&bak(c)<=0?"":"disabled"}>Kapanışı tamamla</button></div>
+      ${bak(c)>0?`<div class="al r">Cari bakiye ${TRL(bak(c))} — kapanış tamamlanamaz</div>`:""}`:
+      `<div class="row"><button class="btn g" data-a="askida" data-i="${c.id}" ${F?"":"disabled"}>${c.durum=="Aktif"?"Askıya al":"Yeniden aktifleştir"}</button><button class="btn g" data-a="uzat" data-i="${c.id}" ${["gm","fd","hk"].includes(R())?"":"disabled"}>Sözleşmeyi 1 yıl uzat</button><button class="btn r" data-a="fes" data-i="${c.id}" ${R()=="gm"?"":"disabled"}>Fesih başlat</button></div>`}`;
+  }
+  const act=s>=0&&s<6?`<div class="row" style="margin-top:14px">
+    <button class="btn" data-a="nxt" data-i="${c.id}" ${A&&!gt?"":"disabled"}>${s==3?"Paneli aç ve onboardingi başlat →":s==5?"Şubeyi aktifleştir →":"Sonraki aşamaya geç →"}</button>
+    ${s<2&&A?`<select id="rj">${RJ.map(x=>`<option>${x}</option>`).join("")}</select><button class="btn g" data-a="rej" data-i="${c.id}">Reddet</button>`:""}
+  </div>${!A?`<p class="nt">Aşama geçişini Franchise Direktörü veya GM yapar.</p>`:""}`:""
+  return`<div class="row" style="justify-content:space-between;align-items:start;flex-wrap:nowrap">
+    <div><h2 style="margin:0">${H(c.ad)}</h2><p class="mu" style="margin:2px 0;font-size:13px">${H(c.ilce)} · ${H(c.bolge)} · ${H(c.yat)} · ${c.kaynak}</p></div>
+    <button class="btn g" data-a="close">✕</button>
+  </div>
+  <div class="sp">${STAGES.map((_,i)=>`<i class="${i<s?"d":i==s?"c":""}"></i>`).join("")}</div>
+  <p class="mu" style="margin:0 0 10px;font-size:13px">${s<0?"Reddedildi":STAGES[s]+(s==6?" · "+c.durum:"")}</p>
+  ${b}
+  ${gt?`<div class="al r" style="margin-top:10px">${gt}</div>`:""}
+  ${act}
+  <h3>Not ve geçmiş</h3>
+  <div class="row"><input id="nt" placeholder="Not ekle…" style="flex:1"><button class="btn g" data-a="note" data-i="${c.id}">Ekle</button></div>
+  ${c.hist.slice(0,10).map(x=>`<div class="al">${H(x)}</div>`).join("")}`;
+}
+/* ══ RENDER ══ */
+const VIEWS={e2e,departman,acilis,portallar,dash,hat,inbox,pipe,gor,belge,sube,web,paket,fin,rapor,yetki,denetim,model};
+function render(){
+  const perm=PERM[R()].split(" ");
+  if(!perm.includes(CUR))CUR=perm[0]||"portallar";
+  $("ttl").textContent=(NAV.find(x=>x[0]==CUR)||[])[2]||"";
+  try{$("view").innerHTML=VIEWS[CUR]();}catch(e){$("view").innerHTML=`<div class="al r">Ekran yüklenirken hata: ${e.message}</div>`;}
+  document.querySelectorAll("#nav .nb").forEach(b=>{
+    b.classList.toggle("on",b.dataset.k==CUR);
+    b.style.display=perm.includes(b.dataset.k)?"flex":"none";
+  });
+  const c=gC(SEL),mo=$("mo");
+  mo.hidden=!c;
+  if(c){try{mo.innerHTML=`<div class="dr">${panel(c)}</div>`;}catch(e){mo.hidden=true;}}
+  try{localStorage.setItem(KEY,JSON.stringify({C,LOG,UID,FB,CUR,FLOW}))}catch(x){}
+}
+/* ══ AKSİYONLAR ══ */
+const A={
+  v:s=>{CUR=s.v;SEL=null;render()},
+  hf:s=>{HF=s.r;render()},
+  open:s=>{SEL=+s.i;render()},
+  close:()=>{SEL=null;render()},
+  gsel:s=>{SEL=+s.i;render()},
+  dtab:s=>{DTAB=s.t;render()},
+  add:()=>{
+    const n=$("na")?.value.trim();if(!n)return;
+    const c=mkC(n,$("ni")?.value||"-",$("ny")?.value||"-",0,{kaynak:$("nk")?.value||"Web"});
+    C.push(c);LOG_ADD("Yeni aday: "+n,c);render();
+  },
+  nxt:s=>{
+    const c=gC(+s.i);if(!adv(c)||gate(c))return;
+    const msgs=["Görüşme planlandı","Kurul değerlendirmesine gönderildi (skor "+scr(c)+")","Onay zinciri tamamlandı — sözleşme hazırlandı","Panel hesabı açıldı; birim görevleri oluşturuldu","Onboarding tamamlandı — şube kurulumu başladı","Şube aktifleştirildi"];
+    if(c.stage==3&&!c.slug)c.slug=SL(c.ad);
+    if(c.stage==5){c.durum="Aktif";c.bit="2031-11-04"}
+    LOG_ADD(c.ad+": "+msgs[c.stage],c);c.stage++;render();
+  },
+  rej:s=>{const c=gC(+s.i),r=$("rj")?.value||"Kurul kararı";c.stage=-1;c.rj=r;LOG_ADD("Reddedildi: "+c.ad+" ("+r+")",c);SEL=null;render()},
+  reopen:s=>{const c=gC(+s.i);c.stage=0;c.rj="";LOG_ADD("Yeniden açıldı: "+c.ad,c);render()},
+  note:s=>{const t=$("nt")?.value.trim();if(t){gC(+s.i).hist.unshift(DL()+" · "+RN[R()]+" · "+t);render()}},
+  bdoc:s=>{const c=gC(+s.ci);c.belge[s.bi]=1;LOG_ADD(c.ad+": belge — "+BDOC[+s.bi],c);render()},
+  donem:()=>{C.filter(c=>c.stage==6&&c.durum!="Kapalı").forEach(c=>{if(!c.led.some(x=>x.dn=="2026-11"))c.led.push(tah(c,"2026-11","2026-12-10"))});LOG_ADD("Kasım 2026 tahakkukları oluşturuldu");render()},
+  tahs:()=>{const c=gC(FB);const t=Math.min(+($("th")?.value)||0,bak(c));if(t<=0)return;c.led.push({tip:"O",dn:"2026-11",vd:"",tt:t});LOG_ADD("Tahsilat: "+c.ad+" · "+TRL(t),c);render()},
+  tahall:()=>{const c=gC(FB);const t=bak(c);if(t>0){c.led.push({tip:"O",dn:"2026-11",vd:"",tt:t});LOG_ADD("Tam tahsilat: "+c.ad+" · "+TRL(t),c);render()}},
+  askida:s=>{const c=gC(+s.i);c.durum=c.durum=="Aktif"?"Askıda":"Aktif";LOG_ADD("Durum → "+c.durum+": "+c.ad,c);render()},
+  uzat:s=>{const c=gC(+s.i);c.bit=(+c.bit.slice(0,4)+1)+c.bit.slice(4);LOG_ADD("Sözleşme uzatıldı: "+c.ad+" → "+c.bit,c);render()},
+  fes:s=>{const c=gC(+s.i);c.fes=1;c.durum="Kapanışta";LOG_ADD("Fesih başlatıldı: "+c.ad,c);render()},
+  kapat:s=>{const c=gC(+s.i);if(bak(c)>0)return;c.durum="Kapalı";c.fes=0;LOG_ADD("Franchise kapatıldı: "+c.ad,c);render()}
+};
+document.addEventListener("click",ev=>{
+  if(ev.target===$("mo")){SEL=null;render();return}
+  const flowAction=ev.target.closest("[data-e2e]");
+  if(flowAction){
+    const action=flowAction.dataset.e2e;
+    if(action==="advance"&&!flowStageGate()&&[E2E_STAGE_OWNER[FLOW.stage],"gm"].includes(R())){FLOW.history.unshift(DL()+" · "+RN[R()]+" · "+E2E_STAGES[FLOW.stage]+" tamamlandı; "+(E2E_STAGES[FLOW.stage+1]||"ilk 90 gün")+" başladı");FLOW.stage=Math.min(E2E_STAGES.length-1,FLOW.stage+1)}
+    if(action==="day"){FLOW.days++;FLOW.history.unshift(DL()+" · Sistem · Program günü "+FLOW.days+" olarak güncellendi")}
+    if(action==="exception"){FLOW.exceptions.push({id:Date.now(),stage:E2E_STAGES[FLOW.stage],requester:RN[R()],status:"İkinci onay bekliyor"});FLOW.history.unshift(DL()+" · "+RN[R()]+" · "+E2E_STAGES[FLOW.stage]+" için istisna talebi açtı")}
+    if(action==="activate"&&R()==="gm"){FLOW.stage=13;FLOW.history.unshift(DL()+" · Genel Müdür · Şube aktif edildi; 30/60/90 gün görevleri oluşturuldu")}
+    render();return;
+  }
+  const el=ev.target.closest("[data-a]");
+  if(el&&A[el.dataset.a])A[el.dataset.a](el.dataset);
+});
+document.addEventListener("change",ev=>{
+  const t=ev.target,d=t.dataset,c=gC(SEL);
+  if(d.flowTask){const role=DEPT_ROLE[d.flowTask.split("|")[0]];if(R()===role||R()==="gm"){t.checked?FLOW.tasks[d.flowTask]=1:delete FLOW.tasks[d.flowTask];FLOW.history.unshift(DL()+" · "+RN[R()]+" · Görev "+(t.checked?"tamamlandı: ":"geri açıldı: ")+d.flowTask);render()}return}
+  if("fb" in d){FB=+t.value;render();return}
+  if(d.f){const x=gC(+d.i);if(x){x[d.f]=Math.max(0,+t.value||0);LOG_ADD("Royalty güncellendi: "+x.ad+" "+d.f,x);render();}return}
+  if(d.ind){const x=gC(+d.i);if(x){x.indirim=Math.max(0,Math.min(20,+t.value||0));render();}return}
+  if(d.gsc!==undefined){const x=gC(+d.i);if(x){x.sc[+d.gsc]=+t.value;const sv=$("gsv"+d.gsc),st=$("gst");if(sv)sv.textContent=t.value;if(st)st.textContent=scr(x);}return}
+  if(!c)return;
+  if(d.ap!==undefined){const i=+d.ap,k=c.a.indexOf(i);k<0?c.a.push(i):c.a.splice(k,1);LOG_ADD(c.ad+": "+AP[i][0]+(k<0?" ✓":" geri alındı"),c)}
+  else if(d.sg){c[d.sg]=t.checked?1:0;LOG_ADD(c.ad+": "+(d.sg=="signed"?"e-imza":"ilk ödeme")+(t.checked?" ✓":" geri alındı"),c)}
+  else if(d.tk){t.checked?c.t[d.tk]=1:delete c.t[d.tk];LOG_ADD(c.ad+": görev — "+d.tk,c)}
+  else if(d.su!==undefined){t.checked?c.s[+d.su]=1:delete c.s[+d.su];LOG_ADD(c.ad+": kurulum — "+SU[+d.su][0],c)}
+  else if(d.kf!==undefined){t.checked?c.kf[+d.kf]=1:delete c.kf[+d.kf];LOG_ADD(c.ad+": kapanış — "+KF[+d.kf][0],c)}
+  else if(d.bdoc!==undefined){c.belge[+d.bdoc]=t.checked?1:0;LOG_ADD(c.ad+": belge — "+BDOC[+d.bdoc],c)}
+  else if(d.gf!==undefined){c.gf[+d.gf]=t.checked;LOG_ADD(c.ad+": görüşme formu — "+GF[+d.gf],c)}
+  else if(d.slug!==undefined){c.slug=SL(t.value)}
+  else return;
+  render();
+});
+document.addEventListener("input",ev=>{
+  const d=ev.target.dataset;
+  if(d.sc!==undefined){const c=gC(SEL);if(!c)return;c.sc[+d.sc]=+ev.target.value;const sv=$("sv"+d.sc),st=$("st"),so=$("so");if(sv)sv.textContent=ev.target.value;if(st){st.textContent=scr(c);if(so){so.textContent=scr(c)>=60?"✓ Onaya uygun":"✗ Yetersiz";so.className=scr(c)>=60?"ok":"rd"}}}
+  if(d.gnot!==undefined){const c=gC(+d.i);if(c)c.gnot=ev.target.value}
+});
+/* ══ NAV OLUŞTUR ══ */
+const navEl=$("nav");
+NAV.forEach(n=>{
+  if(!n[0]){
+    const d=document.createElement("div");
+    d.className="ns";d.textContent=n[2]||n[1];
+    navEl.appendChild(d);return;
+  }
+  const b=document.createElement("button");
+  b.className="nb";b.dataset.k=n[0];
+  b.innerHTML=`<span>${n[2]||n[1]}</span>${n[3]?'<span class="tg">MVP</span>':""}`;
+  b.addEventListener("click",()=>{CUR=n[0];SEL=null;render();});
+  navEl.appendChild(b);
+});
+$("role").addEventListener("change",()=>{SEL=null;render()});
+$("rst").addEventListener("click",()=>{try{localStorage.removeItem(KEY)}catch(e){}location.reload()});
+try{const j=JSON.parse(localStorage.getItem(KEY)||"null");if(j?.C){C=j.C;LOG=j.LOG||[];UID=j.UID||UID;FB=j.FB||1;if(j.CUR&&VIEWS[j.CUR])CUR=j.CUR;if(j.FLOW)FLOW=j.FLOW}}catch(e){}
+render();
+</script>
+</body>
+</html>
