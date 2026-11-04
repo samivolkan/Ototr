@@ -7,15 +7,24 @@ const rollback = await readFile(new URL('../supabase/ops/franchise-rollback.sql'
 const acceptance = await readFile(new URL('../supabase/ops/franchise-activation-acceptance.sql', import.meta.url), 'utf8');
 
 test('all franchise tables enable RLS and anon access is revoked', () => {
-  const tables = ['franchise_cases','franchise_department_tasks','franchise_staff','franchise_branches','franchise_access_accounts','franchise_followup_tasks','franchise_exceptions','franchise_integration_outbox'];
+  const tables = ['franchise_cases','franchise_department_tasks','franchise_staff','franchise_branches','franchise_access_accounts','franchise_followup_tasks','franchise_exceptions','franchise_integration_outbox','franchise_documents','franchise_document_retention','franchise_user_scopes'];
   for (const table of tables) assert.match(sql, new RegExp(`alter table public\\.${table} enable row level security`, 'i'));
   assert.match(sql, /revoke all on[\s\S]+from anon/i);
 });
 
 test('authorization uses app_metadata and never user_metadata', () => {
   assert.match(sql, /app_metadata/g);
+  assert.match(sql, /franchise_role/g);
+  assert.match(sql, /franchise_branch_ids/g);
   assert.doesNotMatch(sql, /user_metadata/);
   assert.doesNotMatch(sql, /auth\.role\(\)/);
+});
+
+test('custom access token hook preserves ERP metadata and is auth-admin only', () => {
+  assert.match(sql, /create or replace function public\.franchise_custom_access_token_hook\(event jsonb\)/);
+  assert.match(sql, /metadata := metadata - 'franchise_role' - 'franchise_branch_ids'/);
+  assert.match(sql, /grant execute on function public\.franchise_custom_access_token_hook\(jsonb\) to supabase_auth_admin/);
+  assert.match(acceptance, /Mevcut ERP claim kayboldu/);
 });
 
 test('activation is invoker-secured, locked and creates all downstream records', () => {

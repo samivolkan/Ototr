@@ -148,6 +148,17 @@ insert into storage.buckets(id,name,public,file_size_limit,allowed_mime_types)
 values('franchise-private','franchise-private',false,20971520,array['application/pdf','image/jpeg','image/png','image/webp'])
 on conflict (id) do update set public=false,file_size_limit=excluded.file_size_limit,allowed_mime_types=excluded.allowed_mime_types;
 
+create table if not exists public.franchise_user_scopes (
+  auth_user_id uuid primary key references auth.users(id) on delete cascade,
+  erp_app_user_id uuid,
+  franchise_role text not null check (franchise_role in ('gm','franchise_director','franchise_specialist','finance','legal','hr','academy','operations','procurement','it','marketing','quality','ohs','accounting','architecture','dealer','inspector','supplier','applicant')),
+  branch_ids uuid[] not null default '{}',
+  scope_version integer not null default 1 check (scope_version > 0),
+  is_active boolean not null default true,
+  updated_by uuid references auth.users(id) on delete set null,
+  updated_at timestamptz not null default now()
+);
+
 create index if not exists franchise_cases_applicant_idx on public.franchise_cases (applicant_user_id, status);
 create index if not exists franchise_tasks_case_status_idx on public.franchise_department_tasks (franchise_case_id, status);
 create index if not exists franchise_staff_case_status_idx on public.franchise_staff (franchise_case_id, recruitment_status, access_status);
@@ -155,6 +166,7 @@ create index if not exists franchise_followups_branch_due_idx on public.franchis
 create index if not exists franchise_exceptions_case_status_idx on public.franchise_exceptions (franchise_case_id, status);
 create index if not exists franchise_outbox_pending_idx on public.franchise_integration_outbox (status, next_attempt_at) where status in ('pending','failed');
 create index if not exists franchise_documents_case_category_idx on public.franchise_documents (franchise_case_id, category, created_at desc);
+create index if not exists franchise_user_scopes_role_idx on public.franchise_user_scopes (franchise_role, is_active);
 
 alter table public.franchise_cases enable row level security;
 alter table public.franchise_department_tasks enable row level security;
@@ -166,101 +178,140 @@ alter table public.franchise_exceptions enable row level security;
 alter table public.franchise_integration_outbox enable row level security;
 alter table public.franchise_documents enable row level security;
 alter table public.franchise_document_retention enable row level security;
+alter table public.franchise_user_scopes enable row level security;
 
-revoke all on public.franchise_cases, public.franchise_department_tasks, public.franchise_staff, public.franchise_branches, public.franchise_access_accounts, public.franchise_followup_tasks, public.franchise_exceptions, public.franchise_integration_outbox, public.franchise_documents, public.franchise_document_retention from anon;
-revoke all on public.franchise_cases, public.franchise_department_tasks, public.franchise_staff, public.franchise_branches, public.franchise_access_accounts, public.franchise_followup_tasks, public.franchise_exceptions, public.franchise_integration_outbox, public.franchise_documents, public.franchise_document_retention from authenticated;
+revoke all on public.franchise_cases, public.franchise_department_tasks, public.franchise_staff, public.franchise_branches, public.franchise_access_accounts, public.franchise_followup_tasks, public.franchise_exceptions, public.franchise_integration_outbox, public.franchise_documents, public.franchise_document_retention, public.franchise_user_scopes from anon;
+revoke all on public.franchise_cases, public.franchise_department_tasks, public.franchise_staff, public.franchise_branches, public.franchise_access_accounts, public.franchise_followup_tasks, public.franchise_exceptions, public.franchise_integration_outbox, public.franchise_documents, public.franchise_document_retention, public.franchise_user_scopes from authenticated;
 grant select, insert, update on public.franchise_cases, public.franchise_department_tasks, public.franchise_staff, public.franchise_branches, public.franchise_access_accounts, public.franchise_followup_tasks, public.franchise_exceptions, public.franchise_documents to authenticated;
 grant select on public.franchise_document_retention to authenticated;
 grant select, insert on public.franchise_integration_outbox to authenticated;
+grant select, insert, update on public.franchise_user_scopes to authenticated;
 
 create policy franchise_case_select on public.franchise_cases for select to authenticated
 using (
   applicant_user_id = (select auth.uid())
-  or (select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director','franchise_specialist','finance','legal','hr','academy','operations','it','quality','ohs','architecture')
+  or (select auth.jwt() -> 'app_metadata' ->> 'franchise_role') in ('gm','franchise_director','franchise_specialist','finance','legal','hr','academy','operations','it','quality','ohs','architecture')
 );
 create policy franchise_case_manage on public.franchise_cases for all to authenticated
-using ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director','franchise_specialist'))
-with check ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director','franchise_specialist'));
+using ((select auth.jwt() -> 'app_metadata' ->> 'franchise_role') in ('gm','franchise_director','franchise_specialist'))
+with check ((select auth.jwt() -> 'app_metadata' ->> 'franchise_role') in ('gm','franchise_director','franchise_specialist'));
 
 create policy franchise_task_select on public.franchise_department_tasks for select to authenticated
-using ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director','franchise_specialist','finance','legal','hr','academy','operations','it','quality','ohs','architecture'));
+using ((select auth.jwt() -> 'app_metadata' ->> 'franchise_role') in ('gm','franchise_director','franchise_specialist','finance','legal','hr','academy','operations','it','quality','ohs','architecture'));
 create policy franchise_task_manage on public.franchise_department_tasks for all to authenticated
-using ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director','franchise_specialist','finance','legal','hr','academy','operations','it','quality','ohs','architecture'))
-with check ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director','franchise_specialist','finance','legal','hr','academy','operations','it','quality','ohs','architecture'));
+using ((select auth.jwt() -> 'app_metadata' ->> 'franchise_role') in ('gm','franchise_director','franchise_specialist','finance','legal','hr','academy','operations','it','quality','ohs','architecture'))
+with check ((select auth.jwt() -> 'app_metadata' ->> 'franchise_role') in ('gm','franchise_director','franchise_specialist','finance','legal','hr','academy','operations','it','quality','ohs','architecture'));
 
 create policy franchise_staff_select on public.franchise_staff for select to authenticated
-using (auth_user_id = (select auth.uid()) or (select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director','hr','academy','it'));
+using (auth_user_id = (select auth.uid()) or (select auth.jwt() -> 'app_metadata' ->> 'franchise_role') in ('gm','franchise_director','hr','academy','it'));
 create policy franchise_staff_manage on public.franchise_staff for all to authenticated
-using ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director','hr','academy','it'))
-with check ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director','hr','academy','it'));
+using ((select auth.jwt() -> 'app_metadata' ->> 'franchise_role') in ('gm','franchise_director','hr','academy','it'))
+with check ((select auth.jwt() -> 'app_metadata' ->> 'franchise_role') in ('gm','franchise_director','hr','academy','it'));
 
 create policy franchise_branch_select on public.franchise_branches for select to authenticated
-using ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director','franchise_specialist','finance','legal','hr','academy','operations','it','quality','ohs','architecture') or id::text = any(array(select jsonb_array_elements_text(coalesce((select auth.jwt() -> 'app_metadata' -> 'branch_ids'),'[]'::jsonb)))));
+using ((select auth.jwt() -> 'app_metadata' ->> 'franchise_role') in ('gm','franchise_director','franchise_specialist','finance','legal','hr','academy','operations','it','quality','ohs','architecture') or id::text = any(array(select jsonb_array_elements_text(coalesce((select auth.jwt() -> 'app_metadata' -> 'franchise_branch_ids'),'[]'::jsonb)))));
 create policy franchise_branch_manage on public.franchise_branches for all to authenticated
-using ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director'))
-with check ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director'));
+using ((select auth.jwt() -> 'app_metadata' ->> 'franchise_role') in ('gm','franchise_director'))
+with check ((select auth.jwt() -> 'app_metadata' ->> 'franchise_role') in ('gm','franchise_director'));
 
 create policy franchise_account_select on public.franchise_access_accounts for select to authenticated
-using (auth_user_id = (select auth.uid()) or (select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director','it'));
+using (auth_user_id = (select auth.uid()) or (select auth.jwt() -> 'app_metadata' ->> 'franchise_role') in ('gm','franchise_director','it'));
 create policy franchise_account_manage on public.franchise_access_accounts for all to authenticated
-using ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director','it'))
-with check ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director','it'));
+using ((select auth.jwt() -> 'app_metadata' ->> 'franchise_role') in ('gm','franchise_director','it'))
+with check ((select auth.jwt() -> 'app_metadata' ->> 'franchise_role') in ('gm','franchise_director','it'));
 
 create policy franchise_followup_select on public.franchise_followup_tasks for select to authenticated
-using ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director','finance','hr','operations') or branch_id::text = any(array(select jsonb_array_elements_text(coalesce((select auth.jwt() -> 'app_metadata' -> 'branch_ids'),'[]'::jsonb)))));
+using ((select auth.jwt() -> 'app_metadata' ->> 'franchise_role') in ('gm','franchise_director','finance','hr','operations') or branch_id::text = any(array(select jsonb_array_elements_text(coalesce((select auth.jwt() -> 'app_metadata' -> 'franchise_branch_ids'),'[]'::jsonb)))));
 create policy franchise_followup_manage on public.franchise_followup_tasks for all to authenticated
-using ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director','finance','hr','operations'))
-with check ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director','finance','hr','operations'));
+using ((select auth.jwt() -> 'app_metadata' ->> 'franchise_role') in ('gm','franchise_director','finance','hr','operations'))
+with check ((select auth.jwt() -> 'app_metadata' ->> 'franchise_role') in ('gm','franchise_director','finance','hr','operations'));
 
 create policy franchise_exception_select on public.franchise_exceptions for select to authenticated
-using ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director','franchise_specialist','finance','legal','hr','academy','operations','it','quality','ohs','architecture'));
+using ((select auth.jwt() -> 'app_metadata' ->> 'franchise_role') in ('gm','franchise_director','franchise_specialist','finance','legal','hr','academy','operations','it','quality','ohs','architecture'));
 create policy franchise_exception_insert on public.franchise_exceptions for insert to authenticated
 with check (requester_id=(select auth.uid()) and status='pending_second_approval' and reviewer_id is null);
 create policy franchise_exception_review on public.franchise_exceptions for update to authenticated
-using ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director') and requester_id<>(select auth.uid()))
-with check ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director') and requester_id<>(select auth.uid()) and reviewer_id=(select auth.uid()) and status in ('approved','rejected'));
+using ((select auth.jwt() -> 'app_metadata' ->> 'franchise_role') in ('gm','franchise_director') and requester_id<>(select auth.uid()))
+with check ((select auth.jwt() -> 'app_metadata' ->> 'franchise_role') in ('gm','franchise_director') and requester_id<>(select auth.uid()) and reviewer_id=(select auth.uid()) and status in ('approved','rejected'));
 
 create policy franchise_outbox_select on public.franchise_integration_outbox for select to authenticated
-using ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director','it'));
+using ((select auth.jwt() -> 'app_metadata' ->> 'franchise_role') in ('gm','franchise_director','it'));
 create policy franchise_outbox_insert on public.franchise_integration_outbox for insert to authenticated
-with check ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director'));
+with check ((select auth.jwt() -> 'app_metadata' ->> 'franchise_role') in ('gm','franchise_director'));
 
 create policy franchise_document_select on public.franchise_documents for select to authenticated
 using (
   exists(select 1 from public.franchise_cases c where c.id=franchise_case_id and c.applicant_user_id=(select auth.uid()))
-  or (select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director','franchise_specialist','finance','legal','hr','academy','operations')
+  or (select auth.jwt() -> 'app_metadata' ->> 'franchise_role') in ('gm','franchise_director','franchise_specialist','finance','legal','hr','academy','operations')
 );
 create policy franchise_document_insert on public.franchise_documents for insert to authenticated
 with check (
   uploaded_by=(select auth.uid()) and (
     exists(select 1 from public.franchise_cases c where c.id=franchise_case_id and c.applicant_user_id=(select auth.uid()))
-    or (select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director','franchise_specialist','finance','legal','hr','academy','operations')
+    or (select auth.jwt() -> 'app_metadata' ->> 'franchise_role') in ('gm','franchise_director','franchise_specialist','finance','legal','hr','academy','operations')
   )
 );
 create policy franchise_document_update on public.franchise_documents for update to authenticated
-using ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director','legal'))
-with check ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director','legal'));
+using ((select auth.jwt() -> 'app_metadata' ->> 'franchise_role') in ('gm','franchise_director','legal'))
+with check ((select auth.jwt() -> 'app_metadata' ->> 'franchise_role') in ('gm','franchise_director','legal'));
 create policy franchise_retention_select on public.franchise_document_retention for select to authenticated using (true);
 
 create policy franchise_storage_select on storage.objects for select to authenticated
 using (
   bucket_id='franchise-private' and (
     exists(select 1 from public.franchise_cases c where c.id::text=(storage.foldername(name))[1] and c.applicant_user_id=(select auth.uid()))
-    or (select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director','franchise_specialist','finance','legal','hr','academy','operations')
+    or (select auth.jwt() -> 'app_metadata' ->> 'franchise_role') in ('gm','franchise_director','franchise_specialist','finance','legal','hr','academy','operations')
   )
 );
 create policy franchise_storage_insert on storage.objects for insert to authenticated
 with check (
   bucket_id='franchise-private' and owner_id=(select auth.jwt()->>'sub') and (
     exists(select 1 from public.franchise_cases c where c.id::text=(storage.foldername(name))[1] and c.applicant_user_id=(select auth.uid()))
-    or (select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director','franchise_specialist','finance','legal','hr','academy','operations')
+    or (select auth.jwt() -> 'app_metadata' ->> 'franchise_role') in ('gm','franchise_director','franchise_specialist','finance','legal','hr','academy','operations')
   )
 );
 create policy franchise_storage_update on storage.objects for update to authenticated
 using (bucket_id='franchise-private' and owner_id=(select auth.jwt()->>'sub'))
 with check (bucket_id='franchise-private' and owner_id=(select auth.jwt()->>'sub'));
 create policy franchise_storage_delete on storage.objects for delete to authenticated
-using (bucket_id='franchise-private' and (select auth.jwt() -> 'app_metadata' ->> 'role') in ('gm','franchise_director','legal'));
+using (bucket_id='franchise-private' and (select auth.jwt() -> 'app_metadata' ->> 'franchise_role') in ('gm','franchise_director','legal'));
+
+create policy franchise_scope_self_select on public.franchise_user_scopes for select to authenticated
+using (auth_user_id=(select auth.uid()) or (select auth.jwt() -> 'app_metadata' ->> 'franchise_role') in ('gm','it'));
+create policy franchise_scope_manage on public.franchise_user_scopes for all to authenticated
+using ((select auth.jwt() -> 'app_metadata' ->> 'franchise_role') in ('gm','it'))
+with check ((select auth.jwt() -> 'app_metadata' ->> 'franchise_role') in ('gm','it'));
+create policy franchise_scope_auth_hook on public.franchise_user_scopes for select to supabase_auth_admin using (true);
+grant select on public.franchise_user_scopes to supabase_auth_admin;
+
+create or replace function public.franchise_custom_access_token_hook(event jsonb)
+returns jsonb
+language plpgsql
+security invoker
+set search_path = public, pg_temp
+as $$
+declare
+  claims jsonb := event->'claims';
+  metadata jsonb := coalesce(event->'claims'->'app_metadata','{}'::jsonb);
+  scope_row public.franchise_user_scopes%rowtype;
+begin
+  metadata := metadata - 'franchise_role' - 'franchise_branch_ids' - 'franchise_scope_version';
+  select * into scope_row from public.franchise_user_scopes
+  where auth_user_id=(event->>'user_id')::uuid and is_active=true;
+  if found then
+    metadata := metadata || jsonb_build_object(
+      'franchise_role',scope_row.franchise_role,
+      'franchise_branch_ids',to_jsonb(scope_row.branch_ids),
+      'franchise_scope_version',scope_row.scope_version
+    );
+  end if;
+  claims := jsonb_set(claims,'{app_metadata}',metadata,true);
+  return jsonb_set(event,'{claims}',claims,true);
+end;
+$$;
+
+revoke all on function public.franchise_custom_access_token_hook(jsonb) from public, anon, authenticated;
+grant execute on function public.franchise_custom_access_token_hook(jsonb) to supabase_auth_admin;
 
 create or replace function public.activate_franchise_case(p_case_id uuid)
 returns jsonb
@@ -271,7 +322,7 @@ as $$
 declare
   v_case public.franchise_cases%rowtype;
   v_branch public.franchise_branches%rowtype;
-  v_role text := auth.jwt() -> 'app_metadata' ->> 'role';
+  v_role text := auth.jwt() -> 'app_metadata' ->> 'franchise_role';
   v_missing integer;
 begin
   if v_role not in ('gm','franchise_director') then raise exception 'Yetkisiz aktivasyon'; end if;

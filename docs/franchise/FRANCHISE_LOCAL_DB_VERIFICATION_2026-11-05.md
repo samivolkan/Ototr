@@ -17,6 +17,9 @@ Yerel ve geçici Supabase PostgreSQL konteynerinde migration, güvenlik doğrula
 - Tam dosyada atomik olarak 1 şube, 10 erişim hesabı, 3 adet 30/60/90 görevi ve 4 outbox olayı oluştu.
 - Tekrarlanan aktivasyon idempotent sonuç verdi; kayıtları çoğaltmadı.
 - Outbox worker `FOR UPDATE SKIP LOCKED` ile olay talep etti ve tamamladı.
+- Custom Access Token Hook, `franchise_role` ve `franchise_branch_ids` claim'lerini üretti; mevcut ERP metadata alanını korudu.
+- Hook yalnız `supabase_auth_admin` tarafından çalıştırılabilir; `authenticated` rolüne kapalıdır.
+- Edge Function worker için HTTPS, alan adı izin listesi, gizli çağrı anahtarı ve idempotency kuralları otomatik test edildi.
 - Rollback Storage politikalarını önce kaldırdı, tüm franchise tablolarını ve bucket'ı temizledi.
 - Test konteyneri çalışma sonunda kaldırıldı.
 

@@ -5,11 +5,24 @@ insert into auth.users(id,email,raw_app_meta_data,created_at,updated_at)
 values('11111111-1111-4111-8111-111111111111','franchise-gm-test@example.invalid','{"role":"gm"}'::jsonb,now(),now())
 on conflict (id) do nothing;
 
+insert into public.franchise_user_scopes(auth_user_id,franchise_role,branch_ids,updated_by)
+values('11111111-1111-4111-8111-111111111111','gm','{}','11111111-1111-4111-8111-111111111111');
+
+set local role supabase_auth_admin;
+do $$
+declare hook_result jsonb;
+begin
+  hook_result:=public.franchise_custom_access_token_hook('{"user_id":"11111111-1111-4111-8111-111111111111","claims":{"app_metadata":{"existing_erp_claim":"preserved"}}}'::jsonb);
+  if hook_result->'claims'->'app_metadata'->>'franchise_role'<>'gm' then raise exception 'Franchise rol claim üretilemedi'; end if;
+  if hook_result->'claims'->'app_metadata'->>'existing_erp_claim'<>'preserved' then raise exception 'Mevcut ERP claim kayboldu'; end if;
+end $$;
+reset role;
+
 insert into public.franchise_cases(id,application_no,candidate_name,city,district,stage,score,consent_count,document_count,document_total,paid_percent,status,created_by)
 values('22222222-2222-4222-8222-222222222222','APP-STAGING-ACCEPTANCE','Sentetik Kabul Adayı','Bursa','Nilüfer',12,84,3,17,17,100,'approved','11111111-1111-4111-8111-111111111111');
 
 set local role authenticated;
-set local request.jwt.claims='{"sub":"11111111-1111-4111-8111-111111111111","app_metadata":{"role":"gm","branch_ids":[]}}';
+set local request.jwt.claims='{"sub":"11111111-1111-4111-8111-111111111111","app_metadata":{"franchise_role":"gm","franchise_branch_ids":[]}}';
 do $$
 begin
   perform public.activate_franchise_case('22222222-2222-4222-8222-222222222222');
