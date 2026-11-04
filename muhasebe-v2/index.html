@@ -1034,6 +1034,20 @@ button,input,select,textarea{font:inherit}.app{min-height:100vh;display:grid;gri
         </div>
       </section>
 <script src="assets/finance-ui.js"></script>
+<script>
+  window.OTOTRDealerFinanceAuth = Object.freeze({
+    getConfig() {
+      const config = window.OTOTR_SUPABASE_CONFIG || {};
+      return Object.freeze({
+        url: String(config.url || '').replace(/\/+$/, ''),
+        publishableKey: String(config.publishableKey || config.key || '')
+      });
+    },
+    getAccessToken() {
+      return window.OTOTR_FINANCE_AUTH?.getAccessToken?.() ?? null;
+    }
+  });
+</script>
 <script type="module" src="assets/finance-api-bridge.mjs"></script>
 <script type="module" src="assets/finance-command-bridge.mjs"></script>
 <script>
