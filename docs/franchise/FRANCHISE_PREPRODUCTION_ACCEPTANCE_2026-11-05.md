@@ -24,6 +24,7 @@ Karar: **NO_GO**
 - Yedi boyutlu, kanıtlı ve rol ayrımlı aday puanlaması; skor yalnız öneri üretir, nihai karar bağımsız kurul maker–checker onayıdır
 - Kurul sonrası skor revizyonunda eski kararın otomatik geçersizleşmesi ve yeniden bağımsız onay zorunluluğu
 - 12 hedef sistem için 31 sürümlü departman olay sözleşmesi; alan minimizasyonu, zorunlu alan, sürüm ve hassas veri denetiminin worker ve PostgreSQL katmanlarında birlikte uygulanması
+- Aday, bayi, denetçi ve tedarikçi için atama bazlı RLS; güvenli portal görünümü, persona–iş türü kilidi ve yalnız atanmış kullanıcının kontrollü işlem RPC'si
 
 ## NO_GO kapıları
 

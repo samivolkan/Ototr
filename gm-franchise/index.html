@@ -529,6 +529,12 @@ SCORE_DIMENSIONS.forEach((dimension,index)=>submitCandidateScore(FLOW,dimension.
 submitBoardDecision(FLOW,{decision:"approved",makerId:"fd:seed",makerRole:"fd"});
 reviewBoardDecision(FLOW,{checkerId:"gm:seed",checkerRole:"gm",approve:true});
 let FR_CASES=[FLOW];
+let PORTAL_WORK={
+  ad:[{id:"PW-AD-1",type:"document_request",title:"Şirket faaliyet belgesini yükle",status:"open",due:"08 Kas"},{id:"PW-AD-2",type:"appointment",title:"Yatırımcı sunumu randevusunu onayla",status:"open",due:"09 Kas"},{id:"PW-AD-3",type:"payment_plan",title:"Sentetik ödeme planını görüntüle",status:"open",due:"10 Kas"}],
+  ba:[{id:"PW-BA-1",type:"training",title:"Şube açılış eğitimini tamamla",status:"open",due:"12 Kas"},{id:"PW-BA-2",type:"procurement_order",title:"Cihaz teslimat durumunu görüntüle",status:"open",due:"15 Kas"}],
+  dn:[{id:"PW-DN-1",type:"inspection",title:"Atanmış saha ziyareti kanıtını gönder",status:"open",due:"07 Kas"}],
+  td:[{id:"PW-TD-1",type:"procurement_order",title:"Atanmış cihaz siparişini teslim et",status:"open",due:"14 Kas"}]
+};
 Object.entries(E2E_TASKS).forEach(([d,items],di)=>items.forEach((_,i)=>{if(di<3||i===0)FLOW.tasks[d+"|"+i]=1}));
 const flowTaskCount=()=>Object.keys(FLOW.tasks).length;
 const flowTaskTotal=()=>Object.values(E2E_TASKS).reduce((n,a)=>n+a.length,0);
@@ -605,7 +611,9 @@ function takip(){
 }
 function portallar(){
   const portals=[['Aday Yatırımcı','Durum, belge talebi, randevu, mesaj, sözleşme/ödeme planı ve eğitim. İç skor ve departman notları gizli.','ad'],['Bayi / Şube','Kurulum, kadro, eğitim, ekipman, sözleşme, royalty ve ilk 90 gün. Yalnızca kendi kapsamı.','ba'],['Denetçi','Atanmış saha ziyareti, konum/ölçüm/fotoğraf kanıtı, bulgu ve yeniden kontrol.','dn'],['Tedarikçi','Yalnızca atanmış sipariş, teslimat, seri no, garanti ve kalibrasyon kaydı.','td']];
-  return`<div class="portal-grid">${portals.map(p=>`<div class="portal-card"><h2>${p[0]}</h2><p>${p[1]}</p><span class="stage-chip ${R()===p[2]?'current':''}">${R()===p[2]?'Aktif persona':'Rol seçiciden görüntüle'}</span></div>`).join("")}</div><div class="card"><h2>Veri görünürlüğü özeti</h2><table><tr><th>Persona</th><th>Görebilir</th><th>Göremez</th></tr><tr><td>Aday</td><td>Kendi başvurusu ve talepleri</td><td>İç skor, risk, kurul ve departman notları</td></tr><tr><td>Bayi</td><td>Kendi şirketi ve şubeleri</td><td>Diğer bayi ve GM özel verisi</td></tr><tr><td>Denetçi</td><td>Atanmış denetim dosyası</td><td>Finans, sözleşme ve personel özlük verisi</td></tr><tr><td>Tedarikçi</td><td>Kendi sipariş/teslimatları</td><td>Aday, finans, hukuk ve çalışan verisi</td></tr></table></div>`;
+  const active=portals.find(p=>p[2]===R()),items=PORTAL_WORK[R()]||[];
+  if(active)return`<div class="safe-note"><b>Atama bazlı görünüm:</b> ${active[1]} Başka aday, şube, denetim veya sipariş verisi bu personaya gönderilmez.</div><div class="g4"><div class="card stat"><b>${items.length}</b><s2>Atanmış iş</s2></div><div class="card stat"><b>${items.filter(x=>x.status!=='open').length}</b><s2>Sonuçlanan</s2></div><div class="card stat"><b>${H(active[0])}</b><s2>Aktif persona</s2></div></div><div class="card"><h2>Yalnız bana atanmış işler</h2><table><tr><th>İş</th><th>Termin</th><th>Durum</th><th>İşlem</th></tr>${items.map(x=>`<tr><td>${H(x.title)}</td><td>${H(x.due)}</td><td><span class="stage-chip ${x.status==='open'?'current':''}">${x.status==='open'?'Açık':'Tamamlandı'}</span></td><td><button class="btn g sm" data-portal-action="${H(x.id)}" ${x.status!=='open'?'disabled':''}>${x.type==='appointment'?'Onayla':x.type==='payment_plan'?'Okudum':x.type==='inspection'?'Kanıt gönder':x.type==='procurement_order'?'Teslim et':'Tamamla'}</button></td></tr>`).join("")}</table></div><div class="card"><h2>Gizlilik sınırı</h2><p class="nt">İç skor, kurul notu, başka şube, finans belgesi, personel özlük kaydı ve diğer kullanıcı atamaları gösterilmez.</p></div>`;
+  return`<div class="portal-grid">${portals.map(p=>`<div class="portal-card"><h2>${p[0]}</h2><p>${p[1]}</p><span class="stage-chip">Atama bazlı RLS</span></div>`).join("")}</div><div class="card"><h2>Veri görünürlüğü özeti</h2><table><tr><th>Persona</th><th>Görebilir</th><th>Göremez</th></tr><tr><td>Aday</td><td>Kendi başvurusu ve talepleri</td><td>İç skor, risk, kurul ve departman notları</td></tr><tr><td>Bayi</td><td>Kendi şirketi ve şubeleri</td><td>Diğer bayi ve GM özel verisi</td></tr><tr><td>Denetçi</td><td>Atanmış saha ziyareti</td><td>Finans, sözleşme ve personel özlük verisi</td></tr><tr><td>Tedarikçi</td><td>Atanmış sipariş ve teslimat</td><td>Aday, hukuk ve çalışan verisi</td></tr></table></div>`;
 }
 /* ══ PANEL ══ */
 function panel(c){
@@ -678,7 +686,7 @@ function render(){
   const c=gC(SEL),mo=$("mo");
   mo.hidden=!c;
   if(c){try{mo.innerHTML=`<div class="dr">${panel(c)}</div>`;}catch(e){mo.hidden=true;}}
-  try{localStorage.setItem(KEY,JSON.stringify({C,LOG,UID,FB,CUR,FLOW,FR_CASES}))}catch(x){}
+  try{localStorage.setItem(KEY,JSON.stringify({C,LOG,UID,FB,CUR,FLOW,FR_CASES,PORTAL_WORK}))}catch(x){}
 }
 /* ══ AKSİYONLAR ══ */
 const A={
@@ -714,6 +722,7 @@ const A={
 };
 document.addEventListener("click",ev=>{
   if(ev.target===$("mo")){SEL=null;render();return}
+  const portalAction=ev.target.closest("[data-portal-action]");if(portalAction){const item=(PORTAL_WORK[R()]||[]).find(x=>x.id===portalAction.dataset.portalAction);if(item&&item.status==='open'){item.status='completed';FLOW.history.unshift(DL()+" · "+RN[R()]+" · Atanmış portal işi güvenli referansla tamamlandı: "+item.id)}render();return}
   const scoreSubmit=ev.target.closest("[data-score-submit]");
   if(scoreSubmit){try{const code=scoreSubmit.dataset.scoreSubmit;submitCandidateScore(FLOW,code,{score:$("score-"+code)?.value,assessorId:R()+":demo-user",assessorRole:R(),evidenceSha256:"c".repeat(64),rationale:"Sentetik rol bazlı değerlendirme kanıtı"});FLOW.history.unshift(DL()+" · "+RN[R()]+" · Aday skoru kanıtla kaydedildi: "+code)}catch(e){FLOW.history.unshift(DL()+" · Sistem · "+e.message)}render();return}
   const boardSubmit=ev.target.closest("[data-board-submit]");
@@ -782,7 +791,7 @@ NAV.forEach(n=>{
 });
 $("role").addEventListener("change",()=>{SEL=null;render()});
 $("rst").addEventListener("click",()=>{try{localStorage.removeItem(KEY)}catch(e){}location.reload()});
-try{const j=JSON.parse(localStorage.getItem(KEY)||"null");if(j?.C){C=j.C;LOG=j.LOG||[];UID=j.UID||UID;FB=j.FB||1;if(j.CUR&&VIEWS[j.CUR])CUR=j.CUR;if(Array.isArray(j.FR_CASES)&&j.FR_CASES.length){FR_CASES=j.FR_CASES;FLOW=FR_CASES.find(x=>x.id===j.FLOW?.id)||FR_CASES[0]}else if(j.FLOW?.staffing){FLOW=j.FLOW;FR_CASES=[FLOW]}}}catch(e){}FR_CASES.forEach(x=>{ensureOpeningEvidence(x);x.candidateScores||={};x.boardDecision??=null});
+try{const j=JSON.parse(localStorage.getItem(KEY)||"null");if(j?.C){C=j.C;LOG=j.LOG||[];UID=j.UID||UID;FB=j.FB||1;if(j.CUR&&VIEWS[j.CUR])CUR=j.CUR;if(j.PORTAL_WORK)PORTAL_WORK=j.PORTAL_WORK;if(Array.isArray(j.FR_CASES)&&j.FR_CASES.length){FR_CASES=j.FR_CASES;FLOW=FR_CASES.find(x=>x.id===j.FLOW?.id)||FR_CASES[0]}else if(j.FLOW?.staffing){FLOW=j.FLOW;FR_CASES=[FLOW]}}}catch(e){}FR_CASES.forEach(x=>{ensureOpeningEvidence(x);x.candidateScores||={};x.boardDecision??=null});
 render();
 </script>
 </body>

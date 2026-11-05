@@ -5,7 +5,7 @@ Bu rehber yalnız hosted staging Supabase projesi içindir. Üretimde kullanıc�
 ## 1. Migration
 
 1. Staging yedeğini ve migration listesini kaydet.
-2. `20261105010000`–`20261105110000` arasındaki on bir Franchise migration'ını dosya adı sırasıyla staging'e uygula.
+2. `20261105010000`–`20261105120000` arasındaki on iki Franchise migration'ını dosya adı sırasıyla staging'e uygula.
 3. `franchise-staging-verify.sql` içindeki bütün sorguların `true` döndürdüğünü kanıt olarak kaydet.
 4. `franchise-activation-acceptance.sql` sonucunun `PASS` olduğunu kaydet.
 5. `franchise-provider-acceptance.sql` içindeki üç kontrolün `true` olduğunu kaydet.
@@ -17,6 +17,7 @@ Bu rehber yalnız hosted staging Supabase projesi içindir. Üretimde kullanıc�
 11. Aktivasyon kabulünde 30. gün görevinin Operasyon kanıtıyla kapatıldığını ve maker–checker ile yeniden açıldığını kaydet.
 12. `franchise-scoring-acceptance.sql` ile yedi boyutlu skor, eşik önerisi ve bağımsız kurul kararını doğrula.
 13. `franchise-integration-contract-acceptance.sql` ile 31 sürümlü departman olay sözleşmesini, alan minimizasyonunu ve hassas veri reddini doğrula.
+14. `franchise-external-portal-acceptance.sql` ile aday, bayi, denetçi ve tedarikçi atama izolasyonunu ve çapraz erişim reddini doğrula.
 
 ## 2. Kimlik hook'u
 

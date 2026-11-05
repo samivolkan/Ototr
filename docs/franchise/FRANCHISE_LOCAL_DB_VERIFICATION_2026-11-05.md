@@ -9,7 +9,7 @@ Yerel ve geçici Supabase PostgreSQL konteynerinde migration, güvenlik doğrula
 
 ## Kanıtlanan davranışlar
 
-- On bir Franchise migration'ı (ana şema, sağlayıcı yönetişimi, sağlayıcı worker, departman RBAC, kadro, açılış kanıtı, gerçek kayıt kapıları, yaşam döngüsü, 30/60/90 yönetişimi, aday skoru/kurul kararı ve sürümlü entegrasyon sözleşmeleri) gerçek PostgreSQL motorunda hatasız commit edildi.
+- On iki Franchise migration'ı (ana şema, sağlayıcı yönetişimi, sağlayıcı worker, departman RBAC, kadro, açılış kanıtı, gerçek kayıt kapıları, yaşam döngüsü, 30/60/90 yönetişimi, aday skoru/kurul kararı, sürümlü entegrasyon sözleşmeleri ve dış portal izolasyonu) gerçek PostgreSQL motorunda hatasız commit edildi.
 - 13 public franchise tablosunda RLS açık.
 - `anon`, franchise dosyalarını ve belgeleri okuyamıyor.
 - Özel Storage bucket `public=false`, 20 MB ve MIME sınırlarıyla oluştu.
@@ -44,6 +44,8 @@ Yerel ve geçici Supabase PostgreSQL konteynerinde migration, güvenlik doğrula
 - Kurul onayından sonra herhangi bir skor revizyonu eski kararı geçersiz kıldı; yeni bağımsız kurul onayı olmadan aşama yeniden kilitlendi.
 - Finans, Hukuk, İK, Academy, Operasyon, Tedarik, BT, Pazarlama, Kalite, İSG, Mimari ve Görev Merkezi için 31 sürümlü olay sözleşmesinin tamamı minimum sentetik yükle kabul edildi.
 - Kaynak/olay uyuşmazlığı, eksik zorunlu alan, sözleşme dışı alan, bilinmeyen sürüm ve iç içe TCKN/e-posta/IBAN/VIN/token gibi hassas alanlar hem worker hem veritabanında fail-closed reddedildi.
+- Aday yalnız kendi başvuru işini, bayi yalnız claim kapsamındaki şubeyi, denetçi yalnız atanmış saha ziyaretini ve tedarikçi yalnız atanmış siparişi gördü; çapraz persona erişimi reddedildi.
+- Dış kullanıcılar yalnız güvenli RPC ile kendi işini sonuçlandırdı; persona–iş türü uyuşmazlığı, kişisel veri yükü ve atama kapsamı değişikliği reddedildi.
 - Rollback Storage politikalarını önce kaldırdı, tüm franchise tablolarını ve bucket'ı temizledi.
 - Test konteyneri çalışma sonunda kaldırıldı.
 
@@ -60,6 +62,7 @@ Yerel ve geçici Supabase PostgreSQL konteynerinde migration, güvenlik doğrula
 - `supabase/migrations/20261105090000_franchise_followup_governance.sql`
 - `supabase/migrations/20261105100000_franchise_scoring_board.sql`
 - `supabase/migrations/20261105110000_franchise_integration_contracts.sql`
+- `supabase/migrations/20261105120000_franchise_external_portals.sql`
 - `supabase/ops/franchise-local-contract-stubs.sql`
 - `supabase/ops/franchise-staging-verify.sql`
 - `supabase/ops/franchise-activation-acceptance.sql`
@@ -71,6 +74,7 @@ Yerel ve geçici Supabase PostgreSQL konteynerinde migration, güvenlik doğrula
 - `supabase/ops/franchise-lifecycle-acceptance.sql`
 - `supabase/ops/franchise-scoring-acceptance.sql`
 - `supabase/ops/franchise-integration-contract-acceptance.sql`
+- `supabase/ops/franchise-external-portal-acceptance.sql`
 - `supabase/ops/franchise-rollback.sql`
 
 ## Kalan sınır

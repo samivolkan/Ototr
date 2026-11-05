@@ -1,6 +1,21 @@
 -- STAGING ONLY. Destructive rollback for the franchise preproduction schema.
 -- Export staging evidence before use. Never run against production without signed approval.
 begin;
+drop view if exists public.franchise_portal_work_v;
+drop function if exists public.complete_franchise_portal_item(uuid,text,text);
+drop function if exists public.create_franchise_portal_item(uuid,text,text,jsonb,timestamptz);
+drop function if exists public.close_franchise_portal_assignment(uuid,text);
+drop function if exists public.create_franchise_portal_assignment(uuid,uuid,uuid,text,text,text);
+drop trigger if exists franchise_portal_item_privacy_guard_trigger on public.franchise_portal_items;
+drop trigger if exists franchise_portal_item_scope_guard_trigger on public.franchise_portal_items;
+drop trigger if exists franchise_portal_assignment_scope_guard_trigger on public.franchise_portal_assignments;
+drop function if exists public.franchise_portal_item_privacy_guard();
+drop function if exists public.franchise_portal_scope_guard();
+drop policy if exists franchise_portal_item_select on public.franchise_portal_items;
+drop policy if exists franchise_portal_assignment_select on public.franchise_portal_assignments;
+drop function if exists public.franchise_role_can_manage_portal_persona(text);
+drop table if exists public.franchise_portal_items;
+drop table if exists public.franchise_portal_assignments;
 drop trigger if exists franchise_integration_outbox_contract_trigger on public.franchise_integration_outbox;
 drop function if exists public.franchise_validate_integration_outbox();
 drop function if exists public.franchise_jsonb_has_prohibited_integration_key(jsonb);
