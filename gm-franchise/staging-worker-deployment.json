@@ -26,7 +26,8 @@
       "status": "ACTIVE",
       "verifyJwt": true,
       "bundleSha256": "1847505c84d4b8bd7363b07b19643469298bb5f94f40d3f808b6558e37e82726",
-      "unauthenticatedProbeStatus": 401
+      "unauthenticatedProbeStatus": 401,
+      "authenticatedInvalidSecretProbeStatus": 401
     },
     {
       "slug": "franchise-provider-worker",
@@ -35,7 +36,8 @@
       "status": "ACTIVE",
       "verifyJwt": true,
       "bundleSha256": "e64404eff3e9ec8e0f3ad7e151b46b0e35867284130b9df00d6033b0378d5446",
-      "unauthenticatedProbeStatus": 401
+      "unauthenticatedProbeStatus": 401,
+      "authenticatedInvalidSecretProbeStatus": 401
     }
   ]
 }

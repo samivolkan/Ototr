@@ -19,6 +19,7 @@ test('staging workers are recorded as fail-closed and not provider-configured', 
     assert.equal(fn.verifyJwt, true);
     assert.match(fn.bundleSha256, /^[0-9a-f]{64}$/);
     assert.equal(fn.unauthenticatedProbeStatus, 401);
+    assert.equal(fn.authenticatedInvalidSecretProbeStatus, 401);
   }
   assert.deepEqual(deployment.functions.map((x) => x.slug).sort(), ['franchise-outbox-worker','franchise-provider-worker']);
 });

@@ -6,7 +6,7 @@ const SHA256=/^[a-f0-9]{64}$/;
 export const PROVIDER_CHANNELS=Object.freeze(['email','sms','whatsapp','esign']);
 export function evaluateIntegrationReadiness(deployment){
   const functions=new Map((deployment?.functions||[]).map(item=>[item.slug,item])),sources=Object.keys(FRANCHISE_INTEGRATIONS),blockers=[];
-  for(const slug of ['franchise-outbox-worker','franchise-provider-worker']){const fn=functions.get(slug);if(!fn||fn.status!=='ACTIVE'||fn.verifyJwt!==true||!SHA256.test(fn.bundleSha256||'')||fn.unauthenticatedProbeStatus!==401)blockers.push(`worker:${slug}`)}
+  for(const slug of ['franchise-outbox-worker','franchise-provider-worker']){const fn=functions.get(slug);if(!fn||fn.status!=='ACTIVE'||fn.verifyJwt!==true||!SHA256.test(fn.bundleSha256||'')||fn.unauthenticatedProbeStatus!==401||fn.authenticatedInvalidSecretProbeStatus!==401)blockers.push(`worker:${slug}`)}
   if(sources.length!==13||!sources.includes('accounting')||deployment?.syntheticTransportAcceptance?.sourceCount!==13)blockers.push('department_source_catalog');
   if(deployment?.accountingContractDeployed!==true)blockers.push('accounting_contract');
   if(deployment?.externalEndpointsConfigured!==true)blockers.push('real_department_endpoints');

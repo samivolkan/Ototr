@@ -11,6 +11,8 @@ Hedef: Supabase `ototr-staging` (`bsjkohwbtrfwrqcyhsfz`).
 
 Her iki uç nokta JWT olmadan yapılan sentetik POST isteğini HTTP 401 ile reddetti.
 
+İkinci kimlik katmanı ayrıca hosted olarak doğrulandı: geçerli staging publishable JWT ile gateway geçildi, ancak bilerek yanlış `x-franchise-worker-secret` / `x-franchise-provider-secret` gönderildiğinde her iki işlev de kendi uygulama katmanında `Yetkisiz worker çağrısı` ve HTTP 401 döndürdü. Readiness manifesti hem başlıksız gateway 401 hem JWT'li yanlış-secret 401 kanıtını zorunlu tutar.
+
 Muhasebe, Finans'tan bağımsız `accounting` kaynağına ayrıldı. Üç sürümlü Muhasebe olay sözleşmesi staging veritabanına uygulandı; Edge Function v2 bundle içinde `FRANCHISE_ACCOUNTING_ADAPTER_URL/TOKEN` ve Muhasebe sözleşmeleri doğrulandı.
 
 ## Kontrollü sentetik HTTPS taşıma kabulü
