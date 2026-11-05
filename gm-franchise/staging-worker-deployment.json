@@ -5,6 +5,14 @@
   "productionDataUsed": false,
   "providerSecretsConfigured": false,
   "externalEndpointsConfigured": false,
+  "syntheticTransportAcceptance": {
+    "endpointHost": "httpbin.org",
+    "persistentConfiguration": false,
+    "sourceCount": 12,
+    "delivered": 12,
+    "finished": 12,
+    "result": "PASS"
+  },
   "functions": [
     {
       "slug": "franchise-outbox-worker",

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "module": "OTOTR_FRANCHISE_ADAPTER_TRANSPORT",
+  "environment": "ototr-staging",
+  "projectRef": "bsjkohwbtrfwrqcyhsfz",
+  "testedAt": "2026-11-05",
+  "productionDataUsed": false,
+  "worker": {"slug": "franchise-outbox-worker", "version": 1, "status": "ACTIVE", "verifyJwt": true, "unauthenticatedStatus": 401},
+  "syntheticEndpoint": {"host": "httpbin.org", "https": true, "persistentConfiguration": false},
+  "sources": ["finance","legal","hr","academy","operations","procurement","it","marketing","quality","ohs","architecture","tasks"],
+  "checks": {
+    "allTwelveSourcesDelivered": true,
+    "bearerHeaderObserved": true,
+    "idempotencyHeaderObserved": true,
+    "minimalContractBodyObserved": true,
+    "allFinishCallbacksSuccessful": true,
+    "prohibitedPersonalDataAbsent": true,
+    "workerFailsClosedWithoutJwt": true
+  },
+  "delivered": 12,
+  "finished": 12,
+  "result": "PASS",
+  "realDepartmentEndpointsConfigured": false,
+  "providerSecretsConfigured": false,
+  "releaseDecision": "NO_GO"
+}

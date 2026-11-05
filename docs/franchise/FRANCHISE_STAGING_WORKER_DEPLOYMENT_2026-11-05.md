@@ -11,6 +11,15 @@ Hedef: Supabase `ototr-staging` (`bsjkohwbtrfwrqcyhsfz`).
 
 Her iki uç nokta JWT olmadan yapılan sentetik POST isteğini HTTP 401 ile reddetti.
 
+## Kontrollü sentetik HTTPS taşıma kabulü
+
+- Worker ile aynı `handler.mjs` teslim katmanı, kalıcı yapılandırma oluşturmadan `https://httpbin.org/anything` kontrollü echo uç noktasına karşı çalıştırıldı.
+- Finans, Hukuk, İK, Academy, Operasyon, Tedarik, BT, Pazarlama, Kalite, İSG, Mimari ve Görev Merkezi kaynaklarının her biri için birer sentetik olay gönderildi; 12/12 teslim ve 12/12 finish callback başarılı oldu.
+- Uzaktaki echo yanıtında Bearer başlığı, `idempotency-key`, olay kimliği, franchise dosyası referansı ve sürümlü minimal sözleşme gövdesi doğrulandı. Token ve olay içeriği kanıt çıktısına yazılmadı.
+- Olaylar yalnız sentetik referanslardan oluştu; gerçek aday, çalışan, şube, finans, sözleşme veya iletişim verisi gönderilmedi.
+- Staging `franchise-outbox-worker` için JWT’siz POST tekrar HTTP 401 döndü.
+- Makinece okunabilir kanıt `gm-franchise/adapter-transport-hosted-evidence.json` içindedir. Bu test gerçek ERP/departman sağlayıcısı değildir ve G12’yi tek başına kapatmaz.
+
 ## Güvenlik sınırı
 
 - Provider secret'ları tanımlanmadı.
@@ -19,4 +28,4 @@ Her iki uç nokta JWT olmadan yapılan sentetik POST isteğini HTTP 401 ile redd
 - Gerçek mesaj, e-imza veya departman olayı gönderilmedi.
 - Worker'lar JWT'ye ek olarak ayrı worker secret'ı doğrular; secret yokken işlem fail-closed kapanır.
 
-Bu dağıtım yalnız kod paketinin staging Edge Runtime üzerinde derlenip aktifleştiğini kanıtlar. G12 ancak gerçek staging endpoint'leri, allowlist, kanal secret'ları ve kontrollü sentetik teslimat kanıtları tamamlandığında geçebilir.
+Bu dağıtım Edge Runtime etkinliğini ve kontrollü HTTPS taşıma sözleşmesini kanıtlar. G12 ancak gerçek staging endpoint'leri, allowlist, kanal secret'ları ve departman sahiplerinin teslimat kabulü tamamlandığında geçebilir.
