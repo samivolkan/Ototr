@@ -9,12 +9,16 @@ Durum: **NO_GO — yalnızca sentetik veri**
 - Yalnız `submitted` sonuç bir kez incelenebilir; bağımsız checker ve 10-2000 karakter inceleme notu zorunludur.
 - Hosted negatif testte kanıt değiştirme ve ikinci inceleme reddedildi; değişmez kanıtla bağımsız onay kabul edildi. Rollback sonrasında sentetik Auth ve UAT sonucu sayıları `0` kaldı.
 - Teknik kanıt `gm-franchise/uat-immutability-hosted-evidence.json` içindedir. Bu teknik geçiş, aşağıdaki gerçek departman UAT’ları ve insan imzaları yerine geçmez.
+- `20261105340000_franchise_uat_command_boundary.sql` staging projesine uygulandı. `authenticated` rolünün sonuç ve imza tablolarına doğrudan yazması kapatıldı; gönderim, inceleme ve imza yalnız kullanıcı/rolü JWT’den sunucuda bağlayan komut RPC’leriyle yapılır.
+- Hosted komut kabulünde öz onay ve çalıştıranın kendi senaryosuna departman imzası reddedildi; bağımsız inceleme ve bağımsız İK imzası kabul edildi. Teknik kanıt `gm-franchise/uat-command-hosted-evidence.json` içindedir.
 Sürüm: 2026-11-05  
 Kapsam: Başvurudan aktif şubeye, 30/60/90 gün takibi dahil.
 
 ## UAT yürütme kuralı
 
 Her senaryo staging ortamında iki kullanıcıyla çalıştırılır. Uygulayan ve onaylayan aynı kişi olamaz. Kanıt bağlantısı, sonuç özeti, hata kaydı ve SHA-256 kanıt özeti olmadan senaryo `PASS` sayılamaz. Gerçek aday, personel, telefon, e-posta, TCKN veya finans belgesi kullanılmaz.
+
+ERP’de `Franchise Yönetim Merkezi → Sistem → Yayın hazırlığı → Hosted UAT çalışma alanı` açılır. Release adayı tüm departmanlar için aynı girilir. Senaryo sahibi kanıtın SHA-256 özetini ve 20-2000 karakter sonuç özetini gönderir; reviewer rolündeki farklı kullanıcı 10-2000 karakter inceleme notuyla onaylar veya reddeder. Departman imzası yalnız katalogdaki zorunlu senaryolar bağımsız onaylandıktan sonra açılır. CEO/Yönetim imzası diğer sekiz onaydan önce sunucu tarafından reddedilir.
 
 ## Ortak uçtan uca senaryolar
 
