@@ -4,7 +4,7 @@ Hedef: Supabase `ototr-staging` (`bsjkohwbtrfwrqcyhsfz`), PostgreSQL 17.6.
 
 ## Sonuç
 
-- 23 Franchise migration sıralı olarak uygulandı.
+- 25 Franchise migration sıralı olarak uygulandı.
 - Şema rollback betiği staging üzerinde tatbik edildi; yeni Franchise şeması kaldırıldı.
 - Supabase Storage tablolarından doğrudan silmenin engellendiği görüldü. Rollback betiği, özel bucket'ı koruyacak ve yalnızca açık onayla Storage API üzerinden kaldırılacak şekilde düzeltildi.
 - 18 migration yeniden uygulanarak şema geri yüklendi.
@@ -28,6 +28,16 @@ Hedef: Supabase `ototr-staging` (`bsjkohwbtrfwrqcyhsfz`), PostgreSQL 17.6.
 - Mevcut `public-api` kaynağı korunarak yalnız Franchise payload eşlemesi geriye uyumlu biçimde genişletildi; staging sürümü `v9`, bundle SHA-256 `5b6affe5f6d4adeecbd5cc0768649f54f1f1b2df667568876d0dada018e78497`.
 - Gerçek HTTP endpoint kabul testi iki sentetik POST ile geçti: yeni istemci `processingConsent=true` ile `ready_for_canonicalization`, eski istemci alanı göndermeden `awaiting_processing_consent` üretti. Ticari ileti `false` iken ayrı karar kanıtı kaydedildi ve başvuru reddedilmedi.
 - HTTP kabul testinin iki sentetik başvurusu ve bridge satırı temizlendi; kalan kayıt `0`.
+
+## Public başvurudan kanonik dosyaya geçiş
+
+- `20261105240000_franchise_public_intake_canonicalization.sql` ile yalnız `ready_for_canonicalization` kayıtlarını işleyen idempotent maker RPC eklendi.
+- Doğrudan `franchise_public_intake_bridge UPDATE` yetkisi `authenticated` rolünden kaldırıldı; durum ve kanonik dosya bağı yalnız kontrollü işlemle değişiyor.
+- İşlem gerçek aday portal `auth.users` kimliği ister; sistem sahte aday hesabı üretmez. Normalize aday/şirket adı ve belge doğrulama referansları operatör tarafından verilir, ham web payload'ı kanonik profile kopyalanmaz.
+- Bridge satırı `FOR UPDATE` ile kilitleniyor; tekrar çağrı aynı `canonical_case_id` değerini döndürüyor. Üç ayrı sunucu bağlı izin kanıtı eksikse işlem reddediliyor.
+- Maker kimliği ve zamanı `canonicalized_by` / `canonicalized_at` alanlarında tutuluyor.
+- Güvenlik danışmanının `public SECURITY DEFINER` uyarısını kaldırmak için `20261105250000_franchise_public_canonicalization_private.sql` uygulandı: ayrıcalıklı uygulama Data API'ye açık olmayan `app_private` şemasında, public RPC ise `SECURITY INVOKER`.
+- Rollback-only staging kabulü kanonik dosya, üç izin makbuzu, maker audit ve idempotent tekrar koşullarını geçti. Sentetik kullanıcı/başvuru/bridge kayıtları rollback sonrası `0`; güvenlik danışmanında yeni fonksiyon bulgusu yok.
 
 ## Sınır
 

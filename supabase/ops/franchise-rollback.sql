@@ -3,6 +3,8 @@
 begin;
 drop trigger if exists franchise_public_application_capture_trigger on public.public_franchise_applications;
 drop trigger if exists franchise_public_consent_evidence_trigger on public.public_franchise_applications;
+drop function if exists public.canonicalize_public_franchise_application(uuid,uuid,text,text,text,text,smallint,text,text,text,text,text,text);
+drop function if exists app_private.canonicalize_public_franchise_application(uuid,uuid,text,text,text,text,smallint,text,text,text,text,text,text);
 drop function if exists public.franchise_capture_public_application();
 drop function if exists public.franchise_bind_public_consent_evidence();
 drop table if exists public.franchise_public_intake_bridge;
