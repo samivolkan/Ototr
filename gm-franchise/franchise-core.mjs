@@ -19,6 +19,46 @@ export const FOLLOW_UP_TEMPLATES = [
 
 export const NON_WAIVABLE_EXCEPTION_TYPES = new Set(["legal", "license", "payment"]);
 
+export const OPENING_EVIDENCE_GATES = Object.freeze([
+  { code: "entry_fee_payment", label: "%100 giriş bedeli tahsilatı", ownerRole: "fn" },
+  { code: "franchise_contract", label: "İmzalı franchise sözleşmesi", ownerRole: "hk" },
+  { code: "site_visit", label: "Konum / fotoğraf / ölçüm / denetçi saha ziyareti", ownerRole: "op" },
+  { code: "operating_license", label: "Geçerli faaliyet ve ruhsat kaydı", ownerRole: "hk" }
+]);
+
+export function createOpeningEvidencePlan() {
+  return OPENING_EVIDENCE_GATES.map((gate) => ({ ...gate, status: "missing", makerId: null, makerRole: null, checkerId: null, checkerRole: null, evidenceSha256: null, sourceReference: null }));
+}
+
+export function ensureOpeningEvidence(franchiseCase) {
+  if (!Array.isArray(franchiseCase.openingEvidence)) franchiseCase.openingEvidence = createOpeningEvidencePlan();
+  for (const gate of OPENING_EVIDENCE_GATES) {
+    if (!franchiseCase.openingEvidence.some((item) => item.code === gate.code)) franchiseCase.openingEvidence.push({ ...gate, status: "missing", makerId: null, makerRole: null, checkerId: null, checkerRole: null, evidenceSha256: null, sourceReference: null });
+  }
+  return franchiseCase.openingEvidence;
+}
+
+export function submitOpeningEvidence(franchiseCase, gateCode, input = {}) {
+  const gate = ensureOpeningEvidence(franchiseCase).find((item) => item.code === gateCode);
+  if (!gate) throw new Error("Bilinmeyen açılış kanıtı.");
+  if (!input.makerId || !input.makerRole) throw new Error("Kanıt hazırlayan kimliği ve rolü zorunludur.");
+  if (input.makerRole !== gate.ownerRole && !new Set(["gm", "fd"]).has(input.makerRole)) throw new Error("Bu kanıt ilgili departman tarafından hazırlanmalıdır.");
+  if (!/^[a-f0-9]{64}$/.test(String(input.evidenceSha256 || ""))) throw new Error("Kanıt SHA-256 özeti zorunludur.");
+  if (String(input.sourceReference || "").trim().length < 3) throw new Error("Kanıt kaynak referansı zorunludur.");
+  Object.assign(gate, { status: "submitted", makerId: input.makerId, makerRole: input.makerRole, checkerId: null, checkerRole: null, evidenceSha256: input.evidenceSha256, sourceReference: String(input.sourceReference).trim() });
+  return gate;
+}
+
+export function reviewOpeningEvidence(franchiseCase, gateCode, review = {}) {
+  const gate = ensureOpeningEvidence(franchiseCase).find((item) => item.code === gateCode);
+  if (!gate || gate.status !== "submitted") throw new Error("İncelenecek gönderilmiş kanıt bulunamadı.");
+  if (!review.checkerId || review.checkerId === gate.makerId) throw new Error("Kanıtı hazırlayan kişi kendi kaydını onaylayamaz.");
+  if (!new Set(["gm", "fd"]).has(review.checkerRole)) throw new Error("İkinci onay yalnız GM veya Franchise Direktörü tarafından verilebilir.");
+  if (!new Set(["approved", "rejected"]).has(review.decision)) throw new Error("Geçersiz kanıt kararı.");
+  Object.assign(gate, { status: review.decision, checkerId: review.checkerId, checkerRole: review.checkerRole });
+  return gate;
+}
+
 export function createStaffingPlan() {
   return REQUIRED_ROLES.map((role, index) => ({
     id: `staff-${index + 1}`,
@@ -60,6 +100,7 @@ export function createFranchiseCase(input = {}) {
     documents: input.documents ?? 0,
     documentsTotal: input.documentsTotal ?? 17,
     exceptions: [],
+    openingEvidence: createOpeningEvidencePlan(),
     tasks: input.tasks || {},
     staffing: createStaffingPlan(),
     branch: null,
@@ -141,6 +182,7 @@ export function openingBlockers(franchiseCase, options = {}) {
   if (franchiseCase.paid < 100) blockers.push("Açılış öncesi tahsilat %100 değil");
   if (!taskDone) blockers.push(`Departman görevleri eksik (${options.taskCount || 0}/${taskTotal})`);
   if (franchiseCase.exceptions.some((item) => item.status === "pending_second_approval")) blockers.push("İkinci onay bekleyen istisna bulunuyor");
+  for (const gate of ensureOpeningEvidence(franchiseCase)) if (gate.status !== "approved") blockers.push(`${gate.label}: bağımsız onay eksik`);
   for (const member of franchiseCase.staffing) {
     if (member.recruitmentStatus !== "hired") blockers.push(`${member.role}: işe alım tamamlanmadı`);
     else if (!member.employmentDocumentsComplete || !member.contractSigned) blockers.push(`${member.role}: özlük veya sözleşme eksik`);
