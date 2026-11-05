@@ -67,6 +67,14 @@ insert into public.franchise_entry_fee_installments(financial_term_id,installmen
 values('77777777-7777-4777-8777-777777777777',1,current_date,100000);
 insert into public.franchise_entry_fee_receipts(franchise_case_id,financial_term_id,receipt_reference,amount,received_at,status,maker_id,checker_id,reviewed_at)
 values('22222222-2222-4222-8222-222222222222','77777777-7777-4777-8777-777777777777','PAY-UAT-LEDGER',100000,now(),'approved','11111111-1111-4111-8111-111111111112','11111111-1111-4111-8111-111111111111',now());
+insert into public.franchise_due_diligence_reviews(franchise_case_id,checklist_version,risk_level,status,evidence_sha256,maker_id,checker_id,reviewed_at)
+values('22222222-2222-4222-8222-222222222222','UAT-1','low','approved',repeat('e',64),'11111111-1111-4111-8111-111111111112','11111111-1111-4111-8111-111111111111',now());
+insert into public.franchise_territory_protections(franchise_case_id,protection_type,city,district,status,maker_id,checker_id,reviewed_at)
+values('22222222-2222-4222-8222-222222222222','district','Bursa','Nilüfer','approved','11111111-1111-4111-8111-111111111112','11111111-1111-4111-8111-111111111111',now());
+insert into public.franchise_contracts(franchise_case_id,contract_no,template_version,signature_method,provider_status,signed_at,evidence_sha256,status,maker_id,checker_id,reviewed_at)
+values('22222222-2222-4222-8222-222222222222','CON-UAT-STRUCTURED','UAT-1','wet','not_requested',now(),repeat('f',64),'approved','11111111-1111-4111-8111-111111111112','11111111-1111-4111-8111-111111111111',now());
+insert into public.franchise_site_visits(franchise_case_id,visited_at,latitude,longitude,photo_count,measurements,evidence_sha256,status,inspector_id,checker_id,reviewed_at)
+values('22222222-2222-4222-8222-222222222222',now(),40.2,29.1,4,'{"gross_area_m2":900,"work_bay_count":6,"ceiling_height_m":4.5}',repeat('9',64),'approved','11111111-1111-4111-8111-111111111113','11111111-1111-4111-8111-111111111111',now());
 
 set local role authenticated;
 do $$

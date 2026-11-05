@@ -1,6 +1,19 @@
 -- STAGING ONLY. Destructive rollback for the franchise preproduction schema.
 -- Export staging evidence before use. Never run against production without signed approval.
 begin;
+drop trigger if exists franchise_branch_legal_location_gate_trigger on public.franchise_branches;
+drop function if exists public.franchise_branch_legal_location_gate();
+drop function if exists public.review_franchise_legal_record(text,uuid,boolean,text);
+drop function if exists public.franchise_legal_location_ready(uuid);
+drop trigger if exists franchise_site_visit_guard_trigger on public.franchise_site_visits;
+drop trigger if exists franchise_contract_guard_trigger on public.franchise_contracts;
+drop trigger if exists franchise_territory_guard_trigger on public.franchise_territory_protections;
+drop trigger if exists franchise_due_diligence_guard_trigger on public.franchise_due_diligence_reviews;
+drop function if exists public.franchise_legal_record_guard();
+drop table if exists public.franchise_site_visits;
+drop table if exists public.franchise_contracts;
+drop table if exists public.franchise_territory_protections;
+drop table if exists public.franchise_due_diligence_reviews;
 drop trigger if exists franchise_branch_finance_gate_trigger on public.franchise_branches;
 drop function if exists public.franchise_branch_finance_gate();
 drop view if exists public.franchise_payment_status_v;

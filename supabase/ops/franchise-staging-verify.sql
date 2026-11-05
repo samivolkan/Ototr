@@ -24,6 +24,10 @@ select to_regclass('public.franchise_application_profiles') is not null as appli
 select to_regclass('public.franchise_financial_terms') is not null as financial_terms_table_exists;
 select to_regclass('public.franchise_entry_fee_installments') is not null as entry_fee_installments_table_exists;
 select to_regclass('public.franchise_entry_fee_receipts') is not null as entry_fee_receipts_table_exists;
+select to_regclass('public.franchise_contracts') is not null as legal_contracts_table_exists;
+select to_regclass('public.franchise_territory_protections') is not null as territory_protections_table_exists;
+select to_regclass('public.franchise_site_visits') is not null as site_visits_table_exists;
+select to_regclass('public.franchise_due_diligence_reviews') is not null as due_diligence_table_exists;
 
 select bool_and(c.relrowsecurity) as all_public_tables_have_rls
 from pg_class c join pg_namespace n on n.oid=c.relnamespace
@@ -36,6 +40,7 @@ where n.nspname='public' and c.relname in (
   ,'franchise_portal_assignments','franchise_portal_items'
   ,'franchise_application_intakes','franchise_application_profiles'
   ,'franchise_financial_terms','franchise_entry_fee_installments','franchise_entry_fee_receipts'
+  ,'franchise_contracts','franchise_territory_protections','franchise_site_visits','franchise_due_diligence_reviews'
 );
 
 select count(*)>=23 as franchise_policies_present
@@ -95,3 +100,5 @@ select to_regprocedure('public.review_franchise_entry_fee_receipt(uuid,boolean,t
 select to_regclass('public.franchise_payment_status_v') is not null as governed_payment_status_view_exists;
 select not has_table_privilege('anon','public.franchise_financial_terms','SELECT') as anon_cannot_read_financial_terms;
 select not has_table_privilege('anon','public.franchise_entry_fee_receipts','SELECT') as anon_cannot_read_entry_fee_receipts;
+select to_regprocedure('public.franchise_legal_location_ready(uuid)') is not null as legal_location_gate_exists;
+select not has_table_privilege('anon','public.franchise_contracts','SELECT') as anon_cannot_read_legal_contracts;
