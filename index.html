@@ -2700,6 +2700,10 @@
     const data=Object.fromEntries(new FormData(form).entries());
     try{
       await dealerSupabaseSignIn(data.email,data.password);
+      if (new URLSearchParams(location.search).get('financeReturn') === '1') {
+        location.replace(new URL('muhasebe-v2/', location.href));
+        return;
+      }
       await dealerSyncSupabaseWorkOrders({silent:true,noRender:true});
       dealerScrubSensitiveUrlParams();
       if(isDealerStandaloneRoute()) saveDealerPortalState({tab:'aktif-is-emirleri',editingWorkOrderId:'',viewingWorkOrderId:''});
