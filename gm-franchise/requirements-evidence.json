@@ -25,4 +25,5 @@
 {"id":"R24","requirement":"Gerçek staging ERP adaptörleri ve iletişim sağlayıcıları","owner":"BT/Departmanlar","status":"EXTERNAL_PENDING","evidence":"gm-franchise/integration-adapters.mjs"},
 {"id":"R25","requirement":"16 senaryo ve dokuz bağımsız departman UAT imzası","owner":"Departmanlar","status":"EXTERNAL_PENDING","evidence":"docs/franchise/FRANCHISE_DEPARTMENT_UAT_SIGNOFF_2026-11-05.md"},
 {"id":"R26","requirement":"Sabit commit, manifest hash, değişiklik penceresi ve rollback onayı","owner":"BT/CEO","status":"EXTERNAL_PENDING","evidence":"gm-franchise/preproduction-decision.json"},
-{"id":"R27","requirement":"Kullanıcının kontrollü canlı yayın onayı","owner":"Kullanıcı/CEO","status":"USER_APPROVAL_PENDING","evidence":"gm-franchise/preproduction-decision.json"}]}
+{"id":"R27","requirement":"Kullanıcının kontrollü canlı yayın onayı","owner":"Kullanıcı/CEO","status":"USER_APPROVAL_PENDING","evidence":"gm-franchise/preproduction-decision.json"},
+{"id":"R28","requirement":"Canlı web formunda üç ayrı izin ve doğrulanmış Franchise intake bağlantısı","owner":"Web/BT/Hukuk-KVKK","status":"EXTERNAL_PENDING","evidence":"docs/franchise/FRANCHISE_LIVE_PUBLIC_INTAKE_GAP_2026-11-05.md"}]}

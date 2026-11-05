@@ -13,4 +13,5 @@
 {"id":"G12","name":"Real staging adapters and providers","mandatory":true,"status":"BLOCKED","evidence":"gm-franchise/integration-adapters.mjs"},
 {"id":"G13","name":"Hosted concurrency, recovery and dead-letter drill","mandatory":true,"status":"PASS","evidence":"docs/franchise/FRANCHISE_HOSTED_CONCURRENCY_RECOVERY_2026-11-05.md"},
 {"id":"G14","name":"Department UAT and independent sign-offs","mandatory":true,"status":"BLOCKED","evidence":"docs/franchise/FRANCHISE_DEPARTMENT_UAT_SIGNOFF_2026-11-05.md"},
-{"id":"G15","name":"Pinned release commit, change window and rollout approval","mandatory":true,"status":"BLOCKED","evidence":"gm-franchise/preproduction-decision.json"}]}
+{"id":"G15","name":"Pinned release commit, change window and rollout approval","mandatory":true,"status":"BLOCKED","evidence":"gm-franchise/preproduction-decision.json"},
+{"id":"G16","name":"Live public Franchise form and three-consent intake contract","mandatory":true,"status":"BLOCKED","evidence":"docs/franchise/FRANCHISE_LIVE_PUBLIC_INTAKE_GAP_2026-11-05.md"}]}

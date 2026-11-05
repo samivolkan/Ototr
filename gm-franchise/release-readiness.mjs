@@ -6,12 +6,12 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 const SHA256=/^[a-f0-9]{64}$/;
 const COMMIT=/^[a-f0-9]{40}$/;
 export const REQUIRED_SIGNOFF_ROLES=Object.freeze(['Franchise Yönetimi','Finans Direktörü','Hukuk/KVKK','İK Yöneticisi','Academy Yöneticisi','Operasyon/Kalite/İSG','Tedarik/Mimari/Pazarlama','ERP/Bilgi Güvenliği','CEO/Yönetim']);
-export const REQUIRED_HOSTED_EVIDENCE=Object.freeze(['migrationSha256','rollbackSha256','identitySha256','storageSha256','adapterSha256','providerSha256','concurrencySha256','uatSha256']);
+export const REQUIRED_HOSTED_EVIDENCE=Object.freeze(['migrationSha256','rollbackSha256','identitySha256','storageSha256','adapterSha256','providerSha256','concurrencySha256','uatSha256','publicIntakeSha256']);
 export function sha256(value){return createHash('sha256').update(value).digest('hex');}
 export function manifestSha256(gates){return sha256(JSON.stringify(gates));}
 export function evaluateRelease(gates,decision,{currentCommit=null}={}){
  const blockers=[];
- if(!Array.isArray(gates?.gates)||gates.gates.length<15)blockers.push('gate_catalog_incomplete');
+ if(!Array.isArray(gates?.gates)||gates.gates.length<16)blockers.push('gate_catalog_incomplete');
  for(const gate of gates?.gates||[]){if(gate.mandatory!==false&&gate.status!=='PASS')blockers.push(`gate:${gate.id}:${gate.status}`);if(gate.status==='PASS'&&!gate.evidence)blockers.push(`gate:${gate.id}:missing_evidence`);}
  if(!COMMIT.test(decision?.releaseCommit||''))blockers.push('release_commit_missing');
  if(!SHA256.test(decision?.releaseManifestSha256||''))blockers.push('release_manifest_hash_missing');
