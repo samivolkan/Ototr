@@ -1,6 +1,18 @@
 -- STAGING ONLY. Destructive rollback for the franchise preproduction schema.
 -- Export staging evidence before use. Never run against production without signed approval.
 begin;
+drop trigger if exists franchise_branch_finance_gate_trigger on public.franchise_branches;
+drop function if exists public.franchise_branch_finance_gate();
+drop view if exists public.franchise_payment_status_v;
+drop function if exists public.review_franchise_entry_fee_receipt(uuid,boolean,text);
+drop function if exists public.submit_franchise_entry_fee_receipt(uuid,text,numeric,timestamptz);
+drop function if exists public.review_franchise_financial_terms(uuid,boolean,text);
+drop function if exists public.submit_franchise_financial_terms(uuid,text,numeric,numeric,numeric,numeric,smallint,numeric);
+drop function if exists public.franchise_financial_readiness(uuid);
+drop function if exists public.franchise_entry_fee_collection_percent(uuid);
+drop table if exists public.franchise_entry_fee_receipts;
+drop table if exists public.franchise_entry_fee_installments;
+drop table if exists public.franchise_financial_terms;
 drop function if exists public.submit_franchise_application(text,text,text,uuid,text,text,text,text,text,text,smallint,text,text,text,text,text,text,text,text,text,text,boolean);
 drop policy if exists franchise_application_profile_select on public.franchise_application_profiles;
 drop policy if exists franchise_intake_select on public.franchise_application_intakes;
@@ -87,6 +99,8 @@ drop function if exists public.claim_franchise_provider_requests(integer);
 drop table if exists public.franchise_provider_requests;
 drop table if exists public.franchise_message_templates;
 drop table if exists public.franchise_consent_receipts;
+drop policy if exists franchise_case_select on public.franchise_cases;
+drop policy if exists franchise_case_manage on public.franchise_cases;
 drop function if exists public.franchise_can_access_case(uuid);
 drop function if exists public.franchise_claim_role();
 drop policy if exists franchise_storage_select on storage.objects;

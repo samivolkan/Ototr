@@ -9,8 +9,8 @@ Yerel ve geçici Supabase PostgreSQL konteynerinde migration, güvenlik doğrula
 
 ## Kanıtlanan davranışlar
 
-- On üç Franchise migration'ı (ana şema, sağlayıcı yönetişimi, sağlayıcı worker, departman RBAC, kadro, açılış kanıtı, gerçek kayıt kapıları, yaşam döngüsü, 30/60/90 yönetişimi, aday skoru/kurul kararı, sürümlü entegrasyon sözleşmeleri, dış portal izolasyonu ve başvuru alımı) gerçek PostgreSQL motorunda hatasız commit edildi.
-- 13 public franchise tablosunda RLS açık.
+- On dört Franchise migration'ı (ana şema, sağlayıcı yönetişimi, sağlayıcı worker, departman RBAC, kadro, açılış kanıtı, gerçek kayıt kapıları, yaşam döngüsü, 30/60/90 yönetişimi, aday skoru/kurul kararı, sürümlü entegrasyon sözleşmeleri, dış portal izolasyonu, başvuru alımı ve finansal koşullar) gerçek PostgreSQL motorunda hatasız commit edildi.
+- Tüm kapsam içi public franchise tablolarında RLS açık.
 - `anon`, franchise dosyalarını ve belgeleri okuyamıyor.
 - Özel Storage bucket `public=false`, 20 MB ve MIME sınırlarıyla oluştu.
 - Eksik 36 görev setinde aktivasyon reddedildi.
@@ -49,6 +49,9 @@ Yerel ve geçici Supabase PostgreSQL konteynerinde migration, güvenlik doğrula
 - Web, GM manuel, CRM, referans, sosyal medya ve çağrı merkezi kanallarının her biri tekil franchise dosyası ve güvenli başvuru profili oluşturdu.
 - Aynı idempotency anahtarı ikinci dosyayı üretmedi; KVKK aydınlatma, veri işleme ve ticari ileti için üç ayrı SHA-256 izin makbuzu oluştu.
 - Ham lead payload'ı ve T.C. kimlik numarası saklanmadı; yalnız doğrulama ve finansal belge referansları kabul edildi.
+- Giriş bedeli, taksit planı ve tahsilat kayıtları yapılandırılmış finans tablolarına alındı; Finans hazırlayan ile Muhasebe/GM kontrol eden ayrıldı.
+- Özet `paid_percent` alanına güvenilmeden, yalnız bağımsız onaylı tahsilat defterinden hesaplanan `%99` açılışı reddetti ve `%100` açılış kapısını açtı.
+- Royalty matrahı KDV dâhil müşteri tahsilatı, varsayılan oran `%10`, reklam payı `%0` ve muafiyet seçenekleri `0/6/12 ay` olarak doğrulandı; gecikme operasyonu otomatik durdurmuyor.
 - Rollback Storage politikalarını önce kaldırdı, tüm franchise tablolarını ve bucket'ı temizledi.
 - Test konteyneri çalışma sonunda kaldırıldı.
 
@@ -67,6 +70,7 @@ Yerel ve geçici Supabase PostgreSQL konteynerinde migration, güvenlik doğrula
 - `supabase/migrations/20261105110000_franchise_integration_contracts.sql`
 - `supabase/migrations/20261105120000_franchise_external_portals.sql`
 - `supabase/migrations/20261105130000_franchise_application_intake.sql`
+- `supabase/migrations/20261105140000_franchise_financial_terms.sql`
 - `supabase/ops/franchise-local-contract-stubs.sql`
 - `supabase/ops/franchise-staging-verify.sql`
 - `supabase/ops/franchise-activation-acceptance.sql`
@@ -80,6 +84,7 @@ Yerel ve geçici Supabase PostgreSQL konteynerinde migration, güvenlik doğrula
 - `supabase/ops/franchise-integration-contract-acceptance.sql`
 - `supabase/ops/franchise-external-portal-acceptance.sql`
 - `supabase/ops/franchise-application-intake-acceptance.sql`
+- `supabase/ops/franchise-finance-acceptance.sql`
 - `supabase/ops/franchise-rollback.sql`
 
 ## Kalan sınır

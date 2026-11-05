@@ -21,6 +21,9 @@ select to_regclass('public.franchise_portal_assignments') is not null as portal_
 select to_regclass('public.franchise_portal_items') is not null as portal_items_table_exists;
 select to_regclass('public.franchise_application_intakes') is not null as application_intakes_table_exists;
 select to_regclass('public.franchise_application_profiles') is not null as application_profiles_table_exists;
+select to_regclass('public.franchise_financial_terms') is not null as financial_terms_table_exists;
+select to_regclass('public.franchise_entry_fee_installments') is not null as entry_fee_installments_table_exists;
+select to_regclass('public.franchise_entry_fee_receipts') is not null as entry_fee_receipts_table_exists;
 
 select bool_and(c.relrowsecurity) as all_public_tables_have_rls
 from pg_class c join pg_namespace n on n.oid=c.relnamespace
@@ -32,6 +35,7 @@ where n.nspname='public' and c.relname in (
   ,'franchise_integration_event_contracts'
   ,'franchise_portal_assignments','franchise_portal_items'
   ,'franchise_application_intakes','franchise_application_profiles'
+  ,'franchise_financial_terms','franchise_entry_fee_installments','franchise_entry_fee_receipts'
 );
 
 select count(*)>=23 as franchise_policies_present
@@ -86,3 +90,8 @@ select not has_table_privilege('anon','public.franchise_portal_items','SELECT') 
 select to_regprocedure('public.submit_franchise_application(text,text,text,uuid,text,text,text,text,text,text,smallint,text,text,text,text,text,text,text,text,text,text,boolean)') is not null as application_intake_rpc_exists;
 select not has_table_privilege('anon','public.franchise_application_intakes','SELECT') as anon_cannot_read_application_intakes;
 select not has_table_privilege('anon','public.franchise_application_profiles','SELECT') as anon_cannot_read_application_profiles;
+select to_regprocedure('public.franchise_financial_readiness(uuid)') is not null as finance_opening_gate_exists;
+select to_regprocedure('public.review_franchise_entry_fee_receipt(uuid,boolean,text)') is not null as accounting_receipt_checker_exists;
+select to_regclass('public.franchise_payment_status_v') is not null as governed_payment_status_view_exists;
+select not has_table_privilege('anon','public.franchise_financial_terms','SELECT') as anon_cannot_read_financial_terms;
+select not has_table_privilege('anon','public.franchise_entry_fee_receipts','SELECT') as anon_cannot_read_entry_fee_receipts;

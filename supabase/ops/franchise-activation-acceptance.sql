@@ -61,6 +61,13 @@ insert into public.franchise_opening_evidence(franchise_case_id,gate_code,status
 ('22222222-2222-4222-8222-222222222222','site_visit','approved',repeat('c',64),'SITE-UAT','{"inspector_approved":true,"measurements_complete":true,"photo_count":4,"latitude":"40.1","longitude":"29.1"}','11111111-1111-4111-8111-111111111112','11111111-1111-4111-8111-111111111111',now()),
 ('22222222-2222-4222-8222-222222222222','operating_license','approved',repeat('d',64),'LIC-UAT','{"valid":true,"license_no":"LIC-UAT"}','11111111-1111-4111-8111-111111111112','11111111-1111-4111-8111-111111111111',now());
 
+insert into public.franchise_financial_terms(id,franchise_case_id,contract_version,entry_fee_amount,status,maker_id,checker_id,submitted_at,reviewed_at)
+values('77777777-7777-4777-8777-777777777777','22222222-2222-4222-8222-222222222222','UAT-1',100000,'approved','11111111-1111-4111-8111-111111111112','11111111-1111-4111-8111-111111111111',now(),now());
+insert into public.franchise_entry_fee_installments(financial_term_id,installment_no,due_date,amount)
+values('77777777-7777-4777-8777-777777777777',1,current_date,100000);
+insert into public.franchise_entry_fee_receipts(franchise_case_id,financial_term_id,receipt_reference,amount,received_at,status,maker_id,checker_id,reviewed_at)
+values('22222222-2222-4222-8222-222222222222','77777777-7777-4777-8777-777777777777','PAY-UAT-LEDGER',100000,now(),'approved','11111111-1111-4111-8111-111111111112','11111111-1111-4111-8111-111111111111',now());
+
 set local role authenticated;
 do $$
 declare first_result jsonb; repeated_result jsonb;
