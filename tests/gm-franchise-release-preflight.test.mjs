@@ -12,4 +12,5 @@ test('release preflight exposes pinned bindings but never hides a dirty worktree
   const {manifestSha256}=await import('../gm-franchise/release-readiness.mjs');decision.releaseManifestSha256=manifestSha256(gates);
   const clean=buildReleasePreflight({gates,decision,currentCommit:decision.releaseCommit,expectedEvidenceHashes:evidence,dirtyPaths:[]});assert.equal(clean.productionDecision,'GO');assert.equal(clean.candidateBindings.releaseCommit,decision.releaseCommit);
   const dirty=buildReleasePreflight({gates,decision,currentCommit:decision.releaseCommit,expectedEvidenceHashes:evidence,dirtyPaths:['sunum-32-ekran-v2/Main.dc.html']});assert.equal(dirty.productionDecision,'NO_GO');assert.ok(dirty.blockers.includes('worktree_dirty'));
+  const metadataHead=buildReleasePreflight({gates,decision,currentCommit:'b'.repeat(40),expectedEvidenceHashes:evidence,dirtyPaths:[],releaseMetadataOnly:true});assert.equal(metadataHead.productionDecision,'GO');assert.ok(!metadataHead.blockers.includes('release_commit_mismatch'));
 });
