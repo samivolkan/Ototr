@@ -69,9 +69,11 @@ Hedef: Supabase `ototr-staging` (`bsjkohwbtrfwrqcyhsfz`), PostgreSQL 17.6.
 
 ## Hosted atomik şube aktivasyonu
 
+- `20261105360000_franchise_finance_accounting_gate_separation.sql` staging projesine uygulandı. Finans yalnız `Finans`, Muhasebe yalnız `Muhasebe` görevlerini yönetebilir; eski birleşik sahiplik kaldırıldı.
+- Aktivasyon kapısı yalnız toplam sayıyı değil 13 farklı departmanın her birinde tam üç görev bulunmasını, ayrıca Finans ve Muhasebe departmanlarının ayrı varlığını doğrular. Eksik veya yapısal olarak yanlış 39 görev seti güvenli biçimde reddedilir.
 - `supabase/ops/franchise-activation-acceptance.sql` staging şemasında tek transaction ve zorunlu `ROLLBACK` ile çalıştırıldı; sonuç `PASS` oldu.
 - Senaryo 17 onaylı zorunlu belge, üç izin makbuzu, ayrı Finans ve Muhasebe sahipliğiyle 39 tamamlanmış departman görevi, 10 zorunlu kadro, işe alım/sözleşme/Academy sertifikası, Finans tahsilatı, Hukuk-lokasyon kayıtları ve 10 açılış teslimatını aynı dosyada kurdu.
-- Aktivasyon tam bir şube, 10 erişim hesabı, bayi JWT şube kapsamı, 30/60/90 takip görevleri ve dört entegrasyon outbox olayı üretti; ikinci çağrı yeni şube üretmeden idempotent döndü.
+- Aktivasyon tam bir şube, 10 erişim hesabı, bayi JWT şube kapsamı, 30/60/90 takip görevleri ve Finans, Muhasebe, İK, BT, Görev Merkezi için beş entegrasyon outbox olayı üretti; Muhasebe olayı `chart_of_accounts.created` olarak doğrulandı ve ikinci çağrı yeni şube üretmeden idempotent döndü.
 - 30 günlük takip görevinin kanıtlı tamamlanması, kendi kendine yeniden açma onayının reddi, bağımsız onayla yeniden açılması ve erişim iptalinde şube kapsamının kaldırılması geçti.
 - Hosted SQL bağlayıcısı `SET ROLE supabase_auth_admin/authenticated` işlemine izin vermediği için Auth hook/RLS rol değiştirme bölümü bu transaction testinden ayrıldı. Gerçek authenticated RLS izolasyonu, ayrı aday JWT → private Storage kabulünde kanıtlanmıştır.
 - Rollback sonrasında Auth kullanıcısı, franchise dosyası, şube, personel, erişim hesabı, takip görevi ve outbox olayı sayıları ayrı ayrı `0` doğrulandı. Sonuç `gm-franchise/hosted-activation-evidence.json` içindedir.
