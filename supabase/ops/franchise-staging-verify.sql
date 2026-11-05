@@ -29,6 +29,11 @@ select to_regclass('public.franchise_territory_protections') is not null as terr
 select to_regclass('public.franchise_site_visits') is not null as site_visits_table_exists;
 select to_regclass('public.franchise_due_diligence_reviews') is not null as due_diligence_table_exists;
 select to_regclass('public.franchise_opening_deliverables') is not null as opening_deliverables_table_exists;
+select to_regclass('public.franchise_uat_results') is not null as uat_results_table_exists;
+select to_regclass('public.franchise_uat_signoffs') is not null as uat_signoffs_table_exists;
+select count(*)=16 as uat_scenario_catalog_complete from public.franchise_uat_scenarios where is_active;
+select count(*)=9 as uat_signoff_catalog_complete from public.franchise_uat_signoff_catalog;
+select to_regclass('public.franchise_uat_release_status_v') is not null as uat_release_status_view_exists;
 
 select bool_and(c.relrowsecurity) as all_public_tables_have_rls
 from pg_class c join pg_namespace n on n.oid=c.relnamespace
