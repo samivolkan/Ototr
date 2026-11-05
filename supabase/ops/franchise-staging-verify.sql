@@ -106,3 +106,5 @@ select to_regprocedure('public.franchise_legal_location_ready(uuid)') is not nul
 select not has_table_privilege('anon','public.franchise_contracts','SELECT') as anon_cannot_read_legal_contracts;
 select count(*)=10 as opening_deliverable_catalog_complete from public.franchise_opening_deliverable_catalog where is_active;
 select to_regprocedure('public.franchise_opening_execution_ready(uuid)') is not null as opening_execution_gate_exists;
+select to_regprocedure('public.request_franchise_exception(uuid,text,text,timestamptz)') is not null as governed_exception_request_exists;
+select to_regprocedure('public.franchise_sync_access_scope()') is not null as branch_access_scope_sync_exists;

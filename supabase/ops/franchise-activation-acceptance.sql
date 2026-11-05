@@ -54,6 +54,7 @@ insert into public.franchise_staff(franchise_case_id,role_key,role_name,person_n
 select '22222222-2222-4222-8222-222222222222', role_key, role_name, 'Sentetik '||role_name, 'hired', true, true,
        certification_required, certification_required, case when certification_required then current_date+365 else null end, 'ready'
 from public.franchise_staffing_rules where branch_type='standard' and is_active;
+update public.franchise_staff set auth_user_id='11111111-1111-4111-8111-111111111113' where franchise_case_id='22222222-2222-4222-8222-222222222222' and role_key='owner';
 
 insert into public.franchise_opening_evidence(franchise_case_id,gate_code,status,evidence_sha256,source_reference,details,maker_id,checker_id,reviewed_at) values
 ('22222222-2222-4222-8222-222222222222','entry_fee_payment','approved',repeat('a',64),'PAY-UAT','{"paid_percent":"100","payment_reference":"PAY-UAT"}','11111111-1111-4111-8111-111111111112','11111111-1111-4111-8111-111111111111',now()),
@@ -95,6 +96,7 @@ begin
   if not (first_result->>'ok')::boolean then raise exception 'İlk aktivasyon başarısız'; end if;
   if (select count(*) from public.franchise_branches where franchise_case_id='22222222-2222-4222-8222-222222222222')<>1 then raise exception 'Şube sayısı yanlış'; end if;
   if (select count(*) from public.franchise_access_accounts where franchise_case_id='22222222-2222-4222-8222-222222222222')<>10 then raise exception 'Hesap sayısı yanlış'; end if;
+  if not exists(select 1 from public.franchise_user_scopes s join public.franchise_branches b on b.id=any(s.branch_ids) where s.auth_user_id='11111111-1111-4111-8111-111111111113' and s.franchise_role='dealer' and s.is_active and b.franchise_case_id='22222222-2222-4222-8222-222222222222') then raise exception 'Bayi JWT şube kapsamı oluşmadı'; end if;
   if (select count(*) from public.franchise_followup_tasks where franchise_case_id='22222222-2222-4222-8222-222222222222')<>3 then raise exception '30/60/90 görev sayısı yanlış'; end if;
   if (select count(*) from public.franchise_integration_outbox where franchise_case_id='22222222-2222-4222-8222-222222222222')<>4 then raise exception 'Outbox olay sayısı yanlış'; end if;
   repeated_result:=public.activate_franchise_case('22222222-2222-4222-8222-222222222222');
@@ -120,6 +122,12 @@ set local request.jwt.claims='{"sub":"11111111-1111-4111-8111-111111111111","app
 select public.review_franchise_followup_reopen((select id from public.franchise_followup_reopen_requests where requester_id='11111111-1111-4111-8111-111111111113' and status='pending'),true,'Bağımsız yeniden açma onayı');
 select status='open' and completed_by is null and evidence_sha256 is null as approved_reopen_clears_completion
 from public.franchise_followup_tasks where franchise_case_id='22222222-2222-4222-8222-222222222222' and day_no=30;
+reset role;
+
+set local role authenticated;
+set local request.jwt.claims='{"sub":"11111111-1111-4111-8111-111111111111","app_metadata":{"franchise_role":"gm","franchise_branch_ids":[]}}';
+update public.franchise_access_accounts set status='revoked' where franchise_case_id='22222222-2222-4222-8222-222222222222' and auth_user_id='11111111-1111-4111-8111-111111111113';
+do $$ begin if exists(select 1 from public.franchise_user_scopes where auth_user_id='11111111-1111-4111-8111-111111111113' and is_active) then raise exception 'İptal edilen hesabın şube kapsamı kaldırılmadı'; end if; end $$;
 reset role;
 
 set local role service_role;
