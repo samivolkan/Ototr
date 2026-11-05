@@ -28,12 +28,12 @@ Muhasebe, Finans'tan bağımsız `accounting` kaynağına ayrıldı. Üç sürü
 
 - Provider secret'ları tanımlanmadı.
 - Gerçek ERP veya iletişim endpoint'i tanımlanmadı.
-- `20261105380000_franchise_outbox_scheduler.sql` ile dakikalık `franchise-outbox-dispatch` cron işi kuruldu; dispatcher Data API dışındaki `app_private` şemasındadır.
-- Scheduler konfigürasyonu varsayılan ve mevcut durumda `enabled=false`, `worker_url=null` olduğu için cron çağrısı güvenli `null` no-op döner. Gerçek gönderim etkin değildir.
+- `20261105380000_franchise_outbox_scheduler.sql` ve `20261105410000_franchise_provider_scheduler.sql` ile dakikalık `franchise-outbox-dispatch` ve `franchise-provider-dispatch` cron işleri kuruldu; iki dispatcher da Data API dışındaki `app_private` şemasındadır.
+- Her iki scheduler konfigürasyonu varsayılan ve mevcut durumda `enabled=false`, `worker_url=null` olduğu için cron çağrıları güvenli `null` no-op döner. Departman outbox ve iletişim/e-imza provider gönderimleri etkin değildir.
 - Worker secret değeri tabloda tutulmaz; etkinleştirme sonrasında yalnız Supabase Vault içindeki `franchise_worker_secret` adıyla okunur. Secret en az 32 karakter değilse dispatcher fail-closed hata verir.
 - Edge Function `verifyJwt=true` kapısı için uygulama worker secret'ından bağımsız `franchise_worker_invoke_jwt` Vault kaydı zorunludur. Cron isteği hem `Authorization: Bearer …` hem `x-franchise-worker-secret` başlığını taşır; service-role anahtarı migration veya konfigürasyon tablosunda tutulmaz.
 - `20261105400000_franchise_scheduler_jwt_regex_fix.sql` ile JWT biçim kontrolü PostgreSQL kaçışından bağımsız `[.]` ayırıcısına geçirildi. Hosted doğrulamada örnek üç parçalı JWT biçimi kabul, geçersiz biçim ret, iki ayrı kimlik başlığı mevcut ve disabled scheduler no-op sonucu birlikte `PASS` verdi.
-- `anon` ve `authenticated` dispatcher çalıştıramaz; yalnız `service_role` yetkilidir. Hosted kontrolde cron kurulu, disabled no-op ve rol yetkileri birlikte doğrulandı.
+- `anon` ve `authenticated` dispatcher çalıştıramaz; yalnız `service_role` yetkilidir. Hosted kontrolde iki cron kurulu, iki disabled no-op ve provider rol yetkileri birlikte doğrulandı.
 - Staging outbox ve provider kuyruklarında kalıcı kayıt yok.
 - Gerçek mesaj, e-imza veya departman olayı gönderilmedi.
 - Worker'lar JWT'ye ek olarak ayrı worker secret'ı doğrular; secret yokken işlem fail-closed kapanır.

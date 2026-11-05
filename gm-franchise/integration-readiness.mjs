@@ -11,8 +11,11 @@ export function evaluateIntegrationReadiness(deployment){
   if(deployment?.accountingContractDeployed!==true)blockers.push('accounting_contract');
   if(deployment?.externalEndpointsConfigured!==true)blockers.push('real_department_endpoints');
   if(deployment?.providerSecretsConfigured!==true)for(const channel of PROVIDER_CHANNELS)blockers.push(`provider:${channel}`);
-  if(deployment?.scheduledDispatchInstalled!==true)blockers.push('scheduled_dispatch_installation');
-  else if(deployment?.scheduledDispatchConfigured!==true)blockers.push('scheduled_dispatch_activation');
+  for(const scheduler of ['outbox','provider']){
+    const state=deployment?.schedulers?.[scheduler];
+    if(state?.installed!==true)blockers.push(`scheduled_dispatch_installation:${scheduler}`);
+    else if(state?.configured!==true)blockers.push(`scheduled_dispatch_activation:${scheduler}`);
+  }
   return Object.freeze({decision:blockers.length?'NO_GO':'READY_FOR_DEPARTMENT_ACCEPTANCE',departmentSources:Object.freeze(sources),providerChannels:PROVIDER_CHANNELS,blockers:Object.freeze(blockers)});
 }
 if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){const deployment=JSON.parse(await readFile(new URL('./staging-worker-deployment.json',import.meta.url),'utf8')),result=evaluateIntegrationReadiness(deployment);console.log(JSON.stringify(result,null,2));if(result.decision!=='READY_FOR_DEPARTMENT_ACCEPTANCE')process.exitCode=2;}

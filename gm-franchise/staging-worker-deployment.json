@@ -7,6 +7,10 @@
   "externalEndpointsConfigured": false,
   "scheduledDispatchInstalled": true,
   "scheduledDispatchConfigured": false,
+  "schedulers": {
+    "outbox": {"installed": true, "configured": false, "jobName": "franchise-outbox-dispatch"},
+    "provider": {"installed": true, "configured": false, "jobName": "franchise-provider-dispatch"}
+  },
   "liveCatalogVerifiedAtUtc": "2026-11-05T21:19:22Z",
   "queueState": {"outbox": 0, "provider": 0},
   "accountingContractDeployed": true,

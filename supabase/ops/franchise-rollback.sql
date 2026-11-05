@@ -7,9 +7,14 @@ begin
   if to_regclass('cron.job') is not null then
     select jobid into v_job_id from cron.job where jobname='franchise-outbox-dispatch';
     if v_job_id is not null then perform cron.unschedule(v_job_id); end if;
+    v_job_id := null;
+    select jobid into v_job_id from cron.job where jobname='franchise-provider-dispatch';
+    if v_job_id is not null then perform cron.unschedule(v_job_id); end if;
   end if;
 end;
 $$;
+drop function if exists app_private.dispatch_franchise_provider();
+drop table if exists app_private.franchise_provider_schedule_config;
 drop function if exists app_private.dispatch_franchise_outbox();
 drop table if exists app_private.franchise_outbox_schedule_config;
 drop policy if exists franchise_storage_applicant_orphan_cleanup on storage.objects;

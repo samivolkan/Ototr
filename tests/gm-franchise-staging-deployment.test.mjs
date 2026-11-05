@@ -10,6 +10,8 @@ test('staging workers are recorded as fail-closed and not provider-configured', 
   assert.equal(deployment.providerSecretsConfigured, false);
   assert.equal(deployment.externalEndpointsConfigured, false);
   assert.equal(deployment.scheduledDispatchConfigured, false);
+  assert.deepEqual(Object.keys(deployment.schedulers).sort(), ['outbox','provider']);
+  for(const scheduler of Object.values(deployment.schedulers)){assert.equal(scheduler.installed,true);assert.equal(scheduler.configured,false);assert.match(scheduler.jobName,/^franchise-(outbox|provider)-dispatch$/);}
   assert.equal(deployment.accountingContractDeployed, true);
   assert.deepEqual(deployment.queueState, {outbox:0,provider:0});
   assert.equal(deployment.functions.length, 2);
