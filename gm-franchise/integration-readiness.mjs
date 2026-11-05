@@ -4,12 +4,16 @@ import {FRANCHISE_INTEGRATIONS} from './integration-adapters.mjs';
 
 const SHA256=/^[a-f0-9]{64}$/;
 export const PROVIDER_CHANNELS=Object.freeze(['email','sms','whatsapp','esign']);
+const sameCatalog=(actual,expected)=>actual&&typeof actual==='object'&&!Array.isArray(actual)&&Object.keys(actual).length===expected.length&&expected.every(key=>Object.hasOwn(actual,key));
 function hasAcceptanceEvidence(record){
   const acceptedAt=new Date(record?.acceptedAtUtc||'');
-  return record?.configured===true&&Number.isInteger(record?.probeStatus)&&record.probeStatus>=200&&record.probeStatus<300&&SHA256.test(record?.evidenceSha256||'')&&SHA256.test(record?.executedByRefSha256||'')&&SHA256.test(record?.acceptedByRefSha256||'')&&record.executedByRefSha256!==record.acceptedByRefSha256&&!Number.isNaN(acceptedAt.getTime());
+  return record?.configured===true&&Number.isInteger(record?.probeStatus)&&record.probeStatus>=200&&record.probeStatus<300&&SHA256.test(record?.evidenceSha256||'')&&SHA256.test(record?.executedByRefSha256||'')&&SHA256.test(record?.acceptedByRefSha256||'')&&record.executedByRefSha256!==record.acceptedByRefSha256&&!Number.isNaN(acceptedAt.getTime())&&String(record.acceptedAtUtc).endsWith('Z');
 }
 export function evaluateIntegrationReadiness(deployment){
   const functions=new Map((deployment?.functions||[]).map(item=>[item.slug,item])),sources=Object.keys(FRANCHISE_INTEGRATIONS),blockers=[];
+  if(deployment?.schemaVersion!==2||deployment?.environment!=='staging'||deployment?.productionDataUsed!==false)blockers.push('deployment_manifest');
+  if(!sameCatalog(deployment?.departmentEndpointAcceptance,sources))blockers.push('department_acceptance_catalog');
+  if(!sameCatalog(deployment?.providerAcceptance,PROVIDER_CHANNELS))blockers.push('provider_acceptance_catalog');
   for(const slug of ['franchise-outbox-worker','franchise-provider-worker']){const fn=functions.get(slug);if(!fn||fn.status!=='ACTIVE'||fn.verifyJwt!==true||!SHA256.test(fn.bundleSha256||'')||fn.unauthenticatedProbeStatus!==401||fn.authenticatedInvalidSecretProbeStatus!==401)blockers.push(`worker:${slug}`)}
   if(sources.length!==13||!sources.includes('accounting')||deployment?.syntheticTransportAcceptance?.sourceCount!==13)blockers.push('department_source_catalog');
   if(deployment?.accountingContractDeployed!==true)blockers.push('accounting_contract');
