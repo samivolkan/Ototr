@@ -11,5 +11,5 @@ test('public form collects evaluation profile but never asks for raw identity or
  assert.doesNotMatch(html,/name="(?:tc|tckn|identity|financialDocument|iban|bank)/i);assert.match(html,/yalnız kimliği doğrulanmış özel aday portalında/);
 });
 test('submission is staging labeled, double-click locked and uses current public API contract',()=>{
- assert.match(html,/GÜVENLİ STAGING ÖNİZLEMESİ/);assert.match(js,/functions\/v1\/public-api\/franchise-applications/);assert.match(js,/button\.disabled=true/);assert.match(js,/FR-KVKK-2026-11/);assert.match(js,/if\(!payload\.kvkkConsent\|\|!payload\.processingConsent\)/);
+ assert.match(html,/GÜVENLİ STAGING ÖNİZLEMESİ/);assert.match(html,/\.hp\{display:none\}/);assert.match(js,/functions\/v1\/public-api\/franchise-applications/);assert.match(js,/button\.disabled=true/);assert.match(js,/FR-KVKK-2026-11/);assert.match(js,/if\(!payload\.kvkkConsent\|\|!payload\.processingConsent\)/);
 });
