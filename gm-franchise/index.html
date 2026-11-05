@@ -290,12 +290,14 @@ function inbox(){
 }
 function pipe(){
   const A=["gm","fd","fu"].includes(R()),rj=C.filter(c=>c.stage<0);
-  return`${A?`<div class="card"><h2>Yeni aday</h2><div class="row">
+  return`${A?`<div class="safe-note"><b>Güvenli başvuru:</b> T.C. kimlik numarası ve finansal belge içeriği girilmez; yalnız sentetik doğrulama referansı kullanılır. Üç izin ayrı kaydedilir.</div><div class="card"><h2>Yeni aday · tekil franchise dosyası</h2><div class="row">
     <input id="na" placeholder="Aday / firma adı" style="flex:2;min-width:140px">
     <input id="ni" placeholder="İlçe" style="flex:1;min-width:80px">
-    <input id="ny" placeholder="Yatırım" style="flex:1;min-width:80px">
-    <select id="nk"><option>Web</option><option>Google Ads</option><option>Referans</option><option>Fuar</option></select>
-    <button class="btn" data-a="add">Ekle</button>
+    <select id="nk"><option>Web</option><option>GM Manuel</option><option>CRM</option><option>Referans</option><option>Sosyal Medya</option><option>Çağrı Merkezi</option></select>
+    <select id="nb"><option value="5m_10m">Bütçe 5–10 M</option><option value="under_5m">Bütçe 5 M altı</option><option value="10m_20m">Bütçe 10–20 M</option><option value="over_20m">Bütçe 20 M üzeri</option></select>
+    <select id="ne"><option value="3m_7m">Öz kaynak 3–7 M</option><option value="under_3m">Öz kaynak 3 M altı</option><option value="7m_15m">Öz kaynak 7–15 M</option><option value="over_15m">Öz kaynak 15 M üzeri</option></select>
+  </div><div class="row"><input id="nx" type="number" min="0" max="60" value="5" placeholder="Yönetim deneyimi"><select id="nc"><option value="limited">Limited şirket</option><option value="joint_stock">Anonim şirket</option><option value="sole_proprietor">Şahıs işletmesi</option><option value="none">Şirket yok</option></select><select id="nl"><option value="candidate_found">Aday lokasyon var</option><option value="searching">Lokasyon aranıyor</option><option value="owned">Mülk sahibi</option><option value="leased">Kiralandı</option><option value="none">Lokasyon yok</option></select><select id="np"><option value="single">Tek ortak</option><option value="family">Aile ortaklığı</option><option value="corporate">Kurumsal</option><option value="multi_partner">Çok ortaklı</option></select><input id="nid" placeholder="Sentetik kimlik doğrulama ref."><input id="nfin" placeholder="Sentetik finansal belge ref."></div>
+  <div class="row"><label class="ck"><input id="nkv1" type="checkbox" checked>KVKK aydınlatma</label><label class="ck"><input id="nkv2" type="checkbox" checked>Veri işleme izni</label><label class="ck"><input id="nkv3" type="checkbox">Ticari ileti izni</label><button class="btn" data-a="add">Tekil dosya oluştur</button>
   </div></div>`:`<p class="nt">Yeni aday eklemek için Franchise Uzmanı, Direktörü veya GM rolünü seçin.</p>`}
   <div class="kb">${STAGES.map((s,i)=>`<div class="kc">
     <h4>${s} · ${C.filter(c=>c.stage==i).length}</h4>
@@ -444,7 +446,7 @@ function rapor(){
   </div>
   <div class="cols">
     <div class="card"><h2>Kaynak analizi</h2>
-      ${["Web","Google Ads","Referans","Fuar"].map(k=>{const n=C.filter(c=>c.kaynak==k).length;return n?`<div class="fr"><span>${k}</span><div class="bar"><i style="width:${n/C.length*100}%"></i></div><b>${n}</b></div>`:""}).join("")}
+      ${["Web","GM Manuel","CRM","Referans","Sosyal Medya","Çağrı Merkezi"].map(k=>{const n=C.filter(c=>c.kaynak==k).length;return n?`<div class="fr"><span>${k}</span><div class="bar"><i style="width:${n/C.length*100}%"></i></div><b>${n}</b></div>`:""}).join("")}
     </div>
     <div class="card"><h2>Bölge dağılımı (aktif)</h2>
       ${[...new Set(ak.map(c=>c.bolge))].map(b=>{const n=ak.filter(c=>c.bolge==b).length;return`<div class="fr"><span>${b}</span><div class="bar"><i style="width:${n/Math.max(ak.length,1)*100}%"></i></div><b>${n}</b></div>`}).join("")||'<p class="nt">Aktif şube yok.</p>'}
@@ -697,9 +699,10 @@ const A={
   gsel:s=>{SEL=+s.i;render()},
   dtab:s=>{DTAB=s.t;render()},
   add:()=>{
-    const n=$("na")?.value.trim();if(!n)return;
-    const c=mkC(n,$("ni")?.value||"-",$("ny")?.value||"-",0,{kaynak:$("nk")?.value||"Web"});
-    C.push(c);const f=createFranchiseCase({id:`FR-${String(c.id).padStart(4,"0")}`,applicationId:`APP-${String(c.id).padStart(4,"0")}`,candidate:n,name:`${$("ni")?.value||"Yeni"} OTOTR`,district:$("ni")?.value||"Belirlenmedi",consents:3,documents:0,documentsTotal:17});FR_CASES.push(f);FLOW=f;LOG_ADD("Yeni aday ve franchise dosyası: "+n,c);CUR="e2e";render();
+    const n=$("na")?.value.trim(),district=$("ni")?.value.trim(),identity=$("nid")?.value.trim(),financial=$("nfin")?.value.trim();if(!n||!district||!identity||!financial||!$("nkv1")?.checked||!$("nkv2")?.checked)return;
+    const profile={channel:$("nk")?.value||"Web",budgetBand:$("nb")?.value,equityBand:$("ne")?.value,managementExperienceYears:+($("nx")?.value||0),companyStatus:$("nc")?.value,locationStatus:$("nl")?.value,partnershipStructure:$("np")?.value,identityVerificationRef:identity,financialDocumentRef:financial,commercialConsent:Boolean($("nkv3")?.checked)};
+    const c=mkC(n,district,profile.budgetBand,0,{kaynak:profile.channel});
+    C.push(c);const f=createFranchiseCase({id:`FR-${String(c.id).padStart(4,"0")}`,applicationId:`APP-${String(c.id).padStart(4,"0")}`,candidate:n,name:`${district} OTOTR`,district,consents:profile.commercialConsent?3:2,documents:0,documentsTotal:17,applicationProfile:profile});FR_CASES.push(f);FLOW=f;LOG_ADD("İzinleri ayrıştırılmış tekil franchise dosyası: "+n+" · "+profile.channel,c);CUR="e2e";render();
   },
   nxt:s=>{
     const c=gC(+s.i);if(!adv(c)||gate(c))return;

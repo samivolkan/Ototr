@@ -25,6 +25,7 @@ Karar: **NO_GO**
 - Kurul sonrası skor revizyonunda eski kararın otomatik geçersizleşmesi ve yeniden bağımsız onay zorunluluğu
 - 12 hedef sistem için 31 sürümlü departman olay sözleşmesi; alan minimizasyonu, zorunlu alan, sürüm ve hassas veri denetiminin worker ve PostgreSQL katmanlarında birlikte uygulanması
 - Aday, bayi, denetçi ve tedarikçi için atama bazlı RLS; güvenli portal görünümü, persona–iş türü kilidi ve yalnız atanmış kullanıcının kontrollü işlem RPC'si
+- Altı kanaldan idempotent başvuru alımı; tekil franchise dosyası, güvenli profil, üç ayrı izin makbuzu ve ham kimlik/lead verisini saklamama kuralı
 
 ## NO_GO kapıları
 

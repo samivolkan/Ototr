@@ -19,6 +19,8 @@ select to_regclass('public.franchise_board_decisions') is not null as board_deci
 select to_regclass('public.franchise_integration_event_contracts') is not null as integration_event_contracts_table_exists;
 select to_regclass('public.franchise_portal_assignments') is not null as portal_assignments_table_exists;
 select to_regclass('public.franchise_portal_items') is not null as portal_items_table_exists;
+select to_regclass('public.franchise_application_intakes') is not null as application_intakes_table_exists;
+select to_regclass('public.franchise_application_profiles') is not null as application_profiles_table_exists;
 
 select bool_and(c.relrowsecurity) as all_public_tables_have_rls
 from pg_class c join pg_namespace n on n.oid=c.relnamespace
@@ -29,6 +31,7 @@ where n.nspname='public' and c.relname in (
   ,'franchise_user_scopes','franchise_consent_receipts','franchise_message_templates','franchise_provider_requests','franchise_staffing_rules','franchise_opening_evidence','franchise_document_requirements','franchise_case_stage_history','franchise_followup_reopen_requests','franchise_score_dimensions','franchise_candidate_score_entries','franchise_board_decisions'
   ,'franchise_integration_event_contracts'
   ,'franchise_portal_assignments','franchise_portal_items'
+  ,'franchise_application_intakes','franchise_application_profiles'
 );
 
 select count(*)>=23 as franchise_policies_present
@@ -80,3 +83,6 @@ select to_regprocedure('public.close_franchise_portal_assignment(uuid,text)') is
 select to_regclass('public.franchise_portal_work_v') is not null as portal_safe_view_exists;
 select not has_table_privilege('anon','public.franchise_portal_assignments','SELECT') as anon_cannot_read_portal_assignments;
 select not has_table_privilege('anon','public.franchise_portal_items','SELECT') as anon_cannot_read_portal_items;
+select to_regprocedure('public.submit_franchise_application(text,text,text,uuid,text,text,text,text,text,text,smallint,text,text,text,text,text,text,text,text,text,text,boolean)') is not null as application_intake_rpc_exists;
+select not has_table_privilege('anon','public.franchise_application_intakes','SELECT') as anon_cannot_read_application_intakes;
+select not has_table_privilege('anon','public.franchise_application_profiles','SELECT') as anon_cannot_read_application_profiles;
