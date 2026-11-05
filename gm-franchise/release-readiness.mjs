@@ -27,6 +27,7 @@ export function sha256(value){return createHash('sha256').update(value).digest('
 export function manifestSha256(gates){return sha256(JSON.stringify(gates));}
 export async function hostedEvidenceHashes(baseUrl=new URL('.',import.meta.url)){const entries=await Promise.all(Object.entries(HOSTED_EVIDENCE_FILES).map(async([key,path])=>[key,sha256(await readFile(new URL(path,baseUrl)))]));return Object.freeze(Object.fromEntries(entries));}
 export function releaseMetadataOnlySinceCommit({isAncestor=false,changedPaths=[]}={}){return isAncestor===true&&changedPaths.length>0&&changedPaths.every(path=>RELEASE_METADATA_PATHS.includes(path.replaceAll('\\','/')))}
+export function userApprovalReady(decision){const approval=decision?.userApproval,approvedAt=Date.parse(approval?.approvedAtUtc||''),start=Date.parse(decision?.changeWindowStartUtc||''),ceoAt=Date.parse((decision?.signoffs||[]).find(item=>item.role==='CEO/Yönetim')?.signedAtUtc||'');return approval?.approved===true&&SHA256.test(approval?.identitySha256||'')&&SHA256.test(approval?.evidenceSha256||'')&&validUtc(approval?.approvedAtUtc)&&Number.isFinite(start)&&Number.isFinite(ceoAt)&&approvedAt>=ceoAt&&approvedAt<=start;}
 export function evaluateRelease(gates,decision,{currentCommit=null,expectedEvidenceHashes=null,releaseMetadataOnly=false,integrationDecision=null,uatAcceptance=null,publicIntakeAcceptance=null}={}){
  const blockers=[];
  if(!Array.isArray(gates?.gates)||gates.gates.length<16)blockers.push('gate_catalog_incomplete');
@@ -47,6 +48,9 @@ export function evaluateRelease(gates,decision,{currentCommit=null,expectedEvide
  for(const role of REQUIRED_SIGNOFF_ROLES){const s=signoffs.get(role),signedAt=Date.parse(s?.signedAtUtc||'');if(!s||!SHA256.test(s.identitySha256||'')||!SHA256.test(s.evidenceSha256||'')||!validUtc(s.signedAtUtc))blockers.push(`signoff:${role}`);else{identities.push(s.identitySha256);signedTimes.push({role,signedAt});if(Number.isFinite(start)&&signedAt>start)blockers.push(`signoff_after_window_start:${role}`);if(Number.isFinite(acceptanceCutoff)&&signedAt<acceptanceCutoff)blockers.push(`signoff_before_acceptance:${role}`);}}
  if(new Set(identities).size!==identities.length)blockers.push('signoff_identity_not_independent');
  const ceoTime=signedTimes.find(item=>item.role==='CEO/Yönetim')?.signedAt;if(Number.isFinite(ceoTime)&&signedTimes.some(item=>item.role!=='CEO/Yönetim'&&item.signedAt>ceoTime))blockers.push('ceo_signoff_not_last');
+ const userApproval=decision?.userApproval,userApprovalAt=Date.parse(userApproval?.approvedAtUtc||'');
+ if(userApproval?.approved!==true||!SHA256.test(userApproval?.identitySha256||'')||!SHA256.test(userApproval?.evidenceSha256||'')||!validUtc(userApproval?.approvedAtUtc))blockers.push('user_approval_missing');
+ else{if(Number.isFinite(ceoTime)&&userApprovalAt<ceoTime)blockers.push('user_approval_before_ceo');if(Number.isFinite(start)&&userApprovalAt>start)blockers.push('user_approval_after_window_start');}
  if(decision?.productionDataUsed!==false)blockers.push('preproduction_must_use_synthetic_data');
  return Object.freeze({productionDecision:blockers.length?'NO_GO':'GO',decision:blockers.length?'NOT_READY':'READY',blockers:Object.freeze(blockers)});
 }
