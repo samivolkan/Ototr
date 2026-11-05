@@ -75,6 +75,17 @@ insert into public.franchise_contracts(franchise_case_id,contract_no,template_ve
 values('22222222-2222-4222-8222-222222222222','CON-UAT-STRUCTURED','UAT-1','wet','not_requested',now(),repeat('f',64),'approved','11111111-1111-4111-8111-111111111112','11111111-1111-4111-8111-111111111111',now());
 insert into public.franchise_site_visits(franchise_case_id,visited_at,latitude,longitude,photo_count,measurements,evidence_sha256,status,inspector_id,checker_id,reviewed_at)
 values('22222222-2222-4222-8222-222222222222',now(),40.2,29.1,4,'{"gross_area_m2":900,"work_bay_count":6,"ceiling_height_m":4.5}',repeat('9',64),'approved','11111111-1111-4111-8111-111111111113','11111111-1111-4111-8111-111111111111',now());
+insert into public.franchise_opening_deliverables(franchise_case_id,deliverable_code,payload,evidence_sha256,status,maker_id,checker_id,reviewed_at) values
+('22222222-2222-4222-8222-222222222222','architecture_project','{"project_id":"P1","plan_version":"V1"}',repeat('1',64),'approved','11111111-1111-4111-8111-111111111112','11111111-1111-4111-8111-111111111111',now()),
+('22222222-2222-4222-8222-222222222222','construction_handover','{"project_id":"P1","handover_id":"H1"}',repeat('2',64),'approved','11111111-1111-4111-8111-111111111112','11111111-1111-4111-8111-111111111111',now()),
+('22222222-2222-4222-8222-222222222222','equipment_delivery','{"order_id":"O1","delivery_id":"D1","inventory_count":12}',repeat('3',64),'approved','11111111-1111-4111-8111-111111111112','11111111-1111-4111-8111-111111111111',now()),
+('22222222-2222-4222-8222-222222222222','calibration','{"equipment_count":12,"calibration_batch_id":"C1"}',repeat('4',64),'approved','11111111-1111-4111-8111-111111111112','11111111-1111-4111-8111-111111111111',now()),
+('22222222-2222-4222-8222-222222222222','ohs_readiness','{"risk_assessment_id":"R1","emergency_plan_id":"E1"}',repeat('5',64),'approved','11111111-1111-4111-8111-111111111112','11111111-1111-4111-8111-111111111111',now()),
+('22222222-2222-4222-8222-222222222222','quality_audit','{"audit_id":"A1","score":90,"open_finding_count":0}',repeat('6',64),'approved','11111111-1111-4111-8111-111111111112','11111111-1111-4111-8111-111111111111',now()),
+('22222222-2222-4222-8222-222222222222','brand_campaign','{"brand_application_id":"B1","campaign_id":"M1"}',repeat('7',64),'approved','11111111-1111-4111-8111-111111111112','11111111-1111-4111-8111-111111111111',now()),
+('22222222-2222-4222-8222-222222222222','it_readiness','{"network_check_id":"N1","erp_tenant_id":"T1","provisioned_account_count":10}',repeat('8',64),'approved','11111111-1111-4111-8111-111111111112','11111111-1111-4111-8111-111111111111',now()),
+('22222222-2222-4222-8222-222222222222','trial_operation','{"trial_operation_id":"T1","successful_job_count":5,"critical_error_count":0}',repeat('a',64),'approved','11111111-1111-4111-8111-111111111112','11111111-1111-4111-8111-111111111111',now()),
+('22222222-2222-4222-8222-222222222222','opening_board','{"board_decision_id":"OB1","decision":"approved"}',repeat('b',64),'approved','11111111-1111-4111-8111-111111111112','11111111-1111-4111-8111-111111111111',now());
 
 set local role authenticated;
 do $$

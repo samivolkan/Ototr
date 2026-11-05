@@ -9,7 +9,7 @@ Yerel ve geçici Supabase PostgreSQL konteynerinde migration, güvenlik doğrula
 
 ## Kanıtlanan davranışlar
 
-- On beş Franchise migration'ı (ana şema, sağlayıcı yönetişimi, sağlayıcı worker, departman RBAC, kadro, açılış kanıtı, gerçek kayıt kapıları, yaşam döngüsü, 30/60/90 yönetişimi, aday skoru/kurul kararı, sürümlü entegrasyon sözleşmeleri, dış portal izolasyonu, başvuru alımı, finansal koşullar ve hukuk/lokasyon kapıları) gerçek PostgreSQL motorunda hatasız commit edildi.
+- On altı Franchise migration'ı gerçek PostgreSQL motorunda hatasız commit edildi; son paket açılış uygulama ve kurul kapılarını yapılandırdı.
 - Tüm kapsam içi public franchise tablolarında RLS açık.
 - `anon`, franchise dosyalarını ve belgeleri okuyamıyor.
 - Özel Storage bucket `public=false`, 20 MB ve MIME sınırlarıyla oluştu.
@@ -53,6 +53,7 @@ Yerel ve geçici Supabase PostgreSQL konteynerinde migration, güvenlik doğrula
 - Özet `paid_percent` alanına güvenilmeden, yalnız bağımsız onaylı tahsilat defterinden hesaplanan `%99` açılışı reddetti ve `%100` açılış kapısını açtı.
 - Royalty matrahı KDV dâhil müşteri tahsilatı, varsayılan oran `%10`, reklam payı `%0` ve muafiyet seçenekleri `0/6/12 ay` olarak doğrulandı; gecikme operasyonu otomatik durdurmuyor.
 - Due diligence, sağlayıcıdan bağımsız e-imza/ıslak imza sözleşmesi, poligon–ilçe–yarıçap bölge koruması ve konum/fotoğraf/ölçüm içeren saha ziyareti ayrı maker-checker kayıtlarıyla açılış kapısına bağlandı.
+- Mimari proje/teslim, ekipman, kalibrasyon, İSG, kalite, pazarlama, BT, deneme operasyonu ve açılış kurulu için on kanıtlı teslimat şube aktivasyonuna bağlandı; güvenlik-kritik kapılar istisnaya kapatıldı.
 - Rollback Storage politikalarını önce kaldırdı, tüm franchise tablolarını ve bucket'ı temizledi.
 - Test konteyneri çalışma sonunda kaldırıldı.
 
@@ -73,6 +74,7 @@ Yerel ve geçici Supabase PostgreSQL konteynerinde migration, güvenlik doğrula
 - `supabase/migrations/20261105130000_franchise_application_intake.sql`
 - `supabase/migrations/20261105140000_franchise_financial_terms.sql`
 - `supabase/migrations/20261105150000_franchise_legal_location_gates.sql`
+- `supabase/migrations/20261105160000_franchise_opening_execution_gates.sql`
 - `supabase/ops/franchise-local-contract-stubs.sql`
 - `supabase/ops/franchise-staging-verify.sql`
 - `supabase/ops/franchise-activation-acceptance.sql`
@@ -88,6 +90,7 @@ Yerel ve geçici Supabase PostgreSQL konteynerinde migration, güvenlik doğrula
 - `supabase/ops/franchise-application-intake-acceptance.sql`
 - `supabase/ops/franchise-finance-acceptance.sql`
 - `supabase/ops/franchise-legal-location-acceptance.sql`
+- `supabase/ops/franchise-opening-execution-acceptance.sql`
 - `supabase/ops/franchise-rollback.sql`
 
 ## Kalan sınır

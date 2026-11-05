@@ -28,6 +28,7 @@ select to_regclass('public.franchise_contracts') is not null as legal_contracts_
 select to_regclass('public.franchise_territory_protections') is not null as territory_protections_table_exists;
 select to_regclass('public.franchise_site_visits') is not null as site_visits_table_exists;
 select to_regclass('public.franchise_due_diligence_reviews') is not null as due_diligence_table_exists;
+select to_regclass('public.franchise_opening_deliverables') is not null as opening_deliverables_table_exists;
 
 select bool_and(c.relrowsecurity) as all_public_tables_have_rls
 from pg_class c join pg_namespace n on n.oid=c.relnamespace
@@ -41,6 +42,7 @@ where n.nspname='public' and c.relname in (
   ,'franchise_application_intakes','franchise_application_profiles'
   ,'franchise_financial_terms','franchise_entry_fee_installments','franchise_entry_fee_receipts'
   ,'franchise_contracts','franchise_territory_protections','franchise_site_visits','franchise_due_diligence_reviews'
+  ,'franchise_opening_deliverable_catalog','franchise_opening_deliverables'
 );
 
 select count(*)>=23 as franchise_policies_present
@@ -102,3 +104,5 @@ select not has_table_privilege('anon','public.franchise_financial_terms','SELECT
 select not has_table_privilege('anon','public.franchise_entry_fee_receipts','SELECT') as anon_cannot_read_entry_fee_receipts;
 select to_regprocedure('public.franchise_legal_location_ready(uuid)') is not null as legal_location_gate_exists;
 select not has_table_privilege('anon','public.franchise_contracts','SELECT') as anon_cannot_read_legal_contracts;
+select count(*)=10 as opening_deliverable_catalog_complete from public.franchise_opening_deliverable_catalog where is_active;
+select to_regprocedure('public.franchise_opening_execution_ready(uuid)') is not null as opening_execution_gate_exists;
