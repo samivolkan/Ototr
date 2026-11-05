@@ -16,7 +16,10 @@ async function connectErpSession() {
   try {
     const session = storedJson(sessionKey);
     if (!session?.access_token || (session.expires_at && Number(session.expires_at) <= Date.now())) {
-      status.textContent = 'Muhasebe V2 için ERP oturumu açın.';
+      const loginLink = document.createElement('a');
+      loginLink.href = '../index.html#dealer';
+      loginLink.textContent = 'ERP girişini aç';
+      status.append('Muhasebe V2 için ERP oturumu gerekli. ', loginLink);
       return;
     }
 
