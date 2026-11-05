@@ -16,6 +16,7 @@ select to_regclass('public.franchise_case_stage_history') is not null as stage_h
 select to_regclass('public.franchise_followup_reopen_requests') is not null as followup_reopen_table_exists;
 select to_regclass('public.franchise_candidate_score_entries') is not null as candidate_score_entries_table_exists;
 select to_regclass('public.franchise_board_decisions') is not null as board_decisions_table_exists;
+select to_regclass('public.franchise_integration_event_contracts') is not null as integration_event_contracts_table_exists;
 
 select bool_and(c.relrowsecurity) as all_public_tables_have_rls
 from pg_class c join pg_namespace n on n.oid=c.relnamespace
@@ -24,6 +25,7 @@ where n.nspname='public' and c.relname in (
   'franchise_access_accounts','franchise_followup_tasks','franchise_exceptions',
   'franchise_integration_outbox','franchise_documents','franchise_document_retention'
   ,'franchise_user_scopes','franchise_consent_receipts','franchise_message_templates','franchise_provider_requests','franchise_staffing_rules','franchise_opening_evidence','franchise_document_requirements','franchise_case_stage_history','franchise_followup_reopen_requests','franchise_score_dimensions','franchise_candidate_score_entries','franchise_board_decisions'
+  ,'franchise_integration_event_contracts'
 );
 
 select count(*)>=23 as franchise_policies_present
@@ -68,3 +70,5 @@ select not has_table_privilege('anon','public.franchise_case_stage_history','SEL
 select to_regclass('public.franchise_followup_status_v') is not null as followup_sla_view_exists;
 select count(*)=7 and sum(weight)=100 as score_dimensions_complete from public.franchise_score_dimensions where is_active;
 select exists(select 1 from information_schema.columns where table_schema='public' and table_name='franchise_board_decisions' and column_name='superseded_at') as score_revision_invalidates_board_ready;
+select count(*)=31 as integration_event_contracts_complete from public.franchise_integration_event_contracts where is_active and contract_version=1;
+select to_regprocedure('public.franchise_validate_integration_outbox()') is not null as integration_payload_guard_exists;

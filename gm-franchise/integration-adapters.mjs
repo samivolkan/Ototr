@@ -1,3 +1,5 @@
+import { FRANCHISE_EVENT_CONTRACTS, FRANCHISE_EVENT_CONTRACT_VERSION, validateFranchiseIntegrationPayload } from '../supabase/functions/_shared/franchise-integration-contracts.mjs';
+
 export const FRANCHISE_INTEGRATIONS = Object.freeze({
   finance: { label: "Finans / Muhasebe", route: "../index.html#finance", events: ["payment_plan.created", "opening_payment.verified", "royalty_profile.created"] },
   legal: { label: "Hukuk", route: "../index.html#legal", events: ["due_diligence.completed", "contract.signed", "territory.approved"] },
@@ -19,14 +21,17 @@ export function validateIntegrationEvent(event) {
   const adapter = FRANCHISE_INTEGRATIONS[event.source];
   if (!adapter) throw new Error("Bilinmeyen entegrasyon kaynağı.");
   if (!adapter.events.includes(event.type)) throw new Error("Olay türü kaynak adaptörüyle uyumsuz.");
+  validateFranchiseIntegrationPayload(event.source, event.type, event.payload, event.contractVersion);
   return true;
 }
 
-export function createIntegrationOutboxEvent({ franchiseCaseId, type, source, payload = {}, occurredAt = "2026-11-05T00:00:00Z" }) {
-  const event = { id: `EVT-${franchiseCaseId}-${source}-${type}`, franchiseCaseId, type, source, payload, occurredAt, status: "pending", attempts: 0 };
+export function createIntegrationOutboxEvent({ franchiseCaseId, type, source, payload = {}, occurredAt = "2026-11-05T00:00:00Z", contractVersion = FRANCHISE_EVENT_CONTRACT_VERSION }) {
+  const event = { id: `EVT-${franchiseCaseId}-${source}-${type}-v${contractVersion}`, franchiseCaseId, type, source, payload, contractVersion, occurredAt, status: "pending", attempts: 0 };
   validateIntegrationEvent(event);
   return event;
 }
+
+export { FRANCHISE_EVENT_CONTRACTS, FRANCHISE_EVENT_CONTRACT_VERSION };
 
 export function processIntegrationEvent(event, handlers = {}) {
   validateIntegrationEvent(event);

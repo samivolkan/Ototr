@@ -1,3 +1,5 @@
+import { validateFranchiseIntegrationPayload } from '../_shared/franchise-integration-contracts.mjs';
+
 export const SOURCE_ENV = Object.freeze({
   finance: ['FRANCHISE_FINANCE_ADAPTER_URL','FRANCHISE_FINANCE_ADAPTER_TOKEN'],
   legal: ['FRANCHISE_LEGAL_ADAPTER_URL','FRANCHISE_LEGAL_ADAPTER_TOKEN'],
@@ -27,6 +29,7 @@ export function adapterConfig(source, env) {
 }
 
 export async function deliverEvent(event, { env, fetcher = fetch }) {
+  validateFranchiseIntegrationPayload(event.source, event.event_type, event.payload, event.contract_version);
   const config = adapterConfig(event.source, env);
   const response = await fetcher(config.url, {
     method: 'POST',
@@ -40,6 +43,7 @@ export async function deliverEvent(event, { env, fetcher = fetch }) {
       franchiseCaseId: event.franchise_case_id,
       type: event.event_type,
       payload: event.payload,
+      contractVersion: event.contract_version,
       createdAt: event.created_at
     })
   });

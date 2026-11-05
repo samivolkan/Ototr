@@ -8,7 +8,7 @@ const values = {
   FRANCHISE_FINANCE_ADAPTER_TOKEN: 'test-token'
 };
 const env = (name) => values[name] || '';
-const event = { id: 'EVT-1', franchise_case_id: 'FR-1', source: 'finance', event_type: 'royalty_profile.created', payload: { branch_id: 'BR-1' }, created_at: '2026-11-05T00:00:00Z' };
+const event = { id: 'EVT-1', franchise_case_id: 'FR-1', source: 'finance', event_type: 'royalty_profile.created', payload: { branch_id: 'BR-1' }, contract_version: 1, created_at: '2026-11-05T00:00:00Z' };
 
 test('adapter configuration requires HTTPS and explicit host allowlist', () => {
   assert.equal(adapterConfig('finance', env).url, values.FRANCHISE_FINANCE_ADAPTER_URL);
@@ -23,6 +23,14 @@ test('delivery sends minimal event with idempotency key and bearer token', async
   assert.equal(request.init.headers['idempotency-key'], 'EVT-1');
   assert.equal(request.init.headers.authorization, 'Bearer test-token');
   assert.equal(JSON.parse(request.init.body).franchiseCaseId, 'FR-1');
+  assert.equal(JSON.parse(request.init.body).contractVersion, 1);
+});
+
+test('worker rejects contract drift and prohibited data before network delivery', async () => {
+  let calls = 0;
+  await assert.rejects(() => deliverEvent({ ...event, payload: { branch_id: 'BR-1', email: 'sentetik@example.invalid' } }, { env, fetcher: async () => { calls++; return new Response('', { status: 200 }); } }), /yasaklı/);
+  await assert.rejects(() => deliverEvent({ ...event, contract_version: 2 }, { env, fetcher: async () => { calls++; return new Response('', { status: 200 }); } }), /sürümü/);
+  assert.equal(calls, 0);
 });
 
 test('worker records both success and failure without leaking tokens', async () => {

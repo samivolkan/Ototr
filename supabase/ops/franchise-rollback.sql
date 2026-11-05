@@ -1,6 +1,10 @@
 -- STAGING ONLY. Destructive rollback for the franchise preproduction schema.
 -- Export staging evidence before use. Never run against production without signed approval.
 begin;
+drop trigger if exists franchise_integration_outbox_contract_trigger on public.franchise_integration_outbox;
+drop function if exists public.franchise_validate_integration_outbox();
+drop function if exists public.franchise_jsonb_has_prohibited_integration_key(jsonb);
+drop table if exists public.franchise_integration_event_contracts;
 drop trigger if exists franchise_scoring_stage_gate_trigger on public.franchise_cases;
 drop function if exists public.franchise_scoring_stage_gate();
 drop trigger if exists franchise_score_supersedes_board_trigger on public.franchise_candidate_score_entries;
