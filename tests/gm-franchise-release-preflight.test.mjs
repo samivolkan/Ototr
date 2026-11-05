@@ -10,7 +10,9 @@ const decision={releaseCommit:'a'.repeat(40),releaseManifestSha256:null,hostedSt
 
 test('release preflight exposes pinned bindings but never hides a dirty worktree',async()=>{
   const {manifestSha256}=await import('../gm-franchise/release-readiness.mjs');decision.releaseManifestSha256=manifestSha256(gates);
-  const clean=buildReleasePreflight({gates,decision,currentCommit:decision.releaseCommit,expectedEvidenceHashes:evidence,dirtyPaths:[]});assert.equal(clean.productionDecision,'GO');assert.equal(clean.candidateBindings.releaseCommit,decision.releaseCommit);
-  const dirty=buildReleasePreflight({gates,decision,currentCommit:decision.releaseCommit,expectedEvidenceHashes:evidence,dirtyPaths:['sunum-32-ekran-v2/Main.dc.html']});assert.equal(dirty.productionDecision,'NO_GO');assert.ok(dirty.blockers.includes('worktree_dirty'));
-  const metadataHead=buildReleasePreflight({gates,decision,currentCommit:'b'.repeat(40),expectedEvidenceHashes:evidence,dirtyPaths:[],releaseMetadataOnly:true});assert.equal(metadataHead.productionDecision,'GO');assert.ok(!metadataHead.blockers.includes('release_commit_mismatch'));
+  const integrationDecision='READY_FOR_DEPARTMENT_ACCEPTANCE';
+  const clean=buildReleasePreflight({gates,decision,currentCommit:decision.releaseCommit,expectedEvidenceHashes:evidence,dirtyPaths:[],integrationDecision});assert.equal(clean.productionDecision,'GO');assert.equal(clean.candidateBindings.releaseCommit,decision.releaseCommit);
+  const dirty=buildReleasePreflight({gates,decision,currentCommit:decision.releaseCommit,expectedEvidenceHashes:evidence,dirtyPaths:['sunum-32-ekran-v2/Main.dc.html'],integrationDecision});assert.equal(dirty.productionDecision,'NO_GO');assert.ok(dirty.blockers.includes('worktree_dirty'));
+  const metadataHead=buildReleasePreflight({gates,decision,currentCommit:'b'.repeat(40),expectedEvidenceHashes:evidence,dirtyPaths:[],releaseMetadataOnly:true,integrationDecision});assert.equal(metadataHead.productionDecision,'GO');assert.ok(!metadataHead.blockers.includes('release_commit_mismatch'));
+  const forged=buildReleasePreflight({gates,decision,currentCommit:decision.releaseCommit,expectedEvidenceHashes:evidence,dirtyPaths:[],integrationDecision:'NO_GO'});assert.equal(forged.productionDecision,'NO_GO');assert.ok(forged.blockers.includes('gate:G12:derived_readiness_missing'));
 });
