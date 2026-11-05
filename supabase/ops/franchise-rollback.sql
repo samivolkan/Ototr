@@ -1,6 +1,9 @@
 -- STAGING ONLY. Destructive rollback for the franchise preproduction schema.
 -- Export staging evidence before use. Never run against production without signed approval.
 begin;
+drop trigger if exists franchise_public_application_capture_trigger on public.public_franchise_applications;
+drop function if exists public.franchise_capture_public_application();
+drop table if exists public.franchise_public_intake_bridge;
 drop view if exists public.franchise_uat_release_status_v;
 drop table if exists public.franchise_uat_signoffs;
 drop table if exists public.franchise_uat_signoff_catalog;
