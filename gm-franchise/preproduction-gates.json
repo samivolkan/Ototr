@@ -1,19 +1,16 @@
-{
-  "module": "OTOTR Franchise",
-  "releaseStatus": "NO_GO",
-  "evaluatedAt": "2026-11-05",
-  "gates": [
-    { "id": "G01", "name": "Canonical franchise case", "status": "PASS", "evidence": "gm-franchise/franchise-core.mjs" },
-    { "id": "G02", "name": "Staffing, Academy and access locks", "status": "PASS", "evidence": "tests/gm-franchise-core.test.mjs" },
-    { "id": "G03", "name": "Maker-checker exceptions", "status": "PASS", "evidence": "tests/gm-franchise-core.test.mjs" },
-    { "id": "G04", "name": "Postgres schema and RLS static review", "status": "PASS", "evidence": "tests/gm-franchise-migration.test.mjs" },
-    { "id": "G05", "name": "Hosted staging migration execution and rollback", "status": "BLOCKED", "evidence": "docs/franchise/FRANCHISE_LOCAL_DB_VERIFICATION_2026-11-05.md" },
-    { "id": "G06", "name": "ERP identity and namespaced app_metadata binding", "status": "READY_FOR_STAGING", "evidence": "supabase/migrations/20261105010000_franchise_end_to_end.sql" },
-    { "id": "G07", "name": "Private Storage buckets and retention policy", "status": "READY_FOR_STAGING", "evidence": "supabase/migrations/20261105010000_franchise_end_to_end.sql" },
-    { "id": "G08", "name": "Finance, HR, Academy, Legal and IT real adapters", "status": "BLOCKED", "evidence": "gm-franchise/integration-adapters.mjs" },
-    { "id": "G09", "name": "E-sign, SMS, email and WhatsApp providers", "status": "READY_FOR_STAGING", "evidence": "gm-franchise/provider-contracts.mjs" },
-    { "id": "G10", "name": "Security, concurrency and recovery tests", "status": "READY_FOR_STAGING", "evidence": "supabase/ops/franchise-staging-verify.sql" },
-    { "id": "G11", "name": "Business UAT sign-off", "status": "BLOCKED", "evidence": "docs/franchise/FRANCHISE_DEPARTMENT_UAT_SIGNOFF_2026-11-05.md" },
-    { "id": "G12", "name": "Production rollout and rollback approval", "status": "BLOCKED", "evidence": null }
-  ]
-}
+{"schemaVersion":2,"module":"OTOTR Franchise","releaseStatus":"NO_GO","evaluatedAt":"2026-11-05","gates":[
+{"id":"G01","name":"Canonical application and franchise case","mandatory":true,"status":"PASS","evidence":"supabase/ops/franchise-application-intake-acceptance.sql"},
+{"id":"G02","name":"Scoring, board and lifecycle gates","mandatory":true,"status":"PASS","evidence":"supabase/ops/franchise-scoring-acceptance.sql"},
+{"id":"G03","name":"Staffing, Academy and access scopes","mandatory":true,"status":"PASS","evidence":"supabase/ops/franchise-activation-acceptance.sql"},
+{"id":"G04","name":"Finance terms and collection gate","mandatory":true,"status":"PASS","evidence":"supabase/ops/franchise-finance-acceptance.sql"},
+{"id":"G05","name":"Legal, contract and location gates","mandatory":true,"status":"PASS","evidence":"supabase/ops/franchise-legal-location-acceptance.sql"},
+{"id":"G06","name":"Opening execution and exception governance","mandatory":true,"status":"PASS","evidence":"supabase/ops/franchise-opening-execution-acceptance.sql"},
+{"id":"G07","name":"RLS, RBAC and portal isolation","mandatory":true,"status":"PASS","evidence":"supabase/ops/franchise-external-portal-acceptance.sql"},
+{"id":"G08","name":"Versioned integration contracts and privacy guard","mandatory":true,"status":"PASS","evidence":"supabase/ops/franchise-integration-contract-acceptance.sql"},
+{"id":"G09","name":"30/60/90 governed follow-up","mandatory":true,"status":"PASS","evidence":"supabase/ops/franchise-activation-acceptance.sql"},
+{"id":"G10","name":"Hosted staging migration and rollback drill","mandatory":true,"status":"BLOCKED","evidence":"docs/franchise/FRANCHISE_STAGING_RUNBOOK_2026-11-05.md"},
+{"id":"G11","name":"Hosted ERP identity and private Storage validation","mandatory":true,"status":"READY_FOR_STAGING","evidence":"supabase/ops/franchise-staging-verify.sql"},
+{"id":"G12","name":"Real staging adapters and providers","mandatory":true,"status":"BLOCKED","evidence":"gm-franchise/integration-adapters.mjs"},
+{"id":"G13","name":"Hosted concurrency, recovery and dead-letter drill","mandatory":true,"status":"READY_FOR_STAGING","evidence":"supabase/ops/franchise-staging-verify.sql"},
+{"id":"G14","name":"Department UAT and independent sign-offs","mandatory":true,"status":"BLOCKED","evidence":"docs/franchise/FRANCHISE_DEPARTMENT_UAT_SIGNOFF_2026-11-05.md"},
+{"id":"G15","name":"Pinned release commit, change window and rollout approval","mandatory":true,"status":"BLOCKED","evidence":"gm-franchise/preproduction-decision.json"}]}

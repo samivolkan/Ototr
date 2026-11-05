@@ -5,6 +5,7 @@ Başvurudan aktif şubeye kadar 14 aşamalı franchise yaşam döngüsünü gös
 - `index.html`: rol/persona, departman kapıları, aday hattı, belge, sözleşme, açılış kurulu, aktif şube, royalty ve audit ekranları.
 - `franchise-core.mjs`: tekil franchise dosyası, zorunlu kadro, sertifika/yetki kilidi, atomik aktivasyon ve 30/60/90 iş kuralları.
 - `integration-adapters.mjs`: Finans, Hukuk, İK, Academy, Operasyon, Tedarik, BT, Pazarlama, Kalite, İSG, Mimari ve Görev Merkezi olay sözleşmeleri.
+- `release-readiness.mjs`: Hosted staging kanıtları, dokuz bağımsız departman imzası, sabit commit ve değişiklik penceresi eksikse otomatik `NO_GO` üreten yayın karar motoru.
 - `supabase/functions/_shared/franchise-integration-contracts.mjs`: 31 olay için sürümlü, minimum veri alanları; TCKN, telefon, e-posta, IBAN, plaka, VIN ve gizli anahtarların dış sisteme taşınmasını engelleyen ortak sözleşme.
 - `supabase/migrations/20261105120000_franchise_external_portals.sql`: aday, bayi, denetçi ve tedarikçi için atama bazlı RLS, güvenli portal işleri ve kontrollü tamamlama/kapatma RPC'leri.
 - `supabase/migrations/20261105130000_franchise_application_intake.sql`: altı kanaldan idempotent başvuru, güvenli yatırımcı profili ve ayrı KVKK/veri işleme/ticari ileti makbuzları.

@@ -1,27 +1,7 @@
-import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
-import test from 'node:test';
-
-const manifest = JSON.parse(await readFile(new URL('../gm-franchise/preproduction-gates.json', import.meta.url), 'utf8'));
-const decision = JSON.parse(await readFile(new URL('../gm-franchise/preproduction-decision.json', import.meta.url), 'utf8'));
-
-test('release remains NO_GO while any mandatory gate is blocked', () => {
-  assert.equal(manifest.releaseStatus, 'NO_GO');
-  assert.equal(manifest.gates.length, 12);
-  assert.ok(manifest.gates.some((gate) => gate.status === 'BLOCKED'));
-  assert.ok(manifest.gates.some((gate) => gate.status === 'READY_FOR_STAGING'));
-  assert.ok(manifest.gates.every((gate) => ['PASS','READY_FOR_STAGING','BLOCKED'].includes(gate.status)));
-  for (const gate of manifest.gates.filter((item) => item.status === 'PASS')) assert.ok(gate.evidence, `${gate.id} needs evidence`);
-});
-
-test('production decision fails closed until evidence and independent signoffs exist', () => {
-  assert.equal(decision.productionDecision, 'NO_GO');
-  assert.equal(decision.decision, 'NOT_READY');
-  assert.equal(decision.productionDataUsed, false);
-  assert.equal(decision.releaseCommit, null);
-  assert.ok(decision.signoffs.length >= 6);
-  assert.ok(decision.signoffs.every((signoff) => signoff.identitySha256 === null && signoff.signedAtUtc === null));
-  const allPassed = manifest.gates.every((gate) => gate.status === 'PASS');
-  assert.equal(allPassed, false);
-  assert.notEqual(decision.productionDecision, 'GO');
-});
+import assert from'node:assert/strict';import{access,readFile}from'node:fs/promises';import test from'node:test';
+import{evaluateRelease,REQUIRED_HOSTED_EVIDENCE,REQUIRED_SIGNOFF_ROLES,sha256}from'../gm-franchise/release-readiness.mjs';
+const manifest=JSON.parse(await readFile(new URL('../gm-franchise/preproduction-gates.json',import.meta.url),'utf8'));const decision=JSON.parse(await readFile(new URL('../gm-franchise/preproduction-decision.json',import.meta.url),'utf8'));
+test('authoritative evaluator keeps current package NO_GO',()=>{const r=evaluateRelease(manifest,decision);assert.equal(r.productionDecision,'NO_GO');assert.ok(r.blockers.some(x=>x.startsWith('gate:G10')));assert.ok(r.blockers.includes('release_commit_missing'));assert.equal(manifest.gates.length,15);});
+test('every PASS gate points to an existing evidence artifact',async()=>{for(const gate of manifest.gates.filter(g=>g.status==='PASS')){assert.ok(gate.evidence);await access(new URL(`../${gate.evidence}`,import.meta.url));}});
+test('GO requires every hosted proof, independent signoff, pinned commit and window',()=>{const gates=structuredClone(manifest);gates.gates.forEach(g=>g.status='PASS');const d=structuredClone(decision);d.releaseCommit='a'.repeat(40);d.releaseManifestSha256=sha256('manifest');d.changeWindowStartUtc='2026-11-06T20:00:00Z';d.changeWindowEndUtc='2026-11-06T22:00:00Z';for(const key of REQUIRED_HOSTED_EVIDENCE)d.hostedStagingEvidence[key]=sha256(key);d.signoffs=REQUIRED_SIGNOFF_ROLES.map((role,i)=>({role,identitySha256:sha256(`identity-${i}`),evidenceSha256:sha256(`evidence-${i}`),signedAtUtc:'2026-11-06T18:00:00Z'}));assert.equal(evaluateRelease(gates,d).productionDecision,'GO');d.signoffs[1].identitySha256=d.signoffs[0].identitySha256;const denied=evaluateRelease(gates,d);assert.equal(denied.productionDecision,'NO_GO');assert.ok(denied.blockers.includes('signoff_identity_not_independent'));});
+test('stored decision labels cannot override missing evidence',()=>{const forged=structuredClone(decision);forged.productionDecision='GO';forged.decision='READY';assert.equal(evaluateRelease(manifest,forged).productionDecision,'NO_GO');});
