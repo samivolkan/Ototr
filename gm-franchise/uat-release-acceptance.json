@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "status": "BLOCKED",
+  "environment": "staging",
+  "productionDataUsed": false,
+  "releaseCommit": null,
+  "scenarioCount": 0,
+  "signoffCount": 0,
+  "uniqueSignerCount": 0,
+  "evidenceSha256": null,
+  "acceptedAtUtc": null
+}
