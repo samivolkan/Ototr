@@ -2,8 +2,19 @@
 -- Export staging evidence before use. Never run against production without signed approval.
 begin;
 drop trigger if exists franchise_public_application_capture_trigger on public.public_franchise_applications;
+drop trigger if exists franchise_public_consent_evidence_trigger on public.public_franchise_applications;
 drop function if exists public.franchise_capture_public_application();
+drop function if exists public.franchise_bind_public_consent_evidence();
 drop table if exists public.franchise_public_intake_bridge;
+alter table if exists public.public_franchise_applications
+  drop constraint if exists public_franchise_privacy_evidence_sha256_check,
+  drop constraint if exists public_franchise_processing_evidence_sha256_check,
+  drop constraint if exists public_franchise_commercial_evidence_sha256_check,
+  drop column if exists processing_consent,
+  drop column if exists consent_captured_at,
+  drop column if exists privacy_evidence_sha256,
+  drop column if exists processing_evidence_sha256,
+  drop column if exists commercial_evidence_sha256;
 drop view if exists public.franchise_uat_release_status_v;
 drop table if exists public.franchise_uat_signoffs;
 drop table if exists public.franchise_uat_signoff_catalog;
