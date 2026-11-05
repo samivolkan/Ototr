@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "module": "OTOTR_FRANCHISE_PORTAL_PRIVILEGE_BOUNDARY",
+  "environment": "ototr-staging",
+  "projectRef": "bsjkohwbtrfwrqcyhsfz",
+  "testedAt": "2026-11-05",
+  "productionDataUsed": false,
+  "checks": {
+    "makerAuthenticated": true,
+    "applicantAuthenticated": true,
+    "publicWrappersSecurityInvoker": true,
+    "privateImplementationsSecurityDefiner": true,
+    "emptySearchPath": true,
+    "anonymousExecuteRevoked": true,
+    "applicantAssignmentCreateDenied": true,
+    "makerApplicantItemCompletionDenied": true,
+    "assignedApplicantCompletionAccepted": true,
+    "makerAssignmentCloseAccepted": true,
+    "sessionsRevoked": true,
+    "portalFunctionsAbsentFromPublicDefinerAdvisorFindings": true
+  },
+  "workflowResult": {
+    "assignmentStatus": "completed",
+    "itemStatus": "confirmed",
+    "assignedUserMatched": true
+  },
+  "cleanup": {
+    "authUsers": 0,
+    "authIdentities": 0,
+    "franchiseCases": 0,
+    "portalAssignments": 0,
+    "portalItems": 0
+  },
+  "result": "PASS",
+  "releaseDecision": "NO_GO",
+  "remainingExternalGates": ["R24", "R25", "R26", "R27", "R28"]
+}

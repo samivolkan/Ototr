@@ -15,11 +15,13 @@ Başvurudan aktif şubeye kadar 14 aşamalı franchise yaşam döngüsünü gös
 - `supabase/migrations/20261105270000_franchise_applicant_document_portal.sql`: adayın yalnız kendi franchise dosyasına özel belge kaydı açmasını sağlayan private implementation/invoker RPC ve dar orphan temizleme politikası.
 - `supabase/migrations/20261105280000_shared_storage_policy_isolation.sql` ve `20261105290000_finance_storage_policy_short_circuit.sql`: paylaşılan Storage RLS değerlendirmesini bucket kapsamına hapseder; Franchise yüklemesi finans politikalarına takılmaz.
 - `supabase/migrations/20261105300000_applicant_document_catalog_integrity.sql`: aday belgesini zorunlu belge kataloğu, kategori ve SHA-256 özetiyle bağlar.
+- `supabase/migrations/20261105330000_franchise_portal_private_implementations.sql`: dört ayrıcalıklı portal işlemini private implementation katmanına alır; Data API'de yalnız `SECURITY INVOKER` sarmalayıcı bırakır.
 - `applicant-portal-hosted-evidence.json`: sentetik Auth → private Storage → kayıt RPC → portal geri okuma → görev tamamlama zinciri ve sıfır kalıntı temizliği kanıtı.
 - `hosted-activation-evidence.json`: hosted staging üzerinde kadro/sertifika/yetki kapılarından atomik şube, erişim hesapları ve 30/60/90 takibine uzanan rollback kabul kanıtı.
 - `uat-immutability-hosted-evidence.json`: staging’de UAT kanıtı değişmezliği, tek inceleme ve bağımsız checker negatif/pozitif kabul kanıtı.
 - `public-handoff-hosted-evidence.json`: RawGitHack formundan Edge API, ayrı izinler, güvenli kuyruk, yapılandırılmış profil ve tekil kanonik dosyaya uzanan hosted kabul kanıtı.
 - `adapter-transport-hosted-evidence.json`: 12 departman kaynağı için gerçek HTTPS echo üzerinde Bearer, idempotency ve minimal sözleşme taşıma kabulü; gerçek sağlayıcı olarak sayılmaz.
+- `portal-wrapper-hosted-evidence.json`: maker/aday pozitif ve negatif yetki senaryoları, oturum kapatma, katalog ACL kontrolü ve sıfır kalıntı temizliğiyle hosted portal güvenlik sınırı kanıtı.
 - `provider-contracts.mjs`: e-posta, SMS, WhatsApp ve e-imza için amaç/izin/şablon/idempotency sözleşmesi ve log maskeleme kuralları.
 - `preproduction-gates.json`: Finans modülündeki yaklaşımla kanıtlı `GO/NO_GO` kapıları.
 - `supabase/functions/franchise-outbox-worker`: HTTPS allowlist, idempotency ve retry/dead-letter destekli departman olay worker'ı.
