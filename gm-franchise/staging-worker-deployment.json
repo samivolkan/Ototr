@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "projectRef": "bsjkohwbtrfwrqcyhsfz",
+  "environment": "staging",
+  "productionDataUsed": false,
+  "providerSecretsConfigured": false,
+  "externalEndpointsConfigured": false,
+  "functions": [
+    {
+      "slug": "franchise-outbox-worker",
+      "functionId": "ffa5e748-0add-428e-9bb6-5aa83eaa2745",
+      "version": 1,
+      "status": "ACTIVE",
+      "verifyJwt": true,
+      "bundleSha256": "ad21b5d790341c4caab0ed52c5183dcb3758cb10f5d9b0d6a4e54f1c63850794",
+      "unauthenticatedProbeStatus": 401
+    },
+    {
+      "slug": "franchise-provider-worker",
+      "functionId": "cd14a422-73f7-458f-9d49-ed5310f13daf",
+      "version": 1,
+      "status": "ACTIVE",
+      "verifyJwt": true,
+      "bundleSha256": "e64404eff3e9ec8e0f3ad7e151b46b0e35867284130b9df00d6033b0378d5446",
+      "unauthenticatedProbeStatus": 401
+    }
+  ]
+}
