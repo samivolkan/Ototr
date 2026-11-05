@@ -21,7 +21,7 @@
 {"id":"R20","requirement":"E-posta, SMS, WhatsApp ve e-imza sağlayıcı sözleşmesi","owner":"BT/Hukuk","status":"PASS","evidence":"supabase/ops/franchise-provider-acceptance.sql"},
 {"id":"R21","requirement":"İK kalitesinde rol bazlı Franchise ERP arayüzü","owner":"Franchise/BT","status":"PASS","evidence":"tests/gm-franchise-ui-release.test.mjs"},
 {"id":"R22","requirement":"PostgreSQL 17 migration, aktivasyon ve rollback yerel tatbikatı","owner":"BT","status":"PASS","evidence":"docs/franchise/FRANCHISE_LOCAL_DB_VERIFICATION_2026-11-05.md"},
-{"id":"R23","requirement":"Hosted Supabase staging migration ve rollback tatbikatı","owner":"BT","status":"EXTERNAL_PENDING","evidence":"docs/franchise/FRANCHISE_STAGING_RUNBOOK_2026-11-05.md"},
+{"id":"R23","requirement":"Hosted Supabase staging migration ve rollback tatbikatı","owner":"BT","status":"PASS","evidence":"docs/franchise/FRANCHISE_HOSTED_STAGING_VERIFICATION_2026-11-05.md"},
 {"id":"R24","requirement":"Gerçek staging ERP adaptörleri ve iletişim sağlayıcıları","owner":"BT/Departmanlar","status":"EXTERNAL_PENDING","evidence":"gm-franchise/integration-adapters.mjs"},
 {"id":"R25","requirement":"16 senaryo ve dokuz bağımsız departman UAT imzası","owner":"Departmanlar","status":"EXTERNAL_PENDING","evidence":"docs/franchise/FRANCHISE_DEPARTMENT_UAT_SIGNOFF_2026-11-05.md"},
 {"id":"R26","requirement":"Sabit commit, manifest hash, değişiklik penceresi ve rollback onayı","owner":"BT/CEO","status":"EXTERNAL_PENDING","evidence":"gm-franchise/preproduction-decision.json"},

@@ -153,6 +153,7 @@ drop table if exists public.franchise_branches;
 drop table if exists public.franchise_staff;
 drop table if exists public.franchise_department_tasks;
 drop table if exists public.franchise_cases;
-delete from storage.objects where bucket_id='franchise-private';
-delete from storage.buckets where id='franchise-private';
+-- Supabase blocks direct deletion from storage.objects/storage.buckets.
+-- Preserve the private bucket during schema rollback. If permanent bucket removal is
+-- explicitly approved, first empty it and then remove it through the Supabase Storage API.
 commit;
