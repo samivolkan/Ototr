@@ -29,6 +29,8 @@ Başvurudan aktif şubeye kadar 14 aşamalı franchise yaşam döngüsünü gös
 - `uat-command-hosted-evidence.json`: gerçek ERP oturumuyla UAT gönderim/inceleme/imza komutlarının pozitif-negatif hosted kabulü; 16 insan UAT'ı ve dokuz imza yerine geçmez.
 - `uat-acceptance-evidence.mjs`: repo dışında tutulan ham staging UAT çıktısında 16 bağımsız senaryo incelemesini, dokuz benzersiz ve sıralı departman imzasını, rol-senaryo ayrımını ve release commit bağını doğrular; yalnız SHA-256 özetli kabul kaydı üretir.
 - `uat-release-acceptance.json`: G14 için kişisel veri içermeyen, release commitine bağlı fail-closed insan UAT kabul özeti; gerçek UAT tamamlanana kadar `BLOCKED` kalır.
+- `public-intake-acceptance-evidence.mjs`: canlı `ototr.com` formunun üç ayrı izin, sürümlü KVKK, Edge intake, eski PHP kapatma, sentetik idempotent gönderim, deployment ve rollback kanıtını repo dışı ham kayıttan doğrular.
+- `public-intake-release-acceptance.json`: G16 için kişisel veri içermeyen ve Franchise release commitine bağlı fail-closed canlı başvuru kabul özeti.
 - `provider-contracts.mjs`: e-posta, SMS, WhatsApp ve e-imza için amaç/izin/şablon/idempotency sözleşmesi ve log maskeleme kuralları.
 - `preproduction-gates.json`: Finans modülündeki yaklaşımla kanıtlı `GO/NO_GO` kapıları.
 - `supabase/functions/franchise-outbox-worker`: HTTPS allowlist, idempotency ve retry/dead-letter destekli departman olay worker'ı.
