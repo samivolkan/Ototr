@@ -9,7 +9,7 @@ insert into public.franchise_cases(id,application_no,candidate_name,city,distric
 values('92000000-0000-4000-8000-000000000001','APP-RBAC-UAT','Sentetik RBAC Adayı','Bursa','Nilüfer');
 
 insert into public.franchise_department_tasks(id,franchise_case_id,department,task_code,title) values
-('93000000-0000-4000-8000-000000000001','92000000-0000-4000-8000-000000000001','Finans / Muhasebe','FIN-UAT','Tahsilat doğrula'),
+('93000000-0000-4000-8000-000000000001','92000000-0000-4000-8000-000000000001','Finans','FIN-UAT','Finansal uygunluğu doğrula'),
 ('93000000-0000-4000-8000-000000000002','92000000-0000-4000-8000-000000000001','Hukuk','LEG-UAT','Sözleşme doğrula');
 
 set local role authenticated;
@@ -34,7 +34,7 @@ set local request.jwt.claims='{"sub":"91000000-0000-4000-8000-000000000002","app
 do $$
 begin
   begin
-    update public.franchise_department_tasks set department='Finans / Muhasebe' where id='93000000-0000-4000-8000-000000000002';
+    update public.franchise_department_tasks set department='Finans' where id='93000000-0000-4000-8000-000000000002';
     raise exception 'immutable task scope was changed';
   exception when others then
     if sqlerrm not like 'Görev dosyası, departmanı ve kodu değiştirilemez%' then raise; end if;

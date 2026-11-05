@@ -6,6 +6,7 @@ const sql = await readFile(new URL('../supabase/migrations/20261105010000_franch
 const rollback = await readFile(new URL('../supabase/ops/franchise-rollback.sql', import.meta.url), 'utf8');
 const acceptance = await readFile(new URL('../supabase/ops/franchise-activation-acceptance.sql', import.meta.url), 'utf8');
 const leaseRecovery = await readFile(new URL('../supabase/migrations/20261105190000_franchise_outbox_lease_recovery.sql', import.meta.url), 'utf8');
+const financeAccountingGate = await readFile(new URL('../supabase/migrations/20261105360000_franchise_finance_accounting_gate_separation.sql', import.meta.url), 'utf8');
 
 test('all franchise tables enable RLS and anon access is revoked', () => {
   const tables = ['franchise_cases','franchise_department_tasks','franchise_staff','franchise_branches','franchise_access_accounts','franchise_followup_tasks','franchise_exceptions','franchise_integration_outbox','franchise_documents','franchise_document_retention','franchise_user_scopes'];
@@ -40,7 +41,11 @@ test('activation is invoker-secured, locked and creates all downstream records',
   assert.match(sql, /for update skip locked/i);
   assert.match(sql, /dead_letter/i);
   assert.match(sql, /already_active/i);
-  assert.match(sql, /<> 36 then raise exception 'Departman görev seti eksik; 36 görev zorunlu'/i);
+  assert.match(financeAccountingGate, /13 departman ve 39 görev zorunlu/i);
+  assert.match(financeAccountingGate, /count\(distinct lower\(trim\(department\)\)\)[\s\S]+<> 13/i);
+  assert.match(financeAccountingGate, /lower\(trim\(department\)\)='finans'/i);
+  assert.match(financeAccountingGate, /lower\(trim\(department\)\)='muhasebe'/i);
+  assert.match(financeAccountingGate, /'accounting','chart_of_accounts\.created'/i);
 });
 
 test('maker-checker protects critical gates and prevents self approval', () => {

@@ -53,7 +53,7 @@
 ## Primary interactions tested
 
 - Genel Müdür ile Sözleşme → Kurulum geçişi.
-- Eksik 18/36 departman görevi varken ilerleme kilidi.
+- Eksik departman görevi varken 39/39 tamamlanana kadar ilerleme kilidi.
 - Genel Müdür ile İK görevi tamamlama ve yüzde güncellemesi.
 - Aday Yatırımcı rolünde fail-closed portal görünümü.
 - Demo sıfırlama ve başlangıç durumuna dönüş.

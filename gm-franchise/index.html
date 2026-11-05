@@ -75,6 +75,7 @@ ul.ul{margin:0;padding-left:18px}ul.ul li{margin:3px 0}
 <option value="fu">Franchise Uzmanı</option>
 <option value="hk">Hukuk</option>
 <option value="fn">Finans</option>
+<option value="mh">Muhasebe</option>
 <option value="ik">İK</option>
 <option value="ak">Akademi</option>
 <option value="sa">Saha</option>
@@ -99,7 +100,7 @@ import {createFranchiseCase,hireStaff,updateStaffCompliance,openingBlockers,acti
 import {franchiseLiveClient} from "./franchise-live-client.mjs";
 const TODAY=new Date("2026-11-05"),KEY="ototr-franchise-e2e-v1";
 const STAGES=["Yeni","Gorusme","Onay","Sozlesme","Onboarding","Kurulum","Aktif"];
-const RN={gm:"Genel Müdür",fd:"Franchise Direktörü",fu:"Franchise Uzmanı",hk:"Hukuk",fn:"Finans / Muhasebe",ik:"İK",ak:"Akademi",sa:"Saha",bt:"BT",ba:"Bayi Sahibi",dn:"Denetçi",td:"Tedarikçi",ad:"Aday Yatırımcı",op:"Operasyon",pz:"Pazarlama",kl:"Kalite",isg:"İSG",mm:"Mimari / Proje"};
+const RN={gm:"Genel Müdür",fd:"Franchise Direktörü",fu:"Franchise Uzmanı",hk:"Hukuk",fn:"Finans",mh:"Muhasebe",ik:"İK",ak:"Akademi",sa:"Saha",bt:"BT",ba:"Bayi Sahibi",dn:"Denetçi",td:"Tedarikçi",ad:"Aday Yatırımcı",op:"Operasyon",pz:"Pazarlama",kl:"Kalite",isg:"İSG",mm:"Mimari / Proje"};
 const AP=[["Franchise uzmanı değerlendirmesi","fu"],["Franchise direktörü onayı","fd"],["Hukuk incelemesi","hk"],["Finans uygunluğu","fn"],["CEO onayı","gm"]];
 const CR=[["Finansal güç",.35],["Bölge uygunluğu",.25],["Deneyim",.20],["Vizyon",.20]];
 const GF=["Yatırım kaynağı açık mı?","Bölge rekabeti değerlendirildi mi?","Referans kişilerle görüşüldü mü?","İşletme deneyimi doğrulandı mı?","Birden fazla değerlendirici imzaladı mı?"];
@@ -125,6 +126,7 @@ const PERM={
  fu:"e2e skorlama departman portallar dash hat inbox web-kuyruk pipe gor belge",
 hk:"e2e skorlama departman acilis dash hat inbox pipe gor belge sube",
 fn:"e2e skorlama departman acilis dash hat inbox pipe fin rapor sube",
+mh:"e2e departman acilis dash hat inbox pipe fin rapor sube",
 ik:"e2e departman personel acilis dash hat inbox pipe gor belge",
 ak:"e2e departman personel acilis dash hat inbox pipe gor",
 sa:"e2e departman acilis dash hat inbox pipe sube",
@@ -533,7 +535,8 @@ const E2E_STAGES=["Başvuru","İlk temas","Ön değerlendirme","Yatırımcı sun
 const E2E_STAGE_OWNER=["fu","fu","fu","fd","fn","op","hk","fd","hk","mm","ak","kl","gm","fd"];
 const E2E_TASKS={
   "Franchise":["Başvuru izinleri doğrulandı","İlk temas ve ihtiyaç görüşmesi tamamlandı","Yedi başlıklı aday skoru gerekçelendirildi"],
-  "Finans / Muhasebe":["Öz kaynak ve yatırım planı incelendi","Giriş bedeli planı oluşturuldu","Açılış öncesi tahsilat %100 doğrulandı"],
+  "Finans":["Öz kaynak ve yatırım planı incelendi","Giriş bedeli ve taksit planı onaylandı","Royalty ve muafiyet koşulları doğrulandı"],
+  "Muhasebe":["Cari hesap ve hesap planı açıldı","Giriş bedeli tahsilatı mutabıklandı","Açılış bakiyesi ve muhasebe onayı tamamlandı"],
   "Hukuk":["Şirket ve ortaklık due diligence tamamlandı","Bölge koruma eki onaylandı","Sözleşme versiyonu ve imza paketi hazır"],
   "İnsan Kaynakları":["Şube tipine göre kadro planı açıldı","Yasal işveren ve özlük hazırlığı doğrulandı","Zorunlu roller atandı"],
   "Academy":["Franchise sahibi programı tamamlandı","Şube müdürü programı tamamlandı","Teknik rollerin sertifikaları geçerli"],
@@ -545,7 +548,7 @@ const E2E_TASKS={
   "İSG":["Risk değerlendirmesi tamamlandı","Yangın ve atölye güvenliği doğrulandı","Acil durum planı yayımlandı"],
   "Mimari / Proje":["Keşif ve uygulama projesi onaylandı","Tadilat kritik yolu tamamlandı","Açılış teslim tutanağı hazırlandı"]
 };
-const DEPT_ROLE={"Franchise":"fd","Finans / Muhasebe":"fn","Hukuk":"hk","İnsan Kaynakları":"ik","Academy":"ak","Operasyon":"op","Tedarik":"td","Bilgi Teknolojileri":"bt","Pazarlama":"pz","Kalite":"kl","İSG":"isg","Mimari / Proje":"mm"};
+const DEPT_ROLE={"Franchise":"fd","Finans":"fn","Muhasebe":"mh","Hukuk":"hk","İnsan Kaynakları":"ik","Academy":"ak","Operasyon":"op","Tedarik":"td","Bilgi Teknolojileri":"bt","Pazarlama":"pz","Kalite":"kl","İSG":"isg","Mimari / Proje":"mm"};
 const OPENING_DELIVERABLES=[
  ["Mimari proje","Mimari / Proje",true],["İnşaat ve şube teslimi","Mimari / Proje",true],["Ekipman teslimi","Tedarik",true],["Kalibrasyon","Tedarik",false],["İSG risk ve acil durum","İSG",false],
  ["Kalite denetimi · ≥80 · açık bulgu 0","Kalite",false],["Marka ve açılış kampanyası","Pazarlama",true],["ERP, ağ ve kullanıcı hazırlığı","Bilgi Teknolojileri",false],["Deneme operasyonu · kritik hata 0","Operasyon",false],["Açılış kurulu · GM ikinci onay","Franchise",false]
@@ -557,10 +560,10 @@ const RELEASE_GATES=[
 ];
 const UAT_SCENARIOS=[
  ["UAT-01","Altı kanaldan sentetik başvuru",["fd","fu"],["hk","gm"]],["UAT-02","Skorlama ve kurul kararı",["fd"],["gm"]],["UAT-03","Eksik kritik kapıyla ilerleme",["fd","fu"],["gm"]],
- ["UAT-04","Hukuk ve e-imza hazırlığı",["hk"],["fd","gm"]],["UAT-05","%100 tahsilat kapısı",["fn"],["gm"]],["UAT-06","Lokasyon ve mimari",["op"],["mm","gm"]],
+ ["UAT-04","Hukuk ve e-imza hazırlığı",["hk"],["fd","gm"]],["UAT-05","%100 tahsilat kapısı",["fn"],["mh","gm"]],["UAT-06","Lokasyon ve mimari",["op"],["mm","gm"]],
  ["UAT-07","On zorunlu kadro",["ik"],["fd","gm"]],["UAT-08","Academy ve kullanıcı yetkisi",["ak"],["bt","gm"]],["UAT-09","Atomik aktif şube",["bt"],["op","gm"]],
  ["UAT-10","Tekrar aktivasyon ve outbox",["bt"],["gm"]],["UAT-11","Şube izolasyonu",["bt"],["hk","gm"]],["UAT-12","30/60/90 takip",["op"],["kl","gm"]],
- ["UAT-13","Finansal koşul ve royalty",["fn"],["gm"]],["UAT-14","Hukuk, bölge ve saha",["hk"],["mm","op","gm"]],["UAT-15","Açılış uygulama teslimatları",["fd"],["gm"]],["UAT-16","Dış portallar ve bayi kapsamı",["bt"],["hk","gm"]]
+ ["UAT-13","Finansal koşul ve royalty",["fn"],["mh","gm"]],["UAT-14","Hukuk, bölge ve saha",["hk"],["mm","op","gm"]],["UAT-15","Açılış uygulama teslimatları",["fd"],["gm"]],["UAT-16","Dış portallar ve bayi kapsamı",["bt"],["hk","gm"]]
 ];
 let UAT_STATE={};
 let FLOW=createFranchiseCase({id:"FR-DEMO-001",applicationId:"APP-DEMO-001",name:"Bursa Nilüfer OTOTR",candidate:"Demo Yatırımcı A.Ş.",city:"Bursa",district:"Nilüfer",stage:8,score:84,days:31,paid:100,royalty:10,exemption:6,territory:"Nilüfer · 12 km · poligon FR-BRS-01",consents:3,documents:12,documentsTotal:17,history:["05 Kas 2026 · Hukuk · Sözleşme taslağı kurul incelemesine alındı","04 Kas 2026 · Finans · %100 tahsilat test kaydı doğrulandı","03 Kas 2026 · Operasyon · Lokasyon saha ziyareti tamamlandı"]});
@@ -588,7 +591,7 @@ const flowStageGate=()=>{
   if(s===0&&FLOW.consents<3)return"KVKK aydınlatma, veri işleme ve ticari ileti izinleri tamamlanmalı.";
   if(s===2&&candidateScoreValue(FLOW)===null)return"Yedi kanıtlı aday skoru tamamlanmalı.";
   if(s===2&&candidateScoreRecommendation(candidateScoreValue(FLOW))==="not_suitable")return"Skor 50 altında; olumlu kurul kararı olmadan ilerleyemez.";
-  if(s===4&&flowDeptPct("Finans / Muhasebe")<67)return"Finansal uygunluk görevleri tamamlanmalı.";
+  if(s===4&&flowDeptPct("Finans")<100)return"Finansal uygunluk görevleri tamamlanmalı.";
   if(s===6&&flowDeptPct("Hukuk")<67)return"Due diligence ve hukuk incelemesi tamamlanmalı.";
   if(s===7&&!(FLOW.boardDecision?.status==="approved"&&["approved","conditionally_approved"].includes(FLOW.boardDecision.decision)))return"Bağımsız ikinci onaylı olumlu kurul kararı tamamlanmalı.";
   if(s===8&&(FLOW.paid<100||flowDeptPct("Hukuk")<100||FLOW.documents<FLOW.documentsTotal))return"Sözleşme, zorunlu belgeler ve açılış öncesi %100 tahsilat kapısı tamamlanmalı.";
@@ -638,7 +641,7 @@ function personel(){
   <div class="row"><button class="btn g sm" data-staff-action="hire" data-role-key="${m.roleKey}" ${!["gm","ik"].includes(R())||m.recruitmentStatus==='hired'?'disabled':''}>İşe al</button><button class="btn g sm" data-staff-action="docs" data-role-key="${m.roleKey}" ${!["gm","ik"].includes(R())||m.recruitmentStatus!=='hired'||m.employmentDocumentsComplete?'disabled':''}>Özlük tamamla</button><button class="btn g sm" data-staff-action="academy" data-role-key="${m.roleKey}" ${!["gm","ak"].includes(R())||m.recruitmentStatus!=='hired'||m.academyCompleted?'disabled':''}>Eğitim/sertifika</button></div></div>`).join("")}</div>`;
 }
 function acilis(){
-  const gates=[['Sözleşme ve hukuk',flowDeptPct('Hukuk')===100],['Finans ve %100 tahsilat',flowDeptPct('Finans / Muhasebe')===100&&FLOW.paid===100],['Kadro ve İK',flowDeptPct('İnsan Kaynakları')===100],['Academy ve sertifikalar',flowDeptPct('Academy')===100],['Fiziki kurulum',flowDeptPct('Mimari / Proje')===100],['Cihaz ve kalibrasyon',flowDeptPct('Tedarik')===100],['BT, POS ve güvenli bağlantı',flowDeptPct('Bilgi Teknolojileri')===100],['Kalite, İSG ve deneme',flowDeptPct('Kalite')===100&&flowDeptPct('İSG')===100&&flowDeptPct('Operasyon')===100]];
+  const gates=[['Sözleşme ve hukuk',flowDeptPct('Hukuk')===100],['Finans, Muhasebe ve %100 tahsilat',flowDeptPct('Finans')===100&&flowDeptPct('Muhasebe')===100&&FLOW.paid===100],['Kadro ve İK',flowDeptPct('İnsan Kaynakları')===100],['Academy ve sertifikalar',flowDeptPct('Academy')===100],['Fiziki kurulum',flowDeptPct('Mimari / Proje')===100],['Cihaz ve kalibrasyon',flowDeptPct('Tedarik')===100],['BT, POS ve güvenli bağlantı',flowDeptPct('Bilgi Teknolojileri')===100],['Kalite, İSG ve deneme',flowDeptPct('Kalite')===100&&flowDeptPct('İSG')===100&&flowDeptPct('Operasyon')===100]];
   const deliverables=OPENING_DELIVERABLES.map(x=>[x[0],x[1],x[2],flowDeptPct(x[1])===100]);
   const evidence=ensureOpeningEvidence(FLOW),approvedEvidence=evidence.filter(x=>x.status==='approved').length;
   const blockers=flowBlockers(),ready=gates.every(x=>x[1])&&approvedEvidence===evidence.length&&blockers.length===0&&FLOW.stage>=12;

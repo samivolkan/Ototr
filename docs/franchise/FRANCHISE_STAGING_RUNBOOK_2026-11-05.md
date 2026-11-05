@@ -49,7 +49,7 @@ Supabase HTTP API'lerinde eski TLS 1.2 cipher kümelerinin 10 Kasım 2026'dan it
 
 ## 4. Zorunlu staging senaryoları
 
-- Eksik belge, ödeme, 36 görev, personel veya sertifikada aktivasyon reddi
+- Eksik belge, ödeme, 39 görev, personel veya sertifikada aktivasyon reddi
 - Maker kendi istisnasını onaylamaya çalıştığında ret
 - Aynı aktivasyonun iki eşzamanlı çağrıda yalnız bir şube üretmesi
 - Adaptör 503 döndürdüğünde retry; 10. denemede dead-letter

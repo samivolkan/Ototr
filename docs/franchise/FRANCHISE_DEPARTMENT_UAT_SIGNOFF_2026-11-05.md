@@ -32,7 +32,7 @@ ERP’de `Franchise Yönetim Merkezi → Sistem → Yayın hazırlığı → Hos
 | UAT-06 | Lokasyon ve mimari | Konum, fotoğraf, ölçüm, denetçi ve teslim tutanağı eksikse kapı kapanmaz | Operasyon | Mimari/Proje |
 | UAT-07 | On zorunlu kadro | Eksik işe alım/özlük/sözleşme aktivasyonu engeller | İK | Franchise |
 | UAT-08 | Academy ve kullanıcı yetkisi | Süresi geçerli rol sertifikası olmadan hesap açılmaz | Academy | BT |
-| UAT-09 | Atomik aktif şube | Tek şube, 10 kapsamlı hesap, 36 açılış işi ve 3 takip görevi oluşur | BT | Operasyon |
+| UAT-09 | Atomik aktif şube | Tek şube, 10 kapsamlı hesap, 39 departman açılış görevi ve 3 takip görevi doğrulanır | BT | Operasyon |
 | UAT-10 | Tekrar aktivasyon ve outbox | Aynı işlem ikinci kez kayıt üretmez; retry/dead-letter izlenir | BT | Bilgi Güvenliği |
 | UAT-11 | Şube izolasyonu | Yetkisiz kullanıcı başka şube/dosya/veri/belgeyi göremez | Bilgi Güvenliği | KVKK |
 | UAT-12 | 30/60/90 takip | Görevler doğru sahip, SLA ve kanıt şartıyla açılır | Operasyon | Kalite |

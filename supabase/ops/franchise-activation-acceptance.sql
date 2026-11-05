@@ -47,8 +47,10 @@ end $$;
 reset role;
 
 insert into public.franchise_department_tasks(franchise_case_id,department,task_code,title,status,completed_by,completed_at)
-select '22222222-2222-4222-8222-222222222222', 'department-'||((n-1)/3+1), 'TASK-'||lpad(n::text,2,'0'), 'Sentetik görev '||n, 'completed', '11111111-1111-4111-8111-111111111111', now()
-from generate_series(1,36) n;
+select '22222222-2222-4222-8222-222222222222',
+       (array['Franchise','Finans','Muhasebe','Hukuk','İnsan Kaynakları','Academy','Operasyon','Tedarik','Bilgi Teknolojileri','Pazarlama','Kalite','İSG','Mimari / Proje'])[((n-1)/3+1)],
+       'TASK-'||lpad(n::text,2,'0'), 'Sentetik görev '||n, 'completed', '11111111-1111-4111-8111-111111111111', now()
+from generate_series(1,39) n;
 
 insert into public.franchise_staff(franchise_case_id,role_key,role_name,person_name,recruitment_status,employment_documents_complete,contract_signed,certification_required,academy_completed,certificate_valid_until,access_status)
 select '22222222-2222-4222-8222-222222222222', role_key, role_name, 'Sentetik '||role_name, 'hired', true, true,
@@ -98,7 +100,8 @@ begin
   if (select count(*) from public.franchise_access_accounts where franchise_case_id='22222222-2222-4222-8222-222222222222')<>10 then raise exception 'Hesap sayısı yanlış'; end if;
   if not exists(select 1 from public.franchise_user_scopes s join public.franchise_branches b on b.id=any(s.branch_ids) where s.auth_user_id='11111111-1111-4111-8111-111111111113' and s.franchise_role='dealer' and s.is_active and b.franchise_case_id='22222222-2222-4222-8222-222222222222') then raise exception 'Bayi JWT şube kapsamı oluşmadı'; end if;
   if (select count(*) from public.franchise_followup_tasks where franchise_case_id='22222222-2222-4222-8222-222222222222')<>3 then raise exception '30/60/90 görev sayısı yanlış'; end if;
-  if (select count(*) from public.franchise_integration_outbox where franchise_case_id='22222222-2222-4222-8222-222222222222')<>4 then raise exception 'Outbox olay sayısı yanlış'; end if;
+  if (select count(*) from public.franchise_integration_outbox where franchise_case_id='22222222-2222-4222-8222-222222222222')<>5 then raise exception 'Outbox olay sayısı yanlış'; end if;
+  if not exists(select 1 from public.franchise_integration_outbox where franchise_case_id='22222222-2222-4222-8222-222222222222' and source='accounting' and event_type='chart_of_accounts.created') then raise exception 'Muhasebe açılış olayı oluşmadı'; end if;
   repeated_result:=public.activate_franchise_case('22222222-2222-4222-8222-222222222222');
   if coalesce((repeated_result->>'already_active')::boolean,false) is not true then raise exception 'Tekrarlı aktivasyon idempotent değil'; end if;
 end $$;

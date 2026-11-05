@@ -13,7 +13,7 @@ Yerel ve geçici Supabase PostgreSQL konteynerinde migration, güvenlik doğrula
 - Tüm kapsam içi public franchise tablolarında RLS açık.
 - `anon`, franchise dosyalarını ve belgeleri okuyamıyor.
 - Özel Storage bucket `public=false`, 20 MB ve MIME sınırlarıyla oluştu.
-- Eksik 36 görev setinde aktivasyon reddedildi.
+- Eksik 39 görev setinde aktivasyon reddedildi.
 - Tam dosyada atomik olarak 1 şube, 10 erişim hesabı, 3 adet 30/60/90 görevi ve 4 outbox olayı oluştu.
 - Tekrarlanan aktivasyon idempotent sonuç verdi; kayıtları çoğaltmadı.
 - Outbox worker `FOR UPDATE SKIP LOCKED` ile olay talep etti ve tamamladı.
