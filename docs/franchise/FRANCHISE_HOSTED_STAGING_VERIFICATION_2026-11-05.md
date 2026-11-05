@@ -58,12 +58,14 @@ Hedef: Supabase `ototr-staging` (`bsjkohwbtrfwrqcyhsfz`), PostgreSQL 17.6.
 
 ## Kimliği doğrulanmış aday portalı ve özel belge alanı
 
-- `20261105270000_franchise_applicant_document_portal.sql` staging veritabanına uygulandı.
+- `20261105270000_franchise_applicant_document_portal.sql` ile aday portalı; `20261105280000`, `20261105290000` ve `20261105300000` ile paylaşılan Storage politika izolasyonu ve belge katalog bütünlüğü staging veritabanına uygulandı.
 - Aday portalı mevcut Supabase kullanıcı JWT’siyle çalışır; service-role/secret anahtar tarayıcıya verilmez. Durum, belge talebi, randevu, mesaj, sözleşme, ödeme planı ve eğitim işleri yalnız adayın kendi portal ataması üzerinden okunur.
-- Belge yükleme yalnız `franchise-private` bucket’ına, `case/applicant/user/object` kapsamlı rastgele yolla ve `x-upsert=false` ile yapılır. Kayıt RPC’si aday rolünü, dosya sahipliğini, franchise dosyası sahipliğini, MIME tipini, 20 MB sınırını ve Storage metadatasını yeniden doğrular.
+- Belge yükleme yalnız `franchise-private` bucket’ına, `case/applicant/user/object` kapsamlı rastgele yolla ve `x-upsert=false` ile yapılır. Kayıt RPC’si aday rolünü, dosya sahipliğini, franchise dosyası sahipliğini, zorunlu belge kodu/kategori eşleşmesini, SHA-256 özetini, MIME tipini, 20 MB sınırını ve Storage metadatasını yeniden doğrular.
 - Public RPC `SECURITY INVOKER`, ayrıcalıklı uygulama `app_private` şemasındadır; `anon EXECUTE=false`. Supabase güvenlik danışmanı yeni RPC veya Storage politikası bulgusu üretmedi.
 - Rollback-only staging kabulünde aday rolü olmayan kullanıcı reddedildi, Storage nesnesi olmadan sahte belge kaydı reddedildi ve sentetik kullanıcı/dosya kayıtları `0` kaldı.
-- Gerçek Storage yükleme kabulü için sentetik bir aday Auth oturumu gerekir. Bu oturum ve kullanıcı kontrollü UAT sırasında oluşturulana kadar dosya yükleme davranışı hosted olarak tamamlandı sayılmaz.
+- Geçici `example.invalid` aday Auth hesabıyla gerçek hosted zincir çalıştırıldı: parola oturumu, yalnız kendi franchise dosyasını okuma, private Storage yükleme, belge kayıt RPC’si, portal geri okuma ve güvenli belge referansıyla görev tamamlama birlikte geçti.
+- İlk koşular paylaşılan Storage RLS politikalarında iki gerçek entegrasyon kusuru yakaladı: finans politikaları ilgisiz bucket yüklemelerinde yetkisiz tablo/fonksiyon değerlendirmesi yapıyordu; eski aday RPC’si zorunlu `document_code` ve SHA-256 alanlarını yazmıyordu. Bucket-kapsamlı security-definer wrapper’lar ve katalog bütünlüğü migration’ı ile kapatıldı.
+- Kabul sonrasında sentetik belge kaydı, Storage nesnesi, portal işi/ataması, franchise dosyası ve iki geçici Auth hesabı silindi. Altı kaynak için kalan kayıt sayısı ayrı ayrı `0` doğrulandı. Makinece okunabilir sonuç `gm-franchise/applicant-portal-hosted-evidence.json` dosyasındadır.
 
 ## Sınır
 

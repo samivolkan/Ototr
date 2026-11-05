@@ -13,6 +13,9 @@ Başvurudan aktif şubeye kadar 14 aşamalı franchise yaşam döngüsünü gös
 - `franchise-basvuru/`: KVKK aydınlatma, veri işleme ve isteğe bağlı ticari ileti kararlarını ayrı alan, hassas kimlik/finans belgesini açık web kanalından dışlayan staging başvuru ekranı.
 - `franchise-aday-portali/`: mevcut Supabase aday oturumuyla durum, belge talebi, randevu, mesaj, sözleşme, ödeme planı ve eğitim işlerini gösteren; özel Storage belge yüklemesini RLS ile sınırlayan aday ekranı.
 - `supabase/migrations/20261105270000_franchise_applicant_document_portal.sql`: adayın yalnız kendi franchise dosyasına özel belge kaydı açmasını sağlayan private implementation/invoker RPC ve dar orphan temizleme politikası.
+- `supabase/migrations/20261105280000_shared_storage_policy_isolation.sql` ve `20261105290000_finance_storage_policy_short_circuit.sql`: paylaşılan Storage RLS değerlendirmesini bucket kapsamına hapseder; Franchise yüklemesi finans politikalarına takılmaz.
+- `supabase/migrations/20261105300000_applicant_document_catalog_integrity.sql`: aday belgesini zorunlu belge kataloğu, kategori ve SHA-256 özetiyle bağlar.
+- `applicant-portal-hosted-evidence.json`: sentetik Auth → private Storage → kayıt RPC → portal geri okuma → görev tamamlama zinciri ve sıfır kalıntı temizliği kanıtı.
 - `provider-contracts.mjs`: e-posta, SMS, WhatsApp ve e-imza için amaç/izin/şablon/idempotency sözleşmesi ve log maskeleme kuralları.
 - `preproduction-gates.json`: Finans modülündeki yaklaşımla kanıtlı `GO/NO_GO` kapıları.
 - `supabase/functions/franchise-outbox-worker`: HTTPS allowlist, idempotency ve retry/dead-letter destekli departman olay worker'ı.
