@@ -31,6 +31,7 @@ Başvurudan aktif şubeye kadar 14 aşamalı franchise yaşam döngüsünü gös
 - `uat-release-acceptance.json`: G14 için kişisel veri içermeyen, release commitine bağlı fail-closed insan UAT kabul özeti; gerçek UAT tamamlanana kadar `BLOCKED` kalır.
 - `public-intake-acceptance-evidence.mjs`: canlı `ototr.com` formunun üç ayrı izin, sürümlü KVKK, Edge intake, eski PHP kapatma, sentetik idempotent gönderim, deployment ve rollback kanıtını repo dışı ham kayıttan doğrular.
 - `public-intake-release-acceptance.json`: G16 için kişisel veri içermeyen ve Franchise release commitine bağlı fail-closed canlı başvuru kabul özeti.
+- `release-candidate-control.mjs`: temiz worktree üzerinde mevcut HEAD'i ve UTC değişiklik penceresini aday olarak sabitler; tüm kapılar geçtikten sonra repo dışı dokuz imza + kullanıcı onayı kanıtını hash'leyerek karar manifestine uygular. Canlı yayın yapmaz.
 - `provider-contracts.mjs`: e-posta, SMS, WhatsApp ve e-imza için amaç/izin/şablon/idempotency sözleşmesi ve log maskeleme kuralları.
 - `preproduction-gates.json`: Finans modülündeki yaklaşımla kanıtlı `GO/NO_GO` kapıları.
 - `supabase/functions/franchise-outbox-worker`: HTTPS allowlist, idempotency ve retry/dead-letter destekli departman olay worker'ı.
