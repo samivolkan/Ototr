@@ -1,6 +1,14 @@
 # OTOTR Franchise Departman UAT ve Onay Paketi
 
 Durum: **NO_GO — yalnızca sentetik veri**  
+
+## Teknik UAT kanıt bütünlüğü
+
+- `20261105310000_franchise_uat_evidence_immutability.sql` staging projesine uygulandı.
+- UAT inceleyicisi onay/red sırasında release adayı, senaryo, revizyon, çalıştıran kişi/rol, kanıt SHA-256’i, sonuç özeti veya gönderim zamanını değiştiremez.
+- Yalnız `submitted` sonuç bir kez incelenebilir; bağımsız checker ve 10-2000 karakter inceleme notu zorunludur.
+- Hosted negatif testte kanıt değiştirme ve ikinci inceleme reddedildi; değişmez kanıtla bağımsız onay kabul edildi. Rollback sonrasında sentetik Auth ve UAT sonucu sayıları `0` kaldı.
+- Teknik kanıt `gm-franchise/uat-immutability-hosted-evidence.json` içindedir. Bu teknik geçiş, aşağıdaki gerçek departman UAT’ları ve insan imzaları yerine geçmez.
 Sürüm: 2026-11-05  
 Kapsam: Başvurudan aktif şubeye, 30/60/90 gün takibi dahil.
 

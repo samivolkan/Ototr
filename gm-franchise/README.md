@@ -17,6 +17,7 @@ Başvurudan aktif şubeye kadar 14 aşamalı franchise yaşam döngüsünü gös
 - `supabase/migrations/20261105300000_applicant_document_catalog_integrity.sql`: aday belgesini zorunlu belge kataloğu, kategori ve SHA-256 özetiyle bağlar.
 - `applicant-portal-hosted-evidence.json`: sentetik Auth → private Storage → kayıt RPC → portal geri okuma → görev tamamlama zinciri ve sıfır kalıntı temizliği kanıtı.
 - `hosted-activation-evidence.json`: hosted staging üzerinde kadro/sertifika/yetki kapılarından atomik şube, erişim hesapları ve 30/60/90 takibine uzanan rollback kabul kanıtı.
+- `uat-immutability-hosted-evidence.json`: staging’de UAT kanıtı değişmezliği, tek inceleme ve bağımsız checker negatif/pozitif kabul kanıtı.
 - `provider-contracts.mjs`: e-posta, SMS, WhatsApp ve e-imza için amaç/izin/şablon/idempotency sözleşmesi ve log maskeleme kuralları.
 - `preproduction-gates.json`: Finans modülündeki yaklaşımla kanıtlı `GO/NO_GO` kapıları.
 - `supabase/functions/franchise-outbox-worker`: HTTPS allowlist, idempotency ve retry/dead-letter destekli departman olay worker'ı.
