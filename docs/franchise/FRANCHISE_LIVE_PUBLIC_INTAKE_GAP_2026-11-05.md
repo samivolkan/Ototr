@@ -2,11 +2,14 @@
 
 ## Gözlenen mevcut durum
 
+Son salt-okunur yeniden doğrulama: **2026-11-06**. `gm-franchise/public-intake-readiness.mjs` sayfa ve güncel uygulama JavaScript kaynağını GET ile denetledi; canlı forma POST göndermedi. Makinece okunabilir sonuç `gm-franchise/live-public-intake-readiness-evidence.json` içindedir.
+
 - `https://ototr.com/franchise` HTTP 200 dönüyor ve `data-demo-form="franchise"` formunu gösteriyor.
 - Form `assets/js/app.js` üzerinden aynı origin `/form-handler.php` adresine POST ediyor; Supabase `public-api/franchise-applications` hattını kullanmıyor.
 - Canlı formda KVKK aydınlatma, veri işleme ve ticari ileti için üç ayrı seçim alanı bulunmuyor.
 - PHP handler ve canlı sayfa kaynakları erişilebilen `samivolkan` GitHub depolarında ve yerel çalışma alanında bulunamadı.
 - Supabase staging tarafındaki ayrı izin, sunucu SHA-256 kanıtı ve fail-closed bridge doğrulandı; bu kanıt canlı PHP hattını kanıtlamaz.
+- Güncel canlı `assets/js/app.js?v=1791147589` hâlâ `/form-handler.php` kullanıyor; Edge intake, deployment commit kimliği ve rollback referansı bulunamadı.
 
 ## Staging önizleme kabulü
 
