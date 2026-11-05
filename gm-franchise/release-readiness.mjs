@@ -9,7 +9,7 @@ export const REQUIRED_SIGNOFF_ROLES=Object.freeze(['Franchise Yönetimi','Finans
 export const REQUIRED_HOSTED_EVIDENCE=Object.freeze(['migrationSha256','rollbackSha256','identitySha256','storageSha256','adapterSha256','providerSha256','concurrencySha256','uatSha256','publicIntakeSha256']);
 export const HOSTED_EVIDENCE_FILES=Object.freeze({
  migrationSha256:'../docs/franchise/FRANCHISE_HOSTED_STAGING_VERIFICATION_2026-11-05.md',
- rollbackSha256:'../docs/franchise/FRANCHISE_HOSTED_STAGING_VERIFICATION_2026-11-05.md',
+ rollbackSha256:'../supabase/ops/franchise-rollback.sql',
  identitySha256:'../docs/franchise/FRANCHISE_HOSTED_STAGING_VERIFICATION_2026-11-05.md',
  storageSha256:'../docs/franchise/FRANCHISE_HOSTED_STAGING_VERIFICATION_2026-11-05.md',
  adapterSha256:'./adapter-transport-hosted-evidence.json',
