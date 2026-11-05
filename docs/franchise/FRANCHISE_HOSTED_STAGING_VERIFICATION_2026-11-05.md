@@ -4,7 +4,7 @@ Hedef: Supabase `ototr-staging` (`bsjkohwbtrfwrqcyhsfz`), PostgreSQL 17.6.
 
 ## Sonuç
 
-- 25 Franchise migration sıralı olarak uygulandı.
+- 26 Franchise migration sıralı olarak uygulandı.
 - Şema rollback betiği staging üzerinde tatbik edildi; yeni Franchise şeması kaldırıldı.
 - Supabase Storage tablolarından doğrudan silmenin engellendiği görüldü. Rollback betiği, özel bucket'ı koruyacak ve yalnızca açık onayla Storage API üzerinden kaldırılacak şekilde düzeltildi.
 - 18 migration yeniden uygulanarak şema geri yüklendi.
@@ -38,6 +38,15 @@ Hedef: Supabase `ototr-staging` (`bsjkohwbtrfwrqcyhsfz`), PostgreSQL 17.6.
 - Maker kimliği ve zamanı `canonicalized_by` / `canonicalized_at` alanlarında tutuluyor.
 - Güvenlik danışmanının `public SECURITY DEFINER` uyarısını kaldırmak için `20261105250000_franchise_public_canonicalization_private.sql` uygulandı: ayrıcalıklı uygulama Data API'ye açık olmayan `app_private` şemasında, public RPC ise `SECURITY INVOKER`.
 - Rollback-only staging kabulü kanonik dosya, üç izin makbuzu, maker audit ve idempotent tekrar koşullarını geçti. Sentetik kullanıcı/başvuru/bridge kayıtları rollback sonrası `0`; güvenlik danışmanında yeni fonksiyon bulgusu yok.
+
+## ERP web başvuru kuyruğu
+
+- `20261105260000_franchise_public_intake_queue.sql` staging veritabanına uygulandı.
+- GM, Franchise Direktörü ve Franchise Uzmanı mevcut ERP Supabase oturumuyla kuyruğu okuyabilir; anonim erişim ve diğer departman rolleri reddedilir.
+- Kuyruk yalnız başvuru referansı, izin durumu, konum, kaynak ve zaman alanlarını döndürür. Ham ad-soyad, telefon, payload, istek metadatası ve belge içeriği RPC sonucuna dahil değildir.
+- `processing_consent` eksik kayıtlar `awaiting_processing_consent` durumunda görünür fakat kanonik dosyaya aktarma işlemi kilitlidir.
+- Public RPC `SECURITY INVOKER`, ayrıcalıklı uygulama Data API dışındaki `app_private` şemasındadır. Rollback-only kabul testi iki sentetik kayıtla yetkili okuma, eksik izin kilidi ve yetkisiz rol reddini doğruladı; sentetik kullanıcı ve başvuru sayısı rollback sonrasında `0` kaldı.
+- Supabase güvenlik danışmanında bu kuyruk fonksiyonuna ait yeni bulgu yoktur. Paylaşılan projedeki Franchise dışı önceki uyarılar bu kapsamda değiştirilmemiştir.
 
 ## Sınır
 

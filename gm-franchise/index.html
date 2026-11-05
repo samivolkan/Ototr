@@ -96,6 +96,7 @@ ul.ul{margin:0;padding-left:18px}ul.ul li{margin:3px 0}
 <div class="mo" id="mo" hidden></div>
 <script type="module">
 import {createFranchiseCase,hireStaff,updateStaffCompliance,openingBlockers,activateFranchiseCase,staffReadyForAccess,requestException,reviewException,ensureOpeningEvidence,submitOpeningEvidence,reviewOpeningEvidence,completeFollowUp,requestFollowUpReopen,reviewFollowUpReopen,SCORE_DIMENSIONS,candidateScoreValue,candidateScoreRecommendation,submitCandidateScore,submitBoardDecision,reviewBoardDecision} from "./franchise-core.mjs";
+import {franchiseLiveClient} from "./franchise-live-client.mjs";
 const TODAY=new Date("2026-11-05"),KEY="ototr-franchise-e2e-v1";
 const STAGES=["Yeni","Gorusme","Onay","Sozlesme","Onboarding","Kurulum","Aktif"];
 const RN={gm:"Genel Müdür",fd:"Franchise Direktörü",fu:"Franchise Uzmanı",hk:"Hukuk",fn:"Finans / Muhasebe",ik:"İK",ak:"Akademi",sa:"Saha",bt:"BT",ba:"Bayi Sahibi",dn:"Denetçi",td:"Tedarikçi",ad:"Aday Yatırımcı",op:"Operasyon",pz:"Pazarlama",kl:"Kalite",isg:"İSG",mm:"Mimari / Proje"};
@@ -113,15 +114,15 @@ const BOLGELER={Kadikoy:"Anadolu",Cankaya:"IC Anadolu",Bornova:"Ege",Nilufer:"Ma
 const NAV=[
 ["","E2E","UÇTAN UCA MERKEZ"],["e2e","E2E","Yaşam döngüsü",1],["skorlama","E2E","Aday skoru ve kurul",1],["departman","E2E","Departman kapıları",1],["personel","E2E","Personel ve yetki",1],["acilis","E2E","Açılış kurulu",1],["takip","E2E","30/60/90 planı",1],["portallar","E2E","Dış kullanıcı portalları",1],
 ["","YON","YÖNETİM"],["dash","YON","Dashboard",1],["hat","YON","Süreç hattı",1],["inbox","YON","Görev merkezi",1],
-["","ADY","ADAYLAR"],["pipe","ADY","Aday hattı",1],["gor","ADY","Görüşme ve değerlendirme",1],["belge","ADY","Belge yönetimi",1],
+ ["","ADY","ADAYLAR"],["web-kuyruk","ADY","Web başvuru kuyruğu",1],["pipe","ADY","Aday hattı",1],["gor","ADY","Görüşme ve değerlendirme",1],["belge","ADY","Belge yönetimi",1],
 ["","SUB","AKTİF ŞUBELER"],["sube","SUB","Şubeler ve sözleşme",1],["web","SUB","Web ve Google yorum",1],["paket","SUB","Paket ve fiyatlama",1],
 ["","FIN","FİNANS"],["fin","FIN","Royalty ve cari",1],["rapor","FIN","Raporlama ve analitik",1],
 ["","SYS","SİSTEM"],["yayin","SYS","Yayın hazırlığı",1],["yetki","SYS","Yetki matrisi",0],["denetim","SYS","Denetim kaydı",0],["model","SYS","Veri modeli",0]
 ];
 const PERM={
-gm:"e2e skorlama departman personel acilis takip portallar dash hat inbox pipe gor belge sube web paket fin rapor yayin yetki denetim model",
-fd:"e2e skorlama departman personel acilis takip portallar dash hat inbox pipe gor belge sube web paket fin rapor yayin yetki denetim model",
-fu:"e2e skorlama departman portallar dash hat inbox pipe gor belge",
+ gm:"e2e skorlama departman personel acilis takip portallar dash hat inbox web-kuyruk pipe gor belge sube web paket fin rapor yayin yetki denetim model",
+ fd:"e2e skorlama departman personel acilis takip portallar dash hat inbox web-kuyruk pipe gor belge sube web paket fin rapor yayin yetki denetim model",
+ fu:"e2e skorlama departman portallar dash hat inbox web-kuyruk pipe gor belge",
 hk:"e2e skorlama departman acilis dash hat inbox pipe gor belge sube",
 fn:"e2e skorlama departman acilis dash hat inbox pipe fin rapor sube",
 ik:"e2e departman personel acilis dash hat inbox pipe gor belge",
@@ -145,6 +146,7 @@ const SL=s=>s.toLocaleLowerCase("tr").replace(/ç/g,"c").replace(/ğ/g,"g").repl
 const DL=()=>"04 Kas 2026";
 const PC=d=>`<span class="pi ${d=="Aktif"?"ok":d=="Kapalı"?"rd":"wn"}">${d}</span>`;
 let UID=1,LOG=[],FB=1,CUR="e2e",SEL=null,HF="all",DTAB="bekliyor";
+let LIVE_QUEUE=[],LIVE_QUEUE_STATE="idle",LIVE_QUEUE_ERROR="",LIVE_QUEUE_SELECTED=null,LIVE_QUEUE_RESULT="";
 function mkC(ad,ilce,yat,stage,o={}){
   const slugIlce=SL(ilce);
   const c={id:UID++,ad,ilce,bolge:BOLGELER[slugIlce]||"Diğer",yat,kaynak:"Web",stage,
@@ -356,6 +358,23 @@ function belge(){
       <td><span class="pi ${nB(c)==BDOC.length?"ok":"wn"}">${nB(c)}/${BDOC.length}</span></td>
     </tr>`).join("")}
   </table></div>`;
+}
+function webKuyruk(){
+  const labels={ready_for_canonicalization:"Hazır",awaiting_processing_consent:"Veri işleme izni bekliyor",rejected_missing_privacy:"Aydınlatma eksik"};
+  const tones={ready_for_canonicalization:"ok",awaiting_processing_consent:"wn",rejected_missing_privacy:"rd"};
+  const selected=LIVE_QUEUE.find(x=>x.source_application_id===LIVE_QUEUE_SELECTED&&x.status==="ready_for_canonicalization");
+  const status=LIVE_QUEUE_STATE==="loading"?'<div class="al wn">Canlı kuyruk yükleniyor…</div>':LIVE_QUEUE_STATE==="error"?`<div class="al r">${H(LIVE_QUEUE_ERROR)}</div>`:LIVE_QUEUE_STATE==="loaded"?`<div class="al ok">Canlı kuyruk bağlandı · ${LIVE_QUEUE.length} açık kayıt</div>`:'<div class="al">ERP oturumuyla bağlanmak için kuyruğu yenileyin. Ham ad-soyad, telefon ve belge içeriği bu ekranda gösterilmez.</div>';
+  return`${status}<div class="row"><button class="btn" data-live-refresh ${LIVE_QUEUE_STATE==="loading"?"disabled":""}>Kuyruğu yenile</button><span class="mu">Yetki: GM · Franchise Direktörü · Franchise Uzmanı</span></div>
+  ${LIVE_QUEUE_RESULT?`<div class="al ok">${H(LIVE_QUEUE_RESULT)}</div>`:""}
+  <div class="card scr"><h2>Web Başvuru Kuyruğu</h2><table><tr><th>Başvuru ref.</th><th>Kaynak</th><th>Konum</th><th>Gönderim</th><th>İzin durumu</th><th>İşlem</th></tr>
+  ${LIVE_QUEUE.map(x=>`<tr><td><b>${H(x.source_application_id)}</b></td><td>${H(x.source||"-")}</td><td>${H([x.province,x.district].filter(Boolean).join(" / ")||"-")}</td><td>${H(x.submitted_at||x.captured_at||"-")}</td><td><span class="pi ${tones[x.status]||""}">${H(labels[x.status]||x.status)}</span>${x.reason_code?`<br><small class="mu">${H(x.reason_code)}</small>`:""}</td><td>${x.status==="ready_for_canonicalization"?`<button class="btn g" data-live-select="${H(x.source_application_id)}">Aday dosyasına aktar</button>`:'<span class="mu">İzin tamamlanmadan kilitli</span>'}</td></tr>`).join("")||'<tr><td colspan="6" class="mu">Kuyruk yüklenmedi veya açık başvuru yok.</td></tr>'}</table></div>
+  ${selected?`<div class="card"><h2>Kanonik aday dosyası oluştur</h2><div class="al wn">Kaynak başvurunun kişisel verileri burada açılmaz. ERP’de doğrulanmış aday kullanıcı UUID’si ile normalleştirilmiş güvenli referanslar zorunludur.</div>
+    <p>Başvuru ref.: <b>${H(selected.source_application_id)}</b></p>
+    <div class="cols"><label>Aday portal kullanıcı UUID’si<input id="live-applicant" placeholder="00000000-0000-0000-0000-000000000000"></label><label>Aday / şirket adı<input id="live-candidate" autocomplete="off"></label><label>İletişim referansı<input id="live-contact" autocomplete="off" placeholder="CRM-CONTACT-…"></label><label>Yönetim deneyimi (yıl)<input id="live-experience" type="number" min="0" max="80"></label>
+    <label>Bütçe aralığı<select id="live-budget"><option value="">Seçiniz</option><option value="under_5m">5 milyon altı</option><option value="5m_10m">5–10 milyon</option><option value="10m_20m">10–20 milyon</option><option value="over_20m">20 milyon üzeri</option></select></label><label>Öz kaynak<select id="live-equity"><option value="">Seçiniz</option><option value="under_3m">3 milyon altı</option><option value="3m_7m">3–7 milyon</option><option value="7m_15m">7–15 milyon</option><option value="over_15m">15 milyon üzeri</option></select></label>
+    <label>Sektör deneyimi<select id="live-sector"><option value="">Seçiniz</option><option value="none">Yok</option><option value="automotive">Otomotiv</option><option value="service">Hizmet</option><option value="retail">Perakende</option><option value="multi_sector">Çoklu sektör</option></select></label><label>Şirket durumu<select id="live-company"><option value="">Seçiniz</option><option value="none">Yok</option><option value="sole_proprietor">Şahıs</option><option value="limited">Limited</option><option value="joint_stock">Anonim</option><option value="other">Diğer</option></select></label>
+    <label>Lokasyon durumu<select id="live-location"><option value="">Seçiniz</option><option value="none">Yok</option><option value="searching">Aranıyor</option><option value="candidate_found">Aday bulundu</option><option value="owned">Mülk</option><option value="leased">Kiralandı</option></select></label><label>Ortaklık yapısı<select id="live-partnership"><option value="">Seçiniz</option><option value="single">Tek ortak</option><option value="family">Aile</option><option value="corporate">Kurumsal</option><option value="multi_partner">Çok ortaklı</option></select></label><label>Kimlik doğrulama referansı<input id="live-identity" autocomplete="off"></label><label>Finansal belge referansı<input id="live-financial" autocomplete="off"></label></div>
+    <div class="row"><button class="btn" data-live-canonicalize ${LIVE_QUEUE_STATE==="loading"?"disabled":""}>Onaylı aday dosyasını oluştur</button><button class="btn g" data-live-cancel>Vazgeç</button></div></div>`:""}`;
 }
 function sube(){
   const l=C.filter(c=>c.stage==6&&vis(c));
@@ -703,7 +722,7 @@ Madde 12: Münhasır bölge ihlali halinde sözleşme feshedilir.</div>
   ${c.hist.slice(0,10).map(x=>`<div class="al">${H(x)}</div>`).join("")}`;
 }
 /* ══ RENDER ══ */
-const VIEWS={e2e,skorlama,departman,personel,acilis,takip,portallar,dash,hat,inbox,pipe,gor,belge,sube,web,paket,fin,rapor,yayin,yetki,denetim,model};
+const VIEWS={e2e,skorlama,departman,personel,acilis,takip,portallar,dash,hat,inbox,"web-kuyruk":webKuyruk,pipe,gor,belge,sube,web,paket,fin,rapor,yayin,yetki,denetim,model};
 function render(){
   const perm=PERM[R()].split(" ");
   if(!perm.includes(CUR))CUR=perm[0]||"portallar";
@@ -751,8 +770,17 @@ const A={
   fes:s=>{const c=gC(+s.i);c.fes=1;c.durum="Kapanışta";LOG_ADD("Fesih başlatıldı: "+c.ad,c);render()},
   kapat:s=>{const c=gC(+s.i);if(bak(c)>0)return;c.durum="Kapalı";c.fes=0;LOG_ADD("Franchise kapatıldı: "+c.ad,c);render()}
 };
-document.addEventListener("click",ev=>{
+document.addEventListener("click",async ev=>{
   if(ev.target===$("mo")){SEL=null;render();return}
+  const liveRefresh=ev.target.closest("[data-live-refresh]");if(liveRefresh){LIVE_QUEUE_STATE="loading";LIVE_QUEUE_ERROR="";LIVE_QUEUE_RESULT="";render();try{LIVE_QUEUE=await franchiseLiveClient.listQueue();LIVE_QUEUE_STATE="loaded"}catch(e){LIVE_QUEUE=[];LIVE_QUEUE_STATE="error";LIVE_QUEUE_ERROR=e.message}render();return}
+  const liveSelect=ev.target.closest("[data-live-select]");if(liveSelect){const item=LIVE_QUEUE.find(x=>x.source_application_id===liveSelect.dataset.liveSelect);if(item?.status==="ready_for_canonicalization"){LIVE_QUEUE_SELECTED=item.source_application_id;LIVE_QUEUE_RESULT=""}render();return}
+  const liveCancel=ev.target.closest("[data-live-cancel]");if(liveCancel){LIVE_QUEUE_SELECTED=null;LIVE_QUEUE_RESULT="";render();return}
+  const liveCanonicalize=ev.target.closest("[data-live-canonicalize]");if(liveCanonicalize){
+    const item=LIVE_QUEUE.find(x=>x.source_application_id===LIVE_QUEUE_SELECTED),uuid=$("live-applicant")?.value.trim(),required=["live-candidate","live-contact","live-budget","live-equity","live-experience","live-sector","live-company","live-location","live-partnership","live-identity","live-financial"];
+    if(item?.status!=="ready_for_canonicalization"){LIVE_QUEUE_STATE="error";LIVE_QUEUE_ERROR="Başvuru izinleri tamamlanmadan aday dosyasına aktarılamaz.";render();return}
+    if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(uuid)||required.some(id=>!$(id)?.value.trim())){LIVE_QUEUE_STATE="error";LIVE_QUEUE_ERROR="Geçerli aday kullanıcı UUID’si ve tüm normalleştirilmiş alanlar zorunludur.";render();return}
+    LIVE_QUEUE_STATE="loading";LIVE_QUEUE_ERROR="";render();try{const result=await franchiseLiveClient.canonicalize({p_source_application_id:item.source_application_id,p_applicant_user_id:uuid,p_candidate_name:$("live-candidate").value.trim(),p_contact_reference:$("live-contact").value.trim(),p_budget_band:$("live-budget").value,p_equity_band:$("live-equity").value,p_management_experience_years:Number($("live-experience").value),p_sector_experience:$("live-sector").value,p_company_status:$("live-company").value,p_location_status:$("live-location").value,p_partnership_structure:$("live-partnership").value,p_identity_verification_ref:$("live-identity").value.trim(),p_financial_document_ref:$("live-financial").value.trim()});LIVE_QUEUE_RESULT=`Aday dosyası oluşturuldu: ${result?.case_id||result?.id||"başarılı"}`;LIVE_QUEUE_SELECTED=null;LIVE_QUEUE=await franchiseLiveClient.listQueue();LIVE_QUEUE_STATE="loaded"}catch(e){LIVE_QUEUE_STATE="error";LIVE_QUEUE_ERROR=e.message}render();return
+  }
   const uatRun=ev.target.closest("[data-uat-run]");if(uatRun){const x=UAT_SCENARIOS.find(s=>s[0]===uatRun.dataset.uatRun);if(x&&x[2].includes(R())&&!UAT_STATE[x[0]])UAT_STATE[x[0]]={status:"submitted",executorId:R()+":demo-user",executorRole:R(),evidenceSha256:"f".repeat(64)};render();return}
   const uatReview=ev.target.closest("[data-uat-review]");if(uatReview){const x=UAT_SCENARIOS.find(s=>s[0]===uatReview.dataset.uatReview),s=x&&UAT_STATE[x[0]];if(s?.status==="submitted"&&x[3].includes(R())&&s.executorId!==R()+":demo-user"){s.status="approved";s.checkerId=R()+":demo-user";s.checkerRole=R()}render();return}
   const portalAction=ev.target.closest("[data-portal-action]");if(portalAction){const item=(PORTAL_WORK[R()]||[]).find(x=>x.id===portalAction.dataset.portalAction);if(item&&item.status==='open'){item.status='completed';FLOW.history.unshift(DL()+" · "+RN[R()]+" · Atanmış portal işi güvenli referansla tamamlandı: "+item.id)}render();return}

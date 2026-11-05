@@ -5,7 +5,7 @@ import vm from 'node:vm';
 const html = await readFile(new URL('../gm-franchise/index.html', import.meta.url), 'utf8');
 const nav = await readFile(new URL('../gm-franchise/erp-nav-integration.js', import.meta.url), 'utf8');
 const root = await readFile(new URL('../index.html', import.meta.url), 'utf8');
-const inlineScript = html.match(/<script type="module">([\s\S]*)<\/script>/)?.[1]?.replace(/^import .*;$/m, '');
+const inlineScript = html.match(/<script type="module">([\s\S]*)<\/script>/)?.[1]?.replace(/^import .*;$/gm, '');
 assert.ok(inlineScript, 'inline application script must exist');
 assert.doesNotThrow(() => new vm.Script(inlineScript), 'inline application script must parse');
 
