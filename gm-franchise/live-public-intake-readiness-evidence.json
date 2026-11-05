@@ -1,23 +1,35 @@
 {
   "schemaVersion": 1,
   "target": "https://ototr.com/franchise",
-  "checkedAtUtc": "2026-11-05T21:13:57Z",
+  "checkedAtUtc": "2026-11-05T22:06:56.029Z",
   "checkedReadOnly": true,
   "formPostAttempted": false,
   "httpStatus": 200,
   "pageBytes": 35629,
   "applicationScriptBytes": 24473,
   "checks": {
-    "demoFormStillPresent": true,
+    "pageAvailable": true,
+    "applicationScriptAvailable": true,
     "privacyNoticeSeparate": false,
     "processingConsentSeparate": false,
     "commercialConsentSeparate": false,
+    "consentVersionPresent": false,
     "edgeIntakeConfigured": false,
     "legacyPhpHandlerAbsent": false,
     "deploymentIdentityPresent": false,
     "rollbackReferencePresent": false
   },
   "decision": "NO_GO",
+  "blockers": [
+    "privacyNoticeSeparate",
+    "processingConsentSeparate",
+    "commercialConsentSeparate",
+    "consentVersionPresent",
+    "edgeIntakeConfigured",
+    "legacyPhpHandlerAbsent",
+    "deploymentIdentityPresent",
+    "rollbackReferencePresent"
+  ],
   "productionDataUsed": false,
   "note": "Salt okunur kaynak denetimidir; canlı forma POST gönderilmedi ve R28 kapanmadı."
 }
