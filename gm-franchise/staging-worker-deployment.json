@@ -1,10 +1,31 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "projectRef": "bsjkohwbtrfwrqcyhsfz",
   "environment": "staging",
   "productionDataUsed": false,
   "providerSecretsConfigured": false,
   "externalEndpointsConfigured": false,
+  "departmentEndpointAcceptance": {
+    "finance": {"configured": false},
+    "accounting": {"configured": false},
+    "legal": {"configured": false},
+    "hr": {"configured": false},
+    "academy": {"configured": false},
+    "operations": {"configured": false},
+    "procurement": {"configured": false},
+    "it": {"configured": false},
+    "marketing": {"configured": false},
+    "quality": {"configured": false},
+    "ohs": {"configured": false},
+    "architecture": {"configured": false},
+    "tasks": {"configured": false}
+  },
+  "providerAcceptance": {
+    "email": {"configured": false},
+    "sms": {"configured": false},
+    "whatsapp": {"configured": false},
+    "esign": {"configured": false}
+  },
   "scheduledDispatchInstalled": true,
   "scheduledDispatchConfigured": false,
   "schedulers": {

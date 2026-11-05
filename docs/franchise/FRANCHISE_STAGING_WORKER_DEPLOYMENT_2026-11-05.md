@@ -28,6 +28,7 @@ Muhasebe, Finans'tan bağımsız `accounting` kaynağına ayrıldı. Üç sürü
 
 - Provider secret'ları tanımlanmadı.
 - Gerçek ERP veya iletişim endpoint'i tanımlanmadı.
+- Tek bir genel hazır bayrağı G12'yi geçiremez. On üç departman kaynağı ve dört sağlayıcı kanalı ayrı ayrı `configured`, başarılı HTTP probe durumu, kanıt SHA-256 özeti, kabul sahibi ve UTC kabul zamanı taşımadıkça readiness fail-closed kalır.
 - `20261105380000_franchise_outbox_scheduler.sql` ve `20261105410000_franchise_provider_scheduler.sql` ile dakikalık `franchise-outbox-dispatch` ve `franchise-provider-dispatch` cron işleri kuruldu; iki dispatcher da Data API dışındaki `app_private` şemasındadır.
 - Her iki scheduler konfigürasyonu varsayılan ve mevcut durumda `enabled=false`, `worker_url=null` olduğu için cron çağrıları güvenli `null` no-op döner. Departman outbox ve iletişim/e-imza provider gönderimleri etkin değildir.
 - Worker secret değeri tabloda tutulmaz; etkinleştirme sonrasında yalnız Supabase Vault içindeki `franchise_worker_secret` adıyla okunur. Secret en az 32 karakter değilse dispatcher fail-closed hata verir.
