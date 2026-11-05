@@ -67,6 +67,15 @@ Hedef: Supabase `ototr-staging` (`bsjkohwbtrfwrqcyhsfz`), PostgreSQL 17.6.
 - İlk koşular paylaşılan Storage RLS politikalarında iki gerçek entegrasyon kusuru yakaladı: finans politikaları ilgisiz bucket yüklemelerinde yetkisiz tablo/fonksiyon değerlendirmesi yapıyordu; eski aday RPC’si zorunlu `document_code` ve SHA-256 alanlarını yazmıyordu. Bucket-kapsamlı security-definer wrapper’lar ve katalog bütünlüğü migration’ı ile kapatıldı.
 - Kabul sonrasında sentetik belge kaydı, Storage nesnesi, portal işi/ataması, franchise dosyası ve iki geçici Auth hesabı silindi. Altı kaynak için kalan kayıt sayısı ayrı ayrı `0` doğrulandı. Makinece okunabilir sonuç `gm-franchise/applicant-portal-hosted-evidence.json` dosyasındadır.
 
+## Hosted atomik şube aktivasyonu
+
+- `supabase/ops/franchise-activation-acceptance.sql` staging şemasında tek transaction ve zorunlu `ROLLBACK` ile çalıştırıldı; sonuç `PASS` oldu.
+- Senaryo 17 onaylı zorunlu belge, üç izin makbuzu, 36 tamamlanmış departman görevi, 10 zorunlu kadro, işe alım/sözleşme/Academy sertifikası, Finans tahsilatı, Hukuk-lokasyon kayıtları ve 10 açılış teslimatını aynı dosyada kurdu.
+- Aktivasyon tam bir şube, 10 erişim hesabı, bayi JWT şube kapsamı, 30/60/90 takip görevleri ve dört entegrasyon outbox olayı üretti; ikinci çağrı yeni şube üretmeden idempotent döndü.
+- 30 günlük takip görevinin kanıtlı tamamlanması, kendi kendine yeniden açma onayının reddi, bağımsız onayla yeniden açılması ve erişim iptalinde şube kapsamının kaldırılması geçti.
+- Hosted SQL bağlayıcısı `SET ROLE supabase_auth_admin/authenticated` işlemine izin vermediği için Auth hook/RLS rol değiştirme bölümü bu transaction testinden ayrıldı. Gerçek authenticated RLS izolasyonu, ayrı aday JWT → private Storage kabulünde kanıtlanmıştır.
+- Rollback sonrasında Auth kullanıcısı, franchise dosyası, şube, personel, erişim hesabı, takip görevi ve outbox olayı sayıları ayrı ayrı `0` doğrulandı. Sonuç `gm-franchise/hosted-activation-evidence.json` içindedir.
+
 ## Sınır
 
 Bu doğrulama staging şema kurulumu ve rollback kabiliyetini kanıtlar. Gerçek ERP/sağlayıcı uçları, departman UAT imzaları, yayın penceresi ve kullanıcı canlı onayı ayrıca gereklidir. Yayın kararı `NO_GO` kalır.
