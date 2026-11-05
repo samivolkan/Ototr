@@ -1,6 +1,9 @@
 -- STAGING ONLY. Destructive rollback for the franchise preproduction schema.
 -- Export staging evidence before use. Never run against production without signed approval.
 begin;
+drop policy if exists franchise_storage_applicant_orphan_cleanup on storage.objects;
+drop function if exists public.register_applicant_franchise_document(uuid,text,text,text,bigint);
+drop function if exists app_private.register_applicant_franchise_document(uuid,text,text,text,bigint);
 drop trigger if exists franchise_public_application_capture_trigger on public.public_franchise_applications;
 drop trigger if exists franchise_public_consent_evidence_trigger on public.public_franchise_applications;
 drop function if exists public.canonicalize_public_franchise_application(uuid,uuid,text,text,text,text,smallint,text,text,text,text,text,text);

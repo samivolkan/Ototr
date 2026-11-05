@@ -4,7 +4,7 @@ Hedef: Supabase `ototr-staging` (`bsjkohwbtrfwrqcyhsfz`), PostgreSQL 17.6.
 
 ## Sonuç
 
-- 26 Franchise migration sıralı olarak uygulandı.
+- 27 Franchise migration sıralı olarak uygulandı.
 - Şema rollback betiği staging üzerinde tatbik edildi; yeni Franchise şeması kaldırıldı.
 - Supabase Storage tablolarından doğrudan silmenin engellendiği görüldü. Rollback betiği, özel bucket'ı koruyacak ve yalnızca açık onayla Storage API üzerinden kaldırılacak şekilde düzeltildi.
 - 18 migration yeniden uygulanarak şema geri yüklendi.
@@ -55,6 +55,15 @@ Hedef: Supabase `ototr-staging` (`bsjkohwbtrfwrqcyhsfz`), PostgreSQL 17.6.
 - Form çift gönderimi kilitler, bot honeypot alanı taşır ve mevcut `public-api/franchise-applications` sözleşmesini kullanır.
 - T.C. kimlik numarası, banka bilgisi ve finansal belge açık web formunda toplanmaz. Bunlar ön değerlendirme sonrasında kimliği doğrulanmış özel aday portalı ve özel Storage üzerinden alınacaktır.
 - Bu ekranın hazırlanması canlı `ototr.com/franchise` kaynağının değiştirildiğini kanıtlamaz. Üretim alan adı, hukuk metni onayı ve doğrulanmış canlı endpoint kabulü tamamlanana kadar G16/R28 `BLOCKED/EXTERNAL_PENDING` kalır.
+
+## Kimliği doğrulanmış aday portalı ve özel belge alanı
+
+- `20261105270000_franchise_applicant_document_portal.sql` staging veritabanına uygulandı.
+- Aday portalı mevcut Supabase kullanıcı JWT’siyle çalışır; service-role/secret anahtar tarayıcıya verilmez. Durum, belge talebi, randevu, mesaj, sözleşme, ödeme planı ve eğitim işleri yalnız adayın kendi portal ataması üzerinden okunur.
+- Belge yükleme yalnız `franchise-private` bucket’ına, `case/applicant/user/object` kapsamlı rastgele yolla ve `x-upsert=false` ile yapılır. Kayıt RPC’si aday rolünü, dosya sahipliğini, franchise dosyası sahipliğini, MIME tipini, 20 MB sınırını ve Storage metadatasını yeniden doğrular.
+- Public RPC `SECURITY INVOKER`, ayrıcalıklı uygulama `app_private` şemasındadır; `anon EXECUTE=false`. Supabase güvenlik danışmanı yeni RPC veya Storage politikası bulgusu üretmedi.
+- Rollback-only staging kabulünde aday rolü olmayan kullanıcı reddedildi, Storage nesnesi olmadan sahte belge kaydı reddedildi ve sentetik kullanıcı/dosya kayıtları `0` kaldı.
+- Gerçek Storage yükleme kabulü için sentetik bir aday Auth oturumu gerekir. Bu oturum ve kullanıcı kontrollü UAT sırasında oluşturulana kadar dosya yükleme davranışı hosted olarak tamamlandı sayılmaz.
 
 ## Sınır
 

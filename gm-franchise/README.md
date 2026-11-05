@@ -11,6 +11,8 @@ Başvurudan aktif şubeye kadar 14 aşamalı franchise yaşam döngüsünü gös
 - `supabase/migrations/20261105130000_franchise_application_intake.sql`: altı kanaldan idempotent başvuru, güvenli yatırımcı profili ve ayrı KVKK/veri işleme/ticari ileti makbuzları.
 - `supabase/migrations/20261105260000_franchise_public_intake_queue.sql`: mevcut ERP oturumunu kullanan, yalnız Franchise maker rollerine açık ve ham kişisel veri döndürmeyen web başvuru kuyruğu.
 - `franchise-basvuru/`: KVKK aydınlatma, veri işleme ve isteğe bağlı ticari ileti kararlarını ayrı alan, hassas kimlik/finans belgesini açık web kanalından dışlayan staging başvuru ekranı.
+- `franchise-aday-portali/`: mevcut Supabase aday oturumuyla durum, belge talebi, randevu, mesaj, sözleşme, ödeme planı ve eğitim işlerini gösteren; özel Storage belge yüklemesini RLS ile sınırlayan aday ekranı.
+- `supabase/migrations/20261105270000_franchise_applicant_document_portal.sql`: adayın yalnız kendi franchise dosyasına özel belge kaydı açmasını sağlayan private implementation/invoker RPC ve dar orphan temizleme politikası.
 - `provider-contracts.mjs`: e-posta, SMS, WhatsApp ve e-imza için amaç/izin/şablon/idempotency sözleşmesi ve log maskeleme kuralları.
 - `preproduction-gates.json`: Finans modülündeki yaklaşımla kanıtlı `GO/NO_GO` kapıları.
 - `supabase/functions/franchise-outbox-worker`: HTTPS allowlist, idempotency ve retry/dead-letter destekli departman olay worker'ı.
