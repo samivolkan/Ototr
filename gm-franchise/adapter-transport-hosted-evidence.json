@@ -7,9 +7,9 @@
   "productionDataUsed": false,
   "worker": {"slug": "franchise-outbox-worker", "version": 1, "status": "ACTIVE", "verifyJwt": true, "unauthenticatedStatus": 401},
   "syntheticEndpoint": {"host": "httpbin.org", "https": true, "persistentConfiguration": false},
-  "sources": ["finance","legal","hr","academy","operations","procurement","it","marketing","quality","ohs","architecture","tasks"],
+  "sources": ["finance","accounting","legal","hr","academy","operations","procurement","it","marketing","quality","ohs","architecture","tasks"],
   "checks": {
-    "allTwelveSourcesDelivered": true,
+    "allThirteenSourcesDelivered": true,
     "bearerHeaderObserved": true,
     "idempotencyHeaderObserved": true,
     "minimalContractBodyObserved": true,
@@ -17,8 +17,8 @@
     "prohibitedPersonalDataAbsent": true,
     "workerFailsClosedWithoutJwt": true
   },
-  "delivered": 12,
-  "finished": 12,
+  "delivered": 13,
+  "finished": 13,
   "result": "PASS",
   "realDepartmentEndpointsConfigured": false,
   "providerSecretsConfigured": false,

@@ -8,6 +8,11 @@ export const FRANCHISE_EVENT_CONTRACTS = Object.freeze({
     'opening_payment.verified': contract(['payment_verification_id'], ['branch_id', 'paid_ratio']),
     'royalty_profile.created': contract(['branch_id'], ['royalty_rate', 'exemption_months'])
   }),
+  accounting: Object.freeze({
+    'chart_of_accounts.created': contract(['branch_id', 'chart_reference']),
+    'current_account.created': contract(['branch_id', 'current_account_id']),
+    'opening_balance.reconciled': contract(['branch_id', 'reconciliation_id'], ['period_reference'])
+  }),
   legal: Object.freeze({
     'due_diligence.completed': contract(['due_diligence_id']),
     'contract.signed': contract(['contract_id'], ['template_version']),

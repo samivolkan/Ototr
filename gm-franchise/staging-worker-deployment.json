@@ -5,22 +5,26 @@
   "productionDataUsed": false,
   "providerSecretsConfigured": false,
   "externalEndpointsConfigured": false,
+  "scheduledDispatchConfigured": false,
+  "liveCatalogVerifiedAtUtc": "2026-11-05T21:19:22Z",
+  "queueState": {"outbox": 0, "provider": 0},
+  "accountingContractDeployed": true,
   "syntheticTransportAcceptance": {
     "endpointHost": "httpbin.org",
     "persistentConfiguration": false,
-    "sourceCount": 12,
-    "delivered": 12,
-    "finished": 12,
+    "sourceCount": 13,
+    "delivered": 13,
+    "finished": 13,
     "result": "PASS"
   },
   "functions": [
     {
       "slug": "franchise-outbox-worker",
       "functionId": "ffa5e748-0add-428e-9bb6-5aa83eaa2745",
-      "version": 1,
+      "version": 2,
       "status": "ACTIVE",
       "verifyJwt": true,
-      "bundleSha256": "ad21b5d790341c4caab0ed52c5183dcb3758cb10f5d9b0d6a4e54f1c63850794",
+      "bundleSha256": "1847505c84d4b8bd7363b07b19643469298bb5f94f40d3f808b6558e37e82726",
       "unauthenticatedProbeStatus": 401
     },
     {

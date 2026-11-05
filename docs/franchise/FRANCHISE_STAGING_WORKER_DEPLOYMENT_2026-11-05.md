@@ -6,15 +6,17 @@ Hedef: Supabase `ototr-staging` (`bsjkohwbtrfwrqcyhsfz`).
 
 | İşlev | Sürüm | Durum | JWT | Bundle SHA-256 |
 |---|---:|---|---|---|
-| `franchise-outbox-worker` | 1 | ACTIVE | Zorunlu | `ad21b5d790341c4caab0ed52c5183dcb3758cb10f5d9b0d6a4e54f1c63850794` |
+| `franchise-outbox-worker` | 2 | ACTIVE | Zorunlu | `1847505c84d4b8bd7363b07b19643469298bb5f94f40d3f808b6558e37e82726` |
 | `franchise-provider-worker` | 1 | ACTIVE | Zorunlu | `e64404eff3e9ec8e0f3ad7e151b46b0e35867284130b9df00d6033b0378d5446` |
 
 Her iki uç nokta JWT olmadan yapılan sentetik POST isteğini HTTP 401 ile reddetti.
 
+Muhasebe, Finans'tan bağımsız `accounting` kaynağına ayrıldı. Üç sürümlü Muhasebe olay sözleşmesi staging veritabanına uygulandı; Edge Function v2 bundle içinde `FRANCHISE_ACCOUNTING_ADAPTER_URL/TOKEN` ve Muhasebe sözleşmeleri doğrulandı.
+
 ## Kontrollü sentetik HTTPS taşıma kabulü
 
 - Worker ile aynı `handler.mjs` teslim katmanı, kalıcı yapılandırma oluşturmadan `https://httpbin.org/anything` kontrollü echo uç noktasına karşı çalıştırıldı.
-- Finans, Hukuk, İK, Academy, Operasyon, Tedarik, BT, Pazarlama, Kalite, İSG, Mimari ve Görev Merkezi kaynaklarının her biri için birer sentetik olay gönderildi; 12/12 teslim ve 12/12 finish callback başarılı oldu.
+- Finans, Muhasebe, Hukuk, İK, Academy, Operasyon, Tedarik, BT, Pazarlama, Kalite, İSG, Mimari ve Görev Merkezi kaynaklarının her biri için birer sentetik olay gönderildi; 13/13 teslim ve 13/13 finish callback başarılı oldu.
 - Uzaktaki echo yanıtında Bearer başlığı, `idempotency-key`, olay kimliği, franchise dosyası referansı ve sürümlü minimal sözleşme gövdesi doğrulandı. Token ve olay içeriği kanıt çıktısına yazılmadı.
 - Olaylar yalnız sentetik referanslardan oluştu; gerçek aday, çalışan, şube, finans, sözleşme veya iletişim verisi gönderilmedi.
 - Staging `franchise-outbox-worker` için JWT’siz POST tekrar HTTP 401 döndü.
@@ -25,6 +27,7 @@ Her iki uç nokta JWT olmadan yapılan sentetik POST isteğini HTTP 401 ile redd
 - Provider secret'ları tanımlanmadı.
 - Gerçek ERP veya iletişim endpoint'i tanımlanmadı.
 - Worker tetikleme zamanlaması açılmadı.
+- Staging outbox ve provider kuyruklarında kalıcı kayıt yok; Franchise cron görevi sayısı `0`.
 - Gerçek mesaj, e-imza veya departman olayı gönderilmedi.
 - Worker'lar JWT'ye ek olarak ayrı worker secret'ı doğrular; secret yokken işlem fail-closed kapanır.
 

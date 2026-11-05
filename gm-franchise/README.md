@@ -4,10 +4,11 @@ Başvurudan aktif şubeye kadar 14 aşamalı franchise yaşam döngüsünü gös
 
 - `index.html`: rol/persona, departman kapıları, aday hattı, belge, sözleşme, açılış kurulu, aktif şube, royalty ve audit ekranları.
 - `franchise-core.mjs`: tekil franchise dosyası, zorunlu kadro, sertifika/yetki kilidi, atomik aktivasyon ve 30/60/90 iş kuralları.
-- `integration-adapters.mjs`: Finans, Hukuk, İK, Academy, Operasyon, Tedarik, BT, Pazarlama, Kalite, İSG, Mimari ve Görev Merkezi olay sözleşmeleri.
+- `integration-adapters.mjs`: Finans, Muhasebe, Hukuk, İK, Academy, Operasyon, Tedarik, BT, Pazarlama, Kalite, İSG, Mimari ve Görev Merkezi olay sözleşmeleri.
 - `release-readiness.mjs`: Hosted staging kanıtları, dokuz bağımsız departman imzası, sabit commit ve değişiklik penceresi eksikse otomatik `NO_GO` üreten yayın karar motoru.
 - `release-preflight.mjs`: gerçek kanıt dosyalarının güncel SHA-256 özetlerini, sabitlenecek commit/manifest değerlerini ve kirli worktree durumunu salt okunur denetler; karar kapılarını değiştirmez.
 - `public-intake-readiness.mjs`: canlı Franchise sayfasını ve uygulama JavaScript'ini yalnız GET ile denetler; üç ayrı izin, Edge intake, deployment kimliği ve rollback referansı eksikse R28'i fail-closed tutar.
+- `integration-readiness.mjs`: 13 departman kaynağı, iki staging worker, dört iletişim/e-imza kanalı ve zamanlanmış dispatch kapılarını değerlendirir; gerçek endpoint/secret yoksa R24'ü `NO_GO` tutar.
 - `supabase/functions/_shared/franchise-integration-contracts.mjs`: 31 olay için sürümlü, minimum veri alanları; TCKN, telefon, e-posta, IBAN, plaka, VIN ve gizli anahtarların dış sisteme taşınmasını engelleyen ortak sözleşme.
 - `supabase/migrations/20261105120000_franchise_external_portals.sql`: aday, bayi, denetçi ve tedarikçi için atama bazlı RLS, güvenli portal işleri ve kontrollü tamamlama/kapatma RPC'leri.
 - `supabase/migrations/20261105130000_franchise_application_intake.sql`: altı kanaldan idempotent başvuru, güvenli yatırımcı profili ve ayrı KVKK/veri işleme/ticari ileti makbuzları.
@@ -23,7 +24,7 @@ Başvurudan aktif şubeye kadar 14 aşamalı franchise yaşam döngüsünü gös
 - `hosted-activation-evidence.json`: hosted staging üzerinde kadro/sertifika/yetki kapılarından atomik şube, erişim hesapları ve 30/60/90 takibine uzanan rollback kabul kanıtı.
 - `uat-immutability-hosted-evidence.json`: staging’de UAT kanıtı değişmezliği, tek inceleme ve bağımsız checker negatif/pozitif kabul kanıtı.
 - `public-handoff-hosted-evidence.json`: RawGitHack formundan Edge API, ayrı izinler, güvenli kuyruk, yapılandırılmış profil ve tekil kanonik dosyaya uzanan hosted kabul kanıtı.
-- `adapter-transport-hosted-evidence.json`: 12 departman kaynağı için gerçek HTTPS echo üzerinde Bearer, idempotency ve minimal sözleşme taşıma kabulü; gerçek sağlayıcı olarak sayılmaz.
+- `adapter-transport-hosted-evidence.json`: 13 departman kaynağı için gerçek HTTPS echo üzerinde Bearer, idempotency ve minimal sözleşme taşıma kabulü; gerçek sağlayıcı olarak sayılmaz.
 - `portal-wrapper-hosted-evidence.json`: maker/aday pozitif ve negatif yetki senaryoları, oturum kapatma, katalog ACL kontrolü ve sıfır kalıntı temizliğiyle hosted portal güvenlik sınırı kanıtı.
 - `uat-command-hosted-evidence.json`: gerçek ERP oturumuyla UAT gönderim/inceleme/imza komutlarının pozitif-negatif hosted kabulü; 16 insan UAT'ı ve dokuz imza yerine geçmez.
 - `provider-contracts.mjs`: e-posta, SMS, WhatsApp ve e-imza için amaç/izin/şablon/idempotency sözleşmesi ve log maskeleme kuralları.

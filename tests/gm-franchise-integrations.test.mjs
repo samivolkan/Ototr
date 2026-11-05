@@ -3,7 +3,7 @@ import test from 'node:test';
 import { FRANCHISE_EVENT_CONTRACTS, FRANCHISE_INTEGRATIONS, createIntegrationOutboxEvent, processIntegrationEvent } from '../gm-franchise/integration-adapters.mjs';
 
 test('all required department adapters are declared', () => {
-  const required = ['finance','legal','hr','academy','operations','procurement','it','marketing','quality','ohs','architecture','tasks'];
+  const required = ['finance','accounting','legal','hr','academy','operations','procurement','it','marketing','quality','ohs','architecture','tasks'];
   assert.deepEqual(Object.keys(FRANCHISE_INTEGRATIONS), required);
   for (const source of required) assert.deepEqual(Object.keys(FRANCHISE_EVENT_CONTRACTS[source]), FRANCHISE_INTEGRATIONS[source].events);
 });
@@ -33,12 +33,12 @@ test('versioned payload contract rejects missing, unexpected and privacy-sensiti
   assert.throws(() => createIntegrationOutboxEvent({ franchiseCaseId: 'FR-1', source: 'finance', type: 'royalty_profile.created', payload: { branch_id: 'BR-1' }, contractVersion: 2 }), /sürümü/);
 });
 
-test('all 31 department event contracts accept their minimum synthetic payload', () => {
+test('all 34 department event contracts accept their minimum synthetic payload', () => {
   let count = 0;
   for (const [source, events] of Object.entries(FRANCHISE_EVENT_CONTRACTS)) for (const [type, definition] of Object.entries(events)) {
     const payload = Object.fromEntries(definition.required.map((key) => [key, 'SENTETIK']));
     assert.equal(createIntegrationOutboxEvent({ franchiseCaseId: 'FR-CONTRACT', source, type, payload }).contractVersion, 1);
     count++;
   }
-  assert.equal(count, 31);
+  assert.equal(count, 34);
 });

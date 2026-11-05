@@ -9,10 +9,13 @@ test('staging workers are recorded as fail-closed and not provider-configured', 
   assert.equal(deployment.productionDataUsed, false);
   assert.equal(deployment.providerSecretsConfigured, false);
   assert.equal(deployment.externalEndpointsConfigured, false);
+  assert.equal(deployment.scheduledDispatchConfigured, false);
+  assert.equal(deployment.accountingContractDeployed, true);
+  assert.deepEqual(deployment.queueState, {outbox:0,provider:0});
   assert.equal(deployment.functions.length, 2);
   for (const fn of deployment.functions) {
     assert.equal(fn.status, 'ACTIVE');
-    assert.equal(fn.version, 1);
+    assert.equal(fn.version, fn.slug==='franchise-outbox-worker'?2:1);
     assert.equal(fn.verifyJwt, true);
     assert.match(fn.bundleSha256, /^[0-9a-f]{64}$/);
     assert.equal(fn.unauthenticatedProbeStatus, 401);
