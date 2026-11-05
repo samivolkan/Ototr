@@ -21,6 +21,7 @@ Karar: **NO_GO**
 - Sayaçtan bağımsız gerçek KVKK makbuzu ve şube tipine göre onaylı belge kataloğu doğrulaması
 - Rol sahibi ve sıralı aşama geçişi; atlama/yanlış rol reddi ve değiştirilemez yaşam döngüsü geçmişi
 - Kanıtlı 30/60/90 tamamlama, SLA görünümü ve yeniden açmada maker–checker
+- Yedi boyutlu, kanıtlı ve rol ayrımlı aday puanlaması; skor yalnız öneri üretir, nihai karar bağımsız kurul maker–checker onayıdır
 
 ## NO_GO kapıları
 

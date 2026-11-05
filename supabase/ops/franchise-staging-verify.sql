@@ -14,6 +14,8 @@ select to_regclass('public.franchise_opening_evidence') is not null as opening_e
 select to_regclass('public.franchise_document_requirements') is not null as document_requirements_table_exists;
 select to_regclass('public.franchise_case_stage_history') is not null as stage_history_table_exists;
 select to_regclass('public.franchise_followup_reopen_requests') is not null as followup_reopen_table_exists;
+select to_regclass('public.franchise_candidate_score_entries') is not null as candidate_score_entries_table_exists;
+select to_regclass('public.franchise_board_decisions') is not null as board_decisions_table_exists;
 
 select bool_and(c.relrowsecurity) as all_public_tables_have_rls
 from pg_class c join pg_namespace n on n.oid=c.relnamespace
@@ -21,7 +23,7 @@ where n.nspname='public' and c.relname in (
   'franchise_cases','franchise_department_tasks','franchise_staff','franchise_branches',
   'franchise_access_accounts','franchise_followup_tasks','franchise_exceptions',
   'franchise_integration_outbox','franchise_documents','franchise_document_retention'
-  ,'franchise_user_scopes','franchise_consent_receipts','franchise_message_templates','franchise_provider_requests','franchise_staffing_rules','franchise_opening_evidence','franchise_document_requirements','franchise_case_stage_history','franchise_followup_reopen_requests'
+  ,'franchise_user_scopes','franchise_consent_receipts','franchise_message_templates','franchise_provider_requests','franchise_staffing_rules','franchise_opening_evidence','franchise_document_requirements','franchise_case_stage_history','franchise_followup_reopen_requests','franchise_score_dimensions','franchise_candidate_score_entries','franchise_board_decisions'
 );
 
 select count(*)>=23 as franchise_policies_present
@@ -45,6 +47,7 @@ select to_regprocedure('public.franchise_consents_ready(uuid)') is not null as c
 select to_regprocedure('public.franchise_documents_ready(uuid)') is not null as required_document_gate_function_exists;
 select to_regprocedure('public.transition_franchise_case(uuid,smallint,text)') is not null as lifecycle_transition_rpc_exists;
 select to_regprocedure('public.complete_franchise_followup(uuid,text,text)') is not null as followup_completion_rpc_exists;
+select to_regprocedure('public.franchise_score_value(uuid)') is not null as candidate_score_function_exists;
 
 select not has_function_privilege('authenticated','public.claim_franchise_outbox(integer)','EXECUTE') as authenticated_cannot_claim_outbox;
 select has_function_privilege('service_role','public.claim_franchise_outbox(integer)','EXECUTE') as service_role_can_claim_outbox;
@@ -63,3 +66,4 @@ select not has_table_privilege('anon','public.franchise_opening_evidence','SELEC
 select count(*)=17 as standard_document_requirements_complete from public.franchise_document_requirements where branch_type='standard' and is_active;
 select not has_table_privilege('anon','public.franchise_case_stage_history','SELECT') as anon_cannot_read_stage_history;
 select to_regclass('public.franchise_followup_status_v') is not null as followup_sla_view_exists;
+select count(*)=7 and sum(weight)=100 as score_dimensions_complete from public.franchise_score_dimensions where is_active;

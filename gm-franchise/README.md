@@ -28,4 +28,6 @@ Veritabanı yaşam döngüsü aşamaları yalnız sırayla ve ilgili aşama sahi
 
 30/60/90 görevleri görev sahibi departman tarafından SHA-256 kanıtı ve tamamlama notuyla kapatılır. Gecikme/due-soon durumu güvenli görünümden hesaplanır; tamamlanan görev yalnız maker–checker yeniden açma kararıyla geri alınabilir.
 
+Aday değerlendirmesi finansal yeterlilik, yönetim deneyimi, marka ve etik uyumu, lokasyon potansiyeli, operasyonel yeterlilik, referans/geçmiş ve büyüme potansiyeli olmak üzere yedi kanıtlı boyuttan oluşur. Ağırlıklı sonuç `80 güçlü / 65 şartlı / 50 yönetici incelemesi / altı uygun değil` önerisi üretir; otomatik nihai karar vermez. Ön onay aşaması, franchise direktörünün hazırladığı olumlu kararın farklı bir GM tarafından onaylanmasına kadar kilitlidir.
+
 Supabase/PostgreSQL ana şeması `supabase/migrations/20261105010000_franchise_end_to_end.sql`, izin/şablon/sağlayıcı yönetişimi ise `supabase/migrations/20261105020000_franchise_provider_governance.sql` dosyasındadır. Migration'lar uzak/üretim veritabanına staging doğrulaması ve kullanıcı kabulü olmadan uygulanmamalıdır.
