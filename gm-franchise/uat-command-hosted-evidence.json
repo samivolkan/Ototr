@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "module": "OTOTR_FRANCHISE_UAT_COMMAND_BOUNDARY",
+  "environment": "ototr-staging",
+  "projectRef": "bsjkohwbtrfwrqcyhsfz",
+  "testedAt": "2026-11-06",
+  "productionDataUsed": false,
+  "checks": {
+    "directResultInsertRevoked": true,
+    "directResultUpdateRevoked": true,
+    "directSignoffInsertRevoked": true,
+    "publicCommandsSecurityInvoker": true,
+    "privateCommandsSecurityDefiner": true,
+    "emptySearchPath": true,
+    "anonymousExecuteRevoked": true,
+    "serverBoundActorAndRole": true,
+    "selfReviewDenied": true,
+    "independentReviewAccepted": true,
+    "executorSignoffDenied": true,
+    "independentSignoffAccepted": true,
+    "authenticatedReadback": true,
+    "sessionsRevoked": true
+  },
+  "hostedScenario": {
+    "scenarioCode": "UAT-07",
+    "resultStatus": "approved",
+    "signoffRole": "İK Yöneticisi",
+    "signoffDecision": "approved"
+  },
+  "cleanup": {"uatResults": 0, "uatSignoffs": 0, "authIdentities": 0, "authUsers": 0},
+  "result": "PASS",
+  "releaseDecision": "NO_GO",
+  "note": "Bu teknik kabul tek bir sentetik senaryoyu kanıtlar; 16 gerçek UAT ve 9 insan imzası yerine geçmez."
+}

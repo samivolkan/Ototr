@@ -26,11 +26,26 @@ async function browserSession(fetchImpl=fetch){
   globalThis.localStorage?.setItem(SESSION_KEY,JSON.stringify(next));return next;
 }
 export function createFranchiseLiveClient({config=browserRuntimeConfig(),getSession=browserSession,fetchImpl=fetch}={}){
-  async function rpc(name,payload={}){
+  async function request(path,{method='GET',body}={}){
     const session=await getSession(fetchImpl);if(!session?.access_token)throw new Error('ERP Supabase oturumu bulunamadı. Ana ERP ekranından giriş yapın.');
-    const response=await fetchImpl(`${config.url}/rest/v1/rpc/${name}`,{method:'POST',headers:{apikey:config.key,Authorization:`Bearer ${session.access_token}`,'Content-Type':'application/json'},body:JSON.stringify(payload)});
-    const body=await response.json().catch(()=>null);if(!response.ok)throw new Error(body?.message||body?.hint||'Franchise canlı işlemi tamamlanamadı.');return body;
+    const response=await fetchImpl(`${config.url}${path}`,{method,headers:{apikey:config.key,Authorization:`Bearer ${session.access_token}`,'Content-Type':'application/json'},body});
+    const result=await response.json().catch(()=>null);if(!response.ok)throw new Error(result?.message||result?.hint||'Franchise canlı işlemi tamamlanamadı.');return result;
   }
-  return Object.freeze({listQueue:()=>rpc('list_public_franchise_intake_queue'),canonicalize:(payload)=>rpc('canonicalize_public_franchise_application',payload)});
+  const rpc=(name,payload={})=>request(`/rest/v1/rpc/${name}`,{method:'POST',body:JSON.stringify(payload)});
+  async function loadUat(releaseCandidate){
+    const q=encodeURIComponent(releaseCandidate),[scenarios,results,signoffCatalog,signoffs,status]=await Promise.all([
+      request('/rest/v1/franchise_uat_scenarios?select=scenario_code,title,owner_roles,reviewer_roles,expected_result&is_active=eq.true&order=scenario_code'),
+      request(`/rest/v1/franchise_uat_results?select=id,release_candidate,scenario_code,revision,status,executor_id,executor_role,evidence_sha256,result_summary,checker_id,checker_role,checker_note,submitted_at,reviewed_at&release_candidate=eq.${q}&order=scenario_code`),
+      request('/rest/v1/franchise_uat_signoff_catalog?select=signoff_role,authorized_roles,required_scenarios,sequence_no&order=sequence_no'),
+      request(`/rest/v1/franchise_uat_signoffs?select=id,release_candidate,signoff_role,signer_id,signer_role,evidence_sha256,decision,note,signed_at&release_candidate=eq.${q}&order=signed_at`),
+      request(`/rest/v1/franchise_uat_release_status_v?select=release_candidate,approved_scenarios,approved_signoffs,uat_ready&release_candidate=eq.${q}`)
+    ]);return{scenarios,results,signoffCatalog,signoffs,status:status[0]||{release_candidate:releaseCandidate,approved_scenarios:0,approved_signoffs:0,uat_ready:false}};
+  }
+  return Object.freeze({
+    listQueue:()=>rpc('list_public_franchise_intake_queue'),canonicalize:(payload)=>rpc('canonicalize_public_franchise_application',payload),loadUat,
+    submitUatResult:payload=>rpc('submit_franchise_uat_result',payload),
+    reviewUatResult:payload=>rpc('review_franchise_uat_result',payload),
+    signUatRelease:payload=>rpc('sign_franchise_uat_release',payload)
+  });
 }
 export const franchiseLiveClient=createFranchiseLiveClient();

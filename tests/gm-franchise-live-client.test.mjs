@@ -18,3 +18,14 @@ test('live client fails closed without ERP session',async()=>{
  const client=createFranchiseLiveClient({config:{url:'https://project.supabase.co',key:'publishable'},getSession:async()=>null,fetchImpl:async()=>{throw new Error('network must not run')}});
  await assert.rejects(()=>client.listQueue(),/ERP Supabase oturumu bulunamadı/);
 });
+
+test('live UAT workspace reads governed records and writes only through command RPCs',async()=>{
+ const calls=[],fetchImpl=async(url,options)=>{calls.push({url,options});return{ok:true,json:async()=>url.includes('release_status')?[{approved_scenarios:0,approved_signoffs:0,uat_ready:false}]:[]}};
+ const client=createFranchiseLiveClient({config:{url:'https://project.supabase.co',key:'publishable'},getSession:async()=>({access_token:'session-token'}),fetchImpl});
+ const workspace=await client.loadUat('rc-2026.11.05');assert.equal(workspace.status.uat_ready,false);assert.equal(calls.length,5);
+ await client.submitUatResult({p_release_candidate:'rc-2026.11.05',p_scenario_code:'UAT-01',p_evidence_sha256:'a'.repeat(64),p_result_summary:'Sentetik UAT sonucu kanıtlandı.'});
+ await client.reviewUatResult({p_result_id:'result-id',p_decision:'approved',p_checker_note:'Bağımsız inceleme tamamlandı.'});
+ await client.signUatRelease({p_release_candidate:'rc-2026.11.05',p_signoff_role:'Franchise Yönetimi',p_evidence_sha256:'b'.repeat(64),p_decision:'approved',p_note:'Departman kabulü tamamlandı.'});
+ assert.match(calls[5].url,/rpc\/submit_franchise_uat_result$/);assert.match(calls[6].url,/rpc\/review_franchise_uat_result$/);assert.match(calls[7].url,/rpc\/sign_franchise_uat_release$/);
+ for(const call of calls.slice(5))assert.equal(call.options.method,'POST');
+});
