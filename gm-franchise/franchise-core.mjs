@@ -12,9 +12,9 @@ export const REQUIRED_ROLES = [
 ];
 
 export const FOLLOW_UP_TEMPLATES = [
-  { day: 30, title: "İlk ay operasyon ve kalite kontrolü", owner: "Operasyon" },
-  { day: 60, title: "Finans, royalty ve kadro değerlendirmesi", owner: "Finans / İK" },
-  { day: 90, title: "Franchise performans kurulu", owner: "Franchise Direktörü" }
+  { day: 30, title: "İlk ay operasyon ve kalite kontrolü", owner: "Operasyon", ownerRoles: ["op"] },
+  { day: 60, title: "Finans, royalty ve kadro değerlendirmesi", owner: "Finans / İK", ownerRoles: ["fn", "ik"] },
+  { day: 90, title: "Franchise performans kurulu", owner: "Franchise Direktörü", ownerRoles: ["fd"] }
 ];
 
 export const NON_WAIVABLE_EXCEPTION_TYPES = new Set(["legal", "license", "payment"]);
@@ -208,8 +208,40 @@ export function activateFranchiseCase(franchiseCase, options = {}) {
   franchiseCase.branch = { id: branchId, name: franchiseCase.name, status: "active", activatedAt: options.activatedAt || "2026-11-05" };
   franchiseCase.accessAccounts = accountIds;
   franchiseCase.staffing.forEach((member) => { member.branchId = branchId; member.accessStatus = "active"; });
-  franchiseCase.followUps = FOLLOW_UP_TEMPLATES.map((item, index) => ({ ...item, id: `FU-${franchiseCase.id}-${index + 1}`, status: "open" }));
+  franchiseCase.followUps = FOLLOW_UP_TEMPLATES.map((item, index) => ({ ...item, id: `FU-${franchiseCase.id}-${index + 1}`, status: "open", completedBy: null, evidenceSha256: null, completionNote: null, reopenRequests: [] }));
   franchiseCase.stage = 13;
   franchiseCase.history.unshift(`${options.activatedAt || "2026-11-05"} · Sistem · Şube, personel bağlılıkları, kullanıcı kapsamları ve 30/60/90 görevleri atomik olarak oluşturuldu`);
   return { ok: true, branch: franchiseCase.branch, accounts: accountIds, followUps: franchiseCase.followUps };
+}
+
+export function completeFollowUp(franchiseCase, followUpId, input = {}) {
+  const task = franchiseCase.followUps.find((item) => item.id === followUpId);
+  if (!task || task.status !== "open") throw new Error("Açık takip görevi bulunamadı.");
+  if (!task.ownerRoles.includes(input.actorRole) && input.actorRole !== "gm") throw new Error("Takip görevini yalnız görev sahibi departman kapatabilir.");
+  if (!/^[a-f0-9]{64}$/.test(String(input.evidenceSha256 || ""))) throw new Error("Takip kanıtı SHA-256 özeti zorunludur.");
+  if (String(input.note || "").trim().length < 3) throw new Error("Takip tamamlama notu zorunludur.");
+  Object.assign(task, { status: "done", completedBy: input.actorId, evidenceSha256: input.evidenceSha256, completionNote: String(input.note).trim() });
+  return task;
+}
+
+export function requestFollowUpReopen(franchiseCase, followUpId, input = {}) {
+  const task = franchiseCase.followUps.find((item) => item.id === followUpId);
+  if (!task || task.status !== "done") throw new Error("Tamamlanmış takip görevi bulunamadı.");
+  if (!task.ownerRoles.includes(input.requesterRole) && input.requesterRole !== "gm") throw new Error("Yeniden açma talebini görev sahibi oluşturabilir.");
+  const request = { id: input.id || `REOPEN-${followUpId}-${task.reopenRequests.length + 1}`, requesterId: input.requesterId, requesterRole: input.requesterRole, reason: String(input.reason || "").trim(), status: "pending", reviewerId: null };
+  if (!request.requesterId || request.reason.length < 5) throw new Error("Yeniden açma gerekçesi zorunludur.");
+  task.reopenRequests.push(request);
+  return request;
+}
+
+export function reviewFollowUpReopen(franchiseCase, followUpId, requestId, input = {}) {
+  const task = franchiseCase.followUps.find((item) => item.id === followUpId);
+  const request = task?.reopenRequests.find((item) => item.id === requestId);
+  if (!task || !request || request.status !== "pending") throw new Error("Bekleyen yeniden açma talebi bulunamadı.");
+  if (!input.reviewerId || input.reviewerId === request.requesterId) throw new Error("Talep eden kendi yeniden açma talebini onaylayamaz.");
+  if (!new Set(["gm", "fd"]).has(input.reviewerRole)) throw new Error("Yeniden açma ikinci onayı GM veya Franchise Direktörü vermelidir.");
+  request.status = input.approve ? "applied" : "rejected";
+  request.reviewerId = input.reviewerId;
+  if (input.approve) Object.assign(task, { status: "open", completedBy: null, evidenceSha256: null, completionNote: null });
+  return request;
 }

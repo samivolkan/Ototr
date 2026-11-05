@@ -26,4 +26,6 @@ Veritabanı açılış kapısı ayrıca %100 tahsilat, imzalı franchise sözle�
 
 Veritabanı yaşam döngüsü aşamaları yalnız sırayla ve ilgili aşama sahibi rol tarafından ilerletilir. Yanlış rol, aşama atlama ve fiziksel şube kaydı olmadan `active` durumu reddedilir; her geçiş append-only geçmişe yazılır.
 
+30/60/90 görevleri görev sahibi departman tarafından SHA-256 kanıtı ve tamamlama notuyla kapatılır. Gecikme/due-soon durumu güvenli görünümden hesaplanır; tamamlanan görev yalnız maker–checker yeniden açma kararıyla geri alınabilir.
+
 Supabase/PostgreSQL ana şeması `supabase/migrations/20261105010000_franchise_end_to_end.sql`, izin/şablon/sağlayıcı yönetişimi ise `supabase/migrations/20261105020000_franchise_provider_governance.sql` dosyasındadır. Migration'lar uzak/üretim veritabanına staging doğrulaması ve kullanıcı kabulü olmadan uygulanmamalıdır.

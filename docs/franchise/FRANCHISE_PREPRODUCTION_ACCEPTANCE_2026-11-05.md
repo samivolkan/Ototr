@@ -20,6 +20,7 @@ Karar: **NO_GO**
 - Finans, Hukuk ve Operasyon kaynaklı dört değiştirilemez açılış kanıtı; ayrı maker–checker onayı olmadan şube kaydı reddi
 - Sayaçtan bağımsız gerçek KVKK makbuzu ve şube tipine göre onaylı belge kataloğu doğrulaması
 - Rol sahibi ve sıralı aşama geçişi; atlama/yanlış rol reddi ve değiştirilemez yaşam döngüsü geçmişi
+- Kanıtlı 30/60/90 tamamlama, SLA görünümü ve yeniden açmada maker–checker
 
 ## NO_GO kapıları
 

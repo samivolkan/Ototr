@@ -7,6 +7,9 @@ on conflict (id) do nothing;
 insert into auth.users(id,email,raw_app_meta_data,created_at,updated_at)
 values('11111111-1111-4111-8111-111111111112','franchise-evidence-test@example.invalid','{}'::jsonb,now(),now())
 on conflict (id) do nothing;
+insert into auth.users(id,email,raw_app_meta_data,created_at,updated_at)
+values('11111111-1111-4111-8111-111111111113','franchise-operations-test@example.invalid','{}'::jsonb,now(),now())
+on conflict (id) do nothing;
 
 insert into public.franchise_user_scopes(auth_user_id,franchise_role,branch_ids,updated_by)
 values('11111111-1111-4111-8111-111111111111','gm','{}','11111111-1111-4111-8111-111111111111');
@@ -71,6 +74,26 @@ begin
   repeated_result:=public.activate_franchise_case('22222222-2222-4222-8222-222222222222');
   if coalesce((repeated_result->>'already_active')::boolean,false) is not true then raise exception 'Tekrarlı aktivasyon idempotent değil'; end if;
 end $$;
+reset role;
+
+set local role authenticated;
+set local request.jwt.claims='{"sub":"11111111-1111-4111-8111-111111111113","app_metadata":{"franchise_role":"operations"}}';
+select public.complete_franchise_followup((select id from public.franchise_followup_tasks where franchise_case_id='22222222-2222-4222-8222-222222222222' and day_no=30),repeat('e',64),'Sentetik 30. gün operasyon kanıtı');
+select status='completed' and completed_by='11111111-1111-4111-8111-111111111113' and evidence_sha256=repeat('e',64) as followup_owner_completed_with_evidence
+from public.franchise_followup_tasks where franchise_case_id='22222222-2222-4222-8222-222222222222' and day_no=30;
+select public.request_franchise_followup_reopen((select id from public.franchise_followup_tasks where franchise_case_id='22222222-2222-4222-8222-222222222222' and day_no=30),'Kanıt dosyası yenilenecek');
+do $$ declare v_request uuid; begin
+  select id into v_request from public.franchise_followup_reopen_requests where requester_id='11111111-1111-4111-8111-111111111113' and status='pending';
+  begin perform public.review_franchise_followup_reopen(v_request,true,'Kendi onayı'); raise exception 'self reopen approval accepted';
+  exception when others then if sqlerrm not like 'Talep eden kendi%' then raise; end if; end;
+end $$;
+reset role;
+
+set local role authenticated;
+set local request.jwt.claims='{"sub":"11111111-1111-4111-8111-111111111111","app_metadata":{"franchise_role":"gm","franchise_branch_ids":[]}}';
+select public.review_franchise_followup_reopen((select id from public.franchise_followup_reopen_requests where requester_id='11111111-1111-4111-8111-111111111113' and status='pending'),true,'Bağımsız yeniden açma onayı');
+select status='open' and completed_by is null and evidence_sha256 is null as approved_reopen_clears_completion
+from public.franchise_followup_tasks where franchise_case_id='22222222-2222-4222-8222-222222222222' and day_no=30;
 reset role;
 
 set local role service_role;

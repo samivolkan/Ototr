@@ -9,7 +9,7 @@ Yerel ve geçici Supabase PostgreSQL konteynerinde migration, güvenlik doğrula
 
 ## Kanıtlanan davranışlar
 
-- Sekiz Franchise migration'ı (ana şema, sağlayıcı yönetişimi, sağlayıcı worker, departman RBAC, kadro, açılış kanıtı, gerçek kayıt kapıları ve yaşam döngüsü denetimi) gerçek PostgreSQL motorunda hatasız commit edildi.
+- Dokuz Franchise migration'ı (ana şema, sağlayıcı yönetişimi, sağlayıcı worker, departman RBAC, kadro, açılış kanıtı, gerçek kayıt kapıları, yaşam döngüsü ve 30/60/90 yönetişimi) gerçek PostgreSQL motorunda hatasız commit edildi.
 - 13 public franchise tablosunda RLS açık.
 - `anon`, franchise dosyalarını ve belgeleri okuyamıyor.
 - Özel Storage bucket `public=false`, 20 MB ve MIME sınırlarıyla oluştu.
@@ -35,6 +35,8 @@ Yerel ve geçici Supabase PostgreSQL konteynerinde migration, güvenlik doğrula
 - Standart şube kataloğunda 16 belge reddedildi, 17 onaylı ve süresi geçmemiş belge kabul edildi.
 - Yanlış departman rolünün aşama ilerletmesi, aşama atlama ve manuel geçmiş kaydı reddedildi.
 - Yetkili sıralı geçiş değiştirilemez aşama geçmişine yazıldı; atomik aktivasyon yeni denetim tetikleyicisiyle yeniden geçti.
+- 30. gün görevi yalnız Operasyon rolü tarafından SHA-256 kanıt ve notla tamamlandı.
+- Görev sahibi kendi yeniden açma talebini onaylayamadı; GM ikinci onayı sonrası görev güvenle yeniden açıldı.
 - Rollback Storage politikalarını önce kaldırdı, tüm franchise tablolarını ve bucket'ı temizledi.
 - Test konteyneri çalışma sonunda kaldırıldı.
 
@@ -48,6 +50,7 @@ Yerel ve geçici Supabase PostgreSQL konteynerinde migration, güvenlik doğrula
 - `supabase/migrations/20261105060000_franchise_opening_evidence.sql`
 - `supabase/migrations/20261105070000_franchise_record_gates.sql`
 - `supabase/migrations/20261105080000_franchise_lifecycle_audit.sql`
+- `supabase/migrations/20261105090000_franchise_followup_governance.sql`
 - `supabase/ops/franchise-local-contract-stubs.sql`
 - `supabase/ops/franchise-staging-verify.sql`
 - `supabase/ops/franchise-activation-acceptance.sql`

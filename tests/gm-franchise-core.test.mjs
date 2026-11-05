@@ -4,12 +4,15 @@ import {
   REQUIRED_ROLES,
   activateFranchiseCase,
   createFranchiseCase,
+  completeFollowUp,
   OPENING_EVIDENCE_GATES,
   hireStaff,
   openingBlockers,
   requestException,
+  requestFollowUpReopen,
   reviewException,
   reviewOpeningEvidence,
+  reviewFollowUpReopen,
   submitOpeningEvidence,
   updateStaffCompliance
 } from '../gm-franchise/franchise-core.mjs';
@@ -95,4 +98,18 @@ test('opening evidence requires department maker and independent checker', () =>
   assert.throws(() => reviewOpeningEvidence(c, 'entry_fee_payment', { checkerId: 'finance-1', checkerRole: 'gm', decision: 'approved' }), /kendi kaydını/);
   reviewOpeningEvidence(c, 'entry_fee_payment', { checkerId: 'gm-1', checkerRole: 'gm', decision: 'approved' });
   assert.equal(c.openingEvidence.find((item) => item.code === 'entry_fee_payment').status, 'approved');
+});
+
+test('followup completion and reopen respect owner and maker checker', () => {
+  const c = createFranchiseCase({ id: 'FR-TEST-7', consents: 3, documents: 17, documentsTotal: 17, paid: 100, stage: 12 });
+  completeStaff(c); completeEvidence(c);
+  activateFranchiseCase(c, { taskDone: true });
+  const task = c.followUps.find((item) => item.day === 30);
+  assert.throws(() => completeFollowUp(c, task.id, { actorId: 'finance-1', actorRole: 'fn', evidenceSha256: 'a'.repeat(64), note: 'Kanıt' }), /görev sahibi/);
+  completeFollowUp(c, task.id, { actorId: 'ops-1', actorRole: 'op', evidenceSha256: 'a'.repeat(64), note: 'Operasyon kanıtı' });
+  const request = requestFollowUpReopen(c, task.id, { requesterId: 'ops-1', requesterRole: 'op', reason: 'Kanıt yenilenecek' });
+  assert.throws(() => reviewFollowUpReopen(c, task.id, request.id, { reviewerId: 'ops-1', reviewerRole: 'gm', approve: true }), /kendi yeniden açma/);
+  reviewFollowUpReopen(c, task.id, request.id, { reviewerId: 'gm-1', reviewerRole: 'gm', approve: true });
+  assert.equal(task.status, 'open');
+  assert.equal(task.evidenceSha256, null);
 });
