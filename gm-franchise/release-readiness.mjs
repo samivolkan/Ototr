@@ -8,6 +8,7 @@ import {evaluateUatAcceptance} from './uat-acceptance-evidence.mjs';
 
 const SHA256=/^[a-f0-9]{64}$/;
 const COMMIT=/^[a-f0-9]{40}$/;
+const validUtc=value=>typeof value==='string'&&value.endsWith('Z')&&Number.isFinite(Date.parse(value));
 export const REQUIRED_SIGNOFF_ROLES=Object.freeze(['Franchise Yönetimi','Finans Direktörü','Hukuk/KVKK','İK Yöneticisi','Academy Yöneticisi','Operasyon/Kalite/İSG','Tedarik/Mimari/Pazarlama','ERP/Bilgi Güvenliği','CEO/Yönetim']);
 export const REQUIRED_HOSTED_EVIDENCE=Object.freeze(['migrationSha256','rollbackSha256','identitySha256','storageSha256','adapterSha256','providerSha256','concurrencySha256','uatSha256','publicIntakeSha256']);
 export const RELEASE_METADATA_PATHS=Object.freeze(['gm-franchise/preproduction-decision.json','gm-franchise/preproduction-gates.json','gm-franchise/staging-worker-deployment.json','gm-franchise/uat-release-acceptance.json','gm-franchise/public-intake-release-acceptance.json']);
@@ -39,10 +40,13 @@ export function evaluateRelease(gates,decision,{currentCommit=null,expectedEvide
  if(currentCommit!==null&&decision?.releaseCommit!==currentCommit&&releaseMetadataOnly!==true)blockers.push('release_commit_mismatch');
  for(const key of REQUIRED_HOSTED_EVIDENCE){const value=decision?.hostedStagingEvidence?.[key]||'';if(!SHA256.test(value))blockers.push(`hosted:${key}`);else if(expectedEvidenceHashes&&value!==expectedEvidenceHashes[key])blockers.push(`hosted:${key}:mismatch`);}
  const start=Date.parse(decision?.changeWindowStartUtc||''),end=Date.parse(decision?.changeWindowEndUtc||'');
- if(!Number.isFinite(start)||!Number.isFinite(end)||end<=start)blockers.push('change_window_invalid');
+ if(!validUtc(decision?.changeWindowStartUtc)||!validUtc(decision?.changeWindowEndUtc)||end<=start)blockers.push('change_window_invalid');
  const signoffs=new Map((decision?.signoffs||[]).map(s=>[s.role,s]));const identities=[];
- for(const role of REQUIRED_SIGNOFF_ROLES){const s=signoffs.get(role);if(!s||!SHA256.test(s.identitySha256||'')||!SHA256.test(s.evidenceSha256||'')||!Number.isFinite(Date.parse(s.signedAtUtc||'')))blockers.push(`signoff:${role}`);else identities.push(s.identitySha256);}
+ if(!Array.isArray(decision?.signoffs)||decision.signoffs.length!==REQUIRED_SIGNOFF_ROLES.length||signoffs.size!==REQUIRED_SIGNOFF_ROLES.length||decision.signoffs.some(s=>!REQUIRED_SIGNOFF_ROLES.includes(s.role)))blockers.push('signoff_catalog_invalid');
+ const acceptanceCutoff=Math.max(Date.parse(uatAcceptance?.acceptedAtUtc||''),Date.parse(publicIntakeAcceptance?.acceptedAtUtc||''));const signedTimes=[];
+ for(const role of REQUIRED_SIGNOFF_ROLES){const s=signoffs.get(role),signedAt=Date.parse(s?.signedAtUtc||'');if(!s||!SHA256.test(s.identitySha256||'')||!SHA256.test(s.evidenceSha256||'')||!validUtc(s.signedAtUtc))blockers.push(`signoff:${role}`);else{identities.push(s.identitySha256);signedTimes.push({role,signedAt});if(Number.isFinite(start)&&signedAt>start)blockers.push(`signoff_after_window_start:${role}`);if(Number.isFinite(acceptanceCutoff)&&signedAt<acceptanceCutoff)blockers.push(`signoff_before_acceptance:${role}`);}}
  if(new Set(identities).size!==identities.length)blockers.push('signoff_identity_not_independent');
+ const ceoTime=signedTimes.find(item=>item.role==='CEO/Yönetim')?.signedAt;if(Number.isFinite(ceoTime)&&signedTimes.some(item=>item.role!=='CEO/Yönetim'&&item.signedAt>ceoTime))blockers.push('ceo_signoff_not_last');
  if(decision?.productionDataUsed!==false)blockers.push('preproduction_must_use_synthetic_data');
  return Object.freeze({productionDecision:blockers.length?'NO_GO':'GO',decision:blockers.length?'NOT_READY':'READY',blockers:Object.freeze(blockers)});
 }
