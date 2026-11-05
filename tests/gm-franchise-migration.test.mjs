@@ -7,6 +7,7 @@ const rollback = await readFile(new URL('../supabase/ops/franchise-rollback.sql'
 const acceptance = await readFile(new URL('../supabase/ops/franchise-activation-acceptance.sql', import.meta.url), 'utf8');
 const leaseRecovery = await readFile(new URL('../supabase/migrations/20261105190000_franchise_outbox_lease_recovery.sql', import.meta.url), 'utf8');
 const financeAccountingGate = await readFile(new URL('../supabase/migrations/20261105360000_franchise_finance_accounting_gate_separation.sql', import.meta.url), 'utf8');
+const departmentCatalogGate = await readFile(new URL('../supabase/migrations/20261105370000_franchise_department_catalog_gate.sql', import.meta.url), 'utf8');
 
 test('all franchise tables enable RLS and anon access is revoked', () => {
   const tables = ['franchise_cases','franchise_department_tasks','franchise_staff','franchise_branches','franchise_access_accounts','franchise_followup_tasks','franchise_exceptions','franchise_integration_outbox','franchise_documents','franchise_document_retention','franchise_user_scopes'];
@@ -46,6 +47,9 @@ test('activation is invoker-secured, locked and creates all downstream records',
   assert.match(financeAccountingGate, /lower\(trim\(department\)\)='finans'/i);
   assert.match(financeAccountingGate, /lower\(trim\(department\)\)='muhasebe'/i);
   assert.match(financeAccountingGate, /'accounting','chart_of_accounts\.created'/i);
+  assert.match(departmentCatalogGate, /resmi 13 departmanda üçer görev zorunlu/i);
+  assert.match(departmentCatalogGate, /\('Franchise'\),\('Finans'\),\('Muhasebe'\),\('Hukuk'\)/i);
+  assert.match(departmentCatalogGate, /task\.department not in/i);
 });
 
 test('maker-checker protects critical gates and prevents self approval', () => {
