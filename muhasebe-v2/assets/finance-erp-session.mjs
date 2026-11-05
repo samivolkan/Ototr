@@ -6,6 +6,14 @@ function storedJson(key) {
   return JSON.parse(localStorage.getItem(key) || sessionStorage.getItem(key) || 'null');
 }
 
+function erpSession() {
+  if (location.hostname === 'samivolkan.github.io') {
+    const native = storedJson('sb-bsjkohwbtrfwrqcyhsfz-auth-token');
+    return native?.currentSession || native?.session || native;
+  }
+  return storedJson(sessionKey);
+}
+
 async function connectErpSession() {
   if (window.OTOTR_FINANCE_AUTH) return;
   const button = document.querySelector('[data-finance-connect]');
@@ -14,8 +22,10 @@ async function connectErpSession() {
   button.before(status);
 
   try {
-    const session = storedJson(sessionKey);
-    if (!session?.access_token || (session.expires_at && Number(session.expires_at) <= Date.now())) {
+    const session = erpSession();
+    const expiry = Number(session?.expires_at) || 0;
+    const expiresAt = expiry < 1e12 ? expiry * 1000 : expiry;
+    if (!session?.access_token || (expiresAt && expiresAt <= Date.now())) {
       const loginLink = document.createElement('a');
       loginLink.href = '../index.html?financeReturn=1#dealer';
       loginLink.textContent = 'ERP girişini aç';
@@ -50,7 +60,7 @@ async function connectErpSession() {
     const saved = sessionStorage.getItem(selectionKey);
     const selected = rows.find(row => scopeKey(row) === saved) || rows[0];
     window.OTOTR_SUPABASE_CONFIG = {url: url.origin, publishableKey};
-    window.OTOTR_FINANCE_AUTH = {getAccessToken: () => storedJson(sessionKey)?.access_token ?? null};
+    window.OTOTR_FINANCE_AUTH = {getAccessToken: () => erpSession()?.access_token ?? null};
     window.OTOTR_FINANCE_CONTEXT = {
       legalEntityId: selected.legal_entity_id,
       dealerAccountId: selected.dealer_account_id,
