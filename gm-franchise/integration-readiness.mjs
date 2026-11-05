@@ -3,10 +3,11 @@ import {pathToFileURL} from 'node:url';
 import {FRANCHISE_INTEGRATIONS} from './integration-adapters.mjs';
 
 const SHA256=/^[a-f0-9]{64}$/;
+const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 export const PROVIDER_CHANNELS=Object.freeze(['email','sms','whatsapp','esign']);
 function hasAcceptanceEvidence(record){
   const acceptedAt=new Date(record?.acceptedAtUtc||'');
-  return record?.configured===true&&Number.isInteger(record?.probeStatus)&&record.probeStatus>=200&&record.probeStatus<300&&SHA256.test(record?.evidenceSha256||'')&&typeof record?.acceptedBy==='string'&&record.acceptedBy.trim().length>=3&&!Number.isNaN(acceptedAt.getTime());
+  return record?.configured===true&&Number.isInteger(record?.probeStatus)&&record.probeStatus>=200&&record.probeStatus<300&&SHA256.test(record?.evidenceSha256||'')&&UUID.test(record?.executedBy||'')&&UUID.test(record?.acceptedBy||'')&&record.executedBy!==record.acceptedBy&&!Number.isNaN(acceptedAt.getTime());
 }
 export function evaluateIntegrationReadiness(deployment){
   const functions=new Map((deployment?.functions||[]).map(item=>[item.slug,item])),sources=Object.keys(FRANCHISE_INTEGRATIONS),blockers=[];
