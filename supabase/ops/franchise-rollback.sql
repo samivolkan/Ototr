@@ -139,6 +139,7 @@ drop policy if exists franchise_storage_insert on storage.objects;
 drop policy if exists franchise_storage_update on storage.objects;
 drop policy if exists franchise_storage_delete on storage.objects;
 drop function if exists public.franchise_custom_access_token_hook(jsonb);
+drop function if exists public.finish_franchise_outbox(uuid,uuid,boolean,text);
 drop function if exists public.finish_franchise_outbox(uuid,boolean,text);
 drop function if exists public.claim_franchise_outbox(integer);
 drop function if exists public.activate_franchise_case(uuid);

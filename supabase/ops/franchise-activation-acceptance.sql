@@ -136,7 +136,7 @@ declare claimed public.franchise_integration_outbox%rowtype;
 begin
   select * into claimed from public.claim_franchise_outbox(1) limit 1;
   if claimed.id is null or claimed.status<>'processing' or claimed.attempts<>1 then raise exception 'Outbox claim başarısız'; end if;
-  perform public.finish_franchise_outbox(claimed.id,true,null);
+  perform public.finish_franchise_outbox(claimed.id,claimed.lease_token,true,null);
   if not exists(select 1 from public.franchise_integration_outbox where id=claimed.id and status='processed' and processed_at is not null) then raise exception 'Outbox finish başarısız'; end if;
 end $$;
 reset role;

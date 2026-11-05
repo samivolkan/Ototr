@@ -8,7 +8,7 @@ const values = {
   FRANCHISE_FINANCE_ADAPTER_TOKEN: 'test-token'
 };
 const env = (name) => values[name] || '';
-const event = { id: 'EVT-1', franchise_case_id: 'FR-1', source: 'finance', event_type: 'royalty_profile.created', payload: { branch_id: 'BR-1' }, contract_version: 1, created_at: '2026-11-05T00:00:00Z' };
+const event = { id: 'EVT-1', lease_token: '11111111-1111-4111-8111-111111111111', franchise_case_id: 'FR-1', source: 'finance', event_type: 'royalty_profile.created', payload: { branch_id: 'BR-1' }, contract_version: 1, created_at: '2026-11-05T00:00:00Z' };
 
 test('adapter configuration requires HTTPS and explicit host allowlist', () => {
   assert.equal(adapterConfig('finance', env).url, values.FRANCHISE_FINANCE_ADAPTER_URL);
@@ -41,6 +41,7 @@ test('worker records both success and failure without leaking tokens', async () 
     finish: async (...args) => finishes.push(args)
   });
   assert.deepEqual(results.map((x) => x.ok), [true, false]);
-  assert.deepEqual(finishes.map((x) => x[1]), [true, false]);
+  assert.deepEqual(finishes.map((x) => x[1]), [event.lease_token,event.lease_token]);
+  assert.deepEqual(finishes.map((x) => x[2]), [true, false]);
   assert.doesNotMatch(JSON.stringify(results), /test-token/);
 });

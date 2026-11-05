@@ -56,11 +56,11 @@ export async function processOutboxBatch(events, dependencies) {
   for (const event of events) {
     try {
       const delivered = await deliverEvent(event, dependencies);
-      await dependencies.finish(event.id, true, null);
+      await dependencies.finish(event.id, event.lease_token, true, null);
       results.push({ id: event.id, ok: true, delivered });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Bilinmeyen adaptör hatası';
-      await dependencies.finish(event.id, false, message);
+      await dependencies.finish(event.id, event.lease_token, false, message);
       results.push({ id: event.id, ok: false, error: message });
     }
   }

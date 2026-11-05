@@ -5,6 +5,7 @@ import test from 'node:test';
 const sql = await readFile(new URL('../supabase/migrations/20261105010000_franchise_end_to_end.sql', import.meta.url), 'utf8');
 const rollback = await readFile(new URL('../supabase/ops/franchise-rollback.sql', import.meta.url), 'utf8');
 const acceptance = await readFile(new URL('../supabase/ops/franchise-activation-acceptance.sql', import.meta.url), 'utf8');
+const leaseRecovery = await readFile(new URL('../supabase/migrations/20261105190000_franchise_outbox_lease_recovery.sql', import.meta.url), 'utf8');
 
 test('all franchise tables enable RLS and anon access is revoked', () => {
   const tables = ['franchise_cases','franchise_department_tasks','franchise_staff','franchise_branches','franchise_access_accounts','franchise_followup_tasks','franchise_exceptions','franchise_integration_outbox','franchise_documents','franchise_document_retention','franchise_user_scopes'];
@@ -68,4 +69,13 @@ test('database acceptance covers fail-closed, idempotency, counts and outbox rec
   assert.match(acceptance, /Tekrarlı aktivasyon idempotent değil/);
   assert.match(acceptance, /claim_franchise_outbox/);
   assert.match(acceptance, /rollback;/i);
+});
+
+test('hosted outbox recovery fences stale workers and dead letters exhausted jobs', () => {
+  assert.match(leaseRecovery, /for update skip locked/i);
+  assert.match(leaseRecovery, /processing_started_at < now\(\) - interval '15 minutes'/i);
+  assert.match(leaseRecovery, /when attempts >= 10 then 'dead_letter'/i);
+  assert.match(leaseRecovery, /lease_token = gen_random_uuid\(\)/i);
+  assert.match(leaseRecovery, /and lease_token = p_lease_token/i);
+  assert.match(leaseRecovery, /revoke all on function public\.finish_franchise_outbox\(uuid,uuid,boolean,text\) from public, anon, authenticated/i);
 });

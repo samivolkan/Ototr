@@ -22,8 +22,8 @@ Deno.serve(async (req) => {
   const results = await processOutboxBatch(claim.data || [], {
     env,
     fetcher: fetch,
-    finish: async (id: string, success: boolean, error: string | null) => {
-      const result = await db.rpc('finish_franchise_outbox', { p_event_id: id, p_success: success, p_error: error });
+    finish: async (id: string, leaseToken: string, success: boolean, error: string | null) => {
+      const result = await db.rpc('finish_franchise_outbox', { p_event_id: id, p_lease_token: leaseToken, p_success: success, p_error: error });
       if (result.error) throw new Error('Outbox sonucu kaydedilemedi.');
     }
   });

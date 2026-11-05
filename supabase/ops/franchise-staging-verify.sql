@@ -55,7 +55,7 @@ select exists(
 
 select to_regprocedure('public.activate_franchise_case(uuid)') is not null as activation_rpc_exists;
 select to_regprocedure('public.claim_franchise_outbox(integer)') is not null as outbox_claim_rpc_exists;
-select to_regprocedure('public.finish_franchise_outbox(uuid,boolean,text)') is not null as outbox_finish_rpc_exists;
+select to_regprocedure('public.finish_franchise_outbox(uuid,uuid,boolean,text)') is not null as outbox_finish_rpc_exists;
 select to_regprocedure('public.franchise_custom_access_token_hook(jsonb)') is not null as identity_hook_exists;
 select to_regprocedure('public.claim_franchise_provider_requests(integer)') is not null as provider_claim_rpc_exists;
 select to_regprocedure('public.finish_franchise_provider_request(uuid,boolean,text,text,text)') is not null as provider_finish_rpc_exists;
