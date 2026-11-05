@@ -26,8 +26,11 @@ Muhasebe, Finans'tan bağımsız `accounting` kaynağına ayrıldı. Üç sürü
 
 - Provider secret'ları tanımlanmadı.
 - Gerçek ERP veya iletişim endpoint'i tanımlanmadı.
-- Worker tetikleme zamanlaması açılmadı.
-- Staging outbox ve provider kuyruklarında kalıcı kayıt yok; Franchise cron görevi sayısı `0`.
+- `20261105380000_franchise_outbox_scheduler.sql` ile dakikalık `franchise-outbox-dispatch` cron işi kuruldu; dispatcher Data API dışındaki `app_private` şemasındadır.
+- Scheduler konfigürasyonu varsayılan ve mevcut durumda `enabled=false`, `worker_url=null` olduğu için cron çağrısı güvenli `null` no-op döner. Gerçek gönderim etkin değildir.
+- Worker secret değeri tabloda tutulmaz; etkinleştirme sonrasında yalnız Supabase Vault içindeki `franchise_worker_secret` adıyla okunur. Secret en az 32 karakter değilse dispatcher fail-closed hata verir.
+- `anon` ve `authenticated` dispatcher çalıştıramaz; yalnız `service_role` yetkilidir. Hosted kontrolde cron kurulu, disabled no-op ve rol yetkileri birlikte doğrulandı.
+- Staging outbox ve provider kuyruklarında kalıcı kayıt yok.
 - Gerçek mesaj, e-imza veya departman olayı gönderilmedi.
 - Worker'lar JWT'ye ek olarak ayrı worker secret'ı doğrular; secret yokken işlem fail-closed kapanır.
 
