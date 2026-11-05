@@ -19,6 +19,7 @@ Karar: **NO_GO**
 - Şube tipine göre parametrik zorunlu kadro ve İK–Academy–BT ayrık alan sahipliği
 - Finans, Hukuk ve Operasyon kaynaklı dört değiştirilemez açılış kanıtı; ayrı maker–checker onayı olmadan şube kaydı reddi
 - Sayaçtan bağımsız gerçek KVKK makbuzu ve şube tipine göre onaylı belge kataloğu doğrulaması
+- Rol sahibi ve sıralı aşama geçişi; atlama/yanlış rol reddi ve değiştirilemez yaşam döngüsü geçmişi
 
 ## NO_GO kapıları
 
