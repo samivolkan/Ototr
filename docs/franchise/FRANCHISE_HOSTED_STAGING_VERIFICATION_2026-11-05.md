@@ -48,6 +48,14 @@ Hedef: Supabase `ototr-staging` (`bsjkohwbtrfwrqcyhsfz`), PostgreSQL 17.6.
 - Public RPC `SECURITY INVOKER`, ayrıcalıklı uygulama Data API dışındaki `app_private` şemasındadır. Rollback-only kabul testi iki sentetik kayıtla yetkili okuma, eksik izin kilidi ve yetkisiz rol reddini doğruladı; sentetik kullanıcı ve başvuru sayısı rollback sonrasında `0` kaldı.
 - Supabase güvenlik danışmanında bu kuyruk fonksiyonuna ait yeni bulgu yoktur. Paylaşılan projedeki Franchise dışı önceki uyarılar bu kapsamda değiştirilmemiştir.
 
+## Public franchise başvuru yüzeyi
+
+- `franchise-basvuru/` altında staging olarak açıkça etiketlenen responsive başvuru ekranı hazırlandı.
+- KVKK aydınlatma teyidi, başvuru verilerinin işlenmesi ve isteğe bağlı ticari ileti kararı üç ayrı kutu ve üç ayrı API alanıdır. İlk ikisi başvuru için zorunlu, ticari ileti isteğe bağlıdır.
+- Form çift gönderimi kilitler, bot honeypot alanı taşır ve mevcut `public-api/franchise-applications` sözleşmesini kullanır.
+- T.C. kimlik numarası, banka bilgisi ve finansal belge açık web formunda toplanmaz. Bunlar ön değerlendirme sonrasında kimliği doğrulanmış özel aday portalı ve özel Storage üzerinden alınacaktır.
+- Bu ekranın hazırlanması canlı `ototr.com/franchise` kaynağının değiştirildiğini kanıtlamaz. Üretim alan adı, hukuk metni onayı ve doğrulanmış canlı endpoint kabulü tamamlanana kadar G16/R28 `BLOCKED/EXTERNAL_PENDING` kalır.
+
 ## Sınır
 
 Bu doğrulama staging şema kurulumu ve rollback kabiliyetini kanıtlar. Gerçek ERP/sağlayıcı uçları, departman UAT imzaları, yayın penceresi ve kullanıcı canlı onayı ayrıca gereklidir. Yayın kararı `NO_GO` kalır.
