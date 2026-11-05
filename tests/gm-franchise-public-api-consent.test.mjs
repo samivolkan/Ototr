@@ -4,6 +4,11 @@ import test from 'node:test';
 
 const source=await readFile(new URL('../supabase/functions/public-api/index.ts',import.meta.url),'utf8');
 
+test('staging preview origin is explicitly allowed without wildcard hosts',()=>{
+  assert.match(source,/host === "raw\.githack\.com"/);
+  assert.doesNotMatch(source,/endsWith\("\.githack\.com"\)/);
+});
+
 test('public franchise API maps separate processing consent without breaking legacy clients',()=>{
   assert.match(source,/hasOwnProperty\.call\(payload, "processingConsent"\)/);
   assert.match(source,/processing_consent:[\s\S]*\? cleanBool\(payload\.processingConsent\)[\s\S]*: null/);

@@ -7,7 +7,7 @@ test('public form separates privacy processing and optional commercial communica
  assert.match(js,/kvkkConsent:data\.get\('kvkkConsent'\)==='on'/);assert.match(js,/processingConsent:data\.get\('processingConsent'\)==='on'/);assert.match(js,/contactConsent:data\.get\('contactConsent'\)==='on'/);
 });
 test('public form collects evaluation profile but never asks for raw identity or financial documents',()=>{
- for(const name of ['fullName','phone','province','district','budget','equityBand','managementExperienceYears','companyStatus','partnershipStructure','hasLocation'])assert.match(html,new RegExp(`name="${name}"`));
+ for(const name of ['fullName','phone','province','district','budget','equityBand','managementExperienceYears','sectorExperience','companyStatus','partnershipStructure','hasLocation'])assert.match(html,new RegExp(`name="${name}"`));
  assert.doesNotMatch(html,/name="(?:tc|tckn|identity|financialDocument|iban|bank)/i);assert.match(html,/yalnız kimliği doğrulanmış özel aday portalında/);
 });
 test('submission is staging labeled, double-click locked and uses current public API contract',()=>{

@@ -29,6 +29,7 @@ function originAllowed(origin: string | null): boolean {
     return (
       host === "localhost" ||
       host === "127.0.0.1" ||
+      host === "raw.githack.com" ||
       host.endsWith(".github.io") ||
       host === "ototr.com.tr" ||
       host === "www.ototr.com.tr"
@@ -192,6 +193,11 @@ async function createFranchise(req: Request): Promise<Response> {
         : null,
       application_type: cleanText(payload.applicationType, 160),
       budget: cleanText(payload.budget, 80),
+      equity_band: cleanText(payload.equityBand, 80) || null,
+      management_experience_years: cleanInt(payload.managementExperienceYears),
+      sector_experience: cleanText(payload.sectorExperience, 80) || null,
+      company_status: cleanText(payload.companyStatus, 80) || null,
+      partnership_structure: cleanText(payload.partnershipStructure, 80) || null,
       region: cleanText(payload.region, 80),
       has_location: cleanText(payload.hasLocation, 80),
       square_meters: cleanText(payload.squareMeters, 40),
