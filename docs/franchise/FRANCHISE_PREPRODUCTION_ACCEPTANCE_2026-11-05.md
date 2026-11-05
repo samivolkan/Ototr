@@ -22,6 +22,7 @@ Karar: **NO_GO**
 - Rol sahibi ve sıralı aşama geçişi; atlama/yanlış rol reddi ve değiştirilemez yaşam döngüsü geçmişi
 - Kanıtlı 30/60/90 tamamlama, SLA görünümü ve yeniden açmada maker–checker
 - Yedi boyutlu, kanıtlı ve rol ayrımlı aday puanlaması; skor yalnız öneri üretir, nihai karar bağımsız kurul maker–checker onayıdır
+- Kurul sonrası skor revizyonunda eski kararın otomatik geçersizleşmesi ve yeniden bağımsız onay zorunluluğu
 
 ## NO_GO kapıları
 

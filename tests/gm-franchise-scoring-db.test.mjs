@@ -12,4 +12,6 @@ test('board decision is independent maker checker and gates stage',()=>{
   assert.match(sql,/maker_id<>\(select auth\.uid\(\)\)/);assert.match(sql,/kendi kurul kararını onaylayamaz/);
   assert.match(sql,/Skor önerisinden sapma gerekçesi zorunludur/);
   assert.match(sql,/old\.stage=7 and new\.stage=8/);
+  assert.match(sql,/franchise_score_supersedes_board_trigger/);
+  assert.match(sql,/b\.superseded_at is null/);
 });

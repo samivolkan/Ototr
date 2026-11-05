@@ -2,7 +2,10 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
   REQUIRED_ROLES,
+  SCORE_DIMENSIONS,
   activateFranchiseCase,
+  candidateScoreRecommendation,
+  candidateScoreValue,
   createFranchiseCase,
   completeFollowUp,
   OPENING_EVIDENCE_GATES,
@@ -12,8 +15,11 @@ import {
   requestFollowUpReopen,
   reviewException,
   reviewOpeningEvidence,
+  reviewBoardDecision,
   reviewFollowUpReopen,
   submitOpeningEvidence,
+  submitBoardDecision,
+  submitCandidateScore,
   updateStaffCompliance
 } from '../gm-franchise/franchise-core.mjs';
 
@@ -42,6 +48,30 @@ test('new application produces one canonical franchise case and mandatory staffi
   assert.equal(c.applicationId, 'APP-TEST-1');
   assert.equal(c.staffing.length, 10);
   assert.equal(c.stage, 0);
+});
+
+test('seven role-owned score dimensions produce recommendation but not final decision', () => {
+  const c = createFranchiseCase({ id: 'FR-SCORE-1' });
+  const values = [84, 82, 80, 85, 81, 84, 86];
+  SCORE_DIMENSIONS.forEach((dimension, index) => submitCandidateScore(c, dimension.code, {
+    score: values[index], assessorId: `actor-${index}`, assessorRole: dimension.ownerRoles[0], evidenceSha256: String(index + 1).repeat(64), rationale: 'Sentetik değerlendirme kanıtı'
+  }));
+  assert.equal(candidateScoreValue(c), 83.15);
+  assert.equal(candidateScoreRecommendation(candidateScoreValue(c)), 'strong');
+  assert.equal(c.boardDecision, null);
+  assert.throws(() => submitCandidateScore(c, 'financial_capacity', { score: 90, assessorId: 'legal', assessorRole: 'hk', evidenceSha256: 'a'.repeat(64), rationale: 'Yetkisiz deneme' }), /rol yetkili değil/);
+});
+
+test('board decision requires franchise director maker and independent GM checker', () => {
+  const c = createFranchiseCase({ id: 'FR-SCORE-2' });
+  SCORE_DIMENSIONS.forEach((dimension) => submitCandidateScore(c, dimension.code, { score: 82, assessorId: dimension.code, assessorRole: dimension.ownerRoles[0], evidenceSha256: 'b'.repeat(64), rationale: 'Sentetik kurul kanıtı' }));
+  assert.throws(() => submitBoardDecision(c, { decision: 'approved', makerId: 'fu-1', makerRole: 'fu' }), /Franchise Direktörü/);
+  submitBoardDecision(c, { decision: 'approved', makerId: 'fd-1', makerRole: 'fd' });
+  assert.throws(() => reviewBoardDecision(c, { checkerId: 'fd-1', checkerRole: 'gm', approve: true }), /kendi kararını/);
+  reviewBoardDecision(c, { checkerId: 'gm-1', checkerRole: 'gm', approve: true });
+  assert.equal(c.boardDecision.status, 'approved');
+  submitCandidateScore(c, 'financial_capacity', { score: 83, assessorId: 'finance-2', assessorRole: 'fn', evidenceSha256: 'c'.repeat(64), rationale: 'Kurul sonrası finans revizyonu' });
+  assert.equal(c.boardDecision.status, 'superseded');
 });
 
 test('activation fails closed while documents and staffing are incomplete', () => {

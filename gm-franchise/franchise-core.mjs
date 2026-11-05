@@ -19,6 +19,65 @@ export const FOLLOW_UP_TEMPLATES = [
 
 export const NON_WAIVABLE_EXCEPTION_TYPES = new Set(["legal", "license", "payment"]);
 
+export const SCORE_DIMENSIONS = Object.freeze([
+  { code: "financial_capacity", label: "Finansal yeterlilik", weight: 25, ownerRoles: ["fn"] },
+  { code: "management_experience", label: "Yönetim deneyimi", weight: 15, ownerRoles: ["fu", "fd"] },
+  { code: "brand_ethics_fit", label: "Marka ve etik uyumu", weight: 15, ownerRoles: ["hk", "fd"] },
+  { code: "location_potential", label: "Lokasyon potansiyeli", weight: 15, ownerRoles: ["op"] },
+  { code: "operational_capability", label: "Operasyonel yeterlilik", weight: 10, ownerRoles: ["op"] },
+  { code: "background_references", label: "Referans / geçmiş kontrolü", weight: 10, ownerRoles: ["hk"] },
+  { code: "growth_potential", label: "Büyüme potansiyeli", weight: 10, ownerRoles: ["fu", "fd"] }
+]);
+
+export function candidateScoreValue(franchiseCase) {
+  if (!SCORE_DIMENSIONS.every((dimension) => franchiseCase.candidateScores?.[dimension.code])) return null;
+  return Number((SCORE_DIMENSIONS.reduce((sum, dimension) => sum + franchiseCase.candidateScores[dimension.code].score * dimension.weight, 0) / 100).toFixed(2));
+}
+
+export function candidateScoreRecommendation(value) {
+  if (value === null || value === undefined) return "incomplete";
+  if (value >= 80) return "strong";
+  if (value >= 65) return "conditional";
+  if (value >= 50) return "manager_review";
+  return "not_suitable";
+}
+
+export function submitCandidateScore(franchiseCase, dimensionCode, input = {}) {
+  const dimension = SCORE_DIMENSIONS.find((item) => item.code === dimensionCode);
+  if (!dimension) throw new Error("Bilinmeyen aday skoru başlığı.");
+  if (!dimension.ownerRoles.includes(input.assessorRole)) throw new Error("Bu skor başlığı için rol yetkili değil.");
+  const score = Number(input.score);
+  if (!Number.isFinite(score) || score < 0 || score > 100) throw new Error("Skor 0 ile 100 arasında olmalıdır.");
+  if (!/^[a-f0-9]{64}$/.test(String(input.evidenceSha256 || ""))) throw new Error("Skor kanıtı SHA-256 özeti zorunludur.");
+  if (String(input.rationale || "").trim().length < 5) throw new Error("Skor gerekçesi zorunludur.");
+  franchiseCase.candidateScores ||= {};
+  const previous = franchiseCase.candidateScores[dimensionCode];
+  franchiseCase.candidateScores[dimensionCode] = { score, assessorId: input.assessorId, assessorRole: input.assessorRole, evidenceSha256: input.evidenceSha256, rationale: String(input.rationale).trim(), revision: (previous?.revision || 0) + 1 };
+  if (franchiseCase.boardDecision) franchiseCase.boardDecision.status = "superseded";
+  franchiseCase.score = candidateScoreValue(franchiseCase) ?? 0;
+  return franchiseCase.candidateScores[dimensionCode];
+}
+
+export function submitBoardDecision(franchiseCase, input = {}) {
+  if (input.makerRole !== "fd") throw new Error("Kurul kararını Franchise Direktörü hazırlamalıdır.");
+  if (candidateScoreValue(franchiseCase) === null) throw new Error("Yedi aday skoru tamamlanmalıdır.");
+  if (!["approved", "conditionally_approved", "rejected"].includes(input.decision)) throw new Error("Geçersiz kurul kararı.");
+  if (input.decision === "conditionally_approved" && String(input.conditions || "").trim().length < 5) throw new Error("Şartlı onay koşulları zorunludur.");
+  franchiseCase.boardDecision = { decision: input.decision, conditions: String(input.conditions || "").trim() || null, makerId: input.makerId, makerRole: input.makerRole, status: "pending_second_approval", checkerId: null, checkerRole: null };
+  return franchiseCase.boardDecision;
+}
+
+export function reviewBoardDecision(franchiseCase, input = {}) {
+  const decision = franchiseCase.boardDecision;
+  if (!decision || decision.status !== "pending_second_approval") throw new Error("İkinci onay bekleyen kurul kararı bulunamadı.");
+  if (!input.checkerId || input.checkerId === decision.makerId) throw new Error("Kararı hazırlayan kendi kararını onaylayamaz.");
+  if (input.checkerRole !== "gm") throw new Error("Kurul ikinci onayını Genel Müdür vermelidir.");
+  decision.status = input.approve ? "approved" : "rejected";
+  decision.checkerId = input.checkerId;
+  decision.checkerRole = input.checkerRole;
+  return decision;
+}
+
 export const OPENING_EVIDENCE_GATES = Object.freeze([
   { code: "entry_fee_payment", label: "%100 giriş bedeli tahsilatı", ownerRole: "fn" },
   { code: "franchise_contract", label: "İmzalı franchise sözleşmesi", ownerRole: "hk" },
@@ -89,6 +148,8 @@ export function createFranchiseCase(input = {}) {
     branchType: input.branchType || "Standart",
     stage: input.stage ?? 0,
     score: input.score ?? 0,
+    candidateScores: input.candidateScores || {},
+    boardDecision: input.boardDecision || null,
     days: input.days ?? 0,
     target: 60,
     paid: input.paid ?? 0,

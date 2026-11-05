@@ -58,6 +58,7 @@ ul.ul{margin:0;padding-left:18px}ul.ul li{margin:3px 0}
 .journey{display:flex;gap:8px;overflow:auto;padding:4px 0 12px}.journey-step{min-width:132px;border:1px solid var(--ln);border-radius:10px;background:var(--pn);padding:10px}.journey-step.done{border-color:#b8dfca;background:#f2fbf6}.journey-step.current{border-color:var(--rd);box-shadow:inset 0 0 0 1px var(--rd)}.journey-step b,.journey-step span{display:block}.journey-step span{font-size:11px;color:var(--mu);margin-top:3px}
 .dept-grid,.portal-grid,.gate-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}.dept-card,.portal-card,.gate-card{border:1px solid var(--ln);border-radius:11px;background:var(--pn);padding:13px}.dept-card h2,.portal-card h2,.gate-card h2{margin-bottom:4px}.dept-card p,.portal-card p,.gate-card p{color:var(--mu);font-size:12px;margin:3px 0 9px}.meter{height:7px;background:var(--ln);border-radius:99px;overflow:hidden;margin:8px 0}.meter i{display:block;height:100%;background:var(--ok)}
 .safe-note{border:1px solid #e7c56e;background:#fff9e9;color:#6e4c00;border-radius:10px;padding:10px 12px;margin-bottom:14px}.stage-chip{display:inline-flex;border-radius:99px;padding:3px 9px;background:var(--sf);font-size:11px}.stage-chip.current{background:#ffe7e5;color:#9a1811}.split{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(280px,.5fr);gap:14px}.approval{display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid var(--ln);padding:8px 0}.approval:last-child{border-bottom:0}.approval small{color:var(--mu)}
+.stat b.decision-status{font-size:20px;line-height:1.2}
 @media(max-width:900px){.split{grid-template-columns:1fr}}
 @media(max-width:760px){.app{grid-template-columns:1fr}aside{position:static;height:auto;flex-direction:row;overflow-x:auto;border-right:0;border-bottom:1px solid var(--ln);padding:6px}aside .logo,.ns{display:none}.nb{white-space:nowrap;width:auto}main{padding:14px}}
 </style>
@@ -94,7 +95,7 @@ ul.ul{margin:0;padding-left:18px}ul.ul li{margin:3px 0}
 </div>
 <div class="mo" id="mo" hidden></div>
 <script type="module">
-import {createFranchiseCase,hireStaff,updateStaffCompliance,openingBlockers,activateFranchiseCase,staffReadyForAccess,requestException,reviewException,ensureOpeningEvidence,submitOpeningEvidence,reviewOpeningEvidence,completeFollowUp,requestFollowUpReopen,reviewFollowUpReopen} from "./franchise-core.mjs";
+import {createFranchiseCase,hireStaff,updateStaffCompliance,openingBlockers,activateFranchiseCase,staffReadyForAccess,requestException,reviewException,ensureOpeningEvidence,submitOpeningEvidence,reviewOpeningEvidence,completeFollowUp,requestFollowUpReopen,reviewFollowUpReopen,SCORE_DIMENSIONS,candidateScoreValue,candidateScoreRecommendation,submitCandidateScore,submitBoardDecision,reviewBoardDecision} from "./franchise-core.mjs";
 const TODAY=new Date("2026-11-05"),KEY="ototr-franchise-e2e-v1";
 const STAGES=["Yeni","Gorusme","Onay","Sozlesme","Onboarding","Kurulum","Aktif"];
 const RN={gm:"Genel Müdür",fd:"Franchise Direktörü",fu:"Franchise Uzmanı",hk:"Hukuk",fn:"Finans / Muhasebe",ik:"İK",ak:"Akademi",sa:"Saha",bt:"BT",ba:"Bayi Sahibi",dn:"Denetçi",td:"Tedarikçi",ad:"Aday Yatırımcı",op:"Operasyon",pz:"Pazarlama",kl:"Kalite",isg:"İSG",mm:"Mimari / Proje"};
@@ -110,7 +111,7 @@ const RJ=["Finansal yetersizlik","Bölge çakışması","Referans olumsuz","Aday
 const PKT=[{ad:"Standart Ekspertiz",fiyat:2500,grup:"Bireysel"},{ad:"Kapsamlı Ekspertiz",fiyat:3500,grup:"Bireysel"},{ad:"Galeri Paketi 5 Rapor",fiyat:12500,grup:"Galeri"},{ad:"Galeri Paketi 10 Rapor",fiyat:23000,grup:"Galeri"},{ad:"Premium Fleet Aylık",fiyat:35000,grup:"Filo"}];
 const BOLGELER={Kadikoy:"Anadolu",Cankaya:"IC Anadolu",Bornova:"Ege",Nilufer:"Marmara",Muratpasa:"Akdeniz",Selcuklu:"IC Anadolu",Osmangazi:"Marmara",Yesilurt:"Karadeniz",Tepebasi:"Marmara"};
 const NAV=[
-["","E2E","UÇTAN UCA MERKEZ"],["e2e","E2E","Yaşam döngüsü",1],["departman","E2E","Departman kapıları",1],["personel","E2E","Personel ve yetki",1],["acilis","E2E","Açılış kurulu",1],["takip","E2E","30/60/90 planı",1],["portallar","E2E","Dış kullanıcı portalları",1],
+["","E2E","UÇTAN UCA MERKEZ"],["e2e","E2E","Yaşam döngüsü",1],["skorlama","E2E","Aday skoru ve kurul",1],["departman","E2E","Departman kapıları",1],["personel","E2E","Personel ve yetki",1],["acilis","E2E","Açılış kurulu",1],["takip","E2E","30/60/90 planı",1],["portallar","E2E","Dış kullanıcı portalları",1],
 ["","YON","YÖNETİM"],["dash","YON","Dashboard",1],["hat","YON","Süreç hattı",1],["inbox","YON","Görev merkezi",1],
 ["","ADY","ADAYLAR"],["pipe","ADY","Aday hattı",1],["gor","ADY","Görüşme ve değerlendirme",1],["belge","ADY","Belge yönetimi",1],
 ["","SUB","AKTİF ŞUBELER"],["sube","SUB","Şubeler ve sözleşme",1],["web","SUB","Web ve Google yorum",1],["paket","SUB","Paket ve fiyatlama",1],
@@ -118,11 +119,11 @@ const NAV=[
 ["","SYS","SİSTEM"],["yetki","SYS","Yetki matrisi",0],["denetim","SYS","Denetim kaydı",0],["model","SYS","Veri modeli",0]
 ];
 const PERM={
-gm:"e2e departman personel acilis takip portallar dash hat inbox pipe gor belge sube web paket fin rapor yetki denetim model",
-fd:"e2e departman personel acilis takip portallar dash hat inbox pipe gor belge sube web paket fin rapor yetki denetim model",
-fu:"e2e departman portallar dash hat inbox pipe gor belge",
-hk:"e2e departman acilis dash hat inbox pipe gor belge sube",
-fn:"e2e departman acilis dash hat inbox pipe fin rapor sube",
+gm:"e2e skorlama departman personel acilis takip portallar dash hat inbox pipe gor belge sube web paket fin rapor yetki denetim model",
+fd:"e2e skorlama departman personel acilis takip portallar dash hat inbox pipe gor belge sube web paket fin rapor yetki denetim model",
+fu:"e2e skorlama departman portallar dash hat inbox pipe gor belge",
+hk:"e2e skorlama departman acilis dash hat inbox pipe gor belge sube",
+fn:"e2e skorlama departman acilis dash hat inbox pipe fin rapor sube",
 ik:"e2e departman personel acilis dash hat inbox pipe gor belge",
 ak:"e2e departman personel acilis dash hat inbox pipe gor",
 sa:"e2e departman acilis dash hat inbox pipe sube",
@@ -131,7 +132,7 @@ ba:"portallar sube fin web",
 dn:"portallar departman acilis",
 td:"portallar",
 ad:"portallar",
-op:"e2e departman acilis hat inbox sube",
+op:"e2e skorlama departman acilis hat inbox sube",
 pz:"e2e departman acilis",
 kl:"e2e departman acilis",
 isg:"e2e departman acilis",
@@ -524,30 +525,46 @@ const E2E_TASKS={
 };
 const DEPT_ROLE={"Franchise":"fd","Finans / Muhasebe":"fn","Hukuk":"hk","İnsan Kaynakları":"ik","Academy":"ak","Operasyon":"op","Tedarik":"td","Bilgi Teknolojileri":"bt","Pazarlama":"pz","Kalite":"kl","İSG":"isg","Mimari / Proje":"mm"};
 let FLOW=createFranchiseCase({id:"FR-DEMO-001",applicationId:"APP-DEMO-001",name:"Bursa Nilüfer OTOTR",candidate:"Demo Yatırımcı A.Ş.",city:"Bursa",district:"Nilüfer",stage:8,score:84,days:31,paid:100,royalty:10,exemption:6,territory:"Nilüfer · 12 km · poligon FR-BRS-01",consents:3,documents:12,documentsTotal:17,history:["05 Kas 2026 · Hukuk · Sözleşme taslağı kurul incelemesine alındı","04 Kas 2026 · Finans · %100 tahsilat test kaydı doğrulandı","03 Kas 2026 · Operasyon · Lokasyon saha ziyareti tamamlandı"]});
+SCORE_DIMENSIONS.forEach((dimension,index)=>submitCandidateScore(FLOW,dimension.code,{score:[84,82,80,85,81,84,86][index],assessorId:dimension.ownerRoles[0]+":seed",assessorRole:dimension.ownerRoles[0],evidenceSha256:String(index+1).repeat(64),rationale:"Sentetik doğrulanmış değerlendirme kanıtı"}));
+submitBoardDecision(FLOW,{decision:"approved",makerId:"fd:seed",makerRole:"fd"});
+reviewBoardDecision(FLOW,{checkerId:"gm:seed",checkerRole:"gm",approve:true});
 let FR_CASES=[FLOW];
 Object.entries(E2E_TASKS).forEach(([d,items],di)=>items.forEach((_,i)=>{if(di<3||i===0)FLOW.tasks[d+"|"+i]=1}));
 const flowTaskCount=()=>Object.keys(FLOW.tasks).length;
 const flowTaskTotal=()=>Object.values(E2E_TASKS).reduce((n,a)=>n+a.length,0);
 const flowDeptPct=d=>Math.round(E2E_TASKS[d].filter((_,i)=>FLOW.tasks[d+"|"+i]).length/E2E_TASKS[d].length*100);
 const pendingExceptions=()=>FLOW.exceptions.filter(x=>x.status==="pending_second_approval");
+const SCORE_LABELS={incomplete:"Eksik",strong:"Güçlü",conditional:"Şartlı",manager_review:"Yönetici incelemesi",not_suitable:"Uygun değil"};
+const BOARD_DECISION_LABELS={approved:"Onay",conditionally_approved:"Şartlı onay",rejected:"Ret"};
+const scoreRecommendationLabel=()=>SCORE_LABELS[candidateScoreRecommendation(candidateScoreValue(FLOW))];
 const flowBlockers=()=>openingBlockers(FLOW,{taskDone:flowTaskCount()===flowTaskTotal(),taskCount:flowTaskCount(),taskTotal:flowTaskTotal(),today:"2026-11-05"});
 const flowStageGate=()=>{
   const s=FLOW.stage;
   if(s===0&&FLOW.consents<3)return"KVKK aydınlatma, veri işleme ve ticari ileti izinleri tamamlanmalı.";
-  if(s===2&&FLOW.score<50)return"Skor 50 altında; yönetim incelemesi olmadan ilerleyemez.";
+  if(s===2&&candidateScoreValue(FLOW)===null)return"Yedi kanıtlı aday skoru tamamlanmalı.";
+  if(s===2&&candidateScoreRecommendation(candidateScoreValue(FLOW))==="not_suitable")return"Skor 50 altında; olumlu kurul kararı olmadan ilerleyemez.";
   if(s===4&&flowDeptPct("Finans / Muhasebe")<67)return"Finansal uygunluk görevleri tamamlanmalı.";
   if(s===6&&flowDeptPct("Hukuk")<67)return"Due diligence ve hukuk incelemesi tamamlanmalı.";
+  if(s===7&&!(FLOW.boardDecision?.status==="approved"&&["approved","conditionally_approved"].includes(FLOW.boardDecision.decision)))return"Bağımsız ikinci onaylı olumlu kurul kararı tamamlanmalı.";
   if(s===8&&(FLOW.paid<100||flowDeptPct("Hukuk")<100||FLOW.documents<FLOW.documentsTotal))return"Sözleşme, zorunlu belgeler ve açılış öncesi %100 tahsilat kapısı tamamlanmalı.";
   if(s>=9&&s<=12&&flowBlockers().length)return flowBlockers()[0]+". Toplam açık: "+flowBlockers().length;
   if(s===13)return"Aktif şube yaşam döngüsünün son aşamasıdır.";
   if(s===12&&pendingExceptions().length)return"Açık istisnalar kapatılmadan açılış kurulu karar veremez.";
   return"";
 };
+function skorlama(){
+  const value=candidateScoreValue(FLOW),recommendation=candidateScoreRecommendation(value),decision=FLOW.boardDecision;
+  const completed=SCORE_DIMENSIONS.filter(d=>FLOW.candidateScores?.[d.code]).length;
+  return`<div class="safe-note"><b>Karar desteği:</b> Ağırlıklı skor yalnız öneri üretir. Nihai karar Franchise Direktörü tarafından hazırlanır ve farklı bir Genel Müdür tarafından ikinci kez onaylanır.</div>
+  <div class="g4"><div class="card stat"><b>${value??"—"}</b><s2>Ağırlıklı skor</s2></div><div class="card stat"><b>${completed}/7</b><s2>Kanıtlı başlık</s2></div><div class="card stat"><b>${H(SCORE_LABELS[recommendation])}</b><s2>Sistem önerisi</s2></div><div class="card stat"><b class="decision-status">${H(({approved:"Onaylandı",pending_second_approval:"İkinci onay bekliyor",rejected:"Reddedildi",superseded:"Skor değişti · yenilenmeli"})[decision?.status]||"Karar yok")}</b><s2>Kurul durumu</s2></div></div>
+  <div class="gate-grid">${SCORE_DIMENSIONS.map(d=>{const entry=FLOW.candidateScores?.[d.code],can=d.ownerRoles.includes(R());return`<div class="gate-card"><h2>${H(d.label)} · %${d.weight}</h2><p>Sorumlu: ${d.ownerRoles.map(r=>RN[r]).join(" / ")} · Revizyon ${entry?.revision||0}</p><div class="row"><input type="number" min="0" max="100" id="score-${d.code}" value="${entry?.score??""}" placeholder="0–100" ${can?'':'disabled'}><button class="btn g sm" data-score-submit="${d.code}" ${can?'':'disabled'}>Kanıtla kaydet</button></div><p>${entry?`Son gerekçe: ${H(entry.rationale)} · Kanıt ${H(entry.evidenceSha256.slice(0,10))}…`:"Henüz kanıtlı puan girilmedi."}</p></div>`}).join("")}</div>
+  <div class="card"><h2>Bağımsız kurul kararı</h2><div class="approval"><span>Sistem önerisi</span><b>${H(SCORE_LABELS[recommendation])}</b></div><div class="approval"><span>${decision?.status==='superseded'?'Geçersizleşen önceki karar':'Nihai karar'}</span><b>${H(BOARD_DECISION_LABELS[decision?.decision]||"Bekliyor")}${decision?.status==='superseded'?' · yeniden karar gerekli':''}</b></div><div class="approval"><span>Hazırlayan / ikinci onay</span><b>${H(decision?.makerRole?RN[decision.makerRole]:"—")} / ${H(decision?.checkerRole?RN[decision.checkerRole]:"—")}</b></div><div class="row"><select id="board-decision" ${R()==='fd'&&completed===7?'':'disabled'}><option value="approved">Onay</option><option value="conditionally_approved">Şartlı onay</option><option value="rejected">Ret</option></select><input id="board-conditions" placeholder="Şart / gerekçe (şartlı onayda zorunlu)" ${R()==='fd'?'':'disabled'}><button class="btn" data-board-submit ${R()==='fd'&&completed===7?'':'disabled'}>Kararı ikinci onaya gönder</button><button class="btn g" data-board-review="approved" ${R()==='gm'&&decision?.status==='pending_second_approval'&&decision?.makerId!==R()+':demo-user'?'':'disabled'}>İkinci onay</button><button class="btn g" data-board-review="rejected" ${R()==='gm'&&decision?.status==='pending_second_approval'&&decision?.makerId!==R()+':demo-user'?'':'disabled'}>Reddet</button></div></div>`;
+}
 function e2e(){
   const gate=flowStageGate(),owner=RN[E2E_STAGE_OWNER[FLOW.stage]],remaining=Math.max(0,FLOW.target-FLOW.days);
   return`<div class="safe-note"><b>Güvenli demo:</b> T.C. kimlik, banka/finans ve sözleşme belgeleri bu ekranda gerçek olarak tutulmaz. Tüm kayıtlar sentetiktir.</div>
   <div class="card"><div class="row"><b>Franchise dosyası</b><select data-case-select>${FR_CASES.map(x=>`<option value="${H(x.id)}" ${x.id===FLOW.id?'selected':''}>${H(x.applicationId)} · ${H(x.candidate)}</option>`).join("")}</select><span class="stage-chip">${H(FLOW.id)}</span></div></div>
-  <div class="g4"><div class="card stat"><b>${FLOW.score}/100</b><s2>Aday skoru</s2></div><div class="card stat"><b>${FLOW.stage+1}/14</b><s2>Yaşam döngüsü</s2></div><div class="card stat"><b>${flowTaskCount()}/${flowTaskTotal()}</b><s2>Departman görevi</s2></div><div class="card stat"><b>${FLOW.paid}%</b><s2>Giriş bedeli tahsilatı</s2></div><div class="card stat"><b>${remaining} gün</b><s2>60 günlük hedefe kalan</s2></div></div>
+  <div class="g4"><div class="card stat"><b>${candidateScoreValue(FLOW)??"—"}/100</b><s2>Aday skoru · ${scoreRecommendationLabel()}</s2></div><div class="card stat"><b>${FLOW.stage+1}/14</b><s2>Yaşam döngüsü</s2></div><div class="card stat"><b>${flowTaskCount()}/${flowTaskTotal()}</b><s2>Departman görevi</s2></div><div class="card stat"><b>${FLOW.paid}%</b><s2>Giriş bedeli tahsilatı</s2></div><div class="card stat"><b>${remaining} gün</b><s2>60 günlük hedefe kalan</s2></div></div>
   <div class="card"><h2>Başvurudan aktif şubeye yaşam döngüsü</h2><div class="journey">${E2E_STAGES.map((x,i)=>`<div class="journey-step ${i<FLOW.stage?'done':i===FLOW.stage?'current':''}"><b>${i+1}. ${x}</b><span>${i<FLOW.stage?'Tamamlandı':i===FLOW.stage?'Sorumlu: '+owner:'Bekliyor'}</span></div>`).join("")}</div></div>
   <div class="split"><div>
     <div class="card"><div class="row" style="justify-content:space-between"><div><h2>${FLOW.name}</h2><p class="nt">${FLOW.candidate} · ${FLOW.territory}</p></div><span class="stage-chip current">${E2E_STAGES[FLOW.stage]}</span></div>
@@ -648,7 +665,7 @@ Madde 12: Münhasır bölge ihlali halinde sözleşme feshedilir.</div>
   ${c.hist.slice(0,10).map(x=>`<div class="al">${H(x)}</div>`).join("")}`;
 }
 /* ══ RENDER ══ */
-const VIEWS={e2e,departman,personel,acilis,takip,portallar,dash,hat,inbox,pipe,gor,belge,sube,web,paket,fin,rapor,yetki,denetim,model};
+const VIEWS={e2e,skorlama,departman,personel,acilis,takip,portallar,dash,hat,inbox,pipe,gor,belge,sube,web,paket,fin,rapor,yetki,denetim,model};
 function render(){
   const perm=PERM[R()].split(" ");
   if(!perm.includes(CUR))CUR=perm[0]||"portallar";
@@ -697,6 +714,12 @@ const A={
 };
 document.addEventListener("click",ev=>{
   if(ev.target===$("mo")){SEL=null;render();return}
+  const scoreSubmit=ev.target.closest("[data-score-submit]");
+  if(scoreSubmit){try{const code=scoreSubmit.dataset.scoreSubmit;submitCandidateScore(FLOW,code,{score:$("score-"+code)?.value,assessorId:R()+":demo-user",assessorRole:R(),evidenceSha256:"c".repeat(64),rationale:"Sentetik rol bazlı değerlendirme kanıtı"});FLOW.history.unshift(DL()+" · "+RN[R()]+" · Aday skoru kanıtla kaydedildi: "+code)}catch(e){FLOW.history.unshift(DL()+" · Sistem · "+e.message)}render();return}
+  const boardSubmit=ev.target.closest("[data-board-submit]");
+  if(boardSubmit){try{submitBoardDecision(FLOW,{decision:$("board-decision")?.value,conditions:$("board-conditions")?.value,makerId:R()+":demo-user",makerRole:R()});FLOW.history.unshift(DL()+" · "+RN[R()]+" · Kurul kararı ikinci onaya gönderildi")}catch(e){FLOW.history.unshift(DL()+" · Sistem · "+e.message)}render();return}
+  const boardReview=ev.target.closest("[data-board-review]");
+  if(boardReview){try{reviewBoardDecision(FLOW,{checkerId:R()+":demo-user",checkerRole:R(),approve:boardReview.dataset.boardReview==="approved"});FLOW.history.unshift(DL()+" · "+RN[R()]+" · Kurul ikinci onayı: "+boardReview.dataset.boardReview)}catch(e){FLOW.history.unshift(DL()+" · Sistem · "+e.message)}render();return}
   const flowAction=ev.target.closest("[data-e2e]");
   if(flowAction){
     const action=flowAction.dataset.e2e;
@@ -759,7 +782,7 @@ NAV.forEach(n=>{
 });
 $("role").addEventListener("change",()=>{SEL=null;render()});
 $("rst").addEventListener("click",()=>{try{localStorage.removeItem(KEY)}catch(e){}location.reload()});
-try{const j=JSON.parse(localStorage.getItem(KEY)||"null");if(j?.C){C=j.C;LOG=j.LOG||[];UID=j.UID||UID;FB=j.FB||1;if(j.CUR&&VIEWS[j.CUR])CUR=j.CUR;if(Array.isArray(j.FR_CASES)&&j.FR_CASES.length){FR_CASES=j.FR_CASES;FLOW=FR_CASES.find(x=>x.id===j.FLOW?.id)||FR_CASES[0]}else if(j.FLOW?.staffing){FLOW=j.FLOW;FR_CASES=[FLOW]}}}catch(e){}FR_CASES.forEach(ensureOpeningEvidence);
+try{const j=JSON.parse(localStorage.getItem(KEY)||"null");if(j?.C){C=j.C;LOG=j.LOG||[];UID=j.UID||UID;FB=j.FB||1;if(j.CUR&&VIEWS[j.CUR])CUR=j.CUR;if(Array.isArray(j.FR_CASES)&&j.FR_CASES.length){FR_CASES=j.FR_CASES;FLOW=FR_CASES.find(x=>x.id===j.FLOW?.id)||FR_CASES[0]}else if(j.FLOW?.staffing){FLOW=j.FLOW;FR_CASES=[FLOW]}}}catch(e){}FR_CASES.forEach(x=>{ensureOpeningEvidence(x);x.candidateScores||={};x.boardDecision??=null});
 render();
 </script>
 </body>

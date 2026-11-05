@@ -44,13 +44,14 @@ create table if not exists public.franchise_board_decisions (
   maker_id uuid not null references auth.users(id) on delete restrict,
   checker_id uuid references auth.users(id) on delete restrict,
   review_note text,
+  superseded_at timestamptz,
   created_at timestamptz not null default now(),
   reviewed_at timestamptz,
   check (checker_id is null or checker_id<>maker_id),
   check ((final_decision='conditionally_approved')=(conditions is not null and length(trim(conditions))>=5)),
   check ((status='pending_second_approval' and checker_id is null and reviewed_at is null) or (status in ('approved','rejected') and checker_id is not null and reviewed_at is not null))
 );
-create unique index if not exists franchise_board_one_pending_idx on public.franchise_board_decisions(franchise_case_id) where status='pending_second_approval';
+create unique index if not exists franchise_board_one_pending_idx on public.franchise_board_decisions(franchise_case_id) where status='pending_second_approval' and superseded_at is null;
 
 alter table public.franchise_score_dimensions enable row level security;
 alter table public.franchise_candidate_score_entries enable row level security;
@@ -117,6 +118,20 @@ begin
 end;
 $$;
 
+create or replace function public.supersede_franchise_board_on_score_change()
+returns trigger
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+begin
+  update public.franchise_board_decisions set superseded_at=now()
+  where franchise_case_id=new.franchise_case_id and superseded_at is null;
+  return new;
+end;
+$$;
+create trigger franchise_score_supersedes_board_trigger after insert on public.franchise_candidate_score_entries for each row execute function public.supersede_franchise_board_on_score_change();
+
 create or replace function public.submit_franchise_board_decision(p_case_id uuid,p_final_decision text,p_conditions text,p_deviation_rationale text)
 returns uuid
 language plpgsql
@@ -150,7 +165,7 @@ begin
   if not found then raise exception 'Kurul kararı bulunamadı veya erişim yok'; end if;
   if v_decision.maker_id=auth.uid() then raise exception 'Kararı hazırlayan kendi kurul kararını onaylayamaz'; end if;
   if public.franchise_claim_role()<>'gm' then raise exception 'Kurul ikinci onayı Genel Müdür tarafından verilmelidir'; end if;
-  update public.franchise_board_decisions set status=case when p_approve then 'approved' else 'rejected' end,checker_id=auth.uid(),reviewed_at=now(),review_note=left(trim(coalesce(p_note,'')),2000) where id=p_decision_id and status='pending_second_approval';
+  update public.franchise_board_decisions set status=case when p_approve then 'approved' else 'rejected' end,checker_id=auth.uid(),reviewed_at=now(),review_note=left(trim(coalesce(p_note,'')),2000) where id=p_decision_id and status='pending_second_approval' and superseded_at is null;
   if not found then raise exception 'Kurul kararı daha önce sonuçlandı'; end if;
 end;
 $$;
@@ -163,7 +178,7 @@ set search_path = public, pg_temp
 as $$
 begin
   if old.stage=2 and new.stage=3 and public.franchise_score_value(old.id) is null then raise exception 'Yedi başlıklı kanıtlı aday skoru tamamlanmadan sunuma geçilemez'; end if;
-  if old.stage=7 and new.stage=8 and not exists(select 1 from public.franchise_board_decisions b where b.franchise_case_id=old.id and b.status='approved' and b.final_decision in ('approved','conditionally_approved')) then raise exception 'Bağımsız onaylı olumlu kurul kararı olmadan sözleşme aşamasına geçilemez'; end if;
+  if old.stage=7 and new.stage=8 and not exists(select 1 from public.franchise_board_decisions b where b.franchise_case_id=old.id and b.status='approved' and b.superseded_at is null and b.final_decision in ('approved','conditionally_approved')) then raise exception 'Bağımsız onaylı olumlu kurul kararı olmadan sözleşme aşamasına geçilemez'; end if;
   return new;
 end;
 $$;
@@ -172,6 +187,7 @@ create trigger franchise_scoring_stage_gate_trigger before update of stage on pu
 revoke all on function public.franchise_score_value(uuid) from public,anon;
 revoke all on function public.franchise_score_recommendation(numeric) from public,anon;
 revoke all on function public.submit_franchise_score(uuid,text,numeric,text,text) from public,anon;
+revoke all on function public.supersede_franchise_board_on_score_change() from public,anon;
 revoke all on function public.submit_franchise_board_decision(uuid,text,text,text) from public,anon;
 revoke all on function public.review_franchise_board_decision(uuid,boolean,text) from public,anon;
 revoke all on function public.franchise_scoring_stage_gate() from public,anon;

@@ -3,6 +3,8 @@
 begin;
 drop trigger if exists franchise_scoring_stage_gate_trigger on public.franchise_cases;
 drop function if exists public.franchise_scoring_stage_gate();
+drop trigger if exists franchise_score_supersedes_board_trigger on public.franchise_candidate_score_entries;
+drop function if exists public.supersede_franchise_board_on_score_change();
 drop function if exists public.review_franchise_board_decision(uuid,boolean,text);
 drop function if exists public.submit_franchise_board_decision(uuid,text,text,text);
 drop function if exists public.submit_franchise_score(uuid,text,numeric,text,text);

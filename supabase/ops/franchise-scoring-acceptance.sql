@@ -52,6 +52,16 @@ do $$ declare v_id uuid; begin
 end $$;
 set local request.jwt.claims='{"sub":"e1000000-0000-4000-8000-000000000006","app_metadata":{"franchise_role":"gm"}}';
 select public.review_franchise_board_decision((select id from public.franchise_board_decisions where franchise_case_id='e2000000-0000-4000-8000-000000000002' and status='pending_second_approval'),true,'Bağımsız GM onayı');
+set local request.jwt.claims='{"sub":"e1000000-0000-4000-8000-000000000002","app_metadata":{"franchise_role":"finance"}}';
+select public.submit_franchise_score('e2000000-0000-4000-8000-000000000002','financial_capacity',83,repeat('3',64),'Kurul sonrası sentetik finans revizyonu');
+set local request.jwt.claims='{"sub":"e1000000-0000-4000-8000-000000000005","app_metadata":{"franchise_role":"franchise_director"}}';
+do $$ begin
+  begin perform public.transition_franchise_case('e2000000-0000-4000-8000-000000000002',7::smallint,'Eski kurul kararıyla geçiş'); raise exception 'superseded board gate bypassed';
+  exception when others then if sqlerrm not like 'Bağımsız onaylı olumlu kurul%' then raise; end if; end;
+end $$;
+select public.submit_franchise_board_decision('e2000000-0000-4000-8000-000000000002','approved',null,null);
+set local request.jwt.claims='{"sub":"e1000000-0000-4000-8000-000000000006","app_metadata":{"franchise_role":"gm"}}';
+select public.review_franchise_board_decision((select id from public.franchise_board_decisions where franchise_case_id='e2000000-0000-4000-8000-000000000002' and status='pending_second_approval' and superseded_at is null),true,'Revizyon sonrası bağımsız GM onayı');
 set local request.jwt.claims='{"sub":"e1000000-0000-4000-8000-000000000005","app_metadata":{"franchise_role":"franchise_director"}}';
 select (public.transition_franchise_case('e2000000-0000-4000-8000-000000000002',7::smallint,'Kurul onayı tamamlandı')).stage=8 as approved_board_opens_stage_gate;
 reset role;

@@ -41,6 +41,7 @@ Yerel ve geçici Supabase PostgreSQL konteynerinde migration, güvenlik doğrula
 - Sentetik adayın ağırlıklı skoru `83,15` hesaplandı ve eşik motoru yalnız `strong` önerisi üretti.
 - Yedi skor tamamlanmadan ön değerlendirme kapısı; bağımsız, olumlu kurul kararı olmadan ön onay kapısı açılmadı.
 - Franchise direktörünün hazırladığı kurul kararını kendisinin onaylaması reddedildi; bağımsız GM kontrolü sonrası aşama ilerledi.
+- Kurul onayından sonra herhangi bir skor revizyonu eski kararı geçersiz kıldı; yeni bağımsız kurul onayı olmadan aşama yeniden kilitlendi.
 - Rollback Storage politikalarını önce kaldırdı, tüm franchise tablolarını ve bucket'ı temizledi.
 - Test konteyneri çalışma sonunda kaldırıldı.
 

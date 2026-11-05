@@ -67,3 +67,4 @@ select count(*)=17 as standard_document_requirements_complete from public.franch
 select not has_table_privilege('anon','public.franchise_case_stage_history','SELECT') as anon_cannot_read_stage_history;
 select to_regclass('public.franchise_followup_status_v') is not null as followup_sla_view_exists;
 select count(*)=7 and sum(weight)=100 as score_dimensions_complete from public.franchise_score_dimensions where is_active;
+select exists(select 1 from information_schema.columns where table_schema='public' and table_name='franchise_board_decisions' and column_name='superseded_at') as score_revision_invalidates_board_ready;
