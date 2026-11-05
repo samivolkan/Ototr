@@ -10,6 +10,14 @@ insert into auth.users(id,email,raw_app_meta_data,created_at,updated_at) values
 insert into public.franchise_cases(id,application_no,candidate_name,city,district,branch_type,paid_percent)
 values('b2000000-0000-4000-8000-000000000001','APP-EVIDENCE-UAT','Sentetik Kanıt Adayı','Bursa','Nilüfer','standard',100);
 
+insert into public.franchise_consent_receipts(franchise_case_id,subject_id,purpose,status,notice_version,source,evidence_sha256) values
+('b2000000-0000-4000-8000-000000000001','b1000000-0000-4000-8000-000000000002','privacy_notice','granted','2026.11','web',repeat('1',64)),
+('b2000000-0000-4000-8000-000000000001','b1000000-0000-4000-8000-000000000002','data_processing','granted','2026.11','web',repeat('2',64)),
+('b2000000-0000-4000-8000-000000000001','b1000000-0000-4000-8000-000000000002','commercial_communication','granted','2026.11','web',repeat('3',64));
+insert into public.franchise_documents(franchise_case_id,storage_path,category,uploaded_by,mime_type,size_bytes,document_code,evidence_sha256,status,approved_by,approved_at)
+select 'b2000000-0000-4000-8000-000000000001','b2000000-0000-4000-8000-000000000001/'||document_code||'.pdf',category,'b1000000-0000-4000-8000-000000000001','application/pdf',1024,document_code,repeat('a',64),'approved','b1000000-0000-4000-8000-000000000002',now()
+from public.franchise_document_requirements where branch_type='standard' and is_active;
+
 insert into public.franchise_staff(franchise_case_id,role_key,role_name,person_name,recruitment_status,employment_documents_complete,contract_signed,certification_required,academy_completed,certificate_valid_until,access_status)
 select 'b2000000-0000-4000-8000-000000000001',role_key,role_name,'Sentetik '||role_name,'hired',true,true,certification_required,certification_required,case when certification_required then current_date+365 else null end,'ready'
 from public.franchise_staffing_rules where branch_type='standard' and is_active;

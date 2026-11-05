@@ -10,6 +10,19 @@ insert into auth.users(id,email,raw_app_meta_data,created_at,updated_at) values
 insert into public.franchise_cases(id,application_no,candidate_name,city,district,branch_type)
 values('a2000000-0000-4000-8000-000000000001','APP-STAFF-UAT','Sentetik Kadro Adayı','Bursa','Nilüfer','standard');
 
+insert into public.franchise_consent_receipts(franchise_case_id,subject_id,purpose,status,notice_version,source,evidence_sha256) values
+('a2000000-0000-4000-8000-000000000001','a1000000-0000-4000-8000-000000000002','privacy_notice','granted','2026.11','web',repeat('1',64)),
+('a2000000-0000-4000-8000-000000000001','a1000000-0000-4000-8000-000000000002','data_processing','granted','2026.11','web',repeat('2',64)),
+('a2000000-0000-4000-8000-000000000001','a1000000-0000-4000-8000-000000000002','commercial_communication','granted','2026.11','web',repeat('3',64));
+insert into public.franchise_documents(franchise_case_id,storage_path,category,uploaded_by,mime_type,size_bytes,document_code,evidence_sha256,status,approved_by,approved_at)
+select 'a2000000-0000-4000-8000-000000000001','a2000000-0000-4000-8000-000000000001/'||document_code||'.pdf',category,'a1000000-0000-4000-8000-000000000001','application/pdf',1024,document_code,repeat('a',64),'approved','a1000000-0000-4000-8000-000000000002',now()
+from public.franchise_document_requirements where branch_type='standard' and is_active;
+insert into public.franchise_opening_evidence(franchise_case_id,gate_code,status,evidence_sha256,source_reference,details,maker_id,checker_id,reviewed_at) values
+('a2000000-0000-4000-8000-000000000001','entry_fee_payment','approved',repeat('a',64),'PAY-UAT','{"paid_percent":"100","payment_reference":"PAY-UAT"}','a1000000-0000-4000-8000-000000000002','a1000000-0000-4000-8000-000000000001',now()),
+('a2000000-0000-4000-8000-000000000001','franchise_contract','approved',repeat('b',64),'CON-UAT','{"signed":true,"contract_no":"CON-UAT","signature_method":"esign"}','a1000000-0000-4000-8000-000000000002','a1000000-0000-4000-8000-000000000001',now()),
+('a2000000-0000-4000-8000-000000000001','site_visit','approved',repeat('c',64),'SITE-UAT','{"inspector_approved":true,"measurements_complete":true,"photo_count":4,"latitude":"40.1","longitude":"29.1"}','a1000000-0000-4000-8000-000000000002','a1000000-0000-4000-8000-000000000001',now()),
+('a2000000-0000-4000-8000-000000000001','operating_license','approved',repeat('d',64),'LIC-UAT','{"valid":true,"license_no":"LIC-UAT"}','a1000000-0000-4000-8000-000000000002','a1000000-0000-4000-8000-000000000001',now());
+
 do $$
 begin
   begin

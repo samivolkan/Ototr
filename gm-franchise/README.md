@@ -22,4 +22,6 @@ Yeni başvuru artık bir `applicationId` ve franchise dosyası üretir. Şube ak
 
 Veritabanı açılış kapısı ayrıca %100 tahsilat, imzalı franchise sözleşmesi, konum/fotoğraf/ölçüm/denetçi onaylı saha ziyareti ve geçerli ruhsat için SHA-256 kanıtı ile bağımsız maker–checker onayı ister. Bu dört kapı istisnayla aşılamaz.
 
+`consent_count` ve `document_count` yalnız özet alanlarıdır. Açılışta son üç izin makbuzu ile şube tipinin zorunlu belge kataloğu gerçek tablolardan yeniden hesaplanır; geri çekilmiş izin, onaysız, eksik veya süresi geçmiş belge kapıyı kapatır.
+
 Supabase/PostgreSQL ana şeması `supabase/migrations/20261105010000_franchise_end_to_end.sql`, izin/şablon/sağlayıcı yönetişimi ise `supabase/migrations/20261105020000_franchise_provider_governance.sql` dosyasındadır. Migration'lar uzak/üretim veritabanına staging doğrulaması ve kullanıcı kabulü olmadan uygulanmamalıdır.

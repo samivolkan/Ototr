@@ -24,6 +24,14 @@ reset role;
 insert into public.franchise_cases(id,application_no,candidate_name,city,district,stage,score,consent_count,document_count,document_total,paid_percent,status,created_by)
 values('22222222-2222-4222-8222-222222222222','APP-STAGING-ACCEPTANCE','Sentetik Kabul Adayı','Bursa','Nilüfer',12,84,3,17,17,100,'approved','11111111-1111-4111-8111-111111111111');
 
+insert into public.franchise_consent_receipts(franchise_case_id,subject_id,purpose,status,notice_version,source,evidence_sha256) values
+('22222222-2222-4222-8222-222222222222','11111111-1111-4111-8111-111111111112','privacy_notice','granted','2026.11','web',repeat('1',64)),
+('22222222-2222-4222-8222-222222222222','11111111-1111-4111-8111-111111111112','data_processing','granted','2026.11','web',repeat('2',64)),
+('22222222-2222-4222-8222-222222222222','11111111-1111-4111-8111-111111111112','commercial_communication','granted','2026.11','web',repeat('3',64));
+insert into public.franchise_documents(franchise_case_id,storage_path,category,uploaded_by,mime_type,size_bytes,document_code,evidence_sha256,status,approved_by,approved_at)
+select '22222222-2222-4222-8222-222222222222','22222222-2222-4222-8222-222222222222/'||document_code||'.pdf',category,'11111111-1111-4111-8111-111111111111','application/pdf',1024,document_code,repeat('a',64),'approved','11111111-1111-4111-8111-111111111112',now()
+from public.franchise_document_requirements where branch_type='standard' and is_active;
+
 set local role authenticated;
 set local request.jwt.claims='{"sub":"11111111-1111-4111-8111-111111111111","app_metadata":{"franchise_role":"gm","franchise_branch_ids":[]}}';
 do $$

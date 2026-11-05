@@ -9,7 +9,7 @@ Yerel ve geçici Supabase PostgreSQL konteynerinde migration, güvenlik doğrula
 
 ## Kanıtlanan davranışlar
 
-- Altı Franchise migration'ı (ana şema, sağlayıcı yönetişimi, sağlayıcı worker, departman RBAC, kadro ve açılış kanıt kapıları) gerçek PostgreSQL motorunda hatasız commit edildi.
+- Yedi Franchise migration'ı (ana şema, sağlayıcı yönetişimi, sağlayıcı worker, departman RBAC, kadro, açılış kanıtı ve gerçek kayıt kapıları) gerçek PostgreSQL motorunda hatasız commit edildi.
 - 13 public franchise tablosunda RLS açık.
 - `anon`, franchise dosyalarını ve belgeleri okuyamıyor.
 - Özel Storage bucket `public=false`, 20 MB ve MIME sınırlarıyla oluştu.
@@ -30,6 +30,9 @@ Yerel ve geçici Supabase PostgreSQL konteynerinde migration, güvenlik doğrula
 - İK, Academy ve BT rollerinin yalnız kendi personel alanlarını değiştirebildiği gerçek JWT/RLS oturumlarıyla doğrulandı.
 - %100 tahsilat, imzalı sözleşme, fotoğraf/ölçüm/konum içeren saha ziyareti ve geçerli ruhsat kanıtları olmadan şube kaydı reddedildi.
 - Kanıtı oluşturan kullanıcının kendi kaydını onaylayamadığı; bağımsız GM onayından sonra dört kapının birlikte açıldığı doğrulandı.
+- Dosyadaki `3/3` ve `17/17` sayaçları dolu olsa bile gerçek izin makbuzu ve onaylı belge olmadan şube açılışı reddedildi.
+- Son ticari ileti izni geri çekildiğinde kapının kapandığı; daha yeni geçerli makbuzla yeniden açıldığı doğrulandı.
+- Standart şube kataloğunda 16 belge reddedildi, 17 onaylı ve süresi geçmemiş belge kabul edildi.
 - Rollback Storage politikalarını önce kaldırdı, tüm franchise tablolarını ve bucket'ı temizledi.
 - Test konteyneri çalışma sonunda kaldırıldı.
 
@@ -41,6 +44,7 @@ Yerel ve geçici Supabase PostgreSQL konteynerinde migration, güvenlik doğrula
 - `supabase/migrations/20261105040000_franchise_department_rbac.sql`
 - `supabase/migrations/20261105050000_franchise_staffing_gates.sql`
 - `supabase/migrations/20261105060000_franchise_opening_evidence.sql`
+- `supabase/migrations/20261105070000_franchise_record_gates.sql`
 - `supabase/ops/franchise-local-contract-stubs.sql`
 - `supabase/ops/franchise-staging-verify.sql`
 - `supabase/ops/franchise-activation-acceptance.sql`
@@ -48,6 +52,7 @@ Yerel ve geçici Supabase PostgreSQL konteynerinde migration, güvenlik doğrula
 - `supabase/ops/franchise-rbac-acceptance.sql`
 - `supabase/ops/franchise-staffing-acceptance.sql`
 - `supabase/ops/franchise-opening-evidence-acceptance.sql`
+- `supabase/ops/franchise-record-gates-acceptance.sql`
 - `supabase/ops/franchise-rollback.sql`
 
 ## Kalan sınır
