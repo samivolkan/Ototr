@@ -1,6 +1,7 @@
 import {createHash} from 'node:crypto';
 import {readFile,writeFile} from 'node:fs/promises';
-import {pathToFileURL} from 'node:url';
+import {resolve,relative} from 'node:path';
+import {fileURLToPath,pathToFileURL} from 'node:url';
 import {FRANCHISE_INTEGRATIONS} from './integration-adapters.mjs';
 import {PROVIDER_CHANNELS} from './integration-readiness.mjs';
 
@@ -9,6 +10,7 @@ const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]
 const PROHIBITED_KEYS=/(authorization|token|secret|password|headers?|requestbody|responsebody|payload|fullname|phone|emailaddress|identity|financialdocument)/i;
 
 function assert(condition,message){if(!condition)throw new Error(message)}
+function sha256(value){return createHash('sha256').update(value).digest('hex')}
 function validUtc(value){const date=new Date(value||'');return !Number.isNaN(date.getTime())&&String(value).endsWith('Z')}
 function inspectKeys(value,path='evidence'){
   if(!value||typeof value!=='object')return;
@@ -46,7 +48,7 @@ export function validateAcceptanceEvidence(evidence,{kind,code}={}){
 export function buildAcceptanceRecord(evidenceText,{kind,code}={}){
   const evidence=JSON.parse(evidenceText);
   validateAcceptanceEvidence(evidence,{kind,code});
-  return Object.freeze({configured:true,probeStatus:evidence.probeStatus,evidenceSha256:createHash('sha256').update(evidenceText).digest('hex'),executedBy:evidence.executedBy,acceptedBy:evidence.acceptedBy,acceptedAtUtc:evidence.performedAtUtc});
+  return Object.freeze({configured:true,probeStatus:evidence.probeStatus,evidenceSha256:sha256(evidenceText),executedByRefSha256:sha256(evidence.executedBy),acceptedByRefSha256:sha256(evidence.acceptedBy),acceptedAtUtc:evidence.performedAtUtc});
 }
 
 export function applyAcceptanceRecord(deployment,{kind,code,record}={}){
@@ -62,8 +64,10 @@ function parseArgs(argv){const result={write:false};for(let i=0;i<argv.length;i+
 if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){
   const args=parseArgs(process.argv.slice(2));
   assert(args.kind&&args.code&&args.evidence,'Kullanım: --kind department|provider --code CODE --evidence FILE [--manifest FILE] [--write]');
+  const repositoryRoot=fileURLToPath(new URL('../',import.meta.url)),evidencePath=resolve(args.evidence),evidenceRelative=relative(repositoryRoot,evidencePath);
+  assert(evidenceRelative.startsWith('..'),'Özel kabul kanıtı public repository dışında tutulmalıdır.');
   const manifestPath=args.manifest||new URL('./staging-worker-deployment.json',import.meta.url);
-  const evidenceText=await readFile(args.evidence,'utf8'),deployment=JSON.parse(await readFile(manifestPath,'utf8'));
+  const evidenceText=await readFile(evidencePath,'utf8'),deployment=JSON.parse(await readFile(manifestPath,'utf8'));
   const record=buildAcceptanceRecord(evidenceText,{kind:args.kind,code:args.code}),next=applyAcceptanceRecord(deployment,{kind:args.kind,code:args.code,record});
   if(args.write){await writeFile(manifestPath,`${JSON.stringify(next,null,2)}\n`,'utf8');console.log(JSON.stringify({updated:true,kind:args.kind,code:args.code,record},null,2));}
   else console.log(JSON.stringify({updated:false,dryRun:true,kind:args.kind,code:args.code,record},null,2));
