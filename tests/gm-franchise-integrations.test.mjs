@@ -1,6 +1,15 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import {readFile} from 'node:fs/promises';
 import { FRANCHISE_EVENT_CONTRACTS, FRANCHISE_INTEGRATIONS, createIntegrationOutboxEvent, processIntegrationEvent } from '../gm-franchise/integration-adapters.mjs';
+
+const currentDocs=await Promise.all([
+  '../gm-franchise/README.md',
+  '../gm-franchise/requirements-evidence.json',
+  '../docs/franchise/FRANCHISE_PREPRODUCTION_ACCEPTANCE_2026-11-05.md',
+  '../docs/franchise/FRANCHISE_STAGING_RUNBOOK_2026-11-05.md',
+  '../docs/franchise/FRANCHISE_LOCAL_DB_VERIFICATION_2026-11-05.md'
+].map(path=>readFile(new URL(path,import.meta.url),'utf8')));
 
 test('all required department adapters are declared', () => {
   const required = ['finance','accounting','legal','hr','academy','operations','procurement','it','marketing','quality','ohs','architecture','tasks'];
@@ -41,4 +50,12 @@ test('all 34 department event contracts accept their minimum synthetic payload',
     count++;
   }
   assert.equal(count, 34);
+});
+
+test('current evidence and runbooks match the 13-source 34-event catalog',()=>{
+  for(const document of currentDocs){
+    assert.match(document,/34 sürümlü|34 olay/);
+    assert.doesNotMatch(document,/31 sürümlü|31 olay/);
+  }
+  assert.equal(Object.keys(FRANCHISE_EVENT_CONTRACTS).length,13);
 });

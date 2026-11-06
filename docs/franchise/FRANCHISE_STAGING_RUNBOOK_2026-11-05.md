@@ -16,7 +16,7 @@ Bu rehber yalnız hosted staging Supabase projesi içindir. Üretimde kullanıc�
 10. `franchise-lifecycle-acceptance.sql` ile yanlış rol, aşama atlama ve manuel geçmiş yazımının reddedildiğini kaydet.
 11. Aktivasyon kabulünde 30. gün görevinin Operasyon kanıtıyla kapatıldığını ve maker–checker ile yeniden açıldığını kaydet.
 12. `franchise-scoring-acceptance.sql` ile yedi boyutlu skor, eşik önerisi ve bağımsız kurul kararını doğrula.
-13. `franchise-integration-contract-acceptance.sql` ile 31 sürümlü departman olay sözleşmesini, alan minimizasyonunu ve hassas veri reddini doğrula.
+13. `franchise-integration-contract-acceptance.sql` ile 13 hedef sistemdeki 34 sürümlü departman olay sözleşmesini, alan minimizasyonunu ve hassas veri reddini doğrula.
 14. `franchise-external-portal-acceptance.sql` ile aday, bayi, denetçi ve tedarikçi atama izolasyonunu ve çapraz erişim reddini doğrula.
 15. `franchise-application-intake-acceptance.sql` ile altı başvuru kanalını, idempotent tekil dosyayı ve üç ayrı izin makbuzunu doğrula.
 16. `franchise-finance-acceptance.sql` ile sözleşme/taksit toplamını, Finans–Muhasebe maker-checker ayrımını, `%99` ret / `%100` açılış kapısını, royalty parametrelerini ve mükerrer tahsilat reddini doğrula.

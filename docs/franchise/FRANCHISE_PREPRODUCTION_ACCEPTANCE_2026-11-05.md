@@ -23,7 +23,7 @@ Karar: **NO_GO**
 - Kanıtlı 30/60/90 tamamlama, SLA görünümü ve yeniden açmada maker–checker
 - Yedi boyutlu, kanıtlı ve rol ayrımlı aday puanlaması; skor yalnız öneri üretir, nihai karar bağımsız kurul maker–checker onayıdır
 - Kurul sonrası skor revizyonunda eski kararın otomatik geçersizleşmesi ve yeniden bağımsız onay zorunluluğu
-- 12 hedef sistem için 31 sürümlü departman olay sözleşmesi; alan minimizasyonu, zorunlu alan, sürüm ve hassas veri denetiminin worker ve PostgreSQL katmanlarında birlikte uygulanması
+- 13 hedef sistem için 34 sürümlü departman olay sözleşmesi; alan minimizasyonu, zorunlu alan, sürüm ve hassas veri denetiminin worker ve PostgreSQL katmanlarında birlikte uygulanması
 - Aday, bayi, denetçi ve tedarikçi için atama bazlı RLS; güvenli portal görünümü, persona–iş türü kilidi ve yalnız atanmış kullanıcının kontrollü işlem RPC'si
 - Altı kanaldan idempotent başvuru alımı; tekil franchise dosyası, güvenli profil, üç ayrı izin makbuzu ve ham kimlik/lead verisini saklamama kuralı
 - Yayın kararı artık JSON üzerindeki `GO` etiketine güvenmez; 15 kapı, sekiz hosted staging kanıt özeti, dokuz bağımsız departman imzası, sabit release commit'i ve geçerli değişiklik penceresini kodla yeniden hesaplar

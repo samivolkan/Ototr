@@ -42,7 +42,7 @@ Yerel ve geçici Supabase PostgreSQL konteynerinde migration, güvenlik doğrula
 - Yedi skor tamamlanmadan ön değerlendirme kapısı; bağımsız, olumlu kurul kararı olmadan ön onay kapısı açılmadı.
 - Franchise direktörünün hazırladığı kurul kararını kendisinin onaylaması reddedildi; bağımsız GM kontrolü sonrası aşama ilerledi.
 - Kurul onayından sonra herhangi bir skor revizyonu eski kararı geçersiz kıldı; yeni bağımsız kurul onayı olmadan aşama yeniden kilitlendi.
-- Finans, Hukuk, İK, Academy, Operasyon, Tedarik, BT, Pazarlama, Kalite, İSG, Mimari ve Görev Merkezi için 31 sürümlü olay sözleşmesinin tamamı minimum sentetik yükle kabul edildi.
+- Finans, Muhasebe, Hukuk, İK, Academy, Operasyon, Tedarik, BT, Pazarlama, Kalite, İSG, Mimari ve Görev Merkezi olmak üzere 13 hedef sistem için 34 sürümlü olay sözleşmesinin tamamı minimum sentetik yükle kabul edildi.
 - Kaynak/olay uyuşmazlığı, eksik zorunlu alan, sözleşme dışı alan, bilinmeyen sürüm ve iç içe TCKN/e-posta/IBAN/VIN/token gibi hassas alanlar hem worker hem veritabanında fail-closed reddedildi.
 - Aday yalnız kendi başvuru işini, bayi yalnız claim kapsamındaki şubeyi, denetçi yalnız atanmış saha ziyaretini ve tedarikçi yalnız atanmış siparişi gördü; çapraz persona erişimi reddedildi.
 - Dış kullanıcılar yalnız güvenli RPC ile kendi işini sonuçlandırdı; persona–iş türü uyuşmazlığı, kişisel veri yükü ve atama kapsamı değişikliği reddedildi.

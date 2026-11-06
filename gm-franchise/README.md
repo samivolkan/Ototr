@@ -9,7 +9,7 @@ Başvurudan aktif şubeye kadar 14 aşamalı franchise yaşam döngüsünü gös
 - `release-preflight.mjs`: gerçek kanıt dosyalarının güncel SHA-256 özetlerini, sabitlenecek commit/manifest değerlerini ve kirli worktree durumunu salt okunur denetler; karar kapılarını değiştirmez.
 - `public-intake-readiness.mjs`: canlı Franchise sayfasını ve uygulama JavaScript'ini yalnız GET ile denetler; üç ayrı izin, Edge intake, deployment kimliği ve rollback referansı eksikse R28'i fail-closed tutar.
 - `integration-readiness.mjs`: 13 departman kaynağı, iki staging worker, dört iletişim/e-imza kanalı ve zamanlanmış dispatch kapılarını değerlendirir; gerçek endpoint/secret yoksa R24'ü `NO_GO` tutar.
-- `supabase/functions/_shared/franchise-integration-contracts.mjs`: 31 olay için sürümlü, minimum veri alanları; TCKN, telefon, e-posta, IBAN, plaka, VIN ve gizli anahtarların dış sisteme taşınmasını engelleyen ortak sözleşme.
+- `supabase/functions/_shared/franchise-integration-contracts.mjs`: 13 hedef sistemde 34 olay için sürümlü, minimum veri alanları; TCKN, telefon, e-posta, IBAN, plaka, VIN ve gizli anahtarların dış sisteme taşınmasını engelleyen ortak sözleşme.
 - `supabase/migrations/20261105120000_franchise_external_portals.sql`: aday, bayi, denetçi ve tedarikçi için atama bazlı RLS, güvenli portal işleri ve kontrollü tamamlama/kapatma RPC'leri.
 - `supabase/migrations/20261105130000_franchise_application_intake.sql`: altı kanaldan idempotent başvuru, güvenli yatırımcı profili ve ayrı KVKK/veri işleme/ticari ileti makbuzları.
 - `supabase/migrations/20261105260000_franchise_public_intake_queue.sql`: mevcut ERP oturumunu kullanan, yalnız Franchise maker rollerine açık ve ham kişisel veri döndürmeyen web başvuru kuyruğu.

@@ -17,7 +17,7 @@
 {"id":"R16","requirement":"Kanıtlı 30/60/90 takip ve yeniden açma","owner":"Operasyon/Finans/İK/Franchise","status":"PASS","evidence":"supabase/ops/franchise-activation-acceptance.sql"},
 {"id":"R17","requirement":"Supabase/PostgreSQL RLS, RBAC ve app_metadata kimliği","owner":"BT/Bilgi Güvenliği","status":"PASS","evidence":"supabase/ops/franchise-staging-verify.sql"},
 {"id":"R18","requirement":"Özel Storage, sınıflandırma ve saklama politikası","owner":"BT/Hukuk","status":"PASS","evidence":"supabase/ops/franchise-record-gates-acceptance.sql"},
-{"id":"R19","requirement":"31 sürümlü departman olayı, outbox ve gizlilik filtresi","owner":"BT","status":"PASS","evidence":"supabase/ops/franchise-integration-contract-acceptance.sql"},
+{"id":"R19","requirement":"13 hedef sistem için 34 sürümlü departman olayı, outbox ve gizlilik filtresi","owner":"BT","status":"PASS","evidence":"supabase/ops/franchise-integration-contract-acceptance.sql"},
 {"id":"R20","requirement":"E-posta, SMS, WhatsApp ve e-imza sağlayıcı sözleşmesi","owner":"BT/Hukuk","status":"PASS","evidence":"supabase/ops/franchise-provider-acceptance.sql"},
 {"id":"R21","requirement":"İK kalitesinde rol bazlı Franchise ERP arayüzü","owner":"Franchise/BT","status":"PASS","evidence":"tests/gm-franchise-ui-release.test.mjs"},
 {"id":"R22","requirement":"PostgreSQL 17 migration, aktivasyon ve rollback yerel tatbikatı","owner":"BT","status":"PASS","evidence":"docs/franchise/FRANCHISE_LOCAL_DB_VERIFICATION_2026-11-05.md"},
