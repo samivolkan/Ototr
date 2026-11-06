@@ -39,7 +39,7 @@ Bu kapı ancak aşağıdakilerin tamamı kanıtlandığında `PASS` olabilir:
 
 Canlı site kaynak deposu bulunduğunda uygulanacak iki bağımsız parça hazırdır:
 
-- `franchise-basvuru/live-form-consent-fragment.html`: mevcut form içine eklenecek, aydınlatma teyidi ve veri işleme iznini zorunlu; ticari ileti kararını isteğe bağlı tutan üç ayrı alan.
+- `franchise-basvuru/live-form-consent-fragment.html`: mevcut forma öz kaynak, sayısal yönetim deneyimi ve ortaklık alanlarını; ayrıca honeypot, zorunlu aydınlatma teyidi, zorunlu veri işleme izni, isteğe bağlı ticari ileti kararı, özel portal gizlilik açıklaması ve erişilebilir durum alanını ekler.
 - `franchise-basvuru/live-franchise-adapter.mjs`: mevcut `name`, `phone`, `city`, `district`, `budget`, `experience`, `company`, `location_status`, `area`, `timeline` ve `message` alanlarını sürümlü Edge sözleşmesine dönüştürür. Yalnız tam Supabase Franchise Edge URL'sini kabul eder; endpoint, KVKK sürümü, deployment commit kimliği veya rollback referansı eksikse fail-closed durur. Bu iki dağıtım alanını istek gövdesine de bağlar; servis anahtarı kullanmaz ve TCKN/finans belgesi taşımaz.
 
 Kaynak uygulamada Franchise formunun `data-demo-form="franchise"` işareti `data-live-franchise-form` olarak değiştirilerek genel `/form-handler.php` dinleyicisinden ayrılmalıdır. `live-franchise-bootstrap.mjs` modülü yüklenmeli; `OTOTR_FRANCHISE_PUBLIC_CONFIG` içinde tam `apiUrl`, 40 karakterli `deploymentIdentity` ve `revert:<40 karakterli commit>` biçiminde `rollbackReference` verilmelidir. Bootstrap gönder düğmesini istek boyunca kilitler ve yalnız `WEB-FR-XXXXXXXX` biçimindeki sunucu referansını başarı sayar. Bu paket hazırlanmış olsa da kaynak commitine uygulanıp sentetik canlı kabul testi yapılmadan G16 `PASS` olmaz.

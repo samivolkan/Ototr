@@ -18,7 +18,7 @@
     {
       "source": "franchise-basvuru/live-form-consent-fragment.html",
       "target": "HTML:/franchise form[data-live-franchise-form] before submit button",
-      "sha256": "e36d8c0b43c477fcba882f08bdc935f18046c7583b151b7c416a9bedecdf0d40"
+      "sha256": "7b183d209dc760a66d75befad0a660e64a9f2183042c878ce0905766e3726c44"
     },
     {
       "source": "franchise-basvuru/live-franchise-adapter.mjs",
