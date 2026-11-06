@@ -8,3 +8,7 @@ test('organization live actions remain disabled until an authenticated session e
  assert.match(html,/LIVE_AUTH_STATE!=='authenticated'\?'disabled'/);assert.match(html,/franchiseLiveClient\.getSession\(\)/);assert.match(html,/franchiseLiveClient\.signOut\(\)/);
  assert.match(html,/Hesap varsa parola sıfırlama e-postası gönderildi/);
 });
+test('organization exposes an all-or-nothing thirteen-owner roster picker',()=>{
+ assert.match(html,/13 departmanlık atomik sorumlu kadrosu/);assert.match(html,/data-org-roster=/);assert.match(html,/LIVE_ORG_CANDIDATES\.length<13\?'disabled'/);
+ assert.match(html,/new Set\(users\)\.size!==13/);assert.match(html,/franchiseLiveClient\.assignDepartmentRoster\(\{roster\}\)/);
+});

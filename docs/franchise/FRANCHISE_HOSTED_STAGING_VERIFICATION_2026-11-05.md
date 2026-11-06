@@ -104,4 +104,12 @@ Hedef: Supabase `ototr-staging` (`bsjkohwbtrfwrqcyhsfz`), PostgreSQL 17.6.
 - Kullanıcının kurumsal GM hesabı oluşturma talebi üzerine mevcut, doğrulanmış ve yasaklı olmayan Auth kimliği yeniden üretilmeden kullanıldı. Kimlik aktif `GENERAL_MANAGER` ERP kartına bağlandı ve tek seferlik bootstrap fonksiyonu çalıştırıldı.
 - Son doğrulamada aktif ERP Genel Müdürü `1`, aktif Franchise GM kapsamı `1`, kapsam sürümü `1` ve şube kapsamı `HQ` bulundu. Kanıt kaydı e-posta adresi veya kullanıcı UUID'si içermez; yeni parola üretilmedi ya da sohbet/log içine yazılmadı.
 
+## Atomik 13 departman sorumlusu kadrosu — 2026-11-06
+
+- `franchise_atomic_department_roster` migration'ı staging'e uygulandı. GM-only RPC tam 13 resmi departmanı, 13 farklı aktif ve Auth bağlantılı ERP kullanıcısını, 10-500 karakter atama notlarını ve boş başlangıç organizasyonunu yazmadan önce doğrular.
+- Transaction advisory lock ve aday ERP satırlarında sabit UUID sıralı `FOR UPDATE` kullanılır. On üç tekil güvenli atama aynı RPC transaction'ında yürür; bir satır reddedilirse hiçbir sorumluluk veya scope kaydı kalmaz.
+- RPC `SECURITY INVOKER`; `anon EXECUTE=false`, `authenticated EXECUTE=true` ve fonksiyon adına bağlı güvenlik danışmanı bulgusu `0` olarak doğrulandı.
+- `franchise_department_candidate_eligibility` migration'ı aday dizininden GM dahil mevcut aktif Franchise kapsamı bulunan kullanıcıları çıkardı. E-posta ve telefon dönmez.
+- Hosted doğrulamada kullanılabilir aday `6`, aktif ana departman sorumlusu `0` bulundu. Bu nedenle ekran `6/13` eksik kadro uyarısı verir ve toplu atamayı kilitler; sahte kullanıcı üretilmedi ve kısmi atama yapılmadı.
+
 Bu doğrulama staging şema kurulumu ve rollback kabiliyetini kanıtlar. Gerçek ERP/sağlayıcı uçları, departman UAT imzaları, yayın penceresi ve kullanıcı canlı onayı ayrıca gereklidir. Yayın kararı `NO_GO` kalır.
