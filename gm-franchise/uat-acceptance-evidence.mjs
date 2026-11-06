@@ -8,15 +8,15 @@ const COMMIT=/^[a-f0-9]{40}$/;
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const SCENARIOS=Object.freeze(Array.from({length:16},(_,index)=>`UAT-${String(index+1).padStart(2,'0')}`));
 export const UAT_SIGNOFF_REQUIREMENTS=Object.freeze({
-  'Franchise Yönetimi':['UAT-01','UAT-02','UAT-03','UAT-15'],
-  'Finans Direktörü':['UAT-05','UAT-13'],
+  'Franchise Sorumlusu':['UAT-01','UAT-02','UAT-03','UAT-15'],
+  'Finans Sorumlusu':['UAT-05','UAT-13'],
   'Hukuk/KVKK':['UAT-01','UAT-04','UAT-11','UAT-14'],
-  'İK Yöneticisi':['UAT-07'],
-  'Academy Yöneticisi':['UAT-08'],
+  'İK Sorumlusu':['UAT-07'],
+  'Academy Sorumlusu':['UAT-08'],
   'Operasyon/Kalite/İSG':['UAT-06','UAT-12','UAT-14','UAT-15'],
   'Tedarik/Mimari/Pazarlama':['UAT-06','UAT-15'],
   'ERP/Bilgi Güvenliği':['UAT-09','UAT-10','UAT-11','UAT-16'],
-  'CEO/Yönetim':SCENARIOS
+  'Genel Müdür':SCENARIOS
 });
 const utc=value=>typeof value==='string'&&value.endsWith('Z')&&!Number.isNaN(Date.parse(value));
 const exact=(actual,expected)=>Array.isArray(actual)&&actual.length===expected.length&&expected.every(value=>actual.includes(value));
@@ -45,14 +45,14 @@ export function validateUatEvidence(evidence){
     assert(UUID.test(item.signerId||'')&&utc(item.signedAtUtc),'UAT imzacısı UUID ve imza zamanı UTC olmalıdır.');
     for(const code of UAT_SIGNOFF_REQUIREMENTS[item.signoffRole])assert(byScenario.get(code)?.executorId!==item.signerId,`${item.signoffRole} kendi yürüttüğü zorunlu senaryoyu imzalayamaz.`);
   }
-  const ceo=evidence.signoffs.find(item=>item.signoffRole==='CEO/Yönetim'),others=evidence.signoffs.filter(item=>item!==ceo);
-  assert(others.every(item=>Date.parse(item.signedAtUtc)<=Date.parse(ceo.signedAtUtc)),'CEO/Yönetim imzası diğer sekiz imzadan sonra olmalıdır.');
+  const ceo=evidence.signoffs.find(item=>item.signoffRole==='Genel Müdür'),others=evidence.signoffs.filter(item=>item!==ceo);
+  assert(others.every(item=>Date.parse(item.signedAtUtc)<=Date.parse(ceo.signedAtUtc)),'Genel Müdür imzası diğer sekiz imzadan sonra olmalıdır.');
   return true;
 }
 
 export function buildUatAcceptanceRecord(evidenceText){
   const evidence=JSON.parse(evidenceText);validateUatEvidence(evidence);
-  return Object.freeze({schemaVersion:1,status:'ACCEPTED',environment:'staging',productionDataUsed:false,releaseCommit:evidence.releaseCommit,scenarioCount:16,signoffCount:9,uniqueSignerCount:9,evidenceSha256:createHash('sha256').update(evidenceText).digest('hex'),acceptedAtUtc:evidence.signoffs.find(item=>item.signoffRole==='CEO/Yönetim').signedAtUtc});
+  return Object.freeze({schemaVersion:1,status:'ACCEPTED',environment:'staging',productionDataUsed:false,releaseCommit:evidence.releaseCommit,scenarioCount:16,signoffCount:9,uniqueSignerCount:9,evidenceSha256:createHash('sha256').update(evidenceText).digest('hex'),acceptedAtUtc:evidence.signoffs.find(item=>item.signoffRole==='Genel Müdür').signedAtUtc});
 }
 
 export function evaluateUatAcceptance(record,{releaseCommit=null}={}){

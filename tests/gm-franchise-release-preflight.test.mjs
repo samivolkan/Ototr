@@ -4,7 +4,7 @@ import {buildReleasePreflight} from '../gm-franchise/release-preflight.mjs';
 import {REQUIRED_HOSTED_EVIDENCE,sha256} from '../gm-franchise/release-readiness.mjs';
 
 const evidence=Object.fromEntries(REQUIRED_HOSTED_EVIDENCE.map(key=>[key,sha256(key)]));
-const signoffRoles=['Franchise Yönetimi','Finans Direktörü','Hukuk/KVKK','İK Yöneticisi','Academy Yöneticisi','Operasyon/Kalite/İSG','Tedarik/Mimari/Pazarlama','ERP/Bilgi Güvenliği','CEO/Yönetim'];
+const signoffRoles=['Franchise Sorumlusu','Finans Sorumlusu','Hukuk/KVKK','İK Sorumlusu','Academy Sorumlusu','Operasyon/Kalite/İSG','Tedarik/Mimari/Pazarlama','ERP/Bilgi Güvenliği','Genel Müdür'];
 const gates={gates:Array.from({length:16},(_,i)=>({id:`G${String(i+1).padStart(2,'0')}`,mandatory:true,status:'PASS',evidence:'proof'}))};
 const decision={releaseCommit:'a'.repeat(40),releaseManifestSha256:null,hostedStagingEvidence:evidence,changeWindowStartUtc:'2026-11-07T20:00:00Z',changeWindowEndUtc:'2026-11-07T22:00:00Z',productionDataUsed:false,signoffs:signoffRoles.map((role,i)=>({role,identitySha256:sha256(`i${i}`),evidenceSha256:sha256(`e${i}`),signedAtUtc:i===8?'2026-11-07T19:50:00Z':'2026-11-07T19:40:00Z'}))};
 decision.userApproval={approved:true,identitySha256:sha256('user'),evidenceSha256:sha256('approval'),approvedAtUtc:'2026-11-07T19:55:00Z'};

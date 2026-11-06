@@ -3,12 +3,13 @@ import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 
 const sql = await readFile(new URL('../supabase/migrations/20261105200000_franchise_uat_governance.sql', import.meta.url), 'utf8');
+const responsibleSql = await readFile(new URL('../supabase/migrations/20261106010440_franchise_uat_responsible_signoff_catalog.sql', import.meta.url), 'utf8');
 const html = await readFile(new URL('../gm-franchise/index.html', import.meta.url), 'utf8');
 
 test('UAT catalog contains exactly sixteen governed scenarios and nine signoff roles', () => {
   const scenarios = [...sql.matchAll(/\('UAT-(\d{2})'/g)].map((x) => x[1]);
   assert.deepEqual([...new Set(scenarios)].sort(), Array.from({ length: 16 }, (_, i) => String(i + 1).padStart(2, '0')));
-  for (const role of ['Franchise Yönetimi','Finans Direktörü','Hukuk/KVKK','İK Yöneticisi','Academy Yöneticisi','Operasyon/Kalite/İSG','Tedarik/Mimari/Pazarlama','ERP/Bilgi Güvenliği','CEO/Yönetim']) assert.match(sql, new RegExp(role));
+  for (const role of ['Franchise Sorumlusu','Finans Sorumlusu','Hukuk/KVKK','İK Sorumlusu','Academy Sorumlusu','Operasyon/Kalite/İSG','Tedarik/Mimari/Pazarlama','ERP/Bilgi Güvenliği','Genel Müdür']) assert.match(`${sql}\n${responsibleSql}`, new RegExp(role));
 });
 
 test('UAT evidence and signoffs are RLS protected and independently approved', () => {
@@ -16,7 +17,7 @@ test('UAT evidence and signoffs are RLS protected and independently approved', (
   assert.match(sql, /checker_id is null or checker_id<>executor_id/i);
   assert.match(sql, /unique\(release_candidate,signer_id\)/i);
   assert.match(sql, /r\.executor_id<>franchise_uat_signoffs\.signer_id/i);
-  assert.match(sql, /signoff_role<>'CEO\/Yönetim'/i);
+  assert.match(responsibleSql, /signoff_role<>'Genel Müdür'/i);
   assert.match(sql, /count\(\*\).*?=8/is);
   assert.match(sql, /count\(distinct r\.scenario_code\).*?=16/is);
   assert.match(sql, /count\(distinct s\.signoff_role\).*?=9/is);
