@@ -23,6 +23,7 @@ drop policy if exists franchise_department_responsibility_select on public.franc
 drop trigger if exists franchise_department_responsibility_guard_trigger on public.franchise_department_responsibilities;
 drop function if exists public.franchise_department_responsibility_guard();
 drop function if exists app_private.franchise_can_manage_department(text);
+drop function if exists app_private.franchise_has_active_primary_assignment(uuid,text);
 drop table if exists public.franchise_department_responsibilities;
 drop policy if exists franchise_storage_applicant_orphan_cleanup on storage.objects;
 drop function if exists public.register_applicant_franchise_document(uuid,text,text,text,bigint);
