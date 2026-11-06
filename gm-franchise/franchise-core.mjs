@@ -14,7 +14,7 @@ export const REQUIRED_ROLES = [
 export const FOLLOW_UP_TEMPLATES = [
   { day: 30, title: "İlk ay operasyon ve kalite kontrolü", owner: "Operasyon", ownerRoles: ["op"] },
   { day: 60, title: "Finans, royalty ve kadro değerlendirmesi", owner: "Finans / İK", ownerRoles: ["fn", "ik"] },
-  { day: 90, title: "Franchise performans kurulu", owner: "Franchise Direktörü", ownerRoles: ["fd"] }
+  { day: 90, title: "Franchise performans kurulu", owner: "Franchise Sorumlusu", ownerRoles: ["fd"] }
 ];
 
 export const NON_WAIVABLE_EXCEPTION_TYPES = new Set(["legal", "license", "payment"]);
@@ -59,7 +59,7 @@ export function submitCandidateScore(franchiseCase, dimensionCode, input = {}) {
 }
 
 export function submitBoardDecision(franchiseCase, input = {}) {
-  if (input.makerRole !== "fd") throw new Error("Kurul kararını Franchise Direktörü hazırlamalıdır.");
+  if (input.makerRole !== "fd") throw new Error("Kurul kararını Franchise Sorumlusu hazırlamalıdır.");
   if (candidateScoreValue(franchiseCase) === null) throw new Error("Yedi aday skoru tamamlanmalıdır.");
   if (!["approved", "conditionally_approved", "rejected"].includes(input.decision)) throw new Error("Geçersiz kurul kararı.");
   if (input.decision === "conditionally_approved" && String(input.conditions || "").trim().length < 5) throw new Error("Şartlı onay koşulları zorunludur.");
@@ -112,7 +112,7 @@ export function reviewOpeningEvidence(franchiseCase, gateCode, review = {}) {
   const gate = ensureOpeningEvidence(franchiseCase).find((item) => item.code === gateCode);
   if (!gate || gate.status !== "submitted") throw new Error("İncelenecek gönderilmiş kanıt bulunamadı.");
   if (!review.checkerId || review.checkerId === gate.makerId) throw new Error("Kanıtı hazırlayan kişi kendi kaydını onaylayamaz.");
-  if (!new Set(["gm", "fd"]).has(review.checkerRole)) throw new Error("İkinci onay yalnız GM veya Franchise Direktörü tarafından verilebilir.");
+  if (!new Set(["gm", "fd"]).has(review.checkerRole)) throw new Error("İkinci onay yalnız GM veya Franchise Sorumlusu tarafından verilebilir.");
   if (!new Set(["approved", "rejected"]).has(review.decision)) throw new Error("Geçersiz kanıt kararı.");
   Object.assign(gate, { status: review.decision, checkerId: review.checkerId, checkerRole: review.checkerRole });
   return gate;
@@ -226,7 +226,7 @@ export function reviewException(franchiseCase, exceptionId, review = {}) {
   if (!exception) throw new Error("İstisna talebi bulunamadı.");
   if (exception.status !== "pending_second_approval") throw new Error("İstisna daha önce karara bağlandı.");
   if (!review.reviewerId || review.reviewerId === exception.requesterId) throw new Error("Talep eden kişi kendi istisnasını onaylayamaz.");
-  if (!new Set(["gm", "fd"]).has(review.reviewerRole)) throw new Error("İkinci onay yalnız GM veya Franchise Direktörü tarafından verilebilir.");
+  if (!new Set(["gm", "fd"]).has(review.reviewerRole)) throw new Error("İkinci onay yalnız GM veya Franchise Sorumlusu tarafından verilebilir.");
   if (!new Set(["approved", "rejected"]).has(review.decision)) throw new Error("Geçersiz istisna kararı.");
   exception.status = review.decision;
   exception.reviewerId = review.reviewerId;
@@ -301,7 +301,7 @@ export function reviewFollowUpReopen(franchiseCase, followUpId, requestId, input
   const request = task?.reopenRequests.find((item) => item.id === requestId);
   if (!task || !request || request.status !== "pending") throw new Error("Bekleyen yeniden açma talebi bulunamadı.");
   if (!input.reviewerId || input.reviewerId === request.requesterId) throw new Error("Talep eden kendi yeniden açma talebini onaylayamaz.");
-  if (!new Set(["gm", "fd"]).has(input.reviewerRole)) throw new Error("Yeniden açma ikinci onayı GM veya Franchise Direktörü vermelidir.");
+  if (!new Set(["gm", "fd"]).has(input.reviewerRole)) throw new Error("Yeniden açma ikinci onayı GM veya Franchise Sorumlusu vermelidir.");
   request.status = input.approve ? "applied" : "rejected";
   request.reviewerId = input.reviewerId;
   if (input.approve) Object.assign(task, { status: "open", completedBy: null, evidenceSha256: null, completionNote: null });

@@ -54,7 +54,7 @@ Yerel ve geçici Supabase PostgreSQL konteynerinde migration, güvenlik doğrula
 - Royalty matrahı KDV dâhil müşteri tahsilatı, varsayılan oran `%10`, reklam payı `%0` ve muafiyet seçenekleri `0/6/12 ay` olarak doğrulandı; gecikme operasyonu otomatik durdurmuyor.
 - Due diligence, sağlayıcıdan bağımsız e-imza/ıslak imza sözleşmesi, poligon–ilçe–yarıçap bölge koruması ve konum/fotoğraf/ölçüm içeren saha ziyareti ayrı maker-checker kayıtlarıyla açılış kapısına bağlandı.
 - Mimari proje/teslim, ekipman, kalibrasyon, İSG, kalite, pazarlama, BT, deneme operasyonu ve açılış kurulu için on kanıtlı teslimat şube aktivasyonuna bağlandı; güvenlik-kritik kapılar istisnaya kapatıldı.
-- Operasyonel istisnalar en fazla 90 gün, bağımsız GM/Franchise Direktörü onaylı ve kapsamı değiştirilemez hale getirildi; kritik açılış kapıları istisnaya kapatıldı.
+- Operasyonel istisnalar en fazla 90 gün, bağımsız GM/Franchise Sorumlusu onaylı ve kapsamı değiştirilemez hale getirildi; kritik açılış kapıları istisnaya kapatıldı.
 - Aktif personel hesabı oluşturulduğunda bayi JWT şube kapsamı atomik üretildi, hesap iptalinde kapsam kaldırıldı; sertifikasız kullanıcı kapsam alamıyor.
 - Rollback Storage politikalarını önce kaldırdı, tüm franchise tablolarını ve bucket'ı temizledi.
 - Test konteyneri çalışma sonunda kaldırıldı.

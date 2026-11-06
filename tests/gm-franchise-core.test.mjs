@@ -62,10 +62,10 @@ test('seven role-owned score dimensions produce recommendation but not final dec
   assert.throws(() => submitCandidateScore(c, 'financial_capacity', { score: 90, assessorId: 'legal', assessorRole: 'hk', evidenceSha256: 'a'.repeat(64), rationale: 'Yetkisiz deneme' }), /rol yetkili değil/);
 });
 
-test('board decision requires franchise director maker and independent GM checker', () => {
+test('board decision requires the single franchise responsible maker and independent GM checker', () => {
   const c = createFranchiseCase({ id: 'FR-SCORE-2' });
   SCORE_DIMENSIONS.forEach((dimension) => submitCandidateScore(c, dimension.code, { score: 82, assessorId: dimension.code, assessorRole: dimension.ownerRoles[0], evidenceSha256: 'b'.repeat(64), rationale: 'Sentetik kurul kanıtı' }));
-  assert.throws(() => submitBoardDecision(c, { decision: 'approved', makerId: 'fu-1', makerRole: 'fu' }), /Franchise Direktörü/);
+  assert.throws(() => submitBoardDecision(c, { decision: 'approved', makerId: 'fu-1', makerRole: 'fu' }), /Franchise Sorumlusu/);
   submitBoardDecision(c, { decision: 'approved', makerId: 'fd-1', makerRole: 'fd' });
   assert.throws(() => reviewBoardDecision(c, { checkerId: 'fd-1', checkerRole: 'gm', approve: true }), /kendi kararını/);
   reviewBoardDecision(c, { checkerId: 'gm-1', checkerRole: 'gm', approve: true });

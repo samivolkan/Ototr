@@ -42,7 +42,7 @@ Hedef: Supabase `ototr-staging` (`bsjkohwbtrfwrqcyhsfz`), PostgreSQL 17.6.
 ## ERP web başvuru kuyruğu
 
 - `20261105260000_franchise_public_intake_queue.sql` staging veritabanına uygulandı.
-- GM, Franchise Direktörü ve Franchise Uzmanı mevcut ERP Supabase oturumuyla kuyruğu okuyabilir; anonim erişim ve diğer departman rolleri reddedilir.
+- GM ve tek aktif Franchise Sorumlusu mevcut ERP Supabase oturumuyla kuyruğu okuyabilir; anonim erişim ve diğer departman rolleri reddedilir. Eski `franchise_director`/`franchise_specialist` kodları yalnız geriye uyumlu teknik yetki adlarıdır; organizasyonda ayrı iki aktif sorumlu oluşturmaz.
 - Kuyruk yalnız başvuru referansı, izin durumu, konum, kaynak ve zaman alanlarını döndürür. Ham ad-soyad, telefon, payload, istek metadatası ve belge içeriği RPC sonucuna dahil değildir.
 - `processing_consent` eksik kayıtlar `awaiting_processing_consent` durumunda görünür fakat kanonik dosyaya aktarma işlemi kilitlidir.
 - Public RPC `SECURITY INVOKER`, ayrıcalıklı uygulama Data API dışındaki `app_private` şemasındadır. Rollback-only kabul testi iki sentetik kayıtla yetkili okuma, eksik izin kilidi ve yetkisiz rol reddini doğruladı; sentetik kullanıcı ve başvuru sayısı rollback sonrasında `0` kaldı.
