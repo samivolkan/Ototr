@@ -10,6 +10,7 @@ Son salt-okunur yeniden doğrulama: **2026-11-06**. `gm-franchise/public-intake-
 - PHP handler ve canlı sayfa kaynakları erişilebilen `samivolkan` GitHub depolarında ve yerel çalışma alanında bulunamadı.
 - Supabase staging tarafındaki ayrı izin, sunucu SHA-256 kanıtı ve fail-closed bridge doğrulandı; bu kanıt canlı PHP hattını kanıtlamaz.
 - Güncel canlı `assets/js/app.js?v=1791147589` hâlâ `/form-handler.php` kullanıyor; Edge intake, deployment commit kimliği ve rollback referansı bulunamadı.
+- 2026-11-06 salt-okunur hosting keşfinde sayfa Cloudflare üzerinden HTTP 200 döndü; Cloudflare ad sunucuları ve `PHPSESSID` oturum çerezi gözlendi. Vercel/Netlify deployment başlığı, kaynak depo kimliği veya origin hosting sağlayıcısı açıklanmadı. Bu nedenle gereken erişim bir GitHub Pages dalı değil, Cloudflare arkasındaki PHP uygulamasının kaynak deposu veya kontrollü hosting deployment kanalıdır. Kanıt: `gm-franchise/live-site-hosting-discovery-evidence.json`.
 
 ## Staging önizleme kabulü
 
@@ -45,4 +46,4 @@ Kaynak uygulamada Franchise formunun `data-demo-form="franchise"` işareti `data
 
 ## Karar
 
-Durum: `BLOCKED`. Canlı PHP kaynak deposu veya kontrollü deployment erişimi olmadan değişiklik yapılmayacak. Bu boşluk kapanmadan üretim kararı `GO` olamaz.
+Durum: `BLOCKED`. Cloudflare arkasındaki canlı PHP kaynak deposu veya kontrollü hosting deployment erişimi olmadan değişiklik yapılmayacak. Bu boşluk kapanmadan üretim kararı `GO` olamaz.
