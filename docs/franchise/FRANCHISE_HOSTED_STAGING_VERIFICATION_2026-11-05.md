@@ -162,4 +162,12 @@ Hedef: Supabase `ototr-staging` (`bsjkohwbtrfwrqcyhsfz`), PostgreSQL 17.6.
 - Bu adım gerçek e-posta göndermedi, Auth kullanıcısı oluşturmadı ve `FRANCHISE_INVITATION_DELIVERY_ENABLED` değerini açmadı.
 - `franchise-user-invitation-scheduler-acceptance.sql` staging'de transaction içinde çalıştırıldı. Cron, dispatcher ve config doğru sırayla kaldırıldı; transaction rollback sonrasında config ve dispatcher geri geldi, cron sayısı `1`, son cron durumu `succeeded`, disabled no-op `true` ve davet kuyruğu `0` olarak doğrulandı.
 
+## UAT tekil sorumlu ön kontrolü — 2026-11-06
+
+- `franchise_uat_roster_readiness` migration'ı staging'e uygulandı. RPC, dokuz imza rolü için yalnız gerekli senaryoları, uygun aktif ana sorumlu sayısını ve kadro durumunu döndürür; kullanıcı UUID'si, ad, e-posta veya telefon döndürmez.
+- Kontrol tek-sorumlu organizasyon tablosundaki aktif `primary_responsible` atamalarını esas alır. Genel Müdür koltuğu merkezdeki aktif `GENERAL_MANAGER` ERP hesabıyla ayrıca doğrulanır.
+- `anon EXECUTE=false`, `authenticated EXECUTE=true`, `service_role EXECUTE=true`; public RPC `SECURITY INVOKER`, ayrıcalıklı sayım Data API dışındaki `app_private` uygulamasındadır ve izinli UAT rollerini sunucu JWT claim'iyle sınırlar.
+- Hosted sonuç: UAT kataloğu `16` aktif senaryo ve `9` imza rolü içeriyor; seçili release adayı için onaylı sonuç `0/16`, imza `0/9`. Genel Müdür sorumluluğu hazır, diğer sekiz imza grubu için aktif ana sorumlu bulunmadığından UAT kadrosu `1/9` ve G14 `BLOCKED` kalır.
+- Yayın ekranı artık her imza kartında uygun ana sorumlu sayısını gösterir ve sorumlu atanmamış rolde imza düğmesini kapatır. Bu ön kontrol insan imzası üretmez veya eksik sorumluyu otomatik atamaz.
+
 Bu doğrulama staging şema kurulumu ve rollback kabiliyetini kanıtlar. Gerçek ERP/sağlayıcı uçları, departman UAT imzaları, yayın penceresi ve kullanıcı canlı onayı ayrıca gereklidir. Yayın kararı `NO_GO` kalır.

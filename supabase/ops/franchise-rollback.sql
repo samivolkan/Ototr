@@ -2,6 +2,8 @@
 -- Export staging evidence before use. Never run against production without signed approval.
 begin;
 drop function if exists app_private.bootstrap_franchise_gm(uuid);
+drop function if exists public.list_franchise_uat_roster_readiness();
+drop function if exists app_private.list_franchise_uat_roster_readiness();
 do $$
 declare v_job_id bigint;
 begin

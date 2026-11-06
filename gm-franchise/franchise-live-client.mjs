@@ -66,13 +66,14 @@ export function createFranchiseLiveClient({config=browserRuntimeConfig(),getSess
   async function assignPrimaryDepartmentOwner({departmentCode,userId,note}){const session=await getSession(fetchImpl),actorId=String(session?.user?.id||tokenSubject(session?.access_token));if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(actorId))throw new Error('ERP oturum kullanıcı kimliği doğrulanamadı.');return request('/rest/v1/rpc/assign_franchise_primary_department_owner',{method:'POST',body:JSON.stringify({p_department_code:departmentCode,p_user_id:userId,p_assignment_note:note})})}
   async function assignDepartmentRoster({roster}){const session=await getSession(fetchImpl),actorId=String(session?.user?.id||tokenSubject(session?.access_token));if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(actorId))throw new Error('ERP oturum kullanıcı kimliği doğrulanamadı.');if(!Array.isArray(roster)||roster.length!==13||new Set(roster.map(x=>x.department_code)).size!==13||new Set(roster.map(x=>x.user_id)).size!==13)throw new Error('13 departman için 13 farklı ana sorumlu seçilmelidir.');return request('/rest/v1/rpc/assign_franchise_department_roster',{method:'POST',body:JSON.stringify({p_roster:roster})})}
   async function loadUat(releaseCandidate){
-    const q=encodeURIComponent(releaseCandidate),[scenarios,results,signoffCatalog,signoffs,status]=await Promise.all([
+    const q=encodeURIComponent(releaseCandidate),[scenarios,results,signoffCatalog,signoffs,status,rosterReadiness]=await Promise.all([
       request('/rest/v1/franchise_uat_scenarios?select=scenario_code,title,owner_roles,reviewer_roles,expected_result&is_active=eq.true&order=scenario_code'),
       request(`/rest/v1/franchise_uat_results?select=id,release_candidate,scenario_code,revision,status,executor_id,executor_role,evidence_sha256,result_summary,checker_id,checker_role,checker_note,submitted_at,reviewed_at&release_candidate=eq.${q}&order=scenario_code`),
       request('/rest/v1/franchise_uat_signoff_catalog?select=signoff_role,authorized_roles,required_scenarios,sequence_no&order=sequence_no'),
       request(`/rest/v1/franchise_uat_signoffs?select=id,release_candidate,signoff_role,signer_id,signer_role,evidence_sha256,decision,note,signed_at&release_candidate=eq.${q}&order=signed_at`),
-      request(`/rest/v1/franchise_uat_release_status_v?select=release_candidate,approved_scenarios,approved_signoffs,uat_ready&release_candidate=eq.${q}`)
-    ]);return{scenarios,results,signoffCatalog,signoffs,status:status[0]||{release_candidate:releaseCandidate,approved_scenarios:0,approved_signoffs:0,uat_ready:false}};
+      request(`/rest/v1/franchise_uat_release_status_v?select=release_candidate,approved_scenarios,approved_signoffs,uat_ready&release_candidate=eq.${q}`),
+      request('/rest/v1/rpc/list_franchise_uat_roster_readiness',{method:'POST',body:'{}'})
+    ]);return{scenarios,results,signoffCatalog,signoffs,rosterReadiness,status:status[0]||{release_candidate:releaseCandidate,approved_scenarios:0,approved_signoffs:0,uat_ready:false}};
   }
   return Object.freeze({
     getSession:()=>getSession(fetchImpl),signIn,requestPasswordRecovery,signOut,
