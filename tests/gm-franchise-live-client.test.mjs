@@ -19,6 +19,29 @@ test('live client fails closed without ERP session',async()=>{
  await assert.rejects(()=>client.listQueue(),/ERP Supabase oturumu bulunamadı/);
 });
 
+test('GM sign-in uses Supabase Auth and never persists the password',async()=>{
+ const calls=[],saved=new Map(),previous=globalThis.localStorage;globalThis.localStorage={getItem:key=>saved.get(key)||null,setItem:(key,value)=>saved.set(key,value),removeItem:key=>saved.delete(key)};
+ try{
+  const client=createFranchiseLiveClient({
+   config:{url:'https://project.supabase.co',key:'publishable'},
+   fetchImpl:async(url,options)=>{calls.push({url,options});return{ok:true,json:async()=>({access_token:'access',refresh_token:'refresh',expires_in:3600,user:{id:'11111111-1111-4111-8111-111111111111',email:'gm@ototr.com'}})}}
+  });
+  await client.signIn({email:' GM@OTOTR.COM ',password:'correct-password'});
+  assert.equal(calls[0].url,'https://project.supabase.co/auth/v1/token?grant_type=password');assert.equal(calls[0].options.headers.apikey,'publishable');assert.deepEqual(JSON.parse(calls[0].options.body),{email:'gm@ototr.com',password:'correct-password'});
+  const persisted=[...saved.values()].join(' ');assert.doesNotMatch(persisted,/correct-password/);assert.match(persisted,/access/);
+ }finally{globalThis.localStorage=previous}
+});
+
+test('password recovery is enumeration-safe and logout clears the browser session',async()=>{
+ const calls=[],saved=new Map([['ototr-dealer-supabase-session-v1',JSON.stringify({access_token:'access',refresh_token:'refresh'})]]),previousLocal=globalThis.localStorage,previousSession=globalThis.sessionStorage;
+ globalThis.localStorage={getItem:key=>saved.get(key)||null,setItem:(key,value)=>saved.set(key,value),removeItem:key=>saved.delete(key)};globalThis.sessionStorage={getItem:()=>null,removeItem:()=>{}};
+ try{
+  const client=createFranchiseLiveClient({config:{url:'https://project.supabase.co',key:'publishable'},getSession:async()=>({access_token:'access'}),fetchImpl:async(url,options)=>{calls.push({url,options});return{ok:true,json:async()=>({})}}});
+  await client.requestPasswordRecovery({email:'gm@ototr.com',redirectTo:'https://example.test/gm-franchise/#organizasyon'});assert.match(calls[0].url,/\/auth\/v1\/recover\?redirect_to=/);assert.deepEqual(JSON.parse(calls[0].options.body),{email:'gm@ototr.com'});
+  await client.signOut();assert.equal(calls[1].url,'https://project.supabase.co/auth/v1/logout');assert.equal(saved.has('ototr-dealer-supabase-session-v1'),false);
+ }finally{globalThis.localStorage=previousLocal;globalThis.sessionStorage=previousSession}
+});
+
 test('live UAT workspace reads governed records and writes only through command RPCs',async()=>{
  const calls=[],fetchImpl=async(url,options)=>{calls.push({url,options});return{ok:true,json:async()=>url.includes('release_status')?[{approved_scenarios:0,approved_signoffs:0,uat_ready:false}]:[]}};
  const client=createFranchiseLiveClient({config:{url:'https://project.supabase.co',key:'publishable'},getSession:async()=>({access_token:'session-token'}),fetchImpl});

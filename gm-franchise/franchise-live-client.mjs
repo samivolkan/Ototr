@@ -17,16 +17,39 @@ function storedSession(){
   return native?.currentSession||native?.session||native||null;
 }
 function tokenSubject(token){try{const raw=String(token||'').split('.')[1].replace(/-/g,'+').replace(/_/g,'/'),payload=JSON.parse(globalThis.atob(raw));return payload.sub||''}catch{return''}}
+function saveSession(session){
+  const safe={access_token:session.access_token,refresh_token:session.refresh_token,expires_at:session.expires_at||Math.floor(Date.now()/1000)+(Number(session.expires_in)||3600),user:session.user?{id:session.user.id,email:session.user.email}:undefined};
+  globalThis.localStorage?.setItem(SESSION_KEY,JSON.stringify(safe));return safe;
+}
+function clearSession(){
+  globalThis.localStorage?.removeItem(SESSION_KEY);globalThis.sessionStorage?.removeItem(SESSION_KEY);
+  const ref=new URL(browserRuntimeConfig().url).hostname.split('.')[0];
+  globalThis.localStorage?.removeItem(`sb-${ref}-auth-token`);globalThis.sessionStorage?.removeItem(`sb-${ref}-auth-token`);
+}
 async function browserSession(fetchImpl=fetch){
   const config=browserRuntimeConfig(),session=storedSession();
   if(session?.access_token&&(!session.expires_at||Number(session.expires_at)>Date.now()/1000+60||Number(session.expires_at)>Date.now()+60000))return session;
   if(!session?.refresh_token)return null;
   const response=await fetchImpl(`${config.url}/auth/v1/token?grant_type=refresh_token`,{method:'POST',headers:{apikey:config.key,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:session.refresh_token})});
   const body=await response.json().catch(()=>null);if(!response.ok)throw new Error(body?.message||'ERP oturumu yenilenemedi.');
-  const next={access_token:body.access_token,refresh_token:body.refresh_token||session.refresh_token,expires_at:Math.floor(Date.now()/1000)+(Number(body.expires_in)||3600)};
-  globalThis.localStorage?.setItem(SESSION_KEY,JSON.stringify(next));return next;
+  return saveSession({...body,refresh_token:body.refresh_token||session.refresh_token});
 }
 export function createFranchiseLiveClient({config=browserRuntimeConfig(),getSession=browserSession,fetchImpl=fetch}={}){
+  async function authRequest(path,{body,accessToken}={}){
+    const response=await fetchImpl(`${config.url}${path}`,{method:'POST',headers:{apikey:config.key,'Content-Type':'application/json',...(accessToken?{Authorization:`Bearer ${accessToken}`}:{})},body:body===undefined?undefined:JSON.stringify(body)});
+    const result=await response.json().catch(()=>null);if(!response.ok)throw new Error(result?.msg||result?.message||result?.error_description||'ERP oturum işlemi tamamlanamadı.');return result;
+  }
+  async function signIn({email,password}){
+    const normalized=String(email||'').trim().toLowerCase();if(!/^\S+@\S+\.\S+$/.test(normalized)||String(password||'').length<8)throw new Error('Geçerli e-posta ve en az 8 karakter parola zorunludur.');
+    const session=await authRequest('/auth/v1/token?grant_type=password',{body:{email:normalized,password:String(password)}});if(!session?.access_token||!session?.refresh_token)throw new Error('ERP oturumu oluşturulamadı.');return saveSession(session);
+  }
+  async function requestPasswordRecovery({email,redirectTo}){
+    const normalized=String(email||'').trim().toLowerCase();if(!/^\S+@\S+\.\S+$/.test(normalized))throw new Error('Geçerli e-posta zorunludur.');
+    const redirect=String(redirectTo||'');const suffix=redirect?`?redirect_to=${encodeURIComponent(redirect)}`:'';await authRequest(`/auth/v1/recover${suffix}`,{body:{email:normalized}});return true;
+  }
+  async function signOut(){
+    const session=await getSession(fetchImpl);try{if(session?.access_token)await authRequest('/auth/v1/logout',{accessToken:session.access_token})}finally{clearSession()}return true;
+  }
   async function request(path,{method='GET',body,headers={}}={}){
     const session=await getSession(fetchImpl);if(!session?.access_token)throw new Error('ERP Supabase oturumu bulunamadı. Ana ERP ekranından giriş yapın.');
     const response=await fetchImpl(`${config.url}${path}`,{method,headers:{apikey:config.key,Authorization:`Bearer ${session.access_token}`,'Content-Type':'application/json',...headers},body});
@@ -46,6 +69,7 @@ export function createFranchiseLiveClient({config=browserRuntimeConfig(),getSess
     ]);return{scenarios,results,signoffCatalog,signoffs,status:status[0]||{release_candidate:releaseCandidate,approved_scenarios:0,approved_signoffs:0,uat_ready:false}};
   }
   return Object.freeze({
+    getSession:()=>getSession(fetchImpl),signIn,requestPasswordRecovery,signOut,
     listQueue:()=>rpc('list_public_franchise_intake_queue'),canonicalize:(payload)=>rpc('canonicalize_public_franchise_application',payload),loadUat,
     submitUatResult:payload=>rpc('submit_franchise_uat_result',payload),
     reviewUatResult:payload=>rpc('review_franchise_uat_result',payload),
