@@ -20,7 +20,7 @@ Son salt-okunur yeniden doğrulama: **2026-11-06**. `gm-franchise/public-intake-
 - Geçici Franchise uzmanı JWT’siyle kuyruk okundu; ham ad-soyad, telefon, payload veya istek metadatası dönmeden güvenli profil alanları GM formunu ön-dolduracak şekilde taşındı.
 - Başvuru tekil kanonik franchise dosyasına çevrildi, ticari ileti reddi `withdrawn` makbuzu olarak korundu ve kaynak kayıt açık kuyruktan çıktı.
 - Kabul sonrasında public başvuru, bridge, franchise dosyası, profil, izin makbuzları ve geçici Auth kullanıcıları silindi; altı grubun kalan sayısı `0` doğrulandı. Kanıt: `gm-franchise/public-handoff-hosted-evidence.json`.
-- `public-api` Edge Function v12 staging'e yayımlandı. `https://ototr.com` ve `https://www.ototr.com` origin'leri açıkça kabul edilirken `https://evil.ototr.com` reddedildi; wildcard alt alan izni kullanılmadı. Bu doğrulamada `OPTIONS` isteği kullanıldı, form `POST` edilmedi ve veri oluşturulmadı. Kanıt: `gm-franchise/public-api-live-origin-hosted-evidence.json`.
+- `public-api` Edge Function v13 staging'e yayımlandı. `https://ototr.com` ve `https://www.ototr.com` origin'leri açıkça kabul edilirken `https://evil.ototr.com` reddedildi; wildcard alt alan izni kullanılmadı. Sürümlü sözleşmede veri işleme kararı eksik veya reddedilmiş iki sentetik istek HTTP 400 ile fail-closed reddedildi; veritabanında kalan test satırı sayısı `0` doğrulandı. Ticari ileti kararı zorunlu yapılmadı. Kanıt: `gm-franchise/public-api-live-origin-hosted-evidence.json`.
 - Bu kabul RawGitHack + Supabase staging hattını kanıtlar; mevcut `ototr.com` PHP formunu değiştirmez ve aşağıdaki canlı kapıyı kapatmaz.
 
 ## Zorunlu kapanış kanıtı

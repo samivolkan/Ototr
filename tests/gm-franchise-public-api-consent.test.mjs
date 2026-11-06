@@ -13,12 +13,15 @@ test('public API explicitly allows the canonical live OTOTR origin without a wil
 
 test('hosted staging evidence proves canonical origins without posting form data',()=>{
   assert.equal(liveOriginEvidence.environment,'staging');
-  assert.equal(liveOriginEvidence.functionVersion,12);
+  assert.equal(liveOriginEvidence.functionVersion,13);
   assert.equal(liveOriginEvidence.productionDataUsed,false);
   assert.equal(liveOriginEvidence.formPostAttempted,false);
   assert.equal(liveOriginEvidence.checks.canonicalOriginAllowed,true);
   assert.equal(liveOriginEvidence.checks.wwwOriginAllowed,true);
   assert.equal(liveOriginEvidence.checks.untrustedSubdomainAllowed,false);
+  assert.equal(liveOriginEvidence.checks.missingProcessingConsentStatus,400);
+  assert.equal(liveOriginEvidence.checks.refusedProcessingConsentStatus,400);
+  assert.equal(liveOriginEvidence.checks.rejectedProbeRows,0);
   assert.equal(liveOriginEvidence.productionDecision,'NO_GO');
 });
 
@@ -30,6 +33,14 @@ test('staging preview origin is explicitly allowed without wildcard hosts',()=>{
 test('public franchise API maps separate processing consent without breaking legacy clients',()=>{
   assert.match(source,/hasOwnProperty\.call\(payload, "processingConsent"\)/);
   assert.match(source,/processing_consent:[\s\S]*\? cleanBool\(payload\.processingConsent\)[\s\S]*: null/);
+});
+
+test('versioned franchise intake rejects missing or refused processing consent server-side',()=>{
+  const franchiseHandler=source.match(/async function createFranchise[\s\S]*?async function createComplaint/)?.[0]??'';
+  assert.match(franchiseHandler,/\^FR-KVKK-\[0-9\]\{4\}-\[0-9\]\{2\}\$/);
+  assert.match(franchiseHandler,/!hasProcessingDecision \|\| !cleanBool\(payload\.processingConsent\)/);
+  assert.match(franchiseHandler,/Veri işleme izni zorunludur/);
+  assert.doesNotMatch(franchiseHandler,/!cleanBool\(payload\.contactConsent\)/);
 });
 
 test('commercial communication remains a separate optional franchise decision',()=>{

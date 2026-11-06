@@ -185,12 +185,17 @@ async function createFranchise(req: Request): Promise<Response> {
   const common = commonPayload(payload, req);
   const error = validateLead(common);
   if (error) return json(req, { ok: false, error }, 400);
+  const versionedConsent = /^FR-KVKK-[0-9]{4}-[0-9]{2}$/.test(common.consent_version);
+  const hasProcessingDecision = Object.prototype.hasOwnProperty.call(payload, "processingConsent");
+  if (versionedConsent && (!hasProcessingDecision || !cleanBool(payload.processingConsent))) {
+    return json(req, { ok: false, error: "Veri işleme izni zorunludur." }, 400);
+  }
 
   const { data, error: insertError } = await supabase
     .from("public_franchise_applications")
     .insert({
       ...common,
-      processing_consent: Object.prototype.hasOwnProperty.call(payload, "processingConsent")
+      processing_consent: hasProcessingDecision
         ? cleanBool(payload.processingConsent)
         : null,
       application_type: cleanText(payload.applicationType, 160),

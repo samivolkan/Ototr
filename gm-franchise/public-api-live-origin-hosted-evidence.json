@@ -3,9 +3,9 @@
   "environment": "staging",
   "projectRef": "bsjkohwbtrfwrqcyhsfz",
   "function": "public-api",
-  "functionVersion": 12,
-  "deploymentSha256": "b4768af00037cfa8a6089f8182e4f5a76df4c29087317576466bd1a406c78346",
-  "verifiedAtUtc": "2026-11-06T05:13:26.579Z",
+  "functionVersion": 13,
+  "deploymentSha256": "6ff37b1b2c85b66eb742d282f9337aa681008863e16eefcaf9d8f08e3db32996",
+  "verifiedAtUtc": "2026-11-06T05:15:40.316Z",
   "productionDataUsed": false,
   "formPostAttempted": false,
   "checks": {
@@ -15,6 +15,9 @@
     "wwwOriginAllowed": true,
     "untrustedSubdomainStatus": 200,
     "untrustedSubdomainAllowed": false,
+    "missingProcessingConsentStatus": 400,
+    "refusedProcessingConsentStatus": 400,
+    "rejectedProbeRows": 0,
     "allowedMethods": ["GET", "POST", "OPTIONS"]
   },
   "result": "PASS",
