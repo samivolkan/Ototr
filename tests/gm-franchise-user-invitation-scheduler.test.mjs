@@ -4,6 +4,7 @@ import test from'node:test';
 
 const migration=await readFile(new URL('../supabase/migrations/20261106094839_franchise_user_invitation_scheduler.sql',import.meta.url),'utf8');
 const rollback=await readFile(new URL('../supabase/ops/franchise-rollback.sql',import.meta.url),'utf8');
+const acceptance=await readFile(new URL('../supabase/ops/franchise-user-invitation-scheduler-acceptance.sql',import.meta.url),'utf8');
 
 test('invitation scheduler is installed fail-closed with no embedded credentials',()=>{
   assert.match(migration,/enabled boolean not null default false/i);
@@ -32,4 +33,9 @@ test('rollback unschedules invitation cron before dropping dispatcher and queue'
   const config=rollback.indexOf('drop table if exists app_private.franchise_user_invitation_schedule_config');
   const queue=rollback.indexOf('drop table if exists app_private.franchise_user_invitation_requests');
   assert.ok(unschedule>=0&&dispatcher>unschedule&&config>dispatcher&&queue>config);
+});
+
+test('hosted acceptance drills rollback and proves restored scheduler stays disabled',()=>{
+  assert.match(acceptance,/begin;[\s\S]*cron\.unschedule[\s\S]*drop function app_private\.dispatch_franchise_user_invitation[\s\S]*drop table app_private\.franchise_user_invitation_schedule_config[\s\S]*rollback;/i);
+  for(const proof of ['config_restored','dispatcher_restored','delivery_disabled','worker_url_absent','invoke_jwt_absent','worker_secret_absent','cron_restored','invitation_queue_empty','disabled_noop'])assert.match(acceptance,new RegExp(proof));
 });

@@ -160,5 +160,6 @@ Hedef: Supabase `ototr-staging` (`bsjkohwbtrfwrqcyhsfz`), PostgreSQL 17.6.
 - Yetki doğrulaması `anon EXECUTE=false`, `authenticated EXECUTE=false`, `service_role EXECUTE=true`; cron sayısı `1`, kuyruk satırı `0` ve disabled no-op sonucu `true` olarak ölçüldü.
 - Güvenlik danışmanında yeni dispatcher için mutable search path bulgusu oluşmadı. Private config tablosunun politikasız RLS bilgisi beklenen savunma katmanıdır; tablo public/anon/authenticated rollerine kapalıdır.
 - Bu adım gerçek e-posta göndermedi, Auth kullanıcısı oluşturmadı ve `FRANCHISE_INVITATION_DELIVERY_ENABLED` değerini açmadı.
+- `franchise-user-invitation-scheduler-acceptance.sql` staging'de transaction içinde çalıştırıldı. Cron, dispatcher ve config doğru sırayla kaldırıldı; transaction rollback sonrasında config ve dispatcher geri geldi, cron sayısı `1`, son cron durumu `succeeded`, disabled no-op `true` ve davet kuyruğu `0` olarak doğrulandı.
 
 Bu doğrulama staging şema kurulumu ve rollback kabiliyetini kanıtlar. Gerçek ERP/sağlayıcı uçları, departman UAT imzaları, yayın penceresi ve kullanıcı canlı onayı ayrıca gereklidir. Yayın kararı `NO_GO` kalır.
