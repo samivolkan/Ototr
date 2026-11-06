@@ -34,6 +34,15 @@ Bu kapı ancak aşağıdakilerin tamamı kanıtlandığında `PASS` olabilir:
 5. Sentetik HTTP kabul testi, veritabanı sonucu ve test verisi temizliği birlikte kaydedilir.
 6. Canlı kaynak commit/deployment kimliği ile rollback yöntemi sabitlenir.
 
+## Dağıtıma hazır entegrasyon paketi
+
+Canlı site kaynak deposu bulunduğunda uygulanacak iki bağımsız parça hazırdır:
+
+- `franchise-basvuru/live-form-consent-fragment.html`: mevcut form içine eklenecek, aydınlatma teyidi ve veri işleme iznini zorunlu; ticari ileti kararını isteğe bağlı tutan üç ayrı alan.
+- `franchise-basvuru/live-franchise-adapter.mjs`: mevcut `name`, `phone`, `city`, `district`, `budget`, `experience`, `company`, `location_status`, `area`, `timeline` ve `message` alanlarını sürümlü Edge sözleşmesine dönüştürür. Yalnız tam Supabase Franchise Edge URL'sini kabul eder; endpoint veya KVKK sürümü eksikse fail-closed durur, servis anahtarı kullanmaz ve TCKN/finans belgesi taşımaz.
+
+Kaynak uygulamada eski `/form-handler.php` submit dinleyicisi yalnız Franchise formu için kaldırılmalı; adaptör `OTOTR_FRANCHISE_PUBLIC_CONFIG.apiUrl` ile bağlanmalı, gönder düğmesi istek boyunca kilitlenmeli ve yalnız `WEB-FR-XXXXXXXX` biçimindeki sunucu referansı başarı sayılmalıdır. Bu paket hazırlanmış olsa da kaynak commitine uygulanıp sentetik canlı kabul testi yapılmadan G16 `PASS` olmaz.
+
 ## Karar
 
 Durum: `BLOCKED`. Canlı PHP kaynak deposu veya kontrollü deployment erişimi olmadan değişiklik yapılmayacak. Bu boşluk kapanmadan üretim kararı `GO` olamaz.
