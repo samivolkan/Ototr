@@ -35,3 +35,8 @@ test('organization provides a password-free GM to IT invitation request queue',(
  assert.match(html,/listUserInvitationRequests\(\)/);assert.match(html,/franchiseLiveClient\.requestUserInvitation\(\{email,displayName,erpRole\}\)/);
  assert.match(html,/masked_email/);assert.match(html,/Auth hesabı henüz oluşturulmadı/);assert.match(html,/@ototr\.com kurumsal e-posta/);
 });
+test('BT organization view independently approves or rejects masked invitation requests',()=>{
+ assert.match(html,/Kurumsal hesap davet incelemesi/);assert.match(html,/data-org-invite-review/);assert.match(html,/data-org-invite-note/);
+ assert.match(html,/franchiseLiveClient\.reviewUserInvitation\(\{requestId,decision,note\}\)/);assert.match(html,/decision==='approved'/);
+ assert.match(html,/Talebi açan kişi onay veremez/);assert.match(html,/x\.masked_email/);assert.match(html,/loadOrganizationWorkspace\(\)/);
+});

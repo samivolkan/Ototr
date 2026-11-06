@@ -85,6 +85,19 @@ test('invitation client rejects non-corporate email before any network request',
  assert.throws(()=>client.requestUserInvitation({email:'person@example.com',displayName:'Test Kullanıcı',erpRole:'FINANCE',requestKey:'33333333-3333-4333-8333-333333333333'}),/@ototr\.com/);assert.equal(called,false);
 });
 
+test('BT review sends only the governed decision and mandatory note',async()=>{
+ const calls=[],requestId='44444444-4444-4444-8444-444444444444',fetchImpl=async(url,options)=>{calls.push({url,options});return{ok:true,json:async()=>[{request_id:requestId,request_status:'approved'}]}};
+ const client=createFranchiseLiveClient({config:{url:'https://project.supabase.co',key:'publishable'},getSession:async()=>({access_token:'it-session'}),fetchImpl});
+ await client.reviewUserInvitation({requestId,decision:' APPROVED ',note:' Bağımsız BT kontrolü tamamlandı. '});
+ assert.match(calls[0].url,/rpc\/review_franchise_user_invitation$/);assert.deepEqual(JSON.parse(calls[0].options.body),{p_request_id:requestId,p_decision:'approved',p_note:'Bağımsız BT kontrolü tamamlandı.'});
+ assert.doesNotMatch(calls[0].options.body,/email|password|service_role/i);
+});
+
+test('BT review rejects malformed request, decision and short note before network',()=>{
+ let called=false;const client=createFranchiseLiveClient({config:{url:'https://project.supabase.co',key:'publishable'},getSession:async()=>({access_token:'it-session'}),fetchImpl:async()=>{called=true;throw new Error('network must not run')}});
+ assert.throws(()=>client.reviewUserInvitation({requestId:'bad',decision:'approved',note:'çok kısa'}),/10–500/);assert.equal(called,false);
+});
+
 test('thirteen-owner roster is submitted through one atomic RPC',async()=>{
  const calls=[],actor='11111111-1111-4111-8111-111111111111',roster=Array.from({length:13},(_,i)=>({department_code:'department-'+i,user_id:`00000000-0000-4000-8000-${String(i).padStart(12,'0')}`,assignment_note:'Sentetik toplu kadro atama notu'}));
  const client=createFranchiseLiveClient({
