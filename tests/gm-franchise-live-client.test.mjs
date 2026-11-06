@@ -34,7 +34,7 @@ test('department owner workspace reads privacy-minimized rows and binds assignme
  const calls=[],fetchImpl=async(url,options)=>{calls.push({url,options});return{ok:true,json:async()=>[]}},actor='11111111-1111-4111-8111-111111111111',owner='22222222-2222-4222-8222-222222222222';
  const client=createFranchiseLiveClient({config:{url:'https://project.supabase.co',key:'publishable'},getSession:async()=>({access_token:'session-token',user:{id:actor}}),fetchImpl});
  await client.listDepartmentResponsibilities();assert.match(calls[0].url,/select=department_code,role_code,assignment_level,is_active,created_at/);assert.doesNotMatch(calls[0].url,/user_id/);
- await client.assignPrimaryDepartmentOwner({departmentCode:'finance',userId:owner,note:'Sentetik finans sorumlusu ataması'});const sent=JSON.parse(calls[1].options.body);assert.deepEqual(sent,{department_code:'finance',user_id:owner,role_code:'finance',assignment_level:'primary_responsible',assigned_by:actor,assignment_note:'Sentetik finans sorumlusu ataması'});assert.equal(calls[1].options.headers.Prefer,'return=representation');
+ await client.assignPrimaryDepartmentOwner({departmentCode:'finance',userId:owner,note:'Sentetik finans sorumlusu ataması'});const sent=JSON.parse(calls[1].options.body);assert.equal(calls[1].url,'https://project.supabase.co/rest/v1/rpc/assign_franchise_primary_department_owner');assert.deepEqual(sent,{p_department_code:'finance',p_user_id:owner,p_assignment_note:'Sentetik finans sorumlusu ataması'});
 });
 
 test('department owner assignment fails closed without a valid session actor or department',async()=>{
