@@ -14,6 +14,7 @@ test('finance terms encode binding commercial decisions', () => {
   assert.match(migration, /advertising_fund_rate numeric\(5,2\).*default 0/i);
   assert.match(migration, /royalty_exemption_months in \(0,6,12\)/i);
   assert.match(html, /signed:0,paid:0,slug:"",roy:10,giris:250000/);
+  assert.match(html, /c\.kaynak==="Web demo formu"&&c\.stage<6&&c\.roy===8/);
 });
 
 test('finance and accounting use maker-checker and immutable references', () => {
