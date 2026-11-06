@@ -20,6 +20,8 @@ Her senaryo staging ortamında iki kullanıcıyla çalıştırılır. Uygulayan 
 
 ERP’de `Franchise Yönetim Merkezi → Sistem → Yayın hazırlığı → Hosted UAT çalışma alanı` açılır. Release adayı tüm departmanlar için aynı girilir. Senaryo sahibi kanıtın SHA-256 özetini ve 20-2000 karakter sonuç özetini gönderir; reviewer rolündeki farklı kullanıcı 10-2000 karakter inceleme notuyla onaylar veya reddeder. Departman imzası yalnız katalogdaki zorunlu senaryolar bağımsız onaylandıktan sonra açılır. Genel Müdür imzası diğer sekiz onaydan önce sunucu tarafından reddedilir.
 
+Atamalar başlamadan önce yürütücü, kontrolör ve dokuz tekil sorumlu kişi repo dışındaki bir JSON dosyasında yalnız SHA-256 aktör referanslarıyla planlanır. `node gm-franchise/uat-roster-preflight.mjs --roster /repo-disinda/uat-roster.json` komutu `ready: true` vermeden UAT başlatılmaz. Araç ham kimlik döndürmez; aynı kişinin kendi sonucunu kontrol etmesini, iki departman imzasını üstlenmesini veya imzalayacağı zorunlu senaryoyu yürütmesini reddeder. Gerçek rol yetkisi ayrıca ERP JWT claim'i ve sunucu RPC'si tarafından doğrulanır.
+
 ## Ortak uçtan uca senaryolar
 
 | ID | Senaryo | Beklenen sonuç | Sahip | İkinci onay |
@@ -47,7 +49,7 @@ ERP’de `Franchise Yönetim Merkezi → Sistem → Yayın hazırlığı → Hos
 |---|---|---|---|---|---|
 | Franchise Sorumlusu | Franchise Sorumlusu | UAT-01..03, UAT-15 | BEKLİYOR | — | — |
 | Finans Sorumlusu | Finans Sorumlusu | UAT-05, UAT-13 | BEKLİYOR | — | — |
-| Hukuk/KVKK | Hukuk/KVKK Sorumlusu | UAT-04, UAT-11, UAT-14 | BEKLİYOR | — | — |
+| Hukuk/KVKK | Hukuk/KVKK Sorumlusu | UAT-01, UAT-04, UAT-11, UAT-14 | BEKLİYOR | — | — |
 | İK Sorumlusu | İK Sorumlusu | UAT-07 | BEKLİYOR | — | — |
 | Academy Sorumlusu | Academy Sorumlusu | UAT-08 | BEKLİYOR | — | — |
 | Operasyon/Kalite/İSG | Operasyon/Kalite/İSG Sorumlusu | UAT-06, UAT-12, UAT-14..15 | BEKLİYOR | — | — |

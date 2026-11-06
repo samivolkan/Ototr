@@ -16,6 +16,8 @@ test('UAT catalog contains exactly sixteen governed scenarios and nine signoff r
 test('UAT guide uses the canonical single-responsible signoff catalog', () => {
   for (const role of ['Franchise Sorumlusu','Finans Sorumlusu','Hukuk/KVKK','İK Sorumlusu','Academy Sorumlusu','Operasyon/Kalite/İSG','Tedarik/Mimari/Pazarlama','ERP/Bilgi Güvenliği','Genel Müdür']) assert.match(uatGuide, new RegExp(role));
   for (const legacyRole of ['Franchise Yönetimi','Finans Direktörü','İK Yöneticisi','Academy Yöneticisi','CEO/Yönetim']) assert.doesNotMatch(uatGuide, new RegExp(legacyRole));
+  assert.match(uatGuide, /\| Hukuk\/KVKK \| Hukuk\/KVKK Sorumlusu \| UAT-01, UAT-04, UAT-11, UAT-14 \|/);
+  assert.match(uatGuide, /uat-roster-preflight\.mjs --roster/);
 });
 
 test('UAT evidence and signoffs are RLS protected and independently approved', () => {
