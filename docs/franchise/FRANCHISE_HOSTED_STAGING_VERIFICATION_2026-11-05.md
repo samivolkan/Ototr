@@ -152,4 +152,13 @@ Hedef: Supabase `ototr-staging` (`bsjkohwbtrfwrqcyhsfz`), PostgreSQL 17.6.
 - Organizasyon veri yükleme akışı role göre en az yetkiyle ayrıldı: GM kadro ve açık raporlarını, BT kendi sorumluluk görünümü ile davet kuyruğunu, diğer departmanlar yalnız RLS kapsamında görülebilen sorumluluklarını ister. UI rol seçimi yetki kaynağı değildir; gerçek JWT ve veritabanı politikası belirleyicidir.
 - Headless Edge görsel kabulünde BT masaüstü ve dar ekran yerleşimleri render edildi; genel ERP girişi, 13 departman görünümü ve davet inceleme kartı görünür, boş kuyrukta kişisel veri yoktur. Work yerel tarayıcı otomasyonu kapalı olduğundan tıklama testi yerine gerçek render ekran görüntüsü ve istemci/RPC otomatik testleri kullanıldı.
 
+## Davet worker otomatik scheduler — 2026-11-06
+
+- `franchise_user_invitation_scheduler` migration'ı staging'e uygulandı. Dakikalık cron işi yalnız Data API dışındaki `app_private.dispatch_franchise_user_invitation()` fonksiyonunu çağırır.
+- Scheduler yapılandırması `enabled=false`, `worker_url=null` ve iki Vault bağlantısı da `null` olarak kuruldu. Dispatcher bu durumda `null` dönerek ağ isteği oluşturmaz; gerçek davet teslimi etkinleştirilmedi.
+- Gateway JWT ve worker çağrı sırrı ayrı Vault UUID'leriyle bağlanır; aynı Vault kaydının iki amaçla kullanılması constraint ile engellenir. SQL dosyasında ham sır, parola veya service-role anahtarı bulunmaz.
+- Yetki doğrulaması `anon EXECUTE=false`, `authenticated EXECUTE=false`, `service_role EXECUTE=true`; cron sayısı `1`, kuyruk satırı `0` ve disabled no-op sonucu `true` olarak ölçüldü.
+- Güvenlik danışmanında yeni dispatcher için mutable search path bulgusu oluşmadı. Private config tablosunun politikasız RLS bilgisi beklenen savunma katmanıdır; tablo public/anon/authenticated rollerine kapalıdır.
+- Bu adım gerçek e-posta göndermedi, Auth kullanıcısı oluşturmadı ve `FRANCHISE_INVITATION_DELIVERY_ENABLED` değerini açmadı.
+
 Bu doğrulama staging şema kurulumu ve rollback kabiliyetini kanıtlar. Gerçek ERP/sağlayıcı uçları, departman UAT imzaları, yayın penceresi ve kullanıcı canlı onayı ayrıca gereklidir. Yayın kararı `NO_GO` kalır.
