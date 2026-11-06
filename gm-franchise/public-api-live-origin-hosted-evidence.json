@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "environment": "staging",
+  "projectRef": "bsjkohwbtrfwrqcyhsfz",
+  "function": "public-api",
+  "functionVersion": 12,
+  "deploymentSha256": "b4768af00037cfa8a6089f8182e4f5a76df4c29087317576466bd1a406c78346",
+  "verifiedAtUtc": "2026-11-06T05:13:26.579Z",
+  "productionDataUsed": false,
+  "formPostAttempted": false,
+  "checks": {
+    "canonicalOriginStatus": 200,
+    "canonicalOriginAllowed": true,
+    "wwwOriginStatus": 200,
+    "wwwOriginAllowed": true,
+    "untrustedSubdomainStatus": 200,
+    "untrustedSubdomainAllowed": false,
+    "allowedMethods": ["GET", "POST", "OPTIONS"]
+  },
+  "result": "PASS",
+  "releaseEffect": "NONE",
+  "productionDecision": "NO_GO"
+}

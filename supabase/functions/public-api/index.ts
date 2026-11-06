@@ -31,6 +31,8 @@ function originAllowed(origin: string | null): boolean {
       host === "127.0.0.1" ||
       host === "raw.githack.com" ||
       host.endsWith(".github.io") ||
+      host === "ototr.com" ||
+      host === "www.ototr.com" ||
       host === "ototr.com.tr" ||
       host === "www.ototr.com.tr"
     );
