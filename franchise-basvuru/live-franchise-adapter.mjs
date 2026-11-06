@@ -2,6 +2,9 @@ export const LIVE_CONSENT_VERSION='FR-KVKK-2026-11';
 const ENDPOINT=/^https:\/\/[a-z0-9-]+\.supabase\.co\/functions\/v1\/public-api\/franchise-applications$/i;
 const clean=(value,max=500)=>String(value??'').trim().replace(/\s+/g,' ').slice(0,max);
 const checked=value=>value===true||value==='true'||value==='on'||value==='1';
+const canonical=(value,map)=>map[clean(value).toLocaleLowerCase('tr-TR')]||clean(value);
+const SECTOR_CODES=Object.freeze({'yok':'none','otomotiv':'automotive','servis / bakım':'service','ekspertiz':'automotive','filo / araç ticareti':'automotive'});
+const LOCATION_CODES=Object.freeze({'henüz belirlenmedi':'none','kiralık yer araştırılıyor':'searching','mülk mevcut':'owned','kiralık yer hazır':'leased'});
 
 export function validateLiveFranchiseConfig(config={}){
   const apiUrl=clean(config.apiUrl,500),consentVersion=clean(config.consentVersion||LIVE_CONSENT_VERSION,80),deploymentIdentity=clean(config.deploymentIdentity,80),rollbackReference=clean(config.rollbackReference,200);
@@ -25,13 +28,13 @@ export function liveFranchisePayload(data,{consentVersion=LIVE_CONSENT_VERSION,u
     budget:clean(get('budget'),80),
     equityBand:clean(get('equity_band'),80),
     managementExperienceYears:Number.parseInt(String(get('management_experience_years')||'0'),10)||0,
-    sectorExperience:clean(get('experience'),80),
-    companyStatus:clean(get('company'),80),
+    sectorExperience:canonical(get('experience'),SECTOR_CODES),
+    companyStatus:clean(get('company_status'),80),
     partnershipStructure:clean(get('partnership_structure'),80),
-    hasLocation:clean(get('location_status'),80),
+    hasLocation:canonical(get('location_status'),LOCATION_CODES),
     region:clean([get('city'),get('district')].filter(Boolean).join(' / '),80),
     squareMeters:clean(get('area'),40),
-    note:clean([get('message'),get('timeline')&&`Planlanan başlangıç: ${get('timeline')}`].filter(Boolean).join(' · '),1500),
+    note:clean([get('company')&&`Şirket / marka: ${get('company')}`,get('message'),get('timeline')&&`Planlanan başlangıç: ${get('timeline')}`].filter(Boolean).join(' · '),1500),
     companyWebsite:clean(get('website'),120),
     kvkkConsent:checked(get('kvkkConsent')),
     processingConsent:checked(get('processingConsent')),

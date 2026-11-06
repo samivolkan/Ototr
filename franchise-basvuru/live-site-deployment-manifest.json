@@ -18,12 +18,12 @@
     {
       "source": "franchise-basvuru/live-form-consent-fragment.html",
       "target": "HTML:/franchise form[data-live-franchise-form] before submit button",
-      "sha256": "7b183d209dc760a66d75befad0a660e64a9f2183042c878ce0905766e3726c44"
+      "sha256": "c17a916a93a7d9f79211f64af42c07b3c7e2fcccb9a3fe4f72eae5f6eab0be58"
     },
     {
       "source": "franchise-basvuru/live-franchise-adapter.mjs",
       "target": "/assets/js/live-franchise-adapter.mjs",
-      "sha256": "e159fde1365996bb550779accddf69a27080134cdd6dceacefd84dc2281787c0"
+      "sha256": "eea08cbf5f9210e12e7564d820b72882a05bf514e9845abd11f47c41b64fa6e2"
     },
     {
       "source": "franchise-basvuru/live-franchise-bootstrap.mjs",
