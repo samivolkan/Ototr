@@ -2,7 +2,7 @@
 
 ## Gözlenen mevcut durum
 
-Son salt-okunur yeniden doğrulama: **2026-11-06**. `gm-franchise/public-intake-readiness.mjs` sayfa ve güncel uygulama JavaScript kaynağını GET ile denetledi; canlı forma POST göndermedi. Makinece okunabilir sonuç `gm-franchise/live-public-intake-readiness-evidence.json` içindedir.
+Son salt-okunur yeniden doğrulama: **2026-11-06 14:56 TSİ**. `gm-franchise/public-intake-readiness.mjs` sayfa ve güncel uygulama JavaScript kaynaklarını yalnız GET ile denetledi; canlı forma POST göndermedi. Makinece okunabilir sonuç `gm-franchise/live-public-intake-readiness-evidence.json` içindedir. ERP yayın ekranı 24 saatten eski denetim kanıtını fail-closed reddeder.
 
 - `https://ototr.com/franchise` HTTP 200 dönüyor ve `data-demo-form="franchise"` formunu gösteriyor.
 - Form `assets/js/app.js` üzerinden aynı origin `/form-handler.php` adresine POST ediyor; Supabase `public-api/franchise-applications` hattını kullanmıyor.

@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
   "target": "https://ototr.com/franchise",
-  "checkedAtUtc": "2026-11-05T22:06:56.029Z",
+  "checkedAtUtc": "2026-11-06T11:56:50.500Z",
   "checkedReadOnly": true,
   "formPostAttempted": false,
   "httpStatus": 200,
   "pageBytes": 35629,
-  "applicationScriptBytes": 24473,
+  "applicationScriptBytes": 82512,
   "checks": {
     "pageAvailable": true,
     "applicationScriptAvailable": true,
