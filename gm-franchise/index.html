@@ -99,6 +99,7 @@ ul.ul{margin:0;padding-left:18px}ul.ul li{margin:3px 0}
 <script type="module">
 import {createFranchiseCase,hireStaff,updateStaffCompliance,openingBlockers,activateFranchiseCase,staffReadyForAccess,requestException,reviewException,ensureOpeningEvidence,submitOpeningEvidence,reviewOpeningEvidence,completeFollowUp,requestFollowUpReopen,reviewFollowUpReopen,SCORE_DIMENSIONS,candidateScoreValue,candidateScoreRecommendation,submitCandidateScore,submitBoardDecision,reviewBoardDecision} from "./franchise-core.mjs";
 import {runFranchiseDemoRehearsal} from "./demo-rehearsal.mjs";
+import {readDemoIntake,removeDemoIntake} from "../franchise-basvuru/demo-intake.mjs";
 import {franchiseLiveClient} from "./franchise-live-client.mjs";
 const TODAY=new Date("2026-11-05"),KEY="ototr-franchise-e2e-v1";
 const STAGES=["Yeni","Gorusme","Onay","Sozlesme","Onboarding","Kurulum","Aktif"];
@@ -151,6 +152,7 @@ const DL=()=>"04 Kas 2026";
 const PC=d=>`<span class="pi ${d=="Aktif"?"ok":d=="Kapalı"?"rd":"wn"}">${d}</span>`;
 let UID=1,LOG=[],FB=1,CUR="e2e",SEL=null,HF="all",DTAB="bekliyor";
 let LIVE_QUEUE=[],LIVE_QUEUE_STATE="idle",LIVE_QUEUE_ERROR="",LIVE_QUEUE_SELECTED=null,LIVE_QUEUE_RESULT="";
+let DEMO_WEB_QUEUE=readDemoIntake();
 let LIVE_UAT=null,LIVE_UAT_STATE="idle",LIVE_UAT_ERROR="",LIVE_UAT_RELEASE="franchise-rc-2026.11.06";
 function mkC(ad,ilce,yat,stage,o={}){
   const slugIlce=SL(ilce);
@@ -369,7 +371,9 @@ function webKuyruk(){
   const tones={ready_for_canonicalization:"ok",awaiting_processing_consent:"wn",rejected_missing_privacy:"rd"};
   const selected=LIVE_QUEUE.find(x=>x.source_application_id===LIVE_QUEUE_SELECTED&&x.status==="ready_for_canonicalization");
   const status=LIVE_QUEUE_STATE==="loading"?'<div class="al wn">Canlı kuyruk yükleniyor…</div>':LIVE_QUEUE_STATE==="error"?`<div class="al r">${H(LIVE_QUEUE_ERROR)}</div>`:LIVE_QUEUE_STATE==="loaded"?`<div class="al ok">Canlı kuyruk bağlandı · ${LIVE_QUEUE.length} açık kayıt</div>`:'<div class="al">ERP oturumuyla bağlanmak için kuyruğu yenileyin. Ham ad-soyad, telefon ve belge içeriği bu ekranda gösterilmez.</div>';
-  return`${status}<div class="row"><button class="btn" data-live-refresh ${LIVE_QUEUE_STATE==="loading"?"disabled":""}>Kuyruğu yenile</button><span class="mu">Yetki: GM · Franchise Direktörü · Franchise Uzmanı</span></div>
+  return`<div class="card"><div class="row" style="justify-content:space-between"><div><h2>Demo web başvurusu</h2><p class="nt">Web formunu sentetik bilgilerle doldurun; kayıt yalnız bu tarayıcıda kuyruğa düşer ve canlı API çağrısı yapılmaz.</p></div><a class="btn" href="../franchise-basvuru/index.html?demo=1" target="_blank" rel="noopener">Demo başvuru formunu aç</a></div></div>
+  <div class="card scr"><h2>Tarayıcı içi demo kuyruğu · ${DEMO_WEB_QUEUE.length}</h2><table><tr><th>Başvuru ref.</th><th>Konum</th><th>Tip</th><th>İzin</th><th>İşlem</th></tr>${DEMO_WEB_QUEUE.map(x=>`<tr><td><b>${H(x.source_application_id)}</b></td><td>${H([x.province,x.district].filter(Boolean).join(" / ")||"-")}</td><td>${H(x.application_type||"-")}</td><td><span class="pi ok">3 ayrı karar alındı</span></td><td><button class="btn" data-demo-intake-start="${H(x.source_application_id)}">Süreci başlat</button></td></tr>`).join("")||'<tr><td colspan="5" class="mu">Henüz demo web başvurusu yok.</td></tr>'}</table></div>
+  ${status}<div class="row"><button class="btn" data-live-refresh ${LIVE_QUEUE_STATE==="loading"?"disabled":""}>Canlı/staging kuyruğunu yenile</button><span class="mu">Yetki: GM · Franchise Direktörü · Franchise Uzmanı</span></div>
   ${LIVE_QUEUE_RESULT?`<div class="al ok">${H(LIVE_QUEUE_RESULT)}</div>`:""}
   <div class="card scr"><h2>Web Başvuru Kuyruğu</h2><table><tr><th>Başvuru ref.</th><th>Kaynak</th><th>Konum</th><th>Gönderim</th><th>İzin durumu</th><th>İşlem</th></tr>
   ${LIVE_QUEUE.map(x=>`<tr><td><b>${H(x.source_application_id)}</b></td><td>${H(x.source||"-")}</td><td>${H([x.province,x.district].filter(Boolean).join(" / ")||"-")}</td><td>${H(x.submitted_at||x.captured_at||"-")}</td><td><span class="pi ${tones[x.status]||""}">${H(labels[x.status]||x.status)}</span>${x.reason_code?`<br><small class="mu">${H(x.reason_code)}</small>`:""}</td><td>${x.status==="ready_for_canonicalization"?`<button class="btn g" data-live-select="${H(x.source_application_id)}">Aday dosyasına aktar</button>`:'<span class="mu">İzin tamamlanmadan kilitli</span>'}</td></tr>`).join("")||'<tr><td colspan="6" class="mu">Kuyruk yüklenmedi veya açık başvuru yok.</td></tr>'}</table></div>
@@ -817,6 +821,7 @@ const A={
 document.addEventListener("click",async ev=>{
   if(ev.target===$("mo")){SEL=null;render();return}
   const demoRehearsal=ev.target.closest("[data-demo-rehearsal]");if(demoRehearsal){DEMO_REHEARSAL=runFranchiseDemoRehearsal();render();return}
+  const demoIntakeStart=ev.target.closest("[data-demo-intake-start]");if(demoIntakeStart){const item=DEMO_WEB_QUEUE.find(x=>x.source_application_id===demoIntakeStart.dataset.demoIntakeStart);if(item){const budgetLabels={under_5m:"5 milyon TL altı",'5m_10m':"5–10 milyon TL",'10m_20m':"10–20 milyon TL",over_20m:"20 milyon TL üzeri"};const candidate=mkC(`Sentetik Web Adayı · ${item.source_application_id}`,item.district||item.province||"Demo",budgetLabels[item.budget_band]||"Demo bütçe",0,{kaynak:"Web demo formu",hist:[`${DL()} · Web başvurusu izin kontrolünden geçerek aday dosyasına dönüştürüldü`],gnot:item.source_application_id});C.unshift(candidate);DEMO_WEB_QUEUE=removeDemoIntake(item.source_application_id);LIVE_QUEUE_RESULT=`Demo aday dosyası oluşturuldu: FR-DEMO-${candidate.id}`;CUR="pipe";SEL=candidate.id;render()}return}
   const liveRefresh=ev.target.closest("[data-live-refresh]");if(liveRefresh){LIVE_QUEUE_STATE="loading";LIVE_QUEUE_ERROR="";LIVE_QUEUE_RESULT="";render();try{LIVE_QUEUE=await franchiseLiveClient.listQueue();LIVE_QUEUE_STATE="loaded"}catch(e){LIVE_QUEUE=[];LIVE_QUEUE_STATE="error";LIVE_QUEUE_ERROR=e.message}render();return}
   const liveSelect=ev.target.closest("[data-live-select]");if(liveSelect){const item=LIVE_QUEUE.find(x=>x.source_application_id===liveSelect.dataset.liveSelect);if(item?.status==="ready_for_canonicalization"){LIVE_QUEUE_SELECTED=item.source_application_id;LIVE_QUEUE_RESULT=""}render();if(item){const values={"live-budget":item.budget_band,"live-equity":item.equity_band,"live-experience":item.management_experience_years,"live-sector":item.sector_experience,"live-company":item.company_status,"live-location":item.location_status,"live-partnership":item.partnership_structure};for(const[id,value]of Object.entries(values)){const field=$(id);if(field&&value!==null&&value!==undefined)field.value=String(value)}}return}
   const liveCancel=ev.target.closest("[data-live-cancel]");if(liveCancel){LIVE_QUEUE_SELECTED=null;LIVE_QUEUE_RESULT="";render();return}
