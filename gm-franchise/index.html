@@ -98,6 +98,7 @@ ul.ul{margin:0;padding-left:18px}ul.ul li{margin:3px 0}
 <div class="mo" id="mo" hidden></div>
 <script type="module">
 import {createFranchiseCase,hireStaff,updateStaffCompliance,openingBlockers,activateFranchiseCase,staffReadyForAccess,requestException,reviewException,ensureOpeningEvidence,submitOpeningEvidence,reviewOpeningEvidence,completeFollowUp,requestFollowUpReopen,reviewFollowUpReopen,SCORE_DIMENSIONS,candidateScoreValue,candidateScoreRecommendation,submitCandidateScore,submitBoardDecision,reviewBoardDecision} from "./franchise-core.mjs";
+import {runFranchiseDemoRehearsal} from "./demo-rehearsal.mjs";
 import {franchiseLiveClient} from "./franchise-live-client.mjs";
 const TODAY=new Date("2026-11-05"),KEY="ototr-franchise-e2e-v1";
 const STAGES=["Yeni","Gorusme","Onay","Sozlesme","Onboarding","Kurulum","Aktif"];
@@ -590,6 +591,7 @@ const UAT_SCENARIOS=[
  ["UAT-13","Finansal koşul ve royalty",["fn"],["mh","gm"]],["UAT-14","Hukuk, bölge ve saha",["hk"],["mm","op","gm"]],["UAT-15","Açılış uygulama teslimatları",["fd"],["gm"]],["UAT-16","Dış portallar ve bayi kapsamı",["bt"],["hk","gm"]]
 ];
 let UAT_STATE={};
+let DEMO_REHEARSAL=null;
 let FLOW=createFranchiseCase({id:"FR-DEMO-001",applicationId:"APP-DEMO-001",name:"Bursa Nilüfer OTOTR",candidate:"Demo Yatırımcı A.Ş.",city:"Bursa",district:"Nilüfer",stage:8,score:84,days:31,paid:100,royalty:10,exemption:6,territory:"Nilüfer · 12 km · poligon FR-BRS-01",consents:3,documents:12,documentsTotal:17,history:["05 Kas 2026 · Hukuk · Sözleşme taslağı kurul incelemesine alındı","04 Kas 2026 · Finans · %100 tahsilat test kaydı doğrulandı","03 Kas 2026 · Operasyon · Lokasyon saha ziyareti tamamlandı"]});
 SCORE_DIMENSIONS.forEach((dimension,index)=>submitCandidateScore(FLOW,dimension.code,{score:[84,82,80,85,81,84,86][index],assessorId:dimension.ownerRoles[0]+":seed",assessorRole:dimension.ownerRoles[0],evidenceSha256:String(index+1).repeat(64),rationale:"Sentetik doğrulanmış değerlendirme kanıtı"}));
 submitBoardDecision(FLOW,{decision:"approved",makerId:"fd:seed",makerRole:"fd"});
@@ -635,6 +637,7 @@ function skorlama(){
 function e2e(){
   const gate=flowStageGate(),owner=RN[E2E_STAGE_OWNER[FLOW.stage]],remaining=Math.max(0,FLOW.target-FLOW.days);
   return`<div class="safe-note"><b>Güvenli demo:</b> T.C. kimlik, banka/finans ve sözleşme belgeleri bu ekranda gerçek olarak tutulmaz. Tüm kayıtlar sentetiktir.</div>
+  <div class="card"><div class="row" style="justify-content:space-between"><div><h2>Uçtan uca demo prova</h2><p class="nt">Başvuru, skor, 13 departman, 10 kadro, Academy, aktivasyon, 30/60/90, 17 entegrasyon hedefi ve 16/9 UAT-yayın provası tek tuşla sentetik olarak çalışır.</p></div><button class="btn" data-demo-rehearsal>Demo provayı çalıştır</button></div>${DEMO_REHEARSAL?`<div class="g4"><div class="card stat"><b class="ok">${H(DEMO_REHEARSAL.demoDecision)}</b><s2>Demo kararı</s2></div><div class="card stat"><b class="rd">${H(DEMO_REHEARSAL.productionDecision)}</b><s2>Üretim kararı değişmez</s2></div><div class="card stat"><b>${DEMO_REHEARSAL.phases.filter(x=>x[1]).length}/${DEMO_REHEARSAL.phases.length}</b><s2>Geçen demo aşaması</s2></div><div class="card stat"><b>${H(DEMO_REHEARSAL.branchId)}</b><s2>Sentetik aktif şube</s2></div></div><div class="gate-grid">${DEMO_REHEARSAL.phases.map((x,index)=>`<div class="gate-card"><h2><span class="${x[1]?'ok':'rd'}">${x[1]?'✓':'✗'}</span> ${index+1}. ${H(x[0])}</h2><p>${H(x[2])}</p></div>`).join('')}</div><div class="al"><b>Demo sınırı:</b> Kalıcı veritabanı yazımı, dış ağ çağrısı, gerçek sağlayıcı veya canlı yayın yapılmadı.</div>`:''}</div>
   <div class="card"><div class="row"><b>Franchise dosyası</b><select data-case-select>${FR_CASES.map(x=>`<option value="${H(x.id)}" ${x.id===FLOW.id?'selected':''}>${H(x.applicationId)} · ${H(x.candidate)}</option>`).join("")}</select><span class="stage-chip">${H(FLOW.id)}</span></div></div>
   <div class="g4"><div class="card stat"><b>${candidateScoreValue(FLOW)??"—"}/100</b><s2>Aday skoru · ${scoreRecommendationLabel()}</s2></div><div class="card stat"><b>${FLOW.stage+1}/14</b><s2>Yaşam döngüsü</s2></div><div class="card stat"><b>${flowTaskCount()}/${flowTaskTotal()}</b><s2>Departman görevi</s2></div><div class="card stat"><b>${FLOW.paid}%</b><s2>Giriş bedeli tahsilatı</s2></div><div class="card stat"><b>${remaining} gün</b><s2>60 günlük hedefe kalan</s2></div></div>
   <div class="card"><h2>Başvurudan aktif şubeye yaşam döngüsü</h2><div class="journey">${E2E_STAGES.map((x,i)=>`<div class="journey-step ${i<FLOW.stage?'done':i===FLOW.stage?'current':''}"><b>${i+1}. ${x}</b><span>${i<FLOW.stage?'Tamamlandı':i===FLOW.stage?'Sorumlu: '+owner:'Bekliyor'}</span></div>`).join("")}</div></div>
@@ -813,6 +816,7 @@ const A={
 };
 document.addEventListener("click",async ev=>{
   if(ev.target===$("mo")){SEL=null;render();return}
+  const demoRehearsal=ev.target.closest("[data-demo-rehearsal]");if(demoRehearsal){DEMO_REHEARSAL=runFranchiseDemoRehearsal();render();return}
   const liveRefresh=ev.target.closest("[data-live-refresh]");if(liveRefresh){LIVE_QUEUE_STATE="loading";LIVE_QUEUE_ERROR="";LIVE_QUEUE_RESULT="";render();try{LIVE_QUEUE=await franchiseLiveClient.listQueue();LIVE_QUEUE_STATE="loaded"}catch(e){LIVE_QUEUE=[];LIVE_QUEUE_STATE="error";LIVE_QUEUE_ERROR=e.message}render();return}
   const liveSelect=ev.target.closest("[data-live-select]");if(liveSelect){const item=LIVE_QUEUE.find(x=>x.source_application_id===liveSelect.dataset.liveSelect);if(item?.status==="ready_for_canonicalization"){LIVE_QUEUE_SELECTED=item.source_application_id;LIVE_QUEUE_RESULT=""}render();if(item){const values={"live-budget":item.budget_band,"live-equity":item.equity_band,"live-experience":item.management_experience_years,"live-sector":item.sector_experience,"live-company":item.company_status,"live-location":item.location_status,"live-partnership":item.partnership_structure};for(const[id,value]of Object.entries(values)){const field=$(id);if(field&&value!==null&&value!==undefined)field.value=String(value)}}return}
   const liveCancel=ev.target.closest("[data-live-cancel]");if(liveCancel){LIVE_QUEUE_SELECTED=null;LIVE_QUEUE_RESULT="";render();return}
