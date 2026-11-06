@@ -95,4 +95,12 @@ Hedef: Supabase `ototr-staging` (`bsjkohwbtrfwrqcyhsfz`), PostgreSQL 17.6.
 - Hook ve sorumluluk tablosu erişimi Supabase Auth Hook kuralına göre `SECURITY INVOKER`, yalnız `supabase_auth_admin` SELECT/EXECUTE izni ve ayrı RLS politikasıyla tanımlandı; `anon` ve `authenticated` doğrudan çağrı yetkisi almaz.
 - Kalan dış bağımlılık: Genel Müdürün gerçek staging kullanıcı UUID'leriyle 13 ana sorumluyu ataması. Bu roster tamamlanmadan token enforcement migration'ı ve kullanıcı oturum yenileme kabulü çalıştırılmayacaktır.
 
+## Tek seferlik Genel Müdür başlangıç koruması — 2026-11-06
+
+- `franchise_gm_bootstrap_guard` migration'ı staging'e uygulandı. Fonksiyon Data API'ye açık olmayan `app_private` şemasında, `SECURITY INVOKER` olarak ve yalnız `service_role` çalıştırma yetkisiyle tanımlandı; `anon` ve `authenticated` çalıştırma yetkileri kapalıdır.
+- İşlem yalnız aktif ve Auth bağlantılı ERP kullanıcısını kabul eder. Transaction advisory lock ile eşzamanlı iki başlangıç isteğini sıraya alır; sistemde aktif GM varsa veya hedef kullanıcıda farklı aktif Franchise rolü varsa güvenli biçimde reddeder.
+- Dönüş değeri yalnız rol, aktiflik ve kapsam sürümünü içerir; ad, e-posta, telefon veya kullanıcı kimliği döndürmez.
+- Hosted doğrulamada `SECURITY DEFINER=false`, `anon EXECUTE=false`, `authenticated EXECUTE=false`, `service_role EXECUTE=true` ve fonksiyon adına bağlı güvenlik danışmanı bulgusu `0` bulundu.
+- Fonksiyon yalnız koruma olarak kuruldu, çalıştırılmadı. Kullanıcı açık onayı olmadan kişi ataması yapılmadı; aktif GM ve toplam Franchise scope satırı `0` kaldı.
+
 Bu doğrulama staging şema kurulumu ve rollback kabiliyetini kanıtlar. Gerçek ERP/sağlayıcı uçları, departman UAT imzaları, yayın penceresi ve kullanıcı canlı onayı ayrıca gereklidir. Yayın kararı `NO_GO` kalır.

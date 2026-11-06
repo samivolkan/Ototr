@@ -1,6 +1,7 @@
 -- STAGING ONLY. Destructive rollback for the franchise preproduction schema.
 -- Export staging evidence before use. Never run against production without signed approval.
 begin;
+drop function if exists app_private.bootstrap_franchise_gm(uuid);
 do $$
 declare v_job_id bigint;
 begin
