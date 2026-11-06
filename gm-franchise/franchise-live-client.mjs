@@ -60,6 +60,8 @@ export function createFranchiseLiveClient({config=browserRuntimeConfig(),getSess
   const listDepartmentOwnerCandidates=()=>request('/rest/v1/rpc/list_franchise_department_owner_candidates',{method:'POST',body:'{}'});
   const listDepartmentStaffingRequirements=()=>request('/rest/v1/rpc/list_franchise_department_staffing_requirements',{method:'POST',body:'{}'});
   const listRoleStaffingGaps=()=>request('/rest/v1/rpc/list_franchise_role_staffing_gaps',{method:'POST',body:'{}'});
+  const listUserInvitationRequests=()=>request('/rest/v1/rpc/list_franchise_user_invitation_requests',{method:'POST',body:'{}'});
+  function requestUserInvitation({email,displayName,erpRole,requestKey=globalThis.crypto?.randomUUID?.()}){if(!/^[0-9a-f-]{36}$/i.test(requestKey||'')||!String(email||'').trim().toLowerCase().endsWith('@ototr.com')||String(displayName||'').trim().length<2||!String(erpRole||'').trim())throw new Error('Geçerli ad, @ototr.com e-posta ve ERP rolü zorunludur.');return request('/rest/v1/rpc/request_franchise_user_invitation',{method:'POST',body:JSON.stringify({p_request_key:requestKey,p_email:String(email).trim().toLowerCase(),p_display_name:String(displayName).trim(),p_erp_role:String(erpRole).trim().toUpperCase()})})}
   async function assignPrimaryDepartmentOwner({departmentCode,userId,note}){const session=await getSession(fetchImpl),actorId=String(session?.user?.id||tokenSubject(session?.access_token));if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(actorId))throw new Error('ERP oturum kullanıcı kimliği doğrulanamadı.');return request('/rest/v1/rpc/assign_franchise_primary_department_owner',{method:'POST',body:JSON.stringify({p_department_code:departmentCode,p_user_id:userId,p_assignment_note:note})})}
   async function assignDepartmentRoster({roster}){const session=await getSession(fetchImpl),actorId=String(session?.user?.id||tokenSubject(session?.access_token));if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(actorId))throw new Error('ERP oturum kullanıcı kimliği doğrulanamadı.');if(!Array.isArray(roster)||roster.length!==13||new Set(roster.map(x=>x.department_code)).size!==13||new Set(roster.map(x=>x.user_id)).size!==13)throw new Error('13 departman için 13 farklı ana sorumlu seçilmelidir.');return request('/rest/v1/rpc/assign_franchise_department_roster',{method:'POST',body:JSON.stringify({p_roster:roster})})}
   async function loadUat(releaseCandidate){
@@ -77,7 +79,7 @@ export function createFranchiseLiveClient({config=browserRuntimeConfig(),getSess
     submitUatResult:payload=>rpc('submit_franchise_uat_result',payload),
     reviewUatResult:payload=>rpc('review_franchise_uat_result',payload),
     signUatRelease:payload=>rpc('sign_franchise_uat_release',payload),
-    listDepartmentResponsibilities,listDepartmentOwnerCandidates,listDepartmentStaffingRequirements,listRoleStaffingGaps,assignPrimaryDepartmentOwner,assignDepartmentRoster
+    listDepartmentResponsibilities,listDepartmentOwnerCandidates,listDepartmentStaffingRequirements,listRoleStaffingGaps,listUserInvitationRequests,requestUserInvitation,assignPrimaryDepartmentOwner,assignDepartmentRoster
   });
 }
 export const franchiseLiveClient=createFranchiseLiveClient();

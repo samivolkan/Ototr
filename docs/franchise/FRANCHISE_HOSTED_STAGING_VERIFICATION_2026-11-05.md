@@ -134,4 +134,13 @@ Hedef: Supabase `ototr-staging` (`bsjkohwbtrfwrqcyhsfz`), PostgreSQL 17.6.
 - Eksik dağılımı: `OPERATIONS=2`; `FINANCE`, `ACADEMY_MANAGER`, `FRANCHISE_SALES`, `HR`, `LEGAL`, `MARKETING`, `QUALITY_AUDITOR` ve `SUPPORT_AGENT` rollerinin her biri `1`.
 - RPC `SECURITY INVOKER`; `anon EXECUTE=false`, `authenticated EXECUTE=true`, `service_role EXECUTE=true`. Kişi adı, e-posta, telefon veya kullanıcı kimliği dönmez.
 
+## Kurumsal hesap davet talebi ve bağımsız BT onayı — 2026-11-06
+
+- `franchise_user_invitation_queue` ve `franchise_user_invitation_corporate_email_guard` migration'ları staging'e uygulandı. Talep kuyruğu Data API'ye açık olmayan `app_private` şemasındadır; RLS açıktır ve parola, erişim anahtarı veya davet tokenı alanı içermez.
+- Genel Müdür yalnız `@ototr.com` kurumsal e-posta, ad soyad ve ERP rolüyle talep oluşturabilir. Liste RPC'si e-postayı maskeli döndürür; tam e-posta tarayıcıdaki kuyruk listesine taşınmaz.
+- Talebi açan kişi aynı talebi onaylayamaz. Onay yalnız aktif BT ERP rolündeki farklı bir kullanıcı tarafından verilebilir; böylece maker-checker ayrımı veritabanında zorunludur.
+- Üç public RPC `SECURITY INVOKER`; anonim talep ve inceleme yetkileri kapalı, kimliği doğrulanmış kullanıcı yetkileri rol kontrollerine bağlıdır.
+- Rollback-only hosted kabulde sentetik GM talebi oluşturdu, OTOTR dışı e-posta reddedildi, maskeli liste doğrulandı ve farklı sentetik BT kullanıcısı talebi onayladı. Transaction rollback sonrasında kuyruktaki kayıt sayısı `0` kaldı.
+- Bu kabul gerçek bir Auth daveti göndermedi ve Auth kullanıcısı oluşturmadı. Davetin gönderilmesi ayrıca sunucu tarafı Auth Admin/Edge worker, BT onayı ve gerçek kişi bilgilerinin kontrollü girilmesini gerektirir.
+
 Bu doğrulama staging şema kurulumu ve rollback kabiliyetini kanıtlar. Gerçek ERP/sağlayıcı uçları, departman UAT imzaları, yayın penceresi ve kullanıcı canlı onayı ayrıca gereklidir. Yayın kararı `NO_GO` kalır.

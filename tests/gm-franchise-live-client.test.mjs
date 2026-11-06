@@ -72,6 +72,19 @@ test('role staffing gaps are loaded without personal data fields',async()=>{
  const rows=await client.listRoleStaffingGaps();assert.equal(rows[0].missing_seats,1);assert.match(calls[0].url,/rpc\/list_franchise_role_staffing_gaps$/);assert.doesNotMatch(JSON.stringify(rows),/email|phone|full_name/i);
 });
 
+test('GM submits a password-free corporate invitation request and reads only the masked queue',async()=>{
+ const calls=[],requestKey='33333333-3333-4333-8333-333333333333',fetchImpl=async(url,options)=>{calls.push({url,options});return{ok:true,json:async()=>url.includes('list_franchise_user_invitation_requests')?[{display_name:'Finans Sorumlusu',masked_email:'f***@ototr.com',erp_role:'FINANCE',request_status:'pending'}]:{request_status:'pending'}}};
+ const client=createFranchiseLiveClient({config:{url:'https://project.supabase.co',key:'publishable'},getSession:async()=>({access_token:'session-token'}),fetchImpl});
+ await client.requestUserInvitation({email:' FINANS@OTOTR.COM ',displayName:' Finans Sorumlusu ',erpRole:'finance',requestKey});
+ const sent=JSON.parse(calls[0].options.body);assert.deepEqual(sent,{p_request_key:requestKey,p_email:'finans@ototr.com',p_display_name:'Finans Sorumlusu',p_erp_role:'FINANCE'});assert.ok(!('password'in sent));
+ const rows=await client.listUserInvitationRequests();assert.equal(rows[0].masked_email,'f***@ototr.com');assert.doesNotMatch(JSON.stringify(rows),/finans@ototr\.com/);
+});
+
+test('invitation client rejects non-corporate email before any network request',async()=>{
+ let called=false;const client=createFranchiseLiveClient({config:{url:'https://project.supabase.co',key:'publishable'},getSession:async()=>({access_token:'session-token'}),fetchImpl:async()=>{called=true;throw new Error('network must not run')}});
+ assert.throws(()=>client.requestUserInvitation({email:'person@example.com',displayName:'Test Kullanıcı',erpRole:'FINANCE',requestKey:'33333333-3333-4333-8333-333333333333'}),/@ototr\.com/);assert.equal(called,false);
+});
+
 test('thirteen-owner roster is submitted through one atomic RPC',async()=>{
  const calls=[],actor='11111111-1111-4111-8111-111111111111',roster=Array.from({length:13},(_,i)=>({department_code:'department-'+i,user_id:`00000000-0000-4000-8000-${String(i).padStart(12,'0')}`,assignment_note:'Sentetik toplu kadro atama notu'}));
  const client=createFranchiseLiveClient({

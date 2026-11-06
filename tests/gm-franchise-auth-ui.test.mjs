@@ -30,3 +30,8 @@ test('organization shows the exact role seat deficit instead of double counting 
  assert.match(html,/listRoleStaffingGaps\(\)/);assert.match(html,/LIVE_ORG_ROLE_GAPS/);
  assert.match(html,/missingSeats/);assert.match(html,/yeni rol-uyumlu ERP hesabı gerekiyor/);assert.match(html,/roleGapSummary/);
 });
+test('organization provides a password-free GM to IT invitation request queue',()=>{
+ assert.match(html,/Kurumsal hesap davet talebi/);assert.match(html,/Parola oluşturulmaz/);assert.match(html,/data-org-invite-request/);
+ assert.match(html,/listUserInvitationRequests\(\)/);assert.match(html,/franchiseLiveClient\.requestUserInvitation\(\{email,displayName,erpRole\}\)/);
+ assert.match(html,/masked_email/);assert.match(html,/Auth hesabı henüz oluşturulmadı/);assert.match(html,/@ototr\.com kurumsal e-posta/);
+});
