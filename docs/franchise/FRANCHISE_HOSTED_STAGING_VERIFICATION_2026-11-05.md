@@ -120,4 +120,11 @@ Hedef: Supabase `ototr-staging` (`bsjkohwbtrfwrqcyhsfz`), PostgreSQL 17.6.
 - Hosted katalog sonucu `13/13` departman, `13` eşleme satırı, rol-uyumlu aktif aday `3`, aktif ana sorumlu `0` olarak doğrulandı. Güvenlik danışmanı yeni katalog/trigger bulgusu üretmedi.
 - Rollback-only negatif kabulte `BRANCH_MANAGER` rolündeki sentetik hedefin Finans ana sorumlusu yapılması veritabanında reddedildi (`PASS`); transaction rollback sonrasında aktif ana sorumlu sayısı `0` kaldı.
 
+## Departman kadro gereksinim raporu — 2026-11-06
+
+- `franchise_department_staffing_gap_report` migration'ı staging'e uygulandı. RPC, 13 departmanın gerekli ERP rolünü ve rol-uyumlu aday sayısını kişisel veri döndürmeden raporlar.
+- RPC `SECURITY INVOKER`; `anon EXECUTE=false`, `authenticated EXECUTE=true`, `service_role EXECUTE=true` olarak doğrulandı.
+- GM JWT ile 13/13 departman döndü. Finans/Muhasebe için `1`, Operasyon/Tedarik/İSG/Mimari için `2` uygun aday; Academy, Franchise, İK, BT, Hukuk, Pazarlama ve Kalite için `0` uygun aday bulundu.
+- Aynı kişi yalnız bir departmana atanabildiğinden, departmanda aday görünmesi kadronun tamamlandığı anlamına gelmez; atomik işlem hâlâ 13 farklı rol-uyumlu kullanıcı ister.
+
 Bu doğrulama staging şema kurulumu ve rollback kabiliyetini kanıtlar. Gerçek ERP/sağlayıcı uçları, departman UAT imzaları, yayın penceresi ve kullanıcı canlı onayı ayrıca gereklidir. Yayın kararı `NO_GO` kalır.

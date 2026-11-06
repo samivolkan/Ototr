@@ -28,6 +28,7 @@ drop function if exists app_private.franchise_can_manage_department(text);
 drop function if exists app_private.franchise_has_active_primary_assignment(uuid,text);
 drop function if exists public.assign_franchise_department_roster(jsonb);
 drop function if exists public.assign_franchise_primary_department_owner(text,uuid,text);
+drop function if exists public.list_franchise_department_staffing_requirements();
 drop trigger if exists franchise_primary_owner_erp_role_guard_trigger on public.franchise_department_responsibilities;
 drop function if exists public.franchise_primary_owner_erp_role_guard();
 drop function if exists public.list_franchise_department_owner_candidates();

@@ -22,3 +22,7 @@ test('organization proves a distinct role-compatible candidate exists for every 
  assert.match(html,/Rol kapsamı:/);assert.match(html,/orgCandidatesFor\(singleDepartment\)/);
  assert.match(html,/t\.id==='org-department'/);
 });
+test('organization loads the authoritative department and ERP role staffing report',()=>{
+ assert.match(html,/listDepartmentStaffingRequirements\(\)/);assert.match(html,/LIVE_ORG_REQUIREMENTS/);
+ assert.match(html,/requirement\?\.erp_role/);assert.match(html,/requirement\?\.eligible_candidate_count/);
+});

@@ -60,6 +60,12 @@ test('department owner workspace reads privacy-minimized rows and binds assignme
  await client.assignPrimaryDepartmentOwner({departmentCode:'finance',userId:owner,note:'Sentetik finans sorumlusu ataması'});const sent=JSON.parse(calls[1].options.body);assert.equal(calls[1].url,'https://project.supabase.co/rest/v1/rpc/assign_franchise_primary_department_owner');assert.deepEqual(sent,{p_department_code:'finance',p_user_id:owner,p_assignment_note:'Sentetik finans sorumlusu ataması'});
 });
 
+test('department staffing requirements are loaded through the authenticated GM RPC',async()=>{
+ const calls=[],fetchImpl=async(url,options)=>{calls.push({url,options});return{ok:true,json:async()=>[{department_code:'finance',erp_role:'FINANCE',eligible_candidate_count:1,is_covered:true}]}};
+ const client=createFranchiseLiveClient({config:{url:'https://project.supabase.co',key:'publishable'},getSession:async()=>({access_token:'session-token'}),fetchImpl});
+ const rows=await client.listDepartmentStaffingRequirements();assert.equal(rows[0].erp_role,'FINANCE');assert.match(calls[0].url,/rpc\/list_franchise_department_staffing_requirements$/);assert.equal(calls[0].options.headers.Authorization,'Bearer session-token');
+});
+
 test('thirteen-owner roster is submitted through one atomic RPC',async()=>{
  const calls=[],actor='11111111-1111-4111-8111-111111111111',roster=Array.from({length:13},(_,i)=>({department_code:'department-'+i,user_id:`00000000-0000-4000-8000-${String(i).padStart(12,'0')}`,assignment_note:'Sentetik toplu kadro atama notu'}));
  const client=createFranchiseLiveClient({
