@@ -101,6 +101,7 @@ Hedef: Supabase `ototr-staging` (`bsjkohwbtrfwrqcyhsfz`), PostgreSQL 17.6.
 - İşlem yalnız aktif ve Auth bağlantılı ERP kullanıcısını kabul eder. Transaction advisory lock ile eşzamanlı iki başlangıç isteğini sıraya alır; sistemde aktif GM varsa veya hedef kullanıcıda farklı aktif Franchise rolü varsa güvenli biçimde reddeder.
 - Dönüş değeri yalnız rol, aktiflik ve kapsam sürümünü içerir; ad, e-posta, telefon veya kullanıcı kimliği döndürmez.
 - Hosted doğrulamada `SECURITY DEFINER=false`, `anon EXECUTE=false`, `authenticated EXECUTE=false`, `service_role EXECUTE=true` ve fonksiyon adına bağlı güvenlik danışmanı bulgusu `0` bulundu.
-- Fonksiyon yalnız koruma olarak kuruldu, çalıştırılmadı. Kullanıcı açık onayı olmadan kişi ataması yapılmadı; aktif GM ve toplam Franchise scope satırı `0` kaldı.
+- Kullanıcının kurumsal GM hesabı oluşturma talebi üzerine mevcut, doğrulanmış ve yasaklı olmayan Auth kimliği yeniden üretilmeden kullanıldı. Kimlik aktif `GENERAL_MANAGER` ERP kartına bağlandı ve tek seferlik bootstrap fonksiyonu çalıştırıldı.
+- Son doğrulamada aktif ERP Genel Müdürü `1`, aktif Franchise GM kapsamı `1`, kapsam sürümü `1` ve şube kapsamı `HQ` bulundu. Kanıt kaydı e-posta adresi veya kullanıcı UUID'si içermez; yeni parola üretilmedi ya da sohbet/log içine yazılmadı.
 
 Bu doğrulama staging şema kurulumu ve rollback kabiliyetini kanıtlar. Gerçek ERP/sağlayıcı uçları, departman UAT imzaları, yayın penceresi ve kullanıcı canlı onayı ayrıca gereklidir. Yayın kararı `NO_GO` kalır.
