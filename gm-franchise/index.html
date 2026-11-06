@@ -628,6 +628,16 @@ SCORE_DIMENSIONS.forEach((dimension,index)=>submitCandidateScore(FLOW,dimension.
 submitBoardDecision(FLOW,{decision:"approved",makerId:"fd:seed",makerRole:"fd"});
 reviewBoardDecision(FLOW,{checkerId:"gm:seed",checkerRole:"gm",approve:true});
 let FR_CASES=[FLOW];
+function ensureLinkedFranchiseCase(candidate,intake={}){
+  const applicationId=candidate.gnot||intake.source_application_id||`APP-DEMO-${candidate.id}`;
+  let linked=FR_CASES.find(item=>item.id===candidate.franchiseCaseId||item.applicationId===applicationId);
+  if(!linked){
+    linked=createFranchiseCase({id:`FR-${applicationId}`,applicationId,candidate:candidate.ad,name:`${candidate.ilce} OTOTR`,city:intake.province||candidate.city||"Demo",district:candidate.ilce,stage:0,score:scr(candidate),days:0,paid:candidate.paid?100:0,royalty:candidate.roy,exemption:0,territory:`${candidate.ilce} · saha doğrulaması bekliyor`,consents:3,documents:Math.min(nB(candidate),7),documentsTotal:17,applicationProfile:{channel:candidate.kaynak,budgetBand:candidate.yat,equityBand:intake.equity_band||"sentetik",managementExperienceYears:intake.management_experience_years||0,companyStatus:intake.company_status||"sentetik",locationStatus:intake.location_status||"sentetik",partnershipStructure:intake.partnership_structure||"sentetik"},history:[`${DL()} · Sistem · Web aday hattı ayrıntılı açılış dosyasına bağlandı`]});
+    FR_CASES.push(linked);
+  }
+  candidate.franchiseCaseId=linked.id;
+  return linked;
+}
 let PORTAL_WORK={
   ad:[{id:"PW-AD-1",type:"document_request",title:"Şirket faaliyet belgesini yükle",status:"open",due:"08 Kas"},{id:"PW-AD-2",type:"appointment",title:"Yatırımcı sunumu randevusunu onayla",status:"open",due:"09 Kas"},{id:"PW-AD-3",type:"payment_plan",title:"Sentetik ödeme planını görüntüle",status:"open",due:"10 Kas"}],
   ba:[{id:"PW-BA-1",type:"training",title:"Şube açılış eğitimini tamamla",status:"open",due:"12 Kas"},{id:"PW-BA-2",type:"procurement_order",title:"Cihaz teslimat durumunu görüntüle",status:"open",due:"15 Kas"}],
@@ -749,7 +759,7 @@ const changeStart=Date.parse(RELEASE_DECISION?.changeWindowStartUtc||""),changeE
 }
 /* ══ PANEL ══ */
 function panel(c){
-  const s=c.stage,gt=s>=0&&s<6?gate(c):"",A=adv(c);
+  const s=c.stage,gt=s>=0&&s<6?gate(c):"",A=adv(c),linked=FR_CASES.find(item=>item.id===c.franchiseCaseId);
   let b="";
   if(s==-1)b=`<div class="al r">Reddedildi: ${H(c.rj)}</div>${["gm","fd"].includes(R())?`<div class="row"><button class="btn" data-a="reopen" data-i="${c.id}">Yeniden aç</button></div>`:""}`;
   if(s==0)b=`<p>Aday kaydı oluştu (kaynak: ${c.kaynak}).</p><div class="card"><div class="fr"><span>SLA durumu</span><b>${c.slaGun}/${c.sla} gün</b>${c.slaGun>c.sla?'<span class="rd"> ⚠ Aşıldı</span>':""}</div></div>`;
@@ -788,7 +798,7 @@ Madde 12: Münhasır bölge ihlali halinde sözleşme feshedilir.</div>
       `<div class="row"><button class="btn g" data-a="askida" data-i="${c.id}" ${F?"":"disabled"}>${c.durum=="Aktif"?"Askıya al":"Yeniden aktifleştir"}</button><button class="btn g" data-a="uzat" data-i="${c.id}" ${["gm","fd","hk"].includes(R())?"":"disabled"}>Sözleşmeyi 1 yıl uzat</button><button class="btn r" data-a="fes" data-i="${c.id}" ${R()=="gm"?"":"disabled"}>Fesih başlat</button></div>`}`;
   }
   const act=s>=0&&s<6?`<div class="row" style="margin-top:14px">
-    <button class="btn" data-a="nxt" data-i="${c.id}" ${A&&!gt?"":"disabled"}>${s==3?"Paneli aç ve onboardingi başlat →":s==5?"Şubeyi aktifleştir →":"Sonraki aşamaya geç →"}</button>
+    <button class="btn" data-a="nxt" data-i="${c.id}" ${A&&!gt?"":"disabled"}>${s==3?"Paneli aç ve onboardingi başlat →":s==5&&linked&&!linked.branch?"Ayrıntılı açılış kapılarına geç →":s==5?"Şubeyi aktifleştir →":"Sonraki aşamaya geç →"}</button>
     ${s<2&&A?`<select id="rj">${RJ.map(x=>`<option>${x}</option>`).join("")}</select><button class="btn g" data-a="rej" data-i="${c.id}">Reddet</button>`:""}
   </div>${!A?`<p class="nt">Aşama geçişini Franchise Sorumlusu veya Genel Müdür yapar.</p>`:""}`:""
   return`<div class="row" style="justify-content:space-between;align-items:start;flex-wrap:nowrap">
@@ -838,6 +848,8 @@ const A={
     const c=gC(+s.i);if(!adv(c)||gate(c))return;
     const msgs=["Görüşme planlandı","Kurul değerlendirmesine gönderildi (skor "+scr(c)+")","Onay zinciri tamamlandı — sözleşme hazırlandı","Panel hesabı açıldı; birim görevleri oluşturuldu","Onboarding tamamlandı — şube kurulumu başladı","Şube aktifleştirildi"];
     if(c.stage==3&&!c.slug)c.slug=SL(c.ad);
+    const linked=FR_CASES.find(item=>item.id===c.franchiseCaseId);
+    if(c.stage==5&&linked&&!linked.branch){FLOW=linked;CUR="e2e";SEL=null;LOG_ADD(c.ad+": ayrıntılı açılış kapılarına yönlendirildi",c);render();return}
     if(c.stage==5){c.durum="Aktif";c.bit="2031-11-04";c.branch={id:`BR-DEMO-${c.id}`,name:c.ad,status:"active",activatedAt:"2026-11-06"};ensureFollowUps(c)}
     LOG_ADD(c.ad+": "+msgs[c.stage],c);c.stage++;render();
   },
@@ -856,7 +868,7 @@ const A={
 document.addEventListener("click",async ev=>{
   if(ev.target===$("mo")){SEL=null;render();return}
   const demoRehearsal=ev.target.closest("[data-demo-rehearsal]");if(demoRehearsal){DEMO_REHEARSAL=runFranchiseDemoRehearsal();render();return}
-  const demoIntakeStart=ev.target.closest("[data-demo-intake-start]");if(demoIntakeStart){const item=DEMO_WEB_QUEUE.find(x=>x.source_application_id===demoIntakeStart.dataset.demoIntakeStart);if(item){const budgetLabels={under_5m:"5 milyon TL altı",'5m_10m':"5–10 milyon TL",'10m_20m':"10–20 milyon TL",over_20m:"20 milyon TL üzeri"};const candidate=mkC(`Sentetik Web Adayı · ${item.source_application_id}`,item.district||item.province||"Demo",budgetLabels[item.budget_band]||"Demo bütçe",0,{kaynak:"Web demo formu",hist:[`${DL()} · Web başvurusu izin kontrolünden geçerek aday dosyasına dönüştürüldü`],gnot:item.source_application_id});C.unshift(candidate);DEMO_WEB_QUEUE=removeDemoIntake(item.source_application_id);LIVE_QUEUE_RESULT=`Demo aday dosyası oluşturuldu: FR-DEMO-${candidate.id}`;CUR="pipe";SEL=candidate.id;render()}return}
+  const demoIntakeStart=ev.target.closest("[data-demo-intake-start]");if(demoIntakeStart){const item=DEMO_WEB_QUEUE.find(x=>x.source_application_id===demoIntakeStart.dataset.demoIntakeStart);if(item){const budgetLabels={under_5m:"5 milyon TL altı",'5m_10m':"5–10 milyon TL",'10m_20m':"10–20 milyon TL",over_20m:"20 milyon TL üzeri"};const candidate=mkC(`Sentetik Web Adayı · ${item.source_application_id}`,item.district||item.province||"Demo",budgetLabels[item.budget_band]||"Demo bütçe",0,{kaynak:"Web demo formu",city:item.province||"Demo",hist:[`${DL()} · Web başvurusu izin kontrolünden geçerek aday dosyasına dönüştürüldü`],gnot:item.source_application_id});C.unshift(candidate);ensureLinkedFranchiseCase(candidate,item);DEMO_WEB_QUEUE=removeDemoIntake(item.source_application_id);LIVE_QUEUE_RESULT=`Demo aday dosyası oluşturuldu: ${candidate.franchiseCaseId}`;CUR="pipe";SEL=candidate.id;render()}return}
   const orgLogin=ev.target.closest("[data-org-login]");if(orgLogin){const email=$("org-login-email")?.value.trim(),password=$("org-login-password")?.value||"";LIVE_AUTH_STATE="loading";LIVE_AUTH_MESSAGE="Oturum doğrulanıyor…";render();try{await franchiseLiveClient.signIn({email,password});LIVE_AUTH_STATE="authenticated";LIVE_AUTH_MESSAGE="ERP oturumu güvenli biçimde açıldı.";await loadOrganizationWorkspace();LIVE_ORG_STATE="loaded"}catch(e){LIVE_AUTH_STATE="error";LIVE_AUTH_MESSAGE=e.message;LIVE_ORG=[];LIVE_ORG_CANDIDATES=[];LIVE_ORG_REQUIREMENTS=[];LIVE_ORG_ROLE_GAPS=[];LIVE_ORG_INVITATIONS=[];LIVE_ORG_STATE="idle"}render();return}
   const orgRecovery=ev.target.closest("[data-org-recovery]");if(orgRecovery){const email=$("org-login-email")?.value.trim();LIVE_AUTH_STATE="loading";LIVE_AUTH_MESSAGE="Parola sıfırlama isteği gönderiliyor…";render();try{await franchiseLiveClient.requestPasswordRecovery({email,redirectTo:`${location.origin}${location.pathname}#organizasyon`});LIVE_AUTH_STATE="anonymous";LIVE_AUTH_MESSAGE="Hesap varsa parola sıfırlama e-postası gönderildi. Gelen kutusu ve spam klasörünü kontrol edin."}catch(e){LIVE_AUTH_STATE="error";LIVE_AUTH_MESSAGE=e.message}render();return}
   const orgLogout=ev.target.closest("[data-org-logout]");if(orgLogout){try{await franchiseLiveClient.signOut()}finally{LIVE_AUTH_STATE="anonymous";LIVE_AUTH_MESSAGE="ERP oturumu kapatıldı.";LIVE_ORG=[];LIVE_ORG_CANDIDATES=[];LIVE_ORG_REQUIREMENTS=[];LIVE_ORG_ROLE_GAPS=[];LIVE_ORG_INVITATIONS=[];LIVE_ORG_STATE="idle";render()}return}
@@ -894,7 +906,7 @@ document.addEventListener("click",async ev=>{
     if(action==="docs"&&["gm","hk"].includes(R())){FLOW.documents=FLOW.documentsTotal;FLOW.history.unshift(DL()+" · "+RN[R()]+" · Zorunlu sentetik belge seti tamamlandı")}
     if(action==="day"){FLOW.days++;FLOW.history.unshift(DL()+" · Sistem · Program günü "+FLOW.days+" olarak güncellendi")}
     if(action==="exception"){try{requestException(FLOW,{type:"non_critical_schedule",stage:FLOW.stage,reason:E2E_STAGES[FLOW.stage]+" için süre/plan istisnası",requesterId:R()+":demo-user",requesterRole:R()});FLOW.history.unshift(DL()+" · "+RN[R()]+" · "+E2E_STAGES[FLOW.stage]+" için ikinci onaylı istisna talebi açtı")}catch(e){FLOW.history.unshift(DL()+" · Sistem · "+e.message)}}
-    if(action==="activate"&&R()==="gm"){const result=activateFranchiseCase(FLOW,{taskDone:flowTaskCount()===flowTaskTotal(),taskCount:flowTaskCount(),taskTotal:flowTaskTotal(),today:"2026-11-05",activatedAt:"2026-11-05"});if(!result.ok)FLOW.history.unshift(DL()+" · Sistem · Aktivasyon reddedildi: "+result.blockers[0])}
+    if(action==="activate"&&R()==="gm"){const result=activateFranchiseCase(FLOW,{taskDone:flowTaskCount()===flowTaskTotal(),taskCount:flowTaskCount(),taskTotal:flowTaskTotal(),today:"2026-11-05",activatedAt:"2026-11-05"});if(!result.ok)FLOW.history.unshift(DL()+" · Sistem · Aktivasyon reddedildi: "+result.blockers[0]);else{const candidate=C.find(item=>item.franchiseCaseId===FLOW.id);if(candidate){candidate.stage=6;candidate.durum="Aktif";candidate.bit="2031-11-04";candidate.branch=FLOW.branch;candidate.hist.unshift(DL()+" · Sistem · Ayrıntılı açılış dosyasıyla atomik aktif şube eşitlendi")}}}
     render();return;
   }
   const staffAction=ev.target.closest("[data-staff-action]");
@@ -950,7 +962,7 @@ NAV.forEach(n=>{
 });
 $("role").addEventListener("change",()=>{SEL=null;render()});
 $("rst").addEventListener("click",()=>{try{localStorage.removeItem(KEY)}catch(e){}location.reload()});
-try{const j=JSON.parse(localStorage.getItem(KEY)||"null");if(j?.C){C=j.C;LOG=j.LOG||[];UID=j.UID||UID;FB=j.FB||1;if(j.CUR&&VIEWS[j.CUR])CUR=j.CUR;if(j.PORTAL_WORK)PORTAL_WORK=j.PORTAL_WORK;if(Array.isArray(j.FR_CASES)&&j.FR_CASES.length){FR_CASES=j.FR_CASES;FLOW=FR_CASES.find(x=>x.id===j.FLOW?.id)||FR_CASES[0]}else if(j.FLOW?.staffing){FLOW=j.FLOW;FR_CASES=[FLOW]}}}catch(e){}C.filter(c=>c.kaynak==="Web demo formu"&&c.stage<6&&c.roy===8).forEach(c=>{c.roy=10;(c.hist||=[]).unshift(`${DL()} · Sistem · Varsayılan royalty politikası %10 olarak güncellendi`)});C.filter(c=>c.stage===6&&c.durum==="Aktif").forEach(c=>{c.branch||={id:`BR-DEMO-${c.id}`,name:c.ad,status:"active",activatedAt:"2026-11-06"};ensureFollowUps(c)});const initialHashView=decodeURIComponent(location.hash.slice(1));if(VIEWS[initialHashView])CUR=initialHashView;addEventListener("hashchange",()=>{const view=decodeURIComponent(location.hash.slice(1));if(VIEWS[view]&&view!==CUR){CUR=view;SEL=null;render()}});FR_CASES.forEach(x=>{ensureOpeningEvidence(x);x.candidateScores||={};x.boardDecision??=null});
+try{const j=JSON.parse(localStorage.getItem(KEY)||"null");if(j?.C){C=j.C;LOG=j.LOG||[];UID=j.UID||UID;FB=j.FB||1;if(j.CUR&&VIEWS[j.CUR])CUR=j.CUR;if(j.PORTAL_WORK)PORTAL_WORK=j.PORTAL_WORK;if(Array.isArray(j.FR_CASES)&&j.FR_CASES.length){FR_CASES=j.FR_CASES;FLOW=FR_CASES.find(x=>x.id===j.FLOW?.id)||FR_CASES[0]}else if(j.FLOW?.staffing){FLOW=j.FLOW;FR_CASES=[FLOW]}}}catch(e){}C.filter(c=>c.kaynak==="Web demo formu"&&c.stage<6&&c.roy===8).forEach(c=>{c.roy=10;(c.hist||=[]).unshift(`${DL()} · Sistem · Varsayılan royalty politikası %10 olarak güncellendi`)});C.filter(c=>c.kaynak==="Web demo formu"&&c.stage<6).forEach(c=>ensureLinkedFranchiseCase(c,{province:c.city}));C.filter(c=>c.stage===6&&c.durum==="Aktif").forEach(c=>{c.branch||={id:`BR-DEMO-${c.id}`,name:c.ad,status:"active",activatedAt:"2026-11-06"};ensureFollowUps(c)});const initialHashView=decodeURIComponent(location.hash.slice(1));if(VIEWS[initialHashView])CUR=initialHashView;addEventListener("hashchange",()=>{const view=decodeURIComponent(location.hash.slice(1));if(VIEWS[view]&&view!==CUR){CUR=view;SEL=null;render()}});FR_CASES.forEach(x=>{ensureOpeningEvidence(x);x.candidateScores||={};x.boardDecision??=null});
 render();
 (async()=>{try{LIVE_AUTH_STATE=await franchiseLiveClient.getSession()?'authenticated':'anonymous'}catch{LIVE_AUTH_STATE='anonymous'}if(CUR==='organizasyon')render()})();
 loadReleaseGates();

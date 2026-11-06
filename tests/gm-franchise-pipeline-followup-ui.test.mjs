@@ -26,3 +26,11 @@ test('every 30/60/90 task owner can access the follow-up view', () => {
     assert.match(views, /(?:^| )takip(?: |$)/, `${role} takip görünümüne erişebilmelidir`);
   }
 });
+
+test('web intake is linked to the governed opening case before activation', () => {
+  assert.match(html, /ensureLinkedFranchiseCase\(candidate,item\)/);
+  assert.match(html, /c\.stage==5&&linked&&!linked\.branch\)\{FLOW=linked;CUR="e2e"/);
+  assert.match(html, /Ayrıntılı açılış kapılarına geç/);
+  assert.match(html, /C\.find\(item=>item\.franchiseCaseId===FLOW\.id\)/);
+  assert.match(html, /Ayrıntılı açılış dosyasıyla atomik aktif şube eşitlendi/);
+});
