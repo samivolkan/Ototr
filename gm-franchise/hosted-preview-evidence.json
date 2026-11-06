@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "environment": "immutable_rawgithack_preview",
+  "repository": "samivolkan/Ototr",
+  "commit": "5e8941503d886e49151242e64ca5d922664f6fcd",
+  "verifiedAtUtc": "2026-11-06T01:34:50.340Z",
+  "productionDataUsed": false,
+  "externalMutationAttempted": false,
+  "files": [
+    {
+      "path": "index.html",
+      "status": 200,
+      "bytes": 860290,
+      "remoteSha256": "1748ebddaa17c320192447855bc735264efc36452e37302063bc2ed4de31829b",
+      "gitBlobSha256": "1748ebddaa17c320192447855bc735264efc36452e37302063bc2ed4de31829b",
+      "matches": true,
+      "assertion": "ERP shell contains the Franchise navigation target"
+    },
+    {
+      "path": "gm-franchise/index.html",
+      "status": 200,
+      "bytes": 134572,
+      "remoteSha256": "3e82e31511cae69f23a32ac4ea2d0a738129b43592cdd9e803da130b7246ad5c",
+      "gitBlobSha256": "3e82e31511cae69f23a32ac4ea2d0a738129b43592cdd9e803da130b7246ad5c",
+      "matches": true,
+      "assertion": "Franchise module is hosted from the tested commit"
+    },
+    {
+      "path": "gm-franchise/demo-rehearsal.mjs",
+      "status": 200,
+      "bytes": 3345,
+      "remoteSha256": "0774ae132b82789b8d101f68c6083c219e9ab6a6b79ca0cbad7ec521f680dbb2",
+      "gitBlobSha256": "0774ae132b82789b8d101f68c6083c219e9ab6a6b79ca0cbad7ec521f680dbb2",
+      "matches": true,
+      "assertion": "End-to-end demo rehearsal module is hosted from the tested commit"
+    }
+  ],
+  "result": "PASS",
+  "releaseEffect": "NONE",
+  "productionDecision": "NO_GO"
+}
