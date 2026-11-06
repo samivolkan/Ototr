@@ -17,6 +17,21 @@ export const FOLLOW_UP_TEMPLATES = [
   { day: 90, title: "Franchise performans kurulu", owner: "Franchise Sorumlusu", ownerRoles: ["fd"] }
 ];
 
+export function ensureFollowUps(franchiseCase) {
+  if (!Array.isArray(franchiseCase.followUps)) franchiseCase.followUps = [];
+  if (franchiseCase.followUps.length) return franchiseCase.followUps;
+  franchiseCase.followUps = FOLLOW_UP_TEMPLATES.map((item, index) => ({
+    ...item,
+    id: `FU-${franchiseCase.id}-${index + 1}`,
+    status: "open",
+    completedBy: null,
+    evidenceSha256: null,
+    completionNote: null,
+    reopenRequests: []
+  }));
+  return franchiseCase.followUps;
+}
+
 export const NON_WAIVABLE_EXCEPTION_TYPES = new Set(["legal", "license", "payment"]);
 
 export const SCORE_DIMENSIONS = Object.freeze([
@@ -270,7 +285,7 @@ export function activateFranchiseCase(franchiseCase, options = {}) {
   franchiseCase.branch = { id: branchId, name: franchiseCase.name, status: "active", activatedAt: options.activatedAt || "2026-11-05" };
   franchiseCase.accessAccounts = accountIds;
   franchiseCase.staffing.forEach((member) => { member.branchId = branchId; member.accessStatus = "active"; });
-  franchiseCase.followUps = FOLLOW_UP_TEMPLATES.map((item, index) => ({ ...item, id: `FU-${franchiseCase.id}-${index + 1}`, status: "open", completedBy: null, evidenceSha256: null, completionNote: null, reopenRequests: [] }));
+  ensureFollowUps(franchiseCase);
   franchiseCase.stage = 13;
   franchiseCase.history.unshift(`${options.activatedAt || "2026-11-05"} · Sistem · Şube, personel bağlılıkları, kullanıcı kapsamları ve 30/60/90 görevleri atomik olarak oluşturuldu`);
   return { ok: true, branch: franchiseCase.branch, accounts: accountIds, followUps: franchiseCase.followUps };

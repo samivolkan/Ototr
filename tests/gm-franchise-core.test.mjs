@@ -7,6 +7,7 @@ import {
   candidateScoreRecommendation,
   candidateScoreValue,
   createFranchiseCase,
+  ensureFollowUps,
   completeFollowUp,
   OPENING_EVIDENCE_GATES,
   hireStaff,
@@ -22,6 +23,17 @@ import {
   submitCandidateScore,
   updateStaffCompliance
 } from '../gm-franchise/franchise-core.mjs';
+
+test('pipeline activation follow-ups are created exactly once and remain operable', () => {
+  const c = { id: 'PIPE-42', followUps: [] };
+  const first = ensureFollowUps(c);
+  const second = ensureFollowUps(c);
+  assert.equal(first, second);
+  assert.equal(c.followUps.length, 3);
+  assert.deepEqual(c.followUps.map((item) => item.day), [30, 60, 90]);
+  completeFollowUp(c, c.followUps[0].id, { actorId: 'op-demo', actorRole: 'op', evidenceSha256: 'e'.repeat(64), note: 'Sentetik operasyon kanıtı' });
+  assert.equal(c.followUps[0].status, 'done');
+});
 
 const completeEvidence = (franchiseCase) => {
   for (const gate of OPENING_EVIDENCE_GATES) {
