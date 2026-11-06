@@ -4,14 +4,14 @@ import {fileURLToPath,pathToFileURL} from 'node:url';
 import {evaluateIntegrationReadiness} from './integration-readiness.mjs';
 import {evaluateRelease,hostedEvidenceHashes,manifestSha256,releaseMetadataOnlySinceCommit,REQUIRED_HOSTED_EVIDENCE} from './release-readiness.mjs';
 
-export function buildReleasePreflight({gates,decision,currentCommit,expectedEvidenceHashes,dirtyPaths=[],releaseMetadataOnly=false,integrationDecision=null,uatAcceptance=null,publicIntakeAcceptance=null}){
-  const evaluation=evaluateRelease(gates,decision,{currentCommit,expectedEvidenceHashes,releaseMetadataOnly,integrationDecision,uatAcceptance,publicIntakeAcceptance});
+export function buildReleasePreflight({gates,decision,currentCommit,expectedEvidenceHashes,dirtyPaths=[],releaseMetadataOnly=false,integrationDecision=null,uatAcceptance=null,publicIntakeAcceptance=null,now=new Date()}){
+  const evaluation=evaluateRelease(gates,decision,{currentCommit,expectedEvidenceHashes,releaseMetadataOnly,integrationDecision,uatAcceptance,publicIntakeAcceptance,now});
   const evidence=Object.fromEntries(REQUIRED_HOSTED_EVIDENCE.map(key=>[key,{recorded:decision.hostedStagingEvidence?.[key]||null,current:expectedEvidenceHashes[key],matches:decision.hostedStagingEvidence?.[key]===expectedEvidenceHashes[key]}]));
   const blockers=[...evaluation.blockers];if(dirtyPaths.length)blockers.push('worktree_dirty');
   return Object.freeze({
     productionDecision:blockers.length?'NO_GO':'GO',
     currentCommit,worktreeClean:dirtyPaths.length===0,dirtyPaths:Object.freeze([...dirtyPaths]),
-    candidateBindings:Object.freeze({releaseCommit:currentCommit,releaseManifestSha256:manifestSha256(gates)}),
+    candidateBindings:Object.freeze({releaseCommit:currentCommit,rollbackCommit:decision.rollbackCommit||null,releaseManifestSha256:manifestSha256(gates)}),
     evidence:Object.freeze(evidence),blockers:Object.freeze(blockers)
   });
 }
