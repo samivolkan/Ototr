@@ -72,12 +72,11 @@ ul.ul{margin:0;padding-left:18px}ul.ul li{margin:3px 0}
 <div class="hd"><h1 id="ttl"></h1>
 <label>Rol: <select id="role">
 <option value="gm">Genel Müdür</option>
-<option value="fd">Franchise Direktörü</option>
-<option value="fu">Franchise Uzmanı</option>
+<option value="fd">Franchise Sorumlusu</option>
 <option value="hk">Hukuk</option>
-<option value="fn">Finans</option>
+<option value="fn">Finans Sorumlusu</option>
 <option value="mh">Muhasebe</option>
-<option value="ik">İK</option>
+<option value="ik">İK Sorumlusu</option>
 <option value="ak">Akademi</option>
 <option value="sa">Saha</option>
 <option value="bt">BT</option>
@@ -103,8 +102,8 @@ import {readDemoIntake,removeDemoIntake} from "../franchise-basvuru/demo-intake.
 import {franchiseLiveClient} from "./franchise-live-client.mjs";
 const TODAY=new Date("2026-11-05"),KEY="ototr-franchise-e2e-v1";
 const STAGES=["Yeni","Gorusme","Onay","Sozlesme","Onboarding","Kurulum","Aktif"];
-const RN={gm:"Genel Müdür",fd:"Franchise Direktörü",fu:"Franchise Uzmanı",hk:"Hukuk",fn:"Finans",mh:"Muhasebe",ik:"İK",ak:"Akademi",sa:"Saha",bt:"BT",ba:"Bayi Sahibi",dn:"Denetçi",td:"Tedarikçi",ad:"Aday Yatırımcı",op:"Operasyon",pz:"Pazarlama",kl:"Kalite",isg:"İSG",mm:"Mimari / Proje"};
-const AP=[["Franchise uzmanı değerlendirmesi","fu"],["Franchise direktörü onayı","fd"],["Hukuk incelemesi","hk"],["Finans uygunluğu","fn"],["CEO onayı","gm"]];
+const RN={gm:"Genel Müdür",fd:"Franchise Sorumlusu",hk:"Hukuk",fn:"Finans Sorumlusu",mh:"Muhasebe",ik:"İK Sorumlusu",ak:"Akademi",sa:"Saha",bt:"BT",ba:"Bayi Sahibi",dn:"Denetçi",td:"Tedarikçi",ad:"Aday Yatırımcı",op:"Operasyon",pz:"Pazarlama",kl:"Kalite",isg:"İSG",mm:"Mimari / Proje"};
+const AP=[["Franchise sorumlusu değerlendirmesi","fd"],["Hukuk incelemesi","hk"],["Finans sorumlusu uygunluğu","fn"],["Genel Müdür ikinci onayı","gm"]];
 const CR=[["Finansal güç",.35],["Bölge uygunluğu",.25],["Deneyim",.20],["Vizyon",.20]];
 const GF=["Yatırım kaynağı açık mı?","Bölge rekabeti değerlendirildi mi?","Referans kişilerle görüşüldü mü?","İşletme deneyimi doğrulandı mı?","Birden fazla değerlendirici imzaladı mı?"];
 const BDOC=["Kimlik (TC nüfus cüzdanı)","Vergi levhası","İmza sirküleri","Kira sözleşmesi","Faaliyet belgesi","Banka teminat mektubu","Şirket ana sözleşmesi"];
@@ -126,7 +125,6 @@ const NAV=[
 const PERM={
  gm:"e2e skorlama departman personel acilis takip portallar dash hat inbox web-kuyruk pipe gor belge sube web paket fin rapor yayin yetki denetim model",
  fd:"e2e skorlama departman personel acilis takip portallar dash hat inbox web-kuyruk pipe gor belge sube web paket fin rapor yayin yetki denetim model",
- fu:"e2e skorlama departman portallar dash hat inbox web-kuyruk pipe gor belge",
 hk:"e2e skorlama departman acilis dash hat inbox pipe gor belge sube",
 fn:"e2e skorlama departman acilis dash hat inbox pipe fin rapor sube",
 mh:"e2e departman acilis dash hat inbox pipe fin rapor sube",
@@ -161,7 +159,7 @@ function mkC(ad,ilce,yat,stage,o={}){
     signed:0,paid:0,slug:"",roy:8,giris:250000,r:0,ucret:0,
     durum:"Aktif",bit:"",led:[],kf:{},fes:0,hist:[],rj:"",sla:3,slaGun:0,wl:0,indirim:0,gnot:""};
   if(stage>1){GF.forEach((_,i)=>c.gf[i]=1);BDOC.forEach((_,i)=>c.belge[i]=1)}
-  if(stage>2)c.a=[0,1,2,3,4];
+  if(stage>2)c.a=[0,1,2,3];
   if(stage>3){c.signed=1;c.paid=1}
   if(stage>4)TL.forEach(x=>c.t[x.k]=1);
   if(stage>5){SU.forEach((_,i)=>c.s[i]=1);c.slug=SL(ad);c.bit="2031-11-04"}
@@ -192,14 +190,14 @@ const nT=c=>Object.keys(c.t).length;
 const nB=c=>Object.keys(c.belge).length;
 const vis=c=>R()!="ba"||c.id==1;
 const gC=id=>C.find(x=>x.id==id);
-const adv=c=>["gm","fd"].includes(R())||(c.stage<2&&R()=="fu");
+const adv=c=>["gm","fd"].includes(R());
 const okR=ro=>R()==ro||R()=="gm";
 const LOG_ADD=(t,c)=>{LOG.unshift(DL()+" · "+RN[R()]+" · "+t);LOG.length=Math.min(LOG.length,60);if(c)c.hist.unshift(DL()+" · "+RN[R()]+" · "+t)};
 function gate(c){
   const s=c.stage;
   if(s==1&&scr(c)<60)return"Ağırlıklı skor en az 60 olmalı (şu an: "+scr(c)+")";
   if(s==1&&GF.some((_,i)=>!c.gf[i]))return"Görüşme formu eksik maddeler içeriyor";
-  if(s==2&&c.a.length<5)return"5 adımlı onay zinciri tamamlanmalı ("+c.a.length+"/5)";
+  if(s==2&&c.a.length<AP.length)return`${AP.length} adımlı onay zinciri tamamlanmalı (${c.a.length}/${AP.length})`;
   if(s==3&&nB(c)<BDOC.length)return"Tüm belgeler tamamlanmalı ("+nB(c)+"/"+BDOC.length+")";
   if(s==3&&!(c.signed&&c.paid))return"E-imza ve ilk ödeme gerekli (kapı kuralı)";
   if(s==4&&nT(c)<TL.length)return"Tüm birim görevleri tamamlanmalı ("+nT(c)+"/"+TL.length+")";
@@ -213,10 +211,10 @@ function todo(){
   C.forEach(c=>{
     if(c.stage<0||!vis(c))return;
     const s=c.stage,P=t=>o.push([c,t]);
-    if(s==0&&["fu","fd"].includes(r))P("Görüşme planla"+(c.slaGun>c.sla?" ⚠ SLA":""));
-    if(s==1&&["fu","fd"].includes(r))P("Görüşme formunu tamamla ve skorla");
-    if(s==2){const i=[0,1,2,3,4].find(i=>!c.a.includes(i));if(i!=null&&AP[i][1]==r)P("Onay: "+AP[i][0])}
-    if(s==3){if(nB(c)<BDOC.length&&["fu","fd","hk"].includes(r))P("Belge eksik ("+nB(c)+"/"+BDOC.length+")");if(!c.signed&&r=="hk")P("E-imza doğrula");if(!c.paid&&r=="fn")P("İlk ödeme tahsil et")}
+    if(s==0&&r==="fd")P("Görüşme planla"+(c.slaGun>c.sla?" ⚠ SLA":""));
+    if(s==1&&r==="fd")P("Görüşme formunu tamamla ve skorla");
+    if(s==2){const i=AP.findIndex((_,index)=>!c.a.includes(index));if(i>=0&&AP[i][1]==r)P("Onay: "+AP[i][0])}
+    if(s==3){if(nB(c)<BDOC.length&&["fd","hk"].includes(r))P("Belge eksik ("+nB(c)+"/"+BDOC.length+")");if(!c.signed&&r=="hk")P("E-imza doğrula");if(!c.paid&&r=="fn")P("İlk ödeme tahsil et")}
     if(s==4)TL.filter(x=>!c.t[x.k]&&x.r==r).forEach(x=>P(x.u+": "+x.t));
     if(s==5){SU.forEach((x,i)=>{if(!c.s[i]&&x[1]==r)P("Kurulum: "+x[0])});if(!gate(c)&&r=="fd")P("Şubeyi aktifleştir")}
     if(s==6&&c.durum!="Kapalı"){
@@ -230,9 +228,9 @@ function todo(){
 }
 function own(c){
   const s=c.stage,m={},add=(r,t)=>(m[r]=m[r]||[]).push(t);
-  if(s==0)add("fu","Görüşme planı"+(c.slaGun>c.sla?" ⚠SLA":""));
-  if(s==1)add("fu","Skor ("+scr(c)+")"+(GF.some((_,i)=>!c.gf[i])?" + form":""));
-  if(s==2){const i=[0,1,2,3,4].find(i=>!c.a.includes(i));if(i!=null)add(AP[i][1],AP[i][0]+" ("+(i+1)+"/5)")}
+  if(s==0)add("fd","Görüşme planı"+(c.slaGun>c.sla?" ⚠SLA":""));
+  if(s==1)add("fd","Skor ("+scr(c)+")"+(GF.some((_,i)=>!c.gf[i])?" + form":""));
+  if(s==2){const i=AP.findIndex((_,index)=>!c.a.includes(index));if(i>=0)add(AP[i][1],AP[i][0]+" ("+(i+1)+"/"+AP.length+")")}
   if(s==3){if(nB(c)<BDOC.length)add("hk","Belge ("+nB(c)+"/"+BDOC.length+")");if(!c.signed)add("hk","E-imza");if(!c.paid)add("fn","İlk ödeme")}
   if(s==4)Object.entries(TU).forEach(([u,[r]])=>{const n=TL.filter(x=>x.u==u&&!c.t[x.k]).length;if(n)add(r,u+": "+n+" görev")});
   if(s==5){SU.forEach((x,i)=>{if(!c.s[i])add(x[1],x[0])});if(!c.slug)add("bt","Slug")}
@@ -272,7 +270,7 @@ function hat(){
   L.forEach(c=>Object.keys(own(c)).forEach(r=>cnt[r]=(cnt[r]||0)+1));
   const hf=(!HF||HF=="all"||!cnt[HF])?"all":HF;
   const F=hf=="all"?L:L.filter(c=>own(c)[hf]);
-  const HDS=["Franchise Uzmanı","Franchise Uzmanı","Uzman → CEO","Hukuk + Finans","İK·Fin·Ak·Saha·BT","BT·Saha·Fin·Dir.","—"];
+  const HDS=["Franchise Sorumlusu","Franchise Sorumlusu","Sorumlu → GM","Hukuk + Finans Sorumlusu","İK·Finans·Akademi·Saha·BT Sorumluları","BT·Saha·Finans·Franchise Sorumluları","—"];
   return`<div class="card"><h2>Rol bazlı yük</h2>
     <div class="row">
       <button class="btn ${hf=="all"?"":"g"}" data-a="hf" data-r="all">Tümü (${L.length})</button>
@@ -298,7 +296,7 @@ function inbox(){
   </div>`;
 }
 function pipe(){
-  const A=["gm","fd","fu"].includes(R()),rj=C.filter(c=>c.stage<0);
+  const A=["gm","fd"].includes(R()),rj=C.filter(c=>c.stage<0);
   return`${A?`<div class="safe-note"><b>Güvenli başvuru:</b> T.C. kimlik numarası ve finansal belge içeriği girilmez; yalnız sentetik doğrulama referansı kullanılır. Üç izin ayrı kaydedilir.</div><div class="card"><h2>Yeni aday · tekil franchise dosyası</h2><div class="row">
     <input id="na" placeholder="Aday / firma adı" style="flex:2;min-width:140px">
     <input id="ni" placeholder="İlçe" style="flex:1;min-width:80px">
@@ -307,14 +305,14 @@ function pipe(){
     <select id="ne"><option value="3m_7m">Öz kaynak 3–7 M</option><option value="under_3m">Öz kaynak 3 M altı</option><option value="7m_15m">Öz kaynak 7–15 M</option><option value="over_15m">Öz kaynak 15 M üzeri</option></select>
   </div><div class="row"><input id="nx" type="number" min="0" max="60" value="5" placeholder="Yönetim deneyimi"><select id="nc"><option value="limited">Limited şirket</option><option value="joint_stock">Anonim şirket</option><option value="sole_proprietor">Şahıs işletmesi</option><option value="none">Şirket yok</option></select><select id="nl"><option value="candidate_found">Aday lokasyon var</option><option value="searching">Lokasyon aranıyor</option><option value="owned">Mülk sahibi</option><option value="leased">Kiralandı</option><option value="none">Lokasyon yok</option></select><select id="np"><option value="single">Tek ortak</option><option value="family">Aile ortaklığı</option><option value="corporate">Kurumsal</option><option value="multi_partner">Çok ortaklı</option></select><input id="nid" placeholder="Sentetik kimlik doğrulama ref."><input id="nfin" placeholder="Sentetik finansal belge ref."></div>
   <div class="row"><label class="ck"><input id="nkv1" type="checkbox" checked>KVKK aydınlatma</label><label class="ck"><input id="nkv2" type="checkbox" checked>Veri işleme izni</label><label class="ck"><input id="nkv3" type="checkbox">Ticari ileti izni</label><button class="btn" data-a="add">Tekil dosya oluştur</button>
-  </div></div>`:`<p class="nt">Yeni aday eklemek için Franchise Uzmanı, Direktörü veya GM rolünü seçin.</p>`}
+  </div></div>`:`<p class="nt">Yeni aday eklemek için Franchise Sorumlusu veya Genel Müdür rolünü seçin.</p>`}
   <div class="kb">${STAGES.map((s,i)=>`<div class="kc">
     <h4>${s} · ${C.filter(c=>c.stage==i).length}</h4>
     ${C.filter(c=>c.stage==i).map(c=>`<div class="it" data-a="open" data-i="${c.id}">
       <b>${H(c.ad)}</b><small>${H(c.ilce)} · ${H(c.yat)}</small>
       ${i==0&&c.slaGun>c.sla?`<div><span class="pi rd">SLA: ${c.slaGun}g</span></div>`:""}
       ${i==1?`<div><span class="pi">Skor: ${scr(c)}</span></div>`:""}
-      ${i==2?`<div><span class="pi">Onay: ${c.a.length}/5</span></div>`:""}
+      ${i==2?`<div><span class="pi">Onay: ${c.a.length}/${AP.length}</span></div>`:""}
       ${i==3?`<div><span class="pi">Belge: ${nB(c)}/${BDOC.length}</span></div>`:""}
       ${i==4?`<div class="fr" style="margin:4px 0 0"><div class="bar"><i style="width:${nT(c)/TL.length*100}%"></i></div><small>${nT(c)}/${TL.length}</small></div>`:""}
       ${i==5?`<div class="fr" style="margin:4px 0 0"><div class="bar"><i style="width:${Object.keys(c.s).length/SU.length*100}%"></i></div><small>${Object.keys(c.s).length}/${SU.length}</small></div>`:""}
@@ -335,15 +333,15 @@ function gor(){
   <div class="cols">
     <div class="card"><h2>Ağırlıklı Değerlendirme Skoru</h2>
       ${CR.map((x,i)=>`<div class="fr"><span>${x[0]} (%${Math.round(x[1]*100)})</span>
-        <input type="range" min="0" max="100" value="${c.sc[i]}" data-gsc="${i}" data-i="${c.id}" ${["gm","fd","fu"].includes(R())?"":"disabled"} style="flex:1">
+        <input type="range" min="0" max="100" value="${c.sc[i]}" data-gsc="${i}" data-i="${c.id}" ${["gm","fd"].includes(R())?"":"disabled"} style="flex:1">
         <b id="gsv${i}">${c.sc[i]}</b>
       </div>`).join("")}
       <div class="card" style="margin-top:8px">Toplam: <b id="gst">${scr(c)}</b> <span class="${scr(c)>=60?"ok":"rd"}">${scr(c)>=60?"✓ Onaya uygun":"✗ Yetersiz (min. 60)"}</span></div>
     </div>
     <div class="card"><h2>Görüşme Formu</h2>
-      ${GF.map((q,i)=>`<label class="ck"><input type="checkbox" data-gf="${i}" data-i="${c.id}" ${c.gf[i]?"checked":""} ${["gm","fd","fu"].includes(R())?"":"disabled"}>${q}</label>`).join("")}
+      ${GF.map((q,i)=>`<label class="ck"><input type="checkbox" data-gf="${i}" data-i="${c.id}" ${c.gf[i]?"checked":""} ${["gm","fd"].includes(R())?"":"disabled"}>${q}</label>`).join("")}
       <h3>Görüşme notu</h3>
-      <textarea data-gnot data-i="${c.id}" placeholder="Görüşme özeti…" ${["gm","fd","fu"].includes(R())?"":"disabled"} style="width:100%;min-height:70px">${H(c.gnot||"")}</textarea>
+      <textarea data-gnot data-i="${c.id}" placeholder="Görüşme özeti…" ${["gm","fd"].includes(R())?"":"disabled"} style="width:100%;min-height:70px">${H(c.gnot||"")}</textarea>
     </div>
     <div class="card"><h2>Münhasır Bölge Kontrolü</h2>
       ${C.filter(x=>x.stage==6&&x.ilce==c.ilce).length?`<div class="al r">${H(c.ilce)} ilçesinde aktif şube var — bölge çakışması!</div>`:`<div class="al ok">${H(c.ilce)} ilçesi müsait.</div>`}
@@ -361,7 +359,7 @@ function belge(){
     <tr><th>Aday</th><th>Aşama</th>${BDOC.map(b=>`<th style="max-width:85px;white-space:normal;font-size:11px">${b.split("(")[0].trim()}</th>`).join("")}<th>Durum</th></tr>
     ${show.filter(c=>{const p=nB(c)/BDOC.length;return DTAB=="tumu"||(DTAB=="bekliyor"&&p<1)||(DTAB=="tamam"&&p==1)}).map(c=>`<tr class="rw" data-a="open" data-i="${c.id}">
       <td><b>${H(c.ad)}</b></td><td><span class="pi">${STAGES[c.stage]}</span></td>
-      ${BDOC.map((_,i)=>`<td>${c.belge[i]?'<span class="ok">✓</span>':(["gm","fd","fu","hk"].includes(R())?`<button class="btn g" style="font-size:11px;padding:2px 6px" data-a="bdoc" data-ci="${c.id}" data-bi="${i}">Yükle</button>`:"-")}</td>`).join("")}
+      ${BDOC.map((_,i)=>`<td>${c.belge[i]?'<span class="ok">✓</span>':(["gm","fd","hk"].includes(R())?`<button class="btn g" style="font-size:11px;padding:2px 6px" data-a="bdoc" data-ci="${c.id}" data-bi="${i}">Yükle</button>`:"-")}</td>`).join("")}
       <td><span class="pi ${nB(c)==BDOC.length?"ok":"wn"}">${nB(c)}/${BDOC.length}</span></td>
     </tr>`).join("")}
   </table></div>`;
@@ -373,7 +371,7 @@ function webKuyruk(){
   const status=LIVE_QUEUE_STATE==="loading"?'<div class="al wn">Canlı kuyruk yükleniyor…</div>':LIVE_QUEUE_STATE==="error"?`<div class="al r">${H(LIVE_QUEUE_ERROR)}</div>`:LIVE_QUEUE_STATE==="loaded"?`<div class="al ok">Canlı kuyruk bağlandı · ${LIVE_QUEUE.length} açık kayıt</div>`:'<div class="al">ERP oturumuyla bağlanmak için kuyruğu yenileyin. Ham ad-soyad, telefon ve belge içeriği bu ekranda gösterilmez.</div>';
   return`<div class="card"><div class="row" style="justify-content:space-between"><div><h2>Demo web başvurusu</h2><p class="nt">Web formunu sentetik bilgilerle doldurun; kayıt yalnız bu tarayıcıda kuyruğa düşer ve canlı API çağrısı yapılmaz.</p></div><a class="btn" href="../franchise-basvuru/index.html?demo=1" target="_blank" rel="noopener">Demo başvuru formunu aç</a></div></div>
   <div class="card scr"><h2>Tarayıcı içi demo kuyruğu · ${DEMO_WEB_QUEUE.length}</h2><table><tr><th>Başvuru ref.</th><th>Konum</th><th>Tip</th><th>İzin</th><th>İşlem</th></tr>${DEMO_WEB_QUEUE.map(x=>`<tr><td><b>${H(x.source_application_id)}</b></td><td>${H([x.province,x.district].filter(Boolean).join(" / ")||"-")}</td><td>${H(x.application_type||"-")}</td><td><span class="pi ok">3 ayrı karar alındı</span></td><td><button class="btn" data-demo-intake-start="${H(x.source_application_id)}">Süreci başlat</button></td></tr>`).join("")||'<tr><td colspan="5" class="mu">Henüz demo web başvurusu yok.</td></tr>'}</table></div>
-  ${status}<div class="row"><button class="btn" data-live-refresh ${LIVE_QUEUE_STATE==="loading"?"disabled":""}>Canlı/staging kuyruğunu yenile</button><span class="mu">Yetki: GM · Franchise Direktörü · Franchise Uzmanı</span></div>
+  ${status}<div class="row"><button class="btn" data-live-refresh ${LIVE_QUEUE_STATE==="loading"?"disabled":""}>Canlı/staging kuyruğunu yenile</button><span class="mu">Yetki: Genel Müdür · Franchise Sorumlusu</span></div>
   ${LIVE_QUEUE_RESULT?`<div class="al ok">${H(LIVE_QUEUE_RESULT)}</div>`:""}
   <div class="card scr"><h2>Web Başvuru Kuyruğu</h2><table><tr><th>Başvuru ref.</th><th>Kaynak</th><th>Konum</th><th>Gönderim</th><th>İzin durumu</th><th>İşlem</th></tr>
   ${LIVE_QUEUE.map(x=>`<tr><td><b>${H(x.source_application_id)}</b></td><td>${H(x.source||"-")}</td><td>${H([x.province,x.district].filter(Boolean).join(" / ")||"-")}</td><td>${H(x.submitted_at||x.captured_at||"-")}</td><td><span class="pi ${tones[x.status]||""}">${H(labels[x.status]||x.status)}</span>${x.reason_code?`<br><small class="mu">${H(x.reason_code)}</small>`:""}</td><td>${x.status==="ready_for_canonicalization"?`<button class="btn g" data-live-select="${H(x.source_application_id)}">Aday dosyasına aktar</button>`:'<span class="mu">İzin tamamlanmadan kilitli</span>'}</td></tr>`).join("")||'<tr><td colspan="6" class="mu">Kuyruk yüklenmedi veya açık başvuru yok.</td></tr>'}</table></div>
@@ -518,7 +516,7 @@ function model(){
     <div class="card"><h2>Yaşam döngüsü ve kapı kuralları</h2><ul class="ul">
       <li><b>Yeni → Görüşme:</b> Uzman/Direktör başlatır, SLA 3 gün</li>
       <li><b>Görüşme → Onay:</b> skor ≥60 + görüşme formu tam</li>
-      <li><b>Onay → Sözleşme:</b> 5 adım sırayla (Uzman→Direktör→Hukuk→Finans→CEO)</li>
+      <li><b>Onay → Sözleşme:</b> 4 adım sırayla (Franchise Sorumlusu→Hukuk→Finans Sorumlusu→Genel Müdür)</li>
       <li><b>Sözleşme → Onboarding:</b> tüm belgeler + e-imza + ilk ödeme</li>
       <li><b>Onboarding → Kurulum:</b> İK·Finans·Akademi·Saha·BT görevleri tam</li>
       <li><b>Kurulum → Aktif:</b> benzersiz slug + ${SU.length} kurulum maddesi</li>
@@ -538,7 +536,7 @@ function model(){
 }
 /* ══ UÇTAN UCA FRANCHISE PROGRAMI ══ */
 const E2E_STAGES=["Başvuru","İlk temas","Ön değerlendirme","Yatırımcı sunumu","Finansal yeterlilik","Lokasyon","Due diligence","Ön onay","Sözleşme","Kurulum","Eğitim","Deneme operasyonu","Açılış kurulu","Aktif şube"];
-const E2E_STAGE_OWNER=["fu","fu","fu","fd","fn","op","hk","fd","hk","mm","ak","kl","gm","fd"];
+const E2E_STAGE_OWNER=["fd","fd","fd","fd","fn","op","hk","fd","hk","mm","ak","kl","gm","fd"];
 const E2E_TASKS={
   "Franchise":["Başvuru izinleri doğrulandı","İlk temas ve ihtiyaç görüşmesi tamamlandı","Yedi başlıklı aday skoru gerekçelendirildi"],
   "Finans":["Öz kaynak ve yatırım planı incelendi","Giriş bedeli ve taksit planı onaylandı","Royalty ve muafiyet koşulları doğrulandı"],
@@ -567,7 +565,7 @@ const RELEASE_GATES=[
 let RELEASE_GATES_LOAD="loading";
 async function loadReleaseGates(){try{const response=await fetch("./preproduction-gates.json",{cache:"no-store"});if(!response.ok)throw new Error(`HTTP ${response.status}`);const manifest=await response.json(),allowed=new Set(["PASS","BLOCKED","READY_FOR_STAGING"]);if(manifest.schemaVersion!==2||manifest.module!=="OTOTR Franchise")throw new Error("Geçersiz kapı manifesti");if(!Array.isArray(manifest.gates)||manifest.gates.length!==16)throw new Error("16 kapı zorunludur");for(let index=0;index<16;index++){const expected=`G${String(index+1).padStart(2,"0")}`,gate=manifest.gates[index];if(gate?.id!==expected||gate?.mandatory!==true||!allowed.has(gate?.status))throw new Error("Geçersiz yayın kapısı");RELEASE_GATES[index]=[gate.id,RELEASE_GATES[index][1],gate.status]}RELEASE_GATES_LOAD="ready"}catch(error){for(const gate of RELEASE_GATES)gate[2]="BLOCKED";RELEASE_GATES_LOAD="error"}if(CUR==="yayin")render()}
 const HOSTED_EVIDENCE_ROWS=[["Migration","G10"],["Rollback tatbikatı","G10"],["ERP kimliği","G11"],["Özel Storage","G11"],["Gerçek adaptörler","G12"],["Gerçek sağlayıcılar","G12"],["Concurrency/dead-letter","G13"],["UAT paketi","G14"],["Canlı web intake","G16"]];
-const RELEASE_SIGNOFF_ROLES=["Franchise Yönetimi","Finans Direktörü","Hukuk/KVKK","İK Yöneticisi","Academy Yöneticisi","Operasyon/Kalite/İSG","Tedarik/Mimari/Pazarlama","ERP/Bilgi Güvenliği","CEO/Yönetim"];
+const RELEASE_SIGNOFF_ROLES=["Franchise Sorumlusu","Finans Sorumlusu","Hukuk/KVKK","İK Sorumlusu","Academy Sorumlusu","Operasyon/Kalite/İSG","Tedarik/Mimari/Pazarlama","ERP/Bilgi Güvenliği","Genel Müdür"];
 let RELEASE_DECISION_LOAD="loading",RELEASE_DECISION=null,RELEASE_SIGNOFFS=RELEASE_SIGNOFF_ROLES.map(role=>[role,false]);
 function validReleaseSignoff(signoff){return SHA256_PATTERN.test(signoff?.identitySha256||"")&&SHA256_PATTERN.test(signoff?.evidenceSha256||"")&&!Number.isNaN(Date.parse(signoff?.signedAtUtc||""))}
 async function loadReleaseDecision(){try{const response=await fetch("./preproduction-decision.json",{cache:"no-store"});if(!response.ok)throw new Error(`HTTP ${response.status}`);const decision=await response.json();if(decision.schemaVersion!==2||decision.module!=="OTOTR_FRANCHISE"||decision.productionDataUsed!==false)throw new Error("Geçersiz karar manifesti");const signoffs=new Map((decision.signoffs||[]).map(item=>[item.role,item]));if(signoffs.size!==9||RELEASE_SIGNOFF_ROLES.some(role=>!signoffs.has(role)))throw new Error("Dokuz imza zorunludur");RELEASE_DECISION=decision;RELEASE_SIGNOFFS=RELEASE_SIGNOFF_ROLES.map(role=>[role,validReleaseSignoff(signoffs.get(role))]);RELEASE_DECISION_LOAD="ready"}catch(error){RELEASE_DECISION=null;RELEASE_SIGNOFFS=RELEASE_SIGNOFF_ROLES.map(role=>[role,false]);RELEASE_DECISION_LOAD="error"}if(CUR==="yayin")render()}
@@ -588,7 +586,7 @@ const SHA256_PATTERN=/^[a-f0-9]{64}$/;
 function validIntegrationAcceptance(record){const acceptedAt=new Date(record?.acceptedAtUtc||"");return record?.configured===true&&Number.isInteger(record?.probeStatus)&&record.probeStatus>=200&&record.probeStatus<300&&SHA256_PATTERN.test(record?.evidenceSha256||"")&&SHA256_PATTERN.test(record?.executedByRefSha256||"")&&SHA256_PATTERN.test(record?.acceptedByRefSha256||"")&&record.executedByRefSha256!==record.acceptedByRefSha256&&!Number.isNaN(acceptedAt.getTime())}
 async function loadIntegrationAcceptance(){try{const response=await fetch("./staging-worker-deployment.json",{cache:"no-store"});if(!response.ok)throw new Error(`HTTP ${response.status}`);const manifest=await response.json();if(manifest.schemaVersion!==2)throw new Error("Desteklenmeyen manifest sürümü");for(const row of INTEGRATION_ACCEPTANCE){const group=row[0]==="Departman"?manifest.departmentEndpointAcceptance:manifest.providerAcceptance;row[3]=validIntegrationAcceptance(group?.[row[2]])}INTEGRATION_ACCEPTANCE_LOAD="ready"}catch(error){for(const row of INTEGRATION_ACCEPTANCE)row[3]=false;INTEGRATION_ACCEPTANCE_LOAD="error"}if(CUR==="yayin")render()}
 const UAT_SCENARIOS=[
- ["UAT-01","Altı kanaldan sentetik başvuru",["fd","fu"],["hk","gm"]],["UAT-02","Skorlama ve kurul kararı",["fd"],["gm"]],["UAT-03","Eksik kritik kapıyla ilerleme",["fd","fu"],["gm"]],
+ ["UAT-01","Altı kanaldan sentetik başvuru",["fd"],["hk","gm"]],["UAT-02","Skorlama ve kurul kararı",["fd"],["gm"]],["UAT-03","Eksik kritik kapıyla ilerleme",["fd"],["gm"]],
  ["UAT-04","Hukuk ve e-imza hazırlığı",["hk"],["fd","gm"]],["UAT-05","%100 tahsilat kapısı",["fn"],["mh","gm"]],["UAT-06","Lokasyon ve mimari",["op"],["mm","gm"]],
  ["UAT-07","On zorunlu kadro",["ik"],["fd","gm"]],["UAT-08","Academy ve kullanıcı yetkisi",["ak"],["bt","gm"]],["UAT-09","Atomik aktif şube",["bt"],["op","gm"]],
  ["UAT-10","Tekrar aktivasyon ve outbox",["bt"],["gm"]],["UAT-11","Şube izolasyonu",["bt"],["hk","gm"]],["UAT-12","30/60/90 takip",["op"],["kl","gm"]],
@@ -633,7 +631,7 @@ const flowStageGate=()=>{
 function skorlama(){
   const value=candidateScoreValue(FLOW),recommendation=candidateScoreRecommendation(value),decision=FLOW.boardDecision;
   const completed=SCORE_DIMENSIONS.filter(d=>FLOW.candidateScores?.[d.code]).length;
-  return`<div class="safe-note"><b>Karar desteği:</b> Ağırlıklı skor yalnız öneri üretir. Nihai karar Franchise Direktörü tarafından hazırlanır ve farklı bir Genel Müdür tarafından ikinci kez onaylanır.</div>
+  return`<div class="safe-note"><b>Tek sorumlu organizasyonu:</b> Franchise, Finans ve İK işlerini kendi departman sorumluları yürütür. Ağırlıklı skor yalnız öneri üretir; Franchise Sorumlusu kararı hazırlar ve farklı bir Genel Müdür ikinci onayı verir.</div>
   <div class="g4"><div class="card stat"><b>${value??"—"}</b><s2>Ağırlıklı skor</s2></div><div class="card stat"><b>${completed}/7</b><s2>Kanıtlı başlık</s2></div><div class="card stat"><b>${H(SCORE_LABELS[recommendation])}</b><s2>Sistem önerisi</s2></div><div class="card stat"><b class="decision-status">${H(({approved:"Onaylandı",pending_second_approval:"İkinci onay bekliyor",rejected:"Reddedildi",superseded:"Skor değişti · yenilenmeli"})[decision?.status]||"Karar yok")}</b><s2>Kurul durumu</s2></div></div>
   <div class="gate-grid">${SCORE_DIMENSIONS.map(d=>{const entry=FLOW.candidateScores?.[d.code],can=d.ownerRoles.includes(R());return`<div class="gate-card"><h2>${H(d.label)} · %${d.weight}</h2><p>Sorumlu: ${d.ownerRoles.map(r=>RN[r]).join(" / ")} · Revizyon ${entry?.revision||0}</p><div class="row"><input type="number" min="0" max="100" id="score-${d.code}" value="${entry?.score??""}" placeholder="0–100" ${can?'':'disabled'}><button class="btn g sm" data-score-submit="${d.code}" ${can?'':'disabled'}>Kanıtla kaydet</button></div><p>${entry?`Son gerekçe: ${H(entry.rationale)} · Kanıt ${H(entry.evidenceSha256.slice(0,10))}…`:"Henüz kanıtlı puan girilmedi."}</p></div>`}).join("")}</div>
   <div class="card"><h2>Bağımsız kurul kararı</h2><div class="approval"><span>Sistem önerisi</span><b>${H(SCORE_LABELS[recommendation])}</b></div><div class="approval"><span>${decision?.status==='superseded'?'Geçersizleşen önceki karar':'Nihai karar'}</span><b>${H(BOARD_DECISION_LABELS[decision?.decision]||"Bekliyor")}${decision?.status==='superseded'?' · yeniden karar gerekli':''}</b></div><div class="approval"><span>Hazırlayan / ikinci onay</span><b>${H(decision?.makerRole?RN[decision.makerRole]:"—")} / ${H(decision?.checkerRole?RN[decision.checkerRole]:"—")}</b></div><div class="row"><select id="board-decision" ${R()==='fd'&&completed===7?'':'disabled'}><option value="approved">Onay</option><option value="conditionally_approved">Şartlı onay</option><option value="rejected">Ret</option></select><input id="board-conditions" placeholder="Şart / gerekçe (şartlı onayda zorunlu)" ${R()==='fd'?'':'disabled'}><button class="btn" data-board-submit ${R()==='fd'&&completed===7?'':'disabled'}>Kararı ikinci onaya gönder</button><button class="btn g" data-board-review="approved" ${R()==='gm'&&decision?.status==='pending_second_approval'&&decision?.makerId!==R()+':demo-user'?'':'disabled'}>İkinci onay</button><button class="btn g" data-board-review="rejected" ${R()==='gm'&&decision?.status==='pending_second_approval'&&decision?.makerId!==R()+':demo-user'?'':'disabled'}>Reddet</button></div></div>`;
@@ -716,7 +714,7 @@ function yayin(){
 function panel(c){
   const s=c.stage,gt=s>=0&&s<6?gate(c):"",A=adv(c);
   let b="";
-  if(s==-1)b=`<div class="al r">Reddedildi: ${H(c.rj)}</div>${["gm","fd","fu"].includes(R())?`<div class="row"><button class="btn" data-a="reopen" data-i="${c.id}">Yeniden aç</button></div>`:""}`;
+  if(s==-1)b=`<div class="al r">Reddedildi: ${H(c.rj)}</div>${["gm","fd"].includes(R())?`<div class="row"><button class="btn" data-a="reopen" data-i="${c.id}">Yeniden aç</button></div>`:""}`;
   if(s==0)b=`<p>Aday kaydı oluştu (kaynak: ${c.kaynak}).</p><div class="card"><div class="fr"><span>SLA durumu</span><b>${c.slaGun}/${c.sla} gün</b>${c.slaGun>c.sla?'<span class="rd"> ⚠ Aşıldı</span>':""}</div></div>`;
   if(s==1)b=`<h3>Değerlendirme skoru</h3>
     ${CR.map((x,i)=>`<div class="fr"><span style="width:130px">${x[0]} (%${Math.round(x[1]*100)})</span><input type="range" min="0" max="100" value="${c.sc[i]}" data-sc="${i}" ${A?"":"disabled"} style="flex:1"><b id="sv${i}">${c.sc[i]}</b></div>`).join("")}
@@ -732,7 +730,7 @@ Giriş ücreti: ${TRL(c.giris)} · Royalty: %${c.roy} · Süre: 5 yıl
 Madde 7: Bayi muhasebesini OTOTR ERP içinde tutmakla yükümlüdür.
 Madde 12: Münhasır bölge ihlali halinde sözleşme feshedilir.</div>
     <h3>Belgeler (${nB(c)}/${BDOC.length})</h3>
-    ${BDOC.map((bd,i)=>`<label class="ck"><input type="checkbox" data-bdoc="${i}" data-i="${c.id}" ${c.belge[i]?"checked":""} ${["gm","fd","fu","hk"].includes(R())?"":"disabled"}>${bd}</label>`).join("")}
+    ${BDOC.map((bd,i)=>`<label class="ck"><input type="checkbox" data-bdoc="${i}" data-i="${c.id}" ${c.belge[i]?"checked":""} ${["gm","fd","hk"].includes(R())?"":"disabled"}>${bd}</label>`).join("")}
     <h3>İmza ve ödeme</h3>
     <label class="ck"><input type="checkbox" data-sg="signed" ${c.signed?"checked":""} ${okR("hk")?"":"disabled"}>E-imza tamamlandı <small class="mu">· Hukuk</small></label>
     <label class="ck"><input type="checkbox" data-sg="paid" ${c.paid?"checked":""} ${okR("fn")?"":"disabled"}>İlk ödeme alındı (${TRL(c.giris)}) <small class="mu">· Finans</small></label>`;
@@ -755,7 +753,7 @@ Madde 12: Münhasır bölge ihlali halinde sözleşme feshedilir.</div>
   const act=s>=0&&s<6?`<div class="row" style="margin-top:14px">
     <button class="btn" data-a="nxt" data-i="${c.id}" ${A&&!gt?"":"disabled"}>${s==3?"Paneli aç ve onboardingi başlat →":s==5?"Şubeyi aktifleştir →":"Sonraki aşamaya geç →"}</button>
     ${s<2&&A?`<select id="rj">${RJ.map(x=>`<option>${x}</option>`).join("")}</select><button class="btn g" data-a="rej" data-i="${c.id}">Reddet</button>`:""}
-  </div>${!A?`<p class="nt">Aşama geçişini Franchise Direktörü veya GM yapar.</p>`:""}`:""
+  </div>${!A?`<p class="nt">Aşama geçişini Franchise Sorumlusu veya Genel Müdür yapar.</p>`:""}`:""
   return`<div class="row" style="justify-content:space-between;align-items:start;flex-wrap:nowrap">
     <div><h2 style="margin:0">${H(c.ad)}</h2><p class="mu" style="margin:2px 0;font-size:13px">${H(c.ilce)} · ${H(c.bolge)} · ${H(c.yat)} · ${c.kaynak}</p></div>
     <button class="btn g" data-a="close">✕</button>

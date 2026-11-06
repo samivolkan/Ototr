@@ -5,13 +5,20 @@ import test from 'node:test';
 const html = await readFile(new URL('../gm-franchise/index.html', import.meta.url), 'utf8');
 
 test('Finance and Accounting are distinct roles and departments', () => {
-  assert.match(html, /<option value="fn">Finans<\/option>/);
+  assert.match(html, /<option value="fn">Finans Sorumlusu<\/option>/);
   assert.match(html, /<option value="mh">Muhasebe<\/option>/);
-  assert.match(html, /fn:"Finans",mh:"Muhasebe"/);
+  assert.match(html, /fn:"Finans Sorumlusu",mh:"Muhasebe"/);
   assert.match(html, /"Finans":\[/);
   assert.match(html, /"Muhasebe":\[/);
   assert.match(html, /"Finans":"fn","Muhasebe":"mh"/);
   assert.doesNotMatch(html, /"Finans \/ Muhasebe":\[/);
+});
+
+test('Franchise Finance and HR use one accountable person per department', () => {
+  assert.match(html, /<option value="fd">Franchise Sorumlusu<\/option>/);
+  assert.match(html, /<option value="ik">İK Sorumlusu<\/option>/);
+  assert.doesNotMatch(html, /<option value="fu">/);
+  assert.match(html, /Genel Müdür ikinci onayı/);
 });
 
 test('opening gate requires Finance, Accounting and full collection', () => {

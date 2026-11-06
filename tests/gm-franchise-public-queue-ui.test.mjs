@@ -2,7 +2,8 @@ import assert from'node:assert/strict';import{readFile}from'node:fs/promises';im
 const html=await readFile(new URL('../gm-franchise/index.html',import.meta.url),'utf8');
 test('live public intake queue is visible only to Franchise maker roles',()=>{
  assert.match(html,/\["web-kuyruk","ADY","Web başvuru kuyruğu"/);
- for(const role of ['gm:','fd:','fu:'])assert.match(html,new RegExp(role+'[^\\n]*web-kuyruk'));
+ for(const role of ['gm:','fd:'])assert.match(html,new RegExp(role+'[^\\n]*web-kuyruk'));
+ assert.doesNotMatch(html,/fu:[^\n]*web-kuyruk/);
  for(const role of ['hk:','fn:','ik:','ak:'])assert.doesNotMatch(html,new RegExp(role+'[^\\n]*web-kuyruk'));
 });
 test('queue UI is session-backed, consent gated and does not render raw public PII',()=>{
