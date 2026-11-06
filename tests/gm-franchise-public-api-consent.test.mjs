@@ -13,7 +13,7 @@ test('public API explicitly allows the canonical live OTOTR origin without a wil
 
 test('hosted staging evidence proves canonical origins without posting form data',()=>{
   assert.equal(liveOriginEvidence.environment,'staging');
-  assert.equal(liveOriginEvidence.functionVersion,13);
+  assert.equal(liveOriginEvidence.functionVersion,14);
   assert.equal(liveOriginEvidence.productionDataUsed,false);
   assert.equal(liveOriginEvidence.formPostAttempted,false);
   assert.equal(liveOriginEvidence.checks.canonicalOriginAllowed,true);
@@ -22,6 +22,10 @@ test('hosted staging evidence proves canonical origins without posting form data
   assert.equal(liveOriginEvidence.checks.missingProcessingConsentStatus,400);
   assert.equal(liveOriginEvidence.checks.refusedProcessingConsentStatus,400);
   assert.equal(liveOriginEvidence.checks.rejectedProbeRows,0);
+  assert.equal(liveOriginEvidence.checks.missingDeploymentIdentityStatus,400);
+  assert.equal(liveOriginEvidence.checks.missingRollbackReferenceStatus,400);
+  assert.equal(liveOriginEvidence.checks.invalidDeploymentIdentityStatus,400);
+  assert.equal(liveOriginEvidence.checks.deploymentBindingProbeRows,0);
   assert.equal(liveOriginEvidence.productionDecision,'NO_GO');
 });
 
@@ -41,6 +45,16 @@ test('versioned franchise intake rejects missing or refused processing consent s
   assert.match(franchiseHandler,/!hasProcessingDecision \|\| !cleanBool\(payload\.processingConsent\)/);
   assert.match(franchiseHandler,/Veri işleme izni zorunludur/);
   assert.doesNotMatch(franchiseHandler,/!cleanBool\(payload\.contactConsent\)/);
+});
+
+test('canonical live intake is bound to a release commit and rollback reference',()=>{
+  const franchiseHandler=source.match(/async function createFranchise[\s\S]*?async function createComplaint/)?.[0]??'';
+  assert.match(franchiseHandler,/common\.source === "ototr\.com\/franchise"/);
+  assert.match(franchiseHandler,/\^\[a-f0-9\]\{40\}\$/);
+  assert.match(franchiseHandler,/\^revert:\[a-f0-9\]\{40\}\$/);
+  assert.match(franchiseHandler,/Sürümlü KVKK metni zorunludur/);
+  assert.match(franchiseHandler,/Canlı kaynak commit kimliği zorunludur/);
+  assert.match(franchiseHandler,/Rollback referansı zorunludur/);
 });
 
 test('commercial communication remains a separate optional franchise decision',()=>{

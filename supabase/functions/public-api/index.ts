@@ -187,6 +187,18 @@ async function createFranchise(req: Request): Promise<Response> {
   if (error) return json(req, { ok: false, error }, 400);
   const versionedConsent = /^FR-KVKK-[0-9]{4}-[0-9]{2}$/.test(common.consent_version);
   const hasProcessingDecision = Object.prototype.hasOwnProperty.call(payload, "processingConsent");
+  const liveSource = common.source === "ototr.com/franchise";
+  const deploymentIdentity = cleanText(payload.deploymentIdentity, 80);
+  const rollbackReference = cleanText(payload.rollbackReference, 200);
+  if (liveSource && !versionedConsent) {
+    return json(req, { ok: false, error: "Sürümlü KVKK metni zorunludur." }, 400);
+  }
+  if (liveSource && !/^[a-f0-9]{40}$/.test(deploymentIdentity)) {
+    return json(req, { ok: false, error: "Canlı kaynak commit kimliği zorunludur." }, 400);
+  }
+  if (liveSource && !/^revert:[a-f0-9]{40}$/.test(rollbackReference)) {
+    return json(req, { ok: false, error: "Rollback referansı zorunludur." }, 400);
+  }
   if (versionedConsent && (!hasProcessingDecision || !cleanBool(payload.processingConsent))) {
     return json(req, { ok: false, error: "Veri işleme izni zorunludur." }, 400);
   }

@@ -14,7 +14,8 @@ test('live form fragment exposes three separate consent decisions',()=>{
 });
 
 test('legacy live fields map to the versioned privacy-minimized Edge contract',()=>{
-  const payload=liveFranchisePayload({name:'  Sentetik Aday  ',phone:'05000000000',email:'demo@example.test',city:'Bursa',district:'Nilüfer',applicant_type:'Şirket',budget:'4–7 milyon TL',experience:'Otomotiv',company:'Demo Ltd.',location_status:'Mülk mevcut',area:'250–500 m²',timeline:'3–6 ay',message:'Yalnız test.',kvkkConsent:'on',processingConsent:'on',contactConsent:undefined});
+  const deploymentIdentity='a'.repeat(40),rollbackReference=`revert:${'b'.repeat(40)}`;
+  const payload=liveFranchisePayload({name:'  Sentetik Aday  ',phone:'05000000000',email:'demo@example.test',city:'Bursa',district:'Nilüfer',applicant_type:'Şirket',budget:'4–7 milyon TL',experience:'Otomotiv',company:'Demo Ltd.',location_status:'Mülk mevcut',area:'250–500 m²',timeline:'3–6 ay',message:'Yalnız test.',kvkkConsent:'on',processingConsent:'on',contactConsent:undefined},{deploymentIdentity,rollbackReference});
   assert.equal(payload.fullName,'Sentetik Aday');
   assert.equal(payload.province,'Bursa');
   assert.equal(payload.consentVersion,LIVE_CONSENT_VERSION);
@@ -22,6 +23,8 @@ test('legacy live fields map to the versioned privacy-minimized Edge contract',(
   assert.equal(payload.processingConsent,true);
   assert.equal(payload.contactConsent,false);
   assert.equal(payload.source,'ototr.com/franchise');
+  assert.equal(payload.deploymentIdentity,deploymentIdentity);
+  assert.equal(payload.rollbackReference,rollbackReference);
   assert.equal(Object.hasOwn(payload,'tckn'),false);
   assert.equal(Object.hasOwn(payload,'financialDocument'),false);
 });

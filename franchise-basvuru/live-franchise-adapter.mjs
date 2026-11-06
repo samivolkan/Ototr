@@ -12,7 +12,7 @@ export function validateLiveFranchiseConfig(config={}){
   return Object.freeze({apiUrl,consentVersion,deploymentIdentity,rollbackReference});
 }
 
-export function liveFranchisePayload(data,{consentVersion=LIVE_CONSENT_VERSION,utm={}}={}){
+export function liveFranchisePayload(data,{consentVersion=LIVE_CONSENT_VERSION,utm={},deploymentIdentity='',rollbackReference=''}={}){
   const get=name=>data instanceof FormData?data.get(name):data?.[name];
   return Object.freeze({
     source:'ototr.com/franchise',
@@ -37,13 +37,15 @@ export function liveFranchisePayload(data,{consentVersion=LIVE_CONSENT_VERSION,u
     processingConsent:checked(get('processingConsent')),
     contactConsent:checked(get('contactConsent')),
     consentVersion:clean(consentVersion,80),
+    deploymentIdentity:clean(deploymentIdentity,80),
+    rollbackReference:clean(rollbackReference,200),
     utm:utm&&typeof utm==='object'?utm:{}
   });
 }
 
 export async function submitLiveFranchiseApplication({form,config,fetchImpl=fetch,utm={}}={}){
   if(!(form instanceof HTMLFormElement))throw new Error('Franchise formu bulunamadı.');
-  const safeConfig=validateLiveFranchiseConfig(config),payload=liveFranchisePayload(new FormData(form),{consentVersion:safeConfig.consentVersion,utm});
+  const safeConfig=validateLiveFranchiseConfig(config),payload=liveFranchisePayload(new FormData(form),{consentVersion:safeConfig.consentVersion,deploymentIdentity:safeConfig.deploymentIdentity,rollbackReference:safeConfig.rollbackReference,utm});
   if(!payload.kvkkConsent||!payload.processingConsent)throw new Error('Aydınlatma teyidi ve veri işleme izni zorunludur.');
   const response=await fetchImpl(safeConfig.apiUrl,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify(payload),credentials:'omit'});
   const result=await response.json().catch(()=>null);
