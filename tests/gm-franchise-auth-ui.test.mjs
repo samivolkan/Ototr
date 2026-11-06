@@ -9,10 +9,16 @@ test('organization live actions remain disabled until an authenticated session e
  assert.match(html,/Hesap varsa parola sıfırlama e-postası gönderildi/);
 });
 test('organization exposes an all-or-nothing thirteen-owner roster picker',()=>{
- assert.match(html,/13 departmanlık atomik sorumlu kadrosu/);assert.match(html,/data-org-roster=/);assert.match(html,/LIVE_ORG_CANDIDATES\.length<13\?'disabled'/);
+ assert.match(html,/13 departmanlık atomik sorumlu kadrosu/);assert.match(html,/data-org-roster=/);assert.match(html,/!rosterReady\?'disabled'/);
  assert.match(html,/new Set\(users\)\.size!==13/);assert.match(html,/franchiseLiveClient\.assignDepartmentRoster\(\{roster\}\)/);
 });
 test('organization filters and validates candidates by authoritative department eligibility',()=>{
- assert.match(html,/x\.allowed_departments\?\.includes\(code\)/);assert.match(html,/candidate\?\.allowed_departments\?\.includes\(departmentCode\)/);
+ assert.match(html,/x\.allowed_departments\?\.includes\(departmentCode\)/);assert.match(html,/candidate\?\.allowed_departments\?\.includes\(departmentCode\)/);
  assert.match(html,/ERP rolü departmanla uyumlu kullanıcı/);
+});
+test('organization proves a distinct role-compatible candidate exists for every department',()=>{
+ assert.match(html,/function hasCompleteOrgRoster\(\)/);assert.match(html,/sort\(\(a,b\)=>a\.length-b\.length\)/);
+ assert.match(html,/used\.has\(userId\)/);assert.match(html,/13 departmanın her birine farklı ve rol-uyumlu/);
+ assert.match(html,/Rol kapsamı:/);assert.match(html,/orgCandidatesFor\(singleDepartment\)/);
+ assert.match(html,/t\.id==='org-department'/);
 });
