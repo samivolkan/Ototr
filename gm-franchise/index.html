@@ -160,7 +160,7 @@ function mkC(ad,ilce,yat,stage,o={}){
   const slugIlce=SL(ilce);
   const c={id:UID++,ad,ilce,bolge:BOLGELER[slugIlce]||"Diğer",yat,kaynak:"Web",stage,
     sc:[70,70,70,70],gf:{},a:[],t:{},s:{},belge:{},
-    signed:0,paid:0,slug:"",roy:8,giris:250000,r:0,ucret:0,
+    signed:0,paid:0,slug:"",roy:10,giris:250000,r:0,ucret:0,
     durum:"Aktif",bit:"",led:[],kf:{},fes:0,hist:[],rj:"",sla:3,slaGun:0,wl:0,indirim:0,gnot:""};
   if(stage>1){GF.forEach((_,i)=>c.gf[i]=1);BDOC.forEach((_,i)=>c.belge[i]=1)}
   if(stage>2)c.a=[0,1,2,3];
