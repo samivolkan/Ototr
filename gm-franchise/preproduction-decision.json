@@ -25,7 +25,7 @@
     "providerSha256": "c70c30f0ad70f1773c1067116de686406b34de10f5085e421e1cb5f57202363d",
     "concurrencySha256": "d915abe5e700cb8a898c171b7f0fa74815c2da2529bf8c790b5ea7af42396eaf",
     "uatSha256": "ce19a6fea0b5598b4b6b764e912962f52053f49fb78b72b3dc168c09be87c511",
-    "publicIntakeSha256": "4d21a985e215f8eeb5a95b4cf214cc8061b88629697f1db5b92838405849cca6"
+    "publicIntakeSha256": "762023d3b6eadec25b74209c1ac44ceec276ebe089eba6e42994caf6314d1005"
   },
   "userApproval": {
     "approved": false,

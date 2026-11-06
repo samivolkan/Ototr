@@ -45,6 +45,8 @@ Canlı site kaynak deposu bulunduğunda uygulanacak iki bağımsız parça hazı
 
 Kaynak uygulamada Franchise formunun `data-demo-form="franchise"` işareti `data-live-franchise-form` olarak değiştirilerek genel `/form-handler.php` dinleyicisinden ayrılmalıdır. `live-franchise-bootstrap.mjs` modülü yüklenmeli; `OTOTR_FRANCHISE_PUBLIC_CONFIG` içinde tam `apiUrl`, 40 karakterli `deploymentIdentity` ve `revert:<40 karakterli commit>` biçiminde `rollbackReference` verilmelidir. Bootstrap gönder düğmesini istek boyunca kilitler ve yalnız `WEB-FR-XXXXXXXX` biçimindeki sunucu referansını başarı sayar. Bu paket hazırlanmış olsa da kaynak commitine uygulanıp sentetik canlı kabul testi yapılmadan G16 `PASS` olmaz.
 
+Kaynak depo erişimi sağlandığında, mevcut PHP sayfasının üzerine yazmadan izole ve hash'li teslim paketi üretmek için `node gm-franchise/live-site-release-package.mjs SOURCE.html OUTPUT_DIR SOURCE_COMMIT_40 PREVIOUS_SOURCE_COMMIT_40` çalıştırılır. Çıktı; dönüştürülmüş aday HTML, iki tarayıcı modülü ve kaynak/rollback commitlerine bağlı `release-manifest.json` içerir. Araç yayın yapmaz ve manifesti daima `NO_GO` üretir; bağımsız sentetik kabul tamamlanmadan canlı karar değişmez.
+
 ## Karar
 
 Durum: `BLOCKED`. Cloudflare arkasındaki canlı PHP kaynak deposu veya kontrollü hosting deployment erişimi olmadan değişiklik yapılmayacak. Bu boşluk kapanmadan üretim kararı `GO` olamaz.
