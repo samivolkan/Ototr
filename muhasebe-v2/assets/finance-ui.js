@@ -16,7 +16,7 @@
     ['SCR-12','Dönem, Mutabakat ve Kilit',['Dönem durumu','Kaynak dondurma','Kapanış ön kontrolleri','Bayi mutabakatı','İstisnalar','Onay ve yeniden açma'],['Ön kontrol çalıştır','Mutabakat gönder','Kilitle','Yeniden açma talep et']],
     ['SCR-13','Faturalama ve Muhasebe Export Paketleri',['Uygun tahakkuklar','Paket kontrol toplamları','Eşleme sürümü','Export durumu','Harici fatura geri bildirimi','Mutabakat farkı'],['Paket oluştur','Doğrula','Export et','Idempotent tekrar','Geri bildirim kaydet']],
     ['SCR-14','Entegrasyon İzleme ve Hata Kuyruğu',['Inbox / outbox','Gecikme','Retry','Dead-letter','Şema sürümü','Correlation izi'],['Maskeli payload incele','Tekrar dene','Çöz','Ata','Maskeli tanı indir']],
-    ['SCR-15','Onay İş Listesi',['Risk seviyesi','Tutar','Talep sahibi','Kapsam','Kanıt','Politika sürümü','Karar geçmişi'],['Onayla','Reddet','Kanıt iste','Kaynak kaydı aç']],
+    ['SCR-15','Bekleyen Onaylar',['Risk seviyesi','Tutar','Talep sahibi','Kapsam','Kanıt','Politika sürümü','Karar geçmişi'],['Onayla','Reddet','Kanıt iste','Kaynak kaydı aç']],
     ['SCR-16','Audit ve Değişiklik İzi',['Aktör','Aksiyon','Varlık','Zaman','Gerekçe','Correlation','Bütünlük zinciri'],['Filtrele','Correlation izini aç','Yetkili seçimi dışa aktar']],
     ['SCR-17','Müşteri İadeleri ve Royalty Ters Kayıtları',['İade olayı','Orijinal tahsilat','Orijinal royalty tahakkuku','İade edilen KDV dahil matrah','Ters hesaplama','Dönem provenance'],['Orijinal tahsilatı aç','Orijinal tahakkuku aç','Ters kaydı aç','İtiraz başlat']]
   ];
@@ -750,7 +750,24 @@
     return Boolean(ready);
   };
 
+  const screenGroups = new Map([
+    ['SCR-01','YÖNETİM ÖZETİ'],['SCR-02','YÖNETİM ÖZETİ'],
+    ['SCR-03','SÖZLEŞME VE BEDELLER'],['SCR-04','SÖZLEŞME VE BEDELLER'],
+    ['SCR-05','TAHAKKUK VE TAHSİLAT'],['SCR-06','TAHAKKUK VE TAHSİLAT'],['SCR-07','TAHAKKUK VE TAHSİLAT'],['SCR-08','TAHAKKUK VE TAHSİLAT'],
+    ['SCR-09','HİZMET VE MASRAFLAR'],['SCR-10','HİZMET VE MASRAFLAR'],['SCR-17','HİZMET VE MASRAFLAR'],
+    ['SCR-11','KONTROL VE ONAY'],['SCR-12','KONTROL VE ONAY'],['SCR-15','KONTROL VE ONAY'],
+    ['SCR-13','ENTEGRASYON VE İZ'],['SCR-14','ENTEGRASYON VE İZ'],['SCR-16','ENTEGRASYON VE İZ']
+  ]);
+  let previousGroup = '';
   screens.forEach(screen => {
+    const group = screenGroups.get(screen[0]) || 'FİNANS';
+    if (group !== previousGroup) {
+      const heading = document.createElement('div');
+      heading.className = 'finance-screen-group-label';
+      heading.textContent = group;
+      nav.appendChild(heading);
+      previousGroup = group;
+    }
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'finance-screen-button';

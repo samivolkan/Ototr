@@ -715,7 +715,60 @@ button,input,select,textarea{font:inherit}.app{min-height:100vh;display:grid;gri
   .package-point-editor-page.v2 .package-point-shell{grid-template-columns:minmax(340px,.95fr) minmax(460px,1.25fr)!important;}
   @media (max-width:1100px){.package-point-editor-page.v2 .package-point-v2-shell,.package-point-editor-page.v2 .package-point-shell{grid-template-columns:1fr!important;}}
   </style>
-<style>body.module-page-open{margin:0;overflow:auto}#financePage{display:block;position:static;min-height:100vh;padding:clamp(12px,3vw,32px);box-sizing:border-box}a.btn{text-decoration:none}</style>
+<style>body.module-page-open{margin:0;overflow:auto}#financePage{display:block;position:static;min-height:100vh;padding:clamp(12px,3vw,32px);box-sizing:border-box}a.btn{text-decoration:none}
+/* ERP ortak kabuğu: IK ve Franchise ile aynı sakin, modül-odaklı görsel dil. */
+#financePage{background:#f6f5f3;color:#17181b;max-width:1600px;margin:0 auto}
+#financePage .module-head{padding:18px 20px 16px;margin:-1px -1px 14px;border:1px solid #e3e1dd;border-radius:12px;background:#fff}
+#financePage .finance-eyebrow{color:#e8281a;font-size:10.5px;letter-spacing:.08em}
+#financePage .module-head h1{font-size:23px;letter-spacing:-.02em}
+#financePage .module-head p{margin:4px 0 0;color:#6b6b66;font-size:13px}
+#financePage .finance-head-actions{gap:7px}
+#financePage .finance-head-actions .btn{min-height:34px;border-radius:8px;font-size:12px}
+#financePage .finance-environment-badge,#financePage .finance-context-status{min-height:30px;font-size:10px}
+#financePage .finance-safety-banner{margin:0 0 10px;padding:9px 12px;border-color:#e3e1dd;border-left:3px solid #b7791f;border-radius:8px;background:#fffaf0;color:#6e4c00;grid-template-columns:auto 1fr}
+#financePage .finance-safety-banner strong{font-size:11px}
+#financePage .finance-safety-banner span{font-size:11px}
+#financePage .finance-context-bar{gap:0;margin-bottom:12px;border-color:#e3e1dd;border-radius:10px;background:#e3e1dd}
+#financePage .finance-context-bar>div{padding:9px 11px}
+#financePage .finance-context-bar span{font-size:9px;color:#6b6b66}
+#financePage .finance-context-bar b{font-size:11.5px}
+#financePage .finance-workspace{grid-template-columns:230px minmax(0,1fr);gap:14px}
+#financePage .finance-screen-nav{padding:9px;gap:3px;border-color:#e3e1dd;border-radius:12px;background:#fff;box-shadow:none;top:16px}
+#financePage .finance-screen-button{grid-template-columns:36px minmax(0,1fr);padding:9px 8px;border-radius:9px;color:#6b6b66}
+#financePage .finance-screen-button:hover{background:#f0eeea;color:#17181b}
+#financePage .finance-screen-button.is-active{background:#17181b;color:#fff}
+#financePage .finance-screen-button b{font-size:11px}
+#financePage .finance-screen-group-label{padding:13px 8px 5px;color:#8a8882;font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;border-top:1px solid #f0eeea;margin-top:4px}
+#financePage .finance-screen-group-label:first-child{border-top:0;margin-top:0;padding-top:4px}
+#financePage .finance-screen-stage{padding:18px;border-color:#e3e1dd;border-radius:12px;background:#fff;box-shadow:none}
+#financePage .finance-screen-heading{padding-bottom:13px}
+#financePage .finance-screen-heading h2{font-size:19px;color:#17181b}
+#financePage .finance-screen-heading p{font-size:11.5px;color:#6b6b66}
+#financePage .finance-state-chip{min-height:26px;font-size:9px}
+#financePage .finance-kpi-empty-grid{gap:10px;margin:12px 0}
+#financePage .finance-kpi-empty-grid article{min-height:88px;border-color:#e3e1dd;background:#fafaf9;border-radius:10px}
+#financePage .finance-kpi-empty-grid b{font-size:21px}
+#financePage .finance-statement,#financePage .finance-period-detail,#financePage .finance-readiness{border-color:#e3e1dd;border-radius:10px;box-shadow:none}
+#financePage .finance-statement-head h3{font-size:15px}
+#financePage .finance-statement-table-wrap{border-color:#e3e1dd}
+#financePage .finance-statement-table th{background:#f6f5f3;color:#6b6b66}
+#financePage .finance-statement-state{background:#fafaf9;border-color:#e3e1dd}
+#financePage #financeWalkthrough{border-left:3px solid #e8281a;background:#fff}
+#financePage .finance-demo-day{margin-top:14px;padding-top:14px;border-top:1px solid #e3e1dd}
+#financePage .finance-demo-grid{display:grid;grid-template-columns:minmax(0,1fr) 250px;gap:12px;margin-top:12px}
+#financePage .finance-demo-payment{border:1px solid #e3e1dd;border-radius:10px;background:#fafaf9;padding:13px}
+#financePage .finance-demo-payment h4{margin:0 0 10px;font-size:13px}
+#financePage .finance-demo-payment div{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid #e3e1dd;font-size:11px;color:#6b6b66}
+#financePage .finance-demo-payment b{color:#17181b;font-size:13px}
+#financePage .finance-demo-payment small{display:block;margin-top:10px;color:#b7791f;font-size:10.5px;line-height:1.45}
+#financePage .finance-demo-events{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:12px}
+#financePage .finance-demo-event{padding:9px;border:1px solid #e3e1dd;border-radius:8px;background:#fff;font-size:10.5px;color:#6b6b66}
+#financePage .finance-demo-event b{display:block;color:#17181b;font-size:11px;margin-bottom:3px}
+@media(max-width:900px){#financePage .finance-demo-grid{grid-template-columns:1fr}#financePage .finance-demo-events{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){#financePage .finance-demo-events{grid-template-columns:1fr}}
+@media(max-width:900px){#financePage .finance-workspace{grid-template-columns:1fr}#financePage .finance-screen-nav{position:static;grid-template-columns:repeat(2,minmax(0,1fr));max-height:none}}
+@media(max-width:560px){#financePage{padding:10px}#financePage .module-head{padding:14px}.finance-head-actions{justify-content:flex-start!important}#financePage .finance-screen-nav{grid-template-columns:1fr}}
+</style>
 </head><body class="module-page-open">
 <section class="module-page active" id="financePage">
         <div class="module-head finance-module-head">
@@ -728,9 +781,44 @@ button,input,select,textarea{font:inherit}.app{min-height:100vh;display:grid;gri
             <span class="finance-context-status" data-finance-context-status>KAPSAM BEKLENİYOR</span>
             <button class="btn primary" type="button" data-finance-connect disabled>Yetkili Veriyi Getir</button>
             <span class="finance-environment-badge" data-finance-environment>ADAY UI · LIVE BAĞLANTI KAPALI</span>
+            <a class="btn" href="?walkthrough=1#financeWalkthrough">Şube finans demosu</a>
             <a class="btn" href="../index.html#dashboard">ERP Kokpitine Dön</a>
           </div>
         </div>
+        <section id="financeWalkthrough" class="finance-statement" hidden aria-labelledby="financeWalkthroughTitle">
+          <div class="finance-statement-head">
+            <div>
+              <span class="finance-screen-code">SİMÜLASYON · SCOPE-B2</span>
+              <h2 id="financeWalkthroughTitle">Şube tahsilatından royalty ödemesine</h2>
+              <p>Örnek kayıtlarla çalışır. Demo işlemleri yalnızca bu panelde görünür.</p>
+            </div>
+            <a class="btn" href="./">Demoyu kapat</a>
+          </div>
+          <div class="finance-statement-controls">
+            <button type="button" class="btn" data-demo-back disabled>Önceki adım</button>
+            <button type="button" class="btn primary" data-demo-next>600 TL müşteri tahsilatı</button>
+            <span class="finance-state-chip" data-demo-step>0 / 6</span>
+          </div>
+          <p class="finance-statement-state" role="status" data-demo-status></p>
+          <div class="finance-statement-table-wrap">
+            <table class="finance-statement-table">
+              <caption>Royalty hareketleri · brüt müşteri tutarı üzerinden %10 + %20 demo KDV</caption>
+              <thead><tr><th scope="col">İşlem</th><th scope="col">Müşteri tutarı</th><th scope="col">Royalty</th><th scope="col">Demo KDV</th><th scope="col">Royalty toplamı</th></tr></thead>
+              <tbody data-demo-ledger></tbody>
+            </table>
+          </div>
+          <dl class="finance-period-grid" aria-label="Fatura ve bakiye özeti">
+            <div><dt>Şubenin net müşteri tahsilatı</dt><dd data-demo-cash>—</dd></div>
+            <div><dt>Fatura takibi · DEMO-F-001</dt><dd data-demo-invoice>Fatura yok</dd></div>
+            <div><dt>Merkezin açık royalty alacağı</dt><dd data-demo-open>—</dd></div>
+          </dl>
+          <section class="finance-demo-day" aria-labelledby="demoDayTitle">
+            <div class="finance-statement-head"><div><span class="finance-screen-code">DEMO GÜNÜ · ŞUBE B2</span><h3 id="demoDayTitle">3 araçlık günlük hareket ve bayi ödeme ekranı</h3><p>Üç araç tahsilatı, royalty, hizmet yansıtması ve modüller arası olay zinciri aynı akışta izlenir.</p></div><span class="finance-state-chip" data-demo-day-state>VERİ YÜKLENMEDİ</span></div>
+            <div class="finance-demo-grid"><div><div class="finance-statement-table-wrap"><table class="finance-statement-table"><thead><tr><th>Araç</th><th>Müşteri tahsilatı</th><th>%10 royalty</th><th>%20 KDV</th><th>Merkez payı</th></tr></thead><tbody data-demo-vehicles></tbody></table></div></div><div class="finance-demo-payment"><h4>Bayi ödeme ekranı</h4><div><span>Bu dönem ödenecek</span><b data-demo-dealer-due>—</b></div><div><span>Royalty + KDV</span><b data-demo-royalty-total>—</b></div><div><span>Hizmet yansıtma + KDV</span><b data-demo-service-total>—</b></div><small data-demo-payment-status>Demo veri yüklenmesini bekliyor.</small></div></div>
+            <div class="finance-statement-table-wrap"><table class="finance-statement-table"><thead><tr><th>Genel Merkez hizmet kalemi</th><th>Temel tutar</th><th>%10 yansıtma</th><th>%20 KDV</th><th>Bayiye yansıtılan</th></tr></thead><tbody data-demo-services></tbody></table></div>
+            <div class="finance-demo-events" data-demo-events aria-label="Modüller arası olay akışı"></div>
+          </section>
+        </section>
         <div class="finance-safety-banner" role="status">
           <strong>Finansal veri kaynağı bağlı değil.</strong>
           <span>Bu ekran demo rakam üretmez. Tutarlar yalnız yetkili finans API’si, doğrulanmış kullanıcı oturumu ve şube kapsamı sağlandığında gösterilir.</span>
@@ -1042,6 +1130,7 @@ button,input,select,textarea{font:inherit}.app{min-height:100vh;display:grid;gri
   <output aria-live="polite"></output>
 </section>
 <script src="assets/finance-ui.js"></script>
+<script type="module" src="assets/finance-walkthrough.mjs"></script>
 <script type="module" src="assets/finance-settlement-demo.mjs"></script>
 <script>
   window.OTOTRDealerFinanceAuth = Object.freeze({
