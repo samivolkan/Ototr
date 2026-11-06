@@ -2,10 +2,10 @@
   'use strict';
 
   const moduleUrl = new URL('muhasebe-v2/', document.baseURI);
-  const nav = document.getElementById('nav');
-  if (!nav) return;
 
   function mount() {
+    const nav = document.getElementById('nav');
+    if (!nav) return;
     if (nav.querySelector('[data-accounting-v2]')) return;
 
     const item = document.createElement('div');
@@ -24,5 +24,5 @@
   }
 
   mount();
-  new MutationObserver(mount).observe(nav, {childList: true});
+  new MutationObserver(mount).observe(document.documentElement, {childList: true, subtree: true});
 })();
