@@ -112,4 +112,12 @@ Hedef: Supabase `ototr-staging` (`bsjkohwbtrfwrqcyhsfz`), PostgreSQL 17.6.
 - `franchise_department_candidate_eligibility` migration'ı aday dizininden GM dahil mevcut aktif Franchise kapsamı bulunan kullanıcıları çıkardı. E-posta ve telefon dönmez.
 - Hosted doğrulamada kullanılabilir aday `6`, aktif ana departman sorumlusu `0` bulundu. Bu nedenle ekran `6/13` eksik kadro uyarısı verir ve toplu atamayı kilitler; sahte kullanıcı üretilmedi ve kısmi atama yapılmadı.
 
+## ERP rolü–departman uygunluğu — 2026-11-06
+
+- `franchise_department_erp_role_eligibility` migration'ı staging'e uygulandı. On üç resmi departmanın her biri mevcut ERP rol kataloğundaki izinli rolle eşleştirildi; örneğin Finans/Muhasebe `FINANCE`, Hukuk `LEGAL`, İK `HR`, BT `SUPPORT_AGENT` rolünü gerektirir.
+- Uygunluk kataloğunda RLS açık, `anon SELECT=false`, `authenticated SELECT=true` fakat politika yalnız GM claim'ine izin verir. Aday dizini `allowed_departments` alanını döndürür; mevcut Franchise kapsamlı veya hiçbir departmanla rolü eşleşmeyen kullanıcıyı listelemez.
+- Arayüz her departmanın seçim kutusunu yalnız uygun adaylarla doldurur. Aynı kural `franchise_primary_owner_erp_role_guard_trigger` ile doğrudan veritabanı yazımında da zorunludur; arayüz filtresi güvenlik sınırı değildir.
+- Hosted katalog sonucu `13/13` departman, `13` eşleme satırı, rol-uyumlu aktif aday `3`, aktif ana sorumlu `0` olarak doğrulandı. Güvenlik danışmanı yeni katalog/trigger bulgusu üretmedi.
+- Rollback-only negatif kabulte `BRANCH_MANAGER` rolündeki sentetik hedefin Finans ana sorumlusu yapılması veritabanında reddedildi (`PASS`); transaction rollback sonrasında aktif ana sorumlu sayısı `0` kaldı.
+
 Bu doğrulama staging şema kurulumu ve rollback kabiliyetini kanıtlar. Gerçek ERP/sağlayıcı uçları, departman UAT imzaları, yayın penceresi ve kullanıcı canlı onayı ayrıca gereklidir. Yayın kararı `NO_GO` kalır.
