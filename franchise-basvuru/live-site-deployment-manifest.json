@@ -32,6 +32,7 @@
     }
   ],
   "htmlOperations": [
+    "Generate a separate candidate HTML with: node gm-franchise/live-site-html-transform.mjs SOURCE.html CANDIDATE.html SOURCE_COMMIT_40 PREVIOUS_SOURCE_COMMIT_40; the command fails closed and never overwrites SOURCE.html.",
     "Replace form attribute data-demo-form=\"franchise\" with data-live-franchise-form.",
     "Insert live-form-consent-fragment.html inside the Franchise form before its submit button.",
     "Define OTOTR_FRANCHISE_PUBLIC_CONFIG before loading the bootstrap module; replace both commit placeholders with reviewed PHP source commits.",
