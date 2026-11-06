@@ -755,6 +755,9 @@ button,input,select,textarea{font:inherit}.app{min-height:100vh;display:grid;gri
 #financePage .finance-statement-state{background:#fafaf9;border-color:#e3e1dd}
 #financePage #financeWalkthrough{border-left:3px solid #e8281a;background:#fff}
 #financePage .finance-demo-day{margin-top:14px;padding-top:14px;border-top:1px solid #e3e1dd}
+#financePage .finance-demo-menu{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 10px;padding:6px;border:1px solid #e3e1dd;border-radius:9px;background:#fafaf9}
+#financePage .finance-demo-menu span{padding:6px 9px;border-radius:7px;color:#6b6b66;font-size:10px;font-weight:800}
+#financePage .finance-demo-menu span.is-active{background:#17181b;color:#fff}
 #financePage .finance-demo-grid{display:grid;grid-template-columns:minmax(0,1fr) 250px;gap:12px;margin-top:12px}
 #financePage .finance-demo-payment{border:1px solid #e3e1dd;border-radius:10px;background:#fafaf9;padding:13px}
 #financePage .finance-demo-payment h4{margin:0 0 10px;font-size:13px}
@@ -799,6 +802,7 @@ button,input,select,textarea{font:inherit}.app{min-height:100vh;display:grid;gri
             <button type="button" class="btn primary" data-demo-next>600 TL müşteri tahsilatı</button>
             <span class="finance-state-chip" data-demo-step>0 / 6</span>
           </div>
+          <div class="finance-demo-menu" aria-label="Finans modülleri"><span class="is-active">Yönetim Özeti</span><span>Sözleşme ve Bedeller</span><span>Tahakkuk ve Tahsilat</span><span>Hizmet ve Masraflar</span><span>Kontrol ve Onay</span><span>Entegrasyon ve İz</span></div>
           <p class="finance-statement-state" role="status" data-demo-status></p>
           <div class="finance-statement-table-wrap">
             <table class="finance-statement-table">
