@@ -16,3 +16,14 @@ test('release readiness remains fail closed for every role', () => {
   assert.match(html, /<button class="btn" disabled>Canlıya yayınla<\/button>/);
   assert.match(html, /Ekrandaki etiket tek başına yetkili değildir/);
 });
+
+test('central procurement owner is distinct from the external supplier persona', () => {
+  assert.match(html, /<option value="ts">Tedarik Sorumlusu<\/option>/);
+  assert.match(html, /ts:"Tedarik Sorumlusu"/);
+  assert.match(html, /"Tedarik":"ts"/);
+  const centralViews = permissionBlock.match(/ts:"([^"]+)"/)?.[1] || '';
+  assert.match(centralViews, /(?:^| )departman(?: |$)/);
+  assert.match(centralViews, /(?:^| )acilis(?: |$)/);
+  const supplierViews = permissionBlock.match(/td:"([^"]+)"/)?.[1] || '';
+  assert.equal(supplierViews, 'portallar');
+});

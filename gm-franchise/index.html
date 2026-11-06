@@ -82,6 +82,7 @@ ul.ul{margin:0;padding-left:18px}ul.ul li{margin:3px 0}
 <option value="bt">BT</option>
 <option value="ba">Bayi Sahibi</option>
 <option value="dn">Denetçi</option>
+<option value="ts">Tedarik Sorumlusu</option>
 <option value="td">Tedarikçi</option>
 <option value="ad">Aday Yatırımcı</option>
 <option value="op">Operasyon</option>
@@ -102,7 +103,7 @@ import {readDemoIntake,removeDemoIntake} from "../franchise-basvuru/demo-intake.
 import {franchiseLiveClient} from "./franchise-live-client.mjs";
 const TODAY=new Date("2026-11-05"),KEY="ototr-franchise-e2e-v1";
 const STAGES=["Yeni","Gorusme","Onay","Sozlesme","Onboarding","Kurulum","Aktif"];
-const RN={gm:"Genel Müdür",fd:"Franchise Sorumlusu",hk:"Hukuk",fn:"Finans Sorumlusu",mh:"Muhasebe",ik:"İK Sorumlusu",ak:"Akademi",sa:"Saha",bt:"BT",ba:"Bayi Sahibi",dn:"Denetçi",td:"Tedarikçi",ad:"Aday Yatırımcı",op:"Operasyon",pz:"Pazarlama",kl:"Kalite",isg:"İSG",mm:"Mimari / Proje"};
+const RN={gm:"Genel Müdür",fd:"Franchise Sorumlusu",hk:"Hukuk",fn:"Finans Sorumlusu",mh:"Muhasebe",ik:"İK Sorumlusu",ak:"Akademi",sa:"Saha",bt:"BT",ba:"Bayi Sahibi",dn:"Denetçi",ts:"Tedarik Sorumlusu",td:"Tedarikçi",ad:"Aday Yatırımcı",op:"Operasyon",pz:"Pazarlama",kl:"Kalite",isg:"İSG",mm:"Mimari / Proje"};
 const AP=[["Franchise sorumlusu değerlendirmesi","fd"],["Hukuk incelemesi","hk"],["Finans sorumlusu uygunluğu","fn"],["Genel Müdür ikinci onayı","gm"]];
 const CR=[["Finansal güç",.35],["Bölge uygunluğu",.25],["Deneyim",.20],["Vizyon",.20]];
 const GF=["Yatırım kaynağı açık mı?","Bölge rekabeti değerlendirildi mi?","Referans kişilerle görüşüldü mü?","İşletme deneyimi doğrulandı mı?","Birden fazla değerlendirici imzaladı mı?"];
@@ -126,17 +127,18 @@ const PERM={
  gm:"e2e skorlama departman personel acilis takip portallar dash hat inbox web-kuyruk pipe gor belge sube web paket fin rapor organizasyon yayin yetki denetim model",
  fd:"e2e skorlama departman personel acilis takip portallar dash hat inbox web-kuyruk pipe gor belge sube web paket fin rapor organizasyon yayin yetki denetim model",
 hk:"e2e skorlama departman acilis dash hat inbox pipe gor belge sube organizasyon yayin",
-fn:"e2e skorlama departman acilis dash hat inbox pipe fin rapor sube organizasyon yayin",
+fn:"e2e skorlama departman acilis takip dash hat inbox pipe fin rapor sube organizasyon yayin",
 mh:"e2e departman acilis dash hat inbox pipe fin rapor sube organizasyon yayin",
-ik:"e2e departman personel acilis dash hat inbox pipe gor belge organizasyon yayin",
+ik:"e2e departman personel acilis takip dash hat inbox pipe gor belge organizasyon yayin",
 ak:"e2e departman personel acilis dash hat inbox pipe gor organizasyon yayin",
 sa:"e2e departman acilis dash hat inbox pipe sube",
 bt:"e2e departman personel acilis dash hat inbox pipe sube web organizasyon yayin",
 ba:"portallar sube fin web",
 dn:"portallar departman acilis",
+ts:"e2e departman acilis dash hat inbox sube organizasyon yayin",
 td:"portallar",
 ad:"portallar",
-op:"e2e skorlama departman acilis hat inbox sube organizasyon yayin",
+op:"e2e skorlama departman acilis takip hat inbox sube organizasyon yayin",
 pz:"e2e departman acilis organizasyon",
 kl:"e2e departman acilis organizasyon yayin",
 isg:"e2e departman acilis organizasyon",
@@ -579,7 +581,7 @@ const E2E_TASKS={
   "İSG":["Risk değerlendirmesi tamamlandı","Yangın ve atölye güvenliği doğrulandı","Acil durum planı yayımlandı"],
   "Mimari / Proje":["Keşif ve uygulama projesi onaylandı","Tadilat kritik yolu tamamlandı","Açılış teslim tutanağı hazırlandı"]
 };
-const DEPT_ROLE={"Franchise":"fd","Finans":"fn","Muhasebe":"mh","Hukuk":"hk","İnsan Kaynakları":"ik","Academy":"ak","Operasyon":"op","Tedarik":"td","Bilgi Teknolojileri":"bt","Pazarlama":"pz","Kalite":"kl","İSG":"isg","Mimari / Proje":"mm"};
+const DEPT_ROLE={"Franchise":"fd","Finans":"fn","Muhasebe":"mh","Hukuk":"hk","İnsan Kaynakları":"ik","Academy":"ak","Operasyon":"op","Tedarik":"ts","Bilgi Teknolojileri":"bt","Pazarlama":"pz","Kalite":"kl","İSG":"isg","Mimari / Proje":"mm"};
 const OPENING_DELIVERABLES=[
  ["Mimari proje","Mimari / Proje",true],["İnşaat ve şube teslimi","Mimari / Proje",true],["Ekipman teslimi","Tedarik",true],["Kalibrasyon","Tedarik",false],["İSG risk ve acil durum","İSG",false],
  ["Kalite denetimi · ≥80 · açık bulgu 0","Kalite",false],["Marka ve açılış kampanyası","Pazarlama",true],["ERP, ağ ve kullanıcı hazırlığı","Bilgi Teknolojileri",false],["Deneme operasyonu · kritik hata 0","Operasyon",false],["Açılış kurulu · GM ikinci onay","Franchise",false]
