@@ -34,6 +34,7 @@ export function createFranchiseLiveClient({config=browserRuntimeConfig(),getSess
   }
   const rpc=(name,payload={})=>request(`/rest/v1/rpc/${name}`,{method:'POST',body:JSON.stringify(payload)});
   const listDepartmentResponsibilities=()=>request('/rest/v1/franchise_department_responsibilities?select=department_code,role_code,assignment_level,is_active,created_at&is_active=eq.true&order=department_code,assignment_level');
+  const listDepartmentOwnerCandidates=()=>request('/rest/v1/rpc/list_franchise_department_owner_candidates',{method:'POST',body:'{}'});
   async function assignPrimaryDepartmentOwner({departmentCode,userId,note}){const session=await getSession(fetchImpl),actorId=String(session?.user?.id||tokenSubject(session?.access_token));if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(actorId))throw new Error('ERP oturum kullanıcı kimliği doğrulanamadı.');return request('/rest/v1/rpc/assign_franchise_primary_department_owner',{method:'POST',body:JSON.stringify({p_department_code:departmentCode,p_user_id:userId,p_assignment_note:note})})}
   async function loadUat(releaseCandidate){
     const q=encodeURIComponent(releaseCandidate),[scenarios,results,signoffCatalog,signoffs,status]=await Promise.all([
@@ -49,7 +50,7 @@ export function createFranchiseLiveClient({config=browserRuntimeConfig(),getSess
     submitUatResult:payload=>rpc('submit_franchise_uat_result',payload),
     reviewUatResult:payload=>rpc('review_franchise_uat_result',payload),
     signUatRelease:payload=>rpc('sign_franchise_uat_release',payload),
-    listDepartmentResponsibilities,assignPrimaryDepartmentOwner
+    listDepartmentResponsibilities,listDepartmentOwnerCandidates,assignPrimaryDepartmentOwner
   });
 }
 export const franchiseLiveClient=createFranchiseLiveClient();
