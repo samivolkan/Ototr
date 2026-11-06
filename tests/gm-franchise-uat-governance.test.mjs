@@ -5,11 +5,17 @@ import test from 'node:test';
 const sql = await readFile(new URL('../supabase/migrations/20261105200000_franchise_uat_governance.sql', import.meta.url), 'utf8');
 const responsibleSql = await readFile(new URL('../supabase/migrations/20261106010440_franchise_uat_responsible_signoff_catalog.sql', import.meta.url), 'utf8');
 const html = await readFile(new URL('../gm-franchise/index.html', import.meta.url), 'utf8');
+const uatGuide = await readFile(new URL('../docs/franchise/FRANCHISE_DEPARTMENT_UAT_SIGNOFF_2026-11-05.md', import.meta.url), 'utf8');
 
 test('UAT catalog contains exactly sixteen governed scenarios and nine signoff roles', () => {
   const scenarios = [...sql.matchAll(/\('UAT-(\d{2})'/g)].map((x) => x[1]);
   assert.deepEqual([...new Set(scenarios)].sort(), Array.from({ length: 16 }, (_, i) => String(i + 1).padStart(2, '0')));
   for (const role of ['Franchise Sorumlusu','Finans Sorumlusu','Hukuk/KVKK','İK Sorumlusu','Academy Sorumlusu','Operasyon/Kalite/İSG','Tedarik/Mimari/Pazarlama','ERP/Bilgi Güvenliği','Genel Müdür']) assert.match(`${sql}\n${responsibleSql}`, new RegExp(role));
+});
+
+test('UAT guide uses the canonical single-responsible signoff catalog', () => {
+  for (const role of ['Franchise Sorumlusu','Finans Sorumlusu','Hukuk/KVKK','İK Sorumlusu','Academy Sorumlusu','Operasyon/Kalite/İSG','Tedarik/Mimari/Pazarlama','ERP/Bilgi Güvenliği','Genel Müdür']) assert.match(uatGuide, new RegExp(role));
+  for (const legacyRole of ['Franchise Yönetimi','Finans Direktörü','İK Yöneticisi','Academy Yöneticisi','CEO/Yönetim']) assert.doesNotMatch(uatGuide, new RegExp(legacyRole));
 });
 
 test('UAT evidence and signoffs are RLS protected and independently approved', () => {
