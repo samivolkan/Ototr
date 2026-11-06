@@ -276,12 +276,13 @@ if (auth && ui) {
   const api = {
     refreshContext,
     async connect(scope, options = {}) {
+      void showRoyaltyBalance(scope);
       ui.setConnectionState('LOADING', 'Yetkili finans projectionı yükleniyor.');
       try {
         const result = await client.getDealerFinanceSummary(scope, options);
         connectedAsOf=result.data.asOf;
         ui.renderSummary(result.data, result.scope);
-        void showRoyaltyBalance(result.scope);
+
         for(const control of document.querySelectorAll('[data-finance-dealer-export],[data-finance-dealer-dispute]')){control.disabled=false;control.dataset.asOf=result.data.asOf;}
         const periodResult=await client.getCurrentFinancePeriod(scope,{asOf:result.data.asOf});
         ui.renderCurrentPeriod?.(periodResult.data);
