@@ -36,6 +36,10 @@ for (const field of ['nkv1','nkv2','nkv3','nid','nfin']) assert.match(html, new 
 assert.match(html, /applicationProfile:profile/);
 assert.match(nav, /data-gm-franchise-link/);
 assert.match(nav, /Franchise Yönetim Merkezi/);
-assert.match(root, /gm-franchise\/erp-nav-integration\.js\?v=20261105/);
+assert.match(root, /gm-franchise\/erp-nav-integration\.js\?v=20261106/);
+assert.match(nav, /location\.hostname !== 'raw\.githack\.com'/);
+assert.match(nav, /data-ototr-public-preview/);
+assert.match(nav, /KAMUYA AÇIK SENTETİK DEMO ÖNİZLEMESİ/);
+assert.match(nav, /Gerçek kişi, aday, çalışan, şube, finans veya sözleşme verisi girmeyin/);
 
 console.log('gm-franchise static acceptance: passed');

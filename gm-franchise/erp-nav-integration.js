@@ -4,6 +4,26 @@
   const marker = 'data-gm-franchise-link';
   const moduleUrl = new URL('gm-franchise/', document.baseURI).href;
 
+  function mountPublicPreviewBoundary() {
+    if (location.hostname !== 'raw.githack.com' || document.querySelector('[data-ototr-public-preview]')) return;
+    const banner = document.createElement('div');
+    banner.setAttribute('data-ototr-public-preview', '');
+    banner.setAttribute('role', 'status');
+    banner.textContent = 'KAMUYA AÇIK SENTETİK DEMO ÖNİZLEMESİ · Gerçek kişi, aday, çalışan, şube, finans veya sözleşme verisi girmeyin. Bu ekran üretim sistemi değildir.';
+    Object.assign(banner.style, {
+      position: 'sticky',
+      top: '0',
+      zIndex: '10000',
+      padding: '10px 16px',
+      background: '#7f1d1d',
+      color: '#fff',
+      font: '700 12px/1.4 system-ui, sans-serif',
+      textAlign: 'center',
+      letterSpacing: '.02em'
+    });
+    document.body.prepend(banner);
+  }
+
   function mount() {
     const nav = document.getElementById('nav');
     if (!nav || nav.querySelector(`[${marker}]`)) return;
@@ -30,6 +50,7 @@
   }
 
   function start() {
+    mountPublicPreviewBoundary();
     mount();
     const nav = document.getElementById('nav');
     if (!nav) return;
