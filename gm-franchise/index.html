@@ -120,27 +120,27 @@ const NAV=[
  ["","ADY","ADAYLAR"],["web-kuyruk","ADY","Web başvuru kuyruğu",1],["pipe","ADY","Aday hattı",1],["gor","ADY","Görüşme ve değerlendirme",1],["belge","ADY","Belge yönetimi",1],
 ["","SUB","AKTİF ŞUBELER"],["sube","SUB","Şubeler ve sözleşme",1],["web","SUB","Web ve Google yorum",1],["paket","SUB","Paket ve fiyatlama",1],
 ["","FIN","FİNANS"],["fin","FIN","Royalty ve cari",1],["rapor","FIN","Raporlama ve analitik",1],
-["","SYS","SİSTEM"],["yayin","SYS","Yayın hazırlığı",1],["yetki","SYS","Yetki matrisi",0],["denetim","SYS","Denetim kaydı",0],["model","SYS","Veri modeli",0]
+["","SYS","SİSTEM"],["organizasyon","SYS","Departman sorumluları",1],["yayin","SYS","Yayın hazırlığı",1],["yetki","SYS","Yetki matrisi",0],["denetim","SYS","Denetim kaydı",0],["model","SYS","Veri modeli",0]
 ];
 const PERM={
- gm:"e2e skorlama departman personel acilis takip portallar dash hat inbox web-kuyruk pipe gor belge sube web paket fin rapor yayin yetki denetim model",
- fd:"e2e skorlama departman personel acilis takip portallar dash hat inbox web-kuyruk pipe gor belge sube web paket fin rapor yayin yetki denetim model",
-hk:"e2e skorlama departman acilis dash hat inbox pipe gor belge sube",
-fn:"e2e skorlama departman acilis dash hat inbox pipe fin rapor sube",
-mh:"e2e departman acilis dash hat inbox pipe fin rapor sube",
-ik:"e2e departman personel acilis dash hat inbox pipe gor belge",
-ak:"e2e departman personel acilis dash hat inbox pipe gor",
+ gm:"e2e skorlama departman personel acilis takip portallar dash hat inbox web-kuyruk pipe gor belge sube web paket fin rapor organizasyon yayin yetki denetim model",
+ fd:"e2e skorlama departman personel acilis takip portallar dash hat inbox web-kuyruk pipe gor belge sube web paket fin rapor organizasyon yayin yetki denetim model",
+hk:"e2e skorlama departman acilis dash hat inbox pipe gor belge sube organizasyon",
+fn:"e2e skorlama departman acilis dash hat inbox pipe fin rapor sube organizasyon",
+mh:"e2e departman acilis dash hat inbox pipe fin rapor sube organizasyon",
+ik:"e2e departman personel acilis dash hat inbox pipe gor belge organizasyon",
+ak:"e2e departman personel acilis dash hat inbox pipe gor organizasyon",
 sa:"e2e departman acilis dash hat inbox pipe sube",
-bt:"e2e departman personel acilis dash hat inbox pipe sube web yayin",
+bt:"e2e departman personel acilis dash hat inbox pipe sube web organizasyon yayin",
 ba:"portallar sube fin web",
 dn:"portallar departman acilis",
 td:"portallar",
 ad:"portallar",
-op:"e2e skorlama departman acilis hat inbox sube",
-pz:"e2e departman acilis",
-kl:"e2e departman acilis",
-isg:"e2e departman acilis",
-mm:"e2e departman acilis"
+op:"e2e skorlama departman acilis hat inbox sube organizasyon",
+pz:"e2e departman acilis organizasyon",
+kl:"e2e departman acilis organizasyon",
+isg:"e2e departman acilis organizasyon",
+mm:"e2e departman acilis organizasyon"
 };
 const $=id=>document.getElementById(id),R=()=>$("role").value;
 const H=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -152,6 +152,7 @@ let UID=1,LOG=[],FB=1,CUR="e2e",SEL=null,HF="all",DTAB="bekliyor";
 let LIVE_QUEUE=[],LIVE_QUEUE_STATE="idle",LIVE_QUEUE_ERROR="",LIVE_QUEUE_SELECTED=null,LIVE_QUEUE_RESULT="";
 let DEMO_WEB_QUEUE=readDemoIntake();
 let LIVE_UAT=null,LIVE_UAT_STATE="idle",LIVE_UAT_ERROR="",LIVE_UAT_RELEASE="franchise-rc-2026.11.06";
+let LIVE_ORG=[],LIVE_ORG_STATE="idle",LIVE_ORG_ERROR="",LIVE_ORG_RESULT="";
 function mkC(ad,ilce,yat,stage,o={}){
   const slugIlce=SL(ilce);
   const c={id:UID++,ad,ilce,bolge:BOLGELER[slugIlce]||"Diğer",yat,kaynak:"Web",stage,
@@ -488,6 +489,11 @@ Bölgeler: ${[...new Set(ak.map(c=>c.bolge))].join(", ")||"-"}</div>
     </div>
   </div>`;
 }
+const ORG_DEPARTMENTS=[['franchise','Franchise','Franchise Sorumlusu'],['finance','Finans','Finans Sorumlusu'],['accounting','Muhasebe','Muhasebe Sorumlusu'],['legal','Hukuk','Hukuk Sorumlusu'],['hr','İnsan Kaynakları','İK Sorumlusu'],['academy','Academy','Academy Sorumlusu'],['operations','Operasyon','Operasyon Sorumlusu'],['procurement','Tedarik','Tedarik Sorumlusu'],['it','Bilgi Teknolojileri','BT Sorumlusu'],['marketing','Pazarlama','Pazarlama Sorumlusu'],['quality','Kalite','Kalite Sorumlusu'],['ohs','İSG','İSG Sorumlusu'],['architecture','Mimari / Proje','Mimari / Proje Sorumlusu']];
+function organizasyon(){
+  const primary=new Map(LIVE_ORG.filter(x=>x.assignment_level==='primary_responsible'&&x.is_active).map(x=>[x.department_code,x])),subordinates=LIVE_ORG.filter(x=>x.assignment_level==='subordinate'&&x.is_active),assigned=primary.size,status=LIVE_ORG_STATE==='loading'?'Staging organizasyonu yükleniyor…':LIVE_ORG_STATE==='error'?LIVE_ORG_ERROR:LIVE_ORG_STATE==='loaded'?`Staging bağlantısı doğrulandı · ${assigned}/13 ana sorumlu`:'ERP Supabase oturumuyla staging sorumluluklarını yükleyin.';
+  return`<div class="safe-note"><b>Organizasyon ilkesi:</b> Her departmanda bir aktif ana sorumlu bulunur. Alt personel daha sonra aynı sorumlunun altına eklenir; ekran rolü veritabanı yetkisi vermez.</div><div class="g4"><div class="card stat"><b>${assigned}/13</b><s2>Atanmış ana sorumlu</s2></div><div class="card stat"><b>${subordinates.length}</b><s2>Alt personel</s2></div><div class="card stat"><b class="${LIVE_ORG_STATE==='loaded'?'ok':'wn'}">${LIVE_ORG_STATE==='loaded'?'BAĞLI':'BEKLİYOR'}</b><s2>Staging RLS</s2></div><div class="card stat"><b>GM</b><s2>Ana atama yetkisi</s2></div></div><div class="al ${LIVE_ORG_STATE==='error'?'r':LIVE_ORG_STATE==='loaded'?'ok':''}">${H(status)}</div>${LIVE_ORG_RESULT?`<div class="al ok">${H(LIVE_ORG_RESULT)}</div>`:''}<div class="row"><button class="btn" data-org-load ${LIVE_ORG_STATE==='loading'?'disabled':''}>Staging sorumluluklarını yükle</button><span class="mu">Kimlik ve iletişim bilgileri listede gösterilmez.</span></div><div class="dept-grid">${ORG_DEPARTMENTS.map(([code,label,title])=>{const owner=primary.get(code),childCount=subordinates.filter(x=>x.department_code===code).length;return`<div class="dept-card"><h2>${owner?'<span class="ok">✓</span>':'<span class="wn">●</span>'} ${H(label)}</h2><p>${H(title)}</p><div class="approval"><span>Ana sorumlu</span><b class="${owner?'ok':'wn'}">${owner?'Atandı':'Atanmadı'}</b></div><div class="approval"><span>Alt personel</span><b>${childCount}</b></div><small class="mu">${owner?`Atama: ${H(String(owner.created_at||'').slice(0,10)||'—')}`:'Genel Müdür ataması bekleniyor'}</small></div>`}).join('')}</div>${R()==='gm'?`<div class="card"><h2>Ana departman sorumlusu ata</h2><p class="nt">Yalnız staging kullanıcı UUID’si kabul edilir. Aynı departmana ikinci aktif sorumlu veritabanında reddedilir.</p><div class="cols"><label>Departman<select id="org-department">${ORG_DEPARTMENTS.filter(x=>!primary.has(x[0])).map(x=>`<option value="${H(x[0])}">${H(x[1])}</option>`).join('')}</select></label><label>Kullanıcı UUID’si<input id="org-user" autocomplete="off" placeholder="00000000-0000-4000-8000-000000000000"></label><label>Atama notu<input id="org-note" autocomplete="off" maxlength="500" placeholder="En az 10 karakter gerekçe"></label></div><button class="btn" data-org-assign ${LIVE_ORG_STATE!=='loaded'||assigned===13?'disabled':''}>Ana sorumluyu ata</button></div>`:'<div class="al">Atama işlemi yalnız Genel Müdürün gerçek ERP oturumuyla yapılabilir.</div>'}`;
+}
 function yetki(){
   const ekr=NAV.filter(n=>n[0]&&n[0].length>0&&!n[0].startsWith("_"));
   return`<div class="cols">
@@ -514,7 +520,7 @@ function denetim(){
 function model(){
   return`<div class="cols">
     <div class="card"><h2>Yaşam döngüsü ve kapı kuralları</h2><ul class="ul">
-      <li><b>Yeni → Görüşme:</b> Uzman/Direktör başlatır, SLA 3 gün</li>
+      <li><b>Yeni → Görüşme:</b> Franchise Sorumlusu başlatır, SLA 3 gün</li>
       <li><b>Görüşme → Onay:</b> skor ≥60 + görüşme formu tam</li>
       <li><b>Onay → Sözleşme:</b> 4 adım sırayla (Franchise Sorumlusu→Hukuk→Finans Sorumlusu→Genel Müdür)</li>
       <li><b>Sözleşme → Onboarding:</b> tüm belgeler + e-imza + ilk ödeme</li>
@@ -768,7 +774,7 @@ Madde 12: Münhasır bölge ihlali halinde sözleşme feshedilir.</div>
   ${c.hist.slice(0,10).map(x=>`<div class="al">${H(x)}</div>`).join("")}`;
 }
 /* ══ RENDER ══ */
-const VIEWS={e2e,skorlama,departman,personel,acilis,takip,portallar,dash,hat,inbox,"web-kuyruk":webKuyruk,pipe,gor,belge,sube,web,paket,fin,rapor,yayin,yetki,denetim,model};
+const VIEWS={e2e,skorlama,departman,personel,acilis,takip,portallar,dash,hat,inbox,"web-kuyruk":webKuyruk,pipe,gor,belge,sube,web,paket,fin,rapor,organizasyon,yayin,yetki,denetim,model};
 function render(){
   const perm=PERM[R()].split(" ");
   if(!perm.includes(CUR))CUR=perm[0]||"portallar";
@@ -820,6 +826,8 @@ document.addEventListener("click",async ev=>{
   if(ev.target===$("mo")){SEL=null;render();return}
   const demoRehearsal=ev.target.closest("[data-demo-rehearsal]");if(demoRehearsal){DEMO_REHEARSAL=runFranchiseDemoRehearsal();render();return}
   const demoIntakeStart=ev.target.closest("[data-demo-intake-start]");if(demoIntakeStart){const item=DEMO_WEB_QUEUE.find(x=>x.source_application_id===demoIntakeStart.dataset.demoIntakeStart);if(item){const budgetLabels={under_5m:"5 milyon TL altı",'5m_10m':"5–10 milyon TL",'10m_20m':"10–20 milyon TL",over_20m:"20 milyon TL üzeri"};const candidate=mkC(`Sentetik Web Adayı · ${item.source_application_id}`,item.district||item.province||"Demo",budgetLabels[item.budget_band]||"Demo bütçe",0,{kaynak:"Web demo formu",hist:[`${DL()} · Web başvurusu izin kontrolünden geçerek aday dosyasına dönüştürüldü`],gnot:item.source_application_id});C.unshift(candidate);DEMO_WEB_QUEUE=removeDemoIntake(item.source_application_id);LIVE_QUEUE_RESULT=`Demo aday dosyası oluşturuldu: FR-DEMO-${candidate.id}`;CUR="pipe";SEL=candidate.id;render()}return}
+  const orgLoad=ev.target.closest("[data-org-load]");if(orgLoad){LIVE_ORG_STATE="loading";LIVE_ORG_ERROR="";LIVE_ORG_RESULT="";render();try{LIVE_ORG=await franchiseLiveClient.listDepartmentResponsibilities();LIVE_ORG_STATE="loaded"}catch(e){LIVE_ORG=[];LIVE_ORG_STATE="error";LIVE_ORG_ERROR=e.message}render();return}
+  const orgAssign=ev.target.closest("[data-org-assign]");if(orgAssign){const departmentCode=$("org-department")?.value,userId=$("org-user")?.value.trim(),note=$("org-note")?.value.trim();if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(userId||'')||String(note||'').length<10){LIVE_ORG_STATE="error";LIVE_ORG_ERROR="Geçerli kullanıcı UUID’si ve en az 10 karakter atama notu zorunludur.";render();return}LIVE_ORG_STATE="loading";LIVE_ORG_ERROR="";render();try{await franchiseLiveClient.assignPrimaryDepartmentOwner({departmentCode,userId,note});LIVE_ORG=await franchiseLiveClient.listDepartmentResponsibilities();LIVE_ORG_STATE="loaded";LIVE_ORG_RESULT="Ana departman sorumlusu staging üzerinde atandı."}catch(e){LIVE_ORG_STATE="error";LIVE_ORG_ERROR=e.message}render();return}
   const liveRefresh=ev.target.closest("[data-live-refresh]");if(liveRefresh){LIVE_QUEUE_STATE="loading";LIVE_QUEUE_ERROR="";LIVE_QUEUE_RESULT="";render();try{LIVE_QUEUE=await franchiseLiveClient.listQueue();LIVE_QUEUE_STATE="loaded"}catch(e){LIVE_QUEUE=[];LIVE_QUEUE_STATE="error";LIVE_QUEUE_ERROR=e.message}render();return}
   const liveSelect=ev.target.closest("[data-live-select]");if(liveSelect){const item=LIVE_QUEUE.find(x=>x.source_application_id===liveSelect.dataset.liveSelect);if(item?.status==="ready_for_canonicalization"){LIVE_QUEUE_SELECTED=item.source_application_id;LIVE_QUEUE_RESULT=""}render();if(item){const values={"live-budget":item.budget_band,"live-equity":item.equity_band,"live-experience":item.management_experience_years,"live-sector":item.sector_experience,"live-company":item.company_status,"live-location":item.location_status,"live-partnership":item.partnership_structure};for(const[id,value]of Object.entries(values)){const field=$(id);if(field&&value!==null&&value!==undefined)field.value=String(value)}}return}
   const liveCancel=ev.target.closest("[data-live-cancel]");if(liveCancel){LIVE_QUEUE_SELECTED=null;LIVE_QUEUE_RESULT="";render();return}

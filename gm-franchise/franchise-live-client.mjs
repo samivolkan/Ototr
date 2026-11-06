@@ -16,6 +16,7 @@ function storedSession(){
   const native=parse(globalThis.localStorage?.getItem(`sb-${ref}-auth-token`)||globalThis.sessionStorage?.getItem(`sb-${ref}-auth-token`));
   return native?.currentSession||native?.session||native||null;
 }
+function tokenSubject(token){try{const raw=String(token||'').split('.')[1].replace(/-/g,'+').replace(/_/g,'/'),payload=JSON.parse(globalThis.atob(raw));return payload.sub||''}catch{return''}}
 async function browserSession(fetchImpl=fetch){
   const config=browserRuntimeConfig(),session=storedSession();
   if(session?.access_token&&(!session.expires_at||Number(session.expires_at)>Date.now()/1000+60||Number(session.expires_at)>Date.now()+60000))return session;
@@ -26,12 +27,14 @@ async function browserSession(fetchImpl=fetch){
   globalThis.localStorage?.setItem(SESSION_KEY,JSON.stringify(next));return next;
 }
 export function createFranchiseLiveClient({config=browserRuntimeConfig(),getSession=browserSession,fetchImpl=fetch}={}){
-  async function request(path,{method='GET',body}={}){
+  async function request(path,{method='GET',body,headers={}}={}){
     const session=await getSession(fetchImpl);if(!session?.access_token)throw new Error('ERP Supabase oturumu bulunamadı. Ana ERP ekranından giriş yapın.');
-    const response=await fetchImpl(`${config.url}${path}`,{method,headers:{apikey:config.key,Authorization:`Bearer ${session.access_token}`,'Content-Type':'application/json'},body});
+    const response=await fetchImpl(`${config.url}${path}`,{method,headers:{apikey:config.key,Authorization:`Bearer ${session.access_token}`,'Content-Type':'application/json',...headers},body});
     const result=await response.json().catch(()=>null);if(!response.ok)throw new Error(result?.message||result?.hint||'Franchise canlı işlemi tamamlanamadı.');return result;
   }
   const rpc=(name,payload={})=>request(`/rest/v1/rpc/${name}`,{method:'POST',body:JSON.stringify(payload)});
+  const listDepartmentResponsibilities=()=>request('/rest/v1/franchise_department_responsibilities?select=department_code,role_code,assignment_level,is_active,created_at&is_active=eq.true&order=department_code,assignment_level');
+  async function assignPrimaryDepartmentOwner({departmentCode,userId,note}){const session=await getSession(fetchImpl),actorId=String(session?.user?.id||tokenSubject(session?.access_token));if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(actorId))throw new Error('ERP oturum kullanıcı kimliği doğrulanamadı.');const roles={franchise:'franchise_director',finance:'finance',accounting:'accounting',legal:'legal',hr:'hr',academy:'academy',operations:'operations',procurement:'procurement',it:'it',marketing:'marketing',quality:'quality',ohs:'ohs',architecture:'architecture'},roleCode=roles[departmentCode];if(!roleCode)throw new Error('Departman kodu geçersiz.');return request('/rest/v1/franchise_department_responsibilities',{method:'POST',headers:{Prefer:'return=representation'},body:JSON.stringify({department_code:departmentCode,user_id:userId,role_code:roleCode,assignment_level:'primary_responsible',assigned_by:actorId,assignment_note:note})})}
   async function loadUat(releaseCandidate){
     const q=encodeURIComponent(releaseCandidate),[scenarios,results,signoffCatalog,signoffs,status]=await Promise.all([
       request('/rest/v1/franchise_uat_scenarios?select=scenario_code,title,owner_roles,reviewer_roles,expected_result&is_active=eq.true&order=scenario_code'),
@@ -45,7 +48,8 @@ export function createFranchiseLiveClient({config=browserRuntimeConfig(),getSess
     listQueue:()=>rpc('list_public_franchise_intake_queue'),canonicalize:(payload)=>rpc('canonicalize_public_franchise_application',payload),loadUat,
     submitUatResult:payload=>rpc('submit_franchise_uat_result',payload),
     reviewUatResult:payload=>rpc('review_franchise_uat_result',payload),
-    signUatRelease:payload=>rpc('sign_franchise_uat_release',payload)
+    signUatRelease:payload=>rpc('sign_franchise_uat_release',payload),
+    listDepartmentResponsibilities,assignPrimaryDepartmentOwner
   });
 }
 export const franchiseLiveClient=createFranchiseLiveClient();

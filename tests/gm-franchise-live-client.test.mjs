@@ -29,3 +29,14 @@ test('live UAT workspace reads governed records and writes only through command 
  assert.match(calls[5].url,/rpc\/submit_franchise_uat_result$/);assert.match(calls[6].url,/rpc\/review_franchise_uat_result$/);assert.match(calls[7].url,/rpc\/sign_franchise_uat_release$/);
  for(const call of calls.slice(5))assert.equal(call.options.method,'POST');
 });
+
+test('department owner workspace reads privacy-minimized rows and binds assignment to session actor',async()=>{
+ const calls=[],fetchImpl=async(url,options)=>{calls.push({url,options});return{ok:true,json:async()=>[]}},actor='11111111-1111-4111-8111-111111111111',owner='22222222-2222-4222-8222-222222222222';
+ const client=createFranchiseLiveClient({config:{url:'https://project.supabase.co',key:'publishable'},getSession:async()=>({access_token:'session-token',user:{id:actor}}),fetchImpl});
+ await client.listDepartmentResponsibilities();assert.match(calls[0].url,/select=department_code,role_code,assignment_level,is_active,created_at/);assert.doesNotMatch(calls[0].url,/user_id/);
+ await client.assignPrimaryDepartmentOwner({departmentCode:'finance',userId:owner,note:'Sentetik finans sorumlusu ataması'});const sent=JSON.parse(calls[1].options.body);assert.deepEqual(sent,{department_code:'finance',user_id:owner,role_code:'finance',assignment_level:'primary_responsible',assigned_by:actor,assignment_note:'Sentetik finans sorumlusu ataması'});assert.equal(calls[1].options.headers.Prefer,'return=representation');
+});
+
+test('department owner assignment fails closed without a valid session actor or department',async()=>{
+ const client=createFranchiseLiveClient({config:{url:'https://project.supabase.co',key:'publishable'},getSession:async()=>({access_token:'bad-token'}),fetchImpl:async()=>{throw new Error('network must not run')}});await assert.rejects(()=>client.assignPrimaryDepartmentOwner({departmentCode:'finance',userId:'22222222-2222-4222-8222-222222222222',note:'Sentetik finans sorumlusu ataması'}),/oturum kullanıcı kimliği/);
+});
