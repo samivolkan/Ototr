@@ -127,4 +127,11 @@ Hedef: Supabase `ototr-staging` (`bsjkohwbtrfwrqcyhsfz`), PostgreSQL 17.6.
 - GM JWT ile 13/13 departman döndü. Finans/Muhasebe için `1`, Operasyon/Tedarik/İSG/Mimari için `2` uygun aday; Academy, Franchise, İK, BT, Hukuk, Pazarlama ve Kalite için `0` uygun aday bulundu.
 - Aynı kişi yalnız bir departmana atanabildiğinden, departmanda aday görünmesi kadronun tamamlandığı anlamına gelmez; atomik işlem hâlâ 13 farklı rol-uyumlu kullanıcı ister.
 
+## Rol bazlı kesin kadro açığı — 2026-11-06
+
+- `franchise_role_staffing_gap_summary` migration'ı staging'e uygulandı. RPC, aynı ERP rolünü paylaşan departmanların koltuklarını ve farklı uygun kişileri ayrı ayrı sayar.
+- Hosted sonuçta gereken toplam koltuk `13`, mevcut farklı rol-uyumlu kişi `3`, eksik kişi `10` bulundu.
+- Eksik dağılımı: `OPERATIONS=2`; `FINANCE`, `ACADEMY_MANAGER`, `FRANCHISE_SALES`, `HR`, `LEGAL`, `MARKETING`, `QUALITY_AUDITOR` ve `SUPPORT_AGENT` rollerinin her biri `1`.
+- RPC `SECURITY INVOKER`; `anon EXECUTE=false`, `authenticated EXECUTE=true`, `service_role EXECUTE=true`. Kişi adı, e-posta, telefon veya kullanıcı kimliği dönmez.
+
 Bu doğrulama staging şema kurulumu ve rollback kabiliyetini kanıtlar. Gerçek ERP/sağlayıcı uçları, departman UAT imzaları, yayın penceresi ve kullanıcı canlı onayı ayrıca gereklidir. Yayın kararı `NO_GO` kalır.

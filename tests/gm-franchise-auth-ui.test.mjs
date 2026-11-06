@@ -18,11 +18,15 @@ test('organization filters and validates candidates by authoritative department 
 });
 test('organization proves a distinct role-compatible candidate exists for every department',()=>{
  assert.match(html,/function hasCompleteOrgRoster\(\)/);assert.match(html,/sort\(\(a,b\)=>a\.length-b\.length\)/);
- assert.match(html,/used\.has\(userId\)/);assert.match(html,/13 departmanın her birine farklı ve rol-uyumlu/);
+ assert.match(html,/used\.has\(userId\)/);assert.match(html,/hasCompleteOrgRoster\(\)/);
  assert.match(html,/Rol kapsamı:/);assert.match(html,/orgCandidatesFor\(singleDepartment\)/);
  assert.match(html,/t\.id==='org-department'/);
 });
 test('organization loads the authoritative department and ERP role staffing report',()=>{
  assert.match(html,/listDepartmentStaffingRequirements\(\)/);assert.match(html,/LIVE_ORG_REQUIREMENTS/);
  assert.match(html,/requirement\?\.erp_role/);assert.match(html,/requirement\?\.eligible_candidate_count/);
+});
+test('organization shows the exact role seat deficit instead of double counting shared candidates',()=>{
+ assert.match(html,/listRoleStaffingGaps\(\)/);assert.match(html,/LIVE_ORG_ROLE_GAPS/);
+ assert.match(html,/missingSeats/);assert.match(html,/yeni rol-uyumlu ERP hesabı gerekiyor/);assert.match(html,/roleGapSummary/);
 });

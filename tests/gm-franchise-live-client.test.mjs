@@ -66,6 +66,12 @@ test('department staffing requirements are loaded through the authenticated GM R
  const rows=await client.listDepartmentStaffingRequirements();assert.equal(rows[0].erp_role,'FINANCE');assert.match(calls[0].url,/rpc\/list_franchise_department_staffing_requirements$/);assert.equal(calls[0].options.headers.Authorization,'Bearer session-token');
 });
 
+test('role staffing gaps are loaded without personal data fields',async()=>{
+ const calls=[],fetchImpl=async(url,options)=>{calls.push({url,options});return{ok:true,json:async()=>[{erp_role:'FINANCE',required_seats:2,eligible_candidate_count:1,missing_seats:1}]}};
+ const client=createFranchiseLiveClient({config:{url:'https://project.supabase.co',key:'publishable'},getSession:async()=>({access_token:'session-token'}),fetchImpl});
+ const rows=await client.listRoleStaffingGaps();assert.equal(rows[0].missing_seats,1);assert.match(calls[0].url,/rpc\/list_franchise_role_staffing_gaps$/);assert.doesNotMatch(JSON.stringify(rows),/email|phone|full_name/i);
+});
+
 test('thirteen-owner roster is submitted through one atomic RPC',async()=>{
  const calls=[],actor='11111111-1111-4111-8111-111111111111',roster=Array.from({length:13},(_,i)=>({department_code:'department-'+i,user_id:`00000000-0000-4000-8000-${String(i).padStart(12,'0')}`,assignment_note:'Sentetik toplu kadro atama notu'}));
  const client=createFranchiseLiveClient({
