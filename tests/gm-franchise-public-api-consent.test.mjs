@@ -57,6 +57,15 @@ test('canonical live intake is bound to a release commit and rollback reference'
   assert.match(franchiseHandler,/Rollback referansı zorunludur/);
 });
 
+test('live franchise profile codes fail with HTTP 400 before PostgreSQL constraints',()=>{
+  const franchiseHandler=source.match(/async function createFranchise[\s\S]*?async function createComplaint/)?.[0]??'';
+  for(const field of ['equityBand','sectorExperience','companyStatus','partnershipStructure','hasLocation'])assert.match(source,new RegExp(`${field}: new Set`));
+  assert.match(source,/validateLiveFranchiseProfile\(payload\)/);
+  assert.match(franchiseHandler,/if \(profileError\) return json\(req, \{ ok: false, error: profileError \}, 400\)/);
+  assert.match(source,/Yönetim deneyimi 0-80 arasında tam sayı olmalıdır/);
+  assert.match(source,/Franchise profil alanı geçersiz/);
+});
+
 test('commercial communication remains a separate optional franchise decision',()=>{
   const leadValidator=source.match(/function validateLead[\s\S]*?function validateContact/)?.[0]??'';
   assert.match(leadValidator,/!payload\.kvkk_consent/);

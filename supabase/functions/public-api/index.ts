@@ -123,6 +123,26 @@ function validateContact(payload: ReturnType<typeof commonPayload>): string | nu
   return null;
 }
 
+const franchiseProfileCatalog = {
+  equityBand: new Set(["under_3m", "3m_7m", "7m_15m", "over_15m"]),
+  sectorExperience: new Set(["none", "automotive", "service", "retail", "multi_sector"]),
+  companyStatus: new Set(["none", "sole_proprietor", "limited", "joint_stock", "other"]),
+  partnershipStructure: new Set(["single", "family", "corporate", "multi_partner"]),
+  hasLocation: new Set(["none", "searching", "candidate_found", "owned", "leased"]),
+};
+
+function validateLiveFranchiseProfile(payload: Record<string, unknown>): string | null {
+  for (const [field, allowed] of Object.entries(franchiseProfileCatalog)) {
+    if (!allowed.has(cleanText(payload[field], 80))) return `Franchise profil alanı geçersiz: ${field}`;
+  }
+  const yearsText = cleanText(payload.managementExperienceYears, 3);
+  const years = Number(yearsText);
+  if (!/^\d{1,2}$/.test(yearsText) || !Number.isInteger(years) || years < 0 || years > 80) {
+    return "Yönetim deneyimi 0-80 arasında tam sayı olmalıdır.";
+  }
+  return null;
+}
+
 async function body(req: Request): Promise<Record<string, unknown>> {
   const parsed = await req.json().catch(() => null);
   return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed as Record<string, unknown> : {};
@@ -198,6 +218,10 @@ async function createFranchise(req: Request): Promise<Response> {
   }
   if (liveSource && !/^revert:[a-f0-9]{40}$/.test(rollbackReference)) {
     return json(req, { ok: false, error: "Rollback referansı zorunludur." }, 400);
+  }
+  if (liveSource) {
+    const profileError = validateLiveFranchiseProfile(payload);
+    if (profileError) return json(req, { ok: false, error: profileError }, 400);
   }
   if (versionedConsent && (!hasProcessingDecision || !cleanBool(payload.processingConsent))) {
     return json(req, { ok: false, error: "Veri işleme izni zorunludur." }, 400);
