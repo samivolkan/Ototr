@@ -66,6 +66,17 @@ test('live franchise profile codes fail with HTTP 400 before PostgreSQL constrai
   assert.match(source,/Franchise profil alanı geçersiz/);
 });
 
+test('live franchise persistence minimizes raw payload, metadata and UTM values',()=>{
+  const franchiseHandler=source.match(/async function createFranchise[\s\S]*?async function createComplaint/)?.[0]??'';
+  assert.match(source,/function minimizedLiveFranchiseCommon/);
+  assert.match(source,/\["source", "medium", "campaign", "content", "term"\]/);
+  assert.match(source,/payload: \{ schemaVersion: 1, deploymentIdentity, rollbackReference \}/);
+  assert.match(source,/request_meta: \{ origin: common\.request_meta\.origin \}/);
+  assert.match(franchiseHandler,/const persistedCommon = liveSource/);
+  assert.match(franchiseHandler,/\.\.\.persistedCommon/);
+  assert.doesNotMatch(source,/payload: \{ schemaVersion: 1, deploymentIdentity, rollbackReference, fullName/);
+});
+
 test('commercial communication remains a separate optional franchise decision',()=>{
   const leadValidator=source.match(/function validateLead[\s\S]*?function validateContact/)?.[0]??'';
   assert.match(leadValidator,/!payload\.kvkk_consent/);

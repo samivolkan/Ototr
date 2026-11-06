@@ -143,6 +143,25 @@ function validateLiveFranchiseProfile(payload: Record<string, unknown>): string 
   return null;
 }
 
+function minimizedLiveFranchiseCommon(
+  common: ReturnType<typeof commonPayload>,
+  deploymentIdentity: string,
+  rollbackReference: string,
+) {
+  const sourceUtm = common.utm as Record<string, unknown>;
+  const utm = Object.fromEntries(
+    ["source", "medium", "campaign", "content", "term"]
+      .map((key) => [key, cleanText(sourceUtm?.[key], 120)])
+      .filter(([, value]) => Boolean(value)),
+  );
+  return {
+    ...common,
+    utm,
+    payload: { schemaVersion: 1, deploymentIdentity, rollbackReference },
+    request_meta: { origin: common.request_meta.origin },
+  };
+}
+
 async function body(req: Request): Promise<Record<string, unknown>> {
   const parsed = await req.json().catch(() => null);
   return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed as Record<string, unknown> : {};
@@ -223,6 +242,9 @@ async function createFranchise(req: Request): Promise<Response> {
     const profileError = validateLiveFranchiseProfile(payload);
     if (profileError) return json(req, { ok: false, error: profileError }, 400);
   }
+  const persistedCommon = liveSource
+    ? minimizedLiveFranchiseCommon(common, deploymentIdentity, rollbackReference)
+    : common;
   if (versionedConsent && (!hasProcessingDecision || !cleanBool(payload.processingConsent))) {
     return json(req, { ok: false, error: "Veri işleme izni zorunludur." }, 400);
   }
@@ -230,7 +252,7 @@ async function createFranchise(req: Request): Promise<Response> {
   const { data, error: insertError } = await supabase
     .from("public_franchise_applications")
     .insert({
-      ...common,
+      ...persistedCommon,
       processing_consent: hasProcessingDecision
         ? cleanBool(payload.processingConsent)
         : null,
