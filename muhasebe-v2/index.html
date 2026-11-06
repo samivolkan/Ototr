@@ -1034,7 +1034,15 @@ button,input,select,textarea{font:inherit}.app{min-height:100vh;display:grid;gri
           </main>
         </div>
       </section>
+<section hidden data-finance-settlement-demo aria-label="Staging tahsilat ve iade denemesi">
+  <h2>Staging tahsilat ve iade denemesi</h2>
+  <button type="button" value="collection-600">600 TL demo tahsilat</button>
+  <button type="button" value="collection-400">400 TL demo tahsilat</button>
+  <button type="button" value="refund-200">200 TL demo iade</button>
+  <output aria-live="polite"></output>
+</section>
 <script src="assets/finance-ui.js"></script>
+<script type="module" src="assets/finance-settlement-demo.mjs"></script>
 <script>
   window.OTOTRDealerFinanceAuth = Object.freeze({
     getConfig() {
