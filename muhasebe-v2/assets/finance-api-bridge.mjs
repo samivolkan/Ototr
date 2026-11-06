@@ -240,14 +240,49 @@ if (auth && ui) {
       return null;
     }
   };
+  async function showRoyaltyBalance(scope) {
+    const output = document.querySelector('[data-finance-royalty-balance]');
+    if (!output) return;
+    output.textContent = 'Güncel royalty bakiyesi yükleniyor.';
+    try {
+      const {url, publishableKey} = auth.getConfig();
+      const token = await auth.getAccessToken();
+      if (!token) throw new Error('AUTH_REQUIRED');
+      const response = await fetch(new URL('/rest/v1/rpc/get_royalty_open_balance', url), {
+        method: 'POST',
+        headers: {
+          apikey: publishableKey,
+          Authorization: 'Bearer ' + token,
+          'Content-Type': 'application/json',
+          'Content-Profile': 'finance_api'
+        },
+        body: JSON.stringify({
+          p_legal_entity_id: scope.legalEntityId,
+          p_dealer_account_id: scope.dealerAccountId,
+          p_branch_id: scope.branchId
+        })
+      });
+      if (!response.ok) throw new Error('ROYALTY_BALANCE_UNAVAILABLE');
+      const {currency, openDebitGrossAmount, availableCreditGrossAmount, netGrossAmount} = await response.json();
+      const format = new Intl.NumberFormat('tr-TR', {style: 'currency', currency, maximumFractionDigits: 8});
+      output.textContent = 'Güncel net royalty ' + format.format(netGrossAmount) +
+        ' · Açık borç ' + format.format(openDebitGrossAmount) +
+        ' · Kullanılabilir iade kredisi ' + format.format(availableCreditGrossAmount);
+    } catch {
+      output.textContent = 'Güncel royalty bakiyesi alınamadı.';
+    }
+  }
+
   const api = {
     refreshContext,
     async connect(scope, options = {}) {
+      void showRoyaltyBalance(scope);
       ui.setConnectionState('LOADING', 'Yetkili finans projectionı yükleniyor.');
       try {
         const result = await client.getDealerFinanceSummary(scope, options);
         connectedAsOf=result.data.asOf;
         ui.renderSummary(result.data, result.scope);
+
         for(const control of document.querySelectorAll('[data-finance-dealer-export],[data-finance-dealer-dispute]')){control.disabled=false;control.dataset.asOf=result.data.asOf;}
         const periodResult=await client.getCurrentFinancePeriod(scope,{asOf:result.data.asOf});
         ui.renderCurrentPeriod?.(periodResult.data);

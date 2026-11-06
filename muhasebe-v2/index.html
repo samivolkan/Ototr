@@ -776,6 +776,7 @@ button,input,select,textarea{font:inherit}.app{min-height:100vh;display:grid;gri
               <div class="finance-statement-table-wrap" data-finance-headquarters-ranking-table hidden><table class="finance-statement-table"><thead><tr><th>Bayi / şube</th><th>Tahakkuk</th><th>Tahsilat</th><th>Açık</th><th>Geciken</th></tr></thead><tbody data-finance-headquarters-ranking></tbody></table></div>
               <div class="finance-statement-state" data-finance-headquarters-empty>Yetkili genel merkez özeti bekleniyor.</div>
             </section>
+              <p class="finance-statement-state" data-finance-royalty-balance role="status">Güncel royalty bakiyesi bekleniyor.</p>
             <section class="finance-statement" data-finance-dealer-breakdown hidden aria-labelledby="financeDealerBreakdownTitle">
               <div class="finance-statement-head"><div><span class="finance-screen-code">BAYİ / ŞUBE PROJECTION</span><h3 id="financeDealerBreakdownTitle">Bayi Finans Kırılımı</h3><p>Bedeller, yalnız yetkili şube kapsamındaki kayıtlardan; şube karşılaştırması ise kullanıcının erişebildiği şubelerden üretilir.</p></div><div class="finance-statement-controls"><button class="btn" type="button" data-finance-dealer-export disabled>Yetkili Özet CSV</button><button class="btn" type="button" data-finance-dealer-dispute disabled>Açık Tahakkuktan İtiraz Başlat</button><span class="finance-state-chip" data-finance-dealer-breakdown-state>EMPTY · YETKİLİ VERİ BEKLENİYOR</span></div></div>
               <div class="finance-inline-note" data-finance-operational-contribution>Operasyonel katkı için ERP müşteri cirosu kaynağı bekleniyor; tahmini kazanç üretilmez.</div>
@@ -1033,7 +1034,15 @@ button,input,select,textarea{font:inherit}.app{min-height:100vh;display:grid;gri
           </main>
         </div>
       </section>
+<section hidden data-finance-settlement-demo aria-label="Staging tahsilat ve iade denemesi">
+  <h2>Staging tahsilat ve iade denemesi</h2>
+  <button type="button" value="collection-600">600 TL demo tahsilat</button>
+  <button type="button" value="collection-400">400 TL demo tahsilat</button>
+  <button type="button" value="refund-200">200 TL demo iade</button>
+  <output aria-live="polite"></output>
+</section>
 <script src="assets/finance-ui.js"></script>
+<script type="module" src="assets/finance-settlement-demo.mjs"></script>
 <script>
   window.OTOTRDealerFinanceAuth = Object.freeze({
     getConfig() {
@@ -1048,8 +1057,8 @@ button,input,select,textarea{font:inherit}.app{min-height:100vh;display:grid;gri
     }
   });
 </script>
-<script type="module" src="assets/finance-erp-session.mjs"></script>
-<script type="module" src="assets/finance-api-bridge.mjs"></script>
+<script type="module" src="assets/finance-erp-session.mjs?v=finance-auth-1"></script>
+<script type="module" src="assets/finance-api-bridge.mjs?v=royalty-balance-2"></script>
 <script type="module" src="assets/finance-command-bridge.mjs"></script>
 <script>
   const checkoutPreview = document.querySelector('[data-finance-card-checkout]');

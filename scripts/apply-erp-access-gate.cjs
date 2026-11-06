@@ -17,6 +17,10 @@ function walk(dir){for(const item of fs.readdirSync(dir,{withFileTypes:true})){
  if(item.isDirectory())walk(file);
  else if(item.isFile()&&/\.html?$/i.test(item.name)){
   const html=fs.readFileSync(file,'utf8');
+  if(file===path.join(root,'muhasebe-v2','index.html')){
+    if(!html.includes('assets/finance-erp-session.mjs'))throw new Error('Finance session gate is missing');
+    continue;
+  }
   if(html.includes(marker))continue;
   const updated=/<head(?:\s[^>]*)?>/i.test(html)?html.replace(/<head(?:\s[^>]*)?>/i,match=>match+'\n'+head):head+'\n'+html;
   fs.writeFileSync(file,updated);count++;
