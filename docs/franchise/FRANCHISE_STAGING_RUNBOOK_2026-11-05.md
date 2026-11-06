@@ -45,6 +45,14 @@ Worker yalnız POST ve doğru `x-franchise-worker-secret` başlığıyla çağr�
 
 `franchise-provider-worker` ayrıca deploy edilir. Kendi `FRANCHISE_PROVIDER_WORKER_SECRET` değeri departman worker secret'ından farklı olmalı; kanal bazlı URL/token secret'ları ve `FRANCHISE_PROVIDER_ALLOWED_HOSTS` yalnız staging sağlayıcı geçitlerini içermelidir. İşlenirken yarım kalan kayıtlar 15 dakika sonra lease-expired olarak geri alınır; 10 başarısız denemede dead-letter olur.
 
+Eksiksiz anahtar kataloğu `supabase/functions/.env.franchise.example` dosyasındadır. Bu dosya yalnız sahte `.example.invalid` adresleri ve yer tutucular içerir; secret dosyası olarak kullanılamaz. Gerçek staging değerleri repo dışında ayrı bir dosyada hazırlanır ve Supabase'e aktarılmadan önce şu salt-okunur kontrol çalıştırılır:
+
+```bash
+node gm-franchise/staging-integration-config.mjs --env /repo-disinda/franchise-staging.env
+```
+
+Kontrol 13 departman adaptörü ile e-posta, SMS, WhatsApp ve e-imza sağlayıcılarının tamamında HTTPS, açık host izin listesi, güçlü ve birbirinden farklı worker secret'ları ve yer tutucu olmayan token ister. Çıktıda URL, token veya secret değerleri gösterilmez. `valid: true` alınmadan secrets yüklenmez, scheduler etkinleştirilmez ve G12 kabul probe'ları başlatılmaz.
+
 Supabase HTTP API'lerinde eski TLS 1.2 cipher kümelerinin 10 Kasım 2026'dan itibaren kaldırılacağı duyuruldu. Seçilecek sağlayıcı geçitlerinin modern TLS yapılandırması staging ağ testinde doğrulanmalı; eski cipher bağımlılığı G09'u kapalı tutar.
 
 ## 4. Zorunlu staging senaryoları
