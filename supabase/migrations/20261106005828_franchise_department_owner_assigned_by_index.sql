@@ -1,0 +1,2 @@
+create index if not exists franchise_department_responsibilities_assigned_by_idx
+on public.franchise_department_responsibilities(assigned_by);
