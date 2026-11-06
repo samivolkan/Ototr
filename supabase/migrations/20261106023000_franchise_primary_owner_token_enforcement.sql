@@ -1,5 +1,26 @@
 -- Fail closed: central Franchise roles enter JWT only for the one active department owner.
 -- Legacy role names remain accepted for compatibility, but do not create a second actor.
+do $$
+declare
+  v_department text;
+begin
+  foreach v_department in array array[
+    'franchise','finance','accounting','legal','hr','academy','operations',
+    'procurement','it','marketing','quality','ohs','architecture'
+  ] loop
+    if not exists(
+      select 1
+      from public.franchise_department_responsibilities r
+      where r.department_code=v_department
+        and r.assignment_level='primary_responsible'
+        and r.is_active
+    ) then
+      raise exception 'Ana sorumlu token kapısı etkinleştirilemez: % departmanı atanmamış',v_department;
+    end if;
+  end loop;
+end
+$$;
+
 create or replace function app_private.franchise_has_active_primary_assignment(
   p_user_id uuid,
   p_role text
@@ -7,7 +28,7 @@ create or replace function app_private.franchise_has_active_primary_assignment(
 returns boolean
 language sql
 stable
-security definer
+security invoker
 set search_path=''
 as $$
   select case
@@ -43,6 +64,12 @@ $$;
 
 revoke all on function app_private.franchise_has_active_primary_assignment(uuid,text) from public,anon,authenticated;
 grant execute on function app_private.franchise_has_active_primary_assignment(uuid,text) to supabase_auth_admin,service_role;
+
+grant select on public.franchise_department_responsibilities to supabase_auth_admin;
+create policy franchise_department_responsibility_auth_hook_select
+on public.franchise_department_responsibilities
+for select to supabase_auth_admin
+using(true);
 
 create or replace function public.franchise_custom_access_token_hook(event jsonb)
 returns jsonb

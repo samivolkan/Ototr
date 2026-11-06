@@ -18,6 +18,7 @@ drop table if exists app_private.franchise_provider_schedule_config;
 drop function if exists app_private.dispatch_franchise_outbox();
 drop table if exists app_private.franchise_outbox_schedule_config;
 drop policy if exists franchise_department_responsibility_update on public.franchise_department_responsibilities;
+drop policy if exists franchise_department_responsibility_auth_hook_select on public.franchise_department_responsibilities;
 drop policy if exists franchise_department_responsibility_insert on public.franchise_department_responsibilities;
 drop policy if exists franchise_department_responsibility_select on public.franchise_department_responsibilities;
 drop trigger if exists franchise_department_responsibility_guard_trigger on public.franchise_department_responsibilities;

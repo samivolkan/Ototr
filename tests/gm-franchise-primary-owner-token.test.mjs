@@ -7,8 +7,16 @@ const migration=await readFile(new URL('supabase/migrations/20261106023000_franc
 const acceptance=await readFile(new URL('supabase/ops/franchise-primary-owner-token-acceptance.sql',root),'utf8');
 
 test('central JWT roles require the single active primary department assignment',()=>{
+  for(const department of ['franchise','finance','accounting','legal','hr','academy','operations','procurement','it','marketing','quality','ohs','architecture']){
+    assert.match(migration,new RegExp(`'${department}'`,'i'));
+  }
+  assert.match(migration,/Ana sorumlu token kapısı etkinleştirilemez/i);
   assert.match(migration,/assignment_level='primary_responsible'/i);
   assert.match(migration,/r\.is_active/i);
+  assert.match(migration,/security invoker/i);
+  assert.doesNotMatch(migration,/security definer/i);
+  assert.match(migration,/grant select on public\.franchise_department_responsibilities to supabase_auth_admin/i);
+  assert.match(migration,/for select to supabase_auth_admin[\s\S]*using\(true\)/i);
   assert.match(migration,/when 'franchise_director' then 'franchise'/i);
   assert.match(migration,/when 'franchise_specialist' then 'franchise'/i);
   for(const role of ['finance','accounting','legal','hr','academy','operations','procurement','it','marketing','quality','ohs','architecture']){

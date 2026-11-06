@@ -82,4 +82,13 @@ Hedef: Supabase `ototr-staging` (`bsjkohwbtrfwrqcyhsfz`), PostgreSQL 17.6.
 
 ## Sınır
 
+## Tek ana sorumlu token kapısı — 2026-11-06
+
+- `ototr-staging` migration geçmişinde `franchise_single_department_owners` ve atanmış-kullanıcı indeks migration'ı bulundu; sorumluluk tablosu ile mevcut Auth hook doğrulandı.
+- Salt-okunur hosted sorguda sorumluluk kaydı `0`, aktif ana sorumlu `0/13` bulundu. Kişi kimliği veya gerçek ERP kullanıcı UUID'si uydurulmadı.
+- Bu durumda yeni token kapısını etkinleştirmek merkez kullanıcılarını kilitleyeceği için migration staging'e uygulanmadı.
+- `20261106023000_franchise_primary_owner_token_enforcement.sql`, 13 departmanın her birinde aktif ana sorumlu bulunmadan ilk adımda transaction'ı durduracak şekilde sertleştirildi.
+- Hook ve sorumluluk tablosu erişimi Supabase Auth Hook kuralına göre `SECURITY INVOKER`, yalnız `supabase_auth_admin` SELECT/EXECUTE izni ve ayrı RLS politikasıyla tanımlandı; `anon` ve `authenticated` doğrudan çağrı yetkisi almaz.
+- Kalan dış bağımlılık: Genel Müdürün gerçek staging kullanıcı UUID'leriyle 13 ana sorumluyu ataması. Bu roster tamamlanmadan token enforcement migration'ı ve kullanıcı oturum yenileme kabulü çalıştırılmayacaktır.
+
 Bu doğrulama staging şema kurulumu ve rollback kabiliyetini kanıtlar. Gerçek ERP/sağlayıcı uçları, departman UAT imzaları, yayın penceresi ve kullanıcı canlı onayı ayrıca gereklidir. Yayın kararı `NO_GO` kalır.
