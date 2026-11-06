@@ -728,9 +728,38 @@ button,input,select,textarea{font:inherit}.app{min-height:100vh;display:grid;gri
             <span class="finance-context-status" data-finance-context-status>KAPSAM BEKLENİYOR</span>
             <button class="btn primary" type="button" data-finance-connect disabled>Yetkili Veriyi Getir</button>
             <span class="finance-environment-badge" data-finance-environment>ADAY UI · LIVE BAĞLANTI KAPALI</span>
+            <a class="btn" href="?walkthrough=1#financeWalkthrough">Şube finans demosu</a>
             <a class="btn" href="../index.html#dashboard">ERP Kokpitine Dön</a>
           </div>
         </div>
+        <section id="financeWalkthrough" class="finance-statement" hidden aria-labelledby="financeWalkthroughTitle">
+          <div class="finance-statement-head">
+            <div>
+              <span class="finance-screen-code">SİMÜLASYON · SCOPE-B2</span>
+              <h2 id="financeWalkthroughTitle">Şube tahsilatından royalty ödemesine</h2>
+              <p>Örnek kayıtlarla çalışır. Demo işlemleri yalnızca bu panelde görünür.</p>
+            </div>
+            <a class="btn" href="./">Demoyu kapat</a>
+          </div>
+          <div class="finance-statement-controls">
+            <button type="button" class="btn" data-demo-back disabled>Önceki adım</button>
+            <button type="button" class="btn primary" data-demo-next>600 TL müşteri tahsilatı</button>
+            <span class="finance-state-chip" data-demo-step>0 / 6</span>
+          </div>
+          <p class="finance-statement-state" role="status" data-demo-status></p>
+          <div class="finance-statement-table-wrap">
+            <table class="finance-statement-table">
+              <caption>Royalty hareketleri · brüt müşteri tutarı üzerinden %10 + %20 demo KDV</caption>
+              <thead><tr><th scope="col">İşlem</th><th scope="col">Müşteri tutarı</th><th scope="col">Royalty</th><th scope="col">Demo KDV</th><th scope="col">Royalty toplamı</th></tr></thead>
+              <tbody data-demo-ledger></tbody>
+            </table>
+          </div>
+          <dl class="finance-period-grid" aria-label="Fatura ve bakiye özeti">
+            <div><dt>Şubenin net müşteri tahsilatı</dt><dd data-demo-cash>—</dd></div>
+            <div><dt>Fatura takibi · DEMO-F-001</dt><dd data-demo-invoice>Fatura yok</dd></div>
+            <div><dt>Merkezin açık royalty alacağı</dt><dd data-demo-open>—</dd></div>
+          </dl>
+        </section>
         <div class="finance-safety-banner" role="status">
           <strong>Finansal veri kaynağı bağlı değil.</strong>
           <span>Bu ekran demo rakam üretmez. Tutarlar yalnız yetkili finans API’si, doğrulanmış kullanıcı oturumu ve şube kapsamı sağlandığında gösterilir.</span>
@@ -1042,6 +1071,7 @@ button,input,select,textarea{font:inherit}.app{min-height:100vh;display:grid;gri
   <output aria-live="polite"></output>
 </section>
 <script src="assets/finance-ui.js"></script>
+<script type="module" src="assets/finance-walkthrough.mjs"></script>
 <script type="module" src="assets/finance-settlement-demo.mjs"></script>
 <script>
   window.OTOTRDealerFinanceAuth = Object.freeze({
