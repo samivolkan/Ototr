@@ -41,7 +41,7 @@ Canlı site kaynak deposu bulunduğunda uygulanacak iki bağımsız parça hazı
 - `franchise-basvuru/live-form-consent-fragment.html`: mevcut form içine eklenecek, aydınlatma teyidi ve veri işleme iznini zorunlu; ticari ileti kararını isteğe bağlı tutan üç ayrı alan.
 - `franchise-basvuru/live-franchise-adapter.mjs`: mevcut `name`, `phone`, `city`, `district`, `budget`, `experience`, `company`, `location_status`, `area`, `timeline` ve `message` alanlarını sürümlü Edge sözleşmesine dönüştürür. Yalnız tam Supabase Franchise Edge URL'sini kabul eder; endpoint veya KVKK sürümü eksikse fail-closed durur, servis anahtarı kullanmaz ve TCKN/finans belgesi taşımaz.
 
-Kaynak uygulamada eski `/form-handler.php` submit dinleyicisi yalnız Franchise formu için kaldırılmalı; adaptör `OTOTR_FRANCHISE_PUBLIC_CONFIG.apiUrl` ile bağlanmalı, gönder düğmesi istek boyunca kilitlenmeli ve yalnız `WEB-FR-XXXXXXXX` biçimindeki sunucu referansı başarı sayılmalıdır. Bu paket hazırlanmış olsa da kaynak commitine uygulanıp sentetik canlı kabul testi yapılmadan G16 `PASS` olmaz.
+Kaynak uygulamada Franchise formunun `data-demo-form="franchise"` işareti `data-live-franchise-form` olarak değiştirilerek genel `/form-handler.php` dinleyicisinden ayrılmalıdır. `live-franchise-bootstrap.mjs` modülü yüklenmeli; `OTOTR_FRANCHISE_PUBLIC_CONFIG` içinde tam `apiUrl`, 40 karakterli `deploymentIdentity` ve `revert:<40 karakterli commit>` biçiminde `rollbackReference` verilmelidir. Bootstrap gönder düğmesini istek boyunca kilitler ve yalnız `WEB-FR-XXXXXXXX` biçimindeki sunucu referansını başarı sayar. Bu paket hazırlanmış olsa da kaynak commitine uygulanıp sentetik canlı kabul testi yapılmadan G16 `PASS` olmaz.
 
 ## Karar
 

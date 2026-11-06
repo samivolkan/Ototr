@@ -4,6 +4,7 @@ import{readFile}from'node:fs/promises';
 import{LIVE_CONSENT_VERSION,liveFranchisePayload,validateLiveFranchiseConfig}from'../franchise-basvuru/live-franchise-adapter.mjs';
 
 const fragment=await readFile(new URL('../franchise-basvuru/live-form-consent-fragment.html',import.meta.url),'utf8');
+const bootstrap=await readFile(new URL('../franchise-basvuru/live-franchise-bootstrap.mjs',import.meta.url),'utf8');
 
 test('live form fragment exposes three separate consent decisions',()=>{
   assert.match(fragment,/name="kvkkConsent" required/);
@@ -26,7 +27,17 @@ test('legacy live fields map to the versioned privacy-minimized Edge contract',(
 });
 
 test('live adapter accepts only the exact Supabase Franchise Edge endpoint',()=>{
-  const apiUrl='https://bsjkohwbtrfwrqcyhsfz.supabase.co/functions/v1/public-api/franchise-applications';
-  assert.equal(validateLiveFranchiseConfig({apiUrl}).apiUrl,apiUrl);
-  for(const value of['','http://bsjkohwbtrfwrqcyhsfz.supabase.co/functions/v1/public-api/franchise-applications','https://evil.example/franchise-applications','https://bsjkohwbtrfwrqcyhsfz.supabase.co/rest/v1/public_franchise_applications'])assert.throws(()=>validateLiveFranchiseConfig({apiUrl:value}));
+  const apiUrl='https://bsjkohwbtrfwrqcyhsfz.supabase.co/functions/v1/public-api/franchise-applications',deploymentIdentity='a'.repeat(40),rollbackReference=`revert:${'b'.repeat(40)}`;
+  assert.equal(validateLiveFranchiseConfig({apiUrl,deploymentIdentity,rollbackReference}).apiUrl,apiUrl);
+  for(const value of['','http://bsjkohwbtrfwrqcyhsfz.supabase.co/functions/v1/public-api/franchise-applications','https://evil.example/franchise-applications','https://bsjkohwbtrfwrqcyhsfz.supabase.co/rest/v1/public_franchise_applications'])assert.throws(()=>validateLiveFranchiseConfig({apiUrl:value,deploymentIdentity,rollbackReference}));
+  assert.throws(()=>validateLiveFranchiseConfig({apiUrl,deploymentIdentity:'main',rollbackReference}));
+  assert.throws(()=>validateLiveFranchiseConfig({apiUrl,deploymentIdentity,rollbackReference:'manual'}));
+});
+
+test('bootstrap isolates Franchise from the legacy handler and locks duplicate submits',()=>{
+  assert.match(bootstrap,/OTOTR_FRANCHISE_EDGE_HANDOFF=true/);
+  assert.match(bootstrap,/\[data-live-franchise-form\]/);
+  assert.match(bootstrap,/button\.disabled=true/);
+  assert.match(bootstrap,/button\.disabled=false/);
+  assert.match(bootstrap,/data-franchise-status/);
 });

@@ -1,20 +1,20 @@
 import {pathToFileURL} from 'node:url';
 
-const SCRIPT_SRC=/<script[^>]+src=["']([^"']*\/assets\/js\/app\.js[^"']*)["']/i;
+const SCRIPT_SRC=/<script[^>]+src=["']([^"']+)["']/gi;
 const has=(text,pattern)=>pattern.test(text);
 export async function auditLivePublicIntake({pageUrl='https://ototr.com/franchise',fetchImpl=fetch,now=()=>new Date()}={}){
   const pageResponse=await fetchImpl(pageUrl,{headers:{Accept:'text/html','Cache-Control':'no-cache'},redirect:'follow'}),html=await pageResponse.text();
-  const source=html.match(SCRIPT_SRC)?.[1]||'',appUrl=source?new URL(source,pageResponse.url||pageUrl).href:null;
-  let appResponse=null,appJs='';if(appUrl){appResponse=await fetchImpl(appUrl,{headers:{Accept:'text/javascript','Cache-Control':'no-cache'},redirect:'follow'});appJs=await appResponse.text()}
+  const sources=[...html.matchAll(SCRIPT_SRC)].map(match=>match[1]).filter(Boolean),appUrls=[...new Set(sources.map(source=>new URL(source,pageResponse.url||pageUrl).href))];
+  const appResponses=await Promise.all(appUrls.map(async appUrl=>{const response=await fetchImpl(appUrl,{headers:{Accept:'text/javascript','Cache-Control':'no-cache'},redirect:'follow'});return{response,text:await response.text()}})),appJs=appResponses.map(item=>item.text).join('\n');
   const checks={
     pageAvailable:pageResponse.ok,
-    applicationScriptAvailable:Boolean(appResponse?.ok),
+    applicationScriptAvailable:appResponses.length>0&&appResponses.every(item=>item.response.ok),
     privacyNoticeSeparate:has(html,/name=["'](?:kvkkConsent|privacyAcknowledged)["']/i),
     processingConsentSeparate:has(html,/name=["']processingConsent["']/i),
     commercialConsentSeparate:has(html,/name=["'](?:contactConsent|commercialConsent)["']/i),
     consentVersionPresent:has(html+appJs,/FR-KVKK-[0-9]{4}-[0-9]{2}/i),
     edgeIntakeConfigured:has(appJs,/public-api\/franchise-applications/i),
-    legacyPhpHandlerAbsent:!has(appJs,/\/form-handler\.php/i),
+    legacyPhpHandlerAbsent:!has(appJs,/\/form-handler\.php/i)||has(appJs,/OTOTR_FRANCHISE_EDGE_HANDOFF/),
     deploymentIdentityPresent:Boolean(pageResponse.headers?.get?.('x-deployment-id')||pageResponse.headers?.get?.('x-vercel-id')||pageResponse.headers?.get?.('x-release-commit')),
     rollbackReferencePresent:has(html+appJs,/rollback[_ -]?(?:id|reference|commit)|x-rollback/i)
   };

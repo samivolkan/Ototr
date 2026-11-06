@@ -4,10 +4,12 @@ const clean=(value,max=500)=>String(value??'').trim().replace(/\s+/g,' ').slice(
 const checked=value=>value===true||value==='true'||value==='on'||value==='1';
 
 export function validateLiveFranchiseConfig(config={}){
-  const apiUrl=clean(config.apiUrl,500),consentVersion=clean(config.consentVersion||LIVE_CONSENT_VERSION,80);
+  const apiUrl=clean(config.apiUrl,500),consentVersion=clean(config.consentVersion||LIVE_CONSENT_VERSION,80),deploymentIdentity=clean(config.deploymentIdentity,80),rollbackReference=clean(config.rollbackReference,200);
   if(!ENDPOINT.test(apiUrl))throw new Error('Güvenli Franchise Edge endpoint yapılandırılmadı.');
   if(!/^FR-KVKK-[0-9]{4}-[0-9]{2}$/.test(consentVersion))throw new Error('Geçerli KVKK metin sürümü yapılandırılmadı.');
-  return Object.freeze({apiUrl,consentVersion});
+  if(!/^[a-f0-9]{40}$/.test(deploymentIdentity))throw new Error('Canlı kaynak commit kimliği yapılandırılmadı.');
+  if(!/^revert:[a-f0-9]{40}$/.test(rollbackReference))throw new Error('Rollback referansı yapılandırılmadı.');
+  return Object.freeze({apiUrl,consentVersion,deploymentIdentity,rollbackReference});
 }
 
 export function liveFranchisePayload(data,{consentVersion=LIVE_CONSENT_VERSION,utm={}}={}){

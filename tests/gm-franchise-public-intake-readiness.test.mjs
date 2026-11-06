@@ -16,4 +16,15 @@ test('live intake audit requires consent version, Edge intake, deployment identi
   let n=0;const fetchImpl=async url=>++n===1?response(html,{headers:{'x-release-commit':'a'.repeat(40)}}):response(js,{url:String(url)});
   const result=await auditLivePublicIntake({fetchImpl});assert.equal(result.decision,'READY_FOR_SYNTHETIC_HTTP_ACCEPTANCE');assert.deepEqual(result.blockers,[]);
 });
+test('live intake audit follows the dedicated module while other forms keep the legacy handler',async()=>{
+  const html='<form data-live-franchise-form><input name="kvkkConsent"><input name="processingConsent"><input name="contactConsent"></form><script src="/assets/js/app.js"></script><script type="module" src="/assets/js/live-franchise-bootstrap.mjs"></script>';
+  const scripts=new Map([
+    ['https://ototr.com/assets/js/app.js',"fetch('/form-handler.php',{method:'POST'})"],
+    ['https://ototr.com/assets/js/live-franchise-bootstrap.mjs',"const OTOTR_FRANCHISE_EDGE_HANDOFF=true,version='FR-KVKK-2026-11',endpoint='/public-api/franchise-applications',rollbackReference='revert:abc';"]
+  ]);
+  const fetchImpl=async url=>String(url)==='https://ototr.com/franchise'?response(html,{headers:{'x-release-commit':'a'.repeat(40)}}):response(scripts.get(String(url))||'',{url:String(url)});
+  const result=await auditLivePublicIntake({fetchImpl});
+  assert.equal(result.decision,'READY_FOR_SYNTHETIC_HTTP_ACCEPTANCE');
+  assert.deepEqual(result.blockers,[]);
+});
 test('current live intake evidence stays read-only and NO_GO',()=>{assert.equal(evidence.checkedReadOnly,true);assert.equal(evidence.formPostAttempted,false);assert.equal(evidence.productionDataUsed,false);assert.equal(evidence.decision,'NO_GO');for(const key of ['processingConsentSeparate','commercialConsentSeparate','edgeIntakeConfigured','deploymentIdentityPresent','rollbackReferencePresent'])assert.equal(evidence.checks[key],false);});
