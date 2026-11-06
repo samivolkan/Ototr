@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "target": {
+    "origin": "https://ototr.com",
+    "pagePath": "/franchise",
+    "applicationBoundary": "cloudflare_fronted_php",
+    "deploymentMode": "controlled_source_or_hosting_release"
+  },
+  "sourceCommit": "${SOURCE_COMMIT_40}",
+  "rollbackCommit": "${PREVIOUS_SOURCE_COMMIT_40}",
+  "runtimeConfig": {
+    "apiUrl": "https://bsjkohwbtrfwrqcyhsfz.supabase.co/functions/v1/public-api/franchise-applications",
+    "consentVersion": "FR-KVKK-2026-11",
+    "deploymentIdentity": "${SOURCE_COMMIT_40}",
+    "rollbackReference": "revert:${PREVIOUS_SOURCE_COMMIT_40}"
+  },
+  "artifacts": [
+    {
+      "source": "franchise-basvuru/live-form-consent-fragment.html",
+      "target": "HTML:/franchise form[data-live-franchise-form] before submit button",
+      "sha256": "e36d8c0b43c477fcba882f08bdc935f18046c7583b151b7c416a9bedecdf0d40"
+    },
+    {
+      "source": "franchise-basvuru/live-franchise-adapter.mjs",
+      "target": "/assets/js/live-franchise-adapter.mjs",
+      "sha256": "e159fde1365996bb550779accddf69a27080134cdd6dceacefd84dc2281787c0"
+    },
+    {
+      "source": "franchise-basvuru/live-franchise-bootstrap.mjs",
+      "target": "/assets/js/live-franchise-bootstrap.mjs",
+      "sha256": "2c634cb21a25e307fe8d125f86a1839c0521e33338a7e5d6eac94140debc1075"
+    }
+  ],
+  "htmlOperations": [
+    "Replace form attribute data-demo-form=\"franchise\" with data-live-franchise-form.",
+    "Insert live-form-consent-fragment.html inside the Franchise form before its submit button.",
+    "Define OTOTR_FRANCHISE_PUBLIC_CONFIG before loading the bootstrap module; replace both commit placeholders with reviewed PHP source commits.",
+    "Load /assets/js/live-franchise-bootstrap.mjs as type=\"module\" with the source commit as its cache version.",
+    "Keep the shared legacy /form-handler.php listener for other forms; the Franchise form is isolated by data-live-franchise-form and OTOTR_FRANCHISE_EDGE_HANDOFF."
+  ],
+  "headerOperations": [
+    "If a Content-Security-Policy connect-src directive exists, add https://bsjkohwbtrfwrqcyhsfz.supabase.co without weakening other directives.",
+    "Do not add service-role keys, Authorization tokens or secrets to HTML, JavaScript, PHP, headers or this manifest."
+  ],
+  "rollbackOperations": [
+    "Deploy PREVIOUS_SOURCE_COMMIT_40 through the same controlled PHP release channel.",
+    "Confirm data-demo-form=\"franchise\" and the previous form handler are restored.",
+    "Remove the three Franchise consent/config/bootstrap insertions only through the reviewed rollback commit.",
+    "Run the read-only live intake audit and record G16 as NO_GO after rollback."
+  ],
+  "acceptance": {
+    "readOnlyAudit": "node gm-franchise/public-intake-readiness.mjs",
+    "syntheticSubmissionRequired": true,
+    "productionDataUsed": false,
+    "processingConsentRequired": true,
+    "commercialConsentMayBeFalse": true,
+    "databaseResultRequired": "ready_for_canonicalization",
+    "testDataCleanupRequired": true,
+    "independentExecutorAndAcceptorRequired": true,
+    "evidenceBuilder": "gm-franchise/public-intake-acceptance-evidence.mjs"
+  },
+  "releaseEffect": "NONE_UNTIL_APPLIED_AND_ACCEPTED",
+  "productionDecision": "NO_GO"
+}
