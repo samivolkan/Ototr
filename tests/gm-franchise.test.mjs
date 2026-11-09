@@ -11,6 +11,14 @@ assert.doesNotThrow(() => new vm.Script(inlineScript), 'inline application scrip
 
 assert.match(html, /GÜVENLİ PİLOT · CANLI FRANCHISE SİSTEMİ DEĞİLDİR/);
 assert.match(html, /const E2E_STAGES=\["Başvuru".*"Aktif şube"\]/);
+assert.match(html, /İŞ ŞU ANDA KİMDE\?/);
+assert.match(html, /data-cockpit-stage/);
+assert.match(html, /data-cockpit-open/);
+assert.match(html, /flowOwnerRole\(\)/);
+assert.match(html, /flowWaitDays\(\)/);
+assert.match(html, /Geçişi kilitleyen şartlar ve gerçek görev sahipleri/);
+assert.match(html, /Mevcut iş bitince otomatik atanır/);
+assert.match(html, /COCKPIT_SELECTED_STAGE=FLOW\.stage/);
 assert.equal((html.match(/"Başvuru","İlk temas","Ön değerlendirme","Yatırımcı sunumu","Finansal yeterlilik","Lokasyon","Due diligence","Ön onay","Sözleşme","Kurulum","Eğitim","Deneme operasyonu","Açılış kurulu","Aktif şube"/g) || []).length, 1);
 assert.match(html, /Giriş bedeli tahsilatı mutabıklandı/);
 assert.match(html, /Finans, Muhasebe ve %100 tahsilat/);

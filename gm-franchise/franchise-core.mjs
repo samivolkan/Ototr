@@ -167,6 +167,7 @@ export function createFranchiseCase(input = {}) {
     boardDecision: input.boardDecision || null,
     applicationProfile: input.applicationProfile || null,
     days: input.days ?? 0,
+    stageEnteredDay: input.stageEnteredDay ?? input.days ?? 0,
     target: 60,
     paid: input.paid ?? 0,
     royalty: input.royalty ?? 10,

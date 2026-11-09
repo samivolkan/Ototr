@@ -1,69 +1,76 @@
-# GM Franchise Design QA
+# GM Franchise Süreç Kokpiti — Design QA
 
-- Source visual truth: `http://127.0.0.1:8767/gm-ik/` (GM İK güvenli pilot dashboard)
-- Implementation: `http://127.0.0.1:8767/gm-franchise/` (GM Franchise yaşam döngüsü)
-- Viewport: 1265 × 720 CSS px, desktop, device scale 1
-- Source pixels: 1265 × 720
-- Implementation pixels: 1265 × 720
-- Density normalization: aynı IAB oturumu, aynı CSS viewport ve aynı ekran yoğunluğu
-- State: kaynakta GM İK Dashboard / Genel Müdür-Merkez İK; uygulamada Yaşam döngüsü / Genel Müdür
-- Evidence: her iki görünüm 5 Kasım 2026 tarihinde aynı in-app browser oturumunda yakalanıp birlikte karşılaştırıldı. Yerel dosya çıktısı tarayıcı aracı tarafından sağlanmadığından kanıt URL ve oturum görüntüsü olarak tutuldu.
+- Seçilen yön: `1 — Süreç kokpiti`
+- Kaynak görsel gerçek: `http://127.0.0.1:8772/franchise-surec-kokpiti.html`
+- Uygulama: `http://127.0.0.1:8771/gm-franchise/?v=20261110-cockpit#e2e`
+- Masaüstü viewport: 1280 × 720 CSS px; sayfa gövdesi 1265 px
+- Mobil viewport: 390 × 844 CSS px; sayfa gövdesi 375 px
+- Yoğunluk normalizasyonu: aynı Codex IAB oturumu ve aynı ekran yoğunluğu
+- Durum: sentetik `FRC-2026-001` dosyası, `Sözleşme` aşaması, `Hukuk Sorumlusu`
+- Kanıt: kaynak ve uygulama 10 Kasım 2026 tarihinde IAB ekran görüntüleriyle karşılaştırıldı; uygulama ayrıca masaüstü ve mobil DOM ölçümleriyle doğrulandı.
 
-## Full-view comparison
+## Tam görünüm karşılaştırması
 
-- Sol navigasyon, aktif siyah menü, kırmızı-beyaz OTOTR kimliği ve MVP rozetleri kaynakla uyumlu.
-- Üst güvenli-pilot bandı, açık gri sayfa zemini, beyaz kartlar, ince sınırlar ve 10–12px köşe yarıçapları kaynakla uyumlu.
-- İçerik yoğunluğu Franchise iş akışının daha geniş kapsamı nedeniyle artırıldı; ana grid ve kart ritmi GM İK ile aynı kaldı.
-- Yatay yaşam döngüsü kontrollü kaydırma kullanıyor; masaüstünde içerik kesilmiyor.
+- Koyu sol navigasyon, açık içerik zemini, kırmızı OTOTR vurgu rengi ve üstteki görev-sahibi bandı seçilen kokpit yönüyle eşleşiyor.
+- 240 px masaüstü menüsü, kaynak prototipteki içerik ağırlıklı hiyerarşiyi koruyor ve 14 aşamaya daha fazla yatay alan bırakıyor.
+- `İş şu anda kimde?`, bekleme, SLA ve `Görevi aç` eylemi ilk bakışta görünür.
+- 1 Başvuru–14 Aktif şube aşamalarının tamamı aynı görünümde; geçmiş, mevcut ve gelecek aşamalar farklı durumlarla ayrılıyor.
 
-## Focused region comparison
+## Odaklı bölge karşılaştırması
 
-- Header/pilot band: renk, ağırlık ve yerleşim eşleşiyor.
-- Sol navigasyon: genişlik, bölüm başlıkları, rozetler ve aktif durum eşleşiyor.
-- KPI kartları: sayı hiyerarşisi, alt etiket ve boşluk ritmi eşleşiyor.
-- İçerik kartları: sınır, arka plan, tipografi ve durum renkleri kaynak tasarım dilini koruyor.
+- Görev sahibi bandı: kişi/rol, somut bekleme nedeni, SLA ve aksiyon tek satırlık karar alanında.
+- Aşama hattı: mevcut `Sözleşme` aşaması kırmızı; tamamlanan aşamalar yeşil; gelecek aşamalar kilitli gri.
+- Onay kapıları: sorumlu departman, kanıt durumu ve kilit/bekleme semantiği birlikte gösteriliyor.
+- Sonraki hareket: mevcut iş tamamlandığında devralacak rol ve yapacağı işlem açıkça belirtiliyor.
 
-## Required fidelity surfaces
+## Zorunlu sadakat yüzeyleri
 
-- Fonts and typography: DM Sans, kaynakla aynı; 23px başlık, 28px KPI değeri ve 12–15px yardımcı metin hiyerarşisi tutarlı.
-- Spacing and layout rhythm: 320px Franchise yan menüsü, 22/28px ana içerik boşlukları ve 12–16px kart ritmi tutarlı. Franchise menüsü kapsam nedeniyle kaydırılabilir.
-- Colors and tokens: açık yüzey, koyu aktif menü, OTOTR kırmızısı, yeşil başarı ve sarı uyarı semantiği tutarlı.
-- Image quality and assets: referans ve uygulamada raster görsel/illüstrasyon yok; marka metin kilidi mevcut kaynak gibi tipografik.
-- Copy and content: güvenli pilot sınırı, sentetik veri, departman sorumluları, 14 aşama ve %100 tahsilat kapısı açık yazıldı.
+- Tipografi: DM Sans; rol ve durum hiyerarşisi 9–18 px aralığında okunaklı.
+- Düzen ritmi: 8–17 px aralık, 9–12 px köşe yarıçapı ve ince sınırlar kaynak tasarım dilini koruyor.
+- Renkler: OTOTR kırmızısı, antrasit görev bandı, yeşil tamamlanma ve sarı bekleme semantiği tutarlı.
+- Kopya: genel departman adı yerine `Hukuk Sorumlusu`, `Finans Sorumlusu`, `İK Sorumlusu` gibi tek hesap verebilir rol kullanılıyor.
+- Gizlilik: gerçek T.C. kimlik, banka/finans ve sözleşme belgelerinin demo ekranda tutulmadığı görünür uyarıyla belirtiliyor.
 
-## Comparison history
+## Karşılaştırma geçmişi
 
-### Iteration 1
+### İterasyon 1
 
-- P1: Aday rolü, izin verilmeyen departman ekranından rol değişiminde genel Dashboard’a düşerek ağ özetini görebiliyordu.
-- Fix: izin verilmeyen görünümde `dash` yerine rolün ilk izinli ekranına fail-closed yönlendirme yapıldı; aday ve tedarikçi yalnızca portal görünümüne sınırlandı.
-- Post-fix evidence: Aday Yatırımcı rolünde yalnız “Dış kullanıcı portalları” menüsü görünür; genel dashboard, finans, görev ve departman ekranları gizli.
+- P2: Sol menü 320 px olduğu için aşama etiketleri gereğinden fazla sıkışıyordu.
+- Düzeltme: kokpit görünümünde menü 240 px'e indirildi; diğer Franchise ekranlarının yerleşimi değiştirilmedi.
+- Sonuç: 1280 px görünümde 14 aşama yedi sütun halinde ve yatay taşma olmadan görüntüleniyor.
 
-### Iteration 2
+### İterasyon 2
 
-- P2: İlk referans taslakta 7 aşama bulunuyor, onaylanan süreç 14 aşamaydı.
-- Fix: yatay 14 aşamalı yaşam döngüsü, aşama sahibi, SLA, kapı gerekçesi ve sonraki aşama bilgisi eklendi.
-- Post-fix evidence: Yaşam döngüsü ekranı 1 Başvuru–14 Aktif şube adımlarını aynı görünümde gösteriyor.
+- P2: Görev sahibi yalnız `Hukuk` olarak görünüyordu ve bekleme nedeni birden fazla kapıyı aynı genel cümlede topluyordu.
+- Düzeltme: hesap verebilir rol `Hukuk Sorumlusu` oldu; neden `Zorunlu sözleşme belgeleri bekleniyor (12/17).` biçiminde somutlaştırıldı.
+- Sonuç: kullanıcı hem işin kimde olduğunu hem de işi ilerletmek için eksik olanı tek bakışta görüyor.
 
-## Findings
+### İterasyon 3
+
+- P2: Mobil kırılımın gerçek tarayıcı görünümünde taşma ve kontrol erişilebilirliği doğrulanmamıştı.
+- Düzeltme: 390 × 844 ayrı IAB sekmesinde yeniden yüklendi ve ölçüldü.
+- Sonuç: menü statik yatay navigasyona, aşamalar iki sütuna dönüyor; `scrollWidth` 375 px ile gövde genişliğine eşit ve `Görevi aç` görünür.
+
+## Açık bulgular
 
 - P0/P1/P2 açık bulgu yok.
-- P3: Çok uzun menü küçük ekranlarda yatay gezinme gerektiriyor; işlevsel fakat sonraki tasarım turunda bölüm akordeonu düşünülebilir.
+- P3: Mobil üst menü kapsam nedeniyle yatay kaydırmalı; işlevsel ve taşmasızdır. İleride bölüm akordeonu ayrı bir tasarım iyileştirmesi olabilir.
 
-## Primary interactions tested
+## Test edilen ana etkileşimler
 
-- Genel Müdür ile Sözleşme → Kurulum geçişi.
-- Eksik departman görevi varken 39/39 tamamlanana kadar ilerleme kilidi.
-- Genel Müdür ile İK görevi tamamlama ve yüzde güncellemesi.
-- Aday Yatırımcı rolünde fail-closed portal görünümü.
-- Demo sıfırlama ve başlangıç durumuna dönüş.
-- ERP, GM İK, Finans, Hukuk, Academy ve Görev Merkezi bağlantılarının hedefleri.
+- `Kurulum` aşaması seçildi; ayrıntı `Mimari / Proje Sorumlusu` ve ilgili görev metniyle değişti.
+- Mevcut `Sözleşme` aşamasına dönüldü; bekleme nedeni ve `Hukuk Sorumlusu` geri geldi.
+- `Görevi aç` eylemi `#departman` görünümüne yönlendirdi.
+- `Yaşam döngüsü` menüsü kullanıcıyı `#e2e` kokpitine geri getirdi.
+- Masaüstünde 14 aşama, 240 px yan menü ve yatay taşmasız 1265 px gövde doğrulandı.
+- Mobilde 14 aşama, iki sütun, görünür görev eylemi ve yatay taşmasız 375 px gövde doğrulandı.
 
-## Console and runtime
+## Konsol ve otomatik kabul
 
-- Sayfa yüklenirken görünür uygulama hatası oluşmadı.
-- Inline JavaScript, Node `vm.Script` ile sözdizimi kontrolünden geçti.
-- Statik kabul testi geçti: `node --test tests/gm-franchise.test.mjs`.
+- Masaüstü konsol hatası/uyarısı: 0 / 0.
+- Mobil konsol hatası/uyarısı: 0 / 0.
+- Franchise test paketi: 310 test geçti, 0 hata.
+- `git diff --check`: geçti.
+- Bu kanıt sentetik demo kabulüdür; canlı Supabase, sağlayıcı, gerçek veri, UAT imzası veya üretim yayını kanıtı değildir.
 
 final result: passed
-

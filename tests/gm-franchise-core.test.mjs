@@ -60,6 +60,12 @@ test('new application produces one canonical franchise case and mandatory staffi
   assert.equal(c.applicationId, 'APP-TEST-1');
   assert.equal(c.staffing.length, 10);
   assert.equal(c.stage, 0);
+  assert.equal(c.stageEnteredDay, 0);
+});
+
+test('process cockpit keeps the stage waiting baseline with the case', () => {
+  const c = createFranchiseCase({ id: 'FR-WAIT-1', stage: 8, days: 31, stageEnteredDay: 30 });
+  assert.equal(c.days - c.stageEnteredDay, 1);
 });
 
 test('seven role-owned score dimensions produce recommendation but not final decision', () => {
