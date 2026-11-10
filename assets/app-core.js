@@ -1483,7 +1483,7 @@ function parseAcademyRoute(id){
 const navGroups = [
   ['Genel Merkez', [['dashboard','Yönetim Kokpiti','layout-dashboard'],['project-roadmap','Proje Yol Haritası','map'],['intelligence','İş Zekası','chart-no-axes-column'],['looker','Looker Canlı Panolar','panels-top-left'],['isler-v24','Kokpit · İşler v24','list-checks'],['actions','Aksiyon & Görev','target'],['crisis','Kriz Merkezi','siren'],['ai','AI Öneri','sparkles']]],
   ['Bayi & Şube Yönetimi', [['branches','Bayiler & Şubeler','building-2'],['dealer','Bayi Portalı','tablet-smartphone'],['ototr-web','OTOTR Web','globe'],['operations','Operasyon','workflow'],['quality','Kalite & Denetim','shield-check']]],
-  ['Ekspertiz & Rapor', [['ruhsat','Ruhsat Oku','scan-line'],['sunum32v2','32 Ekran Sunumu V2','monitor-up'],['kaporta-design','Kaporta Tasarım','panels-top-left'],['kaporta-360','Kaporta 360','rotate-3d']]],
+  ['Ekspertiz & Rapor', [['ruhsat','Ruhsat Oku','scan-line'],['sunum32v2','32 Ekran Sunumu V2','monitor-up'],['gorsel-kontrol','Görsel AI Kontrol','scan-search'],['kaporta-design','Kaporta Tasarım','panels-top-left'],['kaporta-360','Kaporta 360','rotate-3d']]],
   ['Müşteri & Satış', [['crm','CRM & Randevu','users'],['saha-satis','Saha Satış','map-pinned'],['chronic-issues','Kronik Sorunlar','car-front'],['complaints','Müşteri Şikayetleri','message-circle-warning'],['google-reviews','Yorumlar ve Yanıtlar','star'],['marketing','Pazarlama','megaphone']]],
   ['Franchise Yönetimi', [['franchise','Franchise Satış','handshake'],['growth','Bayii Büyüme','map']]],
   ['Kurumsal Yönetim', [['academy','OTOTR Academy','graduation-cap'],['hr','İnsan Kaynakları','badge-check'],['legal','Hukuk & Risk','scale']]],
@@ -2622,6 +2622,10 @@ function renderNav(){
     }
     if(b.dataset.navRoute==='kaporta-design'){
       window.open('https://samivolkan.github.io/Ototr/kaporta-tasarim.html','_blank','noopener,noreferrer');
+      return;
+    }
+    if(b.dataset.navRoute==='gorsel-kontrol'){
+      window.location.assign('gorsel-kontrol.html');
       return;
     }
     if(b.dataset.navRoute==='kaporta-360'){

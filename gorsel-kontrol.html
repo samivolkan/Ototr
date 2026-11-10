@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="OTOTR ERP görsel kontrol prototipi" />
+  <title>OTOTR | Görsel Kontrol Merkezi</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/gorsel-kontrol.css?v=20261111-1" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="#" aria-label="OTOTR ana sayfa"><span class="brand-mark">O</span><span>OTOTR<small>EKSPERTİZ ERP</small></span></a>
+      <nav aria-label="Ana menü">
+        <a href="#"><span>⌂</span> Ana Panel</a>
+        <a href="#"><span>▣</span> İş Emirleri</a>
+        <a class="active" href="#"><span>◎</span> Görsel Kontrol <b>Beta</b></a>
+        <a href="#"><span>✓</span> Ekspertizler</a>
+        <a href="#"><span>◇</span> Araçlar</a>
+        <a href="#"><span>◫</span> Raporlar</a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="privacy"><span>●</span><div><strong>Güvenli oturum</strong><small>Fotoğraflar bu demoda sunucuya gönderilmez.</small></div></div>
+        <div class="user"><span>SV</span><div><strong>Sami Volkan</strong><small>Genel Müdür</small></div><button aria-label="Kullanıcı menüsü">⋮</button></div>
+      </div>
+    </aside>
+
+    <main>
+      <header class="topbar">
+        <button class="menu-button" aria-label="Menüyü aç">☰</button>
+        <div class="breadcrumbs">İş Emirleri <i>/</i> <strong>Görsel Kontrol</strong></div>
+        <div class="top-actions"><button class="icon-button" aria-label="Bildirimler">♢<span></span></button><div class="branch">Bursa Nilüfer Şubesi⌄</div></div>
+      </header>
+
+      <section class="page">
+        <div class="title-row">
+          <div><span class="eyebrow">YAPAY ZEKA DESTEKLİ İKİNCİ KONTROL</span><h1>Görsel Kontrol Merkezi</h1><p>Fotoğrafları yükleyin; kaliteyi, eksik açıları ve olası hasar noktalarını rapor kapanmadan önce kontrol edin.</p></div>
+          <div class="demo-badge"><span></span><div><strong>Test modu</strong><small>AI karar vermez, eksperi uyarır</small></div></div>
+        </div>
+
+        <div class="work-order card">
+          <div class="wo-head"><div><span class="car-icon">▱</span><div><small>AKTİF İŞ EMRİ</small><strong>#OTR-2026-1148</strong></div></div><button class="text-button">İş emrini değiştir →</button></div>
+          <div class="wo-grid">
+            <label>PLAKA<span><input id="plate" value="16 ABC 123" maxlength="12" /></span></label>
+            <div><small>ARAÇ</small><strong>2021 Volkswagen Passat</strong></div>
+            <div><small>PAKET</small><strong>OTOTR 360 Güvence</strong></div>
+            <div><small>EKSPER</small><strong>Ahmet Yılmaz</strong></div>
+          </div>
+        </div>
+
+        <div class="progress-card card">
+          <div class="progress-copy"><div class="ring" style="--p:0"><strong id="progressValue">0%</strong></div><div><small>FOTOĞRAF SETİ</small><strong id="photoCount">0 / 8 açı tamamlandı</strong><span id="progressHint">Analize başlamak için fotoğraf yükleyin</span></div></div>
+          <div class="legend"><span><i class="ok"></i>Tamam</span><span><i class="warn"></i>Kontrol gerekli</span><span><i></i>Eksik</span></div>
+        </div>
+
+        <section class="grid-layout">
+          <div class="capture card">
+            <div class="section-head"><div><small>ADIM 1</small><h2>Fotoğrafları yükleyin</h2></div><span class="counter" id="uploadCount">0 fotoğraf</span></div>
+            <div id="dropzone" class="dropzone" tabindex="0" role="button" aria-label="Fotoğraf yükle">
+              <input id="fileInput" type="file" accept="image/jpeg,image/png,image/webp" multiple hidden />
+              <div class="upload-icon">↑</div><h3>Fotoğrafları buraya bırakın</h3><p>veya cihazınızdan seçin</p><button class="primary" id="chooseFiles">Fotoğraf seç</button><small>JPG, PNG veya WebP · En fazla 15 MB</small>
+            </div>
+            <div class="capture-guide"><span>i</span><p><strong>Daha iyi analiz için:</strong> Aracı iyi aydınlatılmış ortamda, yatay kadrajla ve ilgili panel tamamen görünecek şekilde çekin.</p></div>
+            <div id="thumbs" class="thumbs"></div>
+          </div>
+
+          <div class="angles card">
+            <div class="section-head"><div><small>ZORUNLU ÇEKİMLER</small><h2>Açı kontrolü</h2></div><button id="resetButton" class="text-button">Sıfırla</button></div>
+            <div class="angle-list" id="angleList"></div>
+          </div>
+        </section>
+
+        <section class="analysis card">
+          <div class="section-head"><div><small>ADIM 2</small><h2>İkinci kontrol sonuçları</h2></div><div class="analysis-state" id="analysisState"><span></span>Analiz bekleniyor</div></div>
+          <div id="emptyResults" class="empty-results"><div>⌁</div><h3>Henüz analiz sonucu yok</h3><p>Fotoğraf yüklediğinizde görüntü kalitesi ve çekim bütünlüğü otomatik kontrol edilir.</p></div>
+          <div id="results" class="results" hidden>
+            <div class="score-panel"><div class="score-ring" id="scoreRing"><strong id="score">—</strong><small>kalite</small></div><div><h3 id="resultTitle">Fotoğraflar incelendi</h3><p id="resultSummary"></p></div></div>
+            <div id="findings" class="findings"></div>
+            <div class="disclaimer"><strong>AI ikinci kontrolcü olarak çalışır.</strong> Görsel bulgular nihai ekspertiz kararı değildir. Her uyarı eksper tarafından doğrulanmalıdır.</div>
+          </div>
+        </section>
+
+        <footer class="action-bar">
+          <div><span id="gateDot"></span><div><strong id="gateTitle">Rapor kapatmaya hazır değil</strong><small id="gateText">8 zorunlu açı henüz eksik</small></div></div>
+          <div><button class="secondary" id="saveDraft">Taslak kaydet</button><button class="primary disabled" id="closeReport" disabled>Kontrolü tamamla</button></div>
+        </footer>
+      </section>
+    </main>
+  </div>
+  <div id="toast" class="toast" role="status"></div>
+  <script src="assets/gorsel-kontrol.js?v=20261111-1"></script>
+</body>
+</html>
+
+
