@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "module": "OTOTR_FRANCHISE_UAT_GOVERNANCE",
+  "environment": "ototr-staging",
+  "projectRef": "bsjkohwbtrfwrqcyhsfz",
+  "testedAt": "2026-11-05",
+  "productionDataUsed": false,
+  "migration": "franchise_uat_evidence_immutability",
+  "checks": {
+    "evidenceRewriteRejected": true,
+    "executorAndScenarioImmutable": true,
+    "independentReviewAccepted": true,
+    "secondReviewRejected": true,
+    "reviewNoteRequired": true,
+    "securityAdvisorFinding": false
+  },
+  "cleanup": {"authUsers": 0, "uatResults": 0},
+  "result": "PASS",
+  "humanSignoffsCompleted": false,
+  "releaseDecision": "NO_GO"
+}

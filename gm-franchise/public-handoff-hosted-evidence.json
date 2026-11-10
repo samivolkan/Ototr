@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "module": "OTOTR_FRANCHISE_PUBLIC_HANDOFF",
+  "environment": "ototr-staging",
+  "projectRef": "bsjkohwbtrfwrqcyhsfz",
+  "edgeFunction": {"name": "public-api", "version": 11, "verifyJwt": false},
+  "testedAt": "2026-11-05",
+  "productionDataUsed": false,
+  "checks": {
+    "rawGithackCorsAccepted": true,
+    "publicSubmissionCreatedReference": true,
+    "privacyAndProcessingRequired": true,
+    "commercialConsentOptional": true,
+    "threeServerBoundConsentHashes": true,
+    "structuredProfilePersisted": true,
+    "authenticatedQueueNoRawPii": true,
+    "safeProfilePrefillAvailable": true,
+    "canonicalCaseCreatedOnce": true,
+    "commercialDeclinePreserved": true,
+    "canonicalizedApplicationLeavesOpenQueue": true
+  },
+  "cleanup": {
+    "publicApplications": 0,
+    "bridgeRows": 0,
+    "franchiseCases": 0,
+    "applicationProfiles": 0,
+    "consentReceipts": 0,
+    "authUsers": 0
+  },
+  "result": "PASS",
+  "verificationBoundary": "This proves the RawGitHack staging preview and Supabase staging handoff. It does not prove or change the current ototr.com PHP form.",
+  "releaseDecision": "NO_GO"
+}

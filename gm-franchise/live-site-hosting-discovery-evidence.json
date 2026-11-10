@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "environment": "production_read_only_discovery",
+  "targetUrl": "https://ototr.com/franchise",
+  "verifiedAtUtc": "2026-11-06T01:40:08.870Z",
+  "checkedReadOnly": true,
+  "formPostAttempted": false,
+  "productionDataUsed": false,
+  "checks": {
+    "pageStatus": 200,
+    "finalUrl": "https://ototr.com/franchise",
+    "edgeServer": "cloudflare",
+    "cloudflareNameservers": ["augustus.ns.cloudflare.com", "eleanor.ns.cloudflare.com"],
+    "phpSessionCookieObserved": true,
+    "phpSessionCookieName": "PHPSESSID",
+    "vercelHeaderObserved": false,
+    "netlifyHeaderObserved": false,
+    "customAssetPathsObserved": true,
+    "legacyDemoFormMarkerObserved": true,
+    "sourceRepositoryDisclosed": false,
+    "originHostingProviderDisclosed": false
+  },
+  "requiredAccess": "Cloudflare arkasındaki PHP uygulamasının kaynak deposu veya kontrollü hosting deployment erişimi",
+  "result": "SOURCE_ACCESS_REQUIRED",
+  "releaseEffect": "NONE",
+  "productionDecision": "NO_GO"
+}

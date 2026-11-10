@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "status": "BLOCKED",
+  "environment": "production",
+  "targetOrigin": "https://ototr.com",
+  "productionDataUsed": false,
+  "franchiseReleaseCommit": null,
+  "consentVersion": null,
+  "deploymentIdentitySha256": null,
+  "rollbackReferenceSha256": null,
+  "evidenceSha256": null,
+  "acceptedAtUtc": null
+}

@@ -1,0 +1,17 @@
+{"schemaVersion":2,"module":"OTOTR Franchise","releaseStatus":"NO_GO","evaluatedAt":"2026-11-05","gates":[
+{"id":"G01","name":"Canonical application and franchise case","mandatory":true,"status":"PASS","evidence":"supabase/ops/franchise-application-intake-acceptance.sql"},
+{"id":"G02","name":"Scoring, board and lifecycle gates","mandatory":true,"status":"PASS","evidence":"supabase/ops/franchise-scoring-acceptance.sql"},
+{"id":"G03","name":"Staffing, Academy and access scopes","mandatory":true,"status":"PASS","evidence":"supabase/ops/franchise-activation-acceptance.sql"},
+{"id":"G04","name":"Finance terms and collection gate","mandatory":true,"status":"PASS","evidence":"supabase/ops/franchise-finance-acceptance.sql"},
+{"id":"G05","name":"Legal, contract and location gates","mandatory":true,"status":"PASS","evidence":"supabase/ops/franchise-legal-location-acceptance.sql"},
+{"id":"G06","name":"Opening execution and exception governance","mandatory":true,"status":"PASS","evidence":"supabase/ops/franchise-opening-execution-acceptance.sql"},
+{"id":"G07","name":"RLS, RBAC and portal isolation","mandatory":true,"status":"PASS","evidence":"supabase/ops/franchise-external-portal-acceptance.sql"},
+{"id":"G08","name":"Versioned integration contracts and privacy guard","mandatory":true,"status":"PASS","evidence":"supabase/ops/franchise-integration-contract-acceptance.sql"},
+{"id":"G09","name":"30/60/90 governed follow-up","mandatory":true,"status":"PASS","evidence":"supabase/ops/franchise-activation-acceptance.sql"},
+{"id":"G10","name":"Hosted staging migration and rollback drill","mandatory":true,"status":"PASS","evidence":"docs/franchise/FRANCHISE_HOSTED_STAGING_VERIFICATION_2026-11-05.md"},
+{"id":"G11","name":"Hosted ERP identity and private Storage validation","mandatory":true,"status":"PASS","evidence":"docs/franchise/FRANCHISE_HOSTED_STAGING_VERIFICATION_2026-11-05.md"},
+{"id":"G12","name":"Real staging adapters and providers","mandatory":true,"status":"BLOCKED","evidence":"gm-franchise/integration-adapters.mjs"},
+{"id":"G13","name":"Hosted concurrency, recovery and dead-letter drill","mandatory":true,"status":"PASS","evidence":"docs/franchise/FRANCHISE_HOSTED_CONCURRENCY_RECOVERY_2026-11-05.md"},
+{"id":"G14","name":"Department UAT and independent sign-offs","mandatory":true,"status":"BLOCKED","evidence":"docs/franchise/FRANCHISE_DEPARTMENT_UAT_SIGNOFF_2026-11-05.md"},
+{"id":"G15","name":"Pinned release commit, change window and rollout approval","mandatory":true,"status":"BLOCKED","evidence":"gm-franchise/preproduction-decision.json"},
+{"id":"G16","name":"Live public Franchise form and three-consent intake contract","mandatory":true,"status":"BLOCKED","evidence":"docs/franchise/FRANCHISE_LIVE_PUBLIC_INTAKE_GAP_2026-11-05.md"}]}

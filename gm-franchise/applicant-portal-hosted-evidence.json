@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "module": "OTOTR_FRANCHISE_APPLICANT_PORTAL",
+  "environment": "ototr-staging",
+  "projectRef": "bsjkohwbtrfwrqcyhsfz",
+  "testedAt": "2026-11-05",
+  "productionDataUsed": false,
+  "syntheticIdentityDomain": "example.invalid",
+  "checks": {
+    "passwordAuth": true,
+    "ownCaseIsolation": true,
+    "assignedPortalWork": true,
+    "privateStorageUpload": true,
+    "catalogAndSha256Registration": true,
+    "portalReadback": true,
+    "secureReferenceCompletion": true
+  },
+  "cleanup": {
+    "authUsers": 0,
+    "franchiseCases": 0,
+    "portalAssignments": 0,
+    "portalItems": 0,
+    "documents": 0,
+    "storageObjects": 0
+  },
+  "releaseDecision": "NO_GO",
+  "remainingExternalGates": ["R24", "R25", "R26", "R27", "R28"]
+}

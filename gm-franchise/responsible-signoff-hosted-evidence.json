@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "environment": "staging",
+  "projectRef": "bsjkohwbtrfwrqcyhsfz",
+  "migration": "franchise_uat_responsible_signoff_catalog",
+  "verifiedAtUtc": "2026-11-06T01:08:14.9993969Z",
+  "productionDataUsed": false,
+  "catalogCount": 9,
+  "oldRoleCount": 0,
+  "policyCount": 2,
+  "orderedRoles": [
+    "Franchise Sorumlusu",
+    "Finans Sorumlusu",
+    "Hukuk/KVKK",
+    "İK Sorumlusu",
+    "Academy Sorumlusu",
+    "Operasyon/Kalite/İSG",
+    "Tedarik/Mimari/Pazarlama",
+    "ERP/Bilgi Güvenliği",
+    "Genel Müdür"
+  ],
+  "result": "PASS",
+  "releaseEffect": "NONE",
+  "productionDecision": "NO_GO"
+}
