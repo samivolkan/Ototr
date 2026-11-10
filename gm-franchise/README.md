@@ -1,5 +1,7 @@
 # OTOTR GM Franchise Yönetim Merkezi
 
+Geçerli sürüm: **v0.9.0-beta.1** (`2026-11-11`). Bu sürüm staging doğrulamalı görsel/çalışan demodur; üretim kararı `NO_GO` kalır. Makinece okunabilir sürüm kaydı `gm-franchise/version.json` dosyasındadır.
+
 Başvurudan aktif şubeye kadar 14 aşamalı franchise yaşam döngüsünü gösteren güvenli, sentetik veri pilotudur.
 
 - `index.html`: rol/persona, departman kapıları, aday hattı, belge, sözleşme, açılış kurulu, aktif şube, royalty ve audit ekranları.

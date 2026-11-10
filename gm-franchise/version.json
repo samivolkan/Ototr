@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "module": "OTOTR_FRANCHISE",
+  "version": "0.9.0-beta.1",
+  "displayVersion": "v0.9.0-beta.1",
+  "releaseChannel": "beta",
+  "versionedAt": "2026-11-11",
+  "sourceBranch": "codex/franchise-production-flow",
+  "productionDecision": "NO_GO",
+  "requirementsPassed": 23,
+  "requirementsTotal": 28,
+  "automatedTests": 312,
+  "stagingMigrationVersion": "20261110082445",
+  "notes": [
+    "Ten-channel application intake and end-to-end branch opening demo are included.",
+    "Hosted migration, RLS and transactional rollback evidence are included.",
+    "Real adapters, human UAT signoffs, live intake acceptance and final release approval remain external gates."
+  ]
+}
