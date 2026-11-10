@@ -1,11 +1,12 @@
 # OTOTR GM Franchise Yönetim Merkezi
 
-Geçerli sürüm: **v0.9.0-beta.1** (`2026-11-11`). Bu sürüm staging doğrulamalı görsel/çalışan demodur; üretim kararı `NO_GO` kalır. Makinece okunabilir sürüm kaydı `gm-franchise/version.json` dosyasındadır.
+Geçerli sürüm: **v0.10.0-beta.1** (`2026-11-11`). Bu sürüm staging doğrulamalı görsel/çalışan demodur; üretim kararı `NO_GO` kalır. Makinece okunabilir sürüm kaydı `gm-franchise/version.json` dosyasındadır.
 
 Başvurudan aktif şubeye kadar 14 aşamalı franchise yaşam döngüsünü gösteren güvenli, sentetik veri pilotudur.
 
 - `index.html`: rol/persona, departman kapıları, aday hattı, belge, sözleşme, açılış kurulu, aktif şube, royalty ve audit ekranları.
 - `franchise-core.mjs`: tekil franchise dosyası, zorunlu kadro, sertifika/yetki kilidi, atomik aktivasyon ve 30/60/90 iş kuralları.
+- `dealer-growth-engine.mjs`: Bayi Büyüme altında aday ve lokasyonu 10 boyutta puanlayan; kira/ciro sapmasını, riskleri ve alternatif mikro-bölgeyi açıklayan sentetik karar motoru. Otomatik nihai karar vermez.
 - `integration-adapters.mjs`: Finans, Muhasebe, Hukuk, İK, Academy, Operasyon, Tedarik, BT, Pazarlama, Kalite, İSG, Mimari ve Görev Merkezi olay sözleşmeleri.
 - `release-readiness.mjs`: Hosted staging kanıtları, dokuz bağımsız departman imzası, sabit commit ve değişiklik penceresi eksikse otomatik `NO_GO` üreten yayın karar motoru.
 - `release-preflight.mjs`: gerçek kanıt dosyalarının güncel SHA-256 özetlerini, sabitlenecek commit/manifest değerlerini ve kirli worktree durumunu salt okunur denetler; karar kapılarını değiştirmez.

@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>OTOTR Franchise Modülü</title>
+<link rel="icon" href="data:,">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap">
 <script defer src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
 <style>
@@ -65,17 +66,18 @@ ul.ul{margin:0;padding-left:18px}ul.ul li{margin:3px 0}
 .fc-progress{display:grid;grid-template-columns:auto minmax(120px,1fr) auto;align-items:center;gap:14px;margin-bottom:12px}.fc-progress-label{display:flex;gap:8px;align-items:baseline}.fc-progress-label b{font-size:13px}.fc-progress-label span,.fc-date span{color:var(--mu);font-size:11px}.fc-progress-track{height:7px;border-radius:99px;background:var(--ln);overflow:hidden}.fc-progress-track i{display:block;height:100%;border-radius:inherit;background:var(--rd)}.fc-date{display:grid;grid-template-columns:auto auto;column-gap:7px;align-items:center}.fc-date svg{grid-row:1/3;width:17px;height:17px;color:var(--mu)}.fc-date b{font-size:11px}
 .fc-stages{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;margin-bottom:10px}.fc-stage{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 7px;align-items:center;min-height:70px;padding:9px;border:1px solid var(--ln);border-radius:9px;background:var(--pn);color:var(--ink);font:inherit;text-align:left;cursor:pointer}.fc-stage>i{grid-row:1/3;display:grid;place-items:center;width:25px;height:25px;border-radius:50%;background:var(--sf);color:var(--mu);font-size:10px;font-style:normal;font-weight:700}.fc-stage b{overflow:hidden;font-size:11px;text-overflow:ellipsis;white-space:nowrap}.fc-stage small{overflow:hidden;color:var(--mu);font-size:9px;text-overflow:ellipsis;white-space:nowrap}.fc-stage.done{border-color:#cfe5d8;background:#f4fbf7}.fc-stage.done>i{background:var(--ok);color:#fff}.fc-stage.current{border:2px solid var(--rd);background:#fff7f6;box-shadow:0 5px 15px #e8281a1c}.fc-stage.current>i{background:var(--rd);color:#fff}.fc-stage.future{background:var(--sf);color:var(--mu)}.fc-stage[aria-pressed=true]{outline:2px solid var(--ink);outline-offset:2px}
 .fc-selected{display:flex;align-items:center;gap:8px;min-height:38px;padding:8px 11px;margin-bottom:12px;border-left:3px solid var(--rd);border-radius:5px;background:var(--pn);font-size:11px}.fc-selected svg{width:14px;height:14px;color:var(--rd)}.fc-selected span{color:var(--mu)}.fc-selected em{margin-left:auto;color:var(--rd);font-style:normal;font-weight:700}.fc-body{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(230px,.72fr);gap:13px}.fc-panel{background:var(--pn);border:1px solid var(--ln);border-radius:11px;padding:15px;margin-bottom:13px}.fc-panel-head{display:flex;align-items:start;justify-content:space-between;gap:10px;margin-bottom:10px}.fc-panel-head h2{margin:0 0 3px}.fc-panel-head p{margin:0;color:var(--mu);font-size:11px}.fc-badge{display:inline-flex;padding:4px 8px;border-radius:99px;background:#eaf6ef;color:var(--ok);font-size:10px;font-weight:700;white-space:nowrap}.fc-gates{display:grid}.fc-gate{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:9px;align-items:center;padding:9px 2px;border-top:1px solid var(--ln)}.fc-gate:first-child{border-top:0}.fc-gate svg{width:17px;height:17px;color:var(--mu)}.fc-gate.ok svg,.fc-gate.ok>em{color:var(--ok)}.fc-gate.wait{margin:0 -8px;padding:10px;border-radius:7px;background:#fff7e8}.fc-gate.wait svg,.fc-gate.wait>em{color:var(--wn)}.fc-gate>span{display:grid;gap:1px}.fc-gate b{font-size:11px}.fc-gate small{color:var(--mu);font-size:9px}.fc-gate>em{color:var(--mu);font-size:9px;font-style:normal;font-weight:700}.fc-next{display:grid;gap:4px;padding:12px;border-radius:9px;background:var(--sf)}.fc-next b{font-size:15px}.fc-next span{color:var(--mu);font-size:10px}.fc-history{display:grid;gap:7px}.fc-history div{padding:8px 10px;border-left:2px solid var(--ln);background:var(--sf);font-size:10px}.fc-mini-dl{display:grid;gap:8px;margin:12px 0}.fc-mini-dl div{display:flex;justify-content:space-between;gap:8px;font-size:10px}.fc-mini-dl span{color:var(--mu)}.fc-actions{display:flex;gap:8px;flex-wrap:wrap}.fc-actions .btn{display:inline-flex;align-items:center;gap:6px}.fc-actions svg{width:14px;height:14px}
+.growth-hero{display:grid;grid-template-columns:minmax(190px,.45fr) minmax(0,1.55fr);gap:14px}.growth-score{display:grid;align-content:center;justify-items:center;min-height:190px;text-align:center;background:linear-gradient(145deg,#202329,#351e21);color:#fff}.growth-score b{font-size:58px;line-height:1}.growth-score small{color:#c9ccd1}.growth-narrative{border-left:4px solid var(--rd);font-size:18px;line-height:1.55}.growth-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.growth-metric{border:1px solid var(--ln);border-radius:9px;padding:10px}.growth-metric header{display:flex;justify-content:space-between;gap:8px}.growth-metric small{display:block;color:var(--mu)}.growth-metric .meter i{background:var(--rd)}.growth-owner{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}.growth-owner div{border:1px solid var(--ln);border-radius:9px;padding:10px}.growth-owner small{display:block;color:var(--mu)}
 @media(max-width:900px){.split{grid-template-columns:1fr}}
 @media(max-width:1100px){.fc-owner{grid-template-columns:auto minmax(190px,1fr) auto auto}.fc-owner .btn{grid-column:2/5;width:max-content}.fc-stages{grid-template-columns:repeat(4,minmax(0,1fr))}.fc-body{grid-template-columns:1fr}}
-@media(max-width:760px){.app,.cockpit-shell .app{grid-template-columns:1fr}aside{position:static;height:auto;flex-direction:row;overflow-x:auto;border-right:0;border-bottom:1px solid var(--ln);padding:6px}aside .logo,.ns{display:none}.nb{white-space:nowrap;width:auto}main{padding:14px}}
+@media(max-width:760px){.app,.cockpit-shell .app{grid-template-columns:1fr}aside{position:static;height:auto;flex-direction:row;overflow-x:auto;border-right:0;border-bottom:1px solid var(--ln);padding:6px}aside .logo,.ns{display:none}.nb{white-space:nowrap;width:auto}main{padding:14px}.growth-hero{grid-template-columns:1fr}.growth-score{min-height:150px}.growth-owner{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:760px){.fc-owner{grid-template-columns:auto minmax(0,1fr)}.fc-owner-metric{padding:8px 0 0;border-left:0;border-top:1px solid #494d54}.fc-owner .btn{grid-column:1/3;width:100%}.fc-progress{grid-template-columns:1fr auto}.fc-progress-track{grid-column:1/3;grid-row:2}.fc-stages{grid-template-columns:repeat(2,minmax(0,1fr))}.fc-selected{flex-wrap:wrap}.fc-selected em{width:100%;margin-left:22px}}
-@media(max-width:480px){.pilot{line-height:1.3}.hd{align-items:stretch}.hd label{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%}.hd select{max-width:72%}.g4{grid-template-columns:repeat(2,minmax(0,1fr))}.cols,.dept-grid,.portal-grid,.gate-grid{grid-template-columns:minmax(0,1fr)}.card{min-width:0;padding:14px}.safe-note{overflow-wrap:anywhere}.fc-owner{grid-template-columns:1fr}.fc-owner-icon{display:none}.fc-owner .btn{grid-column:1}.fc-stage{min-height:66px}.fc-gate{grid-template-columns:auto minmax(0,1fr)}.fc-gate>em{grid-column:2}.fc-date{display:none}}
+@media(max-width:480px){.pilot{line-height:1.3}.hd{align-items:stretch}.hd label{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%}.hd select{max-width:72%}.g4{grid-template-columns:repeat(2,minmax(0,1fr))}.cols,.dept-grid,.portal-grid,.gate-grid{grid-template-columns:minmax(0,1fr)}.growth-metrics{grid-template-columns:minmax(0,1fr)}.card{min-width:0;padding:14px}.safe-note{overflow-wrap:anywhere}.fc-owner{grid-template-columns:1fr}.fc-owner-icon{display:none}.fc-owner .btn{grid-column:1}.fc-stage{min-height:66px}.fc-gate{grid-template-columns:auto minmax(0,1fr)}.fc-gate>em{grid-column:2}.fc-date{display:none}.growth-owner{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <div class="pilot">GÜVENLİ PİLOT · CANLI FRANCHISE SİSTEMİ DEĞİLDİR — Yalnızca kurgusal test verisi kullanın.<a href="../index.html#franchise">ERP'ye dön</a></div>
 <div class="app">
-<aside id="nav"><div class="logo">OTO<b>TR</b> Franchise<small>ERP · Franchise Yönetim <span class="ver">v0.9.0-beta.1</span></small></div></aside>
+<aside id="nav"><div class="logo">OTO<b>TR</b> Franchise<small>ERP · Franchise Yönetim <span class="ver">v0.10.0-beta.1</span></small></div></aside>
 <main>
 <div class="hd"><h1 id="ttl"></h1>
 <label>Rol: <select id="role">
@@ -107,6 +109,7 @@ ul.ul{margin:0;padding-left:18px}ul.ul li{margin:3px 0}
 <script type="module">
 import {createFranchiseCase,hireStaff,updateStaffCompliance,openingBlockers,activateFranchiseCase,staffReadyForAccess,requestException,reviewException,ensureOpeningEvidence,submitOpeningEvidence,reviewOpeningEvidence,ensureFollowUps,completeFollowUp,requestFollowUpReopen,reviewFollowUpReopen,SCORE_DIMENSIONS,candidateScoreValue,candidateScoreRecommendation,submitCandidateScore,submitBoardDecision,reviewBoardDecision} from "./franchise-core.mjs";
 import {runFranchiseDemoRehearsal} from "./demo-rehearsal.mjs";
+import {DEALER_GROWTH_PROFILES,evaluateDealerGrowth} from "./dealer-growth-engine.mjs";
 import {readDemoIntake,removeDemoIntake} from "../franchise-basvuru/demo-intake.mjs";
 import {franchiseLiveClient} from "./franchise-live-client.mjs";
 const TODAY=new Date("2026-11-05"),KEY="ototr-franchise-e2e-v1";
@@ -139,6 +142,7 @@ const PKT=[{ad:"Standart Ekspertiz",fiyat:2500,grup:"Bireysel"},{ad:"Kapsamlı E
 const BOLGELER={Kadikoy:"Anadolu",Cankaya:"IC Anadolu",Bornova:"Ege",Nilufer:"Marmara",Muratpasa:"Akdeniz",Selcuklu:"IC Anadolu",Osmangazi:"Marmara",Yesilurt:"Karadeniz",Tepebasi:"Marmara"};
 const NAV=[
 ["","E2E","UÇTAN UCA MERKEZ"],["e2e","E2E","Yaşam döngüsü",1],["skorlama","E2E","Aday skoru ve kurul",1],["departman","E2E","Departman kapıları",1],["personel","E2E","Personel ve yetki",1],["acilis","E2E","Açılış kurulu",1],["takip","E2E","30/60/90 planı",1],["portallar","E2E","Dış kullanıcı portalları",1],
+ ["","BUY","BAYİ BÜYÜME"],["buyume","BUY","Aday ve lokasyon motoru",1],
  ["","YON","YÖNETİM"],["dash","YON","Dashboard",1],["hat","YON","Süreç hattı",1],["inbox","YON","Bekleyen Onaylar",1],
  ["","ADY","ADAYLAR"],["web-kuyruk","ADY","Web başvuru kuyruğu",1],["pipe","ADY","Aday hattı",1],["gor","ADY","Görüşme ve değerlendirme",1],["belge","ADY","Belge yönetimi",1],
 ["","SUB","AKTİF ŞUBELER"],["sube","SUB","Şubeler ve sözleşme",1],["web","SUB","Web ve Google yorum",1],["paket","SUB","Paket ve fiyatlama",1],
@@ -146,10 +150,10 @@ const NAV=[
 ["","SYS","SİSTEM"],["organizasyon","SYS","Departman sorumluları",1],["yayin","SYS","Yayın hazırlığı",1],["yetki","SYS","Yetki matrisi",0],["denetim","SYS","Denetim kaydı",0],["model","SYS","Veri modeli",0]
 ];
 const PERM={
- gm:"e2e skorlama departman personel acilis takip portallar dash hat inbox web-kuyruk pipe gor belge sube web paket fin rapor organizasyon yayin yetki denetim model",
- fd:"e2e skorlama departman personel acilis takip portallar dash hat inbox web-kuyruk pipe gor belge sube web paket fin rapor organizasyon yayin yetki denetim model",
-hk:"e2e skorlama departman acilis dash hat inbox pipe gor belge sube organizasyon yayin",
-fn:"e2e skorlama departman acilis takip dash hat inbox pipe fin rapor sube organizasyon yayin",
+ gm:"e2e skorlama departman personel acilis takip portallar buyume dash hat inbox web-kuyruk pipe gor belge sube web paket fin rapor organizasyon yayin yetki denetim model",
+ fd:"e2e skorlama departman personel acilis takip portallar buyume dash hat inbox web-kuyruk pipe gor belge sube web paket fin rapor organizasyon yayin yetki denetim model",
+hk:"e2e skorlama departman acilis buyume dash hat inbox pipe gor belge sube organizasyon yayin",
+fn:"e2e skorlama departman acilis takip buyume dash hat inbox pipe fin rapor sube organizasyon yayin",
 mh:"e2e departman acilis dash hat inbox pipe fin rapor sube organizasyon yayin",
 ik:"e2e departman personel acilis takip dash hat inbox pipe gor belge organizasyon yayin",
 ak:"e2e departman personel acilis dash hat inbox pipe gor organizasyon yayin",
@@ -160,11 +164,11 @@ dn:"portallar departman acilis",
 ts:"e2e departman acilis dash hat inbox sube organizasyon yayin",
 td:"portallar",
 ad:"portallar",
-op:"e2e skorlama departman acilis takip hat inbox sube organizasyon yayin",
-pz:"e2e departman acilis organizasyon",
+op:"e2e skorlama departman acilis takip buyume hat inbox sube organizasyon yayin",
+pz:"e2e departman acilis buyume organizasyon",
 kl:"e2e departman acilis organizasyon yayin",
 isg:"e2e departman acilis organizasyon",
-mm:"e2e departman acilis organizasyon yayin"
+mm:"e2e departman acilis buyume organizasyon yayin"
 };
 const $=id=>document.getElementById(id),R=()=>$("role").value;
 const H=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -648,6 +652,7 @@ const UAT_SCENARIOS=[
 ];
 let UAT_STATE={};
 let DEMO_REHEARSAL=null;
+let GROWTH_PROFILE_CODE=DEALER_GROWTH_PROFILES[0].code;
 let FLOW=createFranchiseCase({id:"FR-DEMO-001",applicationId:"APP-DEMO-001",name:"Bursa Nilüfer OTOTR",candidate:"Demo Yatırımcı A.Ş.",city:"Bursa",district:"Nilüfer",stage:8,score:84,days:31,stageEnteredDay:30,paid:100,royalty:10,exemption:6,territory:"Nilüfer · 12 km · poligon FR-BRS-01",consents:3,documents:12,documentsTotal:17,history:["05 Kas 2026 · Hukuk · Sözleşme taslağı kurul incelemesine alındı","04 Kas 2026 · Finans · %100 tahsilat test kaydı doğrulandı","03 Kas 2026 · Operasyon · Lokasyon saha ziyareti tamamlandı"]});
 SCORE_DIMENSIONS.forEach((dimension,index)=>submitCandidateScore(FLOW,dimension.code,{score:[84,82,80,85,81,84,86][index],assessorId:dimension.ownerRoles[0]+":seed",assessorRole:dimension.ownerRoles[0],evidenceSha256:String(index+1).repeat(64),rationale:"Sentetik doğrulanmış değerlendirme kanıtı"}));
 submitBoardDecision(FLOW,{decision:"approved",makerId:"fd:seed",makerRole:"fd"});
@@ -782,6 +787,16 @@ function takip(){
   rows.forEach(({task:x})=>{x.ownerRoles=x.ownerRoles||({30:['op'],60:['fn','ik'],90:['fd']}[x.day]||[]);x.reopenRequests=x.reopenRequests||[]});
   return`<div class="safe-note"><b>Kanıtlı takip:</b> Görevi yalnız sahibi SHA-256 kanıt ve notla tamamlar. Tamamlanan görev bağımsız ikinci onay olmadan yeniden açılamaz.</div><div class="g4"><div class="card stat"><b>${rows.length}</b><s2>Takip görevi</s2></div><div class="card stat"><b>${rows.filter(x=>x.task.status==='done').length}</b><s2>Tamamlanan</s2></div><div class="card stat"><b>${rows.filter(x=>(x.task.reopenRequests||[]).some(r=>r.status==='pending')).length}</b><s2>Yeniden açma onayı</s2></div><div class="card stat"><b>${scopes.length}</b><s2>Aktif şube</s2></div></div><div class="gate-grid">${rows.map(({task:x,scope:s})=>{const pending=x.reopenRequests.find(r=>r.status==='pending'),isOwner=x.ownerRoles.includes(R())||R()==='gm',canReview=pending&&['gm','fd'].includes(R())&&pending.requesterId!==R()+':demo-user';return`<div class="gate-card"><h2>${x.day}. gün · ${H(x.title)}</h2><p><b>${H(s.label)}</b> · ${H(s.branchId)}</p><p>Sorumlu: ${H(x.owner)} · <b>${x.status==='done'?'Tamamlandı':'Açık görev'}</b></p><p>Kanıt: ${H(x.evidenceSha256?x.evidenceSha256.slice(0,12)+'…':'Henüz yok')}</p><div class="row"><button class="btn g sm" data-followup-complete="${H(x.id)}" data-followup-scope="${H(s.key)}" ${!isOwner||x.status==='done'?'disabled':''}>Kanıtla tamamla</button><button class="btn g sm" data-followup-reopen="${H(x.id)}" data-followup-scope="${H(s.key)}" ${!isOwner||x.status!=='done'||pending?'disabled':''}>Yeniden açma iste</button>${pending?`<button class="btn g sm" data-followup-review="${H(x.id)}" data-followup-scope="${H(s.key)}" data-reopen-id="${H(pending.id)}" ${!canReview?'disabled':''}>İkinci onay</button>`:''}</div></div>`}).join("")}</div>`;
 }
+function buyume(){
+  const profile=DEALER_GROWTH_PROFILES.find(item=>item.code===GROWTH_PROFILE_CODE)||DEALER_GROWTH_PROFILES[0],result=evaluateDealerGrowth(profile),e=result.economics,a=result.bestAlternative;
+  const owners=[['Dosya sahibi',result.nextGate.owner],['Maliyet doğrulama',result.nextGate.reviewers[0]],['Saha / erişim',result.nextGate.reviewers[1]],['Bölge ve son karar',`${result.nextGate.reviewers[2]} → ${result.nextGate.finalApprover}`]];
+  return`<div class="safe-note"><b>SENTETİK DEMO VERİSİ:</b> Bu çalışma canlı nüfus, araç parkı, ilan, rakip, kira veya OTOTR şube verisi değildir. Gerçek başvuruda kaynak tarihi, kanıt özeti ve bağımsız departman onayı zorunludur.</div>
+  <div class="card"><div class="row"><label style="flex:1">Demo aday/lokasyon senaryosu<br><select data-growth-profile style="width:min(560px,100%)">${DEALER_GROWTH_PROFILES.map(item=>`<option value="${H(item.code)}" ${item.code===profile.code?'selected':''}>${H(item.location)} · ${H(item.candidate)}</option>`).join('')}</select></label><span class="stage-chip">10 boyut · parametrik ağırlık</span></div></div>
+  <div class="growth-hero"><div class="card growth-score"><small>AĞIRLIKLI BÜYÜME SKORU</small><b>${result.score}</b><span class="${result.recommendation.tone}">${H(result.recommendation.label)}</span></div><div class="card"><h2>Aday ve lokasyon karar motoru</h2><p class="growth-narrative">${H(result.narrative)}</p><div class="g4"><div class="stat"><b>%${e.rentRevenueRatio}</b><s2>Kira / beklenen ciro</s2></div><div class="stat"><b>%${e.targetRentRevenueRatio}</b><s2>Hedef üst sınır</s2></div><div class="stat"><b>${a?`${a.distanceMeters} m`:'—'}</b><s2>Alternatif mikro-bölge</s2></div><div class="stat"><b>${a?`%${a.costSavingPercent}`:'—'}</b><s2>Maliyet avantajı</s2></div></div></div></div>
+  <div class="cols"><div class="card"><h2>10 boyutlu skor kırılımı</h2><p class="nt">Risk boyutlarında yüksek ham değer olumsuzdur ve ağırlığa girmeden ters çevrilir. Tüm boyutlar bu demoda eşit %10 ağırlıktadır.</p><div class="growth-metrics">${result.metrics.map(item=>`<div class="growth-metric"><header><b>${H(item.label)}</b><span>${item.adjustedScore}/100</span></header><div class="meter"><i style="width:${item.adjustedScore}%"></i></div><small>${H(item.owner)} · Ham ${item.rawScore} · ${item.polarity==='inverse'?'risk ters çevrildi':'pozitif etki'} · ağırlık %${item.weight}</small></div>`).join('')}</div></div>
+  <div><div class="card"><h2>Karar gerekçesi ve riskler</h2>${result.risks.length?result.risks.map(risk=>`<div class="al">${H(risk)}</div>`).join(''):'<div class="al ok">50 puan altında düzeltilmiş boyut yok.</div>'}<p class="nt"><b>Önerilen sonraki işlem:</b> Alternatif mikro-bölge için saha ziyareti, güncel kira teklifi, erişim süresi ölçümü ve mevcut şube etki analizi toplanmalı.</p></div><div class="card"><h2>Karar sınırı</h2><p><b>Otomatik nihai karar verilmez.</b> Motor öneri ve gerekçe üretir; kurul kararı, kanıtı hazırlayandan farklı bir Genel Müdür onayıyla kesinleşir.</p><p class="nt">${H(result.evidenceBoundary)}</p></div></div></div>
+  <div class="card"><h2>Görev ve yetki zinciri</h2><div class="growth-owner">${owners.map(item=>`<div><small>${H(item[0])}</small><b>${H(item[1])}</b></div>`).join('')}</div></div>`;
+}
 function portallar(){
   const portals=[['Aday Yatırımcı','Durum, belge talebi, randevu, mesaj, sözleşme/ödeme planı ve eğitim. İç skor ve departman notları gizli.','ad'],['Bayi / Şube','Kurulum, kadro, eğitim, ekipman, sözleşme, royalty ve ilk 90 gün. Yalnızca kendi kapsamı.','ba'],['Denetçi','Atanmış saha ziyareti, konum/ölçüm/fotoğraf kanıtı, bulgu ve yeniden kontrol.','dn'],['Tedarikçi','Yalnızca atanmış sipariş, teslimat, seri no, garanti ve kalibrasyon kaydı.','td']];
   const active=portals.find(p=>p[2]===R()),items=PORTAL_WORK[R()]||[];
@@ -869,7 +884,7 @@ Madde 12: Münhasır bölge ihlali halinde sözleşme feshedilir.</div>
   ${c.hist.slice(0,10).map(x=>`<div class="al">${H(x)}</div>`).join("")}`;
 }
 /* ══ RENDER ══ */
-const VIEWS={e2e,skorlama,departman,personel,acilis,takip,portallar,dash,hat,inbox,"web-kuyruk":webKuyruk,pipe,gor,belge,sube,web,paket,fin,rapor,organizasyon,yayin,yetki,denetim,model};
+const VIEWS={e2e,skorlama,departman,personel,acilis,takip,portallar,buyume,dash,hat,inbox,"web-kuyruk":webKuyruk,pipe,gor,belge,sube,web,paket,fin,rapor,organizasyon,yayin,yetki,denetim,model};
 function render(){
   const perm=PERM[R()].split(" ");
   if(!perm.includes(CUR))CUR=perm[0]||"portallar";
@@ -983,6 +998,7 @@ document.addEventListener("click",async ev=>{
 });
 document.addEventListener("change",ev=>{
   const t=ev.target,d=t.dataset,c=gC(SEL);
+  if(d.growthProfile!==undefined){GROWTH_PROFILE_CODE=t.value;render();return}
   if(t.id==='org-department'){LIVE_ORG_DEPARTMENT=t.value;render();return}
   if(d.caseSelect!==undefined){const selected=FR_CASES.find(x=>x.id===t.value);if(selected){FLOW=selected;COCKPIT_SELECTED_STAGE=FLOW.stage}render();return}
   if(d.flowTask){const role=DEPT_ROLE[d.flowTask.split("|")[0]];if(R()===role||R()==="gm"){t.checked?FLOW.tasks[d.flowTask]=1:delete FLOW.tasks[d.flowTask];FLOW.history.unshift(DL()+" · "+RN[R()]+" · Görev "+(t.checked?"tamamlandı: ":"geri açıldı: ")+d.flowTask);render()}return}
