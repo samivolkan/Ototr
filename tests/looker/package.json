@@ -1,0 +1,14 @@
+{
+  "name": "ototr-looker-test-environment",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "serve": "node local-server.mjs",
+    "test:unit": "node --test ../looker-embed-service.test.js",
+    "test:e2e": "playwright test",
+    "test": "npm run test:unit && npm run test:e2e"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.56.1"
+  }
+}

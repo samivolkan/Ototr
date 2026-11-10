@@ -1481,7 +1481,7 @@ function parseAcademyRoute(id){
 }
 
 const navGroups = [
-  ['Genel Merkez', [['dashboard','Yönetim Kokpiti','layout-dashboard'],['project-roadmap','Proje Yol Haritası','map'],['intelligence','İş Zekası','chart-no-axes-column'],['isler-v24','Kokpit · İşler v24','list-checks'],['actions','Aksiyon & Görev','target'],['crisis','Kriz Merkezi','siren'],['ai','AI Öneri','sparkles']]],
+  ['Genel Merkez', [['dashboard','Yönetim Kokpiti','layout-dashboard'],['project-roadmap','Proje Yol Haritası','map'],['intelligence','İş Zekası','chart-no-axes-column'],['looker','Looker Canlı Panolar','panels-top-left'],['isler-v24','Kokpit · İşler v24','list-checks'],['actions','Aksiyon & Görev','target'],['crisis','Kriz Merkezi','siren'],['ai','AI Öneri','sparkles']]],
   ['Bayi & Şube Yönetimi', [['branches','Bayiler & Şubeler','building-2'],['dealer','Bayi Portalı','tablet-smartphone'],['ototr-web','OTOTR Web','globe'],['operations','Operasyon','workflow'],['quality','Kalite & Denetim','shield-check']]],
   ['Ekspertiz & Rapor', [['ruhsat','Ruhsat Oku','scan-line'],['sunum32v2','32 Ekran Sunumu V2','monitor-up'],['kaporta-design','Kaporta Tasarım','panels-top-left'],['kaporta-360','Kaporta 360','rotate-3d']]],
   ['Müşteri & Satış', [['crm','CRM & Randevu','users'],['saha-satis','Saha Satış','map-pinned'],['chronic-issues','Kronik Sorunlar','car-front'],['complaints','Müşteri Şikayetleri','message-circle-warning'],['google-reviews','Yorumlar ve Yanıtlar','star'],['marketing','Pazarlama','megaphone']]],
@@ -1490,7 +1490,7 @@ const navGroups = [
   ['Ayarlar', [['architecture','Sistem Mimarisi','network'],['settings','Ayarlar','settings'],['legacy','Legacy Room','landmark']]],
   ['Finans', [['finance','GM Finans','banknote']]]
 ];
-const titles = {ruhsat:'Ruhsat Oku',dashboard:'Yönetim Kokpiti','project-roadmap':'Proje Yol Haritası',intelligence:'İş Zekası',branches:'Bayiler & Şubeler',dealer:'Bayi Portalı','ototr-web':'OTOTR Web',operations:'Operasyon',franchise:'Franchise Satış',crm:'CRM & Randevu','chronic-issues':'Kronik Sorunlar',complaints:'Müşteri Şikayetleri','google-reviews':'Google Haritalar İtibar Merkezi',reputation:'İtibar Radar',finance:'GM Finans',marketing:'Pazarlama',quality:'Kalite & Denetim','report-design':'Ekspertiz Rapor Tasarımı',sunum32:'32 Ekran Sunumu',sunum32v2:'32 Ekran Sunumu V2','vehicle-passport':'Dijital Araç Karnesi',academy:'OTOTR Academy',hr:'İnsan Kaynakları',legal:'Hukuk & Risk',crisis:'Kriz Merkezi',actions:'Aksiyon & Görev',ai:'AI Öneri',growth:'Bayii Büyüme',legacy:'Legacy Room',architecture:'Sistem Mimarisi',settings:'Ayarlar',branchProfile:'Şube Profili',franchiseProfile:'Aday Değerlendirme',customerProfile:'Müşteri 360'};
+const titles = {ruhsat:'Ruhsat Oku',dashboard:'Yönetim Kokpiti','project-roadmap':'Proje Yol Haritası',intelligence:'İş Zekası',looker:'Looker Canlı Panolar',branches:'Bayiler & Şubeler',dealer:'Bayi Portalı','ototr-web':'OTOTR Web',operations:'Operasyon',franchise:'Franchise Satış',crm:'CRM & Randevu','chronic-issues':'Kronik Sorunlar',complaints:'Müşteri Şikayetleri','google-reviews':'Google Haritalar İtibar Merkezi',reputation:'İtibar Radar',finance:'GM Finans',marketing:'Pazarlama',quality:'Kalite & Denetim','report-design':'Ekspertiz Rapor Tasarımı',sunum32:'32 Ekran Sunumu',sunum32v2:'32 Ekran Sunumu V2','vehicle-passport':'Dijital Araç Karnesi',academy:'OTOTR Academy',hr:'İnsan Kaynakları',legal:'Hukuk & Risk',crisis:'Kriz Merkezi',actions:'Aksiyon & Görev',ai:'AI Öneri',growth:'Bayii Büyüme',legacy:'Legacy Room',architecture:'Sistem Mimarisi',settings:'Ayarlar',branchProfile:'Şube Profili',franchiseProfile:'Aday Değerlendirme',customerProfile:'Müşteri 360'};
 function dealerPortalUrl(){
   const path=decodeURIComponent(location.pathname||'').replace(/\\/g,'/').toLowerCase();
   return path.includes('/bayi-portal/') ? 'index.html#dealer' : 'bayi-portal/index.html#dealer';
@@ -3783,6 +3783,7 @@ function renderPages(){
     pageShell('finance', FinanceRoyaltyHealthCenterPage())+
     pageShell('marketing', typeof MarketingDashboard==='function' ? MarketingDashboard() : `<div class="grid g4">${stat('Pazarlama Harcaması',fmtTL(368000),'Nisan kampanyaları')}${stat('Toplam Lead',1314,'Çapraz kanal','green')}${stat('En İyi ROI','6.6x','Google Maps','blue')}${stat('CPL Ort.',fmtTL(268),'- %11 düşüş','green')}</div><div class="card"><div class="card-head"><div><div class="card-title">Kanal Performansı</div><div class="card-sub">Google Maps dominasyonu, sosyal medya, remarketing</div></div></div>${marketingTable()}</div>`)+
     pageShell('intelligence', IntelligencePage())+
+    pageShell('looker', window.OTOTRLooker?.page?.() || '<div class="card"><b>Looker modülü yüklenemedi.</b><p>Sayfayı yenileyin veya sistem yöneticisine başvurun.</p></div>')+
     pageShell('academy', AcademyDashboard())+
     pageShell('hr', renderHRRoom())+
     pageShell('legal', LegalCommandCenterPage())+
