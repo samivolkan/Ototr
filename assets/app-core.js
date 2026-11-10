@@ -1483,14 +1483,14 @@ function parseAcademyRoute(id){
 const navGroups = [
   ['Genel Merkez', [['dashboard','Yönetim Kokpiti','layout-dashboard'],['project-roadmap','Proje Yol Haritası','map'],['intelligence','İş Zekası','chart-no-axes-column'],['looker','Looker Canlı Panolar','panels-top-left'],['isler-v24','Kokpit · İşler v24','list-checks'],['actions','Aksiyon & Görev','target'],['crisis','Kriz Merkezi','siren'],['ai','AI Öneri','sparkles']]],
   ['Bayi & Şube Yönetimi', [['branches','Bayiler & Şubeler','building-2'],['branch-health','Şube Sağlık & Erken Uyarı','activity'],['dealer','Bayi Portalı','tablet-smartphone'],['ototr-web','OTOTR Web','globe'],['operations','Operasyon','workflow'],['quality','Kalite & Denetim','shield-check']]],
-  ['Ekspertiz & Rapor', [['ruhsat','Ruhsat Oku','scan-line'],['sunum32v2','32 Ekran Sunumu V2','monitor-up'],['gorsel-kontrol','Görsel AI Kontrol','scan-search'],['kaporta-design','Kaporta Tasarım','panels-top-left'],['kaporta-360','Kaporta 360','rotate-3d']]],
+  ['Ekspertiz & Rapor', [['ruhsat','Ruhsat Oku','scan-line'],['report-assurance','Rapor Güvence Merkezi','shield-check'],['sunum32v2','32 Ekran Sunumu V2','monitor-up'],['gorsel-kontrol','Görsel AI Kontrol','scan-search'],['kaporta-design','Kaporta Tasarım','panels-top-left'],['kaporta-360','Kaporta 360','rotate-3d']]],
   ['Müşteri & Satış', [['crm','CRM & Randevu','users'],['saha-satis','Saha Satış','map-pinned'],['chronic-issues','Kronik Sorunlar','car-front'],['complaints','Müşteri Şikayetleri','message-circle-warning'],['google-reviews','Yorumlar ve Yanıtlar','star'],['marketing','Pazarlama','megaphone']]],
   ['Franchise Yönetimi', [['franchise','Franchise Satış','handshake'],['growth','Bayii Büyüme','map']]],
   ['Kurumsal Yönetim', [['academy','OTOTR Academy','graduation-cap'],['hr','İnsan Kaynakları','badge-check'],['legal','Hukuk & Risk','scale']]],
   ['Ayarlar', [['architecture','Sistem Mimarisi','network'],['settings','Ayarlar','settings'],['legacy','Legacy Room','landmark']]],
   ['Finans', [['finance','GM Finans','banknote']]]
 ];
-const titles = {ruhsat:'Ruhsat Oku',dashboard:'Yönetim Kokpiti','project-roadmap':'Proje Yol Haritası',intelligence:'İş Zekası',looker:'Looker Canlı Panolar',branches:'Bayiler & Şubeler','branch-health':'Şube Sağlık & Erken Uyarı',dealer:'Bayi Portalı','ototr-web':'OTOTR Web',operations:'Operasyon',franchise:'Franchise Satış',crm:'CRM & Randevu','chronic-issues':'Kronik Sorunlar',complaints:'Müşteri Şikayetleri','google-reviews':'Google Haritalar İtibar Merkezi',reputation:'İtibar Radar',finance:'GM Finans',marketing:'Pazarlama',quality:'Kalite & Denetim','report-design':'Ekspertiz Rapor Tasarımı',sunum32:'32 Ekran Sunumu',sunum32v2:'32 Ekran Sunumu V2','vehicle-passport':'Dijital Araç Karnesi',academy:'OTOTR Academy',hr:'İnsan Kaynakları',legal:'Hukuk & Risk',crisis:'Kriz Merkezi',actions:'Aksiyon & Görev',ai:'AI Öneri',growth:'Bayii Büyüme',legacy:'Legacy Room',architecture:'Sistem Mimarisi',settings:'Ayarlar',branchProfile:'Şube Profili',franchiseProfile:'Aday Değerlendirme',customerProfile:'Müşteri 360'};
+const titles = {ruhsat:'Ruhsat Oku',dashboard:'Yönetim Kokpiti','project-roadmap':'Proje Yol Haritası',intelligence:'İş Zekası',looker:'Looker Canlı Panolar',branches:'Bayiler & Şubeler','branch-health':'Şube Sağlık & Erken Uyarı',dealer:'Bayi Portalı','ototr-web':'OTOTR Web',operations:'Operasyon',franchise:'Franchise Satış',crm:'CRM & Randevu','chronic-issues':'Kronik Sorunlar',complaints:'Müşteri Şikayetleri','google-reviews':'Google Haritalar İtibar Merkezi',reputation:'İtibar Radar',finance:'GM Finans',marketing:'Pazarlama',quality:'Kalite & Denetim','report-assurance':'Rapor Güvence Merkezi','report-design':'Ekspertiz Rapor Tasarımı',sunum32:'32 Ekran Sunumu',sunum32v2:'32 Ekran Sunumu V2','vehicle-passport':'Dijital Araç Karnesi',academy:'OTOTR Academy',hr:'İnsan Kaynakları',legal:'Hukuk & Risk',crisis:'Kriz Merkezi',actions:'Aksiyon & Görev',ai:'AI Öneri',growth:'Bayii Büyüme',legacy:'Legacy Room',architecture:'Sistem Mimarisi',settings:'Ayarlar',branchProfile:'Şube Profili',franchiseProfile:'Aday Değerlendirme',customerProfile:'Müşteri 360'};
 function dealerPortalUrl(){
   const path=decodeURIComponent(location.pathname||'').replace(/\\/g,'/').toLowerCase();
   return path.includes('/bayi-portal/') ? 'index.html#dealer' : 'bayi-portal/index.html#dealer';
@@ -3768,6 +3768,7 @@ function renderPages(){
   document.getElementById('pages').innerHTML =
     dashboardPage+
     pageShell('project-roadmap', PlanRoomPage())+
+    pageShell('report-assurance', `<iframe title="Rapor Güvence Merkezi" src="report-assurance.html" style="width:100%;height:calc(100vh - 112px);min-height:760px;border:0;border-radius:14px;background:#f4f6f8"></iframe>`)+
     pageShell('franchise', franchiseDashboard())+
     pageShell('crm', crmDashboard())+
     pageShell('chronic-issues', ChronicIssuesPage())+
