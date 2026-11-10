@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 
 const base=await readFile(new URL('../supabase/migrations/20261105130000_franchise_application_intake.sql',import.meta.url),'utf8');
-const expanded=await readFile(new URL('../supabase/migrations/20261110120000_franchise_expanded_intake_channels.sql',import.meta.url),'utf8');
+const expanded=await readFile(new URL('../supabase/migrations/20261110082445_franchise_expanded_intake_channels.sql',import.meta.url),'utf8');
 const sql=base+'\n'+expanded;
 const acceptance=await readFile(new URL('../supabase/ops/franchise-application-intake-acceptance.sql',import.meta.url),'utf8');
 const rollback=await readFile(new URL('../supabase/ops/franchise-rollback.sql',import.meta.url),'utf8');

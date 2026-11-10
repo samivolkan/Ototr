@@ -1,5 +1,7 @@
 begin;
 
+-- Version matches the hosted ototr-staging migration history entry.
+
 create table if not exists public.franchise_intake_channel_catalog (
   channel_code text primary key check (channel_code ~ '^[a-z][a-z0-9_]{1,39}$'),
   label text not null check (length(trim(label)) between 2 and 80),

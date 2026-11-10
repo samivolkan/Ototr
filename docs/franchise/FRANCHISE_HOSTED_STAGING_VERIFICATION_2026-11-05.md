@@ -80,6 +80,16 @@ Hedef: Supabase `ototr-staging` (`bsjkohwbtrfwrqcyhsfz`), PostgreSQL 17.6.
 - Hosted SQL bağlayıcısı `SET ROLE supabase_auth_admin/authenticated` işlemine izin vermediği için Auth hook/RLS rol değiştirme bölümü bu transaction testinden ayrıldı. Gerçek authenticated RLS izolasyonu, ayrı aday JWT → private Storage kabulünde kanıtlanmıştır.
 - Rollback sonrasında Auth kullanıcısı, franchise dosyası, şube, personel, erişim hesabı, takip görevi ve outbox olayı sayıları ayrı ayrı `0` doğrulandı. Sonuç `gm-franchise/hosted-activation-evidence.json` içindedir.
 
+## On kanallı başvuru staging kabulü — 2026-11-10
+
+- `franchise_expanded_intake_channels` migration'ı `ototr-staging` geçmişine `20261110082445` sürümüyle uygulandı; yerel migration dosyası aynı sürümle eşleştirildi.
+- Kanal kataloğunda 10 aktif kanal ve üçüncü faz otomasyonuna aday 8 kanal doğrulandı. Katalogda RLS açık, `anon` yetkisi yok, `authenticated` rolü yalnız aktif satırları okuyabiliyor ve yönetim yetkisi `service_role` ile sınırlı.
+- Rollback-only sentetik kabulde 10 tekil dosya, 10 profil ve 30 ayrı izin makbuzu üretildi. Ticari iletiyi reddeden adayın zorunlu KVKK/veri işleme kapısı geçti; hatalı toplu aktarım referansı, ham T.C. kimlik numarası ve adayın web dışı kanal oluşturma denemesi reddedildi.
+- Aday RLS izolasyonu ve idempotent tekrar çağrısı geçti. Kabul transaction'ı geri alındı; başvuru, profil, izin makbuzu ve sentetik Auth kullanıcı kalıntısı ayrı ayrı `0` doğrulandı.
+- Tam Franchise rollback betiği staging transaction'ında son `COMMIT` yerine `ROLLBACK` kullanılarak çalıştırıldı. DDL bağımlılık sırası hatasız geçti; sonrasında Franchise tabloları, başvuru fonksiyonu ve 10 kanal kataloğu yerinde kaldı.
+- Güvenlik, performans ve sağlık danışmanlarında yeni kanal kataloğuna bağlı bulgu `0`; sağlık bulgusu `0`. Paylaşılan projedeki önceden var olan genel danışman uyarıları bu migration'ın kapsamı dışında ayrıca izlenmelidir.
+- Makinece okunabilir kanıt `gm-franchise/expanded-intake-hosted-evidence.json` dosyasındadır. Bu teknik kabul, gerçek departman UAT imzaları veya canlı yayın onayı değildir; karar `NO_GO` kalır.
+
 ## Sınır
 
 ## Tek ana sorumlu token kapısı — 2026-11-06

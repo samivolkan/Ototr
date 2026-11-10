@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 
 const base = await readFile(new URL('../supabase/migrations/20261105070000_franchise_record_gates.sql', import.meta.url), 'utf8');
-const expanded = await readFile(new URL('../supabase/migrations/20261110120000_franchise_expanded_intake_channels.sql', import.meta.url), 'utf8');
+const expanded = await readFile(new URL('../supabase/migrations/20261110082445_franchise_expanded_intake_channels.sql', import.meta.url), 'utf8');
 const acceptance = await readFile(new URL('../supabase/ops/franchise-record-gates-acceptance.sql', import.meta.url), 'utf8');
 const sql = base+'\n'+expanded;
 
