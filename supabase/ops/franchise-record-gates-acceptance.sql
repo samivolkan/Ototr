@@ -27,7 +27,7 @@ insert into public.franchise_consent_receipts(franchise_case_id,subject_id,purpo
 ('c2000000-0000-4000-8000-000000000001','c1000000-0000-4000-8000-000000000002','data_processing','granted','2026.11','web',now()-interval '3 minutes',null,repeat('2',64)),
 ('c2000000-0000-4000-8000-000000000001','c1000000-0000-4000-8000-000000000002','commercial_communication','granted','2026.11','web',now()-interval '3 minutes',null,repeat('3',64)),
 ('c2000000-0000-4000-8000-000000000001','c1000000-0000-4000-8000-000000000002','commercial_communication','withdrawn','2026.11','portal',now()-interval '2 minutes',now()-interval '2 minutes',repeat('4',64));
-select public.franchise_consents_ready('c2000000-0000-4000-8000-000000000001')=false as latest_withdrawal_closes_gate;
+select public.franchise_consents_ready('c2000000-0000-4000-8000-000000000001') as optional_commercial_withdrawal_keeps_required_consent_gate;
 
 insert into public.franchise_consent_receipts(franchise_case_id,subject_id,purpose,status,notice_version,source,captured_at,evidence_sha256)
 values('c2000000-0000-4000-8000-000000000001','c1000000-0000-4000-8000-000000000002','commercial_communication','granted','2026.11','portal',now()-interval '1 minute',repeat('5',64));

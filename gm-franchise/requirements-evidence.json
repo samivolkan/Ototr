@@ -1,5 +1,5 @@
 {"schemaVersion":1,"module":"OTOTR_FRANCHISE","requirements":[
-{"id":"R01","requirement":"Altı kanaldan idempotent tekil başvuru","owner":"Franchise","status":"PASS","evidence":"supabase/ops/franchise-application-intake-acceptance.sql"},
+{"id":"R01","requirement":"On kanaldan idempotent tekil başvuru","owner":"Franchise","status":"PASS","evidence":"supabase/ops/franchise-application-intake-acceptance.sql"},
 {"id":"R02","requirement":"KVKK aydınlatma, veri işleme ve ticari ileti izinlerinin ayrılması","owner":"Hukuk/KVKK","status":"PASS","evidence":"supabase/ops/franchise-application-intake-acceptance.sql"},
 {"id":"R03","requirement":"Aday, bayi, denetçi ve tedarikçi portal izolasyonu","owner":"BT","status":"PASS","evidence":"supabase/ops/franchise-external-portal-acceptance.sql"},
 {"id":"R04","requirement":"Yedi boyutlu skor önerisi ve bağımsız kurul kararı","owner":"Franchise/CEO","status":"PASS","evidence":"supabase/ops/franchise-scoring-acceptance.sql"},

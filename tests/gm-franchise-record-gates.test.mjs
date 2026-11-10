@@ -2,11 +2,16 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 
-const sql = await readFile(new URL('../supabase/migrations/20261105070000_franchise_record_gates.sql', import.meta.url), 'utf8');
+const base = await readFile(new URL('../supabase/migrations/20261105070000_franchise_record_gates.sql', import.meta.url), 'utf8');
+const expanded = await readFile(new URL('../supabase/migrations/20261110120000_franchise_expanded_intake_channels.sql', import.meta.url), 'utf8');
+const acceptance = await readFile(new URL('../supabase/ops/franchise-record-gates-acceptance.sql', import.meta.url), 'utf8');
+const sql = base+'\n'+expanded;
 
 test('record gates use latest consent receipts and seventeen approved documents', () => {
   assert.match(sql,/distinct on \(purpose\)/i);
-  assert.match(sql,/count\(\*\)=3 and bool_and\(status='granted'\)/i);
+  assert.match(expanded,/purpose in \('privacy_notice','data_processing'\) then status='granted'/i);
+  assert.match(expanded,/else status in \('granted','withdrawn'\)/i);
+  assert.match(acceptance,/optional_commercial_withdrawal_keeps_required_consent_gate/);
   assert.match(sql,/count\(\*\)>0 and bool_and/i);
   assert.match(sql,/d\.status='approved'/i);
   assert.match(sql,/d\.expires_at is null or d\.expires_at>now\(\)/i);

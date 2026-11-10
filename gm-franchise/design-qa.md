@@ -58,6 +58,10 @@
 
 ## Test edilen ana etkileşimler
 
+- Aday hattında 10 başvuru kanalı görüntülendi; Fuar/QR ve Saha Ekibi kaynaklarından sentetik dosya oluşturuldu.
+- Aynı kanal ve kaynak referansı tekrar kullanıldığında yeni dosya oluşturulmadı, mevcut tekil dosya açıldı.
+- Toplu Aktarım `BATCH-` kaynağı olmadan reddedildi; geçerli batch referansıyla kanonik dosya oluşturuldu.
+- Ticari ileti izni verilmemesi başvuruyu kilitlemedi; KVKK aydınlatma ve veri işleme kararları zorunlu kalmaya devam etti.
 - `Kurulum` aşaması seçildi; ayrıntı `Mimari / Proje Sorumlusu` ve ilgili görev metniyle değişti.
 - Mevcut `Sözleşme` aşamasına dönüldü; bekleme nedeni ve `Hukuk Sorumlusu` geri geldi.
 - `Görevi aç` eylemi `#departman` görünümüne yönlendirdi.

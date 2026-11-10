@@ -26,7 +26,7 @@ Atamalar başlamadan önce yürütücü, kontrolör ve dokuz tekil sorumlu kişi
 
 | ID | Senaryo | Beklenen sonuç | Sahip | İkinci onay |
 |---|---|---|---|---|
-| UAT-01 | Altı kanaldan sentetik başvuru | Tekil aday ve franchise dosyası, üç ayrı izin makbuzu | Franchise | KVKK |
+| UAT-01 | On kanaldan sentetik başvuru | Tekil aday ve franchise dosyası, güvenli kaynak referansı, üç ayrı izin makbuzu | Franchise | KVKK |
 | UAT-02 | Skorlama ve kurul kararı | Eşik öneri üretir; kurul kararı denetim izine yazılır | Franchise | Genel Müdür |
 | UAT-03 | Eksik kritik kapıyla ilerleme | Aşama değişimi reddedilir; çift onaylı istisna kritik olmayan kapıda çalışır | Franchise | İlgili departman |
 | UAT-04 | Hukuk ve e-imza hazırlığı | Onaylı şablon/sürüm/izin olmadan talep oluşmaz; gerçek imza gönderilmez | Hukuk | Franchise |

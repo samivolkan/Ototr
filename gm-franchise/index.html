@@ -110,6 +110,18 @@ import {runFranchiseDemoRehearsal} from "./demo-rehearsal.mjs";
 import {readDemoIntake,removeDemoIntake} from "../franchise-basvuru/demo-intake.mjs";
 import {franchiseLiveClient} from "./franchise-live-client.mjs";
 const TODAY=new Date("2026-11-05"),KEY="ototr-franchise-e2e-v1";
+const INTAKE_CHANNELS=Object.freeze([
+  {code:"web",label:"Web",captureMode:"public_form",phase3Ready:true},
+  {code:"gm",label:"GM Manuel",captureMode:"manual_entry",phase3Ready:false},
+  {code:"crm",label:"CRM",captureMode:"external_reference",phase3Ready:true},
+  {code:"reference",label:"Referans",captureMode:"manual_entry",phase3Ready:false},
+  {code:"social",label:"Sosyal Medya",captureMode:"external_reference",phase3Ready:true},
+  {code:"call_center",label:"Çağrı Merkezi",captureMode:"external_reference",phase3Ready:true},
+  {code:"event_qr",label:"Fuar / QR",captureMode:"campaign_reference",phase3Ready:true},
+  {code:"field_team",label:"Saha Ekibi",captureMode:"manual_entry",phase3Ready:true},
+  {code:"corporate_partner",label:"Kurumsal İş Ortağı",captureMode:"external_reference",phase3Ready:true},
+  {code:"bulk_import",label:"Toplu Aktarım",captureMode:"batch_reference",phase3Ready:true}
+]);
 const STAGES=["Yeni","Gorusme","Onay","Sozlesme","Onboarding","Kurulum","Aktif"];
 const RN={gm:"Genel Müdür",fd:"Franchise Sorumlusu",hk:"Hukuk",fn:"Finans Sorumlusu",mh:"Muhasebe",ik:"İK Sorumlusu",ak:"Akademi",sa:"Saha",bt:"BT",ba:"Bayi Sahibi",dn:"Denetçi",ts:"Tedarik Sorumlusu",td:"Tedarikçi",ad:"Aday Yatırımcı",op:"Operasyon",pz:"Pazarlama",kl:"Kalite",isg:"İSG",mm:"Mimari / Proje"};
 const RESPONSIBLE_ROLE_LABELS={gm:"Genel Müdür",fd:"Franchise Sorumlusu",hk:"Hukuk Sorumlusu",fn:"Finans Sorumlusu",mh:"Muhasebe Sorumlusu",ik:"İK Sorumlusu",ak:"Academy Sorumlusu",sa:"Saha Sorumlusu",bt:"BT Sorumlusu",op:"Operasyon Sorumlusu",pz:"Pazarlama Sorumlusu",kl:"Kalite Sorumlusu",isg:"İSG Sorumlusu",mm:"Mimari / Proje Sorumlusu"};
@@ -314,12 +326,13 @@ function pipe(){
   return`${A?`<div class="safe-note"><b>Güvenli başvuru:</b> T.C. kimlik numarası ve finansal belge içeriği girilmez; yalnız sentetik doğrulama referansı kullanılır. Üç izin ayrı kaydedilir.</div><div class="card"><h2>Yeni aday · tekil franchise dosyası</h2><div class="row">
     <input id="na" placeholder="Aday / firma adı" style="flex:2;min-width:140px">
     <input id="ni" placeholder="İlçe" style="flex:1;min-width:80px">
-    <select id="nk"><option>Web</option><option>GM Manuel</option><option>CRM</option><option>Referans</option><option>Sosyal Medya</option><option>Çağrı Merkezi</option></select>
+    <select id="nk" aria-label="Başvuru kanalı">${INTAKE_CHANNELS.map(x=>`<option value="${x.code}">${H(x.label)}</option>`).join("")}</select>
+    <input id="nsrc" placeholder="Kaynak ref. · lead/kampanya/batch kodu" style="flex:1.5;min-width:180px">
     <select id="nb"><option value="5m_10m">Bütçe 5–10 M</option><option value="under_5m">Bütçe 5 M altı</option><option value="10m_20m">Bütçe 10–20 M</option><option value="over_20m">Bütçe 20 M üzeri</option></select>
     <select id="ne"><option value="3m_7m">Öz kaynak 3–7 M</option><option value="under_3m">Öz kaynak 3 M altı</option><option value="7m_15m">Öz kaynak 7–15 M</option><option value="over_15m">Öz kaynak 15 M üzeri</option></select>
   </div><div class="row"><input id="nx" type="number" min="0" max="60" value="5" placeholder="Yönetim deneyimi"><select id="nc"><option value="limited">Limited şirket</option><option value="joint_stock">Anonim şirket</option><option value="sole_proprietor">Şahıs işletmesi</option><option value="none">Şirket yok</option></select><select id="nl"><option value="candidate_found">Aday lokasyon var</option><option value="searching">Lokasyon aranıyor</option><option value="owned">Mülk sahibi</option><option value="leased">Kiralandı</option><option value="none">Lokasyon yok</option></select><select id="np"><option value="single">Tek ortak</option><option value="family">Aile ortaklığı</option><option value="corporate">Kurumsal</option><option value="multi_partner">Çok ortaklı</option></select><input id="nid" placeholder="Sentetik kimlik doğrulama ref."><input id="nfin" placeholder="Sentetik finansal belge ref."></div>
   <div class="row"><label class="ck"><input id="nkv1" type="checkbox" checked>KVKK aydınlatma</label><label class="ck"><input id="nkv2" type="checkbox" checked>Veri işleme izni</label><label class="ck"><input id="nkv3" type="checkbox">Ticari ileti izni</label><button class="btn" data-a="add">Tekil dosya oluştur</button>
-  </div></div>`:`<p class="nt">Yeni aday eklemek için Franchise Sorumlusu veya Genel Müdür rolünü seçin.</p>`}
+  </div><p class="nt">10 kanal aynı tekil Franchise dosyasına bağlanır. Toplu aktarımda ham dosya değil, doğrulanmış batch referansı tutulur; mükerrerlik kaynak referansıyla kontrol edilir.</p></div>`:`<p class="nt">Yeni aday eklemek için Franchise Sorumlusu veya Genel Müdür rolünü seçin.</p>`}
   <div class="kb">${STAGES.map((s,i)=>`<div class="kc">
     <h4>${s} · ${C.filter(c=>c.stage==i).length}</h4>
     ${C.filter(c=>c.stage==i).map(c=>`<div class="it" data-a="open" data-i="${c.id}">
@@ -486,7 +499,7 @@ function rapor(){
   </div>
   <div class="cols">
     <div class="card"><h2>Kaynak analizi</h2>
-      ${["Web","GM Manuel","CRM","Referans","Sosyal Medya","Çağrı Merkezi"].map(k=>{const n=C.filter(c=>c.kaynak==k).length;return n?`<div class="fr"><span>${k}</span><div class="bar"><i style="width:${n/C.length*100}%"></i></div><b>${n}</b></div>`:""}).join("")}
+      ${INTAKE_CHANNELS.map(({label:k})=>{const n=C.filter(c=>c.kaynak==k).length;return n?`<div class="fr"><span>${k}</span><div class="bar"><i style="width:${n/C.length*100}%"></i></div><b>${n}</b></div>`:""}).join("")}
     </div>
     <div class="card"><h2>Bölge dağılımı (aktif)</h2>
       ${[...new Set(ak.map(c=>c.bolge))].map(b=>{const n=ak.filter(c=>c.bolge==b).length;return`<div class="fr"><span>${b}</span><div class="bar"><i style="width:${n/Math.max(ak.length,1)*100}%"></i></div><b>${n}</b></div>`}).join("")||'<p class="nt">Aktif şube yok.</p>'}
@@ -627,7 +640,7 @@ const SHA256_PATTERN=/^[a-f0-9]{64}$/;
 function validIntegrationAcceptance(record){const acceptedAt=new Date(record?.acceptedAtUtc||"");return record?.configured===true&&Number.isInteger(record?.probeStatus)&&record.probeStatus>=200&&record.probeStatus<300&&SHA256_PATTERN.test(record?.evidenceSha256||"")&&SHA256_PATTERN.test(record?.executedByRefSha256||"")&&SHA256_PATTERN.test(record?.acceptedByRefSha256||"")&&record.executedByRefSha256!==record.acceptedByRefSha256&&!Number.isNaN(acceptedAt.getTime())}
 async function loadIntegrationAcceptance(){try{const response=await fetch("./staging-worker-deployment.json",{cache:"no-store"});if(!response.ok)throw new Error(`HTTP ${response.status}`);const manifest=await response.json();if(manifest.schemaVersion!==2)throw new Error("Desteklenmeyen manifest sürümü");for(const row of INTEGRATION_ACCEPTANCE){const group=row[0]==="Departman"?manifest.departmentEndpointAcceptance:manifest.providerAcceptance;row[3]=validIntegrationAcceptance(group?.[row[2]])}INTEGRATION_ACCEPTANCE_LOAD="ready"}catch(error){for(const row of INTEGRATION_ACCEPTANCE)row[3]=false;INTEGRATION_ACCEPTANCE_LOAD="error"}if(CUR==="yayin")render()}
 const UAT_SCENARIOS=[
- ["UAT-01","Altı kanaldan sentetik başvuru",["fd"],["hk","gm"]],["UAT-02","Skorlama ve kurul kararı",["fd"],["gm"]],["UAT-03","Eksik kritik kapıyla ilerleme",["fd"],["gm"]],
+ ["UAT-01","On kanaldan sentetik başvuru",["fd"],["hk","gm"]],["UAT-02","Skorlama ve kurul kararı",["fd"],["gm"]],["UAT-03","Eksik kritik kapıyla ilerleme",["fd"],["gm"]],
  ["UAT-04","Hukuk ve e-imza hazırlığı",["hk"],["fd","gm"]],["UAT-05","%100 tahsilat kapısı",["fn"],["mh","gm"]],["UAT-06","Lokasyon ve mimari",["op"],["mm","gm"]],
  ["UAT-07","On zorunlu kadro",["ik"],["fd","gm"]],["UAT-08","Academy ve kullanıcı yetkisi",["ak"],["bt","gm"]],["UAT-09","Atomik aktif şube",["bt"],["op","gm"]],
  ["UAT-10","Tekrar aktivasyon ve outbox",["bt"],["gm"]],["UAT-11","Şube izolasyonu",["bt"],["hk","gm"]],["UAT-12","30/60/90 takip",["op"],["kl","gm"]],
@@ -644,7 +657,7 @@ function ensureLinkedFranchiseCase(candidate,intake={}){
   const applicationId=candidate.gnot||intake.source_application_id||`APP-DEMO-${candidate.id}`;
   let linked=FR_CASES.find(item=>item.id===candidate.franchiseCaseId||item.applicationId===applicationId);
   if(!linked){
-    linked=createFranchiseCase({id:`FR-${applicationId}`,applicationId,candidate:candidate.ad,name:`${candidate.ilce} OTOTR`,city:intake.province||candidate.city||"Demo",district:candidate.ilce,stage:0,score:scr(candidate),days:0,paid:candidate.paid?100:0,royalty:candidate.roy,exemption:0,territory:`${candidate.ilce} · saha doğrulaması bekliyor`,consents:3,documents:Math.min(nB(candidate),7),documentsTotal:17,applicationProfile:{channel:candidate.kaynak,budgetBand:candidate.yat,equityBand:intake.equity_band||"sentetik",managementExperienceYears:intake.management_experience_years||0,companyStatus:intake.company_status||"sentetik",locationStatus:intake.location_status||"sentetik",partnershipStructure:intake.partnership_structure||"sentetik"},history:[`${DL()} · Sistem · Web aday hattı ayrıntılı açılış dosyasına bağlandı`]});
+    linked=createFranchiseCase({id:`FR-${applicationId}`,applicationId,candidate:candidate.ad,name:`${candidate.ilce} OTOTR`,city:intake.province||candidate.city||"Demo",district:candidate.ilce,stage:0,score:scr(candidate),days:0,paid:candidate.paid?100:0,royalty:candidate.roy,exemption:0,territory:`${candidate.ilce} · saha doğrulaması bekliyor`,consents:3,documents:Math.min(nB(candidate),7),documentsTotal:17,applicationProfile:{channel:"Web",channelCode:"web",captureMode:"public_form",sourceReference:intake.source_application_id,budgetBand:candidate.yat,equityBand:intake.equity_band||"sentetik",managementExperienceYears:intake.management_experience_years||0,companyStatus:intake.company_status||"sentetik",locationStatus:intake.location_status||"sentetik",partnershipStructure:intake.partnership_structure||"sentetik"},history:[`${DL()} · Sistem · Web aday hattı ayrıntılı açılış dosyasına bağlandı`]});
     FR_CASES.push(linked);
   }
   candidate.franchiseCaseId=linked.id;
@@ -882,10 +895,12 @@ const A={
   gsel:s=>{SEL=+s.i;render()},
   dtab:s=>{DTAB=s.t;render()},
   add:()=>{
-    const n=$("na")?.value.trim(),district=$("ni")?.value.trim(),identity=$("nid")?.value.trim(),financial=$("nfin")?.value.trim();if(!n||!district||!identity||!financial||!$("nkv1")?.checked||!$("nkv2")?.checked)return;
-    const profile={channel:$("nk")?.value||"Web",budgetBand:$("nb")?.value,equityBand:$("ne")?.value,managementExperienceYears:+($("nx")?.value||0),companyStatus:$("nc")?.value,locationStatus:$("nl")?.value,partnershipStructure:$("np")?.value,identityVerificationRef:identity,financialDocumentRef:financial,commercialConsent:Boolean($("nkv3")?.checked)};
-    const c=mkC(n,district,profile.budgetBand,0,{kaynak:profile.channel});
-    C.push(c);const f=createFranchiseCase({id:`FR-${String(c.id).padStart(4,"0")}`,applicationId:`APP-${String(c.id).padStart(4,"0")}`,candidate:n,name:`${district} OTOTR`,district,consents:profile.commercialConsent?3:2,documents:0,documentsTotal:17,applicationProfile:profile});FR_CASES.push(f);FLOW=f;LOG_ADD("İzinleri ayrıştırılmış tekil franchise dosyası: "+n+" · "+profile.channel,c);CUR="e2e";render();
+    const n=$("na")?.value.trim(),district=$("ni")?.value.trim(),identity=$("nid")?.value.trim(),financial=$("nfin")?.value.trim(),sourceReference=$("nsrc")?.value.trim(),channel=INTAKE_CHANNELS.find(x=>x.code===$("nk")?.value);if(!n||!district||!identity||!financial||!sourceReference||!channel||!$("nkv1")?.checked||!$("nkv2")?.checked)return;
+    if(!/^[A-Za-z0-9._:-]{3,120}$/.test(sourceReference)||channel.code==="bulk_import"&&!/^BATCH-[A-Za-z0-9._:-]{3,113}$/.test(sourceReference))return;
+    const profile={channel:channel.label,channelCode:channel.code,captureMode:channel.captureMode,phase3Ready:channel.phase3Ready,sourceReference,budgetBand:$("nb")?.value,equityBand:$("ne")?.value,managementExperienceYears:+($("nx")?.value||0),companyStatus:$("nc")?.value,locationStatus:$("nl")?.value,partnershipStructure:$("np")?.value,identityVerificationRef:identity,financialDocumentRef:financial,commercialConsent:Boolean($("nkv3")?.checked)};
+    const duplicate=FR_CASES.find(x=>x.applicationProfile?.channelCode===profile.channelCode&&x.applicationProfile?.sourceReference===sourceReference);if(duplicate){FLOW=duplicate;COCKPIT_SELECTED_STAGE=FLOW.stage;CUR="e2e";history.replaceState(null,"","#e2e");render();return}
+    const c=mkC(n,district,profile.budgetBand,0,{kaynak:profile.channel,gnot:sourceReference});
+    C.push(c);const f=createFranchiseCase({id:`FR-${String(c.id).padStart(4,"0")}`,applicationId:`APP-${String(c.id).padStart(4,"0")}`,candidate:n,name:`${district} OTOTR`,district,consents:3,documents:0,documentsTotal:17,applicationProfile:profile});FR_CASES.push(f);FLOW=f;COCKPIT_SELECTED_STAGE=FLOW.stage;LOG_ADD("İzinleri ayrıştırılmış tekil franchise dosyası: "+n+" · "+profile.channel+" · "+sourceReference,c);CUR="e2e";history.replaceState(null,"","#e2e");render();
   },
   nxt:s=>{
     const c=gC(+s.i);if(!adv(c)||gate(c))return;

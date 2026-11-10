@@ -124,6 +124,8 @@ drop policy if exists franchise_application_profile_select on public.franchise_a
 drop policy if exists franchise_intake_select on public.franchise_application_intakes;
 drop table if exists public.franchise_application_profiles;
 drop table if exists public.franchise_application_intakes;
+drop policy if exists franchise_intake_channel_catalog_select on public.franchise_intake_channel_catalog;
+drop table if exists public.franchise_intake_channel_catalog;
 drop view if exists public.franchise_portal_work_v;
 drop function if exists public.complete_franchise_portal_item(uuid,text,text);
 drop function if exists public.create_franchise_portal_item(uuid,text,text,jsonb,timestamptz);
