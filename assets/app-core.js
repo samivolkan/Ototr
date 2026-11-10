@@ -1482,7 +1482,7 @@ function parseAcademyRoute(id){
 
 const navGroups = [
   ['Genel Merkez', [['dashboard','Yönetim Kokpiti','layout-dashboard'],['project-roadmap','Proje Yol Haritası','map'],['intelligence','İş Zekası','chart-no-axes-column'],['looker','Looker Canlı Panolar','panels-top-left'],['isler-v24','Kokpit · İşler v24','list-checks'],['actions','Aksiyon & Görev','target'],['crisis','Kriz Merkezi','siren'],['ai','AI Öneri','sparkles']]],
-  ['Bayi & Şube Yönetimi', [['branches','Bayiler & Şubeler','building-2'],['dealer','Bayi Portalı','tablet-smartphone'],['ototr-web','OTOTR Web','globe'],['operations','Operasyon','workflow'],['quality','Kalite & Denetim','shield-check']]],
+  ['Bayi & Şube Yönetimi', [['branches','Bayiler & Şubeler','building-2'],['branch-health','Şube Sağlık & Erken Uyarı','activity'],['dealer','Bayi Portalı','tablet-smartphone'],['ototr-web','OTOTR Web','globe'],['operations','Operasyon','workflow'],['quality','Kalite & Denetim','shield-check']]],
   ['Ekspertiz & Rapor', [['ruhsat','Ruhsat Oku','scan-line'],['sunum32v2','32 Ekran Sunumu V2','monitor-up'],['gorsel-kontrol','Görsel AI Kontrol','scan-search'],['kaporta-design','Kaporta Tasarım','panels-top-left'],['kaporta-360','Kaporta 360','rotate-3d']]],
   ['Müşteri & Satış', [['crm','CRM & Randevu','users'],['saha-satis','Saha Satış','map-pinned'],['chronic-issues','Kronik Sorunlar','car-front'],['complaints','Müşteri Şikayetleri','message-circle-warning'],['google-reviews','Yorumlar ve Yanıtlar','star'],['marketing','Pazarlama','megaphone']]],
   ['Franchise Yönetimi', [['franchise','Franchise Satış','handshake'],['growth','Bayii Büyüme','map']]],
@@ -1490,7 +1490,7 @@ const navGroups = [
   ['Ayarlar', [['architecture','Sistem Mimarisi','network'],['settings','Ayarlar','settings'],['legacy','Legacy Room','landmark']]],
   ['Finans', [['finance','GM Finans','banknote']]]
 ];
-const titles = {ruhsat:'Ruhsat Oku',dashboard:'Yönetim Kokpiti','project-roadmap':'Proje Yol Haritası',intelligence:'İş Zekası',looker:'Looker Canlı Panolar',branches:'Bayiler & Şubeler',dealer:'Bayi Portalı','ototr-web':'OTOTR Web',operations:'Operasyon',franchise:'Franchise Satış',crm:'CRM & Randevu','chronic-issues':'Kronik Sorunlar',complaints:'Müşteri Şikayetleri','google-reviews':'Google Haritalar İtibar Merkezi',reputation:'İtibar Radar',finance:'GM Finans',marketing:'Pazarlama',quality:'Kalite & Denetim','report-design':'Ekspertiz Rapor Tasarımı',sunum32:'32 Ekran Sunumu',sunum32v2:'32 Ekran Sunumu V2','vehicle-passport':'Dijital Araç Karnesi',academy:'OTOTR Academy',hr:'İnsan Kaynakları',legal:'Hukuk & Risk',crisis:'Kriz Merkezi',actions:'Aksiyon & Görev',ai:'AI Öneri',growth:'Bayii Büyüme',legacy:'Legacy Room',architecture:'Sistem Mimarisi',settings:'Ayarlar',branchProfile:'Şube Profili',franchiseProfile:'Aday Değerlendirme',customerProfile:'Müşteri 360'};
+const titles = {ruhsat:'Ruhsat Oku',dashboard:'Yönetim Kokpiti','project-roadmap':'Proje Yol Haritası',intelligence:'İş Zekası',looker:'Looker Canlı Panolar',branches:'Bayiler & Şubeler','branch-health':'Şube Sağlık & Erken Uyarı',dealer:'Bayi Portalı','ototr-web':'OTOTR Web',operations:'Operasyon',franchise:'Franchise Satış',crm:'CRM & Randevu','chronic-issues':'Kronik Sorunlar',complaints:'Müşteri Şikayetleri','google-reviews':'Google Haritalar İtibar Merkezi',reputation:'İtibar Radar',finance:'GM Finans',marketing:'Pazarlama',quality:'Kalite & Denetim','report-design':'Ekspertiz Rapor Tasarımı',sunum32:'32 Ekran Sunumu',sunum32v2:'32 Ekran Sunumu V2','vehicle-passport':'Dijital Araç Karnesi',academy:'OTOTR Academy',hr:'İnsan Kaynakları',legal:'Hukuk & Risk',crisis:'Kriz Merkezi',actions:'Aksiyon & Görev',ai:'AI Öneri',growth:'Bayii Büyüme',legacy:'Legacy Room',architecture:'Sistem Mimarisi',settings:'Ayarlar',branchProfile:'Şube Profili',franchiseProfile:'Aday Değerlendirme',customerProfile:'Müşteri 360'};
 function dealerPortalUrl(){
   const path=decodeURIComponent(location.pathname||'').replace(/\\/g,'/').toLowerCase();
   return path.includes('/bayi-portal/') ? 'index.html#dealer' : 'bayi-portal/index.html#dealer';
@@ -2658,6 +2658,7 @@ const moduleHeaderMeta={
   'project-roadmap':['Genel Merkez · Program Yönetimi','Proje Yol Haritası','ERP, CRM, mobil, rapor, franchise, finans, kalite ve entegrasyon işlerini fazlar halinde yürütün; ilerlemeyi tamamlandıkça işaretleyin.'],
   intelligence:['Komuta · İş Zekası','İş Zekası / Analiz Room','Dashboard karar sinyallerinin derin analizini; trend, dönem, bölge, şube ve performans kırılımlarında inceleyin.'],
   branches:['İş Zekası · Bayiler & Şubeler','Bayiler & Şubeler / Network Room','Aktif bayi ve şubeleri; sahip, müdür, ciro, EBITDA, royalty, kalite, SLA, Academy ve hukuk riskiyle yönetin.'],
+  'branch-health':['Bayi & Şube Yönetimi · Demo','Şube Sağlık & Erken Uyarı','Operasyon, müşteri, itibar, kalite, finans, insan, hukuk ve büyüme sinyallerini açıklanabilir sağlık skoru ve 30 günlük risk ön izlemesinde birleştirin.'],
   dealer:['Operasyon · Bayi Kullanımı','OTOTR Bayi Portalı / Şube İşletim Sistemi','Bayi sahibi, şube müdürü, müşteri kabul, usta ve kasa personeli aynı şube verisini rol bazlı kullanır.'],
   'ototr-web':['Bayi & Şube · Web Vitrini','OTOTR Web / Public Site Room','OTOTR web sitesi, randevu formları, franchise başvuruları, SEO içerikleri ve ERP’ye düşen public lead kuyruğunu yönetin.'],
   operations:['Operasyon · Günlük Akış','Operasyon Merkezi','Randevu, araç kabul, ekspertiz akışı, test istasyonları ve rapor teslim süreçlerini günlük operasyon disipliniyle yönetin.'],
@@ -3715,7 +3716,7 @@ function renderPages(){
             <div class="grid g70">
               <div class="card dashboard-jump-target" id="dashboardEmergencyCenter"><div class="card-head"><div><div class="card-title">Acil Durum Merkezi</div><div class="card-sub">CEO'nun ilk bakacağı kritik müşteri, hukuk, marka, operasyon ve finans alarmları</div></div><button class="btn" data-route="crisis">Kriz merkezine git</button></div>${AlertCenter()}</div>
               <div class="trust-column">
-                <div class="card"><div class="card-head"><div><div class="card-title">Şube Sağlık ve Erken Uyarı · DEMO</div><div class="card-sub">Sentetik ERP verisiyle 8 alanlı açıklanabilir sağlık skoru ve 30 gün risk ön izlemesi</div></div></div>${TrustScoreCard()}</div>
+                <div class="card"><div class="card-head"><div><div class="card-title">Şube Sağlık ve Erken Uyarı · DEMO</div><div class="card-sub">Sentetik ERP verisiyle 8 alanlı açıklanabilir sağlık skoru ve 30 gün risk ön izlemesi</div></div><button class="btn" data-route="branch-health">Ayrı ekrana git</button></div>${TrustScoreCard()}</div>
                 ${ManagementPulse()}
                 ${SlaPulsePanel()}
               </div>
@@ -3774,6 +3775,7 @@ function renderPages(){
     pageShell('google-reviews', GoogleReputationPremiumDashboard())+
     pageShell('reputation', ReputationRadarDashboard())+
     pageShell('branches', Branches360Page())+
+    pageShell('branch-health', BranchHealthDemoPage())+
     pageShell('dealer', DealerTabletReportPage())+
     pageShell('ototr-web', OtotrWebManagementPage())+
     pageShell('ruhsat', OtotrRuhsatERP.page())+
@@ -5104,6 +5106,17 @@ function TrustScoreCard(){
   const riskiest=network.rows.slice().sort((a,b)=>b.result.prediction.probability-a.result.prediction.probability)[0];
   if(!riskiest)return '<div class="empty">Şube sağlık verisi bulunamadı.</div>';
   return `${branchHealthMarkup({...riskiest.result,healthScore:network.healthScore},{compact:true})}<div class="health-meta" style="margin-top:10px">Ağ veri yeterliliği %${network.coverage} · ${network.risky} şube yüksek/kritik izlemde. En yüksek risk: <b>${riskiest.branch.name}</b>. Detaylarda 8 alanın katkısı ve en güçlü nedenler gösterilir.</div>`;
+}
+function BranchHealthDemoPage(){
+  const network=branchHealthNetwork();
+  const rows=network.rows.slice().sort((a,b)=>b.result.prediction.probability-a.result.prediction.probability);
+  const critical=rows.filter(x=>x.result.prediction.probability>=70).length;
+  const watch=rows.filter(x=>x.result.prediction.probability>=45&&x.result.prediction.probability<70).length;
+  const source=rows.some(x=>x.result.prediction.source==='bigquery_ml')?'BigQuery ML + ön izleme':'Kural bazlı ön izleme';
+  return `<div class="ceo-note"><b>DEMO TASARIM:</b> Bu ekran sentetik ERP verisiyle çalışır. Canlı yaptırım, prim, fesih veya personel kararı üretmez; model ve veri bağlantıları onaylanmadan operasyonel karar kaynağı değildir.</div>
+  <div class="grid g4" style="margin-top:14px">${stat('Ağ Sağlık Skoru',network.healthScore+'/100','8 alanlı bileşik skor','green')}${stat('Kritik Risk',critical,'30 gün olasılığı %70+','red')}${stat('Yakın İzlem',watch,'30 gün olasılığı %45–69','amber')}${stat('Veri Yeterliliği','%'+network.coverage,source,'blue')}</div>
+  <div class="grid g2" style="margin-top:16px"><div class="card"><div class="card-head"><div><div class="card-title">Model Alanları ve Ağırlıkları</div><div class="card-sub">Her alan kendi sinyalleri, sahibi ve ağırlığıyla görünürdür.</div></div></div><div class="health-area-grid">${(window.OTOTRBranchHealth?.AREAS||[]).map(a=>`<div class="health-area"><span>${a.label} · ${a.owner}</span><b>%${Math.round(a.weight*100)}</b><small class="health-meta">${a.signals.join(' · ')}</small></div>`).join('')}</div></div><div class="card"><div class="card-head"><div><div class="card-title">Karar Güvenlik Çerçevesi</div><div class="card-sub">“AI böyle dedi” yaklaşımını engelleyen kontroller</div></div></div><div class="mini-list"><div class="mini">${icon('badge-info')}<div><b>Tahmin kaynağı görünür</b><span>Model yoksa sonuç açıkça kural bazlı ön izleme olarak etiketlenir.</span></div></div><div class="mini">${icon('list-tree')}<div><b>Nedenler açıklanır</b><span>En güçlü üç etki, alan skoru ve sorumlu departman gösterilir.</span></div></div><div class="mini">${icon('shield-check')}<div><b>İnsan onayı zorunlu</b><span>Otomatik yaptırım veya personel kararı üretilmez.</span></div></div></div></div></div>
+  <div class="card" style="margin-top:16px"><div class="card-head"><div><div class="card-title">Şube Risk Sıralaması</div><div class="card-sub">30 günlük risk olasılığına göre yüksekten düşüğe demo görünüm</div></div><button class="btn" data-route="branches">Şube ağına git</button></div><table><thead><tr><th>Şube</th><th>Sağlık</th><th>30 gün risk</th><th>Seviye</th><th>Veri</th><th>En güçlü neden</th><th>Sorumlu</th><th></th></tr></thead><tbody>${rows.map(({branch,result})=>{const reason=result.reasons[0]||{};return `<tr><td><b>${branch.name}</b><br><span class="card-sub">${branch.region} · ${branch.manager}</span></td><td><b>${result.healthScore}/100</b></td><td><b>%${result.prediction.probability}</b></td><td>${badge(result.level)}</td><td>%${result.coverage}</td><td>${reason.label||'Veri bekleniyor'}<br><span class="card-sub">${reason.score===undefined?'—':reason.score+'/100'}</span></td><td>${reason.owner||'Veri sahibi'}</td><td><button class="btn detail-btn" data-branch-profile="${branch.id}">Aç</button></td></tr>`}).join('')}</tbody></table></div>`;
 }
 function ceoAlarmTable(){
   const alarms=[
