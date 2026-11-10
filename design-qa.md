@@ -1,55 +1,55 @@
-# Google Bağlantı Ayarları — Design QA
+# OTOTR AI ERP Asistanı — Design QA
 
 ## Source of truth
 
-- Referans: `C:\Users\SAMIVO~1\AppData\Local\Temp\codex-clipboard-dee86c70-4cf8-426b-89c9-34c74abf2c3b.png`
-- Uygulama ekranı: `google-connections-implementation.png`
-- Yan yana karşılaştırma: `design-qa-comparison.png`
-- Test görünümü: `1488 × 1058` CSS piksel, DPR `1`
-- Test durumu: Google Bağlantı Ayarları açık, 5 şube aktif, filtre yok, seçim yok
+- Referans görsel: `C:\Users\SAMIVO~1\AppData\Local\Temp\codex-clipboard-f34a610c-75ee-427e-82b2-abcc65c43661.png`
+- Referans ölçüsü: `768 × 457` piksel.
+- Uygulama: `http://127.0.0.1:4173/index.html#dashboard`
+- Tarayıcı kanıtı: Codex in-app Browser, tab 3 (araç tarafından görüntülenen masaüstü ve mobil yakalamalar; dosya sistemi yolu üretmiyor).
+- Masaüstü görünümü: `1265 × 744` CSS piksel, normal panel açık durumu.
+- Mobil görünümü: `390 × 844` CSS piksel, panel açık ve örnek AI yanıtı görünür durumda.
+- Yoğunluk normalizasyonu: Uygulama yakalamaları CSS piksel ölçeğinde incelendi; referansın panel bölgesi kırpılmadan karşılaştırıldı.
 
-## Full-page comparison
+## Full-view comparison evidence
 
-Referanstaki yoğun tek tablo yapısı; başlık ve durum satırı, dört KPI, bilgi kartı, yeni şube formu, filtre çubuğu, dokuz tablo kolonu, beş şube satırı, sayfalama ve iki alt bilgi kartıyla yeniden kuruldu. Eski iki sütunlu kart görünümü kaldırıldı.
+Referanstaki sağ alt müşteri hizmetleri bileşeninin temel kompozisyonu korundu: koyu başlık, kırmızı dairesel destek ikonu, kapatma kontrolü, beyaz yuvarlatılmış panel, kart tabanlı hızlı seçimler ve kırmızı yüzen aç/kapat düğmesi. ERP kullanımına uygun olarak panel genişletildi; WhatsApp seçeneği yerine Kokpit, şube, görev ve risk verileriyle etkileşimli karar desteği getirildi.
 
-Mevcut OTOTR Google Yorum Merkezi yan menüsü ve OTOTR Ekspertiz logosu bilinçli olarak korundu. Referanstaki tüm ERP menüsünü kopyalamak bu modülün gezinme yapısını bozacağı için yalnızca sayfa gövdesi ve işlevsel tablo düzeni eşleştirildi.
+Panel masaüstünde ERP içeriğini tamamen kapatmadan sağ kenarda açılıyor. Mobil görünümde 12 piksel kenar boşluğu, sabit alt giriş alanı ve kaydırılabilir mesaj alanı korunuyor; kalıcı kontroller viewport dışında kalmıyor.
 
-## Focused evidence
+## Focused comparison evidence
 
-- Tablo satırları kompakt tek listede ve referansla aynı içerik sırasındadır.
-- Google hesap/grup ID ve mağaza kodları maskeli gösterilir; kopyalama düğmeleri bulunur.
-- Nilüfer satırında kimlik doğrulama çağrısı, demo satırlarda düzenleme ve üç nokta işlem menüsü bulunur.
-- Üç nokta menüsünde `Düzenle` ve `Kaldır` seçenekleri çalışır.
-- Demo şubelerde son eşitleme metni doğru biçimde `Senkronizasyon bekliyor` gösterilir.
-- Toplu seçim sonrası `Aktif yap`, `Pasif yap` ve `Kaldır` çubuğu açılır.
+- Tipografi: Referansla uyumlu modern sans-serif yapı; ERP'nin mevcut Inter ailesi, güçlü başlık ve küçük yardımcı metin hiyerarşisi korundu.
+- Aralık ve ritim: Başlık 16 px, kartlar 11–13 px iç boşluk, 12–14 px yarıçap ve dengeli 8–12 px dikey aralıklarla referans yoğunluğuna yakın.
+- Renkler: OTOTR kırmızısı, koyu başlık ve açık gri sınırlar mevcut ERP tokenlarıyla uyumlu; koyu tema varyantı ayrıca kod seviyesinde destekleniyor.
+- Görsel ve ikonlar: Özel raster varlık gerekmiyor. Mevcut Lucide ikon kütüphanesi kullanıldı; emoji, özel SVG veya placeholder kullanılmadı.
+- Metin: Müşteri hizmetleri kopyası ERP yönetim bağlamına uyarlandı. Demo/canlı ayrımı, kaynak bilgisi ve insan onayı zorunluluğu açıkça gösteriliyor.
 
-## Interaction verification
+## Primary interactions tested
 
-- Arama: `Gebze` sorgusunda görünür kayıt ve sayaç `1` oldu.
-- Kaynak filtresi: `Demo` seçiminde `4` kayıt gösterildi.
-- Aktif filtresi: Gebze pasife alındığında aktif-only görünümünden çıktı; pasifler açıldığında geri göründü; tekrar aktifleştirildi ve son durumda 5 aktif şube korundu.
-- Filtre kalıcılığı: tam yeniden çizim sonrası `Gebze` araması ve aktif/pasif tercihi korundu.
-- Seçim modeli: 1 satır seçildiğinde sayaç `1` ve toplu işlem çubuğu görünür oldu.
-- Satır menüsü: `Kaldır` işlemi görünür ve erişilebilir olarak doğrulandı; veri silinmemesi için onay penceresi kabul edilmedi.
-- Düzenleme iptali: Gebze hesap ID alanı geçici olarak değiştirildi; `İptal` sonrası özgün değer eksiksiz geri yüklendi.
-- Eski kart renderer sayısı `0`, yeni tablo renderer sayısı `1`, görünür satır sayısı `5` olarak doğrulandı.
-- Yürütülebilir 7 inline script sözdizimi kontrolünden geçti; `git diff --check` temiz geçti.
+- Yüzen düğmeyle panel açma ve kapatma.
+- `Bugünün kritik risklerini özetle` hızlı sorusunun ERP verisinden yanıt üretmesi.
+- Yanıtta kaynak ve insan onayı notunun gösterilmesi.
+- `AI Öneri Merkezi` düğmesinin `#ai` rotasına geçmesi.
+- Mobil `390 × 844` görünümde panel, mesaj kaydırma alanı ve giriş kontrolleri.
+- Escape kısayolu, klavye odağı ve erişilebilir adlar kod ve AX ağacında doğrulandı.
 
 ## Comparison history
 
-1. İlk yapıdaki iki sütunlu şube kartları kaldırıldı.
-2. Tek tablo renderer, filtreler ve toplu işlemler eklendi.
-3. Eski CSS'in tabloyu yeniden kartlara bölmesi engellendi.
-4. Aktif-only filtresinin ilk açılışta uygulanmaması düzeltildi.
-5. Pasif şubenin senkronize olabilmesi engellendi.
-6. OAuth bağlı olduğu halde şube eşitlemesi başarısızsa yanlış `Bağlı` gösterimi engellendi.
-7. Gizlenen seçili satırların toplu işlemden etkilenmesi engellendi.
-8. Kayıt hatalarında yanlış başarı bildirimi kaldırıldı.
-9. Referans ölçüsünde son görsel karşılaştırma yapıldı.
+1. İlk masaüstü yakalamasında referansın koyu başlık/kırmızı vurgu/beyaz kart oranlarıyla eşleşme doğrulandı; P0/P1/P2 fark bulunmadı.
+2. Mobil yakalamada ilk ekran görüntüsü etkileşimden hemen önceki kareyi gösterdi; güncel durum yeniden yakalandı ve panelin viewport içine tam oturduğu doğrulandı. Kod değişikliği gerekmedi.
 
-## Known environment note
+## Console and test notes
 
-Tarayıcı konsolunda sayfanın bu özelliğine ait olmayan `MutationObserver` kaynaklı ortam hataları görüldü. Google bağlantı renderer veya olay kodunda `MutationObserver` kullanılmıyor; yukarıdaki etkileşim testleri bu hatalardan etkilenmedi.
+- `ototr-ai-assistant` filtreli tarayıcı konsolunda hata veya uyarı yok.
+- Ana ERP'nin daha önce de bulunan, AI bileşeninden bağımsız `MutationObserver` hatası konsolda görüldü.
+- Yeni statik test ve JavaScript sözdizimi testi geçti.
+- Mevcut `tools/test-index.mjs` ortamda Playwright paketi olmadığı için çalışmadı.
+- Mevcut `tests/google-reviews.test.mjs`, güncel HTML'de artık bulunmayan eski işaretleyiciyi aradığı için başarısız; AI değişikliğiyle ilgili değil.
+
+## Findings
+
+- P0/P1/P2 görsel veya etkileşim sorunu bulunmadı.
+- P3: Gerçek üretim modeli bağlandığında yanıt bekleme durumuna süre aşımı ve yeniden dene kontrolü eklenebilir.
 
 ## Final result
 
