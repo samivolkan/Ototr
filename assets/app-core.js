@@ -2647,7 +2647,7 @@ function renderHero(){
     <div><b>${active}/${totalBranches}</b><span>aktif şube ağı</span></div>
     <div><b>${fmtTL(totalRevenue)}</b><span>bugünkü ağ cirosu</span></div>
     <div><b>${fmt(reports)}</b><span>bugünkü ekspertiz adedi</span></div>
-    <div><b>${avgQ}/100</b><span>ağ sağlık skoru</span></div>`;
+    <div><b>${avgQ}/100</b><span>demo ağ sağlık skoru</span></div>`;
 }
 
 const moduleHeaderMeta={
@@ -3711,7 +3711,7 @@ function renderPages(){
             <div class="grid g70">
               <div class="card dashboard-jump-target" id="dashboardEmergencyCenter"><div class="card-head"><div><div class="card-title">Acil Durum Merkezi</div><div class="card-sub">CEO'nun ilk bakacağı kritik müşteri, hukuk, marka, operasyon ve finans alarmları</div></div><button class="btn" data-route="crisis">Kriz merkezine git</button></div>${AlertCenter()}</div>
               <div class="trust-column">
-                <div class="card"><div class="card-head"><div><div class="card-title">Şube Sağlık ve Erken Uyarı</div><div class="card-sub">8 alanlı açıklanabilir sağlık skoru ve gelecek 30 gün risk olasılığı</div></div></div>${TrustScoreCard()}</div>
+                <div class="card"><div class="card-head"><div><div class="card-title">Şube Sağlık ve Erken Uyarı · DEMO</div><div class="card-sub">Sentetik ERP verisiyle 8 alanlı açıklanabilir sağlık skoru ve 30 gün risk ön izlemesi</div></div></div>${TrustScoreCard()}</div>
                 ${ManagementPulse()}
                 ${SlaPulsePanel()}
               </div>
@@ -4707,7 +4707,7 @@ function BranchProfilePage(){
     <div class="decision-tile"><span>Kalite / Google</span><b>%${b.quality} / ${b.google||'-'}</b></div>
     <div class="decision-tile"><span>SLA / Şikayet</span><b>%${d.sla||0} / ${d.complaints||0}</b></div>
   </div>
-  <div class="card" style="margin-top:16px"><div class="card-head"><div><div class="card-title">Şube Sağlık ve 30 Gün Erken Uyarı</div><div class="card-sub">Skorun nedenleri, veri yeterliliği ve tahmin kaynağı görünürdür.</div></div></div>${branchHealthMarkup(healthResult)}</div>
+  <div class="card" style="margin-top:16px"><div class="card-head"><div><div class="card-title">Şube Sağlık ve 30 Gün Erken Uyarı · DEMO</div><div class="card-sub">Sentetik demo verisiyle skorun nedenleri, veri yeterliliği ve tahmin kaynağı gösterilir; canlı karar üretmez.</div></div></div>${branchHealthMarkup(healthResult)}</div>
   <div class="grid g60" style="margin-top:16px">
     <div class="grid g2">${stat('Kârlılık',fmtTL(d.profit||0),'Net katkı','green')}${stat('Kapasite','%'+(d.capacity||0),'Bekleme: '+(d.wait||'-'),'blue')}${stat('Ortalama Fiş',fmtTL(d.avgTicket||0),'Premium dönüşüm %'+(d.conversion||0))}${stat('Academy','%'+(d.training||0),(d.staff||0)+' personel','amber')}</div>
     <div class="card"><div class="card-head"><div><div class="card-title">Paket Dağılımı</div><div class="card-sub">Upsell fırsatı ve sepet kalitesi</div></div></div>${packageMixBars(d)}</div>
