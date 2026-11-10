@@ -2642,12 +2642,12 @@ function renderHero(){
   const active=n?.activeBranches || DB.branches.filter(b=>b.status==='Aktif').length;
   const totalBranches=n?.branchCount || DB.branches.length;
   const reports=n?.todayCars || DB.branches.reduce((s,b)=>s+b.reports,0);
-  const avgQ=n?.trustScore || Math.round(DB.branches.reduce((s,b)=>s+b.quality,0)/DB.branches.length);
+  const avgQ=branchHealthNetwork().healthScore || n?.trustScore || Math.round(DB.branches.reduce((s,b)=>s+b.quality,0)/DB.branches.length);
   document.getElementById('heroMetrics').innerHTML = `
     <div><b>${active}/${totalBranches}</b><span>aktif şube ağı</span></div>
     <div><b>${fmtTL(totalRevenue)}</b><span>bugünkü ağ cirosu</span></div>
     <div><b>${fmt(reports)}</b><span>bugünkü ekspertiz adedi</span></div>
-    <div><b>${avgQ}/100</b><span>OTOTR güven skoru</span></div>`;
+    <div><b>${avgQ}/100</b><span>ağ sağlık skoru</span></div>`;
 }
 
 const moduleHeaderMeta={
@@ -3711,7 +3711,7 @@ function renderPages(){
             <div class="grid g70">
               <div class="card dashboard-jump-target" id="dashboardEmergencyCenter"><div class="card-head"><div><div class="card-title">Acil Durum Merkezi</div><div class="card-sub">CEO'nun ilk bakacağı kritik müşteri, hukuk, marka, operasyon ve finans alarmları</div></div><button class="btn" data-route="crisis">Kriz merkezine git</button></div>${AlertCenter()}</div>
               <div class="trust-column">
-                <div class="card"><div class="card-head"><div><div class="card-title">OTOTR Güven Skoru</div><div class="card-sub">Memnuniyet, şikayet, Google, hız, rapor kalitesi ve finansal disiplin bileşik skoru</div></div></div>${TrustScoreCard()}</div>
+                <div class="card"><div class="card-head"><div><div class="card-title">Şube Sağlık ve Erken Uyarı</div><div class="card-sub">8 alanlı açıklanabilir sağlık skoru ve gelecek 30 gün risk olasılığı</div></div></div>${TrustScoreCard()}</div>
                 ${ManagementPulse()}
                 ${SlaPulsePanel()}
               </div>
@@ -3730,7 +3730,7 @@ function renderPages(){
             ${AcademyCeoDashboardPanel()}
             <div class="card dashboard-jump-target" id="dashboardBranchOverview"><div class="card-head"><div><div class="card-title">Türkiye / Şube Genel Görünümü</div><div class="card-sub">Bölge kartları: araç adedi, şube sayısı, memnuniyet ve risk sinyali</div></div><button class="btn" data-route="branches">Şube ekranına git</button></div>${TurkeyBranchOverview()}</div>
             <div class="grid g2">
-              <div class="card"><div class="card-head"><div><div class="card-title">En İyi 10 Şube</div><div class="card-sub">Günlük performans + OTOTR Güven Skoru</div></div></div>${BranchPerformanceTable('best')}</div>
+              <div class="card"><div class="card-head"><div><div class="card-title">En İyi 10 Şube</div><div class="card-sub">Günlük performans + açıklanabilir sağlık skoru</div></div></div>${BranchPerformanceTable('best')}</div>
               <div class="card"><div class="card-head"><div><div class="card-title">En Riskli 10 Şube</div><div class="card-sub">CEO takip ve düzeltme planı gerektiren şubeler</div></div></div>${BranchPerformanceTable('risk')}</div>
             </div>
             <div class="grid g3">
@@ -4637,6 +4637,8 @@ function openRoyaltyActionModal(financeId, actionType='royalty-decision'){
 }
 function normalizeBranchRow(row){ return {name:row[0],cars:row[1],revenue:row[2],satisfaction:row[3],complaints:row[4],trust:row[5],status:row[6],packageAvg:row[7]}; }
 function calculateTrustScore(b){
+  const branch=(DB?.branches||[]).find(x=>x.name===b.name);
+  if(branch)return branchHealth(branch);
   const satisfaction=(b.satisfaction/5)*100, complaint=Math.max(0,100-b.complaints*7), google=(b.satisfaction/5)*100, speed=Math.min(100,70+b.cars*.45), quality=Math.min(100,b.trust+4), finance=Math.min(100,Math.round(b.revenue/2200));
   return Math.round(satisfaction*.24+complaint*.18+google*.18+speed*.14+quality*.16+finance*.10);
 }
@@ -4656,8 +4658,23 @@ function statusReason(b){
 }
 function statusBadge(b){ return `<span class="status-tip" data-tip="${statusReason(b)}">${badge(b.status)}</span>`; }
 function branchHealth(b){
-  const d=DB.branchDetails[b.id]||{};
-  return Math.max(0,Math.min(100,Math.round((b.quality||0)*0.42+(d.sla||0)*0.22+((b.google||4.2)*20)*0.18+(100-Math.min(30,d.complaints||0)*3)*0.12+(d.training||70)*0.06)));
+  return branchHealthResult(b).healthScore;
+}
+function branchHealthResult(b){
+  const engine=window.OTOTRBranchHealth;
+  if(!engine) return {healthScore:0,coverage:0,prediction:{probability:0,source:'unavailable'},level:'Veri yok',scores:{},reasons:[],missing:['Model yüklenemedi']};
+  const predictions=DB.branchHealthPredictions||{};
+  return engine.calculate(b,DB.branchDetails[b.id]||{},predictions[b.id]||{});
+}
+function branchHealthNetwork(){
+  const engine=window.OTOTRBranchHealth;
+  return engine?engine.network(DB.branches||[],DB.branchDetails||{},DB.branchHealthPredictions||{}):{rows:[],healthScore:0,risky:0,coverage:0};
+}
+function branchHealthMarkup(result,{compact=false}={}){
+  const source=result.prediction.source==='bigquery_ml'?'BigQuery ML':'Kural bazlı ön izleme';
+  const areas=(window.OTOTRBranchHealth?.AREAS||[]).map(a=>`<div class="health-area"><span>${a.label}</span><b>${result.scores[a.id]===null||result.scores[a.id]===undefined?'—':Math.round(result.scores[a.id])}</b></div>`).join('');
+  const reasons=result.reasons.map(r=>`<div class="health-reason"><b>${r.label}</b><span>${r.explanation}</span><strong>-${r.impact}</strong></div>`).join('');
+  return `<div class="health-overview"><div class="health-risk-ring" style="--risk:${result.prediction.probability}"><div><b>%${result.prediction.probability}</b><span>30 gün risk</span></div></div><div class="health-summary"><span class="health-source ${result.prediction.source==='bigquery_ml'?'ml':''}">${source}</span><strong>Sağlık ${result.healthScore}/100 · ${result.level}</strong><div class="health-meta">Veri yeterliliği %${result.coverage}. ${result.missing.length?'Eksik alanlar: '+result.missing.join(', ')+'.':'8 alanın tamamı ölçülebiliyor.'}</div></div></div>${compact?'':`<div class="health-area-grid">${areas}</div><div class="health-reasons">${reasons}</div>`}`;
 }
 function branchDecision(b){
   const health=branchHealth(b);
@@ -4672,7 +4689,7 @@ function packageMixBars(d){
   return `<div class="mini-list">${labels.map((l,i)=>`<div><div class="card-sub" style="display:flex;justify-content:space-between"><b>${l}</b><span>%${mix[i]||0}</span></div><div class="progress"><div class="bar" style="width:${mix[i]||0}%;background:${colors[i]}"></div></div></div>`).join('')}</div>`;
 }
 function BranchProfilePage(){
-  const b=DB.branches.find(x=>x.id===selectedBranchId)||DB.branches[0], d=DB.branchDetails[b.id]||{}, health=branchHealth(b), decision=branchDecision(b);
+  const b=DB.branches.find(x=>x.id===selectedBranchId)||DB.branches[0], d=DB.branchDetails[b.id]||{}, healthResult=branchHealthResult(b), health=healthResult.healthScore, decision=branchDecision(b);
   const timeline=[
     ['Bugün','CEO karar notu','Şube kararı: '+decision],
     ['24 saat','Sahip atama','Bölge müdürü + ilgili departman aksiyon sahibi olur.'],
@@ -4690,6 +4707,7 @@ function BranchProfilePage(){
     <div class="decision-tile"><span>Kalite / Google</span><b>%${b.quality} / ${b.google||'-'}</b></div>
     <div class="decision-tile"><span>SLA / Şikayet</span><b>%${d.sla||0} / ${d.complaints||0}</b></div>
   </div>
+  <div class="card" style="margin-top:16px"><div class="card-head"><div><div class="card-title">Şube Sağlık ve 30 Gün Erken Uyarı</div><div class="card-sub">Skorun nedenleri, veri yeterliliği ve tahmin kaynağı görünürdür.</div></div></div>${branchHealthMarkup(healthResult)}</div>
   <div class="grid g60" style="margin-top:16px">
     <div class="grid g2">${stat('Kârlılık',fmtTL(d.profit||0),'Net katkı','green')}${stat('Kapasite','%'+(d.capacity||0),'Bekleme: '+(d.wait||'-'),'blue')}${stat('Ortalama Fiş',fmtTL(d.avgTicket||0),'Premium dönüşüm %'+(d.conversion||0))}${stat('Academy','%'+(d.training||0),(d.staff||0)+' personel','amber')}</div>
     <div class="card"><div class="card-head"><div><div class="card-title">Paket Dağılımı</div><div class="card-sub">Upsell fırsatı ve sepet kalitesi</div></div></div>${packageMixBars(d)}</div>
@@ -4705,7 +4723,7 @@ function livePackageAverage(b){
 }
 function BranchPerformanceTable(type){
   const rows=(type==='best'?DB.ceoDashboard.bestBranches:DB.ceoDashboard.riskyBranches).map(normalizeBranchRow);
-  return `<table class="branch-table compact ${type==='risk'?'risk-table':''}"><thead><tr><th>Şube adı</th><th class="num">Günlük araç</th><th class="money">Ciro</th><th class="money">Paket ort.</th><th class="num">Memnuniyet</th><th class="num">Açık şikayet</th><th class="num">Güven</th><th class="num">Durum</th></tr></thead><tbody>${rows.map(b=>{ const id=branchRefByName(b.name); return `<tr ${id?`data-branch-profile="${id}"`:''}><td><b>${b.name}</b>${id?`<button class="btn detail-btn" data-branch-profile="${id}">Profil</button>`:''}</td><td class="num">${b.cars}</td><td class="mono money">${fmtTL(b.revenue)}</td><td class="mono money"><span class="live-num">${fmtTL(livePackageAverage(b))}</span></td><td class="num">${b.satisfaction}</td><td class="num">${b.complaints}</td><td class="num"><b>${calculateTrustScore(b)}</b>/100</td><td class="num">${statusBadge(b)}</td></tr>`; }).join('')}</tbody></table>`;
+  return `<table class="branch-table compact ${type==='risk'?'risk-table':''}"><thead><tr><th>Şube adı</th><th class="num">Günlük araç</th><th class="money">Ciro</th><th class="money">Paket ort.</th><th class="num">Memnuniyet</th><th class="num">Açık şikayet</th><th class="num">Sağlık</th><th class="num">Durum</th></tr></thead><tbody>${rows.map(b=>{ const id=branchRefByName(b.name); return `<tr ${id?`data-branch-profile="${id}"`:''}><td><b>${b.name}</b>${id?`<button class="btn detail-btn" data-branch-profile="${id}">Profil</button>`:''}</td><td class="num">${b.cars}</td><td class="mono money">${fmtTL(b.revenue)}</td><td class="mono money"><span class="live-num">${fmtTL(livePackageAverage(b))}</span></td><td class="num">${b.satisfaction}</td><td class="num">${b.complaints}</td><td class="num"><b>${calculateTrustScore(b)}</b>/100</td><td class="num">${statusBadge(b)}</td></tr>`; }).join('')}</tbody></table>`;
 }
 function CustomerExperienceCard(){
   const x=DB.ceoDashboard.customerExperience;
@@ -5077,8 +5095,10 @@ function FranchiseSummary(){
   return `<div class="summary-grid"><div class="summary-tile"><span>Yeni başvuru</span><b>${f.newApplications}</b></div><div class="summary-tile"><span>Görüşmede</span><b>${f.inTalks}</b></div><div class="summary-tile"><span>Sözleşme</span><b>${f.contractStage}</b></div><div class="summary-tile"><span>Açılış hazırlığı</span><b>${f.openingPrep}</b></div><div class="summary-tile"><span>Riskli aday</span><b>${f.riskyCandidates}</b></div><div class="summary-tile"><span>Pipeline</span><b>${f.newApplications+f.inTalks+f.contractStage}</b></div></div><div class="mini" style="margin-top:10px">${icon('map-pinned')}<div><b>Kontrollü büyüme notu</b><span>Riskli adaylar finansal güç, lokasyon ve marka uyumu üzerinden tekrar skorlanmalı.</span></div></div>`;
 }
 function TrustScoreCard(){
-  const n=DB.ceoDashboard.network, factors=DB.ceoDashboard.trustFactors;
-  return premiumScoreVisual(n.trustScore,'Genel skor',factors,'Riskli şube eşiği: 75 altı',`${DB.ceoDashboard.riskyBranches.filter(x=>x[5]<75).length} şube düzeltme planı veya CEO takip listesinde.`);
+  const network=branchHealthNetwork();
+  const riskiest=network.rows.slice().sort((a,b)=>b.result.prediction.probability-a.result.prediction.probability)[0];
+  if(!riskiest)return '<div class="empty">Şube sağlık verisi bulunamadı.</div>';
+  return `${branchHealthMarkup({...riskiest.result,healthScore:network.healthScore},{compact:true})}<div class="health-meta" style="margin-top:10px">Ağ veri yeterliliği %${network.coverage} · ${network.risky} şube yüksek/kritik izlemde. En yüksek risk: <b>${riskiest.branch.name}</b>. Detaylarda 8 alanın katkısı ve en güçlü nedenler gösterilir.</div>`;
 }
 function ceoAlarmTable(){
   const alarms=[
