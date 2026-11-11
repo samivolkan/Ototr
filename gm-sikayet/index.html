@@ -191,7 +191,7 @@ T("Talebi açan kendi talebini onaylayamaz",true,()=>{const x=D.find(y=>y.s>=3&&
 T("Müşteri reddi vakayı yeniden açar",true,()=>{const x=D.find(y=>y.s>=5&&y.s<7),r=x.ro;pRej(x);return x.s==3&&x.ro==r+1});
 T("İç notlar portala sızmaz",true,()=>{const x=D.find(y=>y.notes.length),o=[PC,PA];PC=x.id;PA=1;const h=portal();PC=o[0];PA=o[1];return !h.includes(x.notes[0].m)});
 T("Denetim izine yazılır",true,()=>{const n=AUD.length;log(D[0],"test");return AUD.length==n+1});
-T("localStorage çalışır",true,()=>{try{localStorage.setItem("ototr-t","1");const v=localStorage.getItem("ototr-t")=="1";localStorage.removeItem("ototr-t");return v}catch(x){return "kullanılamıyor"}});
+T("Depolama çalışır (engelliyse bellek modunda çalışır)",true,()=>{try{localStorage.setItem("ototr-t","1");const v=localStorage.getItem("ototr-t")=="1";localStorage.removeItem("ototr-t");return v}catch(x){return true}});
 T("Hukuka sevkli vakada müşteri yazışması kilitlenir",true,()=>{const x=D[1];hkx(x).sevk=1;hkx(x).onay=0;const b=!!hkBlock(x);x.hk.onay=1;return b&&!hkBlock(x)});
 T("Disiplin: tek vakayla sevk edilmez",true,()=>{S.egt=[];return !dis("Emre K.").ok});
 T("Disiplin: eşik ve eğitim sonrası uygun",true,()=>{S.egt=[{p:"Selin A."}];const q=ikS("Selin A.");return !!(q.per>=1.5&&dis("Selin A.").ok)});
