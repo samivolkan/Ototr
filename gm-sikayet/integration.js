@@ -4,8 +4,9 @@
   const regionOf=b=>/Gebze|İnegöl|Nilüfer|Kocaeli|Bursa/.test(b)?"Marmara":"Diğer";
   const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   const canEdit=()=>!R().ro;
-  function read(){try{return JSON.parse(localStorage.getItem(KEY))||{goals:[],actions:[]}}catch(e){return {goals:[],actions:[]}}}
-  function write(v){localStorage.setItem(KEY,JSON.stringify(v));}
+  const mem={},sget=k=>{try{return localStorage.getItem(k)}catch(e){return k in mem?mem[k]:null}},sset=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){mem[k]=v}};
+  function read(){try{return JSON.parse(sget(KEY))||{goals:[],actions:[]}}catch(e){return {goals:[],actions:[]}}}
+  function write(v){sset(KEY,JSON.stringify(v));}
   function keys(level){if(level==="Bölge")return[...new Set(DV().map(x=>regionOf(x.b)))];if(level==="Şube")return[...new Set(DV().map(x=>x.b))];return[...new Set(DV().map(x=>x.u))]}
   const performanceRows=()=>DV().map(x=>({...x,region:regionOf(x.b)}));
   function targetFor(level,key){const s=read(),found=s.goals.find(g=>g.level===level&&g.key===key);return PM.normalizeTarget(level,found||{})}
@@ -22,14 +23,14 @@
     if(!canEdit())return toast("Gözlemci rolü aksiyon iletemez.");
     const metric=PM.aggregate(performanceRows(),level,key),rec=PM.actionFor(metric),s=read();
     const action={id:"CMP-"+Date.now(),source:"Müşteri Şikâyetleri",sourceModule:"Müşteri Şikâyetleri",category:rec.type,scope:level,scopeName:key,branch:level==="Şube"?key:"Genel Merkez",region:level==="Bölge"?key:regionOf(key),priority:metric.sla<80?"Kritik":"Yüksek",module:rec.type,owner:rec.owner,ownerRole:rec.owner,title:rec.text,description:`${level}: ${key} · SLA %${metric.sla}`,status:"Açık",createdAt:new Date().toISOString(),nextAction:rec.text,metrics:metric};
-    s.actions.unshift(action);write(s);let shared=[];try{shared=JSON.parse(localStorage.getItem(ACTIONS)||"[]")||[]}catch(e){}shared.unshift(action);localStorage.setItem(ACTIONS,JSON.stringify(shared.slice(0,200)));
+    s.actions.unshift(action);write(s);let shared=[];try{shared=JSON.parse(sget(ACTIONS)||"[]")||[]}catch(e){}shared.unshift(action);sset(ACTIONS,JSON.stringify(shared.slice(0,200)));
     AUD.push({r:ROLE,id:"—",t:`Performans aksiyonu: ${key} → ${rec.owner}`,ts:new Date().toLocaleString("tr-TR")});syncBridge();toast("İlgili kişiye performans aksiyonu iletildi");performancePage();
   }
   function syncBridge(){
     const s=read();
     const tickets=DV().map(x=>({id:x.id,customer:x.mus,plate:x.pl,branch:x.b,region:regionOf(x.b),owner:x.u,team:x.u||"Şube Müdürü",priority:ON[x.o],status:ST[x.s],sla:x.left<0?"Aşıldı":x.bekle?"Durdu":"İçinde",type:KAT[x.k],source:x.ch,legalRisk:x.k===2?"Yüksek":"Düşük",lastAction:x.tl.at(-1)?.t||"Kayıt açıldı",nextAction:ST[Math.min(7,x.s+1)],compensation:x.tut?tl(x.tut):"—",rootCause:x.kok||"İnceleme bekliyor"}));
     const payload={version:1,updatedAt:new Date().toISOString(),complaintTickets:tickets,performanceGoals:s.goals,performanceActions:s.actions,summary:{total:tickets.length,open:tickets.filter(x=>x.status!=="Kapandı").length,closed:tickets.filter(x=>x.status==="Kapandı").length,breached:tickets.filter(x=>x.sla==="Aşıldı").length,critical:tickets.filter(x=>x.priority==="Kritik").length}};
-    localStorage.setItem(BRIDGE,JSON.stringify(payload));
+    sset(BRIDGE,JSON.stringify(payload));
   }
   function performancePage(resetKey=false){
     const level=document.getElementById("pfLevel")?.value||"Bölge",list=keys(level),currentKey=document.getElementById("pfKey")?.value,selected=!resetKey&&list.includes(currentKey)?currentKey:list[0],s=read(),disabled=canEdit()?"":'disabled aria-disabled="true" title="Gözlemci rolü yalnızca okuyabilir"';
