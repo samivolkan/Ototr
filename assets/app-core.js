@@ -3808,7 +3808,16 @@ function renderPages(){
   window.OTOTR_ASSET_LOADER?.afterDashboard?.();
 }
 
-function complaintCenter(){ return DB.complaintsCenter || seed.complaintsCenter || {}; }
+function complaintCenter(){
+  const base=DB.complaintsCenter || seed.complaintsCenter || {};
+  try{
+    const bridge=JSON.parse(localStorage.getItem('ototr_complaint_bridge_v1')||'null');
+    if(bridge?.version===1&&Array.isArray(bridge.complaintTickets)&&bridge.complaintTickets.length){
+      return {...base,...bridge,complaintTickets:bridge.complaintTickets,performanceGoals:bridge.performanceGoals||[],performanceActions:bridge.performanceActions||[]};
+    }
+  }catch(error){ console.warn('Şikayet entegrasyon verisi okunamadı',error); }
+  return base;
+}
 function ComplaintExecutiveSummary(){
   const c=complaintCenter(), rows=c.complaintTickets||[];
   const open=rows.filter(x=>x.status!=='Kapandı').length;
@@ -3883,6 +3892,7 @@ function ComplaintsCenterPage(){
   const c=complaintCenter(), rows=filteredComplaints();
   return `<div class="toolbar">
     <button class="btn primary" data-action="Yeni şikayet dosyası açıldı.">${icon('plus')}Yeni şikayet aç</button>
+    <button class="btn" onclick="window.location.href='gm-sikayet/index.html'">${icon('layout-dashboard')}Gelişmiş Şikayet Operasyon Merkezi</button>
     ${complaintSelect('region','Bölge',uniq((c.complaintTickets||[]).map(x=>x.region)))}
     ${complaintSelect('branch','Şube',uniq((c.complaintTickets||[]).map(x=>x.branch)))}
     ${complaintSelect('priority','Öncelik',uniq((c.complaintTickets||[]).map(x=>x.priority)))}
