@@ -14,7 +14,7 @@ test('uses only the requested three demo branches',()=>{
 });
 
 test('blocks observer writes in the performance module',()=>{
-  assert.match(integration,/if\(!canEdit\(\)\)return toast\("İzleyici rolü hedef değiştiremez/);
+  assert.match(integration,/if\(!canEdit\(\)\)return toast\("Gözlemci rolü hedef değiştiremez/);
   assert.match(integration,/disabled aria-disabled="true"/);
 });
 
