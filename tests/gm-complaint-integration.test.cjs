@@ -13,8 +13,9 @@ test('uses only the requested three demo branches',()=>{
   assert.doesNotMatch(html,/const BR=\["İzmir Bornova"/);
 });
 
-test('blocks observer writes in the performance module',()=>{
-  assert.match(integration,/if\(!canEdit\(\)\)return toast\("Gözlemci rolü hedef değiştiremez/);
+test('blocks unauthorized role writes in the performance module',()=>{
+  assert.match(integration,/canManagePerformance\(ROLE\)/);
+  assert.match(integration,/if\(!canEdit\(\)\)return toast\("Bu rol performans hedefi değiştiremez/);
   assert.match(integration,/disabled aria-disabled="true"/);
 });
 

@@ -21,6 +21,14 @@ test("genel müdür, hukuk, kalite, academy ve gözlemci tüm şubeleri okur",()
 test("gözlemci hiçbir kayda yazamaz",()=>{
   assert.ok(rows.every(x=>!R.canWriteCase("Gözlemci",x.b,x)));
 });
+test("işlem bazlı roller vaka, gelen kutusu, yorum ve performansı ayrı sınırlar",()=>{
+  assert.equal(R.canWriteCase("Academy","Kocaeli Gebze",rows[0]),false);
+  assert.equal(R.canWriteInbox("Gözlemci","Kocaeli Gebze","Kocaeli Gebze"),false);
+  assert.equal(R.canWriteReview("Hukuk","Kocaeli Gebze","Kocaeli Gebze"),false);
+  assert.equal(R.canWriteReview("Şube Müdürü","Kocaeli Gebze","Bursa Nilüfer"),false);
+  assert.equal(R.canManagePerformance("Şube Müdürü"),false);
+  assert.equal(R.canManagePerformance("Bölge Müdürü"),true);
+});
 test("şube müdürü başka şubeye yazamaz, kendi şubesine yazar",()=>{
   assert.equal(R.canWriteCase("Şube Müdürü","Kocaeli Gebze",{b:"Bursa İnegöl"}),false);
   assert.equal(R.canWriteCase("Şube Müdürü","Kocaeli Gebze",{b:"Kocaeli Gebze"}),true);
@@ -32,6 +40,9 @@ test("bilinmeyen rol hiçbir kaydı göremez ve yazamaz",()=>{
 test("sayfa roles.js'i yükler, eski rol adlarını kullanmaz ve yazma işlemlerini korur",()=>{
   assert.match(html,/<script src="roles\.js"><\/script>/);
   for(const w of ["Franchise Yönetim","İzleyici","Şube müdürü"]) assert.ok(!html.includes(w),w);
-  for(const fn of ["addM","appr","hkSevk","hkG","aiA","dofV","dofD"]) assert.match(html,new RegExp("function "+fn+"\\([^)]*\\)\\{if\\(!canW\\(SEL\\)\\)return;"));
-  assert.match(integration,/DV\(\)\.map\(/);
+  for(const fn of ["addM","hkSevk","aiA","dofV","dofD","caseSet","dofOpen","dofClose"]) assert.match(html,new RegExp("function "+fn+"\\([^)]*\\)\\{if\\(!canW\\(SEL\\)\\)return"));
+  assert.match(html,/function appr\([^)]*\)\{if\(!canW\(SEL\)\|\|!compensationReady\(\)\)return;/);
+  assert.match(html,/function compensationOpen\([^)]*\)\{if\(!canW\(SEL\)\|\|!compensationReady\(\)\)return;/);
+  assert.match(html,/function hkG\([^)]*\)\{if\(!R\(\)\.hkw\|\|!OTOTRRoles\.visible/);
+  assert.match(integration,/const tickets=D\.map\(/);
 });
