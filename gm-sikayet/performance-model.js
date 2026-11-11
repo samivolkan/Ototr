@@ -15,7 +15,10 @@
     const recovery=clamp((metrics.recovery/target.recovery)*100);
     const repeat=clamp(((target.repeatMax-Math.max(0,metrics.repeatRate-target.repeatMax))/target.repeatMax)*100);
     const csat=clamp((metrics.csat/target.csat)*100);
-    return Math.round(sla*.35+recovery*.25+repeat*.2+csat*.2);
+    const weighted=Math.round(sla*.45+recovery*.2+repeat*.2+csat*.15);
+    if(metrics.sla<80) return Math.min(64,weighted);
+    if(metrics.sla<target.sla) return Math.min(79,weighted);
+    return weighted;
   }
   function status(value){return value>=95?"Hedef üstü":value>=80?"Hedefte":value>=65?"İzle":"Aksiyon gerekli";}
   function aggregate(cases,level,key){

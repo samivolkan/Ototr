@@ -3,13 +3,13 @@ const test=require('node:test');
 const model=require('../gm-sikayet/performance-model.js');
 
 const rows=[
-  {region:'Marmara',b:'İstanbul Kadıköy',u:'Selin A.',s:3,left:-2,karar:'Haklı',ro:1},
-  {region:'Marmara',b:'İstanbul Kadıköy',u:'Selin A.',s:7,left:0,karar:'Haksız',ro:0},
-  {region:'Ege',b:'İzmir Bornova',u:'Emre K.',s:2,left:10,karar:'',ro:0}
+  {region:'Marmara',b:'Kocaeli Gebze',u:'Selin A.',s:3,left:-2,karar:'Haklı',ro:1},
+  {region:'Marmara',b:'Kocaeli Gebze',u:'Selin A.',s:7,left:0,karar:'Haksız',ro:0},
+  {region:'Marmara',b:'Bursa Nilüfer',u:'Emre K.',s:2,left:10,karar:'',ro:0}
 ];
 
 test('aggregates complaint performance by branch',()=>{
-  const metric=model.aggregate(rows,'Şube','İstanbul Kadıköy');
+  const metric=model.aggregate(rows,'Şube','Kocaeli Gebze');
   assert.equal(metric.count,2);
   assert.equal(metric.open,1);
   assert.equal(metric.sla,0);
@@ -23,6 +23,8 @@ test('normalizes target ranges and produces score/status',()=>{
   const value=model.score({sla:90,recovery:80,repeatRate:5,csat:4.5},model.DEFAULT_TARGETS['Şube']);
   assert.ok(value>=80&&value<=100);
   assert.match(model.status(value),/Hedef/);
+  const missed=model.score({sla:75,recovery:100,repeatRate:0,csat:5},model.DEFAULT_TARGETS['Şube']);
+  assert.ok(missed<80,'SLA hedefini kaçıran kayıt hedefte sayılmamalı');
 });
 
 test('routes weak signals to an accountable owner',()=>{

@@ -2590,7 +2590,7 @@ function renderNav(){
   const nav=document.getElementById('nav');
   const leads = Array.isArray(DB?.leads) ? DB.leads : [];
   const tickets = Array.isArray(DB?.tickets) ? DB.tickets : [];
-  const complaintTickets = Array.isArray(DB?.complaintsCenter?.complaintTickets) ? DB.complaintsCenter.complaintTickets : [];
+  const complaintTickets = complaintCenter().complaintTickets || [];
   const sideAcademyItems = ACADEMY_ROOMS.filter(r=>r.id!=='overview').map(r=>`<button data-nav-route="${academyRouteFor(r.id)}" class="${current==='academy' && ACADEMY_VIEW.room===r.id?'active':''}"><span>${r.title}</span></button>`).join('');
   const sideHrItems = HR_CATEGORIES.filter(c=>c.id!=='hr-command').map(c=>{
     const room = HR_ROOM_BY_ID[c.defaultRoom] || HR_ROOM_BY_ID[c.rooms[0]] || HR_ROOM_BY_ID[HR_DEFAULT_ROOM];
@@ -3818,6 +3818,27 @@ function complaintCenter(){
   }catch(error){ console.warn('Şikayet entegrasyon verisi okunamadı',error); }
   return base;
 }
+function complaintDerivedKpis(){
+  const c=complaintCenter(),rows=c.complaintTickets||[],open=rows.filter(x=>x.status!=='Kapandı'),critical=open.filter(x=>x.priority==='Kritik'||x.priority==='P0'||x.priority==='P1'),breached=open.filter(x=>x.sla==='Aşıldı'),closed=rows.filter(x=>x.status==='Kapandı'),legal=open.filter(x=>x.legalRisk==='Yüksek'),recovered=closed.filter(x=>x.compensation&&x.compensation!=='—');
+  const insideRate=Math.round(100*(open.length-breached.length)/Math.max(1,open.length));
+  return [
+    {label:'Toplam şikayet',value:String(rows.length),trend:'Tek veri kaynağı',tone:'info',icon:'messages-square'},
+    {label:'Açık şikayet',value:String(open.length),trend:`${closed.length} kapandı`,tone:open.length?'warn':'good',icon:'message-circle-warning'},
+    {label:'Kritik şikayet',value:String(critical.length),trend:'Aktif kritik dosya',tone:critical.length?'bad':'good',icon:'shield-alert'},
+    {label:'SLA içinde çözülen',value:`%${insideRate}`,trend:`${breached.length} aşım`,tone:insideRate>=92?'good':'warn',icon:'timer'},
+    {label:'Hukuki risk',value:String(legal.length),trend:'Yüksek riskli açık dosya',tone:legal.length?'warn':'good',icon:'scale'},
+    {label:'Geri kazanım kaydı',value:String(recovered.length),trend:'Kapanan telafili dosya',tone:'info',icon:'hand-heart'}
+  ];
+}
+function complaintDerivedAlerts(){
+  const rows=(complaintCenter().complaintTickets||[]).filter(x=>x.status!=='Kapandı');
+  const rank=x=>(x.priority==='P0'||x.priority==='Kritik'?40:x.priority==='P1'?30:10)+(x.sla==='Aşıldı'?20:0)+(x.legalRisk==='Yüksek'?15:0);
+  return rows.slice().sort((a,b)=>rank(b)-rank(a)).slice(0,5).map(x=>({text:x.sla==='Aşıldı'?`${x.id} SLA süresini aştı`:x.legalRisk==='Yüksek'?`${x.id} hukuki risk takibinde`:`${x.id} kritik müşteri takibinde`,branch:x.branch,time:x.lastAction||'Aktif dosya',route:'complaints',severity:rank(x)>=50?'critical':'warning'}));
+}
+function complaintDerivedBranchScores(){
+  const tickets=complaintCenter().complaintTickets||[];
+  return [...new Set(tickets.map(x=>x.branch).filter(Boolean))].map(branch=>{const all=tickets.filter(x=>x.branch===branch),open=all.filter(x=>x.status!=='Kapandı'),sla=open.filter(x=>x.sla==='Aşıldı').length,legal=open.filter(x=>x.legalRisk==='Yüksek').length,recovery=all.filter(x=>x.status==='Kapandı'&&x.compensation&&x.compensation!=='—').length,score=Math.max(40,100-sla*9-legal*7-Math.max(0,open.length-5)*2);return{branch,open:open.length,sla,legal,recovery,score,status:score>=85?'Lider':score>=70?'Takipte':'Riskli'};});
+}
 function ComplaintExecutiveSummary(){
   const c=complaintCenter(), rows=c.complaintTickets||[];
   const open=rows.filter(x=>x.status!=='Kapandı').length;
@@ -3842,22 +3863,22 @@ function DashboardComplaintCeoPanel(){
   const legal=rows.filter(x=>['Yüksek','CEO takip','Orta'].includes(x.legalRisk)).length;
   const reputation=rows.filter(x=>String(x.source||'').includes('Google')||String(x.type||'').includes('Sosyal')||String(x.type||'').includes('Google')).length;
   const totalRisk=rows.reduce((s,x)=>s+(Number(x.amountRisk)||0),0);
-  const sentiment=c.complaintSentiment||{}, sla=c.complaintSla||{};
-  const slaTotal=(sla.inside||0)+(sla.critical||0)+(sla.breached||0);
-  const slaScore=Math.round(((sla.inside||0)/Math.max(1,slaTotal))*100);
+  const recovered=rows.filter(x=>x.status==='Kapandı'&&x.compensation&&x.compensation!=='—').length;
+  const slaScore=Math.round(((Math.max(0,open-breached))/Math.max(1,open))*100);
   const kpis=[
     ['Açık dosya',open,'CEO gündemine açık şikayet'],
     ['P0 / P1',critical,'Kritik ve yüksek öncelik'],
     ['SLA riski',breached,'Kritik veya aşılmış dosya'],
     ['Hukuki risk',legal,fmtTL(totalRisk)+' potansiyel etki'],
-    ['Google / itibar',reputation,`${sentiment.negative24h||0} negatif / 24 saat`],
-    ['Geri kazanım',`${sentiment.recovered||0}`,'Kurtarılan müşteri kaydı']
+    ['Google / itibar',reputation,'Aktif Google / sosyal dosya'],
+    ['Geri kazanım',`${recovered}`,'Kurtarılan müşteri kaydı']
   ];
   const priority=rows.slice().sort((a,b)=>((b.priority==='P0'?3:b.priority==='P1'?2:1)*100+(b.amountRisk||0)/1000)-((a.priority==='P0'?3:a.priority==='P1'?2:1)*100+(a.amountRisk||0)/1000)).slice(0,4);
   const roots=(c.complaintRootCauses||[]).slice(0,5), maxRoot=Math.max(1,...roots.map(x=>x[1]));
-  const legalRows=(c.complaintLegalRisks||[]).slice(0,4);
+  const legalRows=rows.filter(x=>['Yüksek','CEO takip','Orta'].includes(x.legalRisk)).slice(0,4).map(x=>({branch:x.branch,customer:x.customer,subject:x.type,deadline:x.sla==='Aşıldı'?'SLA aşıldı':'SLA içinde',action:x.nextAction,risk:x.legalRisk,amount:Number(x.amountRisk)||0}));
+  const alerts=complaintDerivedAlerts();
   const decision=legal>2?'Hukuk + Kalite ortak kapanış komitesi ve CEO onaylı müşteri iletişim standardı önerilir.':breached>2?'SLA aşımı yüksek; şube müdürü ve bölge müdürü günlük kapanış ritmine alınmalı.':'Şikayet temposu izlenebilir; kök neden kapatma oranı artırılmalı.';
-  return `<div class="card dashboard-complaint-ceo dashboard-jump-target" id="dashboardComplaintsCeo"><div class="dashboard-complaint-hero"><div><span>Müşteri Şikayetleri & İtibar</span><b>${open} açık dosya · ${critical} kritik</b><small>CEO için amaç: marka riski, hukuki etki, SLA disiplini ve kök neden kapanışını tek bakışta görmek.</small></div><div class="dashboard-complaint-hero-actions"><button class="btn primary" data-route="complaints">${icon('message-circle-warning')}Şikayet merkezi</button><button class="btn" data-route="legal">${icon('scale')}Hukuki risk</button><button class="btn" data-route="quality">${icon('shield-check')}Kalite aksiyonu</button></div></div><div class="dashboard-complaint-kpis">${kpis.map(x=>`<div class="dashboard-complaint-kpi"><span>${x[0]}</span><b>${x[1]}</b><small>${x[2]}</small></div>`).join('')}</div><div class="dashboard-complaint-grid"><div class="dashboard-complaint-panel"><div class="card-head" style="margin-bottom:0"><div><h3>CEO Öncelik Kuyruğu</h3><div class="card-sub">Kritik müşteri, şube, risk ve beklenen karar.</div></div>${complaintBadge(`SLA %${slaScore}`)}</div>${priority.map(r=>`<div class="dashboard-complaint-row"><div><b>${r.branch} · ${r.customer}</b><span>${r.type} · ${r.status} · ${r.nextAction}</span></div><div>${complaintBadge(r.priority)} ${complaintBadge(r.legalRisk)}</div></div>`).join('')}</div><div class="dashboard-complaint-panel"><h3>Kök Neden ve Hukuk Sinyali</h3>${roots.map(r=>`<div class="dashboard-complaint-root"><b>${r[0]}</b><div class="dashboard-complaint-track"><i style="width:${Math.max(10,Math.round(r[1]/maxRoot*100))}%"></i></div><strong>${r[1]}</strong></div>`).join('')}<div class="dashboard-complaint-decision"><b>CEO notu:</b> ${decision}</div></div></div><div class="dashboard-complaint-grid"><div class="dashboard-complaint-panel"><h3>Hukuki Riske Dönen Şikayetler</h3>${legalRows.map(r=>`<div class="dashboard-complaint-row"><div><b>${r.branch} · ${r.customer}</b><span>${r.subject} · ${r.deadline} · ${r.action}</span></div><div>${complaintBadge(r.risk)}<br><b style="font-size:11px">${fmtTL(r.amount)}</b></div></div>`).join('')}</div><div class="dashboard-complaint-panel"><h3>Dashboard Alarm Kuyruğu</h3>${(c.complaintDashboardAlerts||[]).slice(0,4).map(a=>`<div class="dashboard-complaint-row"><div><b>${a.text}</b><span>${a.branch} · ${a.time}</span></div><button class="micro-btn" data-route="${a.route}">Git</button></div>`).join('')}</div></div></div>`;
+  return `<div class="card dashboard-complaint-ceo dashboard-jump-target" id="dashboardComplaintsCeo"><div class="dashboard-complaint-hero"><div><span>Müşteri Şikayetleri & İtibar</span><b>${open} açık dosya · ${critical} kritik</b><small>CEO için amaç: marka riski, hukuki etki, SLA disiplini ve kök neden kapanışını tek bakışta görmek.</small></div><div class="dashboard-complaint-hero-actions"><button class="btn primary" data-route="complaints">${icon('message-circle-warning')}Şikayet merkezi</button><button class="btn" data-route="legal">${icon('scale')}Hukuki risk</button><button class="btn" data-route="quality">${icon('shield-check')}Kalite aksiyonu</button></div></div><div class="dashboard-complaint-kpis">${kpis.map(x=>`<div class="dashboard-complaint-kpi"><span>${x[0]}</span><b>${x[1]}</b><small>${x[2]}</small></div>`).join('')}</div><div class="dashboard-complaint-grid"><div class="dashboard-complaint-panel"><div class="card-head" style="margin-bottom:0"><div><h3>CEO Öncelik Kuyruğu</h3><div class="card-sub">Kritik müşteri, şube, risk ve beklenen karar.</div></div>${complaintBadge(`SLA %${slaScore}`)}</div>${priority.map(r=>`<div class="dashboard-complaint-row"><div><b>${r.branch} · ${r.customer}</b><span>${r.type} · ${r.status} · ${r.nextAction}</span></div><div>${complaintBadge(r.priority)} ${complaintBadge(r.legalRisk)}</div></div>`).join('')}</div><div class="dashboard-complaint-panel"><h3>Kök Neden ve Hukuk Sinyali</h3>${roots.map(r=>`<div class="dashboard-complaint-root"><b>${r[0]}</b><div class="dashboard-complaint-track"><i style="width:${Math.max(10,Math.round(r[1]/maxRoot*100))}%"></i></div><strong>${r[1]}</strong></div>`).join('')}<div class="dashboard-complaint-decision"><b>CEO notu:</b> ${decision}</div></div></div><div class="dashboard-complaint-grid"><div class="dashboard-complaint-panel"><h3>Hukuki Riske Dönen Şikayetler</h3>${legalRows.map(r=>`<div class="dashboard-complaint-row"><div><b>${r.branch} · ${r.customer}</b><span>${r.subject} · ${r.deadline} · ${r.action}</span></div><div>${complaintBadge(r.risk)}<br><b style="font-size:11px">${fmtTL(r.amount)}</b></div></div>`).join('')}</div><div class="dashboard-complaint-panel"><h3>Dashboard Alarm Kuyruğu</h3>${alerts.slice(0,4).map(a=>`<div class="dashboard-complaint-row"><div><b>${a.text}</b><span>${a.branch} · ${a.time}</span></div><button class="micro-btn" data-route="${a.route}">Git</button></div>`).join('')}</div></div></div>`;
 }
 function complaintTone(text){
   return text==='P0'||text==='Yüksek'||text==='Aşıldı'||text==='CEO takip'||text==='Riskli' ? 'b-red' : text==='P1'||text==='Kritik'||text==='Orta'||text==='Hukuk incelemesinde'||text==='Şube savunması bekleniyor'||text==='Yeniden açıldı' ? 'b-amber' : text==='P2'||text==='İçinde'||text==='Takipte'||text==='Kalite incelemesinde'||text==='İncelemede'||text==='Müşteriye dönüş yapıldı' ? 'b-blue' : 'b-green';
@@ -3865,15 +3886,17 @@ function complaintTone(text){
 function complaintBadge(text){ return `<span class="badge ${complaintTone(text)}">${text}</span>`; }
 function ComplaintResolutionFunnel(){
   const c=complaintCenter(), tickets=c.complaintTickets||[];
+  const order=['Alındı','Sınıflandırıldı','Atandı','İnceleme','Karar','Telafi','Müşteri onayı','Kapandı'];
+  const atLeast=index=>tickets.filter(t=>Math.max(0,order.indexOf(t.status))>=index).length;
   const flow=[
-    {label:'Toplam Şikayet',value:248,color:'#ef4444'},
-    {label:'İncelemeye Alındı',value:198,color:'#f97316'},
-    {label:'Çözüm Aşamasında',value:134,color:'#38a8e0'},
-    {label:'Müşteriye İletildi',value:89,color:'#47c7b4'},
-    {label:'Kapandı / Çözüldü',value:67,color:'#3db77a'}
+    {label:'Toplam Şikayet',value:tickets.length,color:'#ef4444'},
+    {label:'İncelemeye Alındı',value:atLeast(3),color:'#f97316'},
+    {label:'Çözüm Aşamasında',value:atLeast(4),color:'#38a8e0'},
+    {label:'Müşteriye İletildi',value:atLeast(6),color:'#47c7b4'},
+    {label:'Kapandı / Çözüldü',value:tickets.filter(t=>t.status==='Kapandı').length,color:'#3db77a'}
   ];
-  const max=Math.max(...flow.map(x=>x.value)), closed=flow[flow.length-1].value, open=flow[0].value-closed;
-  const solveRate=Math.round(closed/flow[0].value*100);
+  const max=Math.max(1,...flow.map(x=>x.value)), closed=flow[flow.length-1].value, open=flow[0].value-closed;
+  const solveRate=Math.round(closed/Math.max(1,flow[0].value)*100);
   const legal=tickets.filter(x=>['Yüksek','CEO takip'].includes(x.legalRisk)).length;
   return `<div class="card complaint-funnel-card"><div class="card-head"><div><div class="card-title">Şikayet Çözüm Hunisi</div><div class="card-sub">Açılış › inceleme › çözüm › müşteri iletişimi › kapanış akışı</div></div><button class="btn" data-open-action-modal="Şikayet çözüm hunisi takip aksiyonu">${icon('clipboard-plus')}Aksiyon aç</button></div><div class="complaint-funnel"><div><div class="complaint-funnel-bars">${flow.map(item=>`<div class="complaint-funnel-row"><span>${item.label}</span><div class="complaint-funnel-track"><div class="complaint-funnel-fill" style="width:${Math.max(18,Math.round(item.value/max*100))}%;background:${item.color}">${item.value}</div></div></div>`).join('')}</div><div class="complaint-funnel-actions"><button class="micro-btn" data-route="quality">Kaliteye aktar</button><button class="micro-btn" data-route="legal">Hukuki riskleri gör</button><button class="micro-btn" data-route="actions">Görevleri gör</button></div></div><div class="complaint-funnel-summary"><div><span>Açık</span><b class="danger">${open}</b></div><div><span>Çözüm %</span><b class="success">%${solveRate}</b></div><div><span>Ort. süre</span><b class="amber">4,2g</b></div><div><span>Hukuki risk</span><b>${legal}</b></div></div></div></div>`;
 }
@@ -3903,7 +3926,7 @@ function ComplaintsCenterPage(){
     ${complaintSelect('source','Kaynak',uniq((c.complaintTickets||[]).map(x=>x.source)))}
     <select data-complaint-filter="date"><option value="">Tarih aralığı</option><option>Bugün</option><option>Son 7 gün</option><option>Bu ay</option></select>
   </div>
-  <div class="kpi-grid">${(c.complaintKpis||[]).map(k=>`<div class="card kpi-card ${k.tone==='good'?'good':k.tone==='bad'?'warn':k.tone==='info'?'info':'warn'}"><div class="kpi-main"><div class="label">${k.label}</div><div class="kpi-line"><span class="kpi-value">${k.value}</span><span class="kpi-meta"><span class="card-sub">${k.trend}</span></span></div></div><div class="kpi-ico">${icon(k.icon)}</div></div>`).join('')}</div>
+  <div class="kpi-grid">${complaintDerivedKpis().map(k=>`<div class="card kpi-card ${k.tone==='good'?'good':k.tone==='bad'?'warn':k.tone==='info'?'info':'warn'}"><div class="kpi-main"><div class="label">${k.label}</div><div class="kpi-line"><span class="kpi-value">${k.value}</span><span class="kpi-meta"><span class="card-sub">${k.trend}</span></span></div></div><div class="kpi-ico">${icon(k.icon)}</div></div>`).join('')}</div>
   ${ComplaintResolutionFunnel()}
   <div class="card complaint-health-card" style="margin-top:16px"><div class="card-head"><div><div class="card-title">Şikayet Sağlığı Skoru</div><div class="card-sub">Şube bazında açık dosya, SLA aşımı, hukuki risk ve geri kazanım etkisi tek yatay bantta okunur.</div></div></div>${ComplaintBranchScore()}</div>
   <div class="complaints-main-grid">
@@ -3930,7 +3953,7 @@ function Iso10002Panel(){
   return `<div class="mini-list">${['Kayıt alındı','Müşteriye alındı bildirimi gönderildi','Sorumlu atandı','SLA başladı','Kanıtlar toplandı','Şube savunması alındı','Kök neden belirlendi','Çözüm önerisi üretildi','Müşteriye yazılı dönüş yapıldı','Memnuniyet tekrar ölçüldü','Kalıcı aksiyon açıldı'].map((x,i)=>`<div class="mini">${icon(i<7?'check-circle-2':'circle-dot')}<div><b>${x}</b><span>${i<7?'Aktif dosyalarda zorunlu kontrol tamamlanma oranı izleniyor.':'Kapanış öncesi kanıt ve müşteri geri kazanımı beklenir.'}</span></div></div>`).join('')}</div>`;
 }
 function ComplaintBranchScore(){
-  const rows=complaintCenter().complaintBranchScore || [];
+  const rows=complaintDerivedBranchScores();
   return `<div class="complaint-health-strip">${rows.map(b=>`<div class="complaint-health-item ${b.score<65?'critical':b.score<75?'risk':''}"><div class="complaint-health-head"><b>${b.branch}</b><span class="complaint-health-score">${b.score}</span></div><div>${complaintBadge(b.status)}</div><div class="progress"><div class="bar ${b.score<70?'amber':'green'}" style="width:${b.score}%"></div></div><div class="complaint-health-meta"><span>Açık ${b.open}</span><span>SLA ${b.sla}</span><span>Hukuk ${b.legal}</span><span>Geri ${b.recovery}</span></div></div>`).join('')}</div>`;
 }
 function ComplaintQualityAcademy(){
@@ -3938,7 +3961,7 @@ function ComplaintQualityAcademy(){
   return `<div class="mini-list">${needs.map(x=>`<div class="mini">${icon('graduation-cap')}<div><b>${x[0]} · ${x[1]} kayıt</b><span>Kalite düzeltme planı, Academy eğitim ataması, şube müdürü takip aksiyonu ve personel bazlı eğitim ihtiyacı oluşturuldu.</span><div class="quick-actions" style="margin-top:8px"><button class="micro-btn" data-action="${x[0]} için kalite düzeltme planı açıldı.">Kalite planı</button><button class="micro-btn" data-action="${x[0]} için Academy eğitimi atandı.">Eğitim ata</button><button class="micro-btn" data-open-action-modal="${x[0]} şube müdürü takip aksiyonu">Müdür takibi</button></div></div></div>`).join('')}</div>`;
 }
 function ComplaintAlertList(){
-  return `<div class="mini-list">${(complaintCenter().complaintDashboardAlerts||[]).map(a=>`<div class="mini">${icon(a.severity==='critical'?'siren':'bell-ring')}<div><b>${a.text}</b><span>${a.branch} · ${a.time}</span><div class="quick-actions" style="margin-top:8px"><button class="micro-btn" data-route="${a.route}">Modüle git</button><button class="micro-btn" data-action="Alarm dashboard kuyruğuna eklendi.">Alarma ekle</button></div></div></div>`).join('')}</div>`;
+  return `<div class="mini-list">${complaintDerivedAlerts().map(a=>`<div class="mini">${icon(a.severity==='critical'?'siren':'bell-ring')}<div><b>${a.text}</b><span>${a.branch} · ${a.time}</span><div class="quick-actions" style="margin-top:8px"><button class="micro-btn" data-route="${a.route}">Modüle git</button><button class="micro-btn" data-action="Alarm dashboard kuyruğuna eklendi.">Alarma ekle</button></div></div></div>`).join('')}</div>`;
 }
 
 function priorityList(){
@@ -13195,7 +13218,11 @@ let actionFilters={};
 let actionFilterTimer=null;
 let aiFilters={};
 let crisisFilters={};
-function actionTasks(){ return (DB.ceoDashboard.actionTasks||[]).map((t,i)=>normalizeActionTask(t,i)).sort((a,b)=>(b.actionPriorityScore||0)-(a.actionPriorityScore||0)); }
+function actionTasks(){
+  let bridged=[];try{bridged=JSON.parse(localStorage.getItem('ototr_action_center_bridge_v1')||'[]')||[]}catch(error){console.warn('Şikayet aksiyon köprüsü okunamadı',error)}
+  const all=[...bridged,...(DB.ceoDashboard.actionTasks||[])],seen=new Set();
+  return all.filter(t=>t?.id&&!seen.has(t.id)&&seen.add(t.id)).map((t,i)=>normalizeActionTask(t,i)).sort((a,b)=>(b.actionPriorityScore||0)-(a.actionPriorityScore||0));
+}
 function getActionRouteBySourceModule(module){
   const text=String(module||'');
   if(ACTION_SOURCE_ROUTES[text]) return ACTION_SOURCE_ROUTES[text];
@@ -15944,7 +15971,8 @@ function renderCharts(){
   make('chartFinanceRoyaltyDecision','doughnut',{labels:Object.keys(decisionCounts),datasets:[{data:Object.values(decisionCounts),backgroundColor:['#14804a','#185abc','#b76b00','#d71920','#6d3fc8'],borderColor:theme.panel,borderWidth:2}]},{cutout:'62%',plugins:{legend:{position:'bottom',labels:{color:theme.text,boxWidth:10}}}});
   const cc=complaintCenter();
   make('chartComplaintTypes','doughnut',{labels:(cc.complaintCategories||[]).map(x=>x[0]),datasets:[{data:(cc.complaintCategories||[]).map(x=>x[1]),backgroundColor:['#d71920','#111318','#185abc','#14804a','#b76b00','#6d3fc8']}]});
-  make('chartComplaintBranches','bar',{labels:(cc.complaintBranchScore||[]).map(x=>x.branch.replace('İstanbul ','').replace('Ankara ','')),datasets:[{label:'Açık şikayet',data:(cc.complaintBranchScore||[]).map(x=>x.open),backgroundColor:'#d71920'},{label:'Şikayet sağlığı skoru',data:(cc.complaintBranchScore||[]).map(x=>x.score/10),backgroundColor:'#111318'}]});
+  const complaintBranchScores=complaintDerivedBranchScores();
+  make('chartComplaintBranches','bar',{labels:complaintBranchScores.map(x=>x.branch),datasets:[{label:'Açık şikayet',data:complaintBranchScores.map(x=>x.open),backgroundColor:'#d71920'},{label:'Şikayet sağlığı skoru',data:complaintBranchScores.map(x=>x.score/10),backgroundColor:'#111318'}]});
   make('chartComplaintSla','line',{labels:cc.complaintSla?.labels||[],datasets:[{label:'SLA uyum %',data:cc.complaintSla?.trend||[],borderColor:'#14804a',backgroundColor:'rgba(20,128,74,.12)',tension:.35,fill:true}]},{scales:{y:{min:50,max:100}}});
   make('chartComplaintSentiment','line',{labels:cc.complaintSentiment?.labels||[],datasets:[{label:'Negatif yorum',data:cc.complaintSentiment?.trend||[],borderColor:'#d71920',backgroundColor:'rgba(215,25,32,.12)',tension:.35,fill:true}]});
   make('chartComplaintRoot','polarArea',{labels:(cc.complaintRootCauses||[]).map(x=>x[0]),datasets:[{data:(cc.complaintRootCauses||[]).map(x=>x[1]),backgroundColor:['#d7192030','#11131830','#185abc30','#14804a30','#b76b0030','#6d3fc830'],borderColor:['#d71920','#111318','#185abc','#14804a','#b76b00','#6d3fc8']}]});
