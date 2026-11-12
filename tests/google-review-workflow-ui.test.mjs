@@ -29,13 +29,15 @@ function server() {
       if (body.action === 'workflow_list') return state.listFails ? Response.json({ error: 'Fixture storage unavailable' }, { status: 503 }) : Response.json({ items: state.items, next_offset: null });
       if (body.action === 'save_draft' || body.action === 'create_task') {
         if (state.saveFails) return Response.json({ error: 'Fixture save rejected' }, { status: 503 });
-        let item = body.item_id ? state.items.find(item => item.id === body.item_id) : null;
+        let item = body.item_id ? state.items.find(item => item.id === body.item_id) : body.action === 'create_task' ? state.items.find(item => item.review_id === body.review_id && item.kind === body.kind) : null;
+        const existing = Boolean(item);
         if (!item) {
           item = { id: `00000000-0000-4000-8000-${String(state.items.length + 1).padStart(12, '0')}`, branch_id: body.branch_id, branch_name: BRANCH.name, account_id: body.account_id, location_id: body.location_id, review_id: body.review_id, kind: body.action === 'save_draft' ? 'reply' : body.kind, version: 0, expected_reply: '', review_snapshot: { rating: REVIEW.rating, comment: REVIEW.comment, reviewer_name: REVIEW.reviewerName } };
           state.items.push(item);
         }
+        if (existing && body.action === 'create_task') return Response.json({ item, existing: true });
         Object.assign(item, { reply_text: body.reply_text || '', draft_source: body.draft_source || 'manual', status: body.action === 'save_draft' ? 'approval_pending' : 'open', note: body.note || '', version: item.version + 1 });
-        return Response.json({ item });
+        return Response.json({ item, ...(existing ? { existing: true } : {}) });
       }
       if (body.action === 'publish_reply') {
         const item = state.items.find(item => item.id === body.item_id);
@@ -58,8 +60,8 @@ function server() {
   };
 }
 
-function ui(shared = server()) {
-  const elements = new Map(), toasts = [], storageWrites = [], syncs = [];
+function ui(shared = server(), branchFixture = BRANCH, reviewFixture = REVIEW) {
+  const elements = new Map(), toasts = [], storageWrites = [], syncs = [], complaintCallbacks = [];
   const document = {
     getElementById: id => elements.get(id) || null,
     createElement: () => new Element(),
@@ -71,11 +73,11 @@ function ui(shared = server()) {
     OTOTRGetLiveSession: async () => ({ access_token: 'fixture-session' }),
     OTOTRGetSupabaseKey: () => 'fixture-public',
     toast: value => toasts.push(value),
-    OTOTRGoogleReputation: { getReviewById: id => id === REVIEW.id ? REVIEW : null, getBranchById: id => id === BRANCH.id ? BRANCH : null, render() {}, setError() {}, syncGoogleReviewsForBranch: async id => syncs.push(id) },
+    OTOTRGoogleReputation: { getReviewById: id => id === reviewFixture.id ? reviewFixture : null, getBranchById: id => id === branchFixture.id ? branchFixture : null, render() {}, setError() {}, syncGoogleReviewsForBranch: async id => syncs.push(id), onComplaintTaskCreated: (item, meta) => complaintCallbacks.push({ item, meta }) },
   };
   vm.runInNewContext(source, { window, document, localStorage: { getItem: () => null, setItem: (...args) => storageWrites.push(args) }, fetch: shared.fetch, Response, URL, AbortController, setTimeout: () => 1, clearTimeout() {}, console });
   const api = window.OTOTRGoogleReviewAI;
-  return { api, window, shared, toasts, storageWrites, syncs, modal: () => elements.get('googleReviewAiModal'), element: selector => elements.get('googleReviewAiModal').querySelector(selector) };
+  return { api, window, shared, toasts, storageWrites, syncs, complaintCallbacks, modal: () => elements.get('googleReviewAiModal'), element: selector => elements.get('googleReviewAiModal').querySelector(selector) };
 }
 
 test('Google publication is disabled until saved text receives explicit user approval', async () => {
@@ -195,6 +197,32 @@ test('another browser session sees a saved branch task and can update its state'
   assert.match(first.api.renderWorkflow(BRANCH.id), /Tamamlandı/);
   assert.match(first.api.renderWorkflow(BRANCH.id), /Şube yönetimi yorumla ilgili inceleme yaptı/);
   assert.equal(shared.state.calls.some(call => call.action === 'publish_reply'), false);
+});
+
+test('complaint creation opens the persistent complaint callback and remains idempotent', async () => {
+  const h = ui();
+  await h.api.createTask(REVIEW.id, 'complaint');
+  assert.equal(h.shared.state.items.length, 1);
+  assert.equal(h.shared.state.items[0].kind, 'complaint');
+  assert.equal(h.complaintCallbacks.length, 1);
+  assert.equal(h.complaintCallbacks[0].meta.existing, false);
+  assert.equal(h.toasts.length, 0, 'the complaint center owns the success message');
+  const copy = h.api.getWorkflowItems();
+  copy[0].review_snapshot.comment = 'mutated outside';
+  assert.equal(h.api.getWorkflowItems()[0].review_snapshot.comment, REVIEW.comment);
+  await h.api.createTask(REVIEW.id, 'complaint');
+  assert.equal(h.shared.state.items.length, 1);
+  assert.equal(h.complaintCallbacks.length, 2);
+  assert.equal(h.complaintCallbacks[1].meta.existing, true);
+});
+
+test('demo reviews cannot create persistent tasks or complaints', async () => {
+  const h = ui(server(), { ...BRANCH, id: 'branch-google-gebze', demo: true }, { ...REVIEW, branchId: 'branch-google-gebze', demo: true });
+  await h.api.createTask(REVIEW.id, 'complaint');
+  assert.equal(h.shared.state.calls.length, 0);
+  assert.equal(h.shared.state.items.length, 0);
+  assert.equal(h.complaintCallbacks.length, 0);
+  assert.match(h.toasts[0], /Demo yorumlardan/);
 });
 
 test('workflow customer text and drafts are escaped in the HTML view', async () => {
