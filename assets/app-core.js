@@ -3557,6 +3557,7 @@ function refreshGoogleReputationPage(){
     if(top&&search&&topActions&&connect){ connect.classList.add('review-top-sync'); top.insertBefore(connect,topActions); }
     page.querySelector?.('.review-page-title')?.remove();
     if(top&&!top.querySelector('.review-api-connect')){ const apiButton=document.createElement('button'); apiButton.type='button'; apiButton.className='review-api-connect'; apiButton.dataset.googleConnect='1'; apiButton.textContent=googleReputationState.connected===true?'Google hesabı bağlı':'Google Hesabını Bağla'; top.insertBefore(apiButton,topActions||null); }
+    if(top&&!top.querySelector('[data-testid="google-demo-toggle"]')){ const demoButton=document.createElement('button'); demoButton.type='button'; demoButton.className='review-api-connect'; demoButton.dataset.testid='google-demo-toggle'; demoButton.textContent=googleReputationState.demoMode?'Canlı moda dön':'Demo veri yükle'; demoButton.addEventListener('click',()=>googleSetDemoMode(!googleReputationState.demoMode)); top.insertBefore(demoButton,topActions||null); }
     const brand=page.querySelector?.('.review-brand');
     if(brand) brand.innerHTML='<img src="sunum-32-ekran/assets/ototr-logo-official-light.png" alt="OTOTR Oto Ekspertiz" loading="eager">';
     const inboxHead=page.querySelector?.('.google-inbox-page-head'), inboxActions=inboxHead?.querySelector?.('.google-inbox-head-actions');
