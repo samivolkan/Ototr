@@ -27,6 +27,12 @@ test('an unresolved complaint overrides unrelated positive wording', () => {
   assert.equal(risk.critical, true);
 });
 
+test('a high-star unresolved complaint remains negative without a critical keyword', () => {
+  const risk = bridge.riskFor({ rating: 5, comment: 'Memnun değilim, mağdur oldum ve çözüm bekliyorum.' });
+  assert.equal(risk.riskLevel, 'negative');
+  assert.equal(risk.critical, false);
+});
+
 test('one-star complaint becomes a persistent P0 ticket with masked customer data', () => {
   const item = {
     id: '12345678-abcd-4000-8000-000000000001',

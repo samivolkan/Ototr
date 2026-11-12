@@ -30,13 +30,17 @@ test('live Google work items are merged into the complaint center without automa
   assert.match(entry,/google-complaint-bridge\.js\?v=/);
   assert.match(app,/googleComplaintWorkflowItems\(\)\.map\(googleComplaintTicket\)/);
   assert.match(app,/data-testid="google-complaint-action"/);
-  assert.match(app,/!branch\.demo&&!review\.demo&&\(complaintTicket\|\|risk\.rating<=3\|\|risk\.critical\|\|risk\.legal\)/);
+  assert.match(app,/!branch\.demo&&!review\.demo&&\(complaintTicket\|\|risk\.rating<=3\|\|risk\.critical\|\|risk\.legal\|\|risk\.riskLevel==='negative'\)/);
   assert.match(app,/return Boolean\(branch&&!branch\.demo\)/);
   assert.match(app,/data-testid="live-google-complaint-detail"/);
   assert.match(app,/type:x\.isLiveGoogle\?'googleComplaint':'complaint'/);
   assert.match(app,/renderPages\(\);\s*route\('complaints'\)/);
   assert.match(app,/Canlı Google şikâyet kaynağı kullanılamıyor/);
   assert.match(app,/Bu kayıt Google’a yanıt göndermez/);
+  assert.match(app,/critical=base\.filter\(googleReviewIsCritical\)/);
+  assert.match(app,/review\.riskLevel=risk\.riskLevel/);
+  assert.match(app,/forEach\(googleRefreshLiveBranchRiskMetrics\)/);
+  assert.match(app,/branch\.criticalCount=riskCount/);
   assert.match(ai,/onComplaintTaskCreated/);
   assert.match(ai,/Demo yorumlardan kalıcı görev veya şikâyet kaydı oluşturulamaz/);
   assert.match(ai,/getWorkflowItems: workflowItems/);

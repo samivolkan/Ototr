@@ -24,7 +24,7 @@
     const criticalTerm = /dolandır|sahte|tehdit|can\s*güven|kişisel\s*veri/i.test(text);
     const legal = legalTerm && negativeContext;
     const critical = rating === 1 || (criticalTerm && negativeContext);
-    const riskLevel = critical ? 'critical' : rating === 2 ? 'negative' : rating === 3 || rating === 0 ? 'neutral' : 'positive';
+    const riskLevel = critical ? 'critical' : rating === 2 || unresolvedIntent || (complaintIntent && !positiveResolution) ? 'negative' : rating === 3 || rating === 0 ? 'neutral' : 'positive';
     return { rating, text, legal, critical, riskLevel };
   }
 
