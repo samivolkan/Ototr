@@ -1492,6 +1492,7 @@ const navGroups = [
   ['Finans', [['finance','GM Finans','banknote']]]
 ];
 const titles = {ruhsat:'Ruhsat Oku',dashboard:'Yönetim Kokpiti','project-roadmap':'Proje Yol Haritası',intelligence:'İş Zekası',looker:'Looker Canlı Panolar',branches:'Bayiler & Şubeler','branch-health':'Şube Sağlık & Erken Uyarı',dealer:'Bayi Portalı','ototr-web':'OTOTR Web',operations:'Operasyon',franchise:'Franchise Satış',crm:'CRM & Randevu','chronic-issues':'Kronik Sorunlar',complaints:'Müşteri Şikayetleri','google-reviews':'Google Haritalar İtibar Merkezi',reputation:'İtibar Radar',finance:'GM Finans',marketing:'Pazarlama',quality:'Kalite & Denetim','report-assurance':'Rapor Güvence Merkezi','report-design':'Ekspertiz Rapor Tasarımı',sunum32:'32 Ekran Sunumu',sunum32v2:'32 Ekran Sunumu V2','vehicle-passport':'Dijital Araç Karnesi',academy:'OTOTR Academy',hr:'İnsan Kaynakları',legal:'Hukuk & Risk','erp-arge':'ERP ARGE',crisis:'Kriz Merkezi',actions:'Aksiyon & Görev',ai:'AI Öneri',growth:'Bayii Büyüme',legacy:'Legacy Room',architecture:'Sistem Mimarisi',settings:'Ayarlar',branchProfile:'Şube Profili',franchiseProfile:'Aday Değerlendirme',customerProfile:'Müşteri 360'};
+let selectedArgeModule=null;
 function dealerPortalUrl(){
   const path=decodeURIComponent(location.pathname||'').replace(/\\/g,'/').toLowerCase();
   return path.includes('/bayi-portal/') ? 'index.html#dealer' : 'bayi-portal/index.html#dealer';
@@ -2597,8 +2598,8 @@ function renderNav(){
     const room = HR_ROOM_BY_ID[c.defaultRoom] || HR_ROOM_BY_ID[c.rooms[0]] || HR_ROOM_BY_ID[HR_DEFAULT_ROOM];
     return `<button data-nav-route="${hrRouteFor(room.id)}" class="${current==='hr' && HR_VIEW.category===c.id?'active':''}"><span>${c.title}</span></button>`;
   }).join('');
-  const sideArgeItems = (window.OTOTR_ERP_ARGE?.modules||[]).filter(module=>module.url).map(module=>
-    `<button data-arge-external="${module.url}" title="Owner-only sandbox"><span>${module.name.replace(/^OTOTR\s+/,'')}</span></button>`
+  const sideArgeItems = (window.OTOTR_ERP_ARGE?.modules||[]).map(module=>
+    `<button data-nav-route="${window.OTOTR_ERP_ARGE.routeFor(module)}" class="${selectedArgeModule===module.id?'active':''}"><span>${module.order} · ${module.shortName||module.name.replace(/^OTOTR\s+/,'')}</span></button>`
   ).join('');
   const navButton = ([id,label,ic]) => {
     const count = `${id==='franchise'?'<span class="count">'+leads.filter(l=>String(l.type||'').includes('Franchise')).length+'</span>':''}${id==='complaints'?'<span class="count">'+complaintTickets.filter(t=>t.status!=='Kapandı').length+'</span>':''}${id==='crisis'?'<span class="count">'+tickets.filter(t=>t.severity==='Yüksek').length+'</span>':''}`;
@@ -2638,9 +2639,6 @@ function renderNav(){
       return;
     }
     route(b.dataset.navRoute);
-  }));
-  nav.querySelectorAll('[data-arge-external]').forEach(button=>button.addEventListener('click',()=>{
-    window.open(button.dataset.argeExternal,'_blank','noopener,noreferrer');
   }));
 }
 
@@ -3898,7 +3896,7 @@ function renderPages(){
     pageShell('academy', AcademyDashboard())+
     pageShell('hr', renderHRRoom())+
     pageShell('legal', LegalCommandCenterPage())+
-    pageShell('erp-arge', window.OTOTR_ERP_ARGE?.page?.() || '<div class="card"><b>ERP ARGE modülü yüklenemedi.</b><p>Sayfayı yenileyin veya sistem yöneticisine başvurun.</p></div>')+
+    pageShell('erp-arge', window.OTOTR_ERP_ARGE?.page?.(selectedArgeModule) || '<div class="card"><b>ERP ARGE modülü yüklenemedi.</b><p>Sayfayı yenileyin veya sistem yöneticisine başvurun.</p></div>')+
     pageShell('crisis', CrisisCenterPage())+
     pageShell('actions', renderActionsPage())+
     pageShell('ai', renderAiPage())+
@@ -15517,8 +15515,10 @@ function route(id,options={}){
   }
   const hrRoute = parseHRRoute(id);
   const academyRoute = hrRoute ? null : parseAcademyRoute(id);
-  let resolved = hrRoute ? 'hr' : academyRoute ? 'academy' : id;
+  const argeRoute = hrRoute||academyRoute ? null : window.OTOTR_ERP_ARGE?.parseRoute?.(id);
+  let resolved = hrRoute ? 'hr' : academyRoute ? 'academy' : argeRoute ? 'erp-arge' : id;
   if(!titles[resolved]) resolved = 'dashboard';
+  selectedArgeModule=resolved==='erp-arge'?argeRoute:null;
   if(hrRoute){
     HR_VIEW.room = hrRoute.room;
     HR_VIEW.category = hrCategoryForRoom(HR_VIEW.room);
@@ -15533,6 +15533,10 @@ function route(id,options={}){
     renderPages();
   }
   current = resolved;
+  if(resolved==='erp-arge'){
+    const page=document.getElementById('page-erp-arge');
+    if(page) page.innerHTML=pageHeader('erp-arge')+window.OTOTR_ERP_ARGE.page(selectedArgeModule)+deptPlan('erp-arge');
+  }
   OtotrRuhsatERP.onRoute(resolved);
   ensureInspectionSchemaForRoute(resolved);
   syncDealerStandaloneMode(resolved);
@@ -15558,7 +15562,7 @@ function route(id,options={}){
     bindGlobalSearch();
     renderNav();
   }
-  history.replaceState(null,'','#'+(resolved==='hr'?hrRouteFor(HR_VIEW.room):resolved==='academy'?academyRouteFor(ACADEMY_VIEW.room):resolved));
+  history.replaceState(null,'','#'+(resolved==='hr'?hrRouteFor(HR_VIEW.room):resolved==='academy'?academyRouteFor(ACADEMY_VIEW.room):resolved==='erp-arge'&&selectedArgeModule?window.OTOTR_ERP_ARGE.routeFor(selectedArgeModule):resolved));
   if(!options.preserveScroll) window.scrollTo({top:0,behavior:'smooth'});
   if(!options.skipDeferredEnhancements) setTimeout(()=>{renderCharts();initBranchMap();dealerEnhanceCockpitRevenue();},40);
   if(isReportRoute(resolved)) setTimeout(()=>{ syncExpertiseReportQuickMenu(); updateExpertiseReportNavActive(); initReportLayoutDesigner(); },80);
@@ -16254,5 +16258,6 @@ window.addEventListener('hashchange',()=>{
   const canonical=id==='expertise-report'?'report-design':id;
   const hr=parseHRRoute(canonical);
   const academy=parseAcademyRoute(canonical);
-  if(hr || academy || (titles[canonical] && canonical!==current)) route(canonical);
+  const arge=window.OTOTR_ERP_ARGE?.parseRoute?.(canonical);
+  if(hr || academy || arge || (titles[canonical] && (canonical!==current || canonical==='erp-arge'))) route(canonical);
 });
