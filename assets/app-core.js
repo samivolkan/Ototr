@@ -16203,6 +16203,7 @@ function renderAll(){
   const initialCanonical=initial==='expertise-report'?'report-design':initial;
   const initialHR=parseHRRoute(initialCanonical);
   const initialAcademy=parseAcademyRoute(initialCanonical);
+  const initialArge=initialHR||initialAcademy?null:window.OTOTR_ERP_ARGE?.parseRoute?.(initialCanonical);
   if(initialHR){
     HR_VIEW.room=initialHR.room;
     HR_VIEW.category=hrCategoryForRoom(HR_VIEW.room);
@@ -16211,6 +16212,9 @@ function renderAll(){
     ACADEMY_VIEW.room=initialAcademy.room;
     academySaveView();
     current='academy';
+  }else if(initialArge){
+    selectedArgeModule=initialArge;
+    current='erp-arge';
   }else{
     current=titles[initialCanonical]?initialCanonical:'dashboard';
   }
@@ -16226,7 +16230,7 @@ function renderAll(){
     try{ DB=Backend.db(); }catch(_){ DB=null; }
     if(apiStatus) apiStatus.textContent='Google yorum merkezi açılıyor';
     renderAll();
-    route(initialHR||initialAcademy?initialCanonical:current,{skipShellRender:true,skipDeferredEnhancements:true,skipIcons:true,preserveScroll:true});
+    route(initialHR||initialAcademy||initialArge?initialCanonical:current,{skipShellRender:true,skipDeferredEnhancements:true,skipIcons:true,preserveScroll:true});
     const hydrate=async()=>{
       if(apiStatus) apiStatus.textContent='Mock API bağlanıyor';
       DB=await Backend.connect();
@@ -16247,7 +16251,7 @@ function renderAll(){
     await window.OTOTR_ASSET_LOADER?.loadInspectionSchema?.().catch(()=>null);
     if(typeof applyInspectionSchemaToReportData === 'function') applyInspectionSchemaToReportData();
   }
-  renderAll(); route(initialHR||initialAcademy?initialCanonical:current,{skipShellRender:true,skipDeferredEnhancements:true,skipIcons:true,preserveScroll:true});
+  renderAll(); route(initialHR||initialAcademy||initialArge?initialCanonical:current,{skipShellRender:true,skipDeferredEnhancements:true,skipIcons:true,preserveScroll:true});
 })();
 window.addEventListener('hashchange',()=>{
   const id=(location.hash||'#dashboard').replace('#','');
