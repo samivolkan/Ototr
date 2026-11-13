@@ -2601,11 +2601,13 @@ function renderNav(){
   const sideArgeItems = (window.OTOTR_ERP_ARGE?.modules||[]).map(module=>
     `<button data-nav-route="${window.OTOTR_ERP_ARGE.routeFor(module)}" class="${selectedArgeModule===module.id?'active':''}"><span>${module.order} · ${module.shortName||module.name.replace(/^OTOTR\s+/,'')}</span></button>`
   ).join('');
+  const sideComplaintItems = `<button type="button" data-complaint-advanced><span>Gelişmiş Şikayet Operasyon Merkezi</span></button>`;
   const navButton = ([id,label,ic]) => {
     const count = `${id==='franchise'?'<span class="count">'+leads.filter(l=>String(l.type||'').includes('Franchise')).length+'</span>':''}${id==='complaints'?'<span class="count">'+complaintTickets.filter(t=>t.status!=='Kapandı').length+'</span>':''}${id==='crisis'?'<span class="count">'+tickets.filter(t=>t.severity==='Yüksek').length+'</span>':''}`;
     const btn = `<button data-nav-route="${id}" class="${id===current?'active':''}">${icon(ic)}<span>${label}</span>${count}</button>`;
     if(id==='academy') return `<div class="nav-node has-sub">${btn}<div class="nav-sub ${current==='academy'?'open':''}">${sideAcademyItems}</div></div>`;
     if(id==='erp-arge') return `<div class="nav-node has-sub arge-nav-node">${btn}<div class="nav-sub ${current==='erp-arge'?'open':''}">${sideArgeItems}</div></div>`;
+    if(id==='complaints') return `<div class="nav-node has-sub complaint-nav-node">${btn}<div class="nav-sub ${current==='complaints'?'open':''}">${sideComplaintItems}</div></div>`;
     return id==='hr' ? `<div class="nav-node has-sub">${btn}<div class="nav-sub ${current==='hr'?'open':''}">${sideHrItems}</div></div>` : `<div class="nav-node">${btn}</div>`;
   };
   nav.innerHTML = navGroups.map(([g,items]) => `<div class="nav-title">${g}</div>` + items.map(navButton).join('')).join('');
@@ -2640,6 +2642,7 @@ function renderNav(){
     }
     route(b.dataset.navRoute);
   }));
+  nav.querySelector('[data-complaint-advanced]')?.addEventListener('click',()=>window.location.assign('gm-sikayet/index.html'));
 }
 
 function renderHero(){
