@@ -14,3 +14,11 @@ test("tema değiştirme, mobil menü ve azaltılmış hareket desteği var",()=>
 test("demo rozeti her ekranda görünür başlıkta",()=>{
   assert.match(html,/SANAL DEMO – GERÇEK VERİ YOKTUR/);
 });
+test("Claude kaynaklı gelişmiş operasyon görünümü güvenli mevcut akışa eklenmiş",()=>{
+  assert.match(html,/Claude UI v5 entegrasyonu/);
+  assert.match(html,/Gelişmiş Şikayet Operasyon Merkezi/);
+  assert.match(html,/function navToggle\(\)/);
+  assert.match(html,/ototr-nc/);
+  assert.match(html,/class="grid k4 kp7"/);
+  assert.match(html,/function statTiles\(x\)/);
+});
