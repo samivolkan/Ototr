@@ -2605,7 +2605,7 @@ function renderNav(){
     const count = `${id==='franchise'?'<span class="count">'+leads.filter(l=>String(l.type||'').includes('Franchise')).length+'</span>':''}${id==='complaints'?'<span class="count">'+complaintTickets.filter(t=>t.status!=='Kapandı').length+'</span>':''}${id==='crisis'?'<span class="count">'+tickets.filter(t=>t.severity==='Yüksek').length+'</span>':''}`;
     const btn = `<button data-nav-route="${id}" class="${id===current?'active':''}">${icon(ic)}<span>${label}</span>${count}</button>`;
     if(id==='academy') return `<div class="nav-node has-sub">${btn}<div class="nav-sub ${current==='academy'?'open':''}">${sideAcademyItems}</div></div>`;
-    if(id==='erp-arge') return `<div class="nav-node has-sub">${btn}<div class="nav-sub ${current==='erp-arge'?'open':''}">${sideArgeItems}</div></div>`;
+    if(id==='erp-arge') return `<div class="nav-node has-sub arge-nav-node">${btn}<div class="nav-sub ${current==='erp-arge'?'open':''}">${sideArgeItems}</div></div>`;
     return id==='hr' ? `<div class="nav-node has-sub">${btn}<div class="nav-sub ${current==='hr'?'open':''}">${sideHrItems}</div></div>` : `<div class="nav-node">${btn}</div>`;
   };
   nav.innerHTML = navGroups.map(([g,items]) => `<div class="nav-title">${g}</div>` + items.map(navButton).join('')).join('');

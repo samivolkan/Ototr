@@ -17,7 +17,7 @@ test('ERP navigation registers the ARGE main section and route',()=>{
   assert.match(index,/assets\/erp-arge-center\.js\?v=20261113-2/);
   assert.match(core,/const sideArgeItems = \(window\.OTOTR_ERP_ARGE\?\.modules\|\|\[\]\)\.map\(module=>/);
   assert.match(core,/data-nav-route="\$\{window\.OTOTR_ERP_ARGE\.routeFor\(module\)\}"/);
-  assert.match(core,/if\(id==='erp-arge'\) return `<div class="nav-node has-sub">/);
+  assert.match(core,/if\(id==='erp-arge'\) return `<div class="nav-node has-sub arge-nav-node">/);
   assert.doesNotMatch(core,/data-arge-external/);
   assert.match(core,/const initialArge=initialHR\|\|initialAcademy\?null:window\.OTOTR_ERP_ARGE\?\.parseRoute\?\.\(initialCanonical\)/);
   assert.match(core,/initialHR\|\|initialAcademy\|\|initialArge\?initialCanonical:current/);
@@ -65,5 +65,7 @@ test('rendered center states privacy and production gates without write actions'
   assert.doesNotMatch(html,/fetch\(|XMLHttpRequest|postMessage\(/);
   assert.match(css,/\.arge-grid/);
   assert.match(css,/\.arge-detail-grid/);
+  assert.match(css,/\.side:has\(\.arge-nav-node \.nav-sub\.open\)/);
+  assert.match(css,/\.arge-nav-node \.nav-sub button\{width:100%/);
   assert.match(css,/@media\(max-width:520px\).*\.arge-detail-head/s);
 });
