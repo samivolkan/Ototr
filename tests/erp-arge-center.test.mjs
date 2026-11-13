@@ -13,8 +13,8 @@ test('ERP navigation registers the ARGE main section and route',()=>{
   assert.match(core,/\['ERP ARGE', \[\['erp-arge','ARGE Merkezi','flask-conical'\]\]\]/);
   assert.match(core,/'erp-arge':'ERP ARGE'/);
   assert.match(core,/pageShell\('erp-arge', window\.OTOTR_ERP_ARGE/);
-  assert.match(index,/assets\/erp-arge-center\.css\?v=20261113-2/);
-  assert.match(index,/assets\/erp-arge-center\.js\?v=20261113-2/);
+  assert.match(index,/assets\/erp-arge-center\.css\?v=20261113-3/);
+  assert.match(index,/assets\/erp-arge-center\.js\?v=20261113-3/);
   assert.match(core,/const sideArgeItems = \(window\.OTOTR_ERP_ARGE\?\.modules\|\|\[\]\)\.map\(module=>/);
   assert.match(core,/data-nav-route="\$\{window\.OTOTR_ERP_ARGE\.routeFor\(module\)\}"/);
   assert.match(core,/if\(id==='erp-arge'\) return `<div class="nav-node has-sub arge-nav-node">/);
