@@ -21,4 +21,9 @@ test("Claude kaynaklı gelişmiş operasyon görünümü güvenli mevcut akışa
   assert.match(html,/ototr-nc/);
   assert.match(html,/class="grid k4 kp7"/);
   assert.match(html,/function statTiles\(x\)/);
+  assert.match(html,/function listBar\(\)/);
+  assert.match(html,/function skel\(v\)/);
+  assert.match(html,/const empty=/);
+  assert.match(html,/Math\.ceil\(a\.length\/10\)/);
+  assert.match(html,/class="box wrap tl"/);
 });
