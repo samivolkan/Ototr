@@ -18,13 +18,70 @@
       url:'https://ototr-kalite-sandbox.samivolkan.chatgpt.site',
       gates:['Gerçek ERP rapor kapatma adaptörü','Server-side yetki','Audit/correlation','Staging UAT']
     },
-    ...Array.from({length:8},(_,index)=>({
-      id:`arge-${String(index+3).padStart(2,'0')}`, order:String(index+3).padStart(2,'0'),
-      name:`ARGE Modülü ${String(index+3).padStart(2,'0')}`, shortName:`Modül ${String(index+3).padStart(2,'0')}`, description:'Kapsam, sahibi ve kabul ölçütleri doğrulandıktan sonra bu alana eklenecek.',
-      category:'Hazırlanıyor', version:'—', environment:'Planlama', security:'Bağlantı yok',
-      tests:'Başlatılmadı', updatedAt:'—', url:null,
-      gates:['Kapsam kararı','Güvenlik incelemesi','Sentetik test','Owner kabulü']
-    }))
+    {
+      id:'arge-03', order:'03', name:'Genel Müdürlük / Otomasyon Kontrol Merkezi', shortName:'Otomasyon Kontrol',
+      description:'n8n otomasyonlarını, çalışma durumlarını ve kontrollü operasyon sinyallerini owner-only sandbox içinde izler.',
+      category:'Genel Müdürlük & Otomasyon', version:'v2', environment:'Sandbox',
+      security:'Owner-only · üretim tetikleri kapalı', tests:'7/7 geçti', updatedAt:'2026-11-13',
+      url:'https://ototr-otomasyon-sandbox-03.samivolkan.chatgpt.site',
+      gates:['Gerçek n8n credential kasası','Server-side RBAC','Audit/correlation','Staging UAT']
+    },
+    {
+      id:'arge-04', order:'04', name:'Olumsuz Yorum ve Şikâyet Alarm Merkezi', shortName:'Şikâyet Alarmı',
+      description:'Olumsuz yorum ve şikâyet sinyallerini insan onayı gerektiren vaka akışında owner-only olarak sınar.',
+      category:'İtibar & Şikâyet', version:'v1', environment:'Sandbox',
+      security:'Owner-only · dış yanıt kapalı', tests:'7/7 geçti', updatedAt:'2026-11-13',
+      url:'https://ototr-vaka-merkezi-04.samivolkan.chatgpt.site',
+      gates:['Canlı yorum adaptörü','İnsan onaylı yanıt','KVKK incelemesi','Staging UAT']
+    },
+    {
+      id:'arge-05', order:'05', name:'Randevu Operasyon Merkezi', shortName:'Randevu Operasyonu',
+      description:'Randevu yoğunluğu, takip ve operasyon senaryolarını sentetik veriyle owner-only sandbox ortamında doğrular.',
+      category:'Randevu & Operasyon', version:'v2', environment:'Sandbox',
+      security:'Owner-only · müşteri mesajı kapalı', tests:'5/5 geçti', updatedAt:'2026-11-13',
+      url:'https://ototr-randevu-operasyon.samivolkan.chatgpt.site',
+      gates:['Canlı CRM adaptörü','Mesaj onay akışı','Idempotency/audit','Staging UAT']
+    },
+    {
+      id:'arge-06', order:'06', name:'ERP–POS–Banka Tahsilat Mutabakatı', shortName:'Tahsilat Mutabakatı',
+      description:'ERP, POS ve banka tahsilat eşleşmelerini finansal işlem yapmadan owner-only sandbox içinde karşılaştırır.',
+      category:'Finans & Mutabakat', version:'v1', environment:'Sandbox',
+      security:'Owner-only · finansal yazma kapalı', tests:'4/4 geçti', updatedAt:'2026-11-13',
+      url:'https://ototr-tahsilat-mutabakat-06.samivolkan.chatgpt.site',
+      gates:['Salt-okunur finans adaptörleri','Yetki ayrılığı','Audit/idempotency','Finans UAT']
+    },
+    {
+      id:'arge-07', order:'07', name:'Cihaz Bakım ve Kalibrasyon', shortName:'Cihaz & Kalibrasyon',
+      description:'Cihaz bakım, kalibrasyon ve yaklaşan kontrol sinyallerini owner-only sandbox ortamında izler.',
+      category:'Cihaz Operasyonu', version:'v2', environment:'Sandbox',
+      security:'Owner-only · cihaz komutu kapalı', tests:'7/7 geçti', updatedAt:'2026-11-13',
+      url:'https://ototr-cihaz-operasyon-07.samivolkan.chatgpt.site',
+      gates:['Cihaz envanter adaptörü','Servis yetki matrisi','Kanıt/audit kaydı','Staging UAT']
+    },
+    {
+      id:'arge-08', order:'08', name:'Franchise Aday Değerlendirme', shortName:'Aday Değerlendirme',
+      description:'Franchise aday sinyallerini karar vermeden, açıklanabilir değerlendirme önerisi olarak owner-only sandbox içinde sunar.',
+      category:'Franchise & Değerlendirme', version:'v2', environment:'Sandbox',
+      security:'Owner-only · karar insan onaylı', tests:'5/5 geçti', updatedAt:'2026-11-13',
+      url:'https://ototr-franchise-arge-08.samivolkan.chatgpt.site',
+      gates:['Canlı aday adaptörü','Açıklanabilir skor','İnsan karar onayı','KVKK/UAT']
+    },
+    {
+      id:'arge-09', order:'09', name:'Yeni Şube Açılış Kontrolü', shortName:'Şube Açılış Kontrolü',
+      description:'Yeni şube açılış hazırlığını kontrol listeleri ve kanıt kapılarıyla owner-only sandbox içinde doğrular.',
+      category:'Franchise & Açılış', version:'v1', environment:'Sandbox',
+      security:'Owner-only · canlı açılış işlemi kapalı', tests:'5/5 geçti', updatedAt:'2026-11-13',
+      url:'https://ototr-franchise-control-09.samivolkan.chatgpt.site',
+      gates:['Şube kimlik sözleşmesi','Kanıt zorunluluğu','Çoklu onay','Staging UAT']
+    },
+    {
+      id:'arge-10', order:'10', name:'Personel Onboarding ve Erişim Kontrolü', shortName:'Onboarding & Erişim',
+      description:'Personel onboarding ve erişim kontrol adımlarını gerçek hesap açmadan owner-only sandbox içinde sınar.',
+      category:'İK & Erişim', version:'v2', environment:'Sandbox',
+      security:'Owner-only · hesap/yetki yazma kapalı', tests:'8/8 geçti', updatedAt:'2026-11-13',
+      url:'https://ototr-personel-erisim-sandbox.samivolkan.chatgpt.site',
+      gates:['Canlı İK kimliği','Least-privilege matrisi','KVKK/audit','Staging UAT']
+    }
   ]);
   modules[0].shortName='Memnuniyet Merkezi';
   modules[1].shortName='Kalite Orkestrasyonu';

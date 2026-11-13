@@ -14,7 +14,7 @@ test('ERP navigation registers the ARGE main section and route',()=>{
   assert.match(core,/'erp-arge':'ERP ARGE'/);
   assert.match(core,/pageShell\('erp-arge', window\.OTOTR_ERP_ARGE/);
   assert.match(index,/assets\/erp-arge-center\.css\?v=20261113-3/);
-  assert.match(index,/assets\/erp-arge-center\.js\?v=20261113-3/);
+  assert.match(index,/assets\/erp-arge-center\.js\?v=20261113-4/);
   assert.match(core,/const sideArgeItems = \(window\.OTOTR_ERP_ARGE\?\.modules\|\|\[\]\)\.map\(module=>/);
   assert.match(core,/data-nav-route="\$\{window\.OTOTR_ERP_ARGE\.routeFor\(module\)\}"/);
   assert.match(core,/if\(id==='erp-arge'\) return `<div class="nav-node has-sub arge-nav-node">/);
@@ -23,16 +23,16 @@ test('ERP navigation registers the ARGE main section and route',()=>{
   assert.match(core,/initialHR\|\|initialAcademy\|\|initialArge\?initialCanonical:current/);
 });
 
-test('ARGE catalog exposes only two verified owner-only sandbox links',()=>{
+test('ARGE catalog exposes ten verified owner-only sandbox links',()=>{
   const context={window:{},Object,Array,String};
   vm.runInNewContext(moduleSource,context,{filename:'erp-arge-center.js'});
   const catalog=context.window.OTOTR_ERP_ARGE.modules;
   assert.equal(catalog.length,10);
   const linked=catalog.filter(module=>module.url);
-  assert.equal(linked.length,2);
-  assert.deepEqual(Array.from(linked,module=>module.id),['arge-01','arge-02']);
+  assert.equal(linked.length,10);
+  assert.deepEqual(Array.from(linked,module=>module.id),Array.from({length:10},(_,index)=>`arge-${String(index+1).padStart(2,'0')}`));
   assert.ok(linked.every(module=>module.security.includes('Owner-only')));
-  assert.ok(catalog.slice(2).every(module=>module.url===null&&module.tests==='Başlatılmadı'));
+  assert.equal(new Set(linked.map(module=>module.url)).size,10);
 });
 
 test('all ten ARGE modules have stable deep links and detail pages',()=>{
@@ -47,10 +47,10 @@ test('all ten ARGE modules have stable deep links and detail pages',()=>{
     assert.equal(api.parseRoute(route),id);
     assert.match(api.page(id),new RegExp(`data-arge-detail="${id}"`));
   });
-  assert.match(api.page('arge-01'),/Denemeyi Aç/);
-  assert.match(api.page('arge-02'),/Denemeyi Aç/);
-  assert.match(api.page('arge-03'),/Canlı deneme henüz açılmadı/);
-  assert.doesNotMatch(api.page('arge-03'),/target="_blank"/);
+  api.modules.forEach(module=>assert.match(api.page(module.id),/Denemeyi Aç/));
+  assert.match(api.page('arge-03'),/ototr-otomasyon-sandbox-03\.samivolkan\.chatgpt\.site/);
+  assert.match(api.page('arge-10'),/ototr-personel-erisim-sandbox\.samivolkan\.chatgpt\.site/);
+  assert.ok(api.modules.every(module=>/^\d+\/\d+ geçti$/.test(module.tests)||module.tests==='Sandbox doğrulandı'));
 });
 
 test('rendered center states privacy and production gates without write actions',()=>{
@@ -60,8 +60,9 @@ test('rendered center states privacy and production gates without write actions'
   assert.match(html,/Yetkisiz kullanıcılar dış sandbox içeriğine erişemez/);
   assert.match(html,/gerçek ERP verisi, dış mesaj ve rapor kapatma işlemi tetiklemez/);
   assert.match(html,/NO-GO/);
-  assert.equal((html.match(/target="_blank"/g)||[]).length,2);
-  assert.equal((html.match(/aria-disabled="true"/g)||[]).length,8);
+  assert.equal((html.match(/target="_blank"/g)||[]).length,10);
+  assert.equal((html.match(/aria-disabled="true"/g)||[]).length,0);
+  assert.doesNotMatch(html,/Hazırlanıyor|Başlatılmadı|Planlama/);
   assert.doesNotMatch(html,/fetch\(|XMLHttpRequest|postMessage\(/);
   assert.match(css,/\.arge-grid/);
   assert.match(css,/\.arge-detail-grid/);
