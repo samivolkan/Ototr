@@ -31,7 +31,7 @@ function loadComplaintVm({storageThrows=false}={}){
   }};
   context.window=context;context.globalThis=context;
   vm.createContext(context);
-  for(const file of ['roles.js','evidence-model.js']) vm.runInContext(fs.readFileSync(path.join(root,'gm-sikayet',file),'utf8'),context,{filename:file});
+  for(const file of ['roles.js','evidence-model.js','chart-model.js']) vm.runInContext(fs.readFileSync(path.join(root,'gm-sikayet',file),'utf8'),context,{filename:file});
   let main=html.slice(start,end);
   main=main.replace(/setTimeout\(\(\)=>\{LOAD=0;draw\(\)\},400\);draw\(\);\s*$/,'');
   vm.runInContext(main,context,{filename:'index.inline.js'});
