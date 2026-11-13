@@ -2,22 +2,22 @@ const test=require('node:test');
 const assert=require('node:assert/strict');
 const {loadComplaintVm}=require('./gm-complaint-vm.cjs');
 
-test('Demo laboratuvarı izole fixture ile 30/30 geçer ve kullanıcı durumunu geri yükler',()=>{
+test('Demo laboratuvarı izole fixture ile 36/36 geçer ve kullanıcı durumunu geri yükler',()=>{
   const h=loadComplaintVm();
   h.run('ROLE="Şube Müdürü";UB="Bursa Nilüfer";SF="Aşıldı";WK=3;KN="İletişim";FD=7;SEL=D[2]');
   const before=h.json('({ROLE,UB,SF,WK,KN,FD,sel:SEL.id,count:D.length})');
   const rows=h.json('tests()');
   const after=h.json('({ROLE,UB,SF,WK,KN,FD,sel:SEL.id,count:D.length})');
-  assert.equal(rows.length,30);
-  assert.equal(rows.filter(x=>x.ok).length,30,JSON.stringify(rows.filter(x=>!x.ok)));
+  assert.equal(rows.length,36);
+  assert.equal(rows.filter(x=>x.ok).length,36,JSON.stringify(rows.filter(x=>!x.ok)));
   assert.deepEqual(after,before);
 });
 
-test('laboratuvar kullanıcı verisi bozulmuş olsa da taze fixture ile 30/30 geçer',()=>{
+test('laboratuvar kullanıcı verisi bozulmuş olsa da taze fixture ile 36/36 geçer',()=>{
   const h=loadComplaintVm();
   h.run('D.forEach(x=>{x.s=7;x.bekle=1;x.esc=1;x.kok=""});S.inb=[]');
   const rows=h.json('tests()');
-  assert.equal(rows.length,30);
+  assert.equal(rows.length,36);
   assert.ok(rows.every(x=>x.ok),JSON.stringify(rows.filter(x=>!x.ok)));
   assert.equal(h.run('D.every(x=>x.s===7&&x.bekle===1&&x.esc===1&&x.kok==="")'),true);
 });
