@@ -1487,10 +1487,11 @@ const navGroups = [
   ['Müşteri & Satış', [['crm','CRM & Randevu','users'],['saha-satis','Saha Satış','map-pinned'],['chronic-issues','Kronik Sorunlar','car-front'],['complaints','Müşteri Şikayetleri','message-circle-warning'],['google-reviews','Yorumlar ve Yanıtlar','star'],['marketing','Pazarlama','megaphone']]],
   ['Franchise Yönetimi', [['franchise','Franchise Satış','handshake'],['growth','Bayii Büyüme','map']]],
   ['Kurumsal Yönetim', [['academy','OTOTR Academy','graduation-cap'],['hr','İnsan Kaynakları','badge-check'],['legal','Hukuk & Risk','scale']]],
+  ['ERP ARGE', [['erp-arge','ARGE Merkezi','flask-conical']]],
   ['Ayarlar', [['architecture','Sistem Mimarisi','network'],['settings','Ayarlar','settings'],['legacy','Legacy Room','landmark']]],
   ['Finans', [['finance','GM Finans','banknote']]]
 ];
-const titles = {ruhsat:'Ruhsat Oku',dashboard:'Yönetim Kokpiti','project-roadmap':'Proje Yol Haritası',intelligence:'İş Zekası',looker:'Looker Canlı Panolar',branches:'Bayiler & Şubeler','branch-health':'Şube Sağlık & Erken Uyarı',dealer:'Bayi Portalı','ototr-web':'OTOTR Web',operations:'Operasyon',franchise:'Franchise Satış',crm:'CRM & Randevu','chronic-issues':'Kronik Sorunlar',complaints:'Müşteri Şikayetleri','google-reviews':'Google Haritalar İtibar Merkezi',reputation:'İtibar Radar',finance:'GM Finans',marketing:'Pazarlama',quality:'Kalite & Denetim','report-assurance':'Rapor Güvence Merkezi','report-design':'Ekspertiz Rapor Tasarımı',sunum32:'32 Ekran Sunumu',sunum32v2:'32 Ekran Sunumu V2','vehicle-passport':'Dijital Araç Karnesi',academy:'OTOTR Academy',hr:'İnsan Kaynakları',legal:'Hukuk & Risk',crisis:'Kriz Merkezi',actions:'Aksiyon & Görev',ai:'AI Öneri',growth:'Bayii Büyüme',legacy:'Legacy Room',architecture:'Sistem Mimarisi',settings:'Ayarlar',branchProfile:'Şube Profili',franchiseProfile:'Aday Değerlendirme',customerProfile:'Müşteri 360'};
+const titles = {ruhsat:'Ruhsat Oku',dashboard:'Yönetim Kokpiti','project-roadmap':'Proje Yol Haritası',intelligence:'İş Zekası',looker:'Looker Canlı Panolar',branches:'Bayiler & Şubeler','branch-health':'Şube Sağlık & Erken Uyarı',dealer:'Bayi Portalı','ototr-web':'OTOTR Web',operations:'Operasyon',franchise:'Franchise Satış',crm:'CRM & Randevu','chronic-issues':'Kronik Sorunlar',complaints:'Müşteri Şikayetleri','google-reviews':'Google Haritalar İtibar Merkezi',reputation:'İtibar Radar',finance:'GM Finans',marketing:'Pazarlama',quality:'Kalite & Denetim','report-assurance':'Rapor Güvence Merkezi','report-design':'Ekspertiz Rapor Tasarımı',sunum32:'32 Ekran Sunumu',sunum32v2:'32 Ekran Sunumu V2','vehicle-passport':'Dijital Araç Karnesi',academy:'OTOTR Academy',hr:'İnsan Kaynakları',legal:'Hukuk & Risk','erp-arge':'ERP ARGE',crisis:'Kriz Merkezi',actions:'Aksiyon & Görev',ai:'AI Öneri',growth:'Bayii Büyüme',legacy:'Legacy Room',architecture:'Sistem Mimarisi',settings:'Ayarlar',branchProfile:'Şube Profili',franchiseProfile:'Aday Değerlendirme',customerProfile:'Müşteri 360'};
 function dealerPortalUrl(){
   const path=decodeURIComponent(location.pathname||'').replace(/\\/g,'/').toLowerCase();
   return path.includes('/bayi-portal/') ? 'index.html#dealer' : 'bayi-portal/index.html#dealer';
@@ -3890,6 +3891,7 @@ function renderPages(){
     pageShell('academy', AcademyDashboard())+
     pageShell('hr', renderHRRoom())+
     pageShell('legal', LegalCommandCenterPage())+
+    pageShell('erp-arge', window.OTOTR_ERP_ARGE?.page?.() || '<div class="card"><b>ERP ARGE modülü yüklenemedi.</b><p>Sayfayı yenileyin veya sistem yöneticisine başvurun.</p></div>')+
     pageShell('crisis', CrisisCenterPage())+
     pageShell('actions', renderActionsPage())+
     pageShell('ai', renderAiPage())+
