@@ -2597,10 +2597,14 @@ function renderNav(){
     const room = HR_ROOM_BY_ID[c.defaultRoom] || HR_ROOM_BY_ID[c.rooms[0]] || HR_ROOM_BY_ID[HR_DEFAULT_ROOM];
     return `<button data-nav-route="${hrRouteFor(room.id)}" class="${current==='hr' && HR_VIEW.category===c.id?'active':''}"><span>${c.title}</span></button>`;
   }).join('');
+  const sideArgeItems = (window.OTOTR_ERP_ARGE?.modules||[]).filter(module=>module.url).map(module=>
+    `<button data-arge-external="${module.url}" title="Owner-only sandbox"><span>${module.name.replace(/^OTOTR\s+/,'')}</span></button>`
+  ).join('');
   const navButton = ([id,label,ic]) => {
     const count = `${id==='franchise'?'<span class="count">'+leads.filter(l=>String(l.type||'').includes('Franchise')).length+'</span>':''}${id==='complaints'?'<span class="count">'+complaintTickets.filter(t=>t.status!=='Kapandı').length+'</span>':''}${id==='crisis'?'<span class="count">'+tickets.filter(t=>t.severity==='Yüksek').length+'</span>':''}`;
     const btn = `<button data-nav-route="${id}" class="${id===current?'active':''}">${icon(ic)}<span>${label}</span>${count}</button>`;
     if(id==='academy') return `<div class="nav-node has-sub">${btn}<div class="nav-sub ${current==='academy'?'open':''}">${sideAcademyItems}</div></div>`;
+    if(id==='erp-arge') return `<div class="nav-node has-sub">${btn}<div class="nav-sub ${current==='erp-arge'?'open':''}">${sideArgeItems}</div></div>`;
     return id==='hr' ? `<div class="nav-node has-sub">${btn}<div class="nav-sub ${current==='hr'?'open':''}">${sideHrItems}</div></div>` : `<div class="nav-node">${btn}</div>`;
   };
   nav.innerHTML = navGroups.map(([g,items]) => `<div class="nav-title">${g}</div>` + items.map(navButton).join('')).join('');
@@ -2634,6 +2638,9 @@ function renderNav(){
       return;
     }
     route(b.dataset.navRoute);
+  }));
+  nav.querySelectorAll('[data-arge-external]').forEach(button=>button.addEventListener('click',()=>{
+    window.open(button.dataset.argeExternal,'_blank','noopener,noreferrer');
   }));
 }
 

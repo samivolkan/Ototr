@@ -15,6 +15,9 @@ test('ERP navigation registers the ARGE main section and route',()=>{
   assert.match(core,/pageShell\('erp-arge', window\.OTOTR_ERP_ARGE/);
   assert.match(index,/assets\/erp-arge-center\.css\?v=20261113-1/);
   assert.match(index,/assets\/erp-arge-center\.js\?v=20261113-1/);
+  assert.match(core,/const sideArgeItems = \(window\.OTOTR_ERP_ARGE\?\.modules\|\|\[\]\)\.filter\(module=>module\.url\)/);
+  assert.match(core,/if\(id==='erp-arge'\) return `<div class="nav-node has-sub">/);
+  assert.match(core,/querySelectorAll\('\[data-arge-external\]'\)/);
 });
 
 test('ARGE catalog exposes only two verified owner-only sandbox links',()=>{
