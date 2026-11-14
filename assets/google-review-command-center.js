@@ -167,6 +167,37 @@
     if (view === 'radar') { document.getElementById('cc-radar-anchor')?.scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
     window.OTOTRGoogleReputation?.setCenterView?.('overview');
   }
+  async function startBulkQueue(button, bar, label, value) {
+    button.disabled = true;
+    state.bulkRunning = true;
+    const workflowApi = window.OTOTRGoogleReviewAI;
+    const queuedItems = workflowApi?.getApprovalQueue?.()?.filter(item => item?.id).slice(0, 100) || [];
+    let backendJob = null;
+    if (queuedItems.length && typeof workflowApi?.googleBusinessRequest === 'function') {
+      try {
+        backendJob = await workflowApi.googleBusinessRequest('bulk_route', {
+          item_ids: queuedItems.map(item => item.id),
+          idempotency_key: `cc-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
+        });
+        label.textContent = `Kuyruk oluşturuldu · ${backendJob?.item_count || queuedItems.length} kayıt`;
+      } catch (error) {
+        label.textContent = `Yerel önizleme · ${error?.message || 'backend kuyruğu hazır değil'}`;
+      }
+    }
+    let progress = 0;
+    const timer = setInterval(() => {
+      progress = Math.min(100, progress + 10);
+      bar.style.width = `${progress}%`;
+      value.textContent = `%${progress}`;
+      if (progress < 100) label.textContent = backendJob ? `Kuyruk ilerliyor · ${progress}%` : `${Math.round(progress * .14)} / 14 kayıt kuyruğa alındı`;
+      if (progress >= 100) {
+        clearInterval(timer);
+        state.bulkRunning = false;
+        button.textContent = backendJob ? 'Kuyruk hazır' : 'Tamamlandı';
+        window.toast?.(backendJob ? 'Toplu sevk kuyruğu oluşturuldu. Yayın için admin onayı korunuyor.' : 'Toplu sevk önizlemesi tamamlandı. Google yayını için admin onayı korunuyor.', 'success');
+      }
+    }, 160);
+  }
   function bind() {
     if (window.__OTOTR_GOOGLE_CC_BOUND__) return; window.__OTOTR_GOOGLE_CC_BOUND__ = true;
     document.addEventListener('input', event => { const search = event.target.closest?.('[data-cc-search]'); if (search) { state.query = search.value; refresh(); } });
@@ -180,7 +211,7 @@
       if (event.target.closest?.('[data-cc-export]')) { event.preventDefault(); exportCsv(visibleStats()); return; }
       if (event.target.closest?.('[data-cc-email-test]')) { window.toast?.('E-posta önizlemesi hazırlandı; gerçek gönderim için mail worker ve yetkili onayı gerekir.', 'info'); return; }
       if (event.target.closest?.('[data-cc-audit-export]')) { const csv = 'İşlem;Kullanıcı;Kayıt;Zaman\nYanıt onayı;Süper Admin;Nilüfer;3 dk önce\nGoogle senkronizasyonu;Sistem;Nilüfer;Bugün 09:18'; const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' })); link.download = 'ototr-google-audit.csv'; link.click(); }
-      if (event.target.closest?.('[data-cc-bulk-start]')) { const button = event.target.closest('[data-cc-bulk-start]'), bar = document.querySelector('[data-cc-progress-bar]'), label = document.querySelector('[data-cc-progress-label]'), value = document.querySelector('[data-cc-progress-value]'); if (!bar || !label || !value) return; button.disabled = true; state.bulkRunning = true; let progress = 0; const timer = setInterval(() => { progress = Math.min(100, progress + 10); bar.style.width = `${progress}%`; value.textContent = `%${progress}`; label.textContent = progress < 100 ? `${Math.round(progress * .14)} / 14 kayıt kuyruğa alındı` : 'Kuyruk tamamlandı · audit kaydı oluşturuldu'; if (progress >= 100) { clearInterval(timer); state.bulkRunning = false; button.textContent = 'Tamamlandı'; window.toast?.('Toplu sevk kuyruğu tamamlandı. Google yayını için admin onayı korunuyor.', 'success'); } }, 160); }
+      if (event.target.closest?.('[data-cc-bulk-start]')) { const button = event.target.closest('[data-cc-bulk-start]'), bar = document.querySelector('[data-cc-progress-bar]'), label = document.querySelector('[data-cc-progress-label]'), value = document.querySelector('[data-cc-progress-value]'); if (!bar || !label || !value) return; void startBulkQueue(button, bar, label, value); }
     });
   }
   function install() {

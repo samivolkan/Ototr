@@ -664,6 +664,28 @@ Deno.serve(async (req) => {
       databaseFailure(error); if (!data) throw new RequestError('Görev başka oturumda değişti. Listeyi yenileyin.', 409);
       return json({ item: data });
     }
+    if (body.action === 'bulk_route') {
+      const authorization = await authorizedGoogleRole(db, user.id, 'bulk_route');
+      const itemIds = Array.isArray(body.item_ids) ? [...new Set(body.item_ids.map((value: unknown) => String(value).trim()).filter(value => /^[0-9a-f-]{36}$/i.test(value)))] : [];
+      if (!itemIds.length || itemIds.length > 100) throw new RequestError('Toplu sevk için 1–100 arası geçerli görev seçin.', 400);
+      const idempotencyKey = String(body.idempotency_key || '').trim();
+      if (!/^[A-Za-z0-9._:-]{8,120}$/.test(idempotencyKey)) throw new RequestError('Toplu sevk idempotency anahtarı geçersiz.', 400);
+      const existing = await db.from('google_review_bulk_jobs').select('*').eq('connection_id', connectionId).eq('idempotency_key', idempotencyKey).maybeSingle();
+      databaseFailure(existing.error);
+      if (existing.data) return json({ job: existing.data, replayed: true });
+      const selected = await db.from(workTable).select('id,status,kind,branch_id').eq('connection_id', connectionId).in('id', itemIds);
+      databaseFailure(selected.error);
+      const eligible = (selected.data || []).filter((item: any) => item.kind === 'reply' && ['approval_pending', 'publish_failed', 'publish_unknown'].includes(item.status));
+      if (!eligible.length) throw new RequestError('Sevk kuyruğuna alınabilecek onay bekleyen yanıt bulunamadı.', 409);
+      const created = await db.from('google_review_bulk_jobs').insert({ connection_id: connectionId, job_type: 'route', status: 'queued', requested_by: user.id, idempotency_key: idempotencyKey, total_count: eligible.length, progress: { source: 'google_review_center', requested_count: itemIds.length } }).select('*').maybeSingle();
+      databaseFailure(created.error);
+      if (!created.data) throw new RequestError('Toplu sevk kuyruğu oluşturulamadı.', 503);
+      const itemRows = eligible.map((item: any) => ({ job_id: created.data.id, item_key: String(item.id), work_item_id: item.id, status: 'queued' }));
+      const itemInsert = await db.from('google_review_bulk_job_items').insert(itemRows);
+      databaseFailure(itemInsert.error);
+      await writeGoogleAudit(db, { userId: user.id, role: authorization.role, action: 'bulk_route', entityType: 'google_review_bulk_job', entityId: created.data.id, afterState: { status: 'queued', total_count: eligible.length }, detail: 'Toplu sevk kuyruğu oluşturuldu.', requestId: req.headers.get('x-request-id') || undefined });
+      return json({ job: created.data, item_count: eligible.length });
+    }
     if (body.action === 'reply') throw new RequestError('Doğrudan yayın kapalı. Kayıtlı taslağı onay kuyruğundan yayımlayın.', 400);
     if (!clientMatches) return json({ error: 'Google uygulama bağlantısı değişti. Google Hesabını Bağla ile hesabınızı yeniden yetkilendirin.', reconnection_required: true }, 409);
     if (body.action === 'prepare_draft') return json(await prepareDraft(db, user, body, connection, req.headers.get('authorization') || ''));
