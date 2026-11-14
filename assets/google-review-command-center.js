@@ -5,7 +5,7 @@
   // It owns the management view only; inbox, goals, OAuth and the live publisher
   // remain on their existing, server-validated paths.
   const state = window.__OTOTR_GOOGLE_CC_STATE = window.__OTOTR_GOOGLE_CC_STATE || {
-    branch: 'all', period: '2026-11', query: '', auditAction: 'all', auditActor: 'all', auditRange: '30', auditRows: null, bulkRunning: false,
+    branch: 'all', period: '2026-11', query: '', auditAction: 'all', auditActor: 'all', auditRange: '30', auditRows: null, auditRowsLoaded: false, bulkRunning: false,
   };
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const metric = (value, decimals = 0) => value == null ? '—' : Number(value).toLocaleString('tr-TR', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
@@ -128,7 +128,7 @@
       ['sync', 'Google senkronizasyonu tamamlandı', 'Sistem', 'Nilüfer · 12 yeni / 3 güncellendi', 'Bugün 09:18'],
     ];
     const action = state.auditAction, actor = state.auditActor;
-    const remote = Array.isArray(state.auditRows) && state.auditRows.length
+    const remote = state.auditRowsLoaded && Array.isArray(state.auditRows)
       ? state.auditRows.map(item => [auditKind(item.action), auditLabel(item.action), auditActorLabel(item.actor_role), `${item.entity_type || 'Kayıt'} · ${item.detail || item.entity_id || '—'}`, item.created_at ? new Date(item.created_at).toLocaleString('tr-TR') : '—'])
       : null;
     const rows = remote || samples;
@@ -141,6 +141,7 @@
       const data = await api.googleBusinessRequest('audit_list', { limit: 200 });
       if (Array.isArray(data?.rows)) {
         state.auditRows = data.rows;
+        state.auditRowsLoaded = true;
         const list = document.querySelector('[data-cc-audit-list]');
         if (list) list.innerHTML = renderAuditRows();
       }
