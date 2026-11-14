@@ -28,7 +28,7 @@
       // management dashboard with its three clearly labelled demo branches.
       // The live branch always remains sourced from googleBranches().
       demoBranchFallbacks.forEach(row => { if (!merged.has(row.id)) merged.set(row.id, row); });
-      return [...merged.values()].filter(row => !hiddenBranches.has(row.id));
+      return [...merged.values()].filter(row => !hiddenBranches.has(row.id) && row.configuredActive !== false && row.active !== false);
     } catch (_) { return []; }
   }
   function rawReviews() {
