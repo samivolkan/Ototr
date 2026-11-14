@@ -15991,6 +15991,12 @@ function renderDealerPageOnly(){
     },180);
   }
 }
+function renderGoogleReviewFallback(message){
+  const pages=document.getElementById('pages');
+  if(!pages) return;
+  pages.innerHTML=`<div class="page active google-fallback-page"><section class="google-fallback-card"><span class="review-kicker">OTOTR · MÜŞTERİ DENEYİMİ</span><h1>Yorumlar ve Yanıtlar</h1><p>Yorum merkezi güvenli önbellekten açıldı. Canlı veriler arka planda yenilenecek.</p><div class="google-fallback-actions"><button class="btn primary" type="button" onclick="location.reload()">Yeniden dene</button><button class="btn" type="button" onclick="window.OTOTRGoogleReputation?.setCenterView?.('connections')">Bağlantı ayarları</button></div><small>${googleEsc(message||'Geçici yükleme gecikmesi')}</small></section></div>`;
+  if(window.lucide) lucide.createIcons();
+}
 function renderAll(){
   // A direct Google Review Center deep-link should not eagerly build every
   // unrelated ERP module before the first paint.
@@ -15998,7 +16004,12 @@ function renderAll(){
     renderHero();
     renderNav();
     const pages=document.getElementById('pages');
-    if(pages) pages.innerHTML=pageShell('google-reviews',GoogleReputationPremiumDashboard());
+    try{
+      if(pages) pages.innerHTML=pageShell('google-reviews',GoogleReputationPremiumDashboard());
+    }catch(error){
+      console.error('Google Review Center ilk çizim hatası',error);
+      renderGoogleReviewFallback(error?.message);
+    }
     if(window.lucide) lucide.createIcons();
     return;
   }
@@ -16046,11 +16057,11 @@ function renderAll(){
   if(googleFirstPaint){
     try{ DB=Backend.db(); }catch(_){ DB=null; }
     if(apiStatus) apiStatus.textContent='Google yorum merkezi açılıyor';
-    renderAll();
+    try{ renderAll(); }catch(error){ console.error('Google Review Center açılış hatası',error); renderGoogleReviewFallback(error?.message); }
     route(initialHR||initialAcademy?initialCanonical:current,{skipShellRender:true,skipDeferredEnhancements:true,skipIcons:true,preserveScroll:true});
     const hydrate=async()=>{
       if(apiStatus) apiStatus.textContent='Mock API bağlanıyor';
-      DB=await Backend.connect();
+      try{ DB=await Backend.connect(); }catch(error){ console.error('Google Review Center backend bağlantısı',error); DB=Backend.db?.()||null; if(apiStatus) apiStatus.textContent='Önbellek modu'; }
       if(apiStatus) apiStatus.textContent='Mock API bağlı';
       if(current==='google-reviews'){
         if(typeof refreshGoogleReputationPage==='function') refreshGoogleReputationPage();
