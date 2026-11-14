@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "environment": "staging",
+  "projectRef": "bsjkohwbtrfwrqcyhsfz",
+  "checkedAtUtc": "2026-11-06T00:59:11Z",
+  "productionDataUsed": false,
+  "migrations": [
+    "franchise_single_department_owners",
+    "franchise_department_owner_assigned_by_index"
+  ],
+  "checks": {
+    "acceptanceTransactionPassed": true,
+    "acceptanceRowsRolledBack": true,
+    "assignmentRowCount": 0,
+    "rlsEnabled": true,
+    "policyCount": 3,
+    "oneActivePrimaryIndex": true,
+    "allForeignKeysIndexed": true,
+    "securityAdvisorFindingsForObject": 0,
+    "performanceAdvisorBlockingFindingsForObject": 0
+  },
+  "notes": [
+    "Ana sorumluyu yalnız Genel Müdür atayabilir.",
+    "Alt personel yalnız aynı departmandaki aktif ana sorumluya bağlanabilir.",
+    "Yeni ve boş indeksler için unused_index bilgi notu beklenen durumdur."
+  ]
+}

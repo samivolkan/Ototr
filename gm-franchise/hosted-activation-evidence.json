@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "module": "OTOTR_FRANCHISE_ACTIVATION",
+  "environment": "ototr-staging",
+  "projectRef": "bsjkohwbtrfwrqcyhsfz",
+  "testedAt": "2026-11-05",
+  "productionDataUsed": false,
+  "executionMode": "single_transaction_rollback",
+  "source": "supabase/ops/franchise-activation-acceptance.sql",
+  "checks": {
+    "seventeenApprovedDocuments": true,
+    "threeConsentReceipts": true,
+    "thirtySixDepartmentTasks": true,
+    "tenMandatoryStaffRoles": true,
+    "employmentAndContractGate": true,
+    "academyCertificateGate": true,
+    "accessScopeGate": true,
+    "financeLedgerAndCollectionGate": true,
+    "legalDueDiligenceTerritoryAndSiteGate": true,
+    "tenOpeningDeliverables": true,
+    "singleAtomicBranch": true,
+    "tenAccessAccounts": true,
+    "dealerBranchScope": true,
+    "thirtySixtyNinetyTasks": true,
+    "fourOutboxEvents": true,
+    "idempotentReactivation": true,
+    "followupMakerChecker": true,
+    "revokedAccessRemovesBranchScope": true,
+    "outboxClaimAndFinish": true
+  },
+  "result": "PASS",
+  "cleanup": {
+    "authUsers": 0,
+    "franchiseCases": 0,
+    "branches": 0,
+    "staff": 0,
+    "accessAccounts": 0,
+    "followupTasks": 0,
+    "outboxEvents": 0
+  },
+  "verificationBoundary": "The hosted SQL connector cannot SET ROLE supabase_auth_admin/authenticated. Function and trigger behavior ran with synthetic JWT claims in a rolled-back transaction; authenticated RLS isolation is independently proven by the real applicant JWT acceptance.",
+  "releaseDecision": "NO_GO"
+}

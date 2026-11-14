@@ -4,14 +4,29 @@
   const marker = 'data-gm-franchise-link';
   const moduleUrl = new URL('gm-franchise/', document.baseURI).href;
 
+  function mountPublicPreviewBoundary() {
+    if (location.hostname !== 'raw.githack.com' || document.querySelector('[data-ototr-public-preview]')) return;
+    const banner = document.createElement('div');
+    banner.setAttribute('data-ototr-public-preview', '');
+    banner.setAttribute('role', 'status');
+    banner.textContent = 'KAMUYA AÇIK SENTETİK DEMO ÖNİZLEMESİ · Gerçek kişi, aday, çalışan, şube, finans veya sözleşme verisi girmeyin. Bu ekran üretim sistemi değildir.';
+    Object.assign(banner.style, {
+      position: 'sticky',
+      top: '0',
+      zIndex: '10000',
+      padding: '10px 16px',
+      background: '#7f1d1d',
+      color: '#fff',
+      font: '700 12px/1.4 system-ui, sans-serif',
+      textAlign: 'center',
+      letterSpacing: '.02em'
+    });
+    document.body.prepend(banner);
+  }
+
   function mount() {
     const nav = document.getElementById('nav');
     if (!nav || nav.querySelector(`[${marker}]`)) return;
-
-    const heading = document.createElement('div');
-    heading.className = 'nav-title';
-    heading.textContent = 'GM Franchise Sistemi';
-    heading.setAttribute('data-gm-franchise-heading', '');
 
     const node = document.createElement('div');
     node.className = 'nav-node';
@@ -23,13 +38,26 @@
     button.addEventListener('click', () => window.location.assign(moduleUrl));
     node.appendChild(button);
 
-    nav.append(heading, node);
+    const franchiseHeading = [...nav.querySelectorAll('.nav-title')]
+      .find(title => title.textContent.trim() === 'Franchise Yönetimi');
+    if (franchiseHeading) {
+      let nextGroup = franchiseHeading.nextElementSibling;
+      while (nextGroup && !nextGroup.classList.contains('nav-title')) nextGroup = nextGroup.nextElementSibling;
+      nav.insertBefore(node, nextGroup);
+    } else {
+      const heading = document.createElement('div');
+      heading.className = 'nav-title';
+      heading.textContent = 'Franchise Yönetimi';
+      heading.setAttribute('data-gm-franchise-heading', '');
+      nav.append(heading, node);
+    }
     if (window.lucide && typeof window.lucide.createIcons === 'function') {
       window.lucide.createIcons();
     }
   }
 
   function start() {
+    mountPublicPreviewBoundary();
     mount();
     const nav = document.getElementById('nav');
     if (!nav) return;

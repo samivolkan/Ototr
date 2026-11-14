@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 2,
+  "projectRef": "bsjkohwbtrfwrqcyhsfz",
+  "environment": "staging",
+  "productionDataUsed": false,
+  "providerSecretsConfigured": false,
+  "externalEndpointsConfigured": false,
+  "departmentEndpointAcceptance": {
+    "finance": {"configured": false},
+    "accounting": {"configured": false},
+    "legal": {"configured": false},
+    "hr": {"configured": false},
+    "academy": {"configured": false},
+    "operations": {"configured": false},
+    "procurement": {"configured": false},
+    "it": {"configured": false},
+    "marketing": {"configured": false},
+    "quality": {"configured": false},
+    "ohs": {"configured": false},
+    "architecture": {"configured": false},
+    "tasks": {"configured": false}
+  },
+  "providerAcceptance": {
+    "email": {"configured": false},
+    "sms": {"configured": false},
+    "whatsapp": {"configured": false},
+    "esign": {"configured": false}
+  },
+  "scheduledDispatchInstalled": true,
+  "scheduledDispatchConfigured": false,
+  "schedulers": {
+    "outbox": {"installed": true, "configured": false, "jobName": "franchise-outbox-dispatch"},
+    "provider": {"installed": true, "configured": false, "jobName": "franchise-provider-dispatch"}
+  },
+  "liveCatalogVerifiedAtUtc": "2026-11-05T21:19:22Z",
+  "queueState": {"outbox": 0, "provider": 0},
+  "accountingContractDeployed": true,
+  "syntheticTransportAcceptance": {
+    "endpointHost": "httpbin.org",
+    "persistentConfiguration": false,
+    "sourceCount": 13,
+    "delivered": 13,
+    "finished": 13,
+    "result": "PASS"
+  },
+  "functions": [
+    {
+      "slug": "franchise-outbox-worker",
+      "functionId": "ffa5e748-0add-428e-9bb6-5aa83eaa2745",
+      "version": 2,
+      "status": "ACTIVE",
+      "verifyJwt": true,
+      "bundleSha256": "1847505c84d4b8bd7363b07b19643469298bb5f94f40d3f808b6558e37e82726",
+      "unauthenticatedProbeStatus": 401,
+      "authenticatedInvalidSecretProbeStatus": 401
+    },
+    {
+      "slug": "franchise-provider-worker",
+      "functionId": "cd14a422-73f7-458f-9d49-ed5310f13daf",
+      "version": 1,
+      "status": "ACTIVE",
+      "verifyJwt": true,
+      "bundleSha256": "e64404eff3e9ec8e0f3ad7e151b46b0e35867284130b9df00d6033b0378d5446",
+      "unauthenticatedProbeStatus": 401,
+      "authenticatedInvalidSecretProbeStatus": 401
+    }
+  ]
+}

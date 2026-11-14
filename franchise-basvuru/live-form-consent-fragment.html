@@ -1,0 +1,35 @@
+<!-- OTOTR /franchise formundaki .form-grid içine, gönder düğmesinden önce eklenir. -->
+<input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" class="hp">
+<div class="field">
+  <label for="fr-equity">Öz kaynak aralığı <b>*</b></label>
+  <select id="fr-equity" name="equity_band" required>
+    <option value="">Seçiniz</option><option value="under_3m">3 milyon TL altı</option><option value="3m_7m">3–7 milyon TL</option><option value="7m_15m">7–15 milyon TL</option><option value="over_15m">15 milyon TL üzeri</option>
+  </select>
+</div>
+<div class="field">
+  <label for="fr-management-years">Yönetim deneyimi (yıl) <b>*</b></label>
+  <input id="fr-management-years" name="management_experience_years" type="number" min="0" max="80" required>
+</div>
+<div class="field">
+  <label for="fr-partnership">Ortaklık yapısı <b>*</b></label>
+  <select id="fr-partnership" name="partnership_structure" required>
+    <option value="">Seçiniz</option><option value="single">Tek ortak</option><option value="family">Aile ortaklığı</option><option value="corporate">Kurumsal</option><option value="multi_partner">Çok ortaklı</option>
+  </select>
+</div>
+<div class="field">
+  <label for="fr-company-status">Mevcut şirket durumu <b>*</b></label>
+  <select id="fr-company-status" name="company_status" required>
+    <option value="">Seçiniz</option><option value="none">Şirket yok</option><option value="sole_proprietor">Şahıs şirketi</option><option value="limited">Limited şirket</option><option value="joint_stock">Anonim şirket</option><option value="other">Diğer</option>
+  </select>
+</div>
+<div class="field full consent">
+  <label><input type="checkbox" name="kvkkConsent" required> KVKK aydınlatma metnini okudum ve bilgilendirildim. <b>*</b></label>
+</div>
+<div class="field full form-note">T.C. kimlik numarası ve finansal belgeler açık formda alınmaz; ön değerlendirme sonrası yalnız kimliği doğrulanmış özel aday portalında istenir.</div>
+<div class="field full form-note" data-franchise-status role="status" aria-live="polite"></div>
+<div class="field full consent">
+  <label><input type="checkbox" name="processingConsent" required> Başvuru verilerimin Franchise değerlendirmesi için işlenmesini kabul ediyorum. <b>*</b></label>
+</div>
+<div class="field full consent">
+  <label><input type="checkbox" name="contactConsent"> Kampanya ve tanıtımlar için ticari elektronik ileti almak istiyorum. <span>(isteğe bağlı)</span></label>
+</div>

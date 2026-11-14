@@ -23,6 +23,8 @@
       if (next) { next.focus?.({ preventScroll: true }); next.setSelectionRange?.(selection.start, selection.end); next.scrollTop = selection.scroll; }
     }
   };
+  const workflowItems = () => workflow.items.map(item => ({ ...item, review_snapshot: item.review_snapshot && typeof item.review_snapshot === 'object' ? { ...item.review_snapshot } : {} }));
+  const notifyWorkflowChanged = () => window.OTOTRGoogleReputation?.onWorkflowChanged?.(workflowItems());
 
   function esc(value) {
     return String(value ?? '').replace(/[&<>'"]/g, (char) => ({
@@ -176,6 +178,7 @@
   }
 
   function identityFor(review, branch) {
+    if (branch?.demo || review?.demo) throw new Error('Demo yorumlar canlı Google iş akışına gönderilemez.');
     // Cached review cards can be rendered before the latest sync metadata is
     // applied to the branch object. Keep the AI workflow usable in that case
     // by deriving the stable identifiers from the configured GBP mapping and
@@ -193,7 +196,7 @@
   async function refreshWorkflow() {
     if (workflow.loading) return { skipped: true };
     const revision = workflowRevision;
-    workflow.loading = true; workflow.error = ''; rerender();
+    workflow.loading = true; workflow.error = ''; rerender(); notifyWorkflowChanged();
     try {
       const items = []; let offset = 0;
       do {
@@ -212,14 +215,14 @@
       workflow.error = error.message;
       if ([401, 403].includes(error.status)) { workflow.items = []; workflow.loaded = false; }
     }
-    finally { workflow.loading = false; rerender(); }
+    finally { workflow.loading = false; rerender(); notifyWorkflowChanged(); }
     return { ok: !workflow.error, lastSuccessAt: workflow.lastSuccessAt };
   }
 
   function remember(item) {
     workflowRevision++;
     workflow.items = [item, ...workflow.items.filter(row => row.id !== item.id)];
-    workflow.error = ''; rerender();
+    workflow.error = ''; rerender(); notifyWorkflowChanged();
   }
 
   function renderWorkflow(branchId, options = {}) {
@@ -404,11 +407,20 @@
     if (pendingTasks.has(key)) return;
     const api = window.OTOTRGoogleReputation, review = api?.getReviewById(reviewId), branch = review && api?.getBranchById(review.branchId);
     if (!review || !branch) return;
+    if (branch.demo || review.demo) {
+      const message = 'Demo yorumlardan kalıcı görev veya şikâyet kaydı oluşturulamaz.';
+      api?.setError(message); window.toast?.(message);
+      return;
+    }
     pendingTasks.add(key);
     try {
       const data = await googleBusinessRequest('create_task', { ...identityFor(review, branch), kind, note: review.recommendedAction || '' });
-      remember(data.item); openItem(data.item.id);
-      window.toast?.(data.existing ? 'Bu yorumun mevcut görevi açıldı.' : 'Görev genel merkez ortak kayıtlarına kaydedildi.');
+      remember(data.item);
+      if (kind === 'complaint' && typeof api?.onComplaintTaskCreated === 'function') api.onComplaintTaskCreated(data.item, { existing: Boolean(data.existing) });
+      else {
+        openItem(data.item.id);
+        window.toast?.(data.existing ? 'Bu yorumun mevcut görevi açıldı.' : 'Görev genel merkez ortak kayıtlarına kaydedildi.');
+      }
       return data.item;
     } catch (error) { workflowRevision++; workflow.error = error.message; rerender(); api?.setError(error.message); }
     finally { pendingTasks.delete(key); }
@@ -641,6 +653,8 @@
     googleBusinessRequest,
     formatBusinessError: googleBusinessError,
     getApprovalQueue: () => workflow.items.filter(item => item.kind === 'reply'),
+    getWorkflowItems: workflowItems,
+    getWorkflowState: () => ({ loaded: workflow.loaded, loading: workflow.loading, error: workflow.error, lastSuccessAt: workflow.lastSuccessAt }),
     getRefreshState: () => ({ busy: workflow.loading || automaticVerification.busy || Boolean(editor?.busy) || pendingTasks.size > 0 || editingCards(), lastSuccessAt: workflow.lastSuccessAt }),
     refreshWorkflow, renderWorkflow, createTask, openItem,
     renderReplyCard, renderAutoDraftSummary, renderAutoDraftMiniSummary, preparePendingDrafts, verifyPendingReply
@@ -673,6 +687,7 @@
         rerender();
       });
     }
+    if (['#google-reviews', '#complaints'].includes(window.location?.hash)) setTimeout(() => { void refreshWorkflow(); }, 0);
   }
 
   install();

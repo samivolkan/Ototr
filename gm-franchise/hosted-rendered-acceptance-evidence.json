@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "environment": "immutable_rawgithack_rendered_preview",
+  "repository": "samivolkan/Ototr",
+  "commit": "cd24222db6009482face2ae48eebaecead4d13e3",
+  "erpUrl": "https://raw.githack.com/samivolkan/Ototr/cd24222db6009482face2ae48eebaecead4d13e3/index.html#franchise",
+  "moduleUrl": "https://raw.githack.com/samivolkan/Ototr/cd24222db6009482face2ae48eebaecead4d13e3/gm-franchise/index.html",
+  "verifiedAtUtc": "2026-11-06T01:38:46.504Z",
+  "browserAutomation": "cua-playwright",
+  "productionDataUsed": false,
+  "externalMutationAttempted": false,
+  "checks": {
+    "publicSyntheticPreviewBoundaryVisible": true,
+    "realDataEntryWarningVisible": true,
+    "erpFranchiseMenuVisible": true,
+    "erpMenuOpenedFranchiseModule": true,
+    "defaultView": "web_intake_queue",
+    "rawApplicantIdentityVisibleInQueue": false,
+    "singleResponsibleLabelVisible": true,
+    "lifecycleDemoAccessible": true,
+    "demoDecision": "PASS",
+    "demoPhasesPassed": 10,
+    "demoPhasesTotal": 10,
+    "manualDemoSeparationNoticeVisible": true,
+    "productionDecision": "NO_GO"
+  },
+  "result": "PASS",
+  "releaseEffect": "NONE",
+  "productionDecision": "NO_GO"
+}

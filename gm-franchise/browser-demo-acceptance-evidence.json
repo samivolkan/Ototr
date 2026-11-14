@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "environment": "local_http_demo",
+  "targetUrl": "http://127.0.0.1:8765/gm-franchise/index.html#e2e",
+  "performedAtUtc": "2026-11-06T01:31:01.066Z",
+  "browserAutomation": "cua-playwright",
+  "productionDataUsed": false,
+  "externalMutationAttempted": false,
+  "checks": {
+    "singleResponsibleLabelVisible": true,
+    "demoRehearsalDecision": "PASS",
+    "productionDecisionAfterRehearsal": "NO_GO",
+    "demoPhasesPassed": 10,
+    "demoPhasesTotal": 10,
+    "syntheticBranchId": "BR-DEMO-PROVA",
+    "mandatoryStaffCount": 10,
+    "franchiseOwnerHired": true,
+    "employmentDocumentsCompleted": true,
+    "academyCertificateCompleted": true,
+    "franchiseOwnerAccessStatus": "ready",
+    "activeAccountCountBeforeBranchActivation": 0,
+    "branchLinkBeforeActivation": null
+  },
+  "result": "PASS",
+  "releaseEffect": "NONE",
+  "productionDecision": "NO_GO"
+}

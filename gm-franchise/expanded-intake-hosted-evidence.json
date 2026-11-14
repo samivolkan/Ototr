@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "module": "OTOTR_FRANCHISE_EXPANDED_INTAKE",
+  "environment": "ototr-staging",
+  "projectRef": "bsjkohwbtrfwrqcyhsfz",
+  "testedAtUtc": "2026-11-10T08:27:26Z",
+  "productionDataUsed": false,
+  "migration": {
+    "version": "20261110082445",
+    "name": "franchise_expanded_intake_channels",
+    "source": "supabase/migrations/20261110082445_franchise_expanded_intake_channels.sql"
+  },
+  "checks": {
+    "migrationHistoryMatched": true,
+    "tenActiveChannels": true,
+    "eightPhase3AutomationTargets": true,
+    "rlsEnabled": true,
+    "anonymousAccessRevoked": true,
+    "authenticatedActiveCatalogReadOnly": true,
+    "serviceRoleCatalogManagement": true,
+    "tenIntakesAndProfilesCreated": true,
+    "thirtySeparateConsentReceiptsCreated": true,
+    "optionalCommercialWithdrawalAccepted": true,
+    "invalidBulkReferenceRejected": true,
+    "idempotentRetryReturnedSameCase": true,
+    "rawIdentityNumberRejected": true,
+    "applicantCrossChannelCreationRejected": true,
+    "applicantRowIsolation": true,
+    "fullSchemaRollbackOrderExecuted": true,
+    "rollbackRestoredSchema": true,
+    "newCatalogAdvisorFindingsZero": true
+  },
+  "channelCodes": [
+    "web",
+    "gm",
+    "crm",
+    "reference",
+    "social",
+    "call_center",
+    "event_qr",
+    "field_team",
+    "corporate_partner",
+    "bulk_import"
+  ],
+  "phase3AutomationTargetCount": 8,
+  "executionMode": "synthetic_single_transaction_rollback",
+  "rollback": {
+    "source": "supabase/ops/franchise-rollback.sql",
+    "mode": "full_schema_transaction_with_commit_replaced_by_rollback",
+    "persistentDestruction": false,
+    "catalogRowsAfterRollback": 10,
+    "franchiseSchemaPreserved": true
+  },
+  "cleanup": {
+    "applicationIntakes": 0,
+    "applicationProfiles": 0,
+    "consentReceipts": 0,
+    "syntheticAuthUsers": 0
+  },
+  "advisors": {
+    "catalogSecurityFindings": 0,
+    "catalogPerformanceFindings": 0,
+    "healthFindings": 0,
+    "inheritedProjectSecurityGroups": 5,
+    "inheritedProjectPerformanceGroups": 5
+  },
+  "result": "PASS",
+  "releaseDecision": "NO_GO",
+  "remainingExternalGates": ["R24", "R25", "R26", "R27", "R28"]
+}

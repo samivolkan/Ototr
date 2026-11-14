@@ -1483,14 +1483,16 @@ function parseAcademyRoute(id){
 const navGroups = [
   ['Genel Merkez', [['dashboard','Yönetim Kokpiti','layout-dashboard'],['project-roadmap','Proje Yol Haritası','map'],['intelligence','İş Zekası','chart-no-axes-column'],['looker','Looker Canlı Panolar','panels-top-left'],['isler-v24','Kokpit · İşler v24','list-checks'],['actions','Aksiyon & Görev','target'],['crisis','Kriz Merkezi','siren'],['ai','AI Öneri','sparkles']]],
   ['Bayi & Şube Yönetimi', [['branches','Bayiler & Şubeler','building-2'],['branch-health','Şube Sağlık & Erken Uyarı','activity'],['dealer','Bayi Portalı','tablet-smartphone'],['ototr-web','OTOTR Web','globe'],['operations','Operasyon','workflow'],['quality','Kalite & Denetim','shield-check']]],
-  ['Ekspertiz & Rapor', [['ruhsat','Ruhsat Oku','scan-line'],['sunum32v2','32 Ekran Sunumu V2','monitor-up'],['gorsel-kontrol','Görsel AI Kontrol','scan-search'],['kaporta-design','Kaporta Tasarım','panels-top-left'],['kaporta-360','Kaporta 360','rotate-3d']]],
+  ['Ekspertiz & Rapor', [['ruhsat','Ruhsat Oku','scan-line'],['report-assurance','Rapor Güvence Merkezi','shield-check'],['sunum32v2','32 Ekran Sunumu V2','monitor-up'],['gorsel-kontrol','Görsel AI Kontrol','scan-search'],['kaporta-design','Kaporta Tasarım','panels-top-left'],['kaporta-360','Kaporta 360','rotate-3d']]],
   ['Müşteri & Satış', [['crm','CRM & Randevu','users'],['saha-satis','Saha Satış','map-pinned'],['chronic-issues','Kronik Sorunlar','car-front'],['complaints','Müşteri Şikayetleri','message-circle-warning'],['google-reviews','Yorumlar ve Yanıtlar','star'],['reputation','İtibar Radarı','radar'],['marketing','Pazarlama','megaphone']]],
   ['Franchise Yönetimi', [['franchise','Franchise Satış','handshake'],['growth','Bayii Büyüme','map']]],
   ['Kurumsal Yönetim', [['academy','OTOTR Academy','graduation-cap'],['hr','İnsan Kaynakları','badge-check'],['legal','Hukuk & Risk','scale']]],
+  ['ERP ARGE', [['erp-arge','ARGE Merkezi','flask-conical']]],
   ['Ayarlar', [['architecture','Sistem Mimarisi','network'],['settings','Ayarlar','settings'],['legacy','Legacy Room','landmark']]],
   ['Finans', [['finance','GM Finans','banknote']]]
 ];
-const titles = {ruhsat:'Ruhsat Oku',dashboard:'Yönetim Kokpiti','project-roadmap':'Proje Yol Haritası',intelligence:'İş Zekası',looker:'Looker Canlı Panolar',branches:'Bayiler & Şubeler','branch-health':'Şube Sağlık & Erken Uyarı',dealer:'Bayi Portalı','ototr-web':'OTOTR Web',operations:'Operasyon',franchise:'Franchise Satış',crm:'CRM & Randevu','chronic-issues':'Kronik Sorunlar',complaints:'Müşteri Şikayetleri','google-reviews':'Google Haritalar İtibar Merkezi',reputation:'İtibar Radar',finance:'GM Finans',marketing:'Pazarlama',quality:'Kalite & Denetim','report-design':'Ekspertiz Rapor Tasarımı',sunum32:'32 Ekran Sunumu',sunum32v2:'32 Ekran Sunumu V2','vehicle-passport':'Dijital Araç Karnesi',academy:'OTOTR Academy',hr:'İnsan Kaynakları',legal:'Hukuk & Risk',crisis:'Kriz Merkezi',actions:'Aksiyon & Görev',ai:'AI Öneri',growth:'Bayii Büyüme',legacy:'Legacy Room',architecture:'Sistem Mimarisi',settings:'Ayarlar',branchProfile:'Şube Profili',franchiseProfile:'Aday Değerlendirme',customerProfile:'Müşteri 360'};
+const titles = {ruhsat:'Ruhsat Oku',dashboard:'Yönetim Kokpiti','project-roadmap':'Proje Yol Haritası',intelligence:'İş Zekası',looker:'Looker Canlı Panolar',branches:'Bayiler & Şubeler','branch-health':'Şube Sağlık & Erken Uyarı',dealer:'Bayi Portalı','ototr-web':'OTOTR Web',operations:'Operasyon',franchise:'Franchise Satış',crm:'CRM & Randevu','chronic-issues':'Kronik Sorunlar',complaints:'Müşteri Şikayetleri','google-reviews':'Google Haritalar İtibar Merkezi',reputation:'İtibar Radar',finance:'GM Finans',marketing:'Pazarlama',quality:'Kalite & Denetim','report-assurance':'Rapor Güvence Merkezi','report-design':'Ekspertiz Rapor Tasarımı',sunum32:'32 Ekran Sunumu',sunum32v2:'32 Ekran Sunumu V2','vehicle-passport':'Dijital Araç Karnesi',academy:'OTOTR Academy',hr:'İnsan Kaynakları',legal:'Hukuk & Risk','erp-arge':'ERP ARGE',crisis:'Kriz Merkezi',actions:'Aksiyon & Görev',ai:'AI Öneri',growth:'Bayii Büyüme',legacy:'Legacy Room',architecture:'Sistem Mimarisi',settings:'Ayarlar',branchProfile:'Şube Profili',franchiseProfile:'Aday Değerlendirme',customerProfile:'Müşteri 360'};
+let selectedArgeModule=null;
 function dealerPortalUrl(){
   const path=decodeURIComponent(location.pathname||'').replace(/\\/g,'/').toLowerCase();
   return path.includes('/bayi-portal/') ? 'index.html#dealer' : 'bayi-portal/index.html#dealer';
@@ -2590,16 +2592,22 @@ function renderNav(){
   const nav=document.getElementById('nav');
   const leads = Array.isArray(DB?.leads) ? DB.leads : [];
   const tickets = Array.isArray(DB?.tickets) ? DB.tickets : [];
-  const complaintTickets = Array.isArray(DB?.complaintsCenter?.complaintTickets) ? DB.complaintsCenter.complaintTickets : [];
+  const complaintTickets = complaintCenter().complaintTickets || [];
   const sideAcademyItems = ACADEMY_ROOMS.filter(r=>r.id!=='overview').map(r=>`<button data-nav-route="${academyRouteFor(r.id)}" class="${current==='academy' && ACADEMY_VIEW.room===r.id?'active':''}"><span>${r.title}</span></button>`).join('');
   const sideHrItems = HR_CATEGORIES.filter(c=>c.id!=='hr-command').map(c=>{
     const room = HR_ROOM_BY_ID[c.defaultRoom] || HR_ROOM_BY_ID[c.rooms[0]] || HR_ROOM_BY_ID[HR_DEFAULT_ROOM];
     return `<button data-nav-route="${hrRouteFor(room.id)}" class="${current==='hr' && HR_VIEW.category===c.id?'active':''}"><span>${c.title}</span></button>`;
   }).join('');
+  const sideArgeItems = (window.OTOTR_ERP_ARGE?.modules||[]).map(module=>
+    `<button data-nav-route="${window.OTOTR_ERP_ARGE.routeFor(module)}" class="${selectedArgeModule===module.id?'active':''}"><span>${module.order} · ${module.shortName||module.name.replace(/^OTOTR\s+/,'')}</span></button>`
+  ).join('');
+  const sideComplaintItems = `<button type="button" data-complaint-advanced><span>Gelişmiş Şikayet Operasyon Merkezi</span></button>`;
   const navButton = ([id,label,ic]) => {
     const count = `${id==='franchise'?'<span class="count">'+leads.filter(l=>String(l.type||'').includes('Franchise')).length+'</span>':''}${id==='complaints'?'<span class="count">'+complaintTickets.filter(t=>t.status!=='Kapandı').length+'</span>':''}${id==='crisis'?'<span class="count">'+tickets.filter(t=>t.severity==='Yüksek').length+'</span>':''}`;
     const btn = `<button data-nav-route="${id}" class="${id===current?'active':''}">${icon(ic)}<span>${label}</span>${count}</button>`;
     if(id==='academy') return `<div class="nav-node has-sub">${btn}<div class="nav-sub ${current==='academy'?'open':''}">${sideAcademyItems}</div></div>`;
+    if(id==='erp-arge') return `<div class="nav-node has-sub arge-nav-node">${btn}<div class="nav-sub ${current==='erp-arge'?'open':''}">${sideArgeItems}</div></div>`;
+    if(id==='complaints') return `<div class="nav-node has-sub complaint-nav-node">${btn}<div class="nav-sub ${current==='complaints'?'open':''}">${sideComplaintItems}</div></div>`;
     return id==='hr' ? `<div class="nav-node has-sub">${btn}<div class="nav-sub ${current==='hr'?'open':''}">${sideHrItems}</div></div>` : `<div class="nav-node">${btn}</div>`;
   };
   nav.innerHTML = navGroups.map(([g,items]) => `<div class="nav-title">${g}</div>` + items.map(navButton).join('')).join('');
@@ -2634,6 +2642,7 @@ function renderNav(){
     }
     route(b.dataset.navRoute);
   }));
+  nav.querySelector('[data-complaint-advanced]')?.addEventListener('click',()=>window.location.assign('gm-sikayet/index.html'));
 }
 
 function renderHero(){
@@ -2703,7 +2712,7 @@ function moduleHeaderActions(id,title){
   if(id==='franchise') return `<button class="btn primary" id="openLead2">${icon('plus')}Yeni Lead</button><button class="btn" data-open-action-modal="Büyüme planı aksiyonu">${icon('map')}Büyüme Planı</button><button class="btn" data-open-action-modal="Franchise görev ataması">${icon('clipboard-plus')}Görev Ata</button><button class="btn" data-open-action-modal="Franchise geciken süreç aksiyonu">${icon('check-square')}Aksiyon Aç</button>`;
   if(id==='crm') return `<button class="btn primary" data-open-action-modal="Yeni randevu aksiyonu">${icon('calendar-plus')}Randevu Oluştur</button><button class="btn" data-open-action-modal="CRM takip görevi">${icon('message-circle')}WhatsApp Takip</button><button class="btn" data-open-action-modal="Lead aksiyonu">${icon('user-plus')}Lead Ata</button>`;
   if(id==='chronic-issues') return `<button class="btn primary" data-chronic-focus-search>${icon('search')}Model Ara</button><button class="btn" data-chronic-scroll-admin>${icon('database')}Import Akışı</button><button class="btn" data-route="ototr-web">${icon('globe')}Web İçine Taşı</button>`;
-  if(id==='google-reviews') return `<button type="button" class="btn primary" data-testid="google-sync" ${googleReputationState.loading?'disabled':''} onclick="OTOTRGoogleReputation.syncAllGoogleReviews()">${icon('refresh-cw')}${googleReputationState.loading?'Yorumlar alınıyor…':'Google Senkronize Et'}</button>`;
+  if(id==='google-reviews') return `<button type="button" class="btn primary" data-testid="google-sync" ${googleReputationState.loading?'disabled':''} onclick="OTOTRGoogleReputation.syncAllGoogleReviews()">${icon('refresh-cw')}${googleReputationState.loading?'Yorumlar alınıyor…':'Nilüfer’i Senkronize Et'}</button><button type="button" class="btn" data-testid="google-demo-toggle" onclick="OTOTRGoogleReputation.setDemoMode(!OTOTRGoogleReputation.isDemoMode())">${icon(googleReputationState.demoMode?'database-zap':'flask-conical')}${googleReputationState.demoMode?'Canlı moda dön':'Demo veri yükle'}</button>`;
   if(id==='reputation') return `<button class="btn primary" data-rep-focus-critical>${icon('siren')}Kritik Alarm</button><button class="btn" data-rep-create-first>${icon('clipboard-plus')}CRM Vakası Aç</button><button class="btn" data-route="crisis">${icon('shield-alert')}Kriz Merkezi</button>`;
   if(id==='marketing') return `<button class="btn primary" data-mkt-open-lead>${icon('user-plus')}Yeni Lead Ekle</button><button class="btn" data-mkt-focus-wa>${icon('message-circle')}WhatsApp Hazırla</button><button class="btn" data-action="Kampanya oluşturma taslağı açıldı.">${icon('megaphone')}Kampanya Oluştur</button><button class="btn" data-open-action-modal="Satış görevi ata">${icon('clipboard-plus')}Görev Ata</button>`;
   if(id==='academy') return `<button class="btn primary" data-action="Yeni eğitim atama ekranı demo olarak hazırlandı.">${icon('graduation-cap')}Eğitim Ata</button><button class="btn" data-action="Başarı ve deadline kırılımları güncellendi.">${icon('bar-chart-3')}Skorları Gör</button>`;
@@ -2853,8 +2862,8 @@ function bindReputationRadarEvents(){
   document.querySelectorAll('[data-rep-focus-critical]').forEach(el=>{if(el.dataset.repBound==='1')return;el.dataset.repBound='1';el.addEventListener('click',e=>{e.preventDefault();document.getElementById('reputationCriticalPanel')?.scrollIntoView({behavior:'smooth',block:'start'});});});
   document.querySelectorAll('[data-rep-create-first]').forEach(el=>{if(el.dataset.repBound==='1')return;el.dataset.repBound='1';el.addEventListener('click',e=>{e.preventDefault();reputationCreateCrmCase(reputationSelectedMention().id);});});
 }
-const googleReputationState={selectedBranchId:'branch-google-nilufer',filter:'all',centerView:'overview',inboxTab:'new',inboxSelectedReviewId:'',inboxQuery:'',inboxExpanded:false,connected:null,loading:false,error:'',progress:'',lastAllSyncAt:0,lastSync:'Henüz yorum alınmadı',goalScope:'hq',goalRegion:'Marmara',goalBranchId:'branch-google-nilufer',goalMonth:new Date().toISOString().slice(0,7),goalMessage:''};
-const googleDashboardState={period:'2026-11',branchId:'all',region:'',openMenu:''};
+const googleReputationState={selectedBranchId:'branch-google-nilufer',filter:'all',centerView:'overview',inboxTab:'new',inboxSelectedReviewId:'',inboxQuery:'',inboxExpanded:false,demoMode:false,connected:null,loading:false,error:'',progress:'',lastAllSyncAt:0,lastSync:'Henüz yorum alınmadı',goalScope:'branch',goalRegion:'Marmara',goalBranchId:'branch-google-nilufer',goalMonth:new Date().toISOString().slice(0,7),goalMessage:''};
+const googleDashboardState={period:'2026-11',branchId:'branch-google-nilufer',region:'',openMenu:''};
 const googleConnectionUiState={query:'',status:'all',source:'all',activeOnly:true};
 const googleTransferQueues={dashboard:[],branches:[],crisis:[],complaints:[],legal:[],quality:[]};
 const googleReputationData={
@@ -2874,12 +2883,38 @@ googleReputationData.branches.forEach(branch=>{
   if(branch.demo&&!branch.publicProfileUrl){ const profileUrl=`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(branch.name)}`; branch.mapsUrl=profileUrl; branch.publicProfileUrl=profileUrl; }
   if(!branch.demo) ['googleRating','googleReviewCount','previousRating','reputationScore','last30DaysReviewCount','negativeReviewRate','unrepliedCount','criticalCount'].forEach(key=>{branch[key]=null;});
 });
-function googleBranches(){ const settings=googleBranchSettings?.()||{},base=googleReputationData.branches.filter(branch=>branch.id!=='branch-google-inegol'),custom=googleCustomBranches(); return [...base,...custom].filter(branch=>settings[branch.id]?.removed!==true).map(branch=>{const s=settings[branch.id]||{};Object.assign(branch,{googleBusinessGroupId:s.accountId||branch.googleBusinessGroupId,storeCode:s.storeCode||branch.storeCode,googleBusinessLocationId:s.locationId||branch.googleBusinessLocationId,configuredActive:s.active!==false,custom:branch.custom===true,replySignatureName:branch.id==='branch-google-nilufer'?'OTOTR Bursa Nilüfer Otoekspertiz Ekibi':branch.replySignatureName});return branch;}); }
+function googleBranches(){ const settings=googleBranchSettings?.()||{},base=googleReputationData.branches.filter(branch=>branch.id!=='branch-google-inegol'),custom=googleCustomBranches(); return [...base,...custom].filter(branch=>settings[branch.id]?.removed!==true&&(googleReputationState.demoMode||!branch.demo)).map(branch=>{const s=settings[branch.id]||{};Object.assign(branch,{googleBusinessGroupId:s.accountId||branch.googleBusinessGroupId,storeCode:s.storeCode||branch.storeCode,googleBusinessLocationId:s.locationId||branch.googleBusinessLocationId,configuredActive:s.active!==false,custom:branch.custom===true,replySignatureName:branch.id==='branch-google-nilufer'?'OTOTR Bursa Nilüfer Otoekspertiz Ekibi':branch.replySignatureName});return branch;}); }
 function googleOperationalBranches(){ return googleBranches().filter(branch=>branch.configuredActive!==false); }
-function googleReviews(){ return googleReputationData.reviews; }
+function googleReviews(){
+  googleReputationData.reviews.forEach(review=>{
+    if(review?.demo) return;
+    const risk=googleLiveReviewRisk(review);
+    if(risk.rating) review.rating=risk.rating;
+    review.riskLevel=risk.riskLevel;
+    review.legalRisk=risk.legal?'Yüksek':'Düşük';
+    review.sentiment={critical:'Negatif',negative:'Negatif',neutral:'Nötr',positive:'Olumlu'}[risk.riskLevel]||'Nötr';
+  });
+  return googleReputationState.demoMode?googleReputationData.reviews:googleReputationData.reviews.filter(review=>!review.demo);
+}
+function googleRefreshLiveBranchRiskMetrics(branch){
+  if(!branch||branch.demo) return;
+  const rows=googleReputationData.reviews.filter(review=>review.branchId===branch.id&&!review.demo);
+  if(!rows.length) return;
+  const riskCount=rows.filter(googleReviewIsCritical).length,total=Number(branch.googleReviewCount)||rows.length,complete=branch.reviewListComplete===true||rows.length===total;
+  branch.loadedReviewCount=rows.length;
+  branch.loadedUnrepliedCount=rows.filter(review=>!review.isReplied).length;
+  branch.loadedCriticalCount=riskCount;
+  branch.unrepliedCount=branch.loadedUnrepliedCount;
+  branch.criticalCount=riskCount;
+  if(complete&&total){
+    const ratings=rows.map(review=>Number(review.starRating||review.rating)).filter(rating=>rating>=1&&rating<=5),average=ratings.length?ratings.reduce((sum,rating)=>sum+rating,0)/ratings.length:null;
+    branch.negativeReviewRate=Math.round(riskCount/total*100);
+    if(average!=null){ branch.googleRating=Number(average.toFixed(2)); branch.reputationScore=Math.max(0,Math.min(100,Math.round((average/5)*80+(100-branch.negativeReviewRate)*.2))); }
+  }
+}
 const GOOGLE_LIVE_CACHE_KEY='ototr.google.live.reviews.v1';
 function googlePersistLiveCache(){ try { const branches=googleReputationData.branches.filter(branch=>!branch.demo).map(branch=>({...branch})),reviews=googleReputationData.reviews.filter(review=>!review.demo); localStorage.setItem(GOOGLE_LIVE_CACHE_KEY,JSON.stringify({version:2,savedAt:new Date().toISOString(),lastSync:googleReputationState.lastSync,lastAllSyncAt:googleReputationState.lastAllSyncAt,branches,reviews})); } catch(_) {} }
-function googleLoadLiveCache(){ try { const raw=localStorage.getItem(GOOGLE_LIVE_CACHE_KEY); if(!raw)return; const cache=JSON.parse(raw); if(!cache||![1,2].includes(cache.version)||!Array.isArray(cache.branches)||!Array.isArray(cache.reviews))return; cache.branches.forEach(saved=>{ const branch=googleReputationData.branches.find(item=>item.id===saved.id&&!item.demo); if(branch) Object.assign(branch,saved); }); const demoReviews=googleReputationData.reviews.filter(review=>review.demo); googleReputationData.reviews.splice(0,googleReputationData.reviews.length,...demoReviews,...cache.reviews.filter(review=>!review.demo)); if(cache.lastSync) googleReputationState.lastSync=String(cache.lastSync); if(Number(cache.lastAllSyncAt)>0) googleReputationState.lastAllSyncAt=Number(cache.lastAllSyncAt); googleReputationData.branches.filter(branch=>!branch.demo&&!branch.monthlyTrend).forEach(branch=>googleRefreshBranchMonthlyTrend(branch.id)); } catch(_) {} }
+function googleLoadLiveCache(){ try { const raw=localStorage.getItem(GOOGLE_LIVE_CACHE_KEY); if(!raw)return; const cache=JSON.parse(raw); if(!cache||![1,2].includes(cache.version)||!Array.isArray(cache.branches)||!Array.isArray(cache.reviews))return; cache.branches.forEach(saved=>{ const branch=googleReputationData.branches.find(item=>item.id===saved.id&&!item.demo); if(branch) Object.assign(branch,saved); }); const demoReviews=googleReputationData.reviews.filter(review=>review.demo); googleReputationData.reviews.splice(0,googleReputationData.reviews.length,...demoReviews,...cache.reviews.filter(review=>!review.demo)); googleReputationData.branches.filter(branch=>!branch.demo).forEach(googleRefreshLiveBranchRiskMetrics); if(cache.lastSync) googleReputationState.lastSync=String(cache.lastSync); if(Number(cache.lastAllSyncAt)>0) googleReputationState.lastAllSyncAt=Number(cache.lastAllSyncAt); googleReputationData.branches.filter(branch=>!branch.demo&&!branch.monthlyTrend).forEach(branch=>googleRefreshBranchMonthlyTrend(branch.id)); } catch(_) {} }
 function googleSelectedBranch(){
   const branch=googleBranches().find(b=>b.id===googleReputationState.selectedBranchId) || googleBranches()[0];
   // Cached live reviews are still usable while the lightweight branch
@@ -2906,26 +2941,55 @@ function googleMetric(value,decimals=0){ return value==null?'—':Number(value).
 function googleRiskTone(v){ return v==='Yüksek'?'high':v==='Orta'?'medium':'low'; }
 function googleRiskBadge(v){ return `<span class="google-status-pill ${v==='Yüksek'?'critical':v==='Orta'?'watch':'excellent'}">${googleEsc(v)}</span>`; }
 function googleReviewMatchesFilter(r,filter=googleReputationState.filter){
-  if(filter==='critical') return r.riskLevel==='critical';
-  if(filter==='negative') return ['negative','critical'].includes(r.riskLevel);
+  const risk=googleLiveReviewRisk(r);
+  if(filter==='critical') return googleReviewIsCritical(r);
+  if(filter==='negative') return googleReviewIsCritical(r)||(risk.rating>=1&&risk.rating<=3);
   if(filter==='unreplied') return !r.isReplied;
-  if(filter==='legal') return r.legalRisk==='Yüksek' || r.riskLevel==='critical';
+  if(filter==='legal') return risk.legal;
   if(filter==='last7') return (Date.now()-new Date(r.reviewDate))/(86400000)<=7;
-  if(filter==='lowStars') return Number(r.rating)<=2;
+  if(filter==='lowStars') return risk.rating>=1&&risk.rating<=2;
   return true;
 }
 function googleLiveRating(value){
   const map={ONE:1,TWO:2,THREE:3,FOUR:4,FIVE:5};
   if(typeof value==='string' && map[value.toUpperCase()]) return map[value.toUpperCase()];
-  return Math.max(1,Math.min(5,Number(value)||0));
+  const rating=Number(value);
+  return Number.isFinite(rating)&&rating>=1&&rating<=5?rating:0;
 }
 function googleLiveReviewRisk(review){
+  const bridged=window.OTOTRGoogleComplaintBridge?.riskFor?.(review);
+  if(bridged) return bridged;
   const rating=googleLiveRating(review.starRating||review.rating);
   const text=String(review.comment||'');
-  const legal=/dava|avukat|hukuk|mahkeme|tazminat|savcılık|şikayet edeceğim/i.test(text);
-  const critical=rating<=1 || /dolandır|sahte|tehdit|can güven|kişisel veri/i.test(text);
-  const riskLevel=critical?'critical':rating<=2?'negative':rating===3?'neutral':'positive';
+  const unresolvedIntent=/iade|geri\s*ödeme|çözüm\s*bekliyorum|dönüş\s*bekliyorum|şik[aâ]yet\s*edeceğim/i.test(text);
+  const complaintIntent=/şik[aâ]yet|mağdur|iade|geri\s*ödeme|çözüm\s*bekliyorum|dönüş\s*bekliyorum|memnun\s*değilim|kötü|rezalet/i.test(text);
+  const positiveResolution=/işini\s*bilen|teşekkür|memnun\s*kald|rahat\s*etti|yardımcı\s*old|profesyonel|iyi\s*(bir\s*)?ekip/i.test(text);
+  const negativeContext=(rating>=1&&rating<=3) || unresolvedIntent || (complaintIntent && !positiveResolution);
+  const legal=/dava|avukat|hukuk|mahkeme|tazminat|savcılık|şik[aâ]yet\s*edeceğim/i.test(text) && negativeContext;
+  const critical=rating===1 || (/dolandır|sahte|tehdit|can\s*güven|kişisel\s*veri/i.test(text) && negativeContext);
+  const riskLevel=critical?'critical':rating===2||unresolvedIntent||(complaintIntent&&!positiveResolution)?'negative':rating===3||rating===0?'neutral':'positive';
   return {rating,text,legal,critical,riskLevel};
+}
+function googleReviewIsCritical(review){
+  const risk=googleLiveReviewRisk(review);
+  return Boolean(risk.critical||risk.legal||risk.riskLevel==='negative'||(risk.rating>=1&&risk.rating<=2));
+}
+function googleComplaintWorkflowItems(){
+  return (window.OTOTRGoogleReviewAI?.getWorkflowItems?.()||[]).filter(item=>{
+    if(item?.kind!=='complaint') return false;
+    const branch=typeof getGoogleBranchById==='function'?getGoogleBranchById(item.branch_id):null;
+    return Boolean(branch&&!branch.demo);
+  });
+}
+function googleComplaintWorkItem(review){
+  if(!review) return null;
+  const reviewId=String(review.googleReviewId||review.id||'');
+  return googleComplaintWorkflowItems().find(item=>String(item.review_id||'')===reviewId && (!item.branch_id||item.branch_id===review.branchId))||null;
+}
+function googleComplaintTicket(item){
+  if(!item) return null;
+  const branch=typeof getGoogleBranchById==='function'?getGoogleBranchById(item.branch_id):null;
+  return window.OTOTRGoogleComplaintBridge?.ticketFor?.(item,branch||{})||null;
 }
 function googleSafeReviewUrl(value){
   if(typeof value!=='string'||!value||value.length>4096||/[\u0000-\u0020\u007f\\]/.test(value)) return '';
@@ -2996,7 +3060,7 @@ function googleGoalMetrics(scope,branchId){
   return {total,rating:total?weighted/total:null,pending,responseRate:total?Math.max(0,(total-pending)/total*100):null,criticalRate:total?critical/total*100:null,recent,live:rows.length>0&&rows.every(row=>row.live),rows};
 }
 function googleInboxData(){
-  const branchId=googleReputationState.selectedBranchId||'branch-google-nilufer',branch=branchId==='all'?{id:'all',name:'Tüm şubeler',synced:googleBranches().some(b=>b.synced)}:googleSelectedBranch(),base=googleBranchReviews(branchId==='all'?'all':branchId),now=Date.now(),recent=base.filter(r=>{const age=now-new Date(r.reviewDate).getTime();return Number.isFinite(age)&&age<=14*86400000;}),waiting=base.filter(r=>!r.isReplied),critical=base.filter(r=>['critical','negative'].includes(r.riskLevel)||Number(r.starRating||r.rating)<=2),groups={new:recent,waiting,critical,all:base},query=String(googleReputationState.inboxQuery||'').trim().toLocaleLowerCase('tr-TR'),source=(groups[googleReputationState.inboxTab]||recent).filter(r=>!query||`${r.reviewerName||''} ${r.comment||''}`.toLocaleLowerCase('tr-TR').includes(query)).sort((a,b)=>new Date(b.reviewDate)-new Date(a.reviewDate));
+  const branchId=googleReputationState.selectedBranchId||'branch-google-nilufer',branch=branchId==='all'?{id:'all',name:'Tüm şubeler',synced:googleBranches().some(b=>b.synced)}:googleSelectedBranch(),base=googleBranchReviews(branchId==='all'?'all':branchId),now=Date.now(),recent=base.filter(r=>{const age=now-new Date(r.reviewDate).getTime();return Number.isFinite(age)&&age<=14*86400000;}),waiting=base.filter(r=>!r.isReplied),critical=base.filter(googleReviewIsCritical),groups={new:recent,waiting,critical,all:base},query=String(googleReputationState.inboxQuery||'').trim().toLocaleLowerCase('tr-TR'),source=(groups[googleReputationState.inboxTab]||recent).filter(r=>!query||`${r.reviewerName||''} ${r.comment||''}`.toLocaleLowerCase('tr-TR').includes(query)).sort((a,b)=>new Date(b.reviewDate)-new Date(a.reviewDate));
   return {branch,base,groups,rows:source,counts:{new:recent.length,waiting:waiting.length,critical:critical.length,all:base.length}};
 }
 function GoogleInboxListItem(review,selected){
@@ -3018,8 +3082,9 @@ function googleOriginalReviewText(comment){
 }
 function GoogleInboxDetail(review,branch){
   if(!review) return `<div class="google-inbox-empty-detail"><span>${icon('inbox')}</span><h3>Bir yorum seçin</h3><p>Sol listeden yeni, cevapsız veya kritik bir yorumu seçtiğinizde detay ve yanıt işlemleri burada açılır.</p></div>`;
-  const risk=googleLiveReviewRisk(review),riskLabel={critical:'Kritik',negative:'Negatif',neutral:'Nötr',positive:'Olumlu'}[risk.riskLevel]||'İnceleniyor',topic=window.OTOTRGoogleAnalytics?.topicOf?.(review)||'Genel memnuniyet',actionId=googleEsc(JSON.stringify(review.id)),reply=window.OTOTRGoogleReviewAI?.renderReplyCard?.(review,branch)||`<div class="google-reply-heading"><strong>${review.isReplied?'Google’daki yanıt':'AI yanıt taslağı'}</strong><span class="google-reply-status" data-tone="${review.isReplied?'published':'loading'}">${review.isReplied?'Yanıtlandı':'Hazırlanıyor'}</span></div><p class="google-reply-text">${review.isReplied?googleEsc(review.replyText||'Google’da yanıt mevcut.'):'Taslak hazırlandığında burada görünecek.'}</p>`;
-  return `<article class="google-inbox-detail-card"><header class="google-inbox-detail-head"><div><span class="google-inbox-eyebrow">MÜŞTERİ YORUMU</span><h3>${googleEsc(review.reviewerName||'Google kullanıcısı')}</h3><p>${new Date(review.reviewDate).toLocaleDateString('tr-TR',{day:'2-digit',month:'long',year:'numeric'})} · ${googleEsc(branch.name||'OTOTR')}</p></div><div class="google-inbox-detail-rating"><span class="google-stars">${googleStars(review.starRating||review.rating)}</span><strong>${googleMetric(review.starRating||review.rating,0)}/5</strong></div></header><div class="google-inbox-detail-branch">${icon('map-pin')}<span>${googleEsc(branch.name||'OTOTR')}</span><span class="google-inbox-source-pill">${branch.demo?'Demo veri':'Canlı Google verisi'}</span></div><blockquote class="google-inbox-review-text">${googleEsc(googleOriginalReviewText(review.comment)||'Yorum metni paylaşılmamış.')}</blockquote><div class="google-inbox-ai-grid"><div><span>Duygu</span><strong>${googleEsc(review.sentiment||riskLabel)}</strong></div><div><span>Konu sinyali</span><strong>${googleEsc(topic)}</strong></div><div><span>Risk seviyesi</span><strong class="${risk.riskLevel}">${riskLabel}</strong></div><div><span>Yanıt durumu</span><strong>${review.isReplied?'Yanıtlandı':'Cevap bekliyor'}</strong></div></div><div class="google-inbox-detail-actions">${googleReviewOpenLink(review,branch)}<button type="button" class="google-action-btn" onclick="OTOTRGoogleReputation.assignTaskToBranch(${actionId})">${icon('clipboard-list')}Şubeye görev</button><button type="button" class="google-action-btn" onclick="OTOTRGoogleReputation.convertGoogleReviewToComplaint(${actionId})">${icon('message-circle-warning')}Müşteri deneyimi</button>${risk.riskLevel==='critical'||risk.legal?`<button type="button" class="google-action-btn danger" onclick="OTOTRGoogleReputation.sendToLegal(${actionId})">${icon('shield-alert')}Hukuk incelemesi</button>`:''}</div><section class="google-inbox-reply-card"><div class="google-inbox-reply-head"><strong>${review.isReplied?'Mevcut yanıt':'Yapay zekâ yanıtı'}</strong></div>${reply}</section></article>`;
+  const risk=googleLiveReviewRisk(review),riskLabel={critical:'Kritik',negative:'Negatif',neutral:'Nötr',positive:'Olumlu'}[risk.riskLevel]||'İnceleniyor',topic=window.OTOTRGoogleAnalytics?.topicOf?.(review)||'Genel memnuniyet',actionId=googleEsc(JSON.stringify(review.id)),complaintTicket=googleComplaintTicket(googleComplaintWorkItem(review)),complaintLabel=complaintTicket?`${complaintTicket.id} · Şikâyete git`:'Şikâyet kaydı aç',reply=window.OTOTRGoogleReviewAI?.renderReplyCard?.(review,branch)||`<div class="google-reply-heading"><strong>${review.isReplied?'Google’daki yanıt':'AI yanıt taslağı'}</strong><span class="google-reply-status" data-tone="${review.isReplied?'published':'loading'}">${review.isReplied?'Yanıtlandı':'Hazırlanıyor'}</span></div><p class="google-reply-text">${review.isReplied?googleEsc(review.replyText||'Google’da yanıt mevcut.'):'Taslak hazırlandığında burada görünecek.'}</p>`;
+  const complaintAction=!branch.demo&&!review.demo&&(complaintTicket||risk.rating<=3||risk.critical||risk.legal||risk.riskLevel==='negative')?`<button type="button" class="google-action-btn" data-testid="google-complaint-action" onclick="OTOTRGoogleReputation.openComplaintForReview(${actionId})">${icon('message-circle-warning')}${googleEsc(complaintLabel)}</button>`:'';
+  return `<article class="google-inbox-detail-card"><header class="google-inbox-detail-head"><div><span class="google-inbox-eyebrow">MÜŞTERİ YORUMU</span><h3>${googleEsc(review.reviewerName||'Google kullanıcısı')}</h3><p>${new Date(review.reviewDate).toLocaleDateString('tr-TR',{day:'2-digit',month:'long',year:'numeric'})} · ${googleEsc(branch.name||'OTOTR')}</p></div><div class="google-inbox-detail-rating"><span class="google-stars">${googleStars(review.starRating||review.rating)}</span><strong>${googleMetric(review.starRating||review.rating,0)}/5</strong></div></header><div class="google-inbox-detail-branch">${icon('map-pin')}<span>${googleEsc(branch.name||'OTOTR')}</span><span class="google-inbox-source-pill">${branch.demo?'Demo veri':'Canlı Google verisi'}</span></div><blockquote class="google-inbox-review-text">${googleEsc(googleOriginalReviewText(review.comment)||'Yorum metni paylaşılmamış.')}</blockquote><div class="google-inbox-ai-grid"><div><span>Duygu</span><strong>${googleEsc(review.sentiment||riskLabel)}</strong></div><div><span>Konu sinyali</span><strong>${googleEsc(topic)}</strong></div><div><span>Risk seviyesi</span><strong class="${risk.riskLevel}">${riskLabel}</strong></div><div><span>Yanıt durumu</span><strong>${review.isReplied?'Yanıtlandı':'Cevap bekliyor'}</strong></div></div><div class="google-inbox-detail-actions">${googleReviewOpenLink(review,branch)}<button type="button" class="google-action-btn" onclick="OTOTRGoogleReputation.assignTaskToBranch(${actionId})">${icon('clipboard-list')}Şubeye görev</button>${complaintAction}${risk.riskLevel==='critical'||risk.legal?`<button type="button" class="google-action-btn danger" onclick="OTOTRGoogleReputation.sendToLegal(${actionId})">${icon('shield-alert')}Hukuk incelemesi</button>`:''}</div><section class="google-inbox-reply-card"><div class="google-inbox-reply-head"><strong>${review.isReplied?'Mevcut yanıt':'Yapay zekâ yanıtı'}</strong></div>${reply}</section></article>`;
 }
 function GoogleInboxWorkspace(){
   const data=googleInboxData(),rows=data.rows,selectedId=googleReputationState.inboxSelectedReviewId||rows[0]?.id||'',selected=rows.find(r=>String(r.id)===String(selectedId))||rows[0]||null,branch=selected?getGoogleBranchById(selected.branchId):data.branch,visibleRows=googleReputationState.inboxExpanded?rows:rows.slice(0,8),options=[{id:'all',name:'Tüm şubeler',demo:false},...googleBranches()];
@@ -3072,6 +3137,19 @@ function seedGoogleDemoReviews(){
     const model=googleLiveReviewModel({reviewId,starRating,comment,reviewer:{displayName:reviewerName},createTime,...(replyText?{reviewReply:{comment:replyText}}:{})},branch);
     googleReputationData.reviews.push({...model,demo:true,source:'Demo Google'});
   });
+}
+function googleSetDemoMode(enabled){
+  const demoMode=Boolean(enabled);
+  googleReputationState.demoMode=demoMode;
+  googleReputationState.selectedBranchId='branch-google-nilufer';
+  googleReputationState.inboxSelectedReviewId='';
+  googleReputationState.inboxExpanded=false;
+  googleDashboardState.branchId=demoMode?'all':'branch-google-nilufer';
+  googleDashboardState.region='';
+  googleReputationState.goalScope=demoMode?'hq':'branch';
+  googleReputationState.goalBranchId='branch-google-nilufer';
+  refreshGoogleReputationPage();
+  toast?.(demoMode?'Demo test modu açıldı. Demo şubeler ve sentetik yorumlar görünür.':'Canlı moda dönüldü. Yalnızca Bursa Nilüfer gerçek Google verisi gösteriliyor.');
 }
 seedGoogleDemoReviews();
 googleLoadLiveCache();
@@ -3305,12 +3383,12 @@ function GoogleVisualAnalytics(branches,reviews){
   return `<div class="google-visual-analytics"><section class="google-visual-card google-trend-card"><div class="google-visual-head"><div><h3>6 aylık yorum eğilimi</h3><p>Yorum hacmi ve ortalama puan trendi</p></div><span class="google-demo-badge">Canlı + demo</span></div><div class="google-chart-legend"><span><i class="volume"></i>Yorum hacmi</span><span><i class="rating"></i>Ortalama puan</span></div><svg viewBox="0 0 960 210" class="google-command-chart" role="img" aria-label="6 aylık yorum eğilimi"><polyline points="40,150 ${points}" fill="none" stroke="#ef5865" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>${values.map((v,i)=>`<circle cx="${40+i*170}" cy="${150-v/max*100}" r="5" fill="#ef5865"/><text x="${32+i*170}" y="188" font-size="12" fill="#6b7890">${labels[i]}</text>`).join('')}</svg></section><section class="google-visual-card google-target-card"><div class="google-visual-head"><div><h3>Kasım hedefi</h3><p>Toplam yorum hedefi</p></div><span class="google-demo-badge">Örnek hedef</span></div><div class="google-target-number">${total.toLocaleString('tr-TR')} <small>/ ${target.toLocaleString('tr-TR')}</small></div><div class="google-target-progress"><i style="width:${pct}%"></i></div><div class="google-target-meta"><span>Hedef tamamlama <b>%${pct}</b></span><span>Günlük tempo <b>${Math.max(1,Math.round(total/30))}</b></span></div></section><section class="google-visual-card google-operation-card"><div class="google-visual-head"><div><h3>Yanıt operasyonunun dağılımı</h3><p>Şubeler genelinde güncel durum</p></div></div><div class="google-operation-summary"><span class="replied"><b>${replied}</b> Yanıtlandı</span><span class="waiting"><b>${pending}</b> Yanıt bekliyor</span><span class="critical"><b>${branches.reduce((n,b)=>n+(b.criticalCount||0),0)}</b> Kritik / eskale</span></div>${branches.map(b=>{const all=b.googleReviewCount||0,p=b.unrepliedCount||0,c=b.criticalCount||0,r=Math.max(0,all-p-c);return `<div class="google-operation-row"><b>${googleEsc(b.name.replace('OTOTR Oto Ekspertiz ',''))}</b><div><i class="r" style="width:${all?Math.round(r/all*100):0}%"></i><i class="p" style="width:${all?Math.round(p/all*100):0}%"></i><i class="c" style="width:${all?Math.round(c/all*100):0}%"></i></div><strong>${all}</strong></div>`}).join('')}</section></div>`;
 }
 function GoogleScreenshotDashboard(){
-  const liveRows=googleReviews().filter(review=>review.branchId==='branch-google-nilufer'),liveTotal=liveRows.length,livePending=liveRows.filter(review=>!review.isReplied).length,liveCritical=liveRows.filter(review=>['critical','negative'].includes(review.riskLevel)||Number(review.starRating||review.rating)<=2).length,liveRating=liveTotal?liveRows.reduce((sum,review)=>sum+Number(review.starRating||review.rating||0),0)/liveTotal:null,demoBranches=googleBranches().filter(branch=>branch.demo),demoTotal=demoBranches.reduce((sum,branch)=>sum+Number(branch.demoReviewCount||0),0),demoPending=demoBranches.reduce((sum,branch)=>sum+Number(branch.demoUnrepliedCount||branch.unrepliedCount||0),0),demoCritical=demoBranches.reduce((sum,branch)=>sum+Number(branch.demoCriticalCount||branch.criticalCount||0),0),demoWeightedRating=demoBranches.reduce((sum,branch)=>sum+Number(branch.demoReviewCount||0)*Number(branch.demoRating||branch.googleRating||0),0),networkTotal=liveTotal?liveTotal+demoTotal:1247,networkPending=liveTotal?livePending+demoPending:392,networkCritical=liveTotal?liveCritical+demoCritical:157,networkReplied=Math.max(0,networkTotal-networkPending-networkCritical),networkSla=liveTotal?Math.round((networkTotal-networkPending)/networkTotal*100):78,networkRating=liveTotal?((demoWeightedRating+(liveRating*liveTotal))/Math.max(1,networkTotal)).toLocaleString('tr-TR',{minimumFractionDigits:1,maximumFractionDigits:1}):'4,3',networkLabel=liveTotal?'Canlı + demo':'Örnek veri',niluferOps=liveTotal?['Bursa Nilüfer',Math.max(0,liveTotal-livePending-liveCritical),livePending,liveCritical,liveTotal]:['Bursa Nilüfer',78,52,12,142],ops=[['Ankara Merkez',66,94,72,232],['İstanbul Anadolu',89,71,38,198],['İzmir',88,67,21,176],niluferOps], balance=[['İstanbul Kadıköy','Marmara',38,12,50,122],['Ankara Çankaya','İç Anadolu',28,10,62,126],['İzmir Bornova','Ege',22,8,70,126],liveTotal?['Bursa Nilüfer','Marmara',liveTotal?Math.round(liveCritical/Math.max(1,liveTotal)*100):18,liveTotal?Math.max(0,liveTotal-livePending-liveCritical):8,liveTotal?Math.round((liveTotal-liveCritical)/Math.max(1,liveTotal)*100):74,liveTotal||122]:['Bursa Nilüfer','Marmara',18,8,74,122],['Antalya Muratpaşa','Akdeniz',12,6,82,116]];
-  const months=['Nis 2026','May 2026','Haz 2026','Tem 2026','Ağu 2026','Eyl 2026'],vol=liveTotal?[560,820,1000,920,1310,Math.max(1740,liveTotal)]:[560,820,1000,920,1310,1740],rating=liveTotal?[3.2,3.7,3.8,3.6,4.1,liveRating]:[3.2,3.7,3.8,3.6,4.1,4.5],max=Math.max(...vol),trendPoints=vol.map((v,i)=>`${40+i*155},${142-v/max*92}`).join(' ');
+  const demoMode=googleReputationState.demoMode,liveRows=googleReviews().filter(review=>review.branchId==='branch-google-nilufer'&&!review.demo),liveTotal=liveRows.length,livePending=liveRows.filter(review=>!review.isReplied).length,liveCritical=liveRows.filter(googleReviewIsCritical).length,liveRating=liveTotal?liveRows.reduce((sum,review)=>sum+Number(review.starRating||review.rating||0),0)/liveTotal:null,demoBranches=demoMode?googleBranches().filter(branch=>branch.demo):[],demoTotal=demoBranches.reduce((sum,branch)=>sum+Number(branch.demoReviewCount||0),0),demoPending=demoBranches.reduce((sum,branch)=>sum+Number(branch.demoUnrepliedCount||branch.unrepliedCount||0),0),demoCritical=demoBranches.reduce((sum,branch)=>sum+Number(branch.demoCriticalCount||branch.criticalCount||0),0),demoWeightedRating=demoBranches.reduce((sum,branch)=>sum+Number(branch.demoReviewCount||0)*Number(branch.demoRating||branch.googleRating||0),0),networkTotal=liveTotal+demoTotal,networkPending=livePending+demoPending,networkCritical=liveCritical+demoCritical,networkReplied=Math.max(0,networkTotal-networkPending-networkCritical),networkSla=networkTotal?Math.round((networkTotal-networkPending)/networkTotal*100):0,networkRating=networkTotal?((demoWeightedRating+(Number(liveRating)||0)*liveTotal)/networkTotal).toLocaleString('tr-TR',{minimumFractionDigits:1,maximumFractionDigits:1}):'—',networkLabel=demoMode?'Canlı + demo':'Canlı · Bursa Nilüfer',niluferOps=['Bursa Nilüfer',Math.max(0,liveTotal-livePending-liveCritical),livePending,liveCritical,Math.max(1,liveTotal)],ops=demoMode?[['Ankara Merkez',66,94,72,232],['İstanbul Anadolu',89,71,38,198],['İzmir',88,67,21,176],niluferOps]:[niluferOps],balance=demoMode?[['İstanbul Kadıköy','Marmara',38,12,50,122],['Ankara Çankaya','İç Anadolu',28,10,62,126],['İzmir Bornova','Ege',22,8,70,126],['Bursa Nilüfer','Marmara',liveTotal?Math.round(liveCritical/Math.max(1,liveTotal)*100):0,Math.max(0,liveTotal-livePending-liveCritical),liveTotal?Math.round((liveTotal-liveCritical)/Math.max(1,liveTotal)*100):0,liveTotal],['Antalya Muratpaşa','Akdeniz',12,6,82,116]]:[['Bursa Nilüfer','Marmara',liveTotal?Math.round(liveCritical/Math.max(1,liveTotal)*100):0,Math.max(0,liveTotal-livePending-liveCritical),liveTotal?Math.round((liveTotal-liveCritical)/Math.max(1,liveTotal)*100):0,liveTotal]];
+  const months=['Nis 2026','May 2026','Haz 2026','Tem 2026','Ağu 2026','Eyl 2026'],vol=demoMode?[560,820,1000,920,1310,Math.max(1740,networkTotal)]:[0,0,0,0,0,liveTotal],rating=demoMode?[3.2,3.7,3.8,3.6,4.1,liveRating||4.5]:[null,null,null,null,null,liveRating],max=Math.max(...vol,1),trendPoints=vol.map((v,i)=>`${40+i*155},${142-v/max*92}`).join(' ');
   return `<div class="review-center-shell"><aside class="review-center-sidebar"><div class="review-brand"><b>Oto<span>TR</span></b></div><nav class="review-center-nav"><button class="active" data-google-center-scroll="review-overview">${icon('house')}<span>Genel Bakış</span></button><button data-google-center-scroll="review-list">${icon('message-square')}<span>Yorumlar</span></button><button data-google-center-scroll="google-reply-workspace">${icon('reply')}<span>Yanıtlar</span></button><button data-google-center-scroll="review-branches">${icon('building-2')}<span>Şubeler</span></button><button data-google-center-scroll="review-targets">${icon('target')}<span>Hedefler</span></button></nav></aside><main class="review-center-main" id="review-overview"><header class="review-center-top"><div class="review-search">${icon('search')}<input placeholder="Şube, yorum veya müşteri ara"></div><div class="review-top-actions"><button>${icon('calendar-days')}Kasım 2026${icon('chevron-down')}</button><button>${icon('building-2')}Tüm şubeler${icon('chevron-down')}</button><button>${icon('download')}Dışa Aktar</button></div></header><div class="review-center-content"><div class="review-page-title"><div><span class="review-kicker">OTOTR · GOOGLE İŞLETME PROFİLLERİ</span><h1>Google Yorum Merkezi <span class="review-demo-pill">${networkLabel}</span></h1><p>Tüm şubelerde itibar, yanıt operasyonu ve hedef performansı.</p></div><button class="review-connect-btn" onclick="OTOTRGoogleReputation.syncGoogleReviewsForBranch('branch-google-nilufer')">${icon('refresh-cw')}Google Senkronize Et</button></div><section class="review-kpi-grid"><article>${icon('message-circle')}<span>Toplam yorum</span><strong>${googleMetric(networkTotal)}</strong><small>${networkLabel}</small></article><article>${icon('star')}<span>Ortalama puan</span><strong>${networkRating} / 5</strong><em>↑ +0,4</em><small>Önceki aya göre</small></article><article>${icon('clock-3')}<span>Bekleyen yanıt</span><strong>${googleMetric(networkPending)}</strong><small>${networkLabel}</small></article><article>${icon('triangle-alert')}<span>Süresi geçen</span><strong>${googleMetric(networkCritical)}</strong><small>${networkLabel}</small></article><article>${icon('bar-chart-3')}<span>SLA başarısı</span><strong>%${networkSla}</strong><em>↑ +6 puan</em><small>Önceki aya göre</small></article></section><section class="review-trend-target"><article class="review-panel review-trend-panel"><div class="review-panel-head"><div><h2>6 aylık yorum eğilimi <span>${networkLabel}</span></h2><div class="review-legend"><i class="red"></i>Yorum hacmi (adet)<i class="blue"></i>Ortalama yorum puanı (5 üzerinden, endeksli)</div></div><div class="review-mini-stats"><b>${googleMetric(networkTotal)}<small>Toplam yorum</small></b><b class="green">+%62<small>Yorum hacmi</small></b><b>${liveRating?googleMetric(liveRating,1):'4,5'} / 5<small>Hedef puan</small></b></div></div><div class="review-trend-chart"><div class="review-y-axis"><span>2.000</span><span>1.600</span><span>1.200</span><span>800</span><span>400</span><span>0</span></div><svg viewBox="0 0 960 210" role="img" aria-label="6 aylık yorum eğilimi" data-google-volume="${googleEsc(vol.join(','))}" data-google-rating="${googleEsc(rating.join(','))}"><path d="M44 164 ${trendPoints} L819 164 Z" fill="#f5aeb7" opacity=".42"/><polyline points="${trendPoints}" fill="none" stroke="#f02d3e" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>${vol.map((v,i)=>`<circle cx="${40+i*155}" cy="${142-v/max*92}" r="5" fill="#f02d3e"/>`).join('')}<polyline points="40,94 195,78 350,70 505,76 660,54 815,28" fill="none" stroke="#287bf2" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>${[94,78,70,76,54,28].map((y,i)=>`<circle cx="${40+i*155}" cy="${y}" r="5" fill="#287bf2"/>`).join('')}</svg><div class="review-x-axis">${months.map(m=>`<span>${m}</span>`).join('')}</div></div></article><article class="review-panel review-goal-panel"><div class="review-panel-head"><div><h2>Kasım hedefi <span>Örnek veri</span></h2><p>Hedef ay: Kasım 2026</p></div></div><div class="review-goal-number">842 <small>/ 2.000</small><b>%42<small>Hedef tamamlama</small></b></div><div class="review-goal-track"><i style="width:42%"></i></div><div class="review-goal-scale"><span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span></div><div class="review-goal-cards"><div>${icon('bar-chart-3')}<b>28<small>Mevcut günlük ortalama</small></b></div><div>${icon('target')}<b>39<small>Hedefe ulaşmak için gerekli</small></b></div></div></article></section><section class="review-operations"><article class="review-panel"><div class="review-panel-head"><div><h2>Yanıt operasyonunun dağılımı <span>${networkLabel}</span></h2><p>Tüm şubelerdeki müşteri yanıt süreçlerinin güncel durumu.</p></div><div class="review-op-summary"><b>${googleMetric(networkReplied)}<small>Yanıtlandı</small></b><b>${googleMetric(networkPending)}<small>Yanıt bekliyor</small></b><b>${googleMetric(networkCritical)}<small>Kritik / eskale</small></b></div></div>${ops.map(o=>`<div class="review-op-row"><b>${o[0]}</b><div><i class="answered" style="width:${o[1]/o[4]*100}%">${o[1]}</i><i class="waiting" style="width:${o[2]/o[4]*100}%">${o[2]}</i><i class="critical" style="width:${o[3]/o[4]*100}%">${o[3]}</i></div><strong>${o[4]}</strong></div>`).join('')}</article><article class="review-panel" id="review-branches"><div class="review-panel-head"><div><h2>Şubelere göre yorum dengesi <small>(Google)</small> <span>${networkLabel}</span></h2><p>Her şube için 1–2 yıldız (kritik) ve 4–5 yıldız (olumlu) yorumların dağılımı.</p></div><select><option>Kritik yorum oranı (yüksekten düşüğe)</option></select></div><div class="review-balance-head"><span>Şube</span><span>Kritik yorumlar<br>(1–2 yıldız)</span><span>3 yıldız<br>(Nötr)</span><span>Olumlu yorumlar<br>(4–5 yıldız)</span><span>Toplam</span></div>${balance.map(b=>`<div class="review-balance-row"><b>${b[0]}<small>${b[1]}</small></b><strong>%${b[2]}<small>${b[2]+10}</small></strong><span>${b[3]}</span><i><em style="width:${b[2]*2}%"></em></i><strong class="positive">%${b[4]}<small>${b[5]-b[3]}</small></strong><b>${b[5]}</b></div>`).join('')}</article></section><section class="review-risk-row" id="review-reports"><article class="review-risk-card"><div>${icon('triangle-alert')}</div><b>En yüksek gecikme riski <span>${networkLabel}</span></b><strong>Ankara Merkez şubesinde<br><em>72 adet</em> süresi geçen yanıt bulunuyor.</strong><button> Kuyruğu aç ${icon('arrow-right')}</button></article><article class="review-panel review-critical-list"><div class="review-panel-head"><div><h2>Kritik yorum oranı en yüksek 3 şube <span>${networkLabel}</span></h2><p>1–2 yıldız yorum oranı en yüksek şubelerimiz.</p></div></div><div class="review-critical-items"><div><b>1</b><strong>İstanbul Kadıköy <em>%38</em><small>Marmara · 48 / 122</small></strong><button>Yorumları incele →</button></div><div><b>2</b><strong>Ankara Çankaya <em>%28</em><small>İç Anadolu · 36 / 126</small></strong><button>Yorumları incele →</button></div><div><b>3</b><strong>İzmir Bornova <em>%22</em><small>Ege · 28 / 126</small></strong><button>Yorumları incele →</button></div></div></article><article class="review-opportunity"><div>${icon('lightbulb')}</div><b>İyileştirme fırsatı</b><p>Kritik yorumları inceleyip, tekrar eden konuları belirleyerek hizmet kalitesini artırabilirsiniz.</p><button>Kritik yorumları filtrele ${icon('arrow-right')}</button></article></section></div></main></div>`;
 }
 function GoogleCommandCenter(){
-  const branches=googleBranches(), liveReviews=googleReviews().filter(r=>r.branchId==='branch-google-nilufer'), liveBase=branches.find(b=>b.id==='branch-google-nilufer'), live=liveReviews.length?{...liveBase,googleReviewCount:liveReviews.length,googleRating:liveReviews.reduce((n,r)=>n+(Number(r.starRating||r.rating)||0),0)/liveReviews.length,unrepliedCount:liveReviews.filter(r=>!r.replyText&&!r.reply).length,synced:true}:liveBase, displayBranches=branches.map(b=>b.id==='branch-google-nilufer'?live:b), total=displayBranches.reduce((n,b)=>n+(b.googleReviewCount||0),0), pending=displayBranches.reduce((n,b)=>n+(b.unrepliedCount||0),0), overdue=displayBranches.reduce((n,b)=>n+Math.max(0,(b.unrepliedCount||0)-8),0), avg=(displayBranches.reduce((n,b)=>n+(b.googleRating||0)*(b.googleReviewCount||0),0)/Math.max(1,total)).toFixed(2);
+  const branches=googleBranches(), liveReviews=googleReviews().filter(r=>r.branchId==='branch-google-nilufer'), liveBase=branches.find(b=>b.id==='branch-google-nilufer'), live=liveReviews.length?{...liveBase,googleReviewCount:liveReviews.length,googleRating:liveReviews.reduce((n,r)=>n+(Number(r.starRating||r.rating)||0),0)/liveReviews.length,unrepliedCount:liveReviews.filter(r=>!r.replyText&&!r.reply).length,criticalCount:liveReviews.filter(googleReviewIsCritical).length,synced:true}:liveBase, displayBranches=branches.map(b=>b.id==='branch-google-nilufer'?live:b), total=displayBranches.reduce((n,b)=>n+(b.googleReviewCount||0),0), pending=displayBranches.reduce((n,b)=>n+(b.unrepliedCount||0),0), overdue=displayBranches.reduce((n,b)=>n+Math.max(0,(b.unrepliedCount||0)-8),0), avg=(displayBranches.reduce((n,b)=>n+(b.googleRating||0)*(b.googleReviewCount||0),0)/Math.max(1,total)).toFixed(2);
   const max=Math.max(...displayBranches.map(b=>b.googleReviewCount||0),1);
   return `<section class="google-command-center"><div class="google-command-head"><div><span class="google-eyebrow">OTOTR · İTİBAR VE MÜŞTERİ DENEYİMİ</span><h1>Google Yorum Merkezi <span class="google-demo-badge">4 demo şube · Nilüfer canlı</span></h1><p>Şube itibarını, yanıt kuyruğunu ve kritik müşteri deneyimi sinyallerini tek ekrandan yönetin.</p></div><div class="google-command-actions"><button class="google-action-btn" onclick="OTOTRGoogleReputation.selectBranch('branch-google-nilufer')">Nilüfer canlı yorumları</button><button class="google-action-btn" onclick="OTOTRGoogleReputation.syncGoogleReviewsForBranch('branch-google-nilufer')">Google’ı senkronize et</button></div></div><div class="google-command-kpis"><article><span>Toplam yorum</span><strong>${googleMetric(total)}</strong><small>4 demo şube + Nilüfer canlı</small></article><article><span>Ortalama puan</span><strong>${avg} / 5</strong><small>Şube ağırlıklı ortalama</small></article><article class="warning"><span>Bekleyen yanıt</span><strong>${googleMetric(pending)}</strong><small>${googleMetric(overdue)} SLA riski</small></article><article class="success"><span>Nilüfer canlı durum</span><strong>${googleMetric(live?.unrepliedCount||0)}</strong><small>${live?.synced?'Google bağlantısı aktif':'Senkronizasyon bekleniyor'}</small></article></div><div class="google-command-grid"><article class="google-command-card google-branch-balance"><div class="google-command-card-head"><div><h3>Şubelere göre yorum dengesi</h3><p>Demo şubeler örnek veriyle, Nilüfer gerçek Google verisiyle gösterilir.</p></div><span class="google-status-pill">${displayBranches.length} şube</span></div>${displayBranches.map(b=>`<button class="google-command-branch" onclick="OTOTRGoogleReputation.selectBranch('${b.id}')"><span><b>${googleEsc(b.name.replace('OTOTR Oto Ekspertiz ',''))}</b><small>${b.demo?'Demo veri':'Canlı Google verisi'} · ${b.googleRating?.toFixed?.(1)||'—'} puan</small></span><span class="google-command-bar"><i style="width:${Math.round((b.googleReviewCount||0)/max*100)}%"></i></span><strong>${googleMetric(b.googleReviewCount||0)}</strong></button>`).join('')}</article><article class="google-command-card"><div class="google-command-card-head"><div><h3>Operasyon kuyrukları</h3><p>Yorumları yalnızca cevap değil, aksiyon olarak yönetin.</p></div></div><div class="google-queue-list"><button onclick="OTOTRGoogleReputation.setFilter('unreplied')"><b>Yanıt bekleyenler</b><strong>${googleMetric(pending)}</strong><span>AI taslak + merkez onayı</span></button><button><b>Şubeden bilgi bekleyenler</b><strong>${googleMetric(Math.max(3,Math.round(pending*.3)))}</strong><span>İş emri, rapor ve açıklama</span></button><button><b>Hukuk incelemesi</b><strong>${googleMetric(displayBranches.reduce((n,b)=>n+(b.criticalCount||0),0))}</strong><span>Kritik ve yüksek riskli kayıtlar</span></button><button><b>Yönetici onayı</b><strong>${googleMetric(Math.max(1,Math.round(pending*.65)))}</strong><span>Yayın öncesi son kontrol</span></button></div></article></div></section>`;
 }
@@ -3378,7 +3456,7 @@ function googleDashboardBranchMetrics(branch){
   const total=isLive?Math.max(liveRows.length,Number(branch.googleReviewCount)||0):Number(branch.demoReviewCount||branch.googleReviewCount||0);
   const rating=liveRows.length?liveRows.reduce((sum,review)=>sum+Number(review.starRating||review.rating||0),0)/liveRows.length:Number(branch.demoRating||branch.googleRating||0)||null;
   const pending=liveRows.length?liveRows.filter(review=>!review.isReplied).length:Number(isLive?branch.loadedUnrepliedCount??branch.unrepliedCount:branch.demoUnrepliedCount||branch.unrepliedCount||0);
-  const critical=liveRows.length?liveRows.filter(review=>['critical','negative'].includes(review.riskLevel)||Number(review.starRating||review.rating)<=2).length:Number(isLive?branch.loadedCriticalCount??branch.criticalCount:branch.demoCriticalCount||branch.criticalCount||0);
+  const critical=liveRows.length?liveRows.filter(googleReviewIsCritical).length:Number(isLive?branch.loadedCriticalCount??branch.criticalCount:branch.demoCriticalCount||branch.criticalCount||0);
   const hasData=Boolean(total||liveRows.length||(!isLive&&branch.demo));
   return {branch,total,rating,pending,critical,hasData,live:isLive};
 }
@@ -3395,12 +3473,12 @@ function googleDashboardSnapshot(){
   }
   const demoTotal=demoMetrics.reduce((sum,item)=>sum+item.total,0),demoPending=demoMetrics.reduce((sum,item)=>sum+item.pending,0),demoCritical=demoMetrics.reduce((sum,item)=>sum+item.critical,0),demoWeighted=demoMetrics.reduce((sum,item)=>sum+item.total*(item.rating||0),0),liveTotal=liveMetrics.reduce((sum,item)=>sum+item.total,0),livePending=liveMetrics.reduce((sum,item)=>sum+item.pending,0),liveCritical=liveMetrics.reduce((sum,item)=>sum+item.critical,0),liveWeighted=liveMetrics.reduce((sum,item)=>sum+item.total*(item.rating||0),0);
   if(liveTotal) return {total:liveTotal+demoTotal,rating:(liveWeighted+demoWeighted)/Math.max(1,liveTotal+demoTotal),pending:livePending+demoPending,critical:liveCritical+demoCritical,sla:Math.round((liveTotal+demoTotal-(livePending+demoPending))/Math.max(1,liveTotal+demoTotal)*100),label:'Canlı + demo'};
-  return {total:1247,rating:4.3,pending:392,critical:157,sla:78,label:'Örnek veri'};
+  return {total:null,rating:null,pending:null,critical:null,sla:null,label:googleReputationState.demoMode?'Demo veri':'Canlı · Bursa Nilüfer'};
 }
 function googleDashboardTrend(){
   const branchId=googleDashboardState.branchId||'all',branch=googleBranches().find(item=>item.id===branchId),scopeRows=googleDashboardScopeBranches(branchId),hasLive=scopeRows.some(item=>!item.demo&&(item.synced||googleReviews().some(review=>review.branchId===item.id&&!review.demo)));
   if(branchId!=='all'&&!branch?.demo&&scopeRows.length===1) return googleLiveMonthlyTrend(branchId);
-  if(hasLive || String(branchId).startsWith('region:') || String(branchId).startsWith('city:')){
+  if(hasLive || scopeRows.some(item=>item.demo) || String(branchId).startsWith('region:') || String(branchId).startsWith('city:')){
     const months=googleTrendMonthsEnding(googleDashboardState.period==='last30'?googleReviewMonthKey(new Date()):googleDashboardState.period,6),volume=months.map((month,index)=>scopeRows.reduce((sum,item)=>{ if(item.demo){const trend=item.trend||[];return sum+Number(trend[Math.max(0,trend.length-months.length)+index]||0);} googleRefreshBranchMonthlyTrend(item.id); return sum+Number(item.monthlyTrend?.[month]?.count||0); },0)),rating=months.map((month,index)=>{let total=0,weighted=0;scopeRows.forEach(item=>{const count=item.demo?Number((item.trend||[])[Math.max(0,(item.trend||[]).length-months.length)+index]||0):Number(item.monthlyTrend?.[month]?.count||0),value=item.demo?Number(item.demoRating||item.googleRating||0):Number(item.monthlyTrend?.[month]?.averageRating||0);if(count&&value){total+=count;weighted+=count*value;}});return total?Number((weighted/total).toFixed(2)):null;}),previous=volume.at(-2)||0,current=volume.at(-1)||0,growth=previous?Math.round((current-previous)/previous*100):(current?100:0);
     return {labels:months.map(month=>new Date(`${month}-01T12:00:00Z`).toLocaleDateString('tr-TR',{month:'short',year:'numeric',timeZone:'Europe/Istanbul'})),volume,rating,selectedIndex:months.length-1,growth,live:hasLive};
   }
@@ -3443,7 +3521,8 @@ function googleDashboardCloseMenu(){ document.querySelectorAll('.review-filter-p
 function googleDashboardOpenMenu(kind,anchor){
   googleDashboardCloseMenu();
   const popover=document.createElement('div'); popover.className=`review-filter-popover ${kind}`; popover.setAttribute('role','listbox');
-  const options=kind==='period'?[['2026-01','Ocak 2026'],['2026-02','Şubat 2026'],['2026-03','Mart 2026'],['2026-04','Nisan 2026'],['2026-05','Mayıs 2026'],['2026-06','Haziran 2026'],['2026-07','Temmuz 2026'],['2026-08','Ağustos 2026'],['2026-09','Eylül 2026'],['2026-10','Ekim 2026'],['2026-11','Kasım 2026'],['2026-12','Aralık 2026'],['last30','Son 30 gün']]:[['all','Tüm şubeler'],...[...new Set(googleBranches().map(branch=>branch.region).filter(Boolean))].map(region=>[`region:${region}`,`Bölge · ${region}`]),...[...new Set(googleBranches().map(branch=>branch.city).filter(Boolean))].map(city=>[`city:${city}`,`İl · ${city}`]),...googleBranches().map(branch=>[branch.id,`${branch.name.replace('OTOTR Oto Ekspertiz ','')}${branch.demo?' · Demo':' · Canlı'}`])];
+  const branchOptions=googleReputationState.demoMode?[['all','Tüm şubeler'],...[...new Set(googleBranches().map(branch=>branch.region).filter(Boolean))].map(region=>[`region:${region}`,`Bölge · ${region}`]),...[...new Set(googleBranches().map(branch=>branch.city).filter(Boolean))].map(city=>[`city:${city}`,`İl · ${city}`]),...googleBranches().map(branch=>[branch.id,`${branch.name.replace('OTOTR Oto Ekspertiz ','')}${branch.demo?' · Demo':' · Canlı'}`])]:googleBranches().map(branch=>[branch.id,`${branch.name.replace('OTOTR Oto Ekspertiz ','')} · Canlı`]);
+  const options=kind==='period'?[['2026-01','Ocak 2026'],['2026-02','Şubat 2026'],['2026-03','Mart 2026'],['2026-04','Nisan 2026'],['2026-05','Mayıs 2026'],['2026-06','Haziran 2026'],['2026-07','Temmuz 2026'],['2026-08','Ağustos 2026'],['2026-09','Eylül 2026'],['2026-10','Ekim 2026'],['2026-11','Kasım 2026'],['2026-12','Aralık 2026'],['last30','Son 30 gün']]:branchOptions;
   const selected=kind==='period'?googleDashboardState.period:googleDashboardState.branchId;
   popover.innerHTML=options.map(([value,label])=>`<button type="button" role="option" aria-selected="${value===selected}" data-google-dashboard-choice="${googleEsc(value)}" data-google-dashboard-choice-kind="${kind}">${googleEsc(label)}${value===selected?' ✓':''}</button>`).join('');
   anchor.parentElement?.appendChild(popover); googleDashboardState.openMenu=kind;
@@ -3459,9 +3538,17 @@ function applyGoogleDashboardFilterView(page){
   const mini=page.querySelectorAll?.('.review-mini-stats b')||[]; if(mini[0]) mini[0].firstChild.textContent=googleDashboardFormat(snapshot.total); if(mini[2]) mini[2].firstChild.textContent=`${googleDashboardFormat(snapshot.rating,1)} / 5`;
   const goal=googleDashboardGoalData(),goalPanel=page.querySelector?.('.review-goal-panel');
   if(goalPanel){ const title=goalPanel.querySelector('h2'),desc=goalPanel.querySelector('.review-panel-head p'),number=goalPanel.querySelector('.review-goal-number'),track=goalPanel.querySelector('.review-goal-track i'),cards=goalPanel.querySelectorAll('.review-goal-cards b'); if(title) title.textContent=`${googleDashboardPeriodLabel(goal.month)} hedefi`; if(desc) desc.textContent=`Hedef ay: ${googleDashboardPeriodLabel(goal.month)} · ${goal.scope==='hq'?'Genel merkez':'Şube hedefi'}`; if(number) number.innerHTML=`${googleDashboardFormat(goal.actual)} <small>/ ${googleDashboardFormat(goal.entry.reviewTarget)}</small><b>%${goal.pct}<small>Hedef tamamlama</small></b>`; if(track) track.style.width=`${goal.pct}%`; if(cards[0]) cards[0].firstChild.textContent=googleDashboardFormat(Math.round(goal.actual/Math.max(1,new Date().getDate()))); if(cards[1]) cards[1].firstChild.textContent=googleDashboardFormat(goal.needed); }
-  applyGoogleGoalsDemoBoard(page);
+  if(googleReputationState.demoMode) applyGoogleGoalsDemoBoard(page);
   const chart=page.querySelector?.('.review-trend-chart'),svg=chart?.querySelector?.('svg'),xAxis=chart?.querySelector?.('.review-x-axis');
   if(chart&&svg&&xAxis){ const built=googleDashboardTrendMarkup(),max=built.max,step=920/Math.max(1,built.trend.labels.length-1),yAxis=chart.querySelector('.review-y-axis'); svg.dataset.googleVolume=built.trend.volume.join(','); svg.dataset.googleRating=built.trend.rating.map(value=>value==null?'':value).join(','); svg.dataset.googleLabels=built.trend.labels.join('|'); svg.setAttribute('viewBox','0 0 960 210'); svg.innerHTML=`<path d="${built.area}" fill="#f5aeb7" opacity=".42"/><polyline points="${built.volumePoints}" fill="none" stroke="#f02d3e" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>${built.trend.volume.map((value,index)=>`<circle cx="${Math.round(index*step+20)}" cy="${Math.round(150-value/max*105)}" r="5" fill="#f02d3e" data-chart-series="volume" data-chart-index="${index}"/>`).join('')}<polyline points="${built.ratingPoints}" fill="none" stroke="#287bf2" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>${built.trend.rating.map((value,index)=>value==null?'':`<circle cx="${Math.round(index*step+20)}" cy="${Math.round(150-(value-1)/4*110)}" r="5" fill="#287bf2" data-chart-series="rating" data-chart-index="${index}"/>`).join('')}`; xAxis.innerHTML=built.trend.labels.map(label=>`<span>${label}</span>`).join(''); if(yAxis)yAxis.innerHTML=Array.from({length:6},(_,index)=>`<span>${googleDashboardFormat(Math.round(max*(5-index)/5))}</span>`).join(''); if(mini[1])mini[1].firstChild.textContent=`${built.trend.growth>0?'+':built.trend.growth<0?'-':''}%${Math.abs(built.trend.growth)}`; }
+}
+function applyGoogleLiveOnlyView(page){
+  if(!page||googleReputationState.demoMode)return;
+  const rows=googleReviews().filter(review=>review.branchId==='branch-google-nilufer'&&!review.demo),critical=rows.filter(googleReviewIsCritical).length;
+  const intro=page.querySelector('.review-center-content .review-page-title p'); if(intro)intro.textContent='Bursa Nilüfer şubesinin gerçek Google verisi ve yanıt operasyonu.';
+  const operationsText=page.querySelector('.review-operations .review-panel-head p'); if(operationsText)operationsText.textContent='Bursa Nilüfer müşteri yanıt süreçlerinin güncel durumu.';
+  const risk=page.querySelector('.review-risk-card strong'); if(risk)risk.innerHTML=`Bursa Nilüfer şubesinde<br><em>${critical} adet</em> kritik yorum bulunuyor.`;
+  const criticalList=page.querySelector('.review-critical-items'); if(criticalList)criticalList.innerHTML=rows.length?`<div><b>1</b><strong>Bursa Nilüfer <em>%${Math.round(critical/Math.max(1,rows.length)*100)}</em><small>Marmara · ${critical} / ${rows.length}</small></strong><button data-google-inbox-reputation-filter="critical">Yorumları incele →</button></div>`:'<div><strong>Bursa Nilüfer canlı verisi senkronizasyon bekliyor.</strong></div>';
 }
 function refreshGoogleReputationPage(){
   const page=document.getElementById('page-google-reviews');
@@ -3479,16 +3566,17 @@ function refreshGoogleReputationPage(){
     if(top&&search&&topActions&&connect){ connect.classList.add('review-top-sync'); top.insertBefore(connect,topActions); }
     page.querySelector?.('.review-page-title')?.remove();
     if(top&&!top.querySelector('.review-api-connect')){ const apiButton=document.createElement('button'); apiButton.type='button'; apiButton.className='review-api-connect'; apiButton.dataset.googleConnect='1'; apiButton.textContent=googleReputationState.connected===true?'Google hesabı bağlı':'Google Hesabını Bağla'; top.insertBefore(apiButton,topActions||null); }
+    if(top&&!top.querySelector('[data-testid="google-demo-toggle"]')){ const demoButton=document.createElement('button'); demoButton.type='button'; demoButton.className='review-api-connect'; demoButton.dataset.testid='google-demo-toggle'; demoButton.textContent=googleReputationState.demoMode?'Canlı moda dön':'Demo veri yükle'; demoButton.addEventListener('click',()=>googleSetDemoMode(!googleReputationState.demoMode)); top.insertBefore(demoButton,topActions||null); }
     const brand=page.querySelector?.('.review-brand');
     if(brand) brand.innerHTML='<img src="sunum-32-ekran/assets/ototr-logo-official-light.png" alt="OTOTR Oto Ekspertiz" loading="eager">';
     const inboxHead=page.querySelector?.('.google-inbox-page-head'), inboxActions=inboxHead?.querySelector?.('.google-inbox-head-actions');
     if(inboxHead){ inboxHead.querySelector?.('.review-kicker')?.remove(); inboxHead.querySelector?.('p')?.remove(); inboxHead.classList.add('google-inbox-page-head-compact'); }
     if(top&&inboxActions){ inboxActions.classList.add('review-inbox-top-actions'); top.insertBefore(inboxActions,topActions||null); }
     const goals=page.querySelector?.('.google-goals-workspace'), goalsHead=goals?.querySelector?.('.google-goals-head'), goalsMeta=goalsHead?.querySelector?.('.google-goals-head-meta'), goalsScope=goals?.querySelector?.('.google-goals-scope');
-    if(goals&&goalsHead&&goalsMeta&&goalsScope){ goals.querySelector?.('.google-goals-hero')?.remove(); goals.querySelector?.('.google-goals-status')?.remove(); goalsHead.querySelector?.(':scope > div:first-child')?.remove(); goalsScope.querySelectorAll?.('button,label').forEach(control=>goalsMeta.appendChild(control)); goalsScope.remove(); goalsHead.classList.add('google-goals-head-compact'); const side=goals.querySelector?.('.google-goals-side-card'),history=goals.querySelector?.('.google-goal-history'); if(side&&history) side.appendChild(history); const summary=goals.querySelector?.('.google-goals-summary'); if(summary&&!goals.querySelector('.google-goals-demo-board')) summary.insertAdjacentHTML('beforebegin',googleGoalsDemoBoard()); const changes=goals.querySelector?.('.google-goal-demo-side article:nth-child(2)'); if(history&&changes) history.appendChild(changes); }
+    if(goals&&goalsHead&&goalsMeta&&goalsScope){ goals.querySelector?.('.google-goals-hero')?.remove(); goals.querySelector?.('.google-goals-status')?.remove(); goalsHead.querySelector?.(':scope > div:first-child')?.remove(); goalsScope.querySelectorAll?.('button,label').forEach(control=>goalsMeta.appendChild(control)); goalsScope.remove(); goalsHead.classList.add('google-goals-head-compact'); const side=goals.querySelector?.('.google-goals-side-card'),history=goals.querySelector?.('.google-goal-history'); if(side&&history) side.appendChild(history); const summary=goals.querySelector?.('.google-goals-summary'); if(googleReputationState.demoMode&&summary&&!goals.querySelector('.google-goals-demo-board')) summary.insertAdjacentHTML('beforebegin',googleGoalsDemoBoard()); const changes=goals.querySelector?.('.google-goal-demo-side article:nth-child(2)'); if(history&&changes) history.appendChild(changes); }
     if(goals&&googleReputationState.centerView==='goals'&&!goals.querySelector('[data-google-goal-scope="region"]')){ const branchScope=goals.querySelector('[data-google-goal-scope="branch"]'),scopeHost=branchScope||goals.querySelector('.google-goals-head-meta'); if(scopeHost) scopeHost.insertAdjacentHTML(branchScope?'beforebegin':'afterbegin',`<button type="button" class="${googleReputationState.goalScope==='region'?'active':''}" data-google-goal-scope="region">${icon('map')}Bölge</button>`); }
     if(goals&&googleReputationState.centerView==='goals'&&googleReputationState.goalScope==='region'&&!goals.querySelector('[data-google-goal-region]')){ const meta=goals.querySelector('.google-goals-head-meta'); if(meta) meta.insertAdjacentHTML('beforeend',`<label>Bölge<select data-google-goal-region>${[...new Set(googleBranches().map(b=>b.region).filter(Boolean))].map(region=>`<option value="${googleEsc(region)}" ${googleReputationState.goalRegion===region?'selected':''}>${googleEsc(region)}</option>`).join('')}</select></label>`); }
-    if(googleReputationState.centerView==='overview'){
+    if(googleReputationState.demoMode&&googleReputationState.centerView==='overview'){
       if(!page.querySelector('.google-goals-demo-board')){ const operations=page.querySelector('.review-operations'); if(operations) operations.insertAdjacentHTML('beforebegin',googleGoalsDemoBoard()); }
       page.querySelector('.google-goals-demo-board .google-goal-demo-side article:nth-child(2)')?.remove();
     }
@@ -3507,6 +3595,7 @@ function refreshGoogleReputationPage(){
       if(googleReputationState.centerView==='goals') periodButton?.remove();
     }
     applyGoogleDashboardFilterView(page);
+    applyGoogleLiveOnlyView(page);
     const activeTarget=googleReputationState.centerView==='goals'?'review-targets':googleReputationState.centerView==='inbox'?'google-reply-workspace':googleReputationState.centerView==='connections'?'google-connections':'review-overview';
     page.querySelectorAll?.('.review-center-nav button')?.forEach(button=>button.classList.toggle('active',button.dataset.googleCenterScroll===activeTarget));
   }
@@ -3561,7 +3650,7 @@ document.addEventListener?.('click',e=>{if(e.target.closest?.('[data-google-sync
 document.addEventListener?.('submit',e=>{const form=e.target.closest?.('[data-google-branch-add]');if(!form)return;e.preventDefault();const data=new FormData(form),name=String(data.get('name')||'').trim(),accountId=String(data.get('accountId')||'').trim(),storeCode=String(data.get('storeCode')||'').trim(),locationId=String(data.get('locationId')||'').trim();if(!name)return;const id='branch-custom-'+Date.now(),configuredLive=Boolean(accountId&&storeCode),branch={id,name:`OTOTR Oto Ekspertiz ${name}`,city:String(data.get('city')||'').trim(),region:String(data.get('region')||'').trim()||'Diğer',googleBusinessGroupId:accountId,storeCode,googleBusinessLocationId:locationId,connectionMode:String(data.get('connectionMode')||'Google Business Profile'),custom:true,demo:!configuredLive,demoReviewCount:0,demoRating:0,demoUnrepliedCount:0,demoCriticalCount:0,googleRating:configuredLive?null:0,googleReviewCount:configuredLive?null:0,unrepliedCount:configuredLive?null:0,criticalCount:configuredLive?null:0,integrationStatus:configuredLive?'Canlı bağlantı adayı':'Demo veri · bağlantı bilgisi bekleniyor',dataMode:configuredLive?'Canlı bağlantı adayı':'Demo şube'};try{localStorage.setItem(GOOGLE_CUSTOM_BRANCHES_KEY,JSON.stringify([...googleCustomBranches(),branch]));toast?.(configuredLive?'Şube canlı senkronizasyon kuyruğuna eklendi.':'Şube demo olarak eklendi; hesap ve mağaza kodunu sonra tamamlayabilirsiniz.');refreshGoogleReputationPage();}catch(_){toast?.('Şube eklenemedi. Tarayıcı depolama iznini kontrol edin.');}});
 document.addEventListener?.('click',e=>{
   const link=e.target.closest?.('[data-google-center-scroll="google-reply-workspace"]');
-  if(!link||window.__OTOTR_DEMO_INBOX_FALLBACK_USED||googleReputationState.selectedBranchId!=='branch-google-nilufer'||googleReviews().some(review=>review.branchId==='branch-google-nilufer')||!googleReviews().some(review=>review.demo)) return;
+  if(!googleReputationState.demoMode||!link||window.__OTOTR_DEMO_INBOX_FALLBACK_USED||googleReputationState.selectedBranchId!=='branch-google-nilufer'||googleReviews().some(review=>review.branchId==='branch-google-nilufer')||!googleReviews().some(review=>review.demo)) return;
   window.__OTOTR_DEMO_INBOX_FALLBACK_USED=true;
   setTimeout(()=>{ if(googleReputationState.centerView==='inbox'&&googleReputationState.selectedBranchId==='branch-google-nilufer'){googleReputationState.selectedBranchId='all';googleReputationState.inboxSelectedReviewId='';refreshGoogleReputationPage();} },0);
 });
@@ -3593,8 +3682,21 @@ function createGoogleWorkTask(reviewId,kind){
   if(!window.OTOTRGoogleReviewAI?.createTask){ toast('Google görev modülü yükleniyor. Lütfen tekrar deneyin.'); return null; }
   return window.OTOTRGoogleReviewAI.createTask(reviewId,kind);
 }
+function openGoogleComplaintTicket(item,{existing=false}={}){
+  const ticket=googleComplaintTicket(item);
+  if(!ticket){ toast('Şikâyet kaydı doğrulanamadı. Görev listesini yenileyin.'); return null; }
+  complaintFilters={source:'Google'};
+  if(!document.getElementById('page-complaints')) window.__OTOTR_FULL_ADMIN_PAGES_RENDERED__=true;
+  renderPages();
+  route('complaints');
+  setTimeout(()=>openDetail(`googleComplaint:${ticket.id}`),80);
+  toast(existing?`Mevcut şikâyet ${ticket.id} açıldı.`:`Şikâyet ${ticket.id} kalıcı görev kaydına bağlandı.`);
+  return ticket;
+}
 window.OTOTRGoogleReputation={
   render:refreshGoogleReputationPage,
+  setDemoMode:googleSetDemoMode,
+  isDemoMode(){ return googleReputationState.demoMode===true; },
   getRefreshState(){ return {busy:googleReputationState.loading,connected:googleReputationState.connected===true,lastSuccessAt:googleReputationState.lastAllSyncAt||Math.max(0,...googleBranches().map(branch=>Number(branch.lastSyncEpoch)||0))}; },
   setError(message){ googleReputationState.error=String(message||''); refreshGoogleReputationPage(); },
   getReviewById:getGoogleReviewById,
@@ -3612,6 +3714,9 @@ window.OTOTRGoogleReputation={
   calculateReputationScore(branch){ return Number(branch?.reputationScore)||0; },
   detectGoogleReviewRisk(review){ return review?.riskLevel || (Number(review?.rating)<=2?'negative':'positive'); },
   convertGoogleReviewToComplaint(reviewId){ return createGoogleWorkTask(reviewId,'complaint'); },
+  openComplaintForReview(reviewId){ const review=getGoogleReviewById(reviewId),item=googleComplaintWorkItem(review); return item?openGoogleComplaintTicket(item,{existing:true}):createGoogleWorkTask(reviewId,'complaint'); },
+  onComplaintTaskCreated(item,meta={}){ return openGoogleComplaintTicket(item,{existing:Boolean(meta.existing)}); },
+  onWorkflowChanged(){ if(current==='complaints'){ renderPages(); route('complaints',{skipShellRender:true,preserveScroll:true}); } },
   generateReplyDraft(){ toast('AI yanıt modülü yükleniyor. Lütfen tekrar deneyin.'); return ''; },
   assignTaskToBranch(reviewId){ return createGoogleWorkTask(reviewId,'branch'); },
   sendToLegal(reviewId){ return createGoogleWorkTask(reviewId,'legal'); },
@@ -3768,6 +3873,7 @@ function renderPages(){
   document.getElementById('pages').innerHTML =
     dashboardPage+
     pageShell('project-roadmap', PlanRoomPage())+
+    pageShell('report-assurance', `<iframe title="Rapor Güvence Merkezi" src="report-assurance.html" style="width:100%;height:calc(100vh - 112px);min-height:760px;border:0;border-radius:14px;background:#f4f6f8"></iframe>`)+
     pageShell('franchise', franchiseDashboard())+
     pageShell('crm', crmDashboard())+
     pageShell('chronic-issues', ChronicIssuesPage())+
@@ -3793,6 +3899,7 @@ function renderPages(){
     pageShell('academy', AcademyDashboard())+
     pageShell('hr', renderHRRoom())+
     pageShell('legal', LegalCommandCenterPage())+
+    pageShell('erp-arge', window.OTOTR_ERP_ARGE?.page?.(selectedArgeModule) || '<div class="card"><b>ERP ARGE modülü yüklenemedi.</b><p>Sayfayı yenileyin veya sistem yöneticisine başvurun.</p></div>')+
     pageShell('crisis', CrisisCenterPage())+
     pageShell('actions', renderActionsPage())+
     pageShell('ai', renderAiPage())+
@@ -3807,7 +3914,42 @@ function renderPages(){
   window.OTOTR_ASSET_LOADER?.afterDashboard?.();
 }
 
-function complaintCenter(){ return DB.complaintsCenter || seed.complaintsCenter || {}; }
+function complaintCenter(){
+  const base=DB.complaintsCenter || seed.complaintsCenter || {};
+  let source=base;
+  try{
+    const bridge=JSON.parse(localStorage.getItem('ototr_complaint_bridge_v1')||'null');
+    if(bridge?.version===1&&Array.isArray(bridge.complaintTickets)&&bridge.complaintTickets.length){
+      source={...base,...bridge,complaintTickets:bridge.complaintTickets,performanceGoals:bridge.performanceGoals||[],performanceActions:bridge.performanceActions||[]};
+    }
+  }catch(error){ console.warn('Şikayet entegrasyon verisi okunamadı',error); }
+  const googleTickets=googleComplaintWorkflowItems().map(googleComplaintTicket).filter(Boolean).sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+  if(!googleTickets.length) return source;
+  const googleIds=new Set(googleTickets.flatMap(ticket=>[ticket.id,ticket.googleWorkItemId,ticket.googleReviewId].filter(Boolean)));
+  const otherTickets=(source.complaintTickets||[]).filter(ticket=>![ticket.id,ticket.googleWorkItemId,ticket.googleReviewId].some(id=>googleIds.has(id)));
+  return {...source,complaintTickets:[...googleTickets,...otherTickets]};
+}
+function complaintDerivedKpis(){
+  const c=complaintCenter(),rows=c.complaintTickets||[],open=rows.filter(x=>x.status!=='Kapandı'),critical=open.filter(x=>x.priority==='Kritik'||x.priority==='P0'||x.priority==='P1'),breached=open.filter(x=>x.sla==='Aşıldı'),closed=rows.filter(x=>x.status==='Kapandı'),legal=open.filter(x=>x.legalRisk==='Yüksek'),recovered=closed.filter(x=>x.compensation&&x.compensation!=='—');
+  const insideRate=Math.round(100*(open.length-breached.length)/Math.max(1,open.length));
+  return [
+    {label:'Toplam şikayet',value:String(rows.length),trend:'Tek veri kaynağı',tone:'info',icon:'messages-square'},
+    {label:'Açık şikayet',value:String(open.length),trend:`${closed.length} kapandı`,tone:open.length?'warn':'good',icon:'message-circle-warning'},
+    {label:'Kritik şikayet',value:String(critical.length),trend:'Aktif kritik dosya',tone:critical.length?'bad':'good',icon:'shield-alert'},
+    {label:'SLA içinde çözülen',value:`%${insideRate}`,trend:`${breached.length} aşım`,tone:insideRate>=92?'good':'warn',icon:'timer'},
+    {label:'Hukuki risk',value:String(legal.length),trend:'Yüksek riskli açık dosya',tone:legal.length?'warn':'good',icon:'scale'},
+    {label:'Geri kazanım kaydı',value:String(recovered.length),trend:'Kapanan telafili dosya',tone:'info',icon:'hand-heart'}
+  ];
+}
+function complaintDerivedAlerts(){
+  const rows=(complaintCenter().complaintTickets||[]).filter(x=>x.status!=='Kapandı');
+  const rank=x=>(x.priority==='P0'||x.priority==='Kritik'?40:x.priority==='P1'?30:10)+(x.sla==='Aşıldı'?20:0)+(x.legalRisk==='Yüksek'?15:0);
+  return rows.slice().sort((a,b)=>rank(b)-rank(a)).slice(0,5).map(x=>({text:x.sla==='Aşıldı'?`${x.id} SLA süresini aştı`:x.legalRisk==='Yüksek'?`${x.id} hukuki risk takibinde`:`${x.id} kritik müşteri takibinde`,branch:x.branch,time:x.lastAction||'Aktif dosya',route:'complaints',severity:rank(x)>=50?'critical':'warning'}));
+}
+function complaintDerivedBranchScores(){
+  const tickets=complaintCenter().complaintTickets||[];
+  return [...new Set(tickets.map(x=>x.branch).filter(Boolean))].map(branch=>{const all=tickets.filter(x=>x.branch===branch),open=all.filter(x=>x.status!=='Kapandı'),sla=open.filter(x=>x.sla==='Aşıldı').length,legal=open.filter(x=>x.legalRisk==='Yüksek').length,recovery=all.filter(x=>x.status==='Kapandı'&&x.compensation&&x.compensation!=='—').length,score=Math.max(40,100-sla*9-legal*7-Math.max(0,open.length-5)*2);return{branch,open:open.length,sla,legal,recovery,score,status:score>=85?'Lider':score>=70?'Takipte':'Riskli'};});
+}
 function ComplaintExecutiveSummary(){
   const c=complaintCenter(), rows=c.complaintTickets||[];
   const open=rows.filter(x=>x.status!=='Kapandı').length;
@@ -3832,38 +3974,40 @@ function DashboardComplaintCeoPanel(){
   const legal=rows.filter(x=>['Yüksek','CEO takip','Orta'].includes(x.legalRisk)).length;
   const reputation=rows.filter(x=>String(x.source||'').includes('Google')||String(x.type||'').includes('Sosyal')||String(x.type||'').includes('Google')).length;
   const totalRisk=rows.reduce((s,x)=>s+(Number(x.amountRisk)||0),0);
-  const sentiment=c.complaintSentiment||{}, sla=c.complaintSla||{};
-  const slaTotal=(sla.inside||0)+(sla.critical||0)+(sla.breached||0);
-  const slaScore=Math.round(((sla.inside||0)/Math.max(1,slaTotal))*100);
+  const recovered=rows.filter(x=>x.status==='Kapandı'&&x.compensation&&x.compensation!=='—').length;
+  const slaScore=Math.round(((Math.max(0,open-breached))/Math.max(1,open))*100);
   const kpis=[
     ['Açık dosya',open,'CEO gündemine açık şikayet'],
     ['P0 / P1',critical,'Kritik ve yüksek öncelik'],
     ['SLA riski',breached,'Kritik veya aşılmış dosya'],
     ['Hukuki risk',legal,fmtTL(totalRisk)+' potansiyel etki'],
-    ['Google / itibar',reputation,`${sentiment.negative24h||0} negatif / 24 saat`],
-    ['Geri kazanım',`${sentiment.recovered||0}`,'Kurtarılan müşteri kaydı']
+    ['Google / itibar',reputation,'Aktif Google / sosyal dosya'],
+    ['Geri kazanım',`${recovered}`,'Kurtarılan müşteri kaydı']
   ];
   const priority=rows.slice().sort((a,b)=>((b.priority==='P0'?3:b.priority==='P1'?2:1)*100+(b.amountRisk||0)/1000)-((a.priority==='P0'?3:a.priority==='P1'?2:1)*100+(a.amountRisk||0)/1000)).slice(0,4);
   const roots=(c.complaintRootCauses||[]).slice(0,5), maxRoot=Math.max(1,...roots.map(x=>x[1]));
-  const legalRows=(c.complaintLegalRisks||[]).slice(0,4);
+  const legalRows=rows.filter(x=>['Yüksek','CEO takip','Orta'].includes(x.legalRisk)).slice(0,4).map(x=>({branch:x.branch,customer:x.customer,subject:x.type,deadline:x.sla==='Aşıldı'?'SLA aşıldı':'SLA içinde',action:x.nextAction,risk:x.legalRisk,amount:Number(x.amountRisk)||0}));
+  const alerts=complaintDerivedAlerts();
   const decision=legal>2?'Hukuk + Kalite ortak kapanış komitesi ve CEO onaylı müşteri iletişim standardı önerilir.':breached>2?'SLA aşımı yüksek; şube müdürü ve bölge müdürü günlük kapanış ritmine alınmalı.':'Şikayet temposu izlenebilir; kök neden kapatma oranı artırılmalı.';
-  return `<div class="card dashboard-complaint-ceo dashboard-jump-target" id="dashboardComplaintsCeo"><div class="dashboard-complaint-hero"><div><span>Müşteri Şikayetleri & İtibar</span><b>${open} açık dosya · ${critical} kritik</b><small>CEO için amaç: marka riski, hukuki etki, SLA disiplini ve kök neden kapanışını tek bakışta görmek.</small></div><div class="dashboard-complaint-hero-actions"><button class="btn primary" data-route="complaints">${icon('message-circle-warning')}Şikayet merkezi</button><button class="btn" data-route="legal">${icon('scale')}Hukuki risk</button><button class="btn" data-route="quality">${icon('shield-check')}Kalite aksiyonu</button></div></div><div class="dashboard-complaint-kpis">${kpis.map(x=>`<div class="dashboard-complaint-kpi"><span>${x[0]}</span><b>${x[1]}</b><small>${x[2]}</small></div>`).join('')}</div><div class="dashboard-complaint-grid"><div class="dashboard-complaint-panel"><div class="card-head" style="margin-bottom:0"><div><h3>CEO Öncelik Kuyruğu</h3><div class="card-sub">Kritik müşteri, şube, risk ve beklenen karar.</div></div>${complaintBadge(`SLA %${slaScore}`)}</div>${priority.map(r=>`<div class="dashboard-complaint-row"><div><b>${r.branch} · ${r.customer}</b><span>${r.type} · ${r.status} · ${r.nextAction}</span></div><div>${complaintBadge(r.priority)} ${complaintBadge(r.legalRisk)}</div></div>`).join('')}</div><div class="dashboard-complaint-panel"><h3>Kök Neden ve Hukuk Sinyali</h3>${roots.map(r=>`<div class="dashboard-complaint-root"><b>${r[0]}</b><div class="dashboard-complaint-track"><i style="width:${Math.max(10,Math.round(r[1]/maxRoot*100))}%"></i></div><strong>${r[1]}</strong></div>`).join('')}<div class="dashboard-complaint-decision"><b>CEO notu:</b> ${decision}</div></div></div><div class="dashboard-complaint-grid"><div class="dashboard-complaint-panel"><h3>Hukuki Riske Dönen Şikayetler</h3>${legalRows.map(r=>`<div class="dashboard-complaint-row"><div><b>${r.branch} · ${r.customer}</b><span>${r.subject} · ${r.deadline} · ${r.action}</span></div><div>${complaintBadge(r.risk)}<br><b style="font-size:11px">${fmtTL(r.amount)}</b></div></div>`).join('')}</div><div class="dashboard-complaint-panel"><h3>Dashboard Alarm Kuyruğu</h3>${(c.complaintDashboardAlerts||[]).slice(0,4).map(a=>`<div class="dashboard-complaint-row"><div><b>${a.text}</b><span>${a.branch} · ${a.time}</span></div><button class="micro-btn" data-route="${a.route}">Git</button></div>`).join('')}</div></div></div>`;
+  return `<div class="card dashboard-complaint-ceo dashboard-jump-target" id="dashboardComplaintsCeo"><div class="dashboard-complaint-hero"><div><span>Müşteri Şikayetleri & İtibar</span><b>${open} açık dosya · ${critical} kritik</b><small>CEO için amaç: marka riski, hukuki etki, SLA disiplini ve kök neden kapanışını tek bakışta görmek.</small></div><div class="dashboard-complaint-hero-actions"><button class="btn primary" data-route="complaints">${icon('message-circle-warning')}Şikayet merkezi</button><button class="btn" data-route="legal">${icon('scale')}Hukuki risk</button><button class="btn" data-route="quality">${icon('shield-check')}Kalite aksiyonu</button></div></div><div class="dashboard-complaint-kpis">${kpis.map(x=>`<div class="dashboard-complaint-kpi"><span>${x[0]}</span><b>${x[1]}</b><small>${x[2]}</small></div>`).join('')}</div><div class="dashboard-complaint-grid"><div class="dashboard-complaint-panel"><div class="card-head" style="margin-bottom:0"><div><h3>CEO Öncelik Kuyruğu</h3><div class="card-sub">Kritik müşteri, şube, risk ve beklenen karar.</div></div>${complaintBadge(`SLA %${slaScore}`)}</div>${priority.map(r=>`<div class="dashboard-complaint-row"><div><b>${r.branch} · ${r.customer}</b><span>${r.type} · ${r.status} · ${r.nextAction}</span></div><div>${complaintBadge(r.priority)} ${complaintBadge(r.legalRisk)}</div></div>`).join('')}</div><div class="dashboard-complaint-panel"><h3>Kök Neden ve Hukuk Sinyali</h3>${roots.map(r=>`<div class="dashboard-complaint-root"><b>${r[0]}</b><div class="dashboard-complaint-track"><i style="width:${Math.max(10,Math.round(r[1]/maxRoot*100))}%"></i></div><strong>${r[1]}</strong></div>`).join('')}<div class="dashboard-complaint-decision"><b>CEO notu:</b> ${decision}</div></div></div><div class="dashboard-complaint-grid"><div class="dashboard-complaint-panel"><h3>Hukuki Riske Dönen Şikayetler</h3>${legalRows.map(r=>`<div class="dashboard-complaint-row"><div><b>${r.branch} · ${r.customer}</b><span>${r.subject} · ${r.deadline} · ${r.action}</span></div><div>${complaintBadge(r.risk)}<br><b style="font-size:11px">${fmtTL(r.amount)}</b></div></div>`).join('')}</div><div class="dashboard-complaint-panel"><h3>Dashboard Alarm Kuyruğu</h3>${alerts.slice(0,4).map(a=>`<div class="dashboard-complaint-row"><div><b>${a.text}</b><span>${a.branch} · ${a.time}</span></div><button class="micro-btn" data-route="${a.route}">Git</button></div>`).join('')}</div></div></div>`;
 }
 function complaintTone(text){
   return text==='P0'||text==='Yüksek'||text==='Aşıldı'||text==='CEO takip'||text==='Riskli' ? 'b-red' : text==='P1'||text==='Kritik'||text==='Orta'||text==='Hukuk incelemesinde'||text==='Şube savunması bekleniyor'||text==='Yeniden açıldı' ? 'b-amber' : text==='P2'||text==='İçinde'||text==='Takipte'||text==='Kalite incelemesinde'||text==='İncelemede'||text==='Müşteriye dönüş yapıldı' ? 'b-blue' : 'b-green';
 }
-function complaintBadge(text){ return `<span class="badge ${complaintTone(text)}">${text}</span>`; }
+function complaintBadge(text){ return `<span class="badge ${complaintTone(text)}">${googleEsc(String(text??'—'))}</span>`; }
 function ComplaintResolutionFunnel(){
   const c=complaintCenter(), tickets=c.complaintTickets||[];
+  const order=['Alındı','Sınıflandırıldı','Atandı','İnceleme','Karar','Telafi','Müşteri onayı','Kapandı'];
+  const atLeast=index=>tickets.filter(t=>Math.max(0,order.indexOf(t.status))>=index).length;
   const flow=[
-    {label:'Toplam Şikayet',value:248,color:'#ef4444'},
-    {label:'İncelemeye Alındı',value:198,color:'#f97316'},
-    {label:'Çözüm Aşamasında',value:134,color:'#38a8e0'},
-    {label:'Müşteriye İletildi',value:89,color:'#47c7b4'},
-    {label:'Kapandı / Çözüldü',value:67,color:'#3db77a'}
+    {label:'Toplam Şikayet',value:tickets.length,color:'#ef4444'},
+    {label:'İncelemeye Alındı',value:atLeast(3),color:'#f97316'},
+    {label:'Çözüm Aşamasında',value:atLeast(4),color:'#38a8e0'},
+    {label:'Müşteriye İletildi',value:atLeast(6),color:'#47c7b4'},
+    {label:'Kapandı / Çözüldü',value:tickets.filter(t=>t.status==='Kapandı').length,color:'#3db77a'}
   ];
-  const max=Math.max(...flow.map(x=>x.value)), closed=flow[flow.length-1].value, open=flow[0].value-closed;
-  const solveRate=Math.round(closed/flow[0].value*100);
+  const max=Math.max(1,...flow.map(x=>x.value)), closed=flow[flow.length-1].value, open=flow[0].value-closed;
+  const solveRate=Math.round(closed/Math.max(1,flow[0].value)*100);
   const legal=tickets.filter(x=>['Yüksek','CEO takip'].includes(x.legalRisk)).length;
   return `<div class="card complaint-funnel-card"><div class="card-head"><div><div class="card-title">Şikayet Çözüm Hunisi</div><div class="card-sub">Açılış › inceleme › çözüm › müşteri iletişimi › kapanış akışı</div></div><button class="btn" data-open-action-modal="Şikayet çözüm hunisi takip aksiyonu">${icon('clipboard-plus')}Aksiyon aç</button></div><div class="complaint-funnel"><div><div class="complaint-funnel-bars">${flow.map(item=>`<div class="complaint-funnel-row"><span>${item.label}</span><div class="complaint-funnel-track"><div class="complaint-funnel-fill" style="width:${Math.max(18,Math.round(item.value/max*100))}%;background:${item.color}">${item.value}</div></div></div>`).join('')}</div><div class="complaint-funnel-actions"><button class="micro-btn" data-route="quality">Kaliteye aktar</button><button class="micro-btn" data-route="legal">Hukuki riskleri gör</button><button class="micro-btn" data-route="actions">Görevleri gör</button></div></div><div class="complaint-funnel-summary"><div><span>Açık</span><b class="danger">${open}</b></div><div><span>Çözüm %</span><b class="success">%${solveRate}</b></div><div><span>Ort. süre</span><b class="amber">4,2g</b></div><div><span>Hukuki risk</span><b>${legal}</b></div></div></div></div>`;
 }
@@ -3878,10 +4022,21 @@ function filteredComplaints(){
 function complaintSelect(id,label,values){
   return `<select data-complaint-filter="${id}"><option value="">${label}</option>${values.map(v=>`<option ${complaintFilters[id]===v?'selected':''}>${v}</option>`).join('')}</select>`;
 }
+function ComplaintGoogleWorkflowStatus(liveGoogle){
+  const ai=window.OTOTRGoogleReviewAI,state=ai?.getWorkflowState?.();
+  const card=(title,note,color,badge,retry=false)=>`<div class="card" data-testid="live-google-complaint-banner" style="margin-bottom:16px;border-left:4px solid ${color}"><div class="card-head" style="margin:0"><div><div class="card-title">${googleEsc(title)}</div><div class="card-sub">${googleEsc(note)}</div></div><div class="quick-actions">${complaintBadge(badge)}${retry?'<button type="button" class="micro-btn" onclick="window.OTOTRGoogleReviewAI?.refreshWorkflow?.()">Yeniden dene</button>':''}</div></div></div>`;
+  if(!ai||!state) return card('Canlı Google şikâyet kayıtları yükleniyor','Görev modülü hazır olduğunda bu alan otomatik güncellenecek.','#38a8e0','Yükleniyor');
+  if(state.loading) return card('Canlı Google şikâyet kayıtları yenileniyor',liveGoogle.length?'Son başarılı kayıtlar yenileme tamamlanana kadar gösteriliyor.':'Kalıcı görev listesi Supabase kaynağından alınıyor.','#38a8e0','Yenileniyor');
+  const last=state.lastSuccessAt?new Date(state.lastSuccessAt).toLocaleString('tr-TR'):'Henüz başarılı bağlantı yok';
+  if(state.error) return card('Canlı Google şikâyet kaynağı kullanılamıyor',`${state.loaded&&liveGoogle.length?'Son başarılı kayıtlar gösteriliyor.':'Canlı Google kayıtları şu anda gösterilemiyor.'} Son başarılı kontrol: ${last}. Hata: ${String(state.error).slice(0,240)}`,'#ef4444','Kontrol gerekli',true);
+  if(!state.loaded) return card('Canlı Google şikâyet kaynağı bekleniyor','Yetkili oturum ve görev kaynağı doğrulanmadan yalnızca demo/entegrasyon kayıtları gösterilir.','#f59e0b','Bekleniyor');
+  return card(`${liveGoogle.length} canlı Google şikâyet kaydı bağlı`,`Son doğrulama: ${last}. Supabase görev kaydı kalıcıdır; arayüzde yaygın kişisel veri sinyalleri maskelenir ve Google’a otomatik yanıt gönderilmez.`,'#22c55e','Canlı');
+}
 function ComplaintsCenterPage(){
-  const c=complaintCenter(), rows=filteredComplaints();
+  const c=complaintCenter(), rows=filteredComplaints(),liveGoogle=(c.complaintTickets||[]).filter(ticket=>ticket.isLiveGoogle);
   return `<div class="toolbar">
     <button class="btn primary" data-action="Yeni şikayet dosyası açıldı.">${icon('plus')}Yeni şikayet aç</button>
+    <button class="btn" onclick="window.location.href='gm-sikayet/index.html'">${icon('layout-dashboard')}Gelişmiş Şikayet Operasyon Merkezi</button>
     ${complaintSelect('region','Bölge',uniq((c.complaintTickets||[]).map(x=>x.region)))}
     ${complaintSelect('branch','Şube',uniq((c.complaintTickets||[]).map(x=>x.branch)))}
     ${complaintSelect('priority','Öncelik',uniq((c.complaintTickets||[]).map(x=>x.priority)))}
@@ -3892,7 +4047,8 @@ function ComplaintsCenterPage(){
     ${complaintSelect('source','Kaynak',uniq((c.complaintTickets||[]).map(x=>x.source)))}
     <select data-complaint-filter="date"><option value="">Tarih aralığı</option><option>Bugün</option><option>Son 7 gün</option><option>Bu ay</option></select>
   </div>
-  <div class="kpi-grid">${(c.complaintKpis||[]).map(k=>`<div class="card kpi-card ${k.tone==='good'?'good':k.tone==='bad'?'warn':k.tone==='info'?'info':'warn'}"><div class="kpi-main"><div class="label">${k.label}</div><div class="kpi-line"><span class="kpi-value">${k.value}</span><span class="kpi-meta"><span class="card-sub">${k.trend}</span></span></div></div><div class="kpi-ico">${icon(k.icon)}</div></div>`).join('')}</div>
+  ${ComplaintGoogleWorkflowStatus(liveGoogle)}
+  <div class="kpi-grid">${complaintDerivedKpis().map(k=>`<div class="card kpi-card ${k.tone==='good'?'good':k.tone==='bad'?'warn':k.tone==='info'?'info':'warn'}"><div class="kpi-main"><div class="label">${k.label}</div><div class="kpi-line"><span class="kpi-value">${k.value}</span><span class="kpi-meta"><span class="card-sub">${k.trend}</span></span></div></div><div class="kpi-ico">${icon(k.icon)}</div></div>`).join('')}</div>
   ${ComplaintResolutionFunnel()}
   <div class="card complaint-health-card" style="margin-top:16px"><div class="card-head"><div><div class="card-title">Şikayet Sağlığı Skoru</div><div class="card-sub">Şube bazında açık dosya, SLA aşımı, hukuki risk ve geri kazanım etkisi tek yatay bantta okunur.</div></div></div>${ComplaintBranchScore()}</div>
   <div class="complaints-main-grid">
@@ -3913,13 +4069,22 @@ function ComplaintsCenterPage(){
   <div class="card iso-accordion"><details><summary><span>ISO 10002 Şikayet Yönetim Disiplini</span><small class="card-sub">Tıklayınca kontrol adımlarını açar/kapatır.</small></summary><div class="iso-body"><p style="margin:0 0 12px;color:var(--muted);line-height:1.6">Her şikayet kayıt altına alınır, tarafsız incelenir, süresi içinde cevaplanır, kök nedeni kapatılır ve müşteri geri kazanımı ölçülür.</p>${Iso10002Panel()}</div></details></div>`;
 }
 function ComplaintTicketsTable(rows){
-  return `<div class="complaint-table-wrap"><table class="complaint-table"><thead><tr><th>Müşteri</th><th>Plaka</th><th>Şube</th><th>Konu / Kaynak</th><th>Risk</th><th>Sahip / Durum</th><th>Son aksiyon</th><th>CEO kararı</th><th>Detay</th></tr></thead><tbody>${rows.map(r=>`<tr><td><b>${r.customer}</b><br><span class="card-sub">${r.region}</span></td><td class="mono"><b>${r.plate}</b><br><button class="micro-btn" data-detail="complaint:${r.id}">Rapor</button></td><td>${r.branch}</td><td><b>${r.type}</b><br><span class="card-sub">${r.source}</span></td><td>${complaintBadge(r.priority)} ${complaintBadge(r.sla)} ${complaintBadge(r.legalRisk)}</td><td><b>${r.team}</b><br>${complaintBadge(r.status)}</td><td>${r.lastAction}</td><td><b>${r.nextAction}</b><br><span class="card-sub">${r.compensation}</span></td><td><button class="btn detail-btn" data-detail="complaint:${r.id}">Aç</button></td></tr>`).join('')}</tbody></table></div>`;
+  return `<div class="complaint-table-wrap"><table class="complaint-table"><thead><tr><th>Müşteri</th><th>Plaka</th><th>Şube</th><th>Konu / Kaynak</th><th>Risk</th><th>Sahip / Durum</th><th>Son aksiyon</th><th>CEO kararı</th><th>Detay</th></tr></thead><tbody>${rows.map(r=>{const detailType=r.isLiveGoogle?'googleComplaint':'complaint',detailRef=`${detailType}:${r.id}`;return `<tr${r.isLiveGoogle?' data-live-google-complaint="1"':''}><td><b>${googleEsc(String(r.customer||'—'))}</b><br><span class="card-sub">${googleEsc(String(r.region||'—'))}</span></td><td class="mono"><b>${googleEsc(String(r.plate||'—'))}</b><br><button class="micro-btn" data-detail="${googleEsc(detailRef)}">${r.isLiveGoogle?'Kayıt':'Rapor'}</button></td><td>${googleEsc(String(r.branch||'—'))}</td><td><b>${googleEsc(String(r.type||'—'))}</b><br><span class="card-sub">${googleEsc(String(r.source||'—'))}${r.isLiveGoogle?' · Canlı kayıt':''}</span></td><td>${complaintBadge(r.priority)} ${complaintBadge(r.sla)} ${complaintBadge(r.legalRisk)}</td><td><b>${googleEsc(String(r.team||'—'))}</b><br>${complaintBadge(r.status)}</td><td>${googleEsc(String(r.lastAction||'—'))}</td><td><b>${googleEsc(String(r.nextAction||'—'))}</b><br><span class="card-sub">${googleEsc(String(r.compensation||'—'))}</span></td><td><button class="btn detail-btn" data-detail="${googleEsc(detailRef)}">Aç</button></td></tr>`;}).join('')}</tbody></table></div>`;
+}
+function GoogleComplaintDetail(c){
+  const esc=value=>googleEsc(String(value??'—'));
+  const reviewLink=c.googleReviewUrl?`<a class="btn" href="${esc(c.googleReviewUrl)}" target="_blank" rel="noopener noreferrer">${icon('external-link')}Google kaydını aç</a>`:'<span class="card-sub">Doğrudan Google bağlantısı bu snapshotta bulunmuyor.</span>';
+  const timeline=[
+    {time:c.opened,title:'Google yorumu şikâyet kaydına dönüştürüldü',note:'Kalıcı Supabase görev kaydı oluşturuldu; mükerrer kayıt kimliği korunur.'},
+    {time:c.updatedAt?new Date(c.updatedAt).toLocaleString('tr-TR'):'—',title:c.status==='Kapandı'?'Görev tamamlandı':'İnceleme sürüyor',note:c.status==='Kapandı'?'Kapanış kanıtı yetkili tarafından doğrulanmalı.':'Şube savunması ve yetkili müşteri dönüşü bekleniyor.'}
+  ];
+  return `<div data-testid="live-google-complaint-detail"><div class="card-head"><div><div class="card-title">${esc(c.id)} · ${esc(c.customer)}</div><div class="card-sub">Canlı Google görevi · ${esc(c.branch)} · ${esc(c.region)}</div></div><button class="btn" onclick="closeDrawer()">Kapat</button></div><div class="grid g2">${stat('Öncelik',esc(c.priority),esc(c.status),'red')}${stat('SLA',esc(c.sla),esc(c.opened),'amber')}${stat('Google puanı',`${esc(c.rating)}/5`,'Canlı yorum snapshotı','blue')}${stat('Hukuki Risk',esc(c.legalRisk),'İnsan onayı gerekli','red')}</div><div class="card" style="margin-top:14px"><div class="card-title">Kişisel veri sinyalleri maskelenmiş yorum özeti</div><p style="color:var(--muted);line-height:1.6;white-space:pre-wrap">${esc(c.reviewComment)}</p></div><div class="grid g2" style="margin-top:14px"><div class="card"><div class="card-title">Google kayıt kimlikleri</div><div class="mini-list"><div class="mini">${icon('message-circle-warning')}<div><b>Review ID</b><span class="mono">${esc(c.googleReviewId)}</span></div></div><div class="mini">${icon('workflow')}<div><b>Work item</b><span class="mono">${esc(c.googleWorkItemId)}</span></div></div><div class="mini">${icon('fingerprint')}<div><b>Correlation ID</b><span class="mono">${esc(c.correlationId)}</span></div></div></div>${reviewLink}</div><div class="card"><div class="card-title">Kontrol sınırı</div><div class="mini-list"><div class="mini">${icon('shield-check')}<div><b>Gizlilik</b><span>Arayüzde ad ve yaygın iletişim/kimlik sinyalleri maskelenir; kaynak snapshot yetkili backend kaydıdır.</span></div></div><div class="mini">${icon('user-check')}<div><b>İnsan onayı</b><span>Şikâyet kararı ve müşteri dönüşü yetkili kullanıcı tarafından yapılır.</span></div></div><div class="mini">${icon('circle-slash')}<div><b>Otomatik yayın kapalı</b><span>Bu kayıt Google’a yanıt göndermez.</span></div></div></div></div></div><div class="card" style="margin-top:14px"><div class="card-head"><div><div class="card-title">Zaman çizelgesi</div><div class="card-sub">Kaynak görev durumu yeniden yüklendiğinde aynı vaka güncellenir.</div></div></div><div class="action-timeline">${timeline.map(item=>`<div class="timeline-step"><span class="step-icon">${icon('clock')}</span><div><b>${esc(item.title)}</b><span>${esc(item.note)}</span></div><strong>${esc(item.time)}</strong></div>`).join('')}</div></div><div class="card" style="margin-top:14px"><div class="card-title">Sonraki aksiyon</div><p style="color:var(--muted)">${esc(c.nextAction)} · ${esc(c.compensation)}</p></div></div>`;
 }
 function Iso10002Panel(){
   return `<div class="mini-list">${['Kayıt alındı','Müşteriye alındı bildirimi gönderildi','Sorumlu atandı','SLA başladı','Kanıtlar toplandı','Şube savunması alındı','Kök neden belirlendi','Çözüm önerisi üretildi','Müşteriye yazılı dönüş yapıldı','Memnuniyet tekrar ölçüldü','Kalıcı aksiyon açıldı'].map((x,i)=>`<div class="mini">${icon(i<7?'check-circle-2':'circle-dot')}<div><b>${x}</b><span>${i<7?'Aktif dosyalarda zorunlu kontrol tamamlanma oranı izleniyor.':'Kapanış öncesi kanıt ve müşteri geri kazanımı beklenir.'}</span></div></div>`).join('')}</div>`;
 }
 function ComplaintBranchScore(){
-  const rows=complaintCenter().complaintBranchScore || [];
+  const rows=complaintDerivedBranchScores();
   return `<div class="complaint-health-strip">${rows.map(b=>`<div class="complaint-health-item ${b.score<65?'critical':b.score<75?'risk':''}"><div class="complaint-health-head"><b>${b.branch}</b><span class="complaint-health-score">${b.score}</span></div><div>${complaintBadge(b.status)}</div><div class="progress"><div class="bar ${b.score<70?'amber':'green'}" style="width:${b.score}%"></div></div><div class="complaint-health-meta"><span>Açık ${b.open}</span><span>SLA ${b.sla}</span><span>Hukuk ${b.legal}</span><span>Geri ${b.recovery}</span></div></div>`).join('')}</div>`;
 }
 function ComplaintQualityAcademy(){
@@ -3927,7 +4092,7 @@ function ComplaintQualityAcademy(){
   return `<div class="mini-list">${needs.map(x=>`<div class="mini">${icon('graduation-cap')}<div><b>${x[0]} · ${x[1]} kayıt</b><span>Kalite düzeltme planı, Academy eğitim ataması, şube müdürü takip aksiyonu ve personel bazlı eğitim ihtiyacı oluşturuldu.</span><div class="quick-actions" style="margin-top:8px"><button class="micro-btn" data-action="${x[0]} için kalite düzeltme planı açıldı.">Kalite planı</button><button class="micro-btn" data-action="${x[0]} için Academy eğitimi atandı.">Eğitim ata</button><button class="micro-btn" data-open-action-modal="${x[0]} şube müdürü takip aksiyonu">Müdür takibi</button></div></div></div>`).join('')}</div>`;
 }
 function ComplaintAlertList(){
-  return `<div class="mini-list">${(complaintCenter().complaintDashboardAlerts||[]).map(a=>`<div class="mini">${icon(a.severity==='critical'?'siren':'bell-ring')}<div><b>${a.text}</b><span>${a.branch} · ${a.time}</span><div class="quick-actions" style="margin-top:8px"><button class="micro-btn" data-route="${a.route}">Modüle git</button><button class="micro-btn" data-action="Alarm dashboard kuyruğuna eklendi.">Alarma ekle</button></div></div></div>`).join('')}</div>`;
+  return `<div class="mini-list">${complaintDerivedAlerts().map(a=>`<div class="mini">${icon(a.severity==='critical'?'siren':'bell-ring')}<div><b>${a.text}</b><span>${a.branch} · ${a.time}</span><div class="quick-actions" style="margin-top:8px"><button class="micro-btn" data-route="${a.route}">Modüle git</button><button class="micro-btn" data-action="Alarm dashboard kuyruğuna eklendi.">Alarma ekle</button></div></div></div>`).join('')}</div>`;
 }
 
 function priorityList(){
@@ -13184,7 +13349,11 @@ let actionFilters={};
 let actionFilterTimer=null;
 let aiFilters={};
 let crisisFilters={};
-function actionTasks(){ return (DB.ceoDashboard.actionTasks||[]).map((t,i)=>normalizeActionTask(t,i)).sort((a,b)=>(b.actionPriorityScore||0)-(a.actionPriorityScore||0)); }
+function actionTasks(){
+  let bridged=[];try{bridged=JSON.parse(localStorage.getItem('ototr_action_center_bridge_v1')||'[]')||[]}catch(error){console.warn('Şikayet aksiyon köprüsü okunamadı',error)}
+  const all=[...bridged,...(DB.ceoDashboard.actionTasks||[])],seen=new Set();
+  return all.filter(t=>t?.id&&!seen.has(t.id)&&seen.add(t.id)).map((t,i)=>normalizeActionTask(t,i)).sort((a,b)=>(b.actionPriorityScore||0)-(a.actionPriorityScore||0));
+}
 function getActionRouteBySourceModule(module){
   const text=String(module||'');
   if(ACTION_SOURCE_ROUTES[text]) return ACTION_SOURCE_ROUTES[text];
@@ -15349,8 +15518,10 @@ function route(id,options={}){
   }
   const hrRoute = parseHRRoute(id);
   const academyRoute = hrRoute ? null : parseAcademyRoute(id);
-  let resolved = hrRoute ? 'hr' : academyRoute ? 'academy' : id;
+  const argeRoute = hrRoute||academyRoute ? null : window.OTOTR_ERP_ARGE?.parseRoute?.(id);
+  let resolved = hrRoute ? 'hr' : academyRoute ? 'academy' : argeRoute ? 'erp-arge' : id;
   if(!titles[resolved]) resolved = 'dashboard';
+  selectedArgeModule=resolved==='erp-arge'?argeRoute:null;
   if(hrRoute){
     HR_VIEW.room = hrRoute.room;
     HR_VIEW.category = hrCategoryForRoom(HR_VIEW.room);
@@ -15365,6 +15536,10 @@ function route(id,options={}){
     renderPages();
   }
   current = resolved;
+  if(resolved==='erp-arge'){
+    const page=document.getElementById('page-erp-arge');
+    if(page) page.innerHTML=pageHeader('erp-arge')+window.OTOTR_ERP_ARGE.page(selectedArgeModule)+deptPlan('erp-arge');
+  }
   OtotrRuhsatERP.onRoute(resolved);
   ensureInspectionSchemaForRoute(resolved);
   syncDealerStandaloneMode(resolved);
@@ -15390,13 +15565,17 @@ function route(id,options={}){
     bindGlobalSearch();
     renderNav();
   }
-  history.replaceState(null,'','#'+(resolved==='hr'?hrRouteFor(HR_VIEW.room):resolved==='academy'?academyRouteFor(ACADEMY_VIEW.room):resolved));
+  history.replaceState(null,'','#'+(resolved==='hr'?hrRouteFor(HR_VIEW.room):resolved==='academy'?academyRouteFor(ACADEMY_VIEW.room):resolved==='erp-arge'&&selectedArgeModule?window.OTOTR_ERP_ARGE.routeFor(selectedArgeModule):resolved));
   if(!options.preserveScroll) window.scrollTo({top:0,behavior:'smooth'});
   if(!options.skipDeferredEnhancements) setTimeout(()=>{renderCharts();initBranchMap();dealerEnhanceCockpitRevenue();},40);
   if(isReportRoute(resolved)) setTimeout(()=>{ syncExpertiseReportQuickMenu(); updateExpertiseReportNavActive(); initReportLayoutDesigner(); },80);
   if(resolved==='dealer') setTimeout(()=>{
     document.querySelector('#dealerWorkOrderForm [name="vin"],#dealerWorkOrderForm [name="plate"],#dealerWorkOrderForm [name="vehicleMake"]')?.dispatchEvent(new Event('input',{bubbles:true}));
   },180);
+  if(resolved==='complaints'){
+    const workflowState=window.OTOTRGoogleReviewAI?.getWorkflowState?.();
+    if(window.OTOTRGoogleReviewAI?.refreshWorkflow && workflowState?.loaded!==true && workflowState?.loading!==true && !workflowState?.error) setTimeout(()=>{ void window.OTOTRGoogleReviewAI.refreshWorkflow(); },0);
+  }
   if(window.lucide && !options.skipIcons) lucide.createIcons();
 }
 function openBranchProfile(id){ selectedBranchId=id; closeDrawer(); current='branchProfile'; renderPages(); route('branchProfile'); }
@@ -15408,6 +15587,7 @@ function openDetail(ref){
   if(type==='crmCustomer'){ const c=crmData().customers.find(x=>x.name===id)||crmData().customers[0], l=ototrLoyaltyProfile(c); html=`<div class="card-head"><div><div class="card-title">${c.name}</div><div class="card-sub">Müşteri 360 · ${c.type} · ${c.phone} · ${l.tier}</div></div><button class="btn" onclick="closeDrawer()">Kapat</button></div><div class="grid g2">${stat('Toplam randevu',c.appointments,'Tamamlanan '+c.completed)}${stat('Sadakat indirimi','%'+l.discount,l.rule,'green')}${stat('Toplam ciro',fmtTL(c.totalRevenue),'Son işlem '+c.lastDate,'green')}${stat('Memnuniyet',c.satisfaction+'/5','Şikayet: '+c.complaint,'blue')}</div><div class="card" style="margin-top:14px"><div class="card-head"><div><div class="card-title">Sadakat Programı</div><div class="card-sub">Gelme sıklığına göre indirim önerisi bayi ve genel merkez CRM'e aynı anda yansır.</div></div>${badge(l.tier)}</div><div class="mini-list"><div class="mini">${icon('badge-percent')}<div><b>Önerilen indirim: %${l.discount}</b><span>${l.visits} geliş · ${l.frequency} · puan ${l.points}</span></div></div><div class="mini">${icon('repeat')}<div><b>Sonraki kademe</b><span>${l.next}</span></div></div><div class="mini">${icon('wallet-cards')}<div><b>İş emri entegrasyonu</b><span>Randevu veya bayi iş emri açıldığında indirim önerisi kasa ve rapor kaydına düşer.</span></div></div></div></div><div class="card" style="margin-top:14px"><div class="card-title">Zaman Çizelgesi</div><div class="mini-list" style="margin-top:10px">${['Lead oluştu','İlk arama yapıldı','WhatsApp gönderildi','Randevu oluşturuldu','Kapora alındı','Araç geldi','Rapor teslim edildi','Anket gönderildi'].map((x,i)=>`<div class="mini">${icon(['user-plus','phone','message-circle','calendar-check','credit-card','car-front','file-check','star'][i])}<div><b>${x}</b><span>${c.name} için demo CRM kaydı.</span></div></div>`).join('')}</div></div><div class="card" style="margin-top:14px"><div class="card-title">Tekrar Satış Fırsatı</div><p style="color:var(--muted);line-height:1.6">Önceki araçlar, raporlar, WhatsApp geçmişi, arama notları, görevler, SLA ve sadakat indirimi bu müşteri kartında API bağlantısına hazır tutulur.</p><button class="btn primary" data-open-action-modal="${c.name} takip görevi">Takip görevi oluştur</button></div>`; }
   if(type==='academyCourse'){ const c=academySeed().courses.find(x=>x.id===id); if(!c){toast('Eğitim bulunamadı.'); return;} html=`<div class="card-head"><div><div class="card-title">${c.title}</div><div class="card-sub">${c.cat} · ${c.role} · ${c.owner}</div></div><button class="btn" onclick="closeDrawer()">Kapat</button></div><div class="grid g2">${stat('İlerleme','%'+c.progress,c.status)}${stat('Süre',c.duration,c.modules+' modül','blue')}${stat('Bölge',c.region,c.branch,'green')}${stat('Puan',c.score+'/5','Katılımcı değerlendirme','amber')}</div><div class="card" style="margin-top:14px"><div class="card-title">Eğitim Amacı</div><p style="color:var(--muted);line-height:1.6">${c.desc}</p></div><div class="mini-list" style="margin-top:14px"><div class="mini">${icon('user-check')}<div><b>Atama kuralı</b><span>${c.role} rolüne atanabilir; şube ve bölge bazlı zorunlu hale getirilebilir.</span></div></div><div class="mini">${icon('clipboard-check')}<div><b>Sınav ve sertifika</b><span>Minimum %80 sınav skoru ve müdür onayı sonrası sertifika üretilir.</span></div></div><div class="mini">${icon('bar-chart-3')}<div><b>KPI bağlantısı</b><span>Tamamlanma, sınav skoru ve gecikme kişi/şube/bölge KPI'larına yansır.</span></div></div></div><button class="btn primary" style="margin-top:14px" onclick="toast('Eğitim atama görevi oluşturuldu.');closeDrawer()">Eğitimi ata</button>`; }
   if(type==='academyPerson'){ const p=academySeed().people.find(x=>x.id===id); if(!p){toast('Personel bulunamadı.'); return;} html=`<div class="card-head"><div><div class="card-title">${p.name}</div><div class="card-sub">${p.role} · ${p.region} · ${p.branch}</div></div><button class="btn" onclick="closeDrawer()">Kapat</button></div><div class="grid g2">${stat('Tamamlama','%'+p.completion,p.path)}${stat('Sınav',p.exam+'/100','Son sınav skoru','blue')}${stat('Sertifika',p.cert,'Geçerli belge','green')}${stat('Geciken',p.overdue,p.status,'amber')}</div><div class="card" style="margin-top:14px"><div class="card-title">Kişi Bazlı Eğitim Planı</div><div class="mini-list" style="margin-top:10px"><div class="mini">${icon('route')}<div><b>Mevcut eğitim yolu</b><span>${p.path}</span></div></div><div class="mini">${icon('target')}<div><b>Sıradaki eğitim</b><span>${p.next}</span></div></div><div class="mini">${icon('alarm-clock')}<div><b>SLA notu</b><span>Geciken eğitim varsa şube müdürü ve bölge müdürü takip listesine düşer.</span></div></div></div></div><button class="btn primary" style="margin-top:14px" onclick="openActionModal('${p.name} eğitim takip görevi');closeDrawer()">Takip görevi oluştur</button>`; }
+  if(type==='googleComplaint'){ const c=(complaintCenter().complaintTickets||[]).find(x=>x.id===id&&x.isLiveGoogle); if(c) html=GoogleComplaintDetail(c); }
   if(type==='complaint'){ const c=(complaintCenter().complaintTickets||[]).find(x=>x.id===id); const timeline=complaintCenter().complaintTimeline||[]; if(c) html=`<div class="card-head"><div><div class="card-title">${c.id} · ${c.customer}</div><div class="card-sub">${c.phone} · ${c.plate} · ${c.branch} · ${c.region}</div></div><button class="btn" onclick="closeDrawer()">Kapat</button></div><div class="grid g2">${stat('Öncelik',c.priority,c.status,'red')}${stat('SLA',c.sla,c.opened,'amber')}${stat('Hukuki Risk',c.legalRisk,'Tutar riski '+fmtTL(c.amountRisk||0),'red')}${stat('Kök Neden',c.rootCause,'Kalite + Academy girdisi','blue')}</div><div class="card" style="margin-top:14px"><div class="card-title">Şikayet Özeti</div><p style="color:var(--muted);line-height:1.6">${c.summary}</p></div><div class="grid g2" style="margin-top:14px"><div class="card"><div class="card-head"><div><div class="card-title">Müşteri ve Araç Özeti</div><div class="card-sub">Ekspertiz raporu bağlantısı demo</div></div></div><div class="mini-list"><div class="mini">${icon('user')}<div><b>${c.customer}</b><span>${c.phone}</span></div></div><div class="mini">${icon('car-front')}<div><b>${c.plate}</b><span>${c.type} · ${c.source}</span></div></div><div class="mini">${icon('file-text')}<div><b>Rapor bağlantısı</b><span>RPR-${c.plate.replaceAll(' ','')}-2026 demo kaydı</span></div></div></div></div><div class="card"><div class="card-head"><div><div class="card-title">Kanıtlar</div><div class="card-sub">Fotoğraf, rapor, çağrı, WhatsApp ve Google yorum kaydı</div></div></div><div class="mini-list">${['Fotoğraf seti','Ekspertiz raporu','Çağrı kaydı','WhatsApp yazışması','Google yorum ekran görüntüsü'].map(x=>`<div class="mini">${icon('paperclip')}<div><b>${x}</b><span>Demo kanıt paketi dosyaya bağlandı.</span></div></div>`).join('')}</div></div></div><div class="card" style="margin-top:14px"><div class="card-head"><div><div class="card-title">Zaman Çizelgesi</div><div class="card-sub">ISO 10002 kayıt ve tarafsız inceleme akışı</div></div></div><div class="action-timeline">${timeline.map(t=>`<div class="timeline-step"><span class="step-icon">${icon('clock')}</span><div><b>${t.title}</b><span>${t.note}</span></div><strong>${t.time}</strong></div>`).join('')}</div></div><div class="grid g3" style="margin-top:14px"><div class="card"><div class="card-title">Şube Açıklaması</div><p style="color:var(--muted);line-height:1.6">Şube müdürü kamera, cihaz çıktısı ve rapor teslim notlarını 2 saat içinde dosyaya eklemeli.</p></div><div class="card"><div class="card-title">Kalite Değerlendirmesi</div><p style="color:var(--muted);line-height:1.6">${c.rootCause} kök nedeni için ikinci uzman incelemesi ve kalıcı aksiyon zorunlu.</p></div><div class="card"><div class="card-title">Hukuk Notu</div><p style="color:var(--muted);line-height:1.6">Marka riski ${c.brandRisk}; yazılı cevap dili hukuk ve kalite tarafından birlikte onaylanmalı.</p></div></div><div class="card" style="margin-top:14px"><div class="card-head"><div><div class="card-title">Telafi, SLA ve Sonraki Aksiyon</div><div class="card-sub">${c.compensation} · Sonraki adım: ${c.nextAction}</div></div></div><div class="quick-actions">${['Hukuka gönder','Kalite incelemesi aç','Şubeden savunma iste','Müşteriye dönüş yapıldı','Telafi öner','Dosyayı kapat','Academy eğitimi ata','Dashboard alarmına ekle'].map(a=>`<button class="btn" data-action="${c.id}: ${a} işlemi kayda alındı.">${a}</button>`).join('')}</div></div>`; }
   if(type==='legal'){ const l=legalCasesData().find(x=>x.id===id) || DB.legal.find(x=>x.id===id); if(!l){ toast('Hukuk dosyası bulunamadı.'); return; } const isNew=!!l.sourceModule, crisisLinked=l.crisisLinked||l.brandRisk==='Yüksek'||l.customerImpact==='Yüksek'; html=isNew?`<div class="card-head"><div><div class="card-title">${l.title}</div><div class="card-sub">${l.id} · ${l.type} · ${l.branch} / ${l.region}</div></div><button class="btn" onclick="closeDrawer()">Kapat</button></div><div class="grid g2">${stat('Risk',l.riskLevel,l.priority,'red')}${stat('Finansal Risk',fmtTL(l.financialExposure),l.sourceModule,'amber')}${stat('SLA',l.sla,l.dueDate,'blue')}${stat('Durum',l.status,'Sahip: '+l.owner,'green')}</div><div class="card" style="margin-top:14px"><div class="card-head"><div><div class="card-title">Karar Notu</div><div class="card-sub">Genel merkez için kanıt, müşteri etkisi, marka riski ve sonraki aksiyon.</div></div></div><div class="mini-list"><div class="mini">${icon('clipboard-check')}<div><b>Sıradaki aksiyon</b><span>${l.nextAction}</span></div></div><div class="mini">${icon('paperclip')}<div><b>Kanıt durumu</b><span>${l.evidenceStatus}</span></div></div><div class="mini">${icon('users')}<div><b>Müşteri etkisi</b><span>${l.customerImpact}</span></div></div><div class="mini">${icon('siren')}<div><b>Marka riski</b><span>${l.brandRisk}${crisisLinked?' · Kriz Merkezi ile ilişkili':''}</span></div></div><div class="mini">${icon('shield-check')}<div><b>Kalite bağlantısı</b><span>${l.qualityAction}</span></div></div></div></div><div class="card" style="margin-top:14px"><div class="card-head"><div><div class="card-title">Aksiyon Motoru</div><div class="card-sub">Butonlar görev motoruna localStorage üzerinden yeni görev ekler.</div></div></div><div class="quick-actions"><button class="btn primary" onclick="openActionModal('${l.title.replace(/'/g,'')} hukuk görevi')">Görev Oluştur</button><button class="btn" data-legal-action="${l.id}|CEO Onayına Gönder">CEO Onayına Gönder</button><button class="btn" data-legal-action="${l.id}|Finans Kontrolü İste">Finans Kontrolü İste</button><button class="btn" data-legal-action="${l.id}|Şubeden Savunma İste">Şubeden Savunma İste</button><button class="btn" data-legal-action="${l.id}|Kanıt Bekleniyor">Kanıt Bekleniyor</button><button class="btn" data-legal-action="${l.id}|Kriz Merkezine Aktar">Kriz Merkezine Aktar</button></div></div>`:`<div class="card-head"><div><div class="card-title">${l.title}</div><div class="card-sub">${l.area} - ${l.owner}</div></div><button class="btn" onclick="closeDrawer()">Kapat</button></div><div class="grid g2">${stat('Risk',l.risk,'Hukuki öncelik')}${stat('Durum',l.status,'Sahip: '+l.owner,'blue')}</div><div class="card" style="margin-top:14px"><div class="card-head"><div><div class="card-title">Madde Bazlı Kontrol Listesi</div><div class="card-sub">Bu başlık sözleşme/dosya içinde mutlaka görünmeli.</div></div></div><div class="mini-list">${l.items.map(x=>`<div class="mini">${icon('check-square')}<div><b>${x}</b><span>Metin, sorumluluk, yaptırım ve kayıt ispatı birlikte tasarlanmalı.</span></div></div>`).join('')}</div></div>`; }
   if(type==='insight'){ const i=DB.intelligence.find(x=>x.id===id); html=`<div class="card-head"><div><div class="card-title">${i.title}</div><div class="card-sub">${i.owner}</div></div><button class="btn" onclick="closeDrawer()">Kapat</button></div><div class="grid g2">${stat('Etki',i.impact,'Finansal / operasyonel')}${stat('Sinyal',i.signal,'Veri merkezi alarmı','blue')}</div><div class="card" style="margin-top:14px"><div class="card-title">Önerilen Karar</div><p style="color:var(--muted);line-height:1.6">${i.action}. Bu içgörü haftalık CEO toplantısında karar maddesine çevrilmeli; aksiyon sahibi, hedef tarih ve ölçüm kriteri girilmeli.</p></div>`; }
@@ -15825,7 +16005,7 @@ function searchIndex(){
     ...DB.reports.map(x=>({type:'report',id:x.id,title:`${x.plate} · ${x.model}`,sub:`Rapor · ${x.branch} · ${x.result}`,text:Object.values(x).join(' ')})),
     ...DB.tickets.map(x=>({type:'ticket',id:x.id,title:x.title,sub:`Kriz · ${x.branch} · ${x.owner}`,text:Object.values(x).join(' ')})),
     ...legalCasesData().map(x=>({type:'legal',id:x.id,title:`${x.id} · ${x.title}`,sub:`Hukuk · ${x.branch} · ${x.riskLevel}`,text:Object.values(x).join(' ')})),
-    ...(complaintCenter().complaintTickets||[]).map(x=>({type:'complaint',id:x.id,title:`${x.id} · ${x.customer}`,sub:`Şikayet · ${x.plate} · ${x.branch} · ${x.type}`,text:Object.values(x).join(' ')})),
+    ...(complaintCenter().complaintTickets||[]).map(x=>({type:x.isLiveGoogle?'googleComplaint':'complaint',id:x.id,title:`${x.id} · ${x.customer}`,sub:`Şikayet · ${x.plate} · ${x.branch} · ${x.type}`,text:Object.values(x).join(' ')})),
     ...DB.ceoDashboard.actionTasks.map(x=>({type:'task',id:x.id,title:x.title,sub:`Görev · ${x.owner} · ${x.branch}`,text:Object.values(x).join(' ')})),
     ...(hd.employees||[]).map(x=>({type:'hrEmployee',id:x.id,title:x.fullName,sub:`İK · ${x.position} · ${x.branchName}`,text:Object.values(x).join(' ')})),
     ...(hd.branches||[]).map(x=>({type:'hrBranch',id:x.id,title:`${x.name} İK`,sub:`Şube İK · ${x.region} · ${x.personnelCount} personel`,text:Object.values(x).join(' ')})),
@@ -15841,6 +16021,7 @@ function openSearchHit(type,id){
   if(type==='branch') return openBranchProfile(id);
   if(type==='lead'){ route('franchise'); setTimeout(()=>openDetail('lead:'+id),80); return; }
   if(type==='complaint'){ route('complaints'); setTimeout(()=>openDetail('complaint:'+id),80); return; }
+  if(type==='googleComplaint'){ route('complaints'); setTimeout(()=>openDetail('googleComplaint:'+id),80); return; }
   if(type==='ticket'){ route('crisis'); toast('Kriz kaydı açıldı.'); return; }
   if(type==='legal'){ route('legal'); setTimeout(()=>openDetail('legal:'+id),80); return; }
   if(type==='task'){ route('actions'); setTimeout(()=>openDetail('task:'+id),80); return; }
@@ -15857,7 +16038,7 @@ function renderSearchResults(q){
   if(q.length<2){ r.classList.remove('open'); r.innerHTML=''; return; }
   const norm=searchText(q);
   const hits=searchIndex().filter(x=>searchText(x.text+' '+x.title+' '+x.sub).includes(norm)).slice(0,6);
-  r.innerHTML=hits.length ? hits.map(h=>`<button type="button" class="search-hit" data-search-type="${h.type}" data-search-id="${h.id}"><b>${h.title}</b><span>${h.sub}</span></button>`).join('') : `<div class="search-empty">Sonuç bulunamadı.</div>`;
+  r.innerHTML=hits.length ? hits.map(h=>`<button type="button" class="search-hit" data-search-type="${googleEsc(h.type)}" data-search-id="${googleEsc(h.id)}"><b>${googleEsc(h.title)}</b><span>${googleEsc(h.sub)}</span></button>`).join('') : `<div class="search-empty">Sonuç bulunamadı.</div>`;
   r.classList.add('open');
   if(window.lucide) lucide.createIcons();
 }
@@ -15933,7 +16114,8 @@ function renderCharts(){
   make('chartFinanceRoyaltyDecision','doughnut',{labels:Object.keys(decisionCounts),datasets:[{data:Object.values(decisionCounts),backgroundColor:['#14804a','#185abc','#b76b00','#d71920','#6d3fc8'],borderColor:theme.panel,borderWidth:2}]},{cutout:'62%',plugins:{legend:{position:'bottom',labels:{color:theme.text,boxWidth:10}}}});
   const cc=complaintCenter();
   make('chartComplaintTypes','doughnut',{labels:(cc.complaintCategories||[]).map(x=>x[0]),datasets:[{data:(cc.complaintCategories||[]).map(x=>x[1]),backgroundColor:['#d71920','#111318','#185abc','#14804a','#b76b00','#6d3fc8']}]});
-  make('chartComplaintBranches','bar',{labels:(cc.complaintBranchScore||[]).map(x=>x.branch.replace('İstanbul ','').replace('Ankara ','')),datasets:[{label:'Açık şikayet',data:(cc.complaintBranchScore||[]).map(x=>x.open),backgroundColor:'#d71920'},{label:'Şikayet sağlığı skoru',data:(cc.complaintBranchScore||[]).map(x=>x.score/10),backgroundColor:'#111318'}]});
+  const complaintBranchScores=complaintDerivedBranchScores();
+  make('chartComplaintBranches','bar',{labels:complaintBranchScores.map(x=>x.branch),datasets:[{label:'Açık şikayet',data:complaintBranchScores.map(x=>x.open),backgroundColor:'#d71920'},{label:'Şikayet sağlığı skoru',data:complaintBranchScores.map(x=>x.score/10),backgroundColor:'#111318'}]});
   make('chartComplaintSla','line',{labels:cc.complaintSla?.labels||[],datasets:[{label:'SLA uyum %',data:cc.complaintSla?.trend||[],borderColor:'#14804a',backgroundColor:'rgba(20,128,74,.12)',tension:.35,fill:true}]},{scales:{y:{min:50,max:100}}});
   make('chartComplaintSentiment','line',{labels:cc.complaintSentiment?.labels||[],datasets:[{label:'Negatif yorum',data:cc.complaintSentiment?.trend||[],borderColor:'#d71920',backgroundColor:'rgba(215,25,32,.12)',tension:.35,fill:true}]});
   make('chartComplaintRoot','polarArea',{labels:(cc.complaintRootCauses||[]).map(x=>x[0]),datasets:[{data:(cc.complaintRootCauses||[]).map(x=>x[1]),backgroundColor:['#d7192030','#11131830','#185abc30','#14804a30','#b76b0030','#6d3fc830'],borderColor:['#d71920','#111318','#185abc','#14804a','#b76b00','#6d3fc8']}]});
@@ -16035,6 +16217,7 @@ function renderAll(){
   const initialCanonical=initial==='expertise-report'?'report-design':initial;
   const initialHR=parseHRRoute(initialCanonical);
   const initialAcademy=parseAcademyRoute(initialCanonical);
+  const initialArge=initialHR||initialAcademy?null:window.OTOTR_ERP_ARGE?.parseRoute?.(initialCanonical);
   if(initialHR){
     HR_VIEW.room=initialHR.room;
     HR_VIEW.category=hrCategoryForRoom(HR_VIEW.room);
@@ -16043,6 +16226,9 @@ function renderAll(){
     ACADEMY_VIEW.room=initialAcademy.room;
     academySaveView();
     current='academy';
+  }else if(initialArge){
+    selectedArgeModule=initialArge;
+    current='erp-arge';
   }else{
     current=titles[initialCanonical]?initialCanonical:'dashboard';
   }
@@ -16058,7 +16244,7 @@ function renderAll(){
     try{ DB=Backend.db(); }catch(_){ DB=null; }
     if(apiStatus) apiStatus.textContent='Google yorum merkezi açılıyor';
     try{ renderAll(); }catch(error){ console.error('Google Review Center açılış hatası',error); renderGoogleReviewFallback(error?.message); }
-    route(initialHR||initialAcademy?initialCanonical:current,{skipShellRender:true,skipDeferredEnhancements:true,skipIcons:true,preserveScroll:true});
+    route(initialHR||initialAcademy||initialArge?initialCanonical:current,{skipShellRender:true,skipDeferredEnhancements:true,skipIcons:true,preserveScroll:true});
     const hydrate=async()=>{
       if(apiStatus) apiStatus.textContent='Mock API bağlanıyor';
       try{ DB=await Backend.connect(); }catch(error){ console.error('Google Review Center backend bağlantısı',error); DB=Backend.db?.()||null; if(apiStatus) apiStatus.textContent='Önbellek modu'; }
@@ -16079,7 +16265,7 @@ function renderAll(){
     await window.OTOTR_ASSET_LOADER?.loadInspectionSchema?.().catch(()=>null);
     if(typeof applyInspectionSchemaToReportData === 'function') applyInspectionSchemaToReportData();
   }
-  renderAll(); route(initialHR||initialAcademy?initialCanonical:current,{skipShellRender:true,skipDeferredEnhancements:true,skipIcons:true,preserveScroll:true});
+  renderAll(); route(initialHR||initialAcademy||initialArge?initialCanonical:current,{skipShellRender:true,skipDeferredEnhancements:true,skipIcons:true,preserveScroll:true});
 })();
 window.addEventListener('hashchange',()=>{
   const id=(location.hash||'#dashboard').replace('#','');
@@ -16090,5 +16276,6 @@ window.addEventListener('hashchange',()=>{
   const canonical=id==='expertise-report'?'report-design':id;
   const hr=parseHRRoute(canonical);
   const academy=parseAcademyRoute(canonical);
-  if(hr || academy || (titles[canonical] && canonical!==current)) route(canonical);
+  const arge=window.OTOTR_ERP_ARGE?.parseRoute?.(canonical);
+  if(hr || academy || arge || (titles[canonical] && (canonical!==current || canonical==='erp-arge'))) route(canonical);
 });

@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 2,
+  "module": "OTOTR_FRANCHISE",
+  "target": "PREPRODUCTION_DECISION",
+  "decision": "NOT_READY",
+  "productionDecision": "NO_GO",
+  "productionDataUsed": false,
+  "releaseCommit": null,
+  "rollbackCommit": null,
+  "rollbackApproval": {
+    "approved": false,
+    "identitySha256": null,
+    "evidenceSha256": null,
+    "approvedAtUtc": null
+  },
+  "releaseManifestSha256": null,
+  "changeWindowStartUtc": null,
+  "changeWindowEndUtc": null,
+  "hostedStagingEvidence": {
+    "migrationSha256": "14eab6885e14e2686cec262987228d18683e4b807f7325f07bce00a6403b0d2e",
+    "rollbackSha256": "0e20e2847dca63d9cd3c9dfc76f9d9e630fa1e8f1197cfa3ba4ce515e7bdd767",
+    "identitySha256": "14eab6885e14e2686cec262987228d18683e4b807f7325f07bce00a6403b0d2e",
+    "storageSha256": "14eab6885e14e2686cec262987228d18683e4b807f7325f07bce00a6403b0d2e",
+    "adapterSha256": "34d87d525481aedebc6e209e56cf5830798e0c2fe3459e23fc8837091eff6612",
+    "providerSha256": "c70c30f0ad70f1773c1067116de686406b34de10f5085e421e1cb5f57202363d",
+    "concurrencySha256": "d915abe5e700cb8a898c171b7f0fa74815c2da2529bf8c790b5ea7af42396eaf",
+    "uatSha256": "ce19a6fea0b5598b4b6b764e912962f52053f49fb78b72b3dc168c09be87c511",
+    "publicIntakeSha256": "012fa9342d522d990e5fd303c524fa2487805263181ff297fd9970c8d68b4996"
+  },
+  "userApproval": {
+    "approved": false,
+    "identitySha256": null,
+    "evidenceSha256": null,
+    "approvedAtUtc": null
+  },
+  "signoffs": [
+    {
+      "role": "Franchise Sorumlusu",
+      "identitySha256": null,
+      "evidenceSha256": null,
+      "signedAtUtc": null
+    },
+    {
+      "role": "Finans Sorumlusu",
+      "identitySha256": null,
+      "evidenceSha256": null,
+      "signedAtUtc": null
+    },
+    {
+      "role": "Hukuk/KVKK",
+      "identitySha256": null,
+      "evidenceSha256": null,
+      "signedAtUtc": null
+    },
+    {
+      "role": "İK Sorumlusu",
+      "identitySha256": null,
+      "evidenceSha256": null,
+      "signedAtUtc": null
+    },
+    {
+      "role": "Academy Sorumlusu",
+      "identitySha256": null,
+      "evidenceSha256": null,
+      "signedAtUtc": null
+    },
+    {
+      "role": "Operasyon/Kalite/İSG",
+      "identitySha256": null,
+      "evidenceSha256": null,
+      "signedAtUtc": null
+    },
+    {
+      "role": "Tedarik/Mimari/Pazarlama",
+      "identitySha256": null,
+      "evidenceSha256": null,
+      "signedAtUtc": null
+    },
+    {
+      "role": "ERP/Bilgi Güvenliği",
+      "identitySha256": null,
+      "evidenceSha256": null,
+      "signedAtUtc": null
+    },
+    {
+      "role": "Genel Müdür",
+      "identitySha256": null,
+      "evidenceSha256": null,
+      "signedAtUtc": null
+    }
+  ]
+}
