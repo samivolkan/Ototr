@@ -92,14 +92,53 @@ class RequestError extends Error {
   constructor(message: string, status: number) { super(message); this.status = status; }
 }
 async function authorizedConnection(db: ReturnType<typeof admin>, userId: string) {
-  const { data: connection, error } = await db.from('google_business_connections').select('*').eq('id', 'ototr-primary').maybeSingle();
-  if (error) throw new RequestError('Google bağlantı kaydı okunamadı.', 503);
+  const connection = await loadGoogleConnection(db);
   const allowedUsers = (Deno.env.get('GOOGLE_BUSINESS_ADMIN_USER_IDS') || '').split(',').map(value => value.trim()).filter(Boolean);
   // A browser role or editable user metadata must never grant access to the shared Google account.
   if (connection?.connected_by !== userId && !allowedUsers.includes(userId)) {
     throw new RequestError('Google yorum yönetimi yalnızca yetkilendirilmiş genel merkez hesabına açıktır.', 403);
   }
   return connection;
+}
+async function loadGoogleConnection(db: ReturnType<typeof admin>) {
+  const { data: connection, error } = await db.from('google_business_connections').select('*').eq('id', 'ototr-primary').maybeSingle();
+  if (error) throw new RequestError('Google bağlantı kaydı okunamadı.', 503);
+  if (!connection) throw new RequestError('Google bağlantı kaydı bulunamadı.', 404);
+  return connection;
+}
+const googleReplyAdminRoles = new Set(['CEO', 'GENERAL_MANAGER', 'GOOGLE_REVIEW_ADMIN', 'MARKETING_DIRECTOR']);
+async function authorizedGoogleRole(db: ReturnType<typeof admin>, userId: string, action: 'publish_reply' | 'verify_reply' | 'bulk_route') {
+  const connection = await loadGoogleConnection(db);
+  const allowedUsers = (Deno.env.get('GOOGLE_BUSINESS_ADMIN_USER_IDS') || '').split(',').map(value => value.trim()).filter(Boolean);
+  if (action !== 'publish_reply') {
+    if (connection.connected_by !== userId && !allowedUsers.includes(userId)) {
+      throw new RequestError('Google yorum yönetimi yalnızca yetkilendirilmiş genel merkez hesabına açıktır.', 403);
+    }
+    return { connection, role: 'OPERATOR' };
+  }
+  // The OAuth connection owner and the server-side allowlist are the emergency
+  // admin path. Everyone else must have an active HQ role in app_users.
+  if (connection?.connected_by === userId || allowedUsers.includes(userId)) return { connection, role: 'ADMIN' };
+  const result = await db.from('app_users').select('auth_user_id,role,is_active').eq('auth_user_id', userId).maybeSingle();
+  if (result.error) throw new RequestError('Google yorum yayınlama rolü doğrulanamadı.', 503);
+  const role = String(result.data?.role || '').trim().toUpperCase();
+  if (!result.data?.is_active || !googleReplyAdminRoles.has(role)) throw new RequestError('Google yorumu yayınlamak için admin onayı gerekir.', 403);
+  return { connection, role };
+}
+async function writeGoogleAudit(db: ReturnType<typeof admin>, input: { userId: string; role: string; action: string; entityType: string; entityId: string; beforeState?: unknown; afterState?: unknown; detail?: string; requestId?: string }) {
+  const result = await db.from('google_review_audit_log').insert({
+    connection_id: connectionId,
+    actor_id: input.userId,
+    actor_role: input.role,
+    action: input.action,
+    entity_type: input.entityType,
+    entity_id: input.entityId,
+    request_id: input.requestId || null,
+    before_state: input.beforeState || {},
+    after_state: input.afterState || {},
+    detail: String(input.detail || '').slice(0, 2000),
+  });
+  databaseFailure(result.error);
 }
 function paginatedUrl(base: string, pageToken: unknown) {
   const url = new URL(base);
@@ -639,7 +678,13 @@ Deno.serve(async (req) => {
     }
     const token = await accessToken(await decrypt(connection.refresh_token_encrypted));
     if (['save_draft', 'create_task'].includes(body.action)) return json(await saveWork(db, user, body, token));
-    if (['publish_reply', 'verify_reply'].includes(body.action)) return json(await publishWork(db, user, body, token));
+    if (['publish_reply', 'verify_reply'].includes(body.action)) {
+      const authorization = await authorizedGoogleRole(db, user.id, body.action);
+      const before = await getWork(db, body);
+      const result = await publishWork(db, user, body, token);
+      await writeGoogleAudit(db, { userId: user.id, role: authorization.role, action: body.action, entityType: 'review_work_item', entityId: before.id, beforeState: { status: before.status, version: before.version }, afterState: { status: result?.item?.status, version: result?.item?.version, googleReplyState: result?.item?.review_snapshot?.google_reply_state }, detail: body.action === 'publish_reply' ? 'Yetkili Google yanıt yayınlama denemesi.' : 'Google yanıt yayın sonucu doğrulandı.', requestId: req.headers.get('x-request-id') || undefined });
+      return json(result);
+    }
     if (body.action === 'accounts') {
       const data = await googleJson(paginatedUrl('https://mybusinessaccountmanagement.googleapis.com/v1/accounts', body.page_token), token);
       return json(data);
