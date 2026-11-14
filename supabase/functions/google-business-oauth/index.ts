@@ -116,13 +116,17 @@ async function authorizedGoogleRole(db: ReturnType<typeof admin>, userId: string
     }
     return { connection, role: 'OPERATOR' };
   }
+  const policyResult = await db.from('google_review_policies').select('approver_roles,admin_user_ids').eq('connection_id', connection.id).maybeSingle();
+  if (policyResult.error) throw new RequestError('Google yorum onay politikası okunamadı.', 503);
+  const policyRoles = new Set((policyResult.data?.approver_roles || [...googleReplyAdminRoles]).map((value: unknown) => String(value).trim().toUpperCase()).filter(Boolean));
+  const policyUsers = (policyResult.data?.admin_user_ids || []).map((value: unknown) => String(value).trim()).filter(Boolean);
   // The OAuth connection owner and the server-side allowlist are the emergency
   // admin path. Everyone else must have an active HQ role in app_users.
-  if (connection?.connected_by === userId || allowedUsers.includes(userId)) return { connection, role: 'ADMIN' };
+  if (connection?.connected_by === userId || allowedUsers.includes(userId) || policyUsers.includes(userId)) return { connection, role: 'ADMIN' };
   const result = await db.from('app_users').select('auth_user_id,role,is_active').eq('auth_user_id', userId).maybeSingle();
   if (result.error) throw new RequestError('Google yorum yayınlama rolü doğrulanamadı.', 503);
   const role = String(result.data?.role || '').trim().toUpperCase();
-  if (!result.data?.is_active || !googleReplyAdminRoles.has(role)) throw new RequestError('Google yorumu yayınlamak için admin onayı gerekir.', 403);
+  if (!result.data?.is_active || !policyRoles.has(role)) throw new RequestError('Google yorumu yayınlamak için admin onayı gerekir.', 403);
   return { connection, role };
 }
 async function writeGoogleAudit(db: ReturnType<typeof admin>, input: { userId: string; role: string; action: string; entityType: string; entityId: string; beforeState?: unknown; afterState?: unknown; detail?: string; requestId?: string }) {
