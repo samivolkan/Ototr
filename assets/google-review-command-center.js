@@ -5,7 +5,7 @@
   // It owns the management view only; inbox, goals, OAuth and the live publisher
   // remain on their existing, server-validated paths.
   const state = window.__OTOTR_GOOGLE_CC_STATE = window.__OTOTR_GOOGLE_CC_STATE || {
-    branch: 'all', period: '2026-11', query: '', auditAction: 'all', auditActor: 'all', auditRange: '30', bulkRunning: false,
+    branch: 'all', period: '2026-11', query: '', auditAction: 'all', auditActor: 'all', auditRange: '30', auditRows: null, bulkRunning: false,
   };
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const metric = (value, decimals = 0) => value == null ? '—' : Number(value).toLocaleString('tr-TR', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
@@ -111,6 +111,15 @@
     const max = Math.max(...rows.map(row => row.total), 1);
     return `<div class="cc-branch-table"><div class="cc-branch-row header"><span>Şube / kaynak</span><span>Ortalama</span><span>Yorum hacmi</span><span>Bekleyen</span><span>Durum</span><span></span></div>${rows.map(row => `<div class="cc-branch-row"><span><strong>${esc(branchLabel(row.branch))}</strong><small>${esc(row.branch.city || '—')} · ${row.live ? 'Nilüfer canlı' : 'Demo veri'}</small></span><span><strong>${row.rating ? metric(row.rating, 1) : '—'} ★</strong></span><span><div class="cc-branch-meter"><i style="width:${percent(row.total, max)}%"></i></div><small>${metric(row.total)} toplam</small></span><span><strong>${metric(row.waiting)}</strong><small>${row.critical} kritik</small></span><span><em class="cc-branch-health ${statusTone(row)}">${statusLabel(row)}</em></span><span><button class="cc-row-action" data-cc-branch="${esc(row.branch.id)}">İncele</button></span></div>`).join('')}</div>`;
   }
+  function auditKind(action) {
+    return action === 'publish_reply' ? 'approved' : action === 'bulk_route' ? 'routed' : action === 'sync_reviews' ? 'sync' : 'updated';
+  }
+  function auditActorLabel(role) {
+    return role === 'ADMIN' ? 'Süper Admin' : role === 'OPERATOR' ? 'Sistem' : String(role || 'Sistem');
+  }
+  function auditLabel(action) {
+    return action === 'publish_reply' ? 'Yanıt onayı / yayınlama' : action === 'verify_reply' ? 'Yayın sonucu doğrulama' : action === 'bulk_route' ? 'Hukuk / operasyon kuyruğuna sevk' : action === 'sync_reviews' ? 'Google senkronizasyonu' : action === 'save_draft' ? 'AI taslağı kaydedildi' : action === 'create_task' ? 'Aksiyon görevi oluşturuldu' : 'Yorum iş akışı güncellendi';
+  }
   function renderAuditRows() {
     const samples = [
       ['approved', 'Yanıt onayı', 'Süper Admin', 'Bursa Nilüfer · Barış Buktel', '3 dk önce'],
@@ -119,7 +128,25 @@
       ['sync', 'Google senkronizasyonu tamamlandı', 'Sistem', 'Nilüfer · 12 yeni / 3 güncellendi', 'Bugün 09:18'],
     ];
     const action = state.auditAction, actor = state.auditActor;
-    return samples.filter(item => (action === 'all' || item[0] === action) && (actor === 'all' || item[2] === actor)).map(item => `<div class="cc-audit-row"><div class="cc-audit-dot">${item[0] === 'approved' ? '✓' : item[0] === 'routed' ? '→' : item[0] === 'sync' ? '↻' : '✎'}</div><div><b>${esc(item[1])}</b><small>${esc(item[2])} · ${esc(item[3])}</small></div><time>${esc(item[4])}</time></div>`).join('') || '<p class="cc-muted-note">Filtreye uyan işlem bulunamadı.</p>';
+    const remote = Array.isArray(state.auditRows) && state.auditRows.length
+      ? state.auditRows.map(item => [auditKind(item.action), auditLabel(item.action), auditActorLabel(item.actor_role), `${item.entity_type || 'Kayıt'} · ${item.detail || item.entity_id || '—'}`, item.created_at ? new Date(item.created_at).toLocaleString('tr-TR') : '—'])
+      : null;
+    const rows = remote || samples;
+    return rows.filter(item => (action === 'all' || item[0] === action) && (actor === 'all' || item[2] === actor)).map(item => `<div class="cc-audit-row"><div class="cc-audit-dot">${item[0] === 'approved' ? '✓' : item[0] === 'routed' ? '→' : item[0] === 'sync' ? '↻' : '✎'}</div><div><b>${esc(item[1])}</b><small>${esc(item[2])} · ${esc(item[3])}</small></div><time>${esc(item[4])}</time></div>`).join('') || '<p class="cc-muted-note">Filtreye uyan işlem bulunamadı.</p>';
+  }
+  async function loadAuditRows() {
+    const api = window.OTOTRGoogleReviewAI;
+    if (typeof api?.googleBusinessRequest !== 'function') return;
+    try {
+      const data = await api.googleBusinessRequest('audit_list', { limit: 200 });
+      if (Array.isArray(data?.rows)) {
+        state.auditRows = data.rows;
+        const list = document.querySelector('[data-cc-audit-list]');
+        if (list) list.innerHTML = renderAuditRows();
+      }
+    } catch (_) {
+      // Keep the safe local preview until the ERP session is authenticated.
+    }
   }
   function overlay(title, body, footer = '') { return `<div class="cc-overlay on" data-cc-overlay><section class="cc-modal" role="dialog" aria-modal="true"><header class="cc-modal-head"><h3>${title}</h3><button class="cc-modal-close" data-cc-close aria-label="Kapat">×</button></header><div class="cc-modal-body">${body}</div>${footer ? `<footer class="cc-modal-foot">${footer}</footer>` : ''}</section></div>`; }
   function openModal(kind) {
@@ -129,6 +156,7 @@
       html = overlay('Toplu sevk kuyruğu', `<p class="cc-muted-note">Seçili onay bekleyen kayıtlar güvenli bir kuyrukta işlenir. Demo şubelerde dış gönderim kapalıdır; Nilüfer kayıtları için admin onayı zorunludur.</p><div class="cc-progress"><i data-cc-progress-bar></i></div><div class="cc-progress-meta"><span data-cc-progress-label>Hazır</span><b data-cc-progress-value>%0</b></div><div class="cc-alert" style="margin-top:15px">${getIcon('shield-check')}<div><b>Yetki kontrolü</b> Süper Admin · Google yanıt yayınlama yetkisi aktif. Her kayıt idempotency anahtarıyla tek kez işlenir.</div></div>`, '<button class="cc-row-action" data-cc-close>İptal</button><button class="cc-row-action" data-cc-bulk-start>Toplu sevki başlat</button>');
     } else if (kind === 'audit') {
       html = overlay('Denetim günlüğü', `<div class="cc-audit-filters"><select data-cc-audit-action><option value="all">Tüm işlemler</option><option value="approved">Onay</option><option value="routed">Sevk</option><option value="updated">Ayar değişikliği</option><option value="sync">Senkronizasyon</option></select><select data-cc-audit-actor><option value="all">Tüm kullanıcılar</option><option value="Süper Admin">Süper Admin</option><option value="Sistem">Sistem</option></select><select><option value="30">Son 30 gün</option><option value="7">Son 7 gün</option><option value="90">Son 90 gün</option></select><input placeholder="Yorum, şube veya işlem ara…"></div><div class="cc-audit-list" data-cc-audit-list>${renderAuditRows()}</div>`, '<button class="cc-row-action" data-cc-audit-export>Audit CSV indir</button><button class="cc-row-action" data-cc-close>Kapat</button>');
+      setTimeout(loadAuditRows, 0);
     } else {
       html = overlay('E-posta önizleme', `<div class="cc-audit-filters"><input value="dijital@ototr.com" aria-label="Alıcı" readonly><input value="Google yorumu · yönetim özeti" aria-label="Konu" readonly><select><option>Yönetim özeti şablonu v2</option><option>Hukuk sevk şablonu v1</option></select><span></span></div><div class="cc-card" style="box-shadow:none;background:#fbfdff"><p><b>Alıcı:</b> dijital@ototr.com</p><p><b>Konu:</b> OTOTR Google Yorum Merkezi · günlük aksiyon özeti</p><hr style="border:0;border-top:1px solid #e5ebf2"><p>Merhaba,</p><p>Nilüfer canlı bağlantısında bekleyen yanıtlar ve kritik müşteri deneyimi sinyalleri aşağıdadır. Bu e-posta yalnızca önizlemedir; gönderim için yetkili onayı gerekir.</p><p><b>Bekleyen yanıt:</b> 14<br><b>Kritik / hukuk:</b> 2<br><b>SLA başarısı:</b> %96</p><p>OTOTR Müşteri Deneyimi Merkezi</p></div>`, '<button class="cc-row-action" data-cc-close>Vazgeç</button><button class="cc-row-action" data-cc-email-test>Test e-postası gönder</button>');
     }

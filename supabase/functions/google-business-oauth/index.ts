@@ -664,6 +664,22 @@ Deno.serve(async (req) => {
       databaseFailure(error); if (!data) throw new RequestError('Görev başka oturumda değişti. Listeyi yenileyin.', 409);
       return json({ item: data });
     }
+    if (body.action === 'audit_list') {
+      const auditConnection = await authorizedConnection(db, user.id);
+      const allowedActions = new Set(['publish_reply', 'verify_reply', 'bulk_route', 'save_draft', 'create_task', 'update_task', 'sync_reviews']);
+      const requestedAction = String(body.audit_action || '').trim();
+      const requestedLimit = Number(body.limit);
+      const limit = Number.isSafeInteger(requestedLimit) ? Math.min(200, Math.max(1, requestedLimit)) : 100;
+      let query = db.from('google_review_audit_log')
+        .select('id,actor_id,actor_role,action,entity_type,entity_id,before_state,after_state,detail,created_at')
+        .eq('connection_id', auditConnection.id)
+        .order('created_at', { ascending: false })
+        .limit(limit);
+      if (requestedAction && allowedActions.has(requestedAction)) query = query.eq('action', requestedAction);
+      const result = await query;
+      databaseFailure(result.error);
+      return json({ rows: result.data || [] });
+    }
     if (body.action === 'bulk_route') {
       const authorization = await authorizedGoogleRole(db, user.id, 'bulk_route');
       const itemIds = Array.isArray(body.item_ids) ? [...new Set(body.item_ids.map((value: unknown) => String(value).trim()).filter(value => /^[0-9a-f-]{36}$/i.test(value)))] : [];
