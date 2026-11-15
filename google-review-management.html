@@ -2982,7 +2982,7 @@ if (!STATE.onboarded) setTimeout(startTour, 500);
     if (date) date.textContent = meta.date || date.textContent;
     badge.title = `Sürüm ${meta.version || ''} · commit ${meta.commit || ''}`;
     const footer = document.getElementById('releaseFooterBadge');
-    if (footer) { footer.querySelector('b').textContent = meta.version || 'G16'; footer.querySelector('span').textContent = `Yayın: ${meta.date || ''} ${meta.time || ''}`.trim(); footer.title = `commit ${meta.commit || ''}`; }
+    if (footer) { footer.querySelector('b').textContent = meta.date || ''; footer.querySelector('span').textContent = `${meta.time || ''} · Güncelleme #${meta.run || ''}`.trim(); footer.title = 'Sürüm güncelleme zamanı'; }
   }).catch(() => {});
 </script>
 <script>
