@@ -159,6 +159,10 @@
     const metrics = [['Bursa · Yorum',rows.length,'ERP’den alınan kayıtlar'],['Bursa · Puan',rows.length?(rows.reduce((s,r)=>s+r.stars,0)/rows.length).toFixed(1):'—','Alınan yorumların ortalaması'],['Bursa · Yanıt',rows.length?Math.round(answered.length/rows.length*100)+'%':'—','Google’da yanıtı bulunan'],['Bursa · SLA',timed.length?Math.round(within.length/timed.length*100)+'%':'—','Yanıt tarihi bilinen kayıtlar · 24 sa'],['Bursa · Bekleyen',rows.length-answered.length,'Henüz Google yanıtı yok'],['Bursa · Geciken',overdue.length,'24 saati aşan yanıtsız kayıtlar']];
     const box=document.getElementById('ovKpis');
     if(box) box.innerHTML=metrics.map(([label,value,note])=>`<div class="kpi"><div class="kl">${label}</div><div class="kv">${value}</div><div class="kd">${note}</div></div>`).join('');
+    const watch=document.getElementById('ovWatchlist');
+    if(watch) watch.innerHTML=rows.filter(r=>r.risk>=50&&r.status!=='gonderildi').slice(0,5).map(r=>`<div class="watch-row"><div class="info"><b>${r.author}</b><small>Bursa Nilüfer · ${r.stars} yıldız</small></div><button class="btn sm ghost" onclick="openReviewFromStore(${r.id})">Detay →</button></div>`).join('') || '<div class="empty">Alınan Bursa kayıtlarında yanıtsız kritik yorum yok.</div>';
+    const sla=document.getElementById('ovSla');
+    if(sla) sla.innerHTML=`<div class="watch-row"><div class="info"><b>Nilüfer</b><small>Bursa · canlı</small></div><div class="metric">${timed.length?Math.round(within.length/timed.length*100)+'%':'—'}</div><span class="chip">${timed.length?'Yanıt tarihi bilinen kayıtlar':'Yanıt tarihi sağlanmadı'}</span></div>` + BRANCHES.filter(b=>b.demo).map(b=>`<div class="watch-row"><div class="info"><b>${b.name}</b><small>Demo</small></div><div class="metric">%${b.slaRate}</div></div>`).join('');
     return result;
   };
   const originalCharts=window.initOverviewCharts;
