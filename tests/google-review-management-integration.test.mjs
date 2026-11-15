@@ -48,3 +48,14 @@ test('Escape closes through the approval-aware modal function', () => {
   assert.match(html,/\$\$\("\.mbd\.on"\)\.forEach\(m => closeModal\(m\.id\)\)/);
   assert.match(bridge,/if\(id==='emailModal'\)\{pendingApproval=null;lockEditing\(\);\}/);
 });
+
+test('bridge carries ERP replyUpdatedAt into SLA dates and response history', () => {
+  const source=bridge.slice(bridge.indexOf('  function hydrateLiveNilufer()'),bridge.indexOf('  function markEnvironment()'));
+  const reviews=[],branches=[{}];
+  const context={BRANCHES:branches,REVIEWS:reviews,LEGAL_CASES:[],COMPLAINTS:[],APPROVALS:[],liveBranchId:'branch-google-nilufer',liveIds:new Map(),workIds:new Map(),nextId:-1,escape:String,window:{OTOTRReviewManagement:{state:{policy:{default_sla_hours:24}}}},ai:{getWorkflowItems:()=>[]},parentApi:{getBranchById:()=>({}),fetchGoogleReviews:()=>[{id:'erp1',googleReviewId:'google1',branchId:'branch-google-nilufer',reviewerName:'QA',rating:5,isReplied:true,reviewDate:'2026-11-10T08:00:00Z',replyUpdatedAt:'2026-11-10T09:00:00Z'}]}};
+  vm.runInNewContext(source+';hydrateLiveNilufer();',context);
+  assert.equal(reviews.length,1);
+  assert.equal(reviews[0].replyDate,'2026-11-10T09:00:00Z');
+  assert.equal(reviews[0].pipeline.stages.responded.ts,reviews[0].replyDate);
+  assert.equal((Date.parse(reviews[0].replyDate)-Date.parse(reviews[0].createdAt))/3600000,1);
+});

@@ -63,6 +63,7 @@
       const item = items.find(i => i.kind === 'reply' && i.branch_id === liveBranchId && i.review_id === review.googleReviewId);
       const task = items.find(i => i.kind !== 'reply' && i.status === 'open' && i.branch_id === liveBranchId && i.review_id === review.googleReviewId);
       const routedTo = task?.kind === 'branch' ? 'store' : task?.kind || null;
+      const replyDate = review.replyUpdatedAt || review.replyDate || null;
       return ({
       id: liveIds.get(review.id),
       erpReviewId: review.id,
@@ -82,8 +83,8 @@
       slaH: slaHours,
       escalated: !review.isReplied && Boolean(review.reviewDate) && Date.now() - Date.parse(review.reviewDate) > slaHours * 3600000,
       createdAt: review.reviewDate || null,
-      replyDate: review.replyDate || null,
-      pipeline: {routedTo, stages:{received:{done:true,ts:review.reviewDate || null},classified:{done:Boolean(item?.review_snapshot?.ai_analysis),ts:item?.review_snapshot?.ai_analysis ? item.created_at : null},draft:{done:Boolean(item?.reply_text),ts:item?.created_at || null},routed:{done:Boolean(task),ts:task?.created_at || null},responded:{done:Boolean(review.isReplied),ts:review.replyDate || null},closed:{done:false,ts:null}}},
+      replyDate,
+      pipeline: {routedTo, stages:{received:{done:true,ts:review.reviewDate || null},classified:{done:Boolean(item?.review_snapshot?.ai_analysis),ts:item?.review_snapshot?.ai_analysis ? item.created_at : null},draft:{done:Boolean(item?.reply_text),ts:item?.created_at || null},routed:{done:Boolean(task),ts:task?.created_at || null},responded:{done:Boolean(review.isReplied),ts:replyDate},closed:{done:false,ts:null}}},
     }); });
     REVIEWS.splice(0, REVIEWS.length, ...mapped, ...REVIEWS.filter(review => review.demo));
     const replace = (collection, kind, convert) => {
