@@ -740,7 +740,7 @@ Deno.serve(async (req) => {
       if(body.action==='template_apply' && result?.item && result.changed_existing_text) await recordAiOutcome(db,{item:result.item,actorId:user.id,action:'edited'});
       return json(result);
     }
-    if (['collection_read','collection_save_policy','collection_enqueue','collection_queue'].includes(body.action)) {
+    if (['collection_read','collection_save_policy','collection_enqueue','collection_queue','collection_run_due'].includes(body.action)) {
       if (body.action !== 'collection_read' && access.role !== 'admin' && !access.is_owner) throw new RequestError('Yorum toplama ayarları için yönetici yetkisi gerekli.',403);
       const policyRow = await db.from('google_review_collection_policies').select('*').eq('connection_id', connectionId).maybeSingle();
       databaseFailure(policyRow.error);
@@ -763,6 +763,16 @@ Deno.serve(async (req) => {
         const scheduled=new Date(Date.now()+Number(policy.delay_minutes)*60000); const keyDate=new Date(scheduled); keyDate.setHours(Number(policy.send_hour),0,0,0); if(keyDate.getTime()<scheduled.getTime()) keyDate.setDate(keyDate.getDate()+1);
         const inserted=await db.from('google_review_collection_outbox').upsert({connection_id:connectionId,branch_id:managementBranchId,service_id:serviceId,customer_name:String(body.customer_name||'').slice(0,160),recipient,channel:policy.channel,scheduled_at:keyDate.toISOString(),status:'queued'},{onConflict:'connection_id,service_id',ignoreDuplicates:true}).select('id,scheduled_at,status').maybeSingle();
         databaseFailure(inserted.error); return json({queued:Boolean(inserted.data),item:inserted.data||null,reason:inserted.data?'queued':'duplicate'});
+      }
+      if (body.action === 'collection_run_due') {
+        if (access.role !== 'admin' || !access.is_owner) throw new RequestError('Gönderim worker yalnızca bağlantı sahibi tarafından çalıştırılabilir.',403);
+        const due=await db.from('google_review_collection_outbox').select('*').eq('connection_id',connectionId).eq('branch_id',managementBranchId).eq('status','queued').lte('scheduled_at',new Date().toISOString()).limit(100);
+        databaseFailure(due.error); const providerUrl=Deno.env.get('REVIEW_COLLECTION_PROVIDER_URL')||''; const providerToken=Deno.env.get('REVIEW_COLLECTION_PROVIDER_TOKEN')||''; let sent=0, skipped=0, failed=0;
+        for(const row of (due.data||[])) {
+          if(!providerUrl || !providerToken){ await db.from('google_review_collection_outbox').update({status:'dry_run',reason:'provider_not_configured'}).eq('id',row.id); skipped++; continue; }
+          try { const response=await fetch(providerUrl,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${providerToken}`},body:JSON.stringify({channel:row.channel,to:row.recipient,customer_name:row.customer_name,service_id:row.service_id,template:policyRow.data?.template||''})}); if(!response.ok) throw new Error(`provider_${response.status}`); await db.from('google_review_collection_outbox').update({status:'sent',sent_at:new Date().toISOString(),reason:null}).eq('id',row.id).eq('status','queued'); sent++; } catch(error){ await db.from('google_review_collection_outbox').update({status:'failed',reason:String(error instanceof Error?error.message:'provider_error').slice(0,200)}).eq('id',row.id).eq('status','queued'); failed++; }
+        }
+        return json({processed:(due.data||[]).length,sent,skipped,failed,dry_run:!providerUrl});
       }
       const queue=await db.from('google_review_collection_outbox').select('id,branch_id,service_id,customer_name,channel,scheduled_at,status,reason,sent_at,created_at').eq('connection_id',connectionId).order('scheduled_at',{ascending:false}).limit(100); databaseFailure(queue.error); return json({queue:queue.data||[]});
     }

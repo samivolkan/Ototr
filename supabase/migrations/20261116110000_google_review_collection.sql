@@ -17,6 +17,7 @@ create table if not exists public.google_review_collection_outbox (
   status text not null default 'queued' check (status in ('queued','sent','failed','skipped','dry_run')),
   reason text, sent_at timestamptz, created_at timestamptz not null default now(), unique(connection_id, service_id)
 );
+create index if not exists google_review_collection_due_idx on public.google_review_collection_outbox(connection_id,status,scheduled_at);
 alter table public.google_review_collection_policies enable row level security;
 alter table public.google_review_collection_outbox enable row level security;
 revoke all on public.google_review_collection_policies from anon, authenticated;
