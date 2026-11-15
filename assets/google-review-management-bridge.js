@@ -308,13 +308,13 @@
     const result = originalView(view, ...args);
     let note = document.getElementById('erpDataScope');
     if (!note) { note = document.createElement('div'); note.id = 'erpDataScope'; note.className = 'chip warn'; document.getElementById('pageTitle')?.after(note); }
-    note.textContent = ['reviews', 'overview','legal','complaint','approval'].includes(view)
+    note.textContent = ['reviews', 'overview','problems','legal','complaint','approval'].includes(view)
       ? (parentApi?'Bursa: canlı ERP verisi':'ERP oturumu yok · Bursa verisi alınmadı')+' · Gebze / İnegöl: demo. Diğer örnek analizler demo kapsamındadır.'
       : 'Bu bölümdeki örnek ayarlar ve raporlar demo kapsamındadır. Canlı kayıtlar ERP kuyruğunda yönetilir.';
     return result;
   };
   const controls=document.createElement('div');controls.className='pacts';
-  controls.innerHTML='<span class="chip ok">1 Canlı · 2 Demo</span><button class="btn sm" id="erpGoogleSync">Bursa’yı yenile</button><button class="btn sm" id="erpGoogleQueue">Canlı yorumlar</button><button class="btn sm" id="erpGoogleConnect">Bağlantı durumu</button>';
+  controls.innerHTML='<label class="scope-label">Veri kapsamı <select id="erpScopeLevel" aria-label="Veri kapsamı"><option value="hq">Genel merkez</option><option value="region">Bölge</option><option value="city">İl</option><option value="branch">Şube</option></select></label><select id="erpScopeValue" aria-label="Kapsam seçimi"><option value="all">Tüm canlı şubeler</option><option value="Bursa Nilüfer">Bursa · Nilüfer · Canlı</option><option value="Kocaeli Gebze">Gebze · Demo</option><option value="Bursa İnegöl">İnegöl · Demo</option></select><span class="chip ok">1 Canlı · 2 Demo</span><button class="btn sm" id="erpGoogleSync">Bursa’yı yenile</button><button class="btn sm" id="erpGoogleQueue">Canlı yorumlar</button><button class="btn sm" id="erpGoogleConnect">Bağlantı durumu</button>';
   document.querySelector('main').prepend(controls);
   document.getElementById('erpGoogleSync').onclick=async()=>{
     if(!parentApi)return missing();
@@ -323,6 +323,17 @@
   };
   document.getElementById('erpGoogleQueue').onclick=()=>switchView('reviews');
   document.getElementById('erpGoogleConnect').onclick=()=>switchView('system');
+  const scopeLevel=document.getElementById('erpScopeLevel'),scopeValue=document.getElementById('erpScopeValue');
+  const applyScopeFilter=()=>{
+    const level=scopeLevel.value,value=scopeValue.value;
+    FILTER_REGION=''; FILTER_CITY='';
+    if(level==='city'&&value==='Bursa') FILTER_CITY='Bursa';
+    if(level==='branch'&&value!=='all'){ branchFilter.value=value; }
+    if(level==='hq'||level==='region'||(level==='branch'&&value==='all')) branchFilter.value='live';
+    SELECTED.clear(); renderNav(); switchView(STATE.view||'overview');
+  };
+  scopeLevel.onchange=()=>{ if(scopeLevel.value==='hq'||scopeLevel.value==='region') scopeValue.innerHTML='<option value="all">Tüm canlı şubeler</option>'; else if(scopeLevel.value==='city') scopeValue.innerHTML='<option value="Bursa">Bursa</option>'; else scopeValue.innerHTML='<option value="all">Tüm canlı şubeler</option><option value="Bursa Nilüfer">Bursa · Nilüfer · Canlı</option><option value="Kocaeli Gebze">Gebze · Demo</option><option value="Bursa İnegöl">İnegöl · Demo</option>'; applyScopeFilter(); };
+  scopeValue.onchange=applyScopeFilter;
   document.getElementById('emailModal')?.addEventListener('click',event=>{if(event.target.id==='emailModal'){pendingApproval=null;lockEditing();}});
   window.addEventListener('beforeunload',()=>ai?.setManagementEditing?.(false));
   window.addEventListener('message', event => {

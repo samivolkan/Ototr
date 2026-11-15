@@ -700,6 +700,11 @@ main{margin-left:208px;width:calc(100% - 208px);max-width:none;padding:22px}
     </div>
     <div class="card"><div class="head"><div><h3>🟡 Rakip şüphesi</h3></div></div><div id="riskSuspicious"></div></div>
   </section>
+  <section class="view" id="view-problems">
+    <div class="card-head"><div><h2>Problem Merkezi</h2><p class="psub">Genel merkezden bölge, il, şube ve yorum seviyesine inen operasyon problemleri.</p></div><span class="chip warn" id="problemScopeBadge">Genel merkez</span></div>
+    <div class="metrics" id="problemKpis"></div>
+    <div class="table-wrap"><table><thead><tr><th>Problem</th><th>Kapsam</th><th>Şube</th><th>Risk</th><th>Son durum</th><th>Aksiyon</th></tr></thead><tbody id="problemRows"></tbody></table></div>
+  </section>
 
   <!-- LEGAL -->
   <section class="view" id="view-legal">
@@ -1375,8 +1380,8 @@ function logAudit(entity, id, action, detail){
 }
 
 const ROLES = {
-  admin:{ label:"Admin", icon:"👑", tabs:["overview","reviews","performance","risk","legal","complaint","approval","compare","ai","settings","system","golive"], user:{name:"Mehmet K.",avatar:"MK"} },
-  region_manager:{ label:"Bölge", icon:"📍", tabs:["overview","reviews","performance","risk","legal","complaint","approval","compare","ai","system"], user:{name:"Ayşe T.",avatar:"AT"} },
+  admin:{ label:"Admin", icon:"👑", tabs:["overview","reviews","performance","risk","problems","legal","complaint","approval","compare","ai","settings","system","golive"], user:{name:"Mehmet K.",avatar:"MK"} },
+  region_manager:{ label:"Bölge", icon:"📍", tabs:["overview","reviews","performance","risk","problems","legal","complaint","approval","compare","ai","system"], user:{name:"Ayşe T.",avatar:"AT"} },
   store_manager:{ label:"Şube", icon:"🏬", tabs:["overview","reviews","performance","risk","complaint","approval","compare","ai"], user:{name:"Can Y.",avatar:"CY"} },
   legal:{ label:"Hukuk", icon:"⚖️", tabs:["overview","reviews","risk","legal","approval"], user:{name:"Av. Zeynep B.",avatar:"ZB"} },
   complaint:{ label:"Şikayet", icon:"📨", tabs:["overview","reviews","risk","complaint","approval"], user:{name:"Burak D.",avatar:"BD"} }
@@ -1450,6 +1455,7 @@ const VIEWS = [
   { id:"reviews", label:"💬 Yorumlar", title:"Yanıt Merkezi", sub:"Yorumları incele, onayla veya sevk et." },
   { id:"performance", label:"📈 Performans", title:"Hedef ve Performans", sub:"Bölge › il › şube hedefleri." },
   { id:"risk", label:"⚠️ Risk", title:"Risk ve SLA", sub:"Kritik yorumlar, hukuki süreçler." },
+  { id:"problems", label:"🧭 Problemler", title:"Problem Merkezi", sub:"Genelden yoruma inen problem görünümü." },
   { id:"legal", label:"⚖️ Hukuk", title:"Hukuk Merkezi", sub:"Hukuki dosyalar, KVKK." },
   { id:"complaint", label:"📨 Şikayet", title:"Şikayet Merkezi", sub:"Şikayet pipeline." },
   { id:"approval", label:"✅ Onay", title:"Onay Akışı", sub:"Çok seviyeli onay." },
@@ -1496,6 +1502,7 @@ function switchView(id){
   $("#pageSub").textContent = v.sub;
   $("#crumb").innerHTML = `Yönetim <b>/</b> <span>${v.title}</span>`;
   if (id === "overview"){ renderOverview(); setTimeout(initCharts, 20); }
+  else if (id === "problems") renderProblems();
   else if (id === "reviews") renderReviews();
   else if (id === "performance") renderPerformance();
   else if (id === "risk") renderRisk();
@@ -1552,6 +1559,23 @@ function renderOverview(){
 
   const crit = active.filter(b => b.criticalRate >= 30);
   $("#ovAlerts").innerHTML = crit.length ? `<div class="alert warn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg><div><b>Kritik eşiği aşan:</b> ${crit.slice(0,3).map(b=>b.name).join(", ")}.</div></div>` : "";
+}
+
+function renderProblems(){
+  const rows = roleReviews().filter(r => !r.demo).map(r => {
+    const branch = BRANCHES.find(b => `${b.city} ${b.name}` === r.store);
+    const problem = r.escalated ? 'SLA gecikmesi' : r.risk >= 80 ? 'Kritik / hukuki ifade' : r.risk >= 50 ? 'Düşük puan' : 'İnceleme bekliyor';
+    return {problem, scope: branch?.city || 'İl bilinmiyor', branch: branch?.name || r.store, risk:r.risk, status:r.status, id:r.id};
+  });
+  const counts = [
+    ['Açık problem', rows.filter(r=>r.status!=='gonderildi').length],
+    ['SLA gecikmesi', rows.filter(r=>r.problem==='SLA gecikmesi').length],
+    ['Kritik / hukuki', rows.filter(r=>r.problem==='Kritik / hukuki ifade').length],
+    ['Mükerrer kayıt', roleReviews().filter(r=>r.duplicate).length]
+  ];
+  const kpi=document.getElementById('problemKpis'); if(kpi) kpi.innerHTML=counts.map(([l,v])=>`<div class="kpi"><div class="kl">${l}</div><div class="kv">${v}</div><div class="kd">Seçili kapsam</div></div>`).join('');
+  const body=document.getElementById('problemRows'); if(body) body.innerHTML=rows.length?rows.sort((a,b)=>b.risk-a.risk).map(r=>`<tr><td><b>${r.problem}</b></td><td>${r.scope}</td><td>${r.branch}</td><td><span class="chip ${r.risk>=70?'bad':r.risk>=40?'warn':'ok'}">${r.risk}</span></td><td>${r.status}</td><td><button class="btn sm ghost" onclick="selectReview(${r.id});switchView('reviews')">Detay</button></td></tr>`).join(''):`<tr><td colspan="6">Seçili kapsamda açık problem bulunmuyor.</td></tr>`;
+  const badge=document.getElementById('problemScopeBadge'); if(badge) badge.textContent=FILTER_CITY||FILTER_REGION||'Genel merkez';
 }
 
 const charts = {};
