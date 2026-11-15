@@ -201,6 +201,7 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
 .inline-review-actions{display:flex;gap:6px;flex-wrap:wrap;padding:8px 12px 10px 42px;background:#f8fafc;border-top:1px solid var(--l2);border-bottom:1px solid var(--l2)}
 .inline-review-actions button{border:1px solid #cfd7e4;background:#fff;border-radius:6px;padding:5px 8px;font-size:11px;cursor:pointer;color:#1f2937}
 .inline-review-actions button.primary{background:#111827;color:#fff;border-color:#111827}
+.inline-review-actions button.danger{color:#b42318;border-color:#f3b7b1;background:#fff7f5}
 @keyframes bulkDrop{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
 .bulk-bar.on{display:flex}
 .bulk-bar .bulk-info{font-size:12px;font-weight:600;display:flex;align-items:center;gap:5px}
@@ -651,6 +652,7 @@ main{margin-left:208px;width:calc(100% - 208px);max-width:none;padding:22px}
         <option value="kritik">Kritik (risk 50+)</option>
         <option value="gonderildi">Gönderilen</option>
         <option value="routed">Sevk edilen</option>
+        <option value="duplicate">Mükerrer / pasif</option>
         <option value="escalated">SLA aşımı</option>
       </select>
       <select id="rvSort"><option value="date">En yeni</option><option value="risk">Risk</option><option value="rating">Puan</option></select>
@@ -1625,6 +1627,8 @@ function renderHistory(r){
 
 function getFilteredReviews(){
   let list = roleReviews().filter(r => {
+    if (r.duplicate && RV_FILTER !== "duplicate") return false;
+    if (RV_FILTER === "duplicate") return Boolean(r.duplicate);
     if (RV_FILTER === "hepsi") return true;
     if (RV_FILTER === "kritik") return r.risk >= 50;
     if (RV_FILTER === "escalated") return r.escalated;
@@ -1658,7 +1662,7 @@ function renderReviews(){
           <div class="row2">${r.store} · ${r.time}${r.escalated?' · ⚠':''}</div>
           <p>${r.text}</p>
         </div>
-      </div>${SELECTED.has(r.id)?`<div class="inline-review-actions" onclick="event.stopPropagation()"><button class="primary" onclick="selectReview(${r.id})">Detayı aç</button><button onclick="openInlineAction(${r.id},'edit')">✎ Taslağı düzenle</button><button onclick="openInlineAction(${r.id},'ai')">✦ Alternatif AI</button><button onclick="routeReview(${r.id},'legal')">⚖ Hukuka</button><button onclick="routeReview(${r.id},'complaint')">📨 Şikâyete</button></div>`:""}`;
+      </div>${SELECTED.has(r.id)?`<div class="inline-review-actions" onclick="event.stopPropagation()"><button class="primary" onclick="selectReview(${r.id})">Detayı aç</button><button onclick="openInlineAction(${r.id},'edit')">✎ Taslağı düzenle</button><button onclick="openInlineAction(${r.id},'ai')">✦ Alternatif AI</button><button onclick="routeReview(${r.id},'legal')">⚖ Hukuka</button><button onclick="routeReview(${r.id},'complaint')">📨 Şikâyete</button><button class="danger" onclick="markDuplicate(${r.id})">⊘ Mükerrer işaretle</button></div>`:""}`;
     }).join("");
   }
 
@@ -1722,6 +1726,7 @@ function toggleSelect(id){ SELECTED.has(id) ? SELECTED.delete(id) : SELECTED.add
 function openInlineAction(id, action){ selectReview(id); if(action==='edit') editSentReply(id); else if(action==='ai') regenDraft(id); }
 function editSentReply(id){ const box=$('#draftBox'); if(!box) return; box.readOnly=false; box.focus(); box.dataset.editing='1'; box.style.borderColor='var(--blue)'; toast('Yanıt düzenleme modu açıldı. Değişiklikten sonra Güncel yanıtı gönder seçeneğini kullanın.','info'); }
 function sendUpdatedReply(id){ const r=REVIEWS.find(x=>x.id===id), box=$('#draftBox'); if(!r||!box) return; const text=box.value.trim(); if(!text){toast('Yanıt metni boş olamaz.','warn');return;} r.drafts[(DRAFT_IDX[id]||0)%r.drafts.length]=text; box.readOnly=true; box.dataset.editing=''; box.style.borderColor=''; AUDIT_LOG.unshift({entity:'review',id,user:'Genel Merkez',action:'updated_reply',detail:'Güncel yanıt gönderim kuyruğuna alındı',ts:new Date().toLocaleString('tr-TR')}); toast('Güncel yanıt gönderim kuyruğuna alındı.','ok'); renderReviews(); }
+function markDuplicate(id){ const r=REVIEWS.find(x=>x.id===id); if(!r)return; if(!confirm(`${r.author} kaydı mükerrer olarak pasifleştirilsin mi? Google’daki gerçek yorum silinmez.`))return; r.duplicate=true; r.status='duplicate'; SELECTED.delete(id); AUDIT_LOG.unshift({entity:'review',id,user:'Genel Merkez',action:'duplicate_marked',detail:'Mükerrer kayıt pasifleştirildi; Google kaydı korunuyor.',ts:new Date().toLocaleString('tr-TR')}); toast('Kayıt mükerrer olarak pasifleştirildi. Google yorumu silinmedi.','ok'); renderReviews(); }
 
 function openEmail(id){
   const r = REVIEWS.find(x => x.id === id); if (!r) return;
