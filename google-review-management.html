@@ -2966,6 +2966,8 @@ if (!STATE.onboarded) setTimeout(startTour, 500);
 <script src="assets/google-review-live-views.js?v=20261116-6"></script>
 <script src="assets/google-review-enhancements.js?v=20261116-6"></script>
 <script src="assets/google-review-live-features.js?v=20261116-6"></script>
+<div id="releaseFooterBadge" aria-label="Sürüm ve yayın zamanı"><b>G16</b><span>Yayın: kontrol ediliyor</span></div>
+<style>#releaseFooterBadge{position:fixed;left:12px;bottom:10px;z-index:90;display:inline-flex;align-items:center;gap:7px;padding:6px 9px;border:1px solid var(--line,#dfe3e8);border-radius:7px;background:rgba(255,255,255,.94);color:var(--mute,#64748b);font:600 10px/1.2 system-ui;box-shadow:0 4px 12px rgba(15,23,42,.08)}#releaseFooterBadge b{color:var(--ink,#171b20);font-size:11px}@media(max-width:768px){#releaseFooterBadge{left:8px;bottom:8px;font-size:9px}}</style>
 <script>
   fetch('release.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(meta => {
     if (!meta) return;
@@ -2976,6 +2978,8 @@ if (!STATE.onboarded) setTimeout(startTour, 500);
     if (build) build.textContent = meta.version || build.textContent;
     if (date) date.textContent = meta.date || date.textContent;
     badge.title = `Sürüm ${meta.version || ''} · commit ${meta.commit || ''}`;
+    const footer = document.getElementById('releaseFooterBadge');
+    if (footer) { footer.querySelector('b').textContent = meta.version || 'G16'; footer.querySelector('span').textContent = `Yayın: ${meta.date || ''} ${meta.time || ''}`.trim(); footer.title = `commit ${meta.commit || ''}`; }
   }).catch(() => {});
 </script>
 <script>
