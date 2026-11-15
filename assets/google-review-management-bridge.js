@@ -172,9 +172,20 @@
     if([...SELECTED].some(id=>liveRow(id))&&action!=='clear')return toast('Canlı yorumları ayrı ayrı inceleyip onaylayın. Demo toplu işlemler canlı kayıtları değiştirmez.','warn');
     return originalBulk(action);
   };
+  const branchFilter=document.createElement('select');branchFilter.id='erpBranchFilter';branchFilter.setAttribute('aria-label','Şube ve veri ortamı');
+  branchFilter.innerHTML='<option value="live">Bursa Nilüfer · Canlı</option><option value="Kocaeli Gebze">Gebze · Demo</option><option value="Bursa İnegöl">İnegöl · Demo</option><option value="all">Tümü · Canlı + Demo</option>';
+  branchFilter.value=parentApi?'live':'all';
+  document.getElementById('rvSort')?.after(branchFilter);
+  const originalFiltered=window.getFilteredReviews;
+  window.getFilteredReviews=()=>originalFiltered().filter(row=>branchFilter.value==='all'||(branchFilter.value==='live'?!row.demo:row.demo&&row.store===branchFilter.value));
+  branchFilter.onchange=()=>{SELECTED.clear();SEL=null;renderReviews();};
   const originalRender=window.renderReviews;
   window.renderReviews=(...args)=>{
     const result=originalRender(...args),row=liveRow(SEL),box=document.getElementById('draftBox');
+    const filtered=getFilteredReviews();
+    document.querySelectorAll('#rvList .row2').forEach((node,index)=>{node.textContent+=' · '+(filtered[index]?.demo?'Demo':'Canlı');});
+    const selected=REVIEWS.find(r=>r.id===SEL),meta=document.querySelector('#rvDetail .meta');
+    if(selected&&meta){const badge=document.createElement('span');badge.className='chip '+(selected.demo?'warn':'ok');badge.textContent=selected.demo?'Demo · Google’a gönderilmez':'Bursa · Canlı Google kaydı';meta.prepend(badge);}
     if(!row||!box)return result;
     const item=currentItem(row),edit=dirty.get(row.id);
     const editable=!row.replyDate && row.status!=='gonderildi' && ['approval_pending','publish_failed'].includes(item?.status);
