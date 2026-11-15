@@ -555,7 +555,7 @@ async function saveWork(db: any, user: any, body: any, token: string) {
     throw new RequestError('Bu yorum için kayıtlı yanıt var. Onay kuyruğundan açıp düzenleyin.', 409);
   }
   if (existing && (workId(body) !== existing.id || expectedVersion(body) !== existing.version)) throw new RequestError('Taslak başka oturumda değişti. Listeyi yenileyin.', 409);
-  if (existing && !['approval_pending', 'publish_failed', 'draft_failed'].includes(existing.status)) throw new RequestError('Yayımlanan veya yayın sonucu beklenen taslak değiştirilemez.', 409);
+  if (existing && !['approval_pending', 'publish_failed', 'draft_failed'].includes(existing.status) && !(existing.status === 'published' && body.edit_published === true)) throw new RequestError('Yayımlanan veya yayın sonucu beklenen taslak değiştirilemez.', 409);
   if (!existing && body.item_id) throw new RequestError('Düzenlenecek taslak bulunamadı.', 404);
   const now = new Date().toISOString();
   let aiAnalysis = existing?.review_snapshot?.ai_analysis;
@@ -566,7 +566,7 @@ async function saveWork(db: any, user: any, body: any, token: string) {
   const values = { ...identity, kind, review_snapshot: withReviewReplyUrl({ ...verified.snapshot, ...(existing?.review_snapshot?.legal_hold ? { legal_hold: true } : {}) }, verified.snapshot.review_reply_url || existing?.review_snapshot?.review_reply_url), expected_reply: verified.expected_reply, reply_text: reply, draft_source: source, status: isReply ? 'approval_pending' : 'open', note: String(body.note || '').trim().slice(0, 2000), version: existing ? existing.version + 1 : 1, updated_by: user.id, updated_at: now, last_error: null, attempt_id: null, approved_by: null, approved_at: null, published_at: null };
   if (aiAnalysis) values.review_snapshot.ai_analysis=aiAnalysis;
   const result = existing
-    ? await db.from(workTable).update(values).eq('connection_id', connectionId).eq('id', existing.id).eq('version', existing.version).in('status', ['approval_pending', 'publish_failed', 'draft_failed']).select('*').maybeSingle()
+    ? await db.from(workTable).update(values).eq('connection_id', connectionId).eq('id', existing.id).eq('version', existing.version).in('status', existing.status === 'published' && body.edit_published === true ? ['published'] : ['approval_pending', 'publish_failed', 'draft_failed']).select('*').maybeSingle()
     : await db.from(workTable).insert({ ...values, created_by: user.id }).select('*').single();
   if (result.error?.code === '23505') throw new RequestError('Bu yorum için görev zaten oluşturuldu. Listeyi yenileyin.', 409);
   databaseFailure(result.error);

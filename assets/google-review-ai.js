@@ -575,7 +575,7 @@
     if (!context) return '';
     const { item, state } = context, status = item?.status;
     const action = (name, label, disabled = false, primary = false) => `<button type="button" class="${primary ? 'google-reply-primary' : 'google-reply-secondary'}" data-google-card-action="${name}" data-review-id="${esc(review.id)}" ${disabled || (name !== 'details' && publicationLocks.has(item?.id)) ? 'disabled' : ''}>${label}</button>`;
-    if (review.isReplied) {
+    if (review.isReplied && item?.status !== 'published') {
       const verification = canVerifyReply(item), conflict = Boolean(item?.review_snapshot?.reply_conflict), failed = item?.status === 'publish_failed';
       return `<div class="google-reply-heading"><strong>Google’daki yanıt</strong><span class="google-reply-status" data-tone="${verification ? 'loading' : 'published'}">${verification ? publicationWaiting(item) ? esc(replyStatus(item)) : 'Yayın kaydı doğrulama bekliyor' : item?.status === 'published' ? 'Yayımlandığı doğrulandı' : 'Yanıtlandı'}</span></div><div class="google-reply-text">${esc(review.replyText || 'Google’da yanıt mevcut.')}</div><p class="google-reply-note">${publicationWaiting(item) ? esc(verificationNote(item)) : verification ? 'Google’da bir yanıt görünüyor. Kayıtlı taslağın yayın sonucunu kontrol edin; bu işlem yanıt göndermez.' : 'Mevcut işletme yanıtı korunuyor.'}</p>${!verification && (conflict || failed) ? '<p class="google-reply-error">Kayıtlı taslağı ve Google’daki mevcut yanıtı inceleyin. Değişiklik için taslağı yeniden kaydetmeniz ve onaylamanız gerekir.</p>' : ''}${state.error && item?.status !== 'published' ? `<p class="google-reply-error" role="status">${esc(state.error)}</p>` : ''}${verification || conflict || failed ? `<div class="google-reply-actions">${verification ? action('verify', 'Yayın sonucunu kontrol et', state.busy) : ''}${action('details', 'Kayıtlı taslağı ve mevcut yanıtı incele', state.busy)}</div>` : ''}`;
     }
@@ -583,7 +583,7 @@
       const pending = preparingReviews.has(review.id) || status === 'preparing', error = state.error || item?.last_error, demoDraft = review.demo && !item && !error ? fallbackReply(review, branch) : '';
       return `<div class="google-reply-heading"><strong>${demoDraft ? 'Demo yanıt taslağı' : 'AI yanıt taslağı'}</strong><span class="google-reply-status" data-tone="${error ? 'error' : demoDraft ? 'ready' : 'loading'}">${demoDraft ? 'Demo hazır' : pending ? 'Hazırlanıyor' : error ? 'Tekrar deneme gerekli' : 'Hazırlama sırasında'}</span></div><div class="google-reply-text">${demoDraft ? esc(demoDraft) : pending ? 'Yoruma ve şubeye özel yanıt hazırlanıyor…' : error ? 'Taslak hazır olduğunda burada görünecek.' : 'Bu yorumun yanıtı otomatik hazırlanacak.'}</div>${error ? `<p class="google-reply-error" role="status">${esc(error)}</p>` : ''}<div class="google-reply-actions">${error || status === 'preparing' ? action('prepare', status === 'preparing' ? 'Hazırlığı kontrol et' : 'Yeniden dene', preparingReviews.has(review.id)) : ''}</div><p class="google-reply-note">${demoDraft ? 'Demo taslak gösteriliyor; canlı Google yayını kapalıdır.' : 'Hazırlanan taslak otomatik kaydedilir; onayınız olmadan Google’a gönderilmez.'}</p>`;
     }
-    const editable = ['approval_pending', 'publish_failed'].includes(status), conflict = Boolean(item.review_snapshot?.reply_conflict);
+    const editable = ['approval_pending', 'publish_failed', 'published'].includes(status), conflict = Boolean(item.review_snapshot?.reply_conflict);
     const mayApprove = editable && !conflict && !state.editing && !state.busy && Boolean(item.reply_text?.trim());
     const risk = item.review_snapshot?.ai_analysis?.risk_reason;
     const versionChanged = state.editing && state.baseVersion !== item.version;
@@ -596,9 +596,9 @@
     if (action === 'prepare') return prepareCard(reviewId, true);
     if (action === 'details' && item) return openItem(item.id);
     if (publicationLocks.has(item?.id)) return;
-    if (!item || (review.isReplied && action !== 'verify')) return;
+    if (!item || (review.isReplied && item.status !== 'published' && action !== 'verify')) return;
     if (item.review_snapshot?.reply_conflict && ['edit', 'regenerate'].includes(action)) return openItem(item.id);
-    if (action === 'edit' && ['approval_pending', 'publish_failed'].includes(item.status)) {
+    if (action === 'edit' && ['approval_pending', 'publish_failed', 'published'].includes(item.status)) {
       state.editing = true; state.text = item.reply_text; state.baseVersion = item.version; state.approved = null; state.error = ''; rerender(); return;
     }
     if (action === 'cancel') { state.editing = false; state.approved = null; state.error = ''; rerender(); schedulePreparation(); return; }
@@ -615,7 +615,7 @@
         const generated = action === 'regenerate' ? await requestDraft(review, branch, item.reply_text) : null;
         const text = generated ? String(generated.reply || '').trim() : state.text.trim();
         if (!text) throw new Error('AI boş yanıt döndürdü. Kayıtlı taslak korundu.');
-        data = await googleBusinessRequest('save_draft', { ...identityFor(review, branch), item_id: item.id, expected_version: item.version, reply_text: text, draft_source: generated ? 'openai' : 'manual', generation_id: generated?.generation_id });
+        data = await googleBusinessRequest('save_draft', { ...identityFor(review, branch), item_id: item.id, expected_version: item.version, reply_text: text, draft_source: generated ? 'openai' : 'manual', generation_id: generated?.generation_id, ...(item.status === 'published' ? { edit_published: true } : {}) });
       } else {
         data = await googleBusinessRequest(action === 'verify' ? 'verify_reply' : 'publish_reply', { item_id: item.id, expected_version: action === 'send' ? approved.version : item.version, ...(action === 'send' ? { approved: true } : {}) });
       }
