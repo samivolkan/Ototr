@@ -24,6 +24,8 @@ const TARGET = { account_id: '123', location_id: LOCATION, review_id: 'review-on
 function workflowFixture(options = {}) {
   let handler;
   const calls = [], mutations = [], rows = [];
+  const policies = [{ connection_id: 'ototr-primary', approver_roles: ['CEO', 'GENERAL_MANAGER', 'GOOGLE_REVIEW_ADMIN', 'MARKETING_DIRECTOR'], admin_user_ids: [], auto_reply_enabled: false, default_sla_hours: 24 }];
+  const audit = [];
   const connection = { id: 'ototr-primary', connected_by: OWNER, oauth_client_id: 'fixture-client', refresh_token_encrypted: encryptedRefresh, connected_at: new Date().toISOString() };
   const values = {
     SUPABASE_URL: 'https://fixture.supabase.invalid', SUPABASE_ANON_KEY: 'fixture-public', SUPABASE_SERVICE_ROLE_KEY: 'fixture-server',
@@ -58,22 +60,23 @@ function workflowFixture(options = {}) {
     };
     function execute() {
       if (table === 'google_business_connections') return { data: clone(connection), error: null };
-      assert.ok(['google_review_work_items','google_review_targets'].includes(table), 'Unexpected database table');
+      assert.ok(['google_review_work_items','google_review_targets','google_review_policies','google_review_audit_log'].includes(table), 'Unexpected database table');
+      const tableRows = table === 'google_review_policies' ? policies : table === 'google_review_audit_log' ? audit : rows;
       if (operation === 'select' && state.failReads) return { data: null, error: { code: '42P01', message: 'fixture table unavailable' } };
       if (operation !== 'select') {
         mutations.push({ operation, payload: clone(payload) });
         if (state.failAllWrites || (state.failPublishedWrite && payload.status === 'published')) return { data: null, error: { code: 'XX000', message: 'fixture database failure' } };
       }
-      let selected = rows.filter(row => filters.every(predicate => predicate(row)));
+      let selected = tableRows.filter(row => filters.every(predicate => predicate(row)));
       if (operation === 'insert' || operation === 'upsert') {
         const incoming = Array.isArray(payload) ? payload : [payload];
         selected = [];
         for (const data of incoming) {
-          const existing = rows.find(row => (table==='google_review_targets'?['connection_id','branch_id','month']:['connection_id', 'location_id', 'review_id', 'kind']).every(column => row[column] === data[column]));
+          const existing = table === 'google_review_audit_log' ? null : tableRows.find(row => (table==='google_review_targets'?['connection_id','branch_id','month']:['connection_id', 'location_id', 'review_id', 'kind']).every(column => row[column] === data[column]));
           if (existing && operation === 'insert') return { data: null, error: { code: '23505', message: 'fixture duplicate' } };
           if (existing) Object.assign(existing, clone(data));
           const row = existing || { id: randomUUID(), version: 1, created_at: new Date().toISOString(), updated_at: new Date().toISOString(), last_error: '', ...clone(data) };
-          if (!existing) rows.push(row);
+          if (!existing) tableRows.push(row);
           selected.push(row);
         }
       } else if (operation === 'update') {
@@ -128,7 +131,7 @@ function workflowFixture(options = {}) {
   });
   vm.runInContext(javascript, context, { filename: 'google-business-oauth-workflow.js' });
   return {
-    calls, mutations, rows, state,
+    calls, mutations, rows, state, audit, policies,
     rotateClient(value) { values.GOOGLE_OAUTH_CLIENT_ID = value; },
     setRemoteReply(text, extra = {}) { remote.reviewReply = { comment: text, updateTime: new Date().toISOString(), ...extra }; },
     setRemoteComment(text) { remote.comment = text; },
@@ -404,6 +407,10 @@ test('approved publication uses stored IDs/text and verifies the remote reply', 
   const put = f.calls.find(call => call.method === 'PUT');
   assert.equal(put.url.pathname, `/v4/accounts/123/locations/${LOCATION}/reviews/review-one/reply`);
   assert.deepEqual(JSON.parse(put.body), { comment: REPLY });
+  assert.equal(f.audit.length, 1);
+  assert.equal(f.audit[0].action, 'publish_reply');
+  assert.equal(f.audit[0].actor_id, OWNER);
+  assert.equal(f.audit[0].after_state.status, 'published');
   const putIndex = f.calls.indexOf(put);
   assert.ok(f.calls.slice(putIndex + 1).some(call => call.method === 'GET' && call.url.hostname === 'mybusiness.googleapis.com'), 'must verify after the write');
 });
@@ -1014,4 +1021,37 @@ test('targets reject unauthorized access, inactive branch and invalid input',asy
   const f=workflowFixture();assert.equal((await f.request({...input,...override})).status,400);assert.equal(f.mutations.length,0);
  }
  const denied=workflowFixture({userId:OTHER});assert.equal((await denied.request(input)).status,403);assert.equal((await denied.request({action:'targets_list'})).status,403);
+});
+
+test('a revised rejected draft clears rejection but preserves the legal publication hold', async () => {
+  const f = workflowFixture();
+  const item = await saveDraft(f);
+  f.rows[0].review_snapshot.legal_hold = true;
+  const rejected = await f.request({ action: 'reject_draft', branch_id: BRANCH, item_id: item.id, expected_version: item.version, reason: 'Yanıtı düzeltin' });
+  assert.equal(rejected.status, 200);
+  assert.equal(rejected.data.item.reply_text, REPLY);
+  const edited = await saveDraft(f, { item_id: item.id, expected_version: rejected.data.item.version, reply_text: `Düzenlendi. ${REPLY}` });
+  assert.equal(edited.review_snapshot.rejection, undefined);
+  assert.equal(edited.review_snapshot.legal_hold, true);
+  assert.equal(edited.status, 'approval_pending');
+  const blocked = await f.request(publishBody(edited));
+  assert.equal(blocked.status, 409);
+  assert.match(blocked.data.error, /Hukuki kilit/);
+  assert.equal(f.state.putCount, 0);
+});
+
+test('preparation retry retains a legal hold through both AI failure and success', async () => {
+  const f = workflowFixture();
+  f.state.aiStatus = 503;
+  const failed = await f.request(prepareBody());
+  f.rows[0].review_snapshot.legal_hold = true;
+  const retry = await f.request(prepareBody({ item_id: failed.data.item.id, expected_version: failed.data.item.version, retry: true }));
+  assert.equal(retry.data.item.status, 'draft_failed');
+  assert.equal(retry.data.item.review_snapshot.legal_hold, true);
+  f.state.aiStatus = 200;
+  const complete = await f.request(prepareBody({ item_id: retry.data.item.id, expected_version: retry.data.item.version, retry: true }));
+  assert.equal(complete.data.item.status, 'approval_pending');
+  assert.equal(complete.data.item.review_snapshot.legal_hold, true);
+  assert.equal((await f.request(publishBody(complete.data.item))).status, 409);
+  assert.equal(f.state.putCount, 0);
 });

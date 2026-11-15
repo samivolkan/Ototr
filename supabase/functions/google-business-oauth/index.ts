@@ -328,6 +328,7 @@ function workIdentity(body: any) {
   if (!/^\d+$/.test(account_id) || !/^\d+$/.test(location_id) || !review_id || review_id.length > 512 || !Object.hasOwn(branches, branch_id)) {
     throw new RequestError('Geçerli hesap, şube ve Google yorum kimliği gerekli.', 400);
   }
+  managementScope({ branch_id });
   return { connection_id: connectionId, account_id, location_id, review_id, branch_id, branch_name: branches[branch_id].name };
 }
 function workId(body: any) {
@@ -342,10 +343,113 @@ function expectedVersion(body: any) {
 function databaseFailure(error: any) {
   if (error) throw new RequestError('Yorum görevleri kaydedilemedi veya okunamadı. İş akışı veritabanı kurulumunu kontrol edin.', 503);
 }
+const managementBranchId = 'branch-google-nilufer';
+const policyColumns = 'auto_reply_enabled,default_sla_hours,approver_roles,updated_at';
+function managementScope(body: any) {
+  if (body.branch_id !== managementBranchId) throw new RequestError('Canlı yönetim yalnızca Bursa Nilüfer için kullanılabilir. Diğer şubeler demodur.', 400);
+}
+function managementFields(body: any, fields: string[]) {
+  const allowed = new Set(['action', 'entity', 'branch_id', ...fields]);
+  if (Object.keys(body).some(key => !allowed.has(key))) throw new RequestError('Bu işlem desteklenmeyen bir alan içeriyor.', 400);
+}
+async function readManagement(db: any, user: any, body: any, connection: any, clientMatches: boolean) {
+  managementScope(body);
+  const results = await Promise.all([
+    db.from('google_review_policies').select(policyColumns).eq('connection_id', connectionId).maybeSingle(),
+    db.from('google_review_audit_log').select('id,actor_id,actor_role,action,entity_type,entity_id,before_state,after_state,detail,created_at').eq('connection_id', connectionId).order('created_at', { ascending: false }).limit(200),
+    db.from('app_users').select('id,auth_user_id,full_name,role,is_active,branch_id').order('full_name').limit(500),
+    db.from('google_review_bulk_jobs').select('id,job_type,status,total_count,processed_count,success_count,failure_count,created_at,started_at,finished_at').eq('connection_id', connectionId).order('created_at', { ascending: false }).limit(100),
+    db.from('google_review_email_outbox').select('id,template_key,status,created_at,sent_at').eq('connection_id', connectionId).order('created_at', { ascending: false }).limit(100),
+  ]);
+  for (const result of results) databaseFailure(result.error);
+  if (!results[0].data) throw new RequestError('Google yorum politikası bulunamadı.', 503);
+  const allowedUsers = new Set([connection.connected_by, ...(Deno.env.get('GOOGLE_BUSINESS_ADMIN_USER_IDS') || '').split(',').map(value => value.trim()).filter(Boolean)]);
+  return {
+    branch_id: managementBranchId,
+    policy: results[0].data,
+    audit: results[1].data || [],
+    users: (results[2].data || []).map((row: any) => ({ id: row.id, full_name: row.full_name, role: row.role, is_active: row.is_active, branch_id: row.branch_id, google_management_enabled: allowedUsers.has(row.auth_user_id) })),
+    jobs: results[3].data || [], notifications: results[4].data || [], templates: [], escalations: [],
+    capabilities: { policy_sla: true, task_status: true, legal_hold: true, reject_draft: true, audit: true, users_read: true, users_write: false, templates: false, escalation_rules: false, notifications_read: true, notification_rules: false, auto_reply: false },
+    settings: { google_connected: clientMatches, connected_at: connection.connected_at || null, manual_approval_required: true, openai_configured: Boolean(Deno.env.get('OPENAI_API_KEY')), openai_model: Deno.env.get('OPENAI_MODEL') || 'gpt-5-mini' },
+  };
+}
+async function replyLegalHold(db: any, user: any, task: any, hold: boolean) {
+  const result = await db.from(workTable).select('*').eq('connection_id', connectionId).eq('location_id', task.location_id).eq('review_id', task.review_id).eq('kind', 'reply').maybeSingle();
+  databaseFailure(result.error);
+  const reply = result.data;
+  if (!reply) return;
+  if (hold && ['publishing', 'publish_unknown', 'preparing'].includes(reply.status)) throw new RequestError('Yanıt işlemi sürüyor veya sonucu belirsiz. Sonucu doğruladıktan sonra hukuki kilidi uygulayın.', 409);
+  if (Boolean(reply.review_snapshot?.legal_hold) === hold) return;
+  const updated = await db.from(workTable).update({ review_snapshot: { ...reply.review_snapshot, legal_hold: hold }, version: reply.version + 1, updated_by: user.id, updated_at: new Date().toISOString() }).eq('connection_id', connectionId).eq('id', reply.id).eq('version', reply.version).eq('status', reply.status).eq('updated_at', reply.updated_at).select('id').maybeSingle();
+  databaseFailure(updated.error);
+  if (!updated.data) throw new RequestError('Yanıt eşzamanlı değişti. Hukuki kilidi yeniden kontrol edin.', 409);
+}
+async function assertNoLegalHold(db: any, item: any) {
+  if (item.review_snapshot?.legal_hold) throw new RequestError('Hukuki kilit açık. Yanıt yayımlanmadan önce hukuk dosyasındaki kilit kaldırılmalı.', 409);
+  const result = await db.from(workTable).select('review_snapshot').eq('connection_id', connectionId).eq('location_id', item.location_id).eq('review_id', item.review_id).eq('kind', 'legal').eq('status', 'open').maybeSingle();
+  databaseFailure(result.error);
+  if (result.data?.review_snapshot?.legal_hold) throw new RequestError('Hukuki kilit açık. Yanıt yayımlanmadan önce hukuk dosyasındaki kilit kaldırılmalı.', 409);
+}
+async function updateManagementTask(db: any, user: any, body: any, requestId?: string) {
+  managementScope(body);
+  managementFields(body, ['item_id', 'expected_version', 'status', 'hold', 'note']);
+  const item = await getWork(db, body);
+  if (item.branch_id !== managementBranchId || !taskKinds.includes(item.kind)) throw new RequestError('Bu kayıt Bursa yönetim görevi değil.', 400);
+  if (!['status', 'hold', 'note'].some(key => Object.hasOwn(body, key))) throw new RequestError('Değiştirilecek görev alanı gerekli.', 400);
+  if (body.status !== undefined && !['open', 'done'].includes(body.status)) throw new RequestError('Geçersiz görev durumu.', 400);
+  if (body.note !== undefined && (typeof body.note !== 'string' || body.note.length > 2000)) throw new RequestError('Görev notu en fazla 2000 karakter olmalıdır.', 400);
+  if (body.hold !== undefined && (typeof body.hold !== 'boolean' || item.kind !== 'legal')) throw new RequestError('Hukuki kilit yalnızca hukuk dosyasında değiştirilebilir.', 400);
+  const hold = body.hold ?? Boolean(item.review_snapshot?.legal_hold), status = body.status ?? item.status;
+  if (hold && status === 'done') throw new RequestError('Dosyayı kapatmadan önce hukuki kilidi kaldırın.', 409);
+  // Persist the task first: newly created reply rows must observe the hold too.
+  // Then bump any existing reply version to defeat an already-read approval.
+  const values = { status, note: body.note === undefined ? item.note : body.note.trim(), review_snapshot: { ...item.review_snapshot, ...(body.hold !== undefined ? { legal_hold: hold } : {}) }, version: item.version + 1, updated_by: user.id, updated_at: new Date().toISOString() };
+  const result = await db.from(workTable).update(values).eq('connection_id', connectionId).eq('id', item.id).eq('version', item.version).select('*').maybeSingle();
+  databaseFailure(result.error);
+  if (!result.data) throw new RequestError('Görev başka oturumda değişti. Listeyi yenileyin.', 409);
+  await writeGoogleAudit(db, { userId: user.id, role: 'OPERATOR', action: 'update_task', entityType: 'review_work_item', entityId: item.id, beforeState: { status: item.status, version: item.version, legal_hold: Boolean(item.review_snapshot?.legal_hold) }, afterState: { status, version: result.data.version, legal_hold: hold }, detail: body.hold !== undefined ? hold ? 'Hukuki yayın kilidi açıldı.' : 'Hukuki yayın kilidi kaldırıldı.' : 'Görev durumu veya notu güncellendi.', requestId });
+  if (body.hold !== undefined) {
+    try { await replyLegalHold(db, user, result.data, hold); }
+    catch (error) { throw new RequestError(`Hukuk dosyasındaki kilit tercihi kaydedildi; yanıt kilidi tamamlanamadı. Listeyi yenileyip aynı işlemi tekrar deneyin. ${error instanceof RequestError ? error.message : ''}`, error instanceof RequestError ? error.status : 503); }
+  }
+  return { item: result.data };
+}
+async function updateManagement(db: any, user: any, body: any, requestId?: string) {
+  managementScope(body);
+  if (body.entity === 'task') return await updateManagementTask(db, user, body, requestId);
+  if (body.entity !== 'policy') throw new RequestError('Bu yönetim alanı sunucuda desteklenmiyor.', 400);
+  managementFields(body, ['expected_updated_at', 'default_sla_hours']);
+  if (!Number.isSafeInteger(body.default_sla_hours) || body.default_sla_hours < 1 || body.default_sla_hours > 168 || typeof body.expected_updated_at !== 'string' || !Number.isFinite(Date.parse(body.expected_updated_at))) throw new RequestError('SLA 1–168 saat ve güncel kayıt sürümü gerekli.', 400);
+  const before = await db.from('google_review_policies').select(policyColumns).eq('connection_id', connectionId).maybeSingle();
+  databaseFailure(before.error);
+  if (!before.data || before.data.updated_at !== body.expected_updated_at) throw new RequestError('Politika başka oturumda değişti. Ayarları yenileyin.', 409);
+  const result = await db.from('google_review_policies').update({ default_sla_hours: body.default_sla_hours, updated_by: user.id, updated_at: new Date().toISOString() }).eq('connection_id', connectionId).eq('updated_at', body.expected_updated_at).select(policyColumns).maybeSingle();
+  databaseFailure(result.error);
+  if (!result.data) throw new RequestError('Politika başka oturumda değişti. Ayarları yenileyin.', 409);
+  await writeGoogleAudit(db, { userId: user.id, role: 'OPERATOR', action: 'policy_update', entityType: 'google_review_policy', entityId: connectionId, beforeState: { default_sla_hours: before.data.default_sla_hours }, afterState: { default_sla_hours: result.data.default_sla_hours }, detail: 'Bursa yorum SLA süresi güncellendi.', requestId });
+  return { policy: result.data };
+}
+async function rejectDraft(db: any, user: any, body: any, requestId?: string) {
+  managementScope(body);
+  managementFields(body, ['item_id', 'expected_version', 'reason']);
+  if (typeof body.reason !== 'string' || !body.reason.trim() || body.reason.length > 1000) throw new RequestError('1–1000 karakter ret gerekçesi gerekli.', 400);
+  const item = await getWork(db, body);
+  if (item.branch_id !== managementBranchId || item.kind !== 'reply' || !['approval_pending', 'publish_failed'].includes(item.status)) throw new RequestError('Yalnızca yayınlanmamış, sonucu kesin taslak reddedilebilir.', 409);
+  const rejection = { reason: body.reason.trim(), rejected_at: new Date().toISOString(), rejected_by: user.id };
+  // The current schema requires draft_failed to have an empty reply. Retain the
+  // actual draft under publish_failed plus explicit rejection metadata instead.
+  const result = await db.from(workTable).update({ status: 'publish_failed', review_snapshot: { ...item.review_snapshot, rejection }, last_error: `Taslak reddedildi: ${rejection.reason}`, approved_by: null, approved_at: null, published_at: null, attempt_id: null, version: item.version + 1, updated_by: user.id, updated_at: rejection.rejected_at }).eq('connection_id', connectionId).eq('id', item.id).eq('version', item.version).eq('status', item.status).eq('updated_at', item.updated_at).select('*').maybeSingle();
+  databaseFailure(result.error);
+  if (!result.data) throw new RequestError('Taslak başka oturumda değişti. Listeyi yenileyin.', 409);
+  await writeGoogleAudit(db, { userId: user.id, role: 'OPERATOR', action: 'reject_draft', entityType: 'review_work_item', entityId: item.id, beforeState: { status: item.status, version: item.version }, afterState: { status: result.data.status, version: result.data.version, rejection }, detail: rejection.reason, requestId });
+  return { item: result.data };
+}
 async function getWork(db: any, body: any) {
   const { data, error } = await db.from(workTable).select('*').eq('connection_id', connectionId).eq('id', workId(body)).maybeSingle();
   databaseFailure(error);
   if (!data) throw new RequestError('Yorum görevi bulunamadı.', 404);
+  managementScope(data);
   if (data.version !== expectedVersion(body)) throw new RequestError('Kayıt başka bir oturumda değişti. Listeyi yenileyin.', 409);
   return data;
 }
@@ -415,11 +519,11 @@ async function prepareDraft(db: any, user: any, body: any, connection: any, auth
     return result.data;
   }
   const signal = AbortSignal.timeout(35_000);
-  let snapshot: any = {}, skipped = false;
+  let snapshot: any = item.review_snapshot?.legal_hold ? { legal_hold: true } : {}, skipped = false;
   try {
     const token = await accessToken(await decrypt(connection.refresh_token_encrypted), signal);
     const verified = await verifiedReview(identity, token, signal);
-    snapshot = withReviewReplyUrl(verified.snapshot, verified.snapshot.review_reply_url || item.review_snapshot?.review_reply_url);
+    snapshot = withReviewReplyUrl({ ...verified.snapshot, ...(item.review_snapshot?.legal_hold ? { legal_hold: true } : {}) }, verified.snapshot.review_reply_url || item.review_snapshot?.review_reply_url);
     if (verified.expected_reply) { skipped = true; throw new RequestError('Bu yorum Google’da zaten yanıtlanmış. Mevcut yanıt korundu.', 409); }
     // Forward the same ERP identity to the existing AI service. Its authorization,
     // canonical prompt, moderation and signature validation remain the only path.
@@ -463,7 +567,7 @@ async function saveWork(db: any, user: any, body: any, token: string) {
   if (existing && !['approval_pending', 'publish_failed', 'draft_failed'].includes(existing.status)) throw new RequestError('Yayımlanan veya yayın sonucu beklenen taslak değiştirilemez.', 409);
   if (!existing && body.item_id) throw new RequestError('Düzenlenecek taslak bulunamadı.', 404);
   const now = new Date().toISOString();
-  const values = { ...identity, kind, review_snapshot: withReviewReplyUrl(verified.snapshot, verified.snapshot.review_reply_url || existing?.review_snapshot?.review_reply_url), expected_reply: verified.expected_reply, reply_text: reply, draft_source: source, status: isReply ? 'approval_pending' : 'open', note: String(body.note || '').trim().slice(0, 2000), version: existing ? existing.version + 1 : 1, updated_by: user.id, updated_at: now, last_error: null, attempt_id: null, approved_by: null, approved_at: null, published_at: null };
+  const values = { ...identity, kind, review_snapshot: withReviewReplyUrl({ ...verified.snapshot, ...(existing?.review_snapshot?.legal_hold ? { legal_hold: true } : {}) }, verified.snapshot.review_reply_url || existing?.review_snapshot?.review_reply_url), expected_reply: verified.expected_reply, reply_text: reply, draft_source: source, status: isReply ? 'approval_pending' : 'open', note: String(body.note || '').trim().slice(0, 2000), version: existing ? existing.version + 1 : 1, updated_by: user.id, updated_at: now, last_error: null, attempt_id: null, approved_by: null, approved_at: null, published_at: null };
   const result = existing
     ? await db.from(workTable).update(values).eq('connection_id', connectionId).eq('id', existing.id).eq('version', existing.version).in('status', ['approval_pending', 'publish_failed', 'draft_failed']).select('*').maybeSingle()
     : await db.from(workTable).insert({ ...values, created_by: user.id }).select('*').single();
@@ -494,6 +598,8 @@ const outcomePendingMessage = 'Gönderim sonucu kontrol ediliyor.';
 async function publishWork(db: any, user: any, body: any, token: string) {
   const item = await getWork(db, body), verifyOnly = body.action === 'verify_reply';
   if (item.kind !== 'reply') throw new RequestError('Bu kayıt yanıt taslağı değil.', 400);
+  if (!verifyOnly && item.review_snapshot?.rejection) throw new RequestError('Taslak reddedilmiş. Düzenleyip yeniden kaydetmeden yayımlanamaz.', 409);
+  if (!verifyOnly) await assertNoLegalHold(db, item);
   if (!verifyOnly && body.approved !== true) throw new RequestError('Bu yanıtı Google’da yayımlamak için açık onay gerekli.', 400);
   if (!verifyOnly && item.review_snapshot?.reply_conflict) throw new RequestError('Google’daki farklı yanıtı inceleyin ve taslağı yeniden kaydedin. Yeniden onay olmadan üzerine yazılmaz.', 409);
   if (item.status === 'published') return { item, already_published: true };
@@ -574,6 +680,7 @@ async function publishWork(db: any, user: any, body: any, token: string) {
     }
     if (!sameGoogleReply(currentReply, item.expected_reply)) throw new RequestError('Google’daki mevcut yanıt değişmiş. Yayın durduruldu; taslağı yeniden inceleyin.', 409);
     if (replySnapshot.google_reply_accepted) return { item: await finishPublication(db, item, attemptId, { status: replySnapshot.google_reply_state === 'REJECTED' ? 'publish_failed' : 'publish_unknown', review_snapshot: replySnapshot, last_error: replySnapshot.google_reply_state === 'REJECTED' ? 'Google yanıtı reddetti. Metni inceleyip yeniden kaydedin; yeni onay gerekir.' : sentPendingMessage }) };
+    await assertNoLegalHold(db, item);
     writeStarted = true;
     try {
       const receipt = await googleJson(`${reviewUrl(item)}/reply`, token, { method: 'PUT', signal, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ comment: item.reply_text }) }, true);
@@ -623,6 +730,11 @@ Deno.serve(async (req) => {
     const clientMatches = Boolean(connection && connection.oauth_client_id === env('GOOGLE_OAUTH_CLIENT_ID'));
     if (body.action === 'status') return json({ connected: clientMatches, connected_at: connection?.connected_at || null, reconnection_required: Boolean(connection && !clientMatches) });
     if (!connection) return json({ error: 'Google Business Profile bağlantısı kurulmamış.' }, 409);
+    if (['prepare_draft', 'save_draft', 'create_task'].includes(body.action)) workIdentity(body);
+    if (['publish_reply', 'verify_reply'].includes(body.action)) await getWork(db, body);
+    if (body.action === 'management_read') return json(await readManagement(db, user, body, connection, clientMatches));
+    if (body.action === 'management_update') return json(await updateManagement(db, user, body, req.headers.get('x-request-id') || undefined));
+    if (body.action === 'reject_draft') return json(await rejectDraft(db, user, body, req.headers.get('x-request-id') || undefined));
     if (body.action === 'operations_list') {
       const { data, error } = await db.from('google_review_operations').select('review_id,branch_id,status,version,updated_at').eq('connection_id', connectionId).order('updated_at', { ascending: false }).limit(5000);
       databaseFailure(error); return json({ items: data || [] });
@@ -659,6 +771,7 @@ Deno.serve(async (req) => {
     }
     if (body.action === 'update_task') {
       const item = await getWork(db, body);
+      if (item.review_snapshot?.legal_hold && body.status === 'done') throw new RequestError('Dosyayı kapatmadan önce hukuki kilidi kaldırın.', 409);
       if (!taskKinds.includes(item.kind) || !['open', 'done'].includes(body.status)) throw new RequestError('Geçersiz görev durumu.', 400);
       const { data, error } = await db.from(workTable).update({ status: body.status, note: String(body.note || '').trim().slice(0, 2000), version: item.version + 1, updated_by: user.id, updated_at: new Date().toISOString() }).eq('connection_id', connectionId).eq('id', item.id).eq('version', item.version).select('*').maybeSingle();
       databaseFailure(error); if (!data) throw new RequestError('Görev başka oturumda değişti. Listeyi yenileyin.', 409);
@@ -666,7 +779,7 @@ Deno.serve(async (req) => {
     }
     if (body.action === 'audit_list') {
       const auditConnection = await authorizedConnection(db, user.id);
-      const allowedActions = new Set(['publish_reply', 'verify_reply', 'bulk_route', 'save_draft', 'create_task', 'update_task', 'sync_reviews']);
+      const allowedActions = new Set(['publish_reply', 'verify_reply', 'bulk_route', 'save_draft', 'create_task', 'update_task', 'sync_reviews', 'policy_update', 'reject_draft']);
       const requestedAction = String(body.audit_action || '').trim();
       const requestedLimit = Number(body.limit);
       const limit = Number.isSafeInteger(requestedLimit) ? Math.min(200, Math.max(1, requestedLimit)) : 100;
@@ -691,6 +804,7 @@ Deno.serve(async (req) => {
       if (existing.data) return json({ job: existing.data, replayed: true });
       const selected = await db.from(workTable).select('id,status,kind,branch_id').eq('connection_id', connectionId).in('id', itemIds);
       databaseFailure(selected.error);
+      if ((selected.data || []).some((item: any) => item.branch_id !== managementBranchId)) throw new RequestError('Demo şubeler canlı sevk kuyruğuna alınamaz.', 400);
       const eligible = (selected.data || []).filter((item: any) => item.kind === 'reply' && ['approval_pending', 'publish_failed', 'publish_unknown'].includes(item.status));
       if (!eligible.length) throw new RequestError('Sevk kuyruğuna alınabilecek onay bekleyen yanıt bulunamadı.', 409);
       const created = await db.from('google_review_bulk_jobs').insert({ connection_id: connectionId, job_type: 'route', status: 'queued', requested_by: user.id, idempotency_key: idempotencyKey, total_count: eligible.length, progress: { source: 'google_review_center', requested_count: itemIds.length } }).select('*').maybeSingle();

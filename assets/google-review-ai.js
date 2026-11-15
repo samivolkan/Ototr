@@ -639,7 +639,7 @@
     const identity = identityFor(review, branch);
     if (!['prepare','regenerate','save','publish','verify','legal','complaint','branch'].includes(action)) throw new Error('Geçersiz işlem.');
     if (['save','publish','verify','regenerate'].includes(action) && (!item || options.version !== item.version)) throw new Error('Taslak sürümü değişti; güncel kaydı inceleyin.');
-    if (action === 'publish' && (options.approved !== true || options.text !== item.reply_text || !['approval_pending','publish_failed'].includes(item.status) || item.review_snapshot?.reply_conflict)) throw new Error('Güncel kayıtlı metin için yayın onayı gerekli.');
+    if (action === 'publish' && (options.approved !== true || options.text !== item.reply_text || !['approval_pending','publish_failed'].includes(item.status) || item.review_snapshot?.reply_conflict || item.review_snapshot?.rejection || item.review_snapshot?.legal_hold)) throw new Error('Güncel kayıtlı metin için yayın onayı gerekli; reddedilen veya hukuken bekletilen taslak yayınlanamaz.');
     if (['prepare','regenerate','save','publish'].includes(action) && review.isReplied) throw new Error('Google’da zaten yanıt var; mevcut yanıt korunuyor.');
     if (action === 'prepare' && item && !['draft_failed','preparing'].includes(item.status)) return item;
     managementLocks.add(reviewId);

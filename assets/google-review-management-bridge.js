@@ -43,11 +43,16 @@
     const live = parentApi?.getBranchById?.(liveBranchId);
     const reviews = parentApi?.fetchGoogleReviews?.(liveBranchId) || [];
     const items = ai?.getWorkflowItems?.() || [];
+    const policy = window.OTOTRReviewManagement?.state?.policy;
+    const slaHours = Number(policy?.default_sla_hours) || 24;
     const target = BRANCHES[0];
     if (target) {
       target.actual = Number(live?.googleReviewCount ?? reviews.length);
       target.rating = Number(live?.googleRating ?? 0);
       target.target = Number(live?.monthlyTarget ?? 0);
+      target.slaH = slaHours;
+      target.autoreply = policy?.auto_reply_enabled === true;
+      target.gbp = live?.googleLocationId || live?.locationId || '';
       target.slaRate = 0;
       target.responseRate = reviews.length ? Math.round(reviews.filter(r => r.isReplied).length / reviews.length * 100) : 0;
       target.criticalRate = reviews.length ? Math.round(reviews.filter(r => r.rating <= 2).length / reviews.length * 100) : 0;
@@ -56,6 +61,8 @@
     const mapped = reviews.filter(review => !review.demo && review.id && review.branchId === liveBranchId).map(review => {
       if (!liveIds.has(review.id)) liveIds.set(review.id, nextId--);
       const item = items.find(i => i.kind === 'reply' && i.branch_id === liveBranchId && i.review_id === review.googleReviewId);
+      const task = items.find(i => i.kind !== 'reply' && i.status === 'open' && i.branch_id === liveBranchId && i.review_id === review.googleReviewId);
+      const routedTo = task?.kind === 'branch' ? 'store' : task?.kind || null;
       return ({
       id: liveIds.get(review.id),
       erpReviewId: review.id,
@@ -65,16 +72,18 @@
       author: escape(review.reviewerName || 'Google kullanıcısı'),
       stars: Math.max(1, Math.min(5, Number(review.rating) || 1)),
       risk: Number(review.starRating || review.rating || 0) <= 2 ? 85 : Number(review.starRating || review.rating || 0) === 3 ? 45 : 8,
+      riskSource: 'Yıldız puanı kuralı; AI risk ölçümü değildir',
+      aiAnalysis: item?.review_snapshot?.ai_analysis || null,
       tag: Number(review.starRating || review.rating || 0) <= 2 ? 'Kritik' : Number(review.starRating || review.rating || 0) === 3 ? 'Takip' : 'Olumlu',
       text: escape(review.comment || ''),
       drafts: [escape(review.isReplied ? review.replyText || '' : item?.reply_text || 'ERP üzerinden taslak hazırlamak için Yeniden düğmesini kullanın.')],
-      status: review.isReplied ? 'gonderildi' : 'bekliyor',
+      status: review.isReplied ? 'gonderildi' : routedTo === 'legal' ? 'hukuk' : routedTo ? 'routed' : 'bekliyor',
       time: review.reviewDate ? new Date(review.reviewDate).toLocaleString('tr-TR') : 'Canlı Google kaydı',
-      slaH: 12,
-      escalated: false,
+      slaH: slaHours,
+      escalated: !review.isReplied && Boolean(review.reviewDate) && Date.now() - Date.parse(review.reviewDate) > slaHours * 3600000,
       createdAt: review.reviewDate || null,
       replyDate: review.replyDate || null,
-      pipeline: {routedTo:null, stages:{received:{done:true,ts:review.reviewDate || null},classified:{done:Boolean(item),ts:item?.created_at || null},draft:{done:Boolean(item?.reply_text),ts:item?.created_at || null},routed:{done:false,ts:null},responded:{done:Boolean(review.isReplied),ts:review.replyDate || null},closed:{done:false,ts:null}}},
+      pipeline: {routedTo, stages:{received:{done:true,ts:review.reviewDate || null},classified:{done:Boolean(item?.review_snapshot?.ai_analysis),ts:item?.review_snapshot?.ai_analysis ? item.created_at : null},draft:{done:Boolean(item?.reply_text),ts:item?.created_at || null},routed:{done:Boolean(task),ts:task?.created_at || null},responded:{done:Boolean(review.isReplied),ts:review.replyDate || null},closed:{done:false,ts:null}}},
     }); });
     REVIEWS.splice(0, REVIEWS.length, ...mapped, ...REVIEWS.filter(review => review.demo));
     const replace = (collection, kind, convert) => {
@@ -82,17 +91,17 @@
       const liveItems = items.filter(item => item.branch_id === liveBranchId && item.kind === kind);
       collection.splice(0, collection.length, ...liveItems.map(item => {
         if (!workIds.has(item.id)) workIds.set(item.id, `ERP-${workIds.size + 1}`);
-        return {id:workIds.get(item.id), erpItemId:item.id, branchIdx:0,
+        return {id:workIds.get(item.id), erpItemId:item.id, branchIdx:0, version:item.version, googleReviewId:item.review_id,
           customer:escape(item.review_snapshot?.reviewer_name || 'Google kullanıcısı'),
           text:escape(item.reply_text || item.note || ''), ...convert(item)};
       }), ...demo);
     };
-    replace(LEGAL_CASES, 'legal', item => ({category:'Google yorum incelemesi',assignee:'ERP hukuk kuyruğu',status:item.status === 'done' ? 'closed' : 'open',hold:item.status !== 'done',opened:String(item.created_at || '').slice(0,10),sla:7,review:escape(item.review_snapshot?.comment || '')}));
-    replace(COMPLAINTS, 'complaint', item => ({category:'Google müşteri deneyimi',assignee:'ERP şikayet kuyruğu',status:item.status === 'done' ? 'resolved' : 'received',severity:'normal',openedAt:Date.parse(item.created_at),slaH:24,review:escape(item.review_snapshot?.comment || '')}));
-    replace(APPROVALS, 'reply', item => ({type:'ERP yanıtı · '+escape(item.status),level:1,total:1,assignedTo:'ERP yetkili onayı',slaH:24,openedAt:Date.parse(item.created_at)}));
+    replace(LEGAL_CASES, 'legal', item => ({category:'Google yorum incelemesi',assignee:'ERP hukuk kuyruğu',status:item.status === 'done' ? 'closed' : 'open',hold:item.review_snapshot?.legal_hold === true,opened:String(item.created_at || '').slice(0,10),sla:slaHours/24,review:escape(item.review_snapshot?.comment || '')}));
+    replace(COMPLAINTS, 'complaint', item => ({category:'Google müşteri deneyimi',assignee:'ERP şikayet kuyruğu',status:item.status === 'done' ? 'resolved' : 'received',severity:Number(item.review_snapshot?.rating) <= 2 ? 'high' : 'normal',openedAt:Date.parse(item.created_at),slaH:slaHours,review:escape(item.review_snapshot?.comment || '')}));
+    replace(APPROVALS, 'reply', item => ({type:'ERP yanıtı · '+escape(item.review_snapshot?.rejection ? 'Reddedildi' : item.status),level:1,total:1,assignedTo:'ERP yetkili onayı',slaH:slaHours,openedAt:Date.parse(item.created_at)}));
     for (let i=APPROVALS.length-1;i>=0;i--) {
       const item=items.find(item=>item.id===APPROVALS[i].erpItemId);
-      if(item && item.status==='published') APPROVALS.splice(i,1);
+      if(item && (!['approval_pending','publish_failed','publish_unknown'].includes(item.status) || item.review_snapshot?.rejection)) APPROVALS.splice(i,1);
     }
   }
 
@@ -122,6 +131,7 @@
   let pendingApproval = null, busy = false;
   const currentItem = row => ai?.getWorkflowItems?.().find(i=>i.kind==='reply' && i.branch_id===liveBranchId && i.review_id===row.googleReviewId);
   const isEditing = () => dirty.size>0 || Boolean(pendingApproval) || busy;
+  window.OTOTRReviewBridge = {hydrate:hydrateLiveNilufer,isEditing};
   const lockEditing = () => ai?.setManagementEditing?.(isEditing());
   async function act(id, action, extra={}) {
     const row=liveRow(id); if(!row || !ai?.manageReview) return missing();
@@ -144,6 +154,7 @@
     const row=liveRow(id);if(!row)return originalEmail(id);
     const item=currentItem(row);
     if(dirty.has(id))return toast('Önce düzenlediğiniz taslağı kaydedin.','warn');
+    if(item?.review_snapshot?.rejection)return toast('Bu taslak reddedildi. Önce düzenleyip yeniden kaydedin.','warn');
     if(!item?.reply_text || !['approval_pending','publish_failed'].includes(item.status))return toast('Önce geçerli bir taslak hazırlayın.','warn');
     pendingApproval={id,version:item.version,text:item.reply_text};lockEditing();
     document.getElementById('emailFrom').textContent='Bursa Nilüfer · canlı Google yayını';
@@ -199,7 +210,7 @@
       actions.innerHTML=`<button class="btn p" onclick="openEmail(${row.id})" ${editable?'':'disabled'}>✓ Onayla</button><button class="btn" onclick="regenDraft(${row.id})">↻ ${item?.reply_text?'Yeniden':'Taslak hazırla'}</button><button class="btn" onclick="saveLiveDraft(${row.id})" ${editable?'':'disabled'}>Kaydet</button>${['publishing','publish_unknown','publish_failed'].includes(item?.status)?`<button class="btn" onclick="verifyLiveReply(${row.id})">Yayın sonucunu kontrol et</button>`:''}`;
     }
     const label=document.querySelector('.draft-label .chip');
-    if(label)label.textContent=row.status==='gonderildi'?'Google yanıtı':item?`${item.draft_source==='openai'?'OpenAI':item.draft_source==='manual'?'Elle düzenlenen':'Şablon'} · ${item.status}`:'ERP taslağı bekleniyor';
+    if(label)label.textContent=row.status==='gonderildi'?'Google yanıtı':item?`${item.draft_source==='openai'?'OpenAI':item.draft_source==='manual'?'Elle düzenlenen':'Şablon'} · ${item.review_snapshot?.rejection ? 'Reddedildi · yeniden düzenleyin' : item.status}`:'ERP taslağı bekleniyor';
     return result;
   };
   const originalOverview = window.renderOverview;
