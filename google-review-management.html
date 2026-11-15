@@ -533,6 +533,7 @@ textarea[readonly]{opacity:.75;cursor:default}
 .menu-toggle{display:none}
 .review-sidebar{position:fixed;top:54px;bottom:0;left:0;width:208px;background:var(--nav);border-right:1px solid rgba(255,255,255,.08);z-index:95;overflow-y:auto;padding:20px 12px}
 .sidebar-title{color:rgba(255,255,255,.4);font-size:10px;font-weight:600;letter-spacing:1.1px;padding:0 12px 12px;text-transform:uppercase}
+.release-badge{display:flex;align-items:center;gap:6px;margin-left:10px;padding:5px 8px;border:1px solid rgba(255,255,255,.16);border-radius:7px;color:#dbeafe;font-size:10px;line-height:1.15;white-space:nowrap;background:rgba(37,99,235,.16)}.release-badge b{color:#fff;font-size:11px}.release-badge small{color:#a5b4fc}
 .review-sidebar .topnav{display:flex;flex-direction:column;gap:4px;overflow:visible}
 .review-sidebar .topnav a{padding:11px 12px;border:0;border-left:3px solid transparent;border-radius:7px;font-size:12px;text-decoration:none;white-space:normal;min-height:42px}
 .review-sidebar .topnav a.on{background:rgba(232,40,26,.13);border-left-color:var(--red);color:#fff}
@@ -556,6 +557,7 @@ main{margin-left:208px;width:calc(100% - 208px);max-width:none;padding:22px}
 <header class="topbar">
   <button class="ibtn menu-toggle" id="reviewMenuToggle" aria-label="Menüyü aç" aria-controls="reviewSidebar" aria-expanded="false" onclick="toggleReviewMenu()">☰</button>
   <div class="brand"><span class="bm">OTO</span><span style="color:var(--red)">TR</span><span class="bsub">Google Yorum Yönetim</span></div>
+  <div class="release-badge" id="releaseBadge" title="Arayüz sürümü ve veri yenileme durumu"><b>G16</b><span>16.11.2026</span><small id="dataFreshness">Veri: kontrol ediliyor</small></div>
   <div class="searchbar">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
     <input placeholder="Ara..." readonly onclick="openCmdk()">
@@ -1647,6 +1649,7 @@ function getFilteredReviews(){
 
 function renderReviews(){
   const filtered = getFilteredReviews();
+  const fresh=$('#dataFreshness'); if(fresh) fresh.textContent=`Veri: ${new Date().toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})}`;
   $("#rvCount").textContent = filtered.length;
 
   if (!filtered.length){
