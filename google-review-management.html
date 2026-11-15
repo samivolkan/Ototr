@@ -198,6 +198,9 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
 .li .row2{font-size:11px;color:var(--mute);margin-bottom:3px}
 .li p{margin:0;color:var(--i2);font-size:12px;line-height:1.4;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 .bulk-bar{position:relative;bottom:auto;background:var(--nav);color:#fff;padding:9px 12px;display:none;align-items:center;gap:8px;border-radius:var(--r);margin:8px 0 0;z-index:10;flex-wrap:wrap;box-shadow:0 8px 20px rgba(15,23,42,.18);animation:bulkDrop .16s ease-out}
+.inline-review-actions{display:flex;gap:6px;flex-wrap:wrap;padding:8px 12px 10px 42px;background:#f8fafc;border-top:1px solid var(--l2);border-bottom:1px solid var(--l2)}
+.inline-review-actions button{border:1px solid #cfd7e4;background:#fff;border-radius:6px;padding:5px 8px;font-size:11px;cursor:pointer;color:#1f2937}
+.inline-review-actions button.primary{background:#111827;color:#fff;border-color:#111827}
 @keyframes bulkDrop{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
 .bulk-bar.on{display:flex}
 .bulk-bar .bulk-info{font-size:12px;font-weight:600;display:flex;align-items:center;gap:5px}
@@ -1655,7 +1658,7 @@ function renderReviews(){
           <div class="row2">${r.store} · ${r.time}${r.escalated?' · ⚠':''}</div>
           <p>${r.text}</p>
         </div>
-      </div>`;
+      </div>${SELECTED.has(r.id)?`<div class="inline-review-actions" onclick="event.stopPropagation()"><button class="primary" onclick="selectReview(${r.id})">Detayı aç</button><button onclick="openInlineAction(${r.id},'edit')">✎ Taslağı düzenle</button><button onclick="openInlineAction(${r.id},'ai')">✦ Alternatif AI</button><button onclick="routeReview(${r.id},'legal')">⚖ Hukuka</button><button onclick="routeReview(${r.id},'complaint')">📨 Şikâyete</button></div>`:""}`;
     }).join("");
   }
 
@@ -1690,7 +1693,7 @@ function renderReviews(){
       <div class="draft-label"><h4>${isFinal ? "Gönderilen" : "AI taslağı"}</h4>${isFinal ? `<span class="chip ok">Gönderildi</span>` : `<span class="chip">${idx+1}/${r.drafts.length}</span>`}</div>
       <textarea id="draftBox" ${isFinal||isRouted?"readonly":""}>${draft}</textarea>
       <div class="actions">
-        ${isFinal ? `<button class="btn ghost" onclick="toast('Gönderilmiş','info')">Detay</button>`
+        ${isFinal ? `<button class="btn ghost" onclick="editSentReply(${r.id})">✎ Yanıtı düzenle</button><button class="btn" onclick="openInlineAction(${r.id},'ai')">✦ Alternatif AI</button><button class="btn p" onclick="sendUpdatedReply(${r.id})">↗ Güncel yanıtı gönder</button>`
         : isRouted ? `<span class="chip purple" style="padding:8px 12px">Sevk edildi</span><button class="btn" onclick="closeRouting(${r.id})">Kapat</button>`
         : `<button class="btn p" onclick="openEmail(${r.id})">✓ Onayla</button><button class="btn" onclick="regenDraft(${r.id})">↻ Yeniden</button>`}
       </div>
@@ -1716,6 +1719,9 @@ function renderReviews(){
 
 function selectReview(id){ SEL = id; renderReviews(); }
 function toggleSelect(id){ SELECTED.has(id) ? SELECTED.delete(id) : SELECTED.add(id); renderReviews(); }
+function openInlineAction(id, action){ selectReview(id); if(action==='edit') editSentReply(id); else if(action==='ai') regenDraft(id); }
+function editSentReply(id){ const box=$('#draftBox'); if(!box) return; box.readOnly=false; box.focus(); box.dataset.editing='1'; box.style.borderColor='var(--blue)'; toast('Yanıt düzenleme modu açıldı. Değişiklikten sonra Güncel yanıtı gönder seçeneğini kullanın.','info'); }
+function sendUpdatedReply(id){ const r=REVIEWS.find(x=>x.id===id), box=$('#draftBox'); if(!r||!box) return; const text=box.value.trim(); if(!text){toast('Yanıt metni boş olamaz.','warn');return;} r.drafts[(DRAFT_IDX[id]||0)%r.drafts.length]=text; box.readOnly=true; box.dataset.editing=''; box.style.borderColor=''; AUDIT_LOG.unshift({entity:'review',id,user:'Genel Merkez',action:'updated_reply',detail:'Güncel yanıt gönderim kuyruğuna alındı',ts:new Date().toLocaleString('tr-TR')}); toast('Güncel yanıt gönderim kuyruğuna alındı.','ok'); renderReviews(); }
 
 function openEmail(id){
   const r = REVIEWS.find(x => x.id === id); if (!r) return;
