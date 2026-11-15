@@ -1,0 +1,6 @@
+import {Router} from 'express';import {z} from 'zod';import {randomUUID} from 'node:crypto';import {db} from '../db/index.js';import {hashPassword} from '../auth/jwt.js';import {requireAuth,wrap,HttpError} from '../auth/middleware.js';
+export const usersRouter=Router();usersRouter.use(requireAuth(['admin']));
+usersRouter.get('/',(_req,res)=>res.json(db.prepare('SELECT id,email,name,role,store_id,region,active FROM users').all()));
+usersRouter.post('/',wrap((req,res)=>{const b=z.object({email:z.string().email(),password:z.string().min(12).max(72),name:z.string().min(1),role:z.enum(['admin','region_manager','store_manager','legal','complaint']),store_id:z.string().optional(),region:z.string().optional()}).parse(req.body);if(b.role==='store_manager'&&!b.store_id||b.role==='region_manager'&&!b.region)throw new HttpError(400,'Atama gerekli');const id=randomUUID();db.prepare('INSERT INTO users(id,email,password_hash,name,role,store_id,region) VALUES(?,?,?,?,?,?,?)').run(id,b.email,hashPassword(b.password),b.name,b.role,b.store_id||null,b.region||null);res.status(201).json({id});}));
+usersRouter.delete('/:id',wrap((req,res)=>{if(req.params.id===req.user!.id)throw new HttpError(409,'Kendi hesabınızı kapatamazsınız');db.prepare('UPDATE users SET active=0 WHERE id=?').run(req.params.id);res.json({ok:true});}));
+

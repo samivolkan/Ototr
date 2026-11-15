@@ -1531,6 +1531,8 @@ function seedState(){
 let STATE = loadState();
 
 function loadState(){
+  // Embedded live data is session-bound and must never be restored from demo storage.
+  if (new URLSearchParams(location.search).get('embedded') === '1') return seedState();
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw){
@@ -1542,6 +1544,7 @@ function loadState(){
 }
 
 function saveState(){
+  if (new URLSearchParams(location.search).get('embedded') === '1') return;
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(STATE)); } catch(e){}
 }
 
@@ -3633,5 +3636,5 @@ renderNotifications();
 // Show onboarding on first load
 if (!STATE.onboarded){ setTimeout(startTour, 500); }
 </script>
-<script src="assets/google-review-management-bridge.js?v=20261115-1"></script>
+<script src="assets/google-review-management-bridge.js?v=20261115-2"></script>
 </body></html>

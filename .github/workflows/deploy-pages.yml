@@ -47,10 +47,13 @@ jobs:
       - name: Protect ERP entry screens
         run: node scripts/apply-erp-access-gate.cjs
 
+      - name: Stage public assets without backend data
+        run: rsync -a --exclude='.git' --exclude='backend' --exclude='.env*' --exclude='*.sqlite*' --exclude='node_modules' ./ /tmp/ototr-pages/
+
       - name: Upload static site
         uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: /tmp/ototr-pages
 
       - name: Deploy
         id: deployment

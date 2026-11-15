@@ -262,12 +262,18 @@
     if (!window.__OTOTR_GOOGLE_CC_REFRESH_WRAPPED__ && typeof window.refreshGoogleReputationPage === 'function') {
       const originalRefresh = window.refreshGoogleReputationPage;
       window.refreshGoogleReputationPage = function (...args) {
+        const frame = document.querySelector('.google-management-frame');
+        if (frame && (googleReputationState.centerView || 'overview') === 'overview') {
+          frame.contentWindow?.postMessage({type: 'ototr-google-refresh'}, location.origin);
+          return;
+        }
         googleReputationState.demoMode = true;
         googleDashboardState.branchId = 'all';
         const result = originalRefresh.apply(this, args);
         setTimeout(mountOverlays, 0);
         return result;
       };
+      window.OTOTRGoogleReputation.render = window.refreshGoogleReputationPage;
       window.__OTOTR_GOOGLE_CC_REFRESH_WRAPPED__ = true;
     }
     bind();

@@ -25,7 +25,7 @@ test('production scope is one live branch and two explicitly demo branches', () 
 
 test('live sync and publish actions delegate to the established secure ERP workflow', () => {
   assert.match(bridge, /syncGoogleReviewsForBranch/);
-  assert.match(bridge, /setCenterView\?\.\('inbox', 'waiting'\)/);
+  assert.match(bridge, /setCenterView\('inbox', 'waiting'\)/);
   assert.match(bridge, /fetchGoogleReviews/);
   assert.doesNotMatch(bridge, /access_token|service_role|api[_-]?key/i);
 });

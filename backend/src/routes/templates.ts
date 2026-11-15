@@ -1,0 +1,3 @@
+import {Router} from 'express';import {z} from 'zod';import {randomUUID} from 'node:crypto';import {db} from '../db/index.js';import {requireAuth,wrap} from '../auth/middleware.js';
+export const templatesRouter=Router();templatesRouter.get('/',requireAuth(),(_req,res)=>res.json(db.prepare('SELECT * FROM templates').all()));templatesRouter.post('/',requireAuth(['admin']),wrap((req,res)=>{const b=z.object({name:z.string().min(1),category:z.string().min(1),body:z.string().min(1).max(4000)}).parse(req.body);const id=randomUUID();db.prepare('INSERT INTO templates VALUES(?,?,?,?)').run(id,b.name,b.category,b.body);res.status(201).json({id});}));
+

@@ -1,0 +1,12 @@
+CREATE TABLE stores(id TEXT PRIMARY KEY,name TEXT NOT NULL,city TEXT NOT NULL,region TEXT NOT NULL,mode TEXT NOT NULL CHECK(mode IN ('demo','live')),target INTEGER NOT NULL DEFAULT 30,sla_hours INTEGER NOT NULL DEFAULT 24 CHECK(sla_hours>0),lifecycle TEXT NOT NULL DEFAULT 'active',gbp_location_id TEXT);
+CREATE TABLE users(id TEXT PRIMARY KEY,email TEXT UNIQUE NOT NULL,password_hash TEXT NOT NULL,name TEXT NOT NULL,role TEXT NOT NULL CHECK(role IN ('admin','region_manager','store_manager','legal','complaint')),store_id TEXT REFERENCES stores(id),region TEXT,active INTEGER NOT NULL DEFAULT 1);
+CREATE TABLE reviews(id TEXT PRIMARY KEY,store_id TEXT NOT NULL REFERENCES stores(id),author TEXT NOT NULL,stars INTEGER NOT NULL CHECK(stars BETWEEN 1 AND 5),text TEXT NOT NULL,mode TEXT NOT NULL CHECK(mode IN ('demo','live')),risk INTEGER NOT NULL,status TEXT NOT NULL DEFAULT 'approval_pending',routed_to TEXT,hold INTEGER NOT NULL DEFAULT 0,sla_hours INTEGER NOT NULL DEFAULT 24,created_at TEXT NOT NULL,responded_at TEXT,gbp_review_id TEXT UNIQUE);
+CREATE TABLE drafts(id TEXT PRIMARY KEY,review_id TEXT NOT NULL REFERENCES reviews(id),text TEXT NOT NULL,version INTEGER NOT NULL DEFAULT 1,source TEXT NOT NULL DEFAULT 'local_template',approved_by TEXT,approved_hash TEXT);
+CREATE TABLE cases(id TEXT PRIMARY KEY,review_id TEXT REFERENCES reviews(id),store_id TEXT NOT NULL REFERENCES stores(id),kind TEXT NOT NULL CHECK(kind IN ('legal','complaint','store')),customer TEXT NOT NULL,category TEXT NOT NULL,status TEXT NOT NULL DEFAULT 'open',notes TEXT NOT NULL DEFAULT '',UNIQUE(review_id,kind));
+CREATE TABLE audit_log(id INTEGER PRIMARY KEY AUTOINCREMENT,ts TEXT NOT NULL,user_name TEXT NOT NULL,store_id TEXT REFERENCES stores(id),entity TEXT NOT NULL,entity_id TEXT,action TEXT NOT NULL,detail TEXT NOT NULL DEFAULT '');
+CREATE TABLE publications(id TEXT PRIMARY KEY,review_id TEXT NOT NULL REFERENCES reviews(id),draft_id TEXT NOT NULL REFERENCES drafts(id),version INTEGER NOT NULL,text_hash TEXT NOT NULL,status TEXT NOT NULL,UNIQUE(draft_id,version));
+CREATE TABLE templates(id TEXT PRIMARY KEY,name TEXT NOT NULL,category TEXT NOT NULL,body TEXT NOT NULL);
+CREATE TABLE outbox(id TEXT PRIMARY KEY,review_id TEXT REFERENCES reviews(id),event TEXT NOT NULL,status TEXT NOT NULL DEFAULT 'pending',UNIQUE(review_id,event));
+CREATE INDEX reviews_store ON reviews(store_id);
+CREATE INDEX audit_store ON audit_log(store_id);
+
