@@ -26,3 +26,6 @@
 @media(max-width:980px){#page-google-reviews .cc-shell{grid-template-columns:1fr}.cc-sidebar{display:none!important}.cc-main{padding:0 15px 36px}.cc-topbar{margin:0 -15px;padding:0 15px}.cc-grid,.cc-section-grid{grid-template-columns:1fr}.cc-footer-grid{grid-template-columns:1fr}.cc-branch-row{min-width:710px}.cc-card:has(.cc-branch-table){overflow:auto}.cc-head{align-items:flex-start;flex-direction:column}.cc-head-actions{width:100%}}
 @media(max-width:640px){#page-google-reviews .cc-kpis{grid-template-columns:1fr 1fr}.cc-top-actions{flex-wrap:wrap}.cc-top-actions select,.cc-top-actions button{font-size:10px;padding:0 8px}.cc-top-actions .cc-export{display:none}.cc-kpi strong{font-size:22px}.cc-radar{grid-template-columns:1fr 1fr!important}.cc-goal-number{font-size:30px}.cc-audit-filters{grid-template-columns:1fr 1fr}}
 #page-google-reviews .cc-overlay.on{display:flex}
+.google-management-frame{display:block;width:100%;height:100vh;min-height:760px;border:0;background:#f5f6fa}
+body:has(#page-google-reviews.active) #ototrAiLauncher{display:none!important}
+@media(max-width:768px){.google-management-frame{min-height:100dvh}}

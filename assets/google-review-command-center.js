@@ -256,7 +256,7 @@
     const legacyDashboard = window.GoogleScreenshotDashboard;
     window.GoogleScreenshotDashboard = function (...args) {
       return (googleReputationState.centerView || 'overview') === 'overview'
-        ? markup()
+        ? '<iframe class="google-management-frame" src="google-review-management.html?embedded=1" title="OTOTR Google Yorum Yönetim Sistemi" loading="eager" referrerpolicy="same-origin"></iframe>'
         : legacyDashboard.apply(this, args);
     };
     if (!window.__OTOTR_GOOGLE_CC_REFRESH_WRAPPED__ && typeof window.refreshGoogleReputationPage === 'function') {
