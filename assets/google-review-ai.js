@@ -100,19 +100,25 @@
     modal.querySelector('[data-google-ai-queue]').addEventListener('click', () => saveEditor());
     modal.querySelector('[data-google-ai-publish]').addEventListener('click', () => publishEditor(false));
     modal.querySelector('[data-google-ai-verify]').addEventListener('click', () => publishEditor(true));
-    modal.querySelector('#googleAiReply').addEventListener('input', () => { modal.querySelector('#googleAiApprove').checked = false; updateEditorControls(); });
+    modal.querySelector('#googleAiReply').addEventListener('input', () => { if (editor) editor.source='manual'; modal.querySelector('#googleAiApprove').checked = false; updateEditorControls(); });
     modal.querySelector('#googleAiApprove').addEventListener('change', updateEditorControls);
     return modal;
   }
 
   async function requestDraft(review, branch, previousReply = '') {
+    return requestAI('generate',{previous_reply:String(previousReply || ''),review:{id:review.googleReviewId || review.id,rating:review.rating,comment:review.comment,reviewerName:String(review.reviewerName || '')},branch:{id:branch.id,name:branch.name,city:branch.city,replySignatureName:branch.replySignatureName}});
+  }
+
+  async function requestAI(action, payload = {}) {
+    if (!['generate','playground','analytics'].includes(action)) throw new Error('Geçersiz AI işlemi.');
     const auth = await session();
     const key = supabaseKey();
     if (!auth?.access_token || !key) throw new Error('ERP oturumu veya backend bağlantısı bulunamadı.');
     const response = await globalThis.fetch(AI_ENDPOINT, {
       method: 'POST',
       headers: { apikey: key, Authorization: `Bearer ${auth.access_token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'generate', previous_reply: String(previousReply || ''), review: { id: review.id, rating: review.rating, comment: review.comment, reviewerName: String(review.reviewerName || '') }, branch: { id: branch.id, name: branch.name, city: branch.city, replySignatureName: branch.replySignatureName } })
+      body: JSON.stringify({ ...payload, action }),
+      signal: AbortSignal.timeout(45000)
     });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(data.error || data.message || `AI servisi ${response.status} hatası verdi (${new URL(response.url).hostname}).`);
@@ -332,7 +338,7 @@
       const result = await requestDraft(current.review, current.branch, previousReply);
       if (editor !== current || seq !== generationSequence) return '';
       if (!String(result.reply || '').trim()) throw new Error('AI servisi boş taslak döndürdü.');
-      current.source = 'openai'; modal.querySelector('#googleAiReply').value = result.reply;
+      current.source = 'openai'; current.generationId = result.generation_id; modal.querySelector('#googleAiReply').value = result.reply;
       modal.querySelector('#googleAiMeta').innerHTML = `<span>OpenAI taslağı</span><span>${esc(result.tone || 'doğal')}</span>`;
       modal.querySelector('#googleAiWarning').textContent = result.risk_reason || 'Taslağı düzenleyip kaydedin. Henüz Google’a gönderilmedi.';
     } catch (error) {
@@ -360,7 +366,7 @@
     try {
       const data = task
         ? await googleBusinessRequest('update_task', { item_id: item.id, expected_version: item.version, note: text, status: modal.querySelector('#googleTaskState').value })
-        : await googleBusinessRequest('save_draft', { ...current.identity, ...(item ? { item_id: item.id, expected_version: item.version } : {}), reply_text: text, draft_source: current.source });
+        : await googleBusinessRequest('save_draft', { ...current.identity, ...(item ? { item_id: item.id, expected_version: item.version } : {}), reply_text: text, draft_source: current.source, generation_id: current.generationId });
       remember(data.item);
       if (editor === current) { openItem(data.item.id); ensureModal().querySelector('#googleAiWarning').textContent = task ? 'Görev ortak kayıtlara kaydedildi.' : 'Taslak kaydedildi. Metni onayladığınızda tek yanıt Google’da yayımlanacak.'; }
     } catch (error) {
@@ -501,8 +507,12 @@
     setTimeout(() => { automaticPumpScheduled = false; preparePendingDrafts(); }, 0);
   }
   async function autoPublishDue() {
-    // No implicit human approval. Publishing uses the explicit version-bound action.
-    return;
+    if (managementEditing || !autoPreparationAllowed() || window.OTOTRReviewLiveViews?.getScope?.() !== 'live') return;
+    const items = workflow.items.filter(item => item.kind === 'reply' && item.status === 'approval_pending' && [4,5].includes(Number(item.review_snapshot?.rating)) && item.review_snapshot?.ai_analysis?.requires_human_review !== true && !item.review_snapshot?.legal_hold && !item.review_snapshot?.rejection);
+    for (const item of items.slice(0,2)) {
+      try { await googleBusinessRequest('auto_publish_safe',{item_id:item.id,expected_version:item.version}); } catch (_) {}
+    }
+    if (items.length) await refreshWorkflow();
   }
   function preparePendingDrafts() {
     if (!autoPreparationAllowed()) return;
@@ -605,7 +615,7 @@
         const generated = action === 'regenerate' ? await requestDraft(review, branch, item.reply_text) : null;
         const text = generated ? String(generated.reply || '').trim() : state.text.trim();
         if (!text) throw new Error('AI boş yanıt döndürdü. Kayıtlı taslak korundu.');
-        data = await googleBusinessRequest('save_draft', { ...identityFor(review, branch), item_id: item.id, expected_version: item.version, reply_text: text, draft_source: generated ? 'openai' : 'manual' });
+        data = await googleBusinessRequest('save_draft', { ...identityFor(review, branch), item_id: item.id, expected_version: item.version, reply_text: text, draft_source: generated ? 'openai' : 'manual', generation_id: generated?.generation_id });
       } else {
         data = await googleBusinessRequest(action === 'verify' ? 'verify_reply' : 'publish_reply', { item_id: item.id, expected_version: action === 'send' ? approved.version : item.version, ...(action === 'send' ? { approved: true } : {}) });
       }
@@ -652,7 +662,7 @@
         const generated = action === 'regenerate' ? await requestDraft(review,branch,item.reply_text) : null;
         const text = String(generated ? generated.reply || '' : options.text || '').trim();
         if (!text || text.length > 4000) throw new Error('Yanıt 1–4000 karakter olmalı.');
-        result = await googleBusinessRequest('save_draft',{...identity,item_id:item.id,expected_version:item.version,reply_text:text,draft_source:generated?'openai':'manual'});
+        result = await googleBusinessRequest('save_draft',{...identity,item_id:item.id,expected_version:item.version,reply_text:text,draft_source:generated?'openai':'manual',generation_id:generated?.generation_id});
       } else result = await googleBusinessRequest(action === 'publish'?'publish_reply':'verify_reply',{item_id:item.id,expected_version:item.version,...(action==='publish'?{approved:true}:{})});
       if (!result?.item) throw new Error('İşlem sonucu doğrulanamadı; güncel kaydı kontrol edin.');
       remember(result.item);
@@ -676,6 +686,7 @@
     connectGoogleBusiness,
     googleBusinessStatus,
     googleBusinessRequest,
+    requestAI,
     formatBusinessError: googleBusinessError,
     getApprovalQueue: () => workflow.items.filter(item => item.kind === 'reply'),
     getWorkflowItems: workflowItems,

@@ -75,7 +75,7 @@ function ui(shared = server(), branchFixture = BRANCH, reviewFixture = REVIEW) {
     toast: value => toasts.push(value),
     OTOTRGoogleReputation: { getReviewById: id => id === reviewFixture.id ? reviewFixture : null, getBranchById: id => id === branchFixture.id ? branchFixture : null, render() {}, setError() {}, syncGoogleReviewsForBranch: async id => syncs.push(id), onComplaintTaskCreated: (item, meta) => complaintCallbacks.push({ item, meta }) },
   };
-  vm.runInNewContext(source, { window, document, localStorage: { getItem: () => null, setItem: (...args) => storageWrites.push(args) }, fetch: shared.fetch, Response, URL, AbortController, setTimeout: () => 1, clearTimeout() {}, console });
+  vm.runInNewContext(source, { window, document, localStorage: { getItem: () => null, setItem: (...args) => storageWrites.push(args) }, fetch: shared.fetch, Response, URL, AbortController, AbortSignal, setTimeout: () => 1, clearTimeout() {}, console });
   const api = window.OTOTRGoogleReviewAI;
   return { api, window, shared, toasts, storageWrites, syncs, complaintCallbacks, modal: () => elements.get('googleReviewAiModal'), element: selector => elements.get('googleReviewAiModal').querySelector(selector) };
 }

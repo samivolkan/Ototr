@@ -4,9 +4,10 @@ import { stripTypeScriptTypes } from 'node:module';
 import { webcrypto } from 'node:crypto';
 import vm from 'node:vm';
 import test from 'node:test';
+import { edgeSource } from './helpers/edge-source.mjs';
 
 const source = await readFile(new URL('../supabase/functions/google-business-oauth/index.ts', import.meta.url), 'utf8');
-const javascript = stripTypeScriptTypes(source.replace(/^import .*?;\r?\n/, ''));
+const javascript = await edgeSource(new URL('../supabase/functions/google-business-oauth/index.ts',import.meta.url));
 const OWNER = '11111111-1111-4111-8111-111111111111';
 const ITEM = '22222222-2222-4222-8222-222222222222';
 const LEGAL = '33333333-3333-4333-8333-333333333333';
@@ -25,6 +26,10 @@ function fixture(options = {}) {
     google_review_bulk_jobs: [],
     google_review_email_outbox: [{ id: LEGAL, connection_id: CONNECTION, template_key: 'review', status: 'pending', created_at: STAMP, sent_at: null, body: 'private body', to_addresses: ['private@example.invalid'] }],
     google_review_work_items: [],
+    google_review_management_resources: [],
+    google_review_notifications: [],
+    google_review_ai_generations: [],
+    google_review_ai_outcomes: [],
   };
   const writes = [], remote = [];
   let beforeUpdate = null, afterWrite = null;
@@ -75,6 +80,40 @@ const read = { action: 'management_read', branch_id: BRANCH };
 const policy = { action: 'management_update', branch_id: BRANCH, entity: 'policy', expected_updated_at: STAMP, default_sla_hours: 48 };
 const task = { action: 'management_update', branch_id: BRANCH, entity: 'task', item_id: LEGAL, expected_version: 1 };
 const reject = { action: 'reject_draft', branch_id: BRANCH, item_id: ITEM, expected_version: 1, reason: 'Düzeltilecek içerik' };
+
+function grant(f,role) {
+  f.tables.app_users.push({id:LEGAL,auth_user_id:ITEM,full_name:'Scoped user',is_active:true,role:'EMPLOYEE'});
+  f.tables.google_review_management_resources.push({id:LEGAL,connection_id:CONNECTION,branch_id:BRANCH,kind:'user_permissions',key:ITEM,archived:false,data:{user_id:ITEM,role,active:true}});
+}
+test('granted viewer can read but cannot mutate, reconnect Google, or promote their role',async()=>{
+  const f=fixture({user:ITEM});grant(f,'viewer');
+  assert.equal((await f.request(read)).status,200);
+  for(const body of [policy,reject,{action:'start'},{action:'target_save',branch_id:BRANCH},{action:'resource_save',branch_id:BRANCH,resource:'user_permissions'}]) assert.equal((await f.request(body)).status,403);
+  assert.equal(f.writes.length,0);
+});
+test('operator can update complaint work but cannot change legal holds or global policy',async()=>{
+  const f=fixture({user:ITEM});grant(f,'operator');
+  f.item({id:LEGAL,kind:'complaint',status:'open'});
+  assert.equal((await f.request({...task,note:'Real task note'})).status,200);
+  f.tables.google_review_work_items[0].kind='legal';
+  assert.equal((await f.request({...task,expected_version:2,hold:true})).status,403);
+  assert.equal((await f.request(policy)).status,403);
+});
+test('module admin changes policy but only connection owner can reconnect or manage grants',async()=>{
+  const f=fixture({user:ITEM});grant(f,'admin');
+  assert.equal((await f.request(policy)).status,200);
+  assert.equal((await f.request({action:'start'})).status,403);
+  assert.equal((await f.request({action:'resource_save',branch_id:BRANCH,resource:'user_permissions',expected_version:0,data:{user_id:ITEM,role:'admin',active:true}})).status,403);
+});
+test('deactivated granted users lose access immediately',async()=>{
+  const f=fixture({user:ITEM});grant(f,'admin');f.tables.app_users[1].is_active=false;
+  assert.equal((await f.request(read)).status,403);
+});
+test('paused Bursa blocks draft and public reply before any external call',async()=>{
+  const f=fixture(); f.tables.google_review_management_resources.push({connection_id:CONNECTION,branch_id:BRANCH,kind:'branch_settings',key:'default',archived:false,data:{lifecycle:'paused'}});
+  for(const action of ['prepare_draft','save_draft','publish_reply']) assert.equal((await f.request({action,branch_id:BRANCH})).status,409);
+  assert.equal(f.remote.length,0);assert.equal(f.writes.length,0);
+});
 
 test('management requires authenticated server-authorized owner, ignores editable role metadata', async () => {
   assert.equal((await fixture().request(read, false)).status, 401);

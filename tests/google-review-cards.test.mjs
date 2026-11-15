@@ -97,7 +97,7 @@ function fixture(count = 1) {
     }
     throw new Error(`Unexpected synthetic action: ${body.action}`);
   }
-  const context = vm.createContext({ window, document, fetch, Response, URL, AbortController,
+  const context = vm.createContext({ window, document, fetch, Response, URL, AbortController, AbortSignal,
     Date: class extends Date { constructor(...args) { super(...(args.length ? args : [state.now])); } static now() { return state.now; } },
     location: { get hash() { return state.hash; } }, navigator: { get onLine() { return state.online; } },
     setTimeout(callback, delay) { const id = ++timerId; timeouts.set(id, { callback, delay }); return id; },

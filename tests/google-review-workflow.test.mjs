@@ -4,10 +4,11 @@ import { stripTypeScriptTypes } from 'node:module';
 import { webcrypto, randomUUID } from 'node:crypto';
 import vm from 'node:vm';
 import test from 'node:test';
+import { edgeSource } from './helpers/edge-source.mjs';
 
 // Real Edge Function handler, isolated from the network and all live credentials.
 const source = await readFile(new URL('../supabase/functions/google-business-oauth/index.ts', import.meta.url), 'utf8');
-const javascript = stripTypeScriptTypes(source.replace(/^import .*?;\r?\n/, ''));
+const javascript = await edgeSource(new URL('../supabase/functions/google-business-oauth/index.ts',import.meta.url));
 const encoder = new TextEncoder();
 const keyBytes = new Uint8Array(32).fill(17);
 const iv = new Uint8Array(12).fill(29);
@@ -60,6 +61,7 @@ function workflowFixture(options = {}) {
     };
     function execute() {
       if (table === 'google_business_connections') return { data: clone(connection), error: null };
+      if (table === 'google_review_management_resources' || table === 'app_users') return {data:mode==='many'?[]:null,error:null};
       assert.ok(['google_review_work_items','google_review_targets','google_review_policies','google_review_audit_log'].includes(table), 'Unexpected database table');
       const tableRows = table === 'google_review_policies' ? policies : table === 'google_review_audit_log' ? audit : rows;
       if (operation === 'select' && state.failReads) return { data: null, error: { code: '42P01', message: 'fixture table unavailable' } };
@@ -166,7 +168,7 @@ test('automatic preparation persists verified AI draft and analysis without appr
   assert.equal(f.state.putCount, 0); assert.equal(f.state.aiCount, 1);
   const call = f.calls.find(c => c.url.pathname === '/functions/v1/google-review-ai');
   assert.equal(call.headers.Authorization, 'Bearer fixture-session'); assert.equal(call.headers.apikey, 'fixture-public');
-  assert.deepEqual(JSON.parse(call.body), { action: 'generate', branch: { id: BRANCH }, review: { rating: 5, comment: 'Fixture public review', reviewerName: 'Fixture reviewer' } });
+  assert.deepEqual(JSON.parse(call.body), { action: 'generate', branch: { id: BRANCH }, review: { id:'review-one', rating: 5, comment: 'Fixture public review', reviewerName: 'Fixture reviewer' } });
   assert.doesNotMatch(JSON.stringify(result.data), /fixture-refresh|fixture-secret|refresh_token_encrypted/);
 });
 
