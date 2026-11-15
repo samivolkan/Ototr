@@ -7,7 +7,7 @@
   const ai = parentApi ? window.parent.OTOTRGoogleReviewAI : null;
   const escape = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const liveIds = new Map();
-  let nextId = 1000000;
+  let nextId = -1; // Demo forms allocate positive IDs; keep the namespaces disjoint.
   const workIds = new Map();
   const liveBranchId = 'branch-google-nilufer';
   const allowedNames = new Set(['Bursa Nilüfer', 'Kocaeli Gebze', 'Bursa İnegöl']);
@@ -54,7 +54,7 @@
       target.lastSync = live?.lastSyncedAt ? new Date(live.lastSyncedAt).toLocaleString('tr-TR') : 'Senkronizasyon bekleniyor';
     }
     const mapped = reviews.filter(review => !review.demo && review.id && review.branchId === liveBranchId).map(review => {
-      if (!liveIds.has(review.id)) liveIds.set(review.id, nextId++);
+      if (!liveIds.has(review.id)) liveIds.set(review.id, nextId--);
       const item = items.find(i => i.kind === 'reply' && i.branch_id === liveBranchId && i.review_id === review.googleReviewId);
       return ({
       id: liveIds.get(review.id),

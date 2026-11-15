@@ -25,7 +25,7 @@ test('empty Google result never retains synthetic Bursa reviews',()=>{
 });
 test('real review gets stable numeric UI identity and escaped content',()=>{
   const f=fixture([live]); const row=f.context.REVIEWS[0];
-  assert.equal(typeof row.id,'number'); assert.ok(row.drafts.length);
+  assert.equal(typeof row.id,'number'); assert.ok(row.id<0); assert.ok(row.drafts.length);
   assert.doesNotMatch(row.text, /<script/); assert.doesNotMatch(row.author, /<img/);
   f.listeners.message({origin:'https://erp.test',source:f.context.parent,data:{type:'ototr-google-refresh'}});
   assert.equal(f.context.REVIEWS[0].id,row.id);
