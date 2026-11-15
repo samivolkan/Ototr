@@ -523,11 +523,34 @@ textarea[readonly]{opacity:.75;cursor:default}
 #erpDataScope{white-space:normal;max-width:100%;line-height:1.5}
 .ph>div,.split>*,.chart-grid>*,.grid2>*{min-width:0}
 @media(max-width:768px){.split{grid-template-columns:minmax(0,1fr)}.detail .actions,.route-row{flex-wrap:wrap}.review-quote{overflow-wrap:anywhere}}
+</style><style id="review-sidebar-layout">
+.topbar{height:54px;flex-wrap:nowrap}
+.menu-toggle{display:none}
+.review-sidebar{position:fixed;top:54px;bottom:0;left:0;width:208px;background:var(--nav);border-right:1px solid rgba(255,255,255,.08);z-index:95;overflow-y:auto;padding:20px 12px}
+.sidebar-title{color:rgba(255,255,255,.4);font-size:10px;font-weight:600;letter-spacing:1.1px;padding:0 12px 12px;text-transform:uppercase}
+.review-sidebar .topnav{display:flex;flex-direction:column;gap:4px;overflow:visible}
+.review-sidebar .topnav a{padding:11px 12px;border:0;border-left:3px solid transparent;border-radius:7px;font-size:12px;text-decoration:none;white-space:normal;min-height:42px}
+.review-sidebar .topnav a.on{background:rgba(232,40,26,.13);border-left-color:var(--red);color:#fff}
+.sidebar-backdrop{display:none}
+main{margin-left:208px;width:calc(100% - 208px);max-width:none;padding:22px}
+.mob{display:none!important}
+@media(max-width:768px){
+ body{padding-bottom:0}
+ main{margin:0;width:100%;padding:12px}
+ .menu-toggle{display:grid;flex-shrink:0}
+ .topbar .role-sel,.topbar .uchip{display:none}
+ .review-sidebar{width:min(260px,85vw);z-index:120;transform:translateX(-100%);visibility:hidden;transition:transform .18s ease,visibility .18s}
+ body.review-menu-open .review-sidebar{transform:translateX(0);visibility:visible}
+ body.review-menu-open .sidebar-backdrop{display:block;position:fixed;inset:54px 0 0;background:rgba(0,0,0,.4);border:0;z-index:110}
+ .bulk-bar{bottom:12px}
+ .tc{bottom:12px}
+}
+@media print{.review-sidebar,.sidebar-backdrop,.menu-toggle{display:none!important}main{margin:0;width:100%}}
 </style></head><body>
 
 <header class="topbar">
+  <button class="ibtn menu-toggle" id="reviewMenuToggle" aria-label="Menüyü aç" aria-controls="reviewSidebar" aria-expanded="false" onclick="toggleReviewMenu()">☰</button>
   <div class="brand"><span class="bm">OTO</span><span style="color:var(--red)">TR</span><span class="bsub">Google Yorum Yönetim</span></div>
-  <nav class="topnav" id="topnav"></nav>
   <div class="searchbar">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
     <input placeholder="Ara..." readonly onclick="openCmdk()">
@@ -556,6 +579,11 @@ textarea[readonly]{opacity:.75;cursor:default}
   </select>
   <div class="uchip"><b id="userAvatar">MK</b></div>
 </header>
+<button class="sidebar-backdrop" id="reviewSidebarBackdrop" aria-label="Menüyü kapat" onclick="closeReviewMenu()" tabindex="-1"></button>
+<aside class="review-sidebar" id="reviewSidebar" aria-label="Yorum yönetimi menüsü">
+  <div class="sidebar-title">Yorum Yönetimi</div>
+  <nav class="topnav" id="topnav" aria-label="Yorum ekranları"></nav>
+</aside>
 
 <main>
   <div class="ph">
@@ -1423,11 +1451,25 @@ const VIEWS = [
   { id:"golive", label:"🚀 Go-Live", title:"Devreye Alma", sub:"Üretime geçiş kontrolü." }
 ];
 
+function closeReviewMenu(){
+  const opened=document.body.classList.contains('review-menu-open');
+  document.body.classList.remove('review-menu-open');
+  const button=document.getElementById('reviewMenuToggle');
+  button.setAttribute('aria-expanded','false');button.setAttribute('aria-label','Menüyü aç');
+  if(opened)button.focus();
+}
+function toggleReviewMenu(){
+  const open=document.body.classList.toggle('review-menu-open');
+  const button=document.getElementById('reviewMenuToggle');
+  button.setAttribute('aria-expanded',String(open));button.setAttribute('aria-label',open?'Menüyü kapat':'Menüyü aç');
+  if(open)document.querySelector('#topnav a.on')?.focus();
+}
+document.addEventListener('keydown',event=>{if(event.key==='Escape')closeReviewMenu();});
 function renderNav(){
   const allowed = ROLES[STATE.role].tabs;
   const visible = VIEWS.filter(v => allowed.includes(v.id));
   $("#topnav").innerHTML = visible.map(v => `<a data-v="${v.id}" class="${v.id===STATE.view?'on':''}">${v.label}</a>`).join("");
-  $$("#topnav a").forEach(a => a.onclick = e => { e.preventDefault(); switchView(a.dataset.v); });
+  $$("#topnav a").forEach(a => a.onclick = e => { e.preventDefault(); switchView(a.dataset.v); closeReviewMenu(); });
   const mob = visible.slice(0, 5);
   $("#mobNav").innerHTML = mob.map(v => `<a data-v="${v.id}" class="${v.id===STATE.view?'on':''}"><span class="mi">${v.label.split(" ")[0]}</span><span>${v.label.split(" ").slice(1).join(" ").slice(0,8)}</span></a>`).join("");
   $$("#mobNav a").forEach(a => a.onclick = () => switchView(a.dataset.v));
