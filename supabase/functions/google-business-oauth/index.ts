@@ -740,6 +740,32 @@ Deno.serve(async (req) => {
       if(body.action==='template_apply' && result?.item && result.changed_existing_text) await recordAiOutcome(db,{item:result.item,actorId:user.id,action:'edited'});
       return json(result);
     }
+    if (['collection_read','collection_save_policy','collection_enqueue','collection_queue'].includes(body.action)) {
+      if (body.action !== 'collection_read' && access.role !== 'admin' && !access.is_owner) throw new RequestError('Yorum toplama ayarları için yönetici yetkisi gerekli.',403);
+      const policyRow = await db.from('google_review_collection_policies').select('*').eq('connection_id', connectionId).maybeSingle();
+      databaseFailure(policyRow.error);
+      if (body.action === 'collection_read') {
+        const queue = await db.from('google_review_collection_outbox').select('id,branch_id,service_id,customer_name,channel,scheduled_at,status,reason,sent_at,created_at').eq('connection_id', connectionId).order('scheduled_at',{ascending:false}).limit(100);
+        databaseFailure(queue.error);
+        return json({policy: policyRow.data || {connection_id:connectionId,branch_id:managementBranchId,enabled:false,send_hour:18,delay_minutes:120,channel:'sms',cooldown_days:30,template:'Merhaba {{musteri_adi}}, hizmet deneyiminizi değerlendirmek ister misiniz? {{yorum_linki}}'}, queue: queue.data || []});
+      }
+      if (body.action === 'collection_save_policy') {
+        const sendHour=Number(body.send_hour), delay=Number(body.delay_minutes), cooldown=Number(body.cooldown_days||30), channel=String(body.channel||'sms');
+        if (!Number.isInteger(sendHour)||sendHour<0||sendHour>23||!Number.isInteger(delay)||delay<0||delay>10080||!Number.isInteger(cooldown)||cooldown<1||cooldown>365||!['sms','whatsapp','email'].includes(channel)) throw new RequestError('Yorum toplama ayarları geçersiz.',400);
+        const saved=await db.from('google_review_collection_policies').upsert({connection_id:connectionId,branch_id:managementBranchId,enabled:Boolean(body.enabled),send_hour:sendHour,delay_minutes:delay,cooldown_days:cooldown,channel,template:String(body.template||'').slice(0,1000),updated_by:user.id,updated_at:new Date().toISOString()}).select('*').single();
+        databaseFailure(saved.error); return json({policy:saved.data});
+      }
+      if (body.action === 'collection_enqueue') {
+        if (body.branch_id !== managementBranchId) throw new RequestError('Yorum toplama yalnız Bursa canlı şubesinde etkin.',400);
+        const serviceId=String(body.service_id||'').trim(), recipient=String(body.recipient||'').trim();
+        if (!serviceId||!recipient) throw new RequestError('Hizmet ve alıcı bilgisi gerekli.',400);
+        const policy=policyRow.data; if (!policy?.enabled) return json({queued:false,reason:'policy_disabled'});
+        const scheduled=new Date(Date.now()+Number(policy.delay_minutes)*60000); const keyDate=new Date(scheduled); keyDate.setHours(Number(policy.send_hour),0,0,0); if(keyDate.getTime()<scheduled.getTime()) keyDate.setDate(keyDate.getDate()+1);
+        const inserted=await db.from('google_review_collection_outbox').upsert({connection_id:connectionId,branch_id:managementBranchId,service_id:serviceId,customer_name:String(body.customer_name||'').slice(0,160),recipient,channel:policy.channel,scheduled_at:keyDate.toISOString(),status:'queued'},{onConflict:'connection_id,service_id',ignoreDuplicates:true}).select('id,scheduled_at,status').maybeSingle();
+        databaseFailure(inserted.error); return json({queued:Boolean(inserted.data),item:inserted.data||null,reason:inserted.data?'queued':'duplicate'});
+      }
+      const queue=await db.from('google_review_collection_outbox').select('id,branch_id,service_id,customer_name,channel,scheduled_at,status,reason,sent_at,created_at').eq('connection_id',connectionId).order('scheduled_at',{ascending:false}).limit(100); databaseFailure(queue.error); return json({queue:queue.data||[]});
+    }
     if (body.action === 'branch_list') {
       const rows=await db.from('google_review_branch_registry').select('id,name,city,region,account_id,store_code,location_id,mode,interval_minutes,sla_hours,target,active,created_at,updated_at').eq('connection_id',connectionId).order('name');
       databaseFailure(rows.error); return json({items:rows.data||[]});
