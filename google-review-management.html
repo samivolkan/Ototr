@@ -2967,6 +2967,18 @@ if (!STATE.onboarded) setTimeout(startTour, 500);
 <script src="assets/google-review-enhancements.js?v=20261116-6"></script>
 <script src="assets/google-review-live-features.js?v=20261116-6"></script>
 <script>
+  fetch('release.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(meta => {
+    if (!meta) return;
+    const badge = document.getElementById('releaseBadge');
+    if (!badge) return;
+    const build = badge.querySelector('b');
+    const date = badge.querySelector('span');
+    if (build) build.textContent = meta.version || build.textContent;
+    if (date) date.textContent = meta.date || date.textContent;
+    badge.title = `Sürüm ${meta.version || ''} · commit ${meta.commit || ''}`;
+  }).catch(() => {});
+</script>
+<script>
   // Embedded review module: keep account actions in the header, never floating over content.
   (() => {
     const move = () => {

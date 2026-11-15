@@ -33,6 +33,13 @@ jobs:
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
+      - name: Write release metadata
+        shell: bash
+        run: |
+          VERSION="G${GITHUB_RUN_NUMBER}"
+          DATE="$(date -u +%d.%m.%Y)"
+          printf '{"version":"%s","date":"%s","commit":"%s","run":%s}\n' "$VERSION" "$DATE" "${GITHUB_SHA:0:7}" "$GITHUB_RUN_NUMBER" > release.json
+
       - name: Verify archive design bundle
         shell: bash
         run: |
