@@ -238,7 +238,7 @@
     const rows=REVIEWS.filter(r=>!r.demo), now=new Date();
     const months=Array.from({length:12},(_,i)=>new Date(now.getFullYear(),now.getMonth()-11+i,1));
     const volumes=months.map(m=>rows.filter(r=>{const d=new Date(r.createdAt);return d.getFullYear()===m.getFullYear()&&d.getMonth()===m.getMonth();}).length);
-    if(charts.chartTrend){charts.chartTrend.data.labels=months.map(m=>m.toLocaleDateString('tr-TR',{month:'short',year:'2-digit'}));charts.chartTrend.data.datasets[0].data=[];charts.chartTrend.data.datasets[1].data=volumes;charts.chartTrend.data.datasets[1].label='Bursa · alınan yorumlar';charts.chartTrend.update();}
+    if(charts.chartTrend){charts.chartTrend.data.labels=months.map(m=>m.toLocaleDateString('tr-TR',{month:'short',year:'2-digit'}));charts.chartTrend.data.datasets[0].data=[];charts.chartTrend.data.datasets[0].label='';charts.chartTrend.data.datasets[0].borderWidth=0;charts.chartTrend.data.datasets[0].backgroundColor='transparent';charts.chartTrend.data.datasets[1].data=volumes;charts.chartTrend.data.datasets[1].label='Bursa · alınan yorumlar';charts.chartTrend.update();}
     if(charts.chartRating){charts.chartRating.data.datasets[0].data=[5,4,3,2,1].map(star=>rows.filter(r=>r.stars===star).length);charts.chartRating.update();}
     if(charts.chartResponse){const durations=rows.filter(r=>r.replyDate&&r.createdAt).map(r=>(Date.parse(r.replyDate)-Date.parse(r.createdAt))/3600000).filter(h=>h>=0);charts.chartResponse.data.datasets[0].data=[durations.filter(h=>h<2).length,durations.filter(h=>h>=2&&h<6).length,durations.filter(h=>h>=6&&h<24).length,durations.filter(h=>h>=24&&h<48).length,durations.filter(h=>h>=48).length];charts.chartResponse.update();}
   };
