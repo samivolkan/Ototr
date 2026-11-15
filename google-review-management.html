@@ -1501,7 +1501,7 @@ function switchView(id){
   $("#pageTitle").textContent = v.title;
   $("#pageSub").textContent = v.sub;
   $("#crumb").innerHTML = `Yönetim <b>/</b> <span>${v.title}</span>`;
-  if (id === "overview"){ renderOverview(); setTimeout(initCharts, 20); }
+  if (id === "overview"){ renderOverview(); initCharts(); }
   else if (id === "problems") renderProblems();
   else if (id === "reviews") renderReviews();
   else if (id === "performance") renderPerformance();
