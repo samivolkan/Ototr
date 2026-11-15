@@ -2984,14 +2984,15 @@ if (!STATE.onboarded) setTimeout(startTour, 500);
     const move = () => {
       const exit = document.getElementById('ototr-account-exit');
       const feedback = document.querySelector('button[aria-label="Geri bildirim merkezi"]');
+      feedback?.remove();
       const anchor = document.querySelector('.uchip') || document.querySelector('.topbar');
       if (!anchor || (!exit && !feedback)) return;
       let menu = document.getElementById('review-profile-actions');
       if (!menu) { menu = document.createElement('div'); menu.id='review-profile-actions'; menu.setAttribute('aria-label','Profil işlemleri'); anchor.parentElement?.append(menu); }
-      [feedback, exit].forEach(button => { if (button && button.parentElement !== menu) menu.append(button); });
+      if (exit && exit.parentElement !== menu) menu.append(exit);
     };
     const style = document.createElement('style');
-    style.textContent = '#review-profile-actions{display:flex;align-items:center;gap:6px;margin-left:8px}#review-profile-actions button{position:static!important;inset:auto!important;min-height:32px!important;border:1px solid var(--line,#dfe3e8)!important;border-radius:7px!important;background:var(--surface,#fff)!important;color:var(--ink,#171b20)!important;padding:7px 10px!important;font:600 12px system-ui!important;cursor:pointer!important;box-shadow:none!important}#review-profile-actions button:hover{border-color:var(--red,#d71920)!important;color:var(--red,#d71920)!important}@media(max-width:768px){#review-profile-actions{margin-left:4px}#review-profile-actions button{font-size:11px!important;padding:6px 7px!important}#review-profile-actions button:not(#ototr-account-exit){display:none!important}}';
+    style.textContent = '#review-profile-actions{display:flex;align-items:center;gap:6px;margin-left:8px}#review-profile-actions button{position:static!important;inset:auto!important;min-height:32px!important;border:1px solid var(--line,#dfe3e8)!important;border-radius:7px!important;background:var(--surface,#fff)!important;color:var(--ink,#171b20)!important;padding:7px 10px!important;font:600 12px system-ui!important;cursor:pointer!important;box-shadow:none!important}#review-profile-actions button:hover{border-color:var(--red,#d71920)!important;color:var(--red,#d71920)!important}button[aria-label="Geri bildirim merkezi"]{display:none!important}@media(max-width:768px){#review-profile-actions{margin-left:4px}#review-profile-actions button{font-size:11px!important;padding:6px 7px!important}#review-profile-actions button:not(#ototr-account-exit){display:none!important}}';
     document.head.append(style); move(); new MutationObserver(move).observe(document.body,{childList:true,subtree:true});
   })();
 </script>
