@@ -439,6 +439,7 @@
 
   function editingCards() { return [...cards.values()].some(state => state.editing || state.busy); }
   function automaticViewAllowed() {
+    if (managementEditing || managementLocks.size) return false;
     return typeof location !== 'undefined' && location.hash === '#google-reviews' && document.visibilityState === 'visible' &&
       (typeof navigator === 'undefined' || navigator.onLine !== false) &&
       !document.documentElement?.classList.contains('ototr-access-locked') &&
@@ -500,19 +501,8 @@
     setTimeout(() => { automaticPumpScheduled = false; preparePendingDrafts(); }, 0);
   }
   async function autoPublishDue() {
-    if (automaticPublish.busy || !automaticViewAllowed() || !workflow.loaded || workflow.loading) return;
-    const now = Date.now(), reviews = window.OTOTRGoogleReputation?.demoReviews || [];
-    const candidate = workflow.items.map(item => {
-      const review = reviews.find(row => row.googleReviewId === item.review_id || row.id === item.review_id);
-      return { item, review };
-    }).find(({ item, review }) => item.kind === 'reply' && item.branch_id === 'branch-google-nilufer' && item.status === 'approval_pending' && review && !review.isReplied && now - new Date(review.reviewDate).getTime() >= AUTO_REPLY_AFTER_MS && item.review_snapshot?.ai_analysis?.requires_human_review === false && item.reply_text?.trim());
-    if (!candidate) return;
-    automaticPublish.busy = true;
-    try {
-      const data = await googleBusinessRequest('publish_reply', { item_id: candidate.item.id, expected_version: candidate.item.version, approved: true });
-      if (data.item) remember(data.item);
-    } catch (_) { /* Existing workflow status exposes the retry state. */ }
-    finally { automaticPublish.busy = false; rerender(); }
+    // No implicit human approval. Publishing uses the explicit version-bound action.
+    return;
   }
   function preparePendingDrafts() {
     if (!autoPreparationAllowed()) return;
@@ -638,6 +628,39 @@
     }
   }
 
+  const managementLocks = new Set();
+  let managementEditing = false;
+  // Data-only interface for the new DeepSeek screen: never opens legacy UI.
+  async function manageReview(reviewId, action, options = {}) {
+    const context = cardContext(reviewId);
+    if (!context || context.review.demo || context.branch.demo || context.branch.id !== 'branch-google-nilufer') throw new Error('Canlı işlem yalnız Bursa Nilüfer için kullanılabilir.');
+    const {review, branch, item} = context;
+    if (managementLocks.has(reviewId) || publicationLocks.has(item?.id)) throw new Error('Bu yorum için işlem sürüyor.');
+    const identity = identityFor(review, branch);
+    if (!['prepare','regenerate','save','publish','verify','legal','complaint','branch'].includes(action)) throw new Error('Geçersiz işlem.');
+    if (['save','publish','verify','regenerate'].includes(action) && (!item || options.version !== item.version)) throw new Error('Taslak sürümü değişti; güncel kaydı inceleyin.');
+    if (action === 'publish' && (options.approved !== true || options.text !== item.reply_text || !['approval_pending','publish_failed'].includes(item.status) || item.review_snapshot?.reply_conflict)) throw new Error('Güncel kayıtlı metin için yayın onayı gerekli.');
+    if (['prepare','regenerate','save','publish'].includes(action) && review.isReplied) throw new Error('Google’da zaten yanıt var; mevcut yanıt korunuyor.');
+    if (action === 'prepare' && item && !['draft_failed','preparing'].includes(item.status)) return item;
+    managementLocks.add(reviewId);
+    if (item) publicationLocks.add(item.id);
+    try {
+      let result;
+      if (action === 'prepare') result = await googleBusinessRequest('prepare_draft', {...identity,...(item ? {retry:true,item_id:item.id,expected_version:item.version}: {})});
+      else if (['legal','complaint','branch'].includes(action)) result = await googleBusinessRequest('create_task', {...identity,kind:action,note:''});
+      else if (['save','regenerate'].includes(action)) {
+        const generated = action === 'regenerate' ? await requestDraft(review,branch,item.reply_text) : null;
+        const text = String(generated ? generated.reply || '' : options.text || '').trim();
+        if (!text || text.length > 4000) throw new Error('Yanıt 1–4000 karakter olmalı.');
+        result = await googleBusinessRequest('save_draft',{...identity,item_id:item.id,expected_version:item.version,reply_text:text,draft_source:generated?'openai':'manual'});
+      } else result = await googleBusinessRequest(action === 'publish'?'publish_reply':'verify_reply',{item_id:item.id,expected_version:item.version,...(action==='publish'?{approved:true}:{})});
+      if (!result?.item) throw new Error('İşlem sonucu doğrulanamadı; güncel kaydı kontrol edin.');
+      remember(result.item);
+      if(result.item.status === 'published') await publicationConfirmed(result.item);
+      return result.item;
+    } finally { managementLocks.delete(reviewId); if(item) publicationLocks.delete(item.id); }
+  }
+
   function install() {
     if (!window.OTOTRGoogleReputation) return setTimeout(install, 100);
     window.OTOTRGoogleReputation.generateReplyDraft = generate;
@@ -647,6 +670,8 @@
     window.OTOTRGoogleReputation.openQualityAudit = id => createTask(id, 'quality');
     window.OTOTRGoogleReputation.sendToCrisisCenter = id => createTask(id, 'crisis');
   window.OTOTRGoogleReviewAI = {
+    manageReview,
+    setManagementEditing: value => { managementEditing = value === true; },
     generate,
     connectGoogleBusiness,
     googleBusinessStatus,
@@ -655,7 +680,7 @@
     getApprovalQueue: () => workflow.items.filter(item => item.kind === 'reply'),
     getWorkflowItems: workflowItems,
     getWorkflowState: () => ({ loaded: workflow.loaded, loading: workflow.loading, error: workflow.error, lastSuccessAt: workflow.lastSuccessAt }),
-    getRefreshState: () => ({ busy: workflow.loading || automaticVerification.busy || Boolean(editor?.busy) || pendingTasks.size > 0 || editingCards(), lastSuccessAt: workflow.lastSuccessAt }),
+    getRefreshState: () => ({ busy: managementEditing || managementLocks.size > 0 || workflow.loading || automaticVerification.busy || Boolean(editor?.busy) || pendingTasks.size > 0 || editingCards(), lastSuccessAt: workflow.lastSuccessAt }),
     refreshWorkflow, renderWorkflow, createTask, openItem,
     renderReplyCard, renderAutoDraftSummary, renderAutoDraftMiniSummary, preparePendingDrafts, verifyPendingReply
   };

@@ -9,12 +9,12 @@ const css = await readFile(new URL('../assets/google-review-command-center.css',
 
 test('DeepSeek management UI is mounted inside the existing ERP review route', () => {
   assert.match(commandCenter, /google-review-management\.html\?embedded=1/);
-  assert.match(commandCenter, /centerView \|\| 'overview'/);
+  assert.doesNotMatch(bridge, /parentApi\.setCenterView|ai\.openItem/);
   assert.match(css, /\.google-management-frame/);
 });
 
 test('production scope is one live branch and two explicitly demo branches', () => {
-  assert.match(html, /1 Canlı · 2 Demo/);
+  assert.match(bridge, /1 Canlı · 2 Demo/);
   assert.match(html, /live: i===0/);
   assert.match(html, /demo: i===1 \|\| i===2/);
   assert.match(bridge, /branch-google-nilufer/);
@@ -25,7 +25,7 @@ test('production scope is one live branch and two explicitly demo branches', () 
 
 test('live sync and publish actions delegate to the established secure ERP workflow', () => {
   assert.match(bridge, /syncGoogleReviewsForBranch/);
-  assert.match(bridge, /setCenterView\('inbox', 'waiting'\)/);
+  assert.match(bridge, /ai\.manageReview/);
   assert.match(bridge, /fetchGoogleReviews/);
   assert.doesNotMatch(bridge, /access_token|service_role|api[_-]?key/i);
 });

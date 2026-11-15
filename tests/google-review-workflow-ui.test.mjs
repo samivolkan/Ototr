@@ -415,3 +415,42 @@ test('published and pending modal replies cannot regenerate through a hidden act
     assert.equal(h.shared.state.calls.filter(call => call.action === 'generate').length, 1);
   }
 });
+
+async function managementFixture() {
+  const h=ui();
+  // Seed through the existing service, then use only the new data API.
+  await h.api.generate(REVIEW.id);await h.element('[data-google-ai-queue]').dispatch('click');
+  return h;
+}
+test('new management service refuses demo records before network',async()=>{
+  const h=ui(server(),{...BRANCH,demo:true},{...REVIEW,demo:true});
+  await assert.rejects(h.api.manageReview(REVIEW.id,'prepare'),/yalnız Bursa/);
+  assert.equal(h.shared.state.calls.length,0);
+});
+test('new management save persists exact text and needs fresh version approval',async()=>{
+  const h=await managementFixture(),item=h.api.getWorkflowItems()[0];
+  await assert.rejects(h.api.manageReview(REVIEW.id,'publish',{version:item.version,approved:true,text:'stale'}),/onayı/);
+  const next=await h.api.manageReview(REVIEW.id,'save',{version:item.version,text:'A new manually edited reply'});
+  assert.equal(next.reply_text,'A new manually edited reply');
+  assert.equal(next.status,'approval_pending');
+  await assert.rejects(h.api.manageReview(REVIEW.id,'publish',{version:item.version,approved:true,text:next.reply_text}),/sürümü/);
+  assert.equal(h.shared.state.calls.some(c=>c.action==='publish_reply'),false);
+  const result=await h.api.manageReview(REVIEW.id,'publish',{version:next.version,approved:true,text:next.reply_text});
+  assert.equal(result.status,'published');
+});
+test('new management failed AI call preserves existing draft',async()=>{
+  const h=await managementFixture(),item=h.api.getWorkflowItems()[0];h.shared.state.aiFails=true;
+  await assert.rejects(h.api.manageReview(REVIEW.id,'regenerate',{version:item.version}),/unavailable/);
+  assert.equal(h.api.getWorkflowItems()[0].reply_text,item.reply_text);
+  assert.equal(h.api.getRefreshState().busy,false);
+});
+test('new editor locks background refresh and rejects duplicate in-flight generation',async()=>{
+  const h=await managementFixture(),item=h.api.getWorkflowItems()[0];
+  h.api.setManagementEditing(true);assert.equal(h.api.getRefreshState().busy,true);
+  h.api.setManagementEditing(false);h.shared.state.aiHold=true;
+  const first=h.api.manageReview(REVIEW.id,'regenerate',{version:item.version});
+  for(let i=0;i<8;i++)await Promise.resolve();
+  await assert.rejects(h.api.manageReview(REVIEW.id,'regenerate',{version:item.version}),/işlem sürüyor/);
+  h.shared.state.releaseAI();await first;
+  assert.equal(h.api.getRefreshState().busy,false);
+});
