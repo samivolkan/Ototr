@@ -3172,6 +3172,7 @@ export default router;
       }
       const exit = document.getElementById('ototr-account-exit');
       document.querySelectorAll('button[aria-label="Geri bildirim merkezi"]').forEach(button => { button.remove(); });
+      document.querySelectorAll('button,[role="button"]').forEach(button => { if (/Geri\s*bildirim/i.test(button.textContent || '')) button.remove(); });
       if (exit && exit.parentElement !== profile) profile.append(exit);
     };
     const style = document.createElement('style');
