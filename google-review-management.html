@@ -1609,7 +1609,7 @@ function initCharts(){
     charts.chartTrend = new Chart(ctxT, {
     type:"line", data:{ labels:SEED.MONTHS, datasets:[
       { label:"Gerçek", data:SEED.VOL, borderColor:"#2563eb", backgroundColor:(c)=>{ const g=c.chart.ctx.createLinearGradient(0,0,0,240); g.addColorStop(0,"rgba(37,99,235,.22)"); g.addColorStop(1,"rgba(37,99,235,0)"); return g; }, borderWidth:2.5, pointRadius:3, pointBackgroundColor:"#fff", pointBorderColor:"#2563eb", pointBorderWidth:2, fill:true, tension:.35 },
-      { label:"Hedef", data:Array(12).fill(monthlyTarget), borderColor:isDark?"#cbd5e1":"#64748b", backgroundColor:"transparent", borderWidth:2.5, borderDash:[8,4], pointRadius:2, pointBackgroundColor:isDark?"#131924":"#fff", pointBorderColor:isDark?"#cbd5e1":"#64748b", pointBorderWidth:1.5, fill:false, tension:0, order:0 }
+      { label:"Hedef", data:Array(12).fill(monthlyTarget), borderColor:"#e11d48", backgroundColor:"transparent", borderWidth:3, borderDash:[10,5], pointRadius:3, pointBackgroundColor:"#fff", pointBorderColor:"#e11d48", pointBorderWidth:2, fill:false, tension:0, order:2 }
     ]},
     options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false} }, scales:{ x:{grid:{display:false}, ticks:{color:text, font}}, y:{beginAtZero:true, grid:{color:grid, drawBorder:false}, ticks:{color:text, font, stepSize:25}} } }
     });
