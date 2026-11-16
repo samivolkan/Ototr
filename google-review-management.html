@@ -1343,6 +1343,7 @@ function loadState(){
 }
 function saveState(){
   // Only synthetic records persist in this prototype namespace.
+  if (new URLSearchParams(location.search).get('embedded') === '1') return;
   const snapshot = {...STATE, reviews: STATE.reviews.filter(r=>r.demo===true)};
   for (const key of ['legalCases','complaints','approvals']) snapshot[key]=STATE[key].filter(r=>!r.erpItemId);
   snapshot.branches=STATE.branches.map(b=>b.live?{...b,actual:0,rating:0,responseRate:0,slaRate:0,criticalRate:0,lastSync:'ERP bağlantısı bekleniyor'}:b);
@@ -1579,6 +1580,9 @@ function renderProblems(){
 }
 
 const charts = {};
+// Expose the chart registry for the ERP bridge so live data can refresh the
+// already-painted chart without depending on a module/global lexical quirk.
+window.__ototrCharts = charts;
 function destroyChart(id){ if (charts[id]){ charts[id].destroy(); delete charts[id]; } }
 
 function initCharts(){
@@ -1589,13 +1593,17 @@ function initCharts(){
 
   destroyChart("chartTrend");
   const ctxT = document.getElementById("chartTrend");
-  if (ctxT) charts.chartTrend = new Chart(ctxT, {
+  if (ctxT) {
+    const liveTarget = Math.max(1, Number(BRANCHES?.find(b => b.live)?.target) || 200);
+    const monthlyTarget = liveTarget / 12;
+    charts.chartTrend = new Chart(ctxT, {
     type:"line", data:{ labels:SEED.MONTHS, datasets:[
-      { label:"Hedef", data:(BRANCHES?.find(b=>b.live)?.target ? Array(12).fill(Number(BRANCHES.find(b=>b.live).target)/12) : SEED.TGT), borderColor:isDark?"#475569":"#cbd5e1", backgroundColor:"transparent", borderWidth:1.8, borderDash:[6,4], pointRadius:0, tension:.35 },
-      { label:"Gerçek", data:SEED.VOL, borderColor:"#2563eb", backgroundColor:(c)=>{ const g=c.chart.ctx.createLinearGradient(0,0,0,240); g.addColorStop(0,"rgba(37,99,235,.22)"); g.addColorStop(1,"rgba(37,99,235,0)"); return g; }, borderWidth:2.5, pointRadius:3, pointBackgroundColor:"#fff", pointBorderColor:"#2563eb", pointBorderWidth:2, fill:true, tension:.35 }
+      { label:"Gerçek", data:SEED.VOL, borderColor:"#2563eb", backgroundColor:(c)=>{ const g=c.chart.ctx.createLinearGradient(0,0,0,240); g.addColorStop(0,"rgba(37,99,235,.22)"); g.addColorStop(1,"rgba(37,99,235,0)"); return g; }, borderWidth:2.5, pointRadius:3, pointBackgroundColor:"#fff", pointBorderColor:"#2563eb", pointBorderWidth:2, fill:true, tension:.35 },
+      { label:"Hedef", data:Array(12).fill(monthlyTarget), borderColor:isDark?"#cbd5e1":"#64748b", backgroundColor:"transparent", borderWidth:2.5, borderDash:[8,4], pointRadius:2, pointBackgroundColor:isDark?"#131924":"#fff", pointBorderColor:isDark?"#cbd5e1":"#64748b", pointBorderWidth:1.5, fill:false, tension:0, order:0 }
     ]},
     options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false} }, scales:{ x:{grid:{display:false}, ticks:{color:text, font}}, y:{beginAtZero:true, grid:{color:grid, drawBorder:false}, ticks:{color:text, font, stepSize:25}} } }
-  });
+    });
+  }
 
   destroyChart("chartRating");
   const ctxR = document.getElementById("chartRating");
@@ -2961,13 +2969,13 @@ renderNotifications();
 
 if (!STATE.onboarded) setTimeout(startTour, 500);
 </script>
-<script src="assets/google-review-management-bridge.js?v=20261116-9"></script>
+<script src="assets/google-review-management-bridge.js?v=20261116-11"></script>
 <script src="assets/google-review-management-controller.js?v=20261116-6"></script>
 <script src="assets/google-review-live-views.js?v=20261116-6"></script>
 <script src="assets/google-review-enhancements.js?v=20261116-6"></script>
 <script src="assets/google-review-live-features.js?v=20261116-6"></script>
 <script>
-  (() => { const purge = (root=document) => { root.getElementById?.('langSel')?.remove(); root.querySelectorAll?.('button,[role="button"]').forEach(b => { if (/Geri\s*bildirim/i.test(b.textContent || '') && !/^\s*←?\s*Geri\s*$/.test(b.textContent.trim())) b.remove(); }); root.querySelectorAll?.('*').forEach(e => { if (e.shadowRoot) purge(e.shadowRoot); }); }; purge(); setInterval(() => purge(), 100); })();
+  (() => { const purge = (root=document) => { root.getElementById?.('langSel')?.remove(); root.getElementById?.('ototr-feedback-root')?.remove(); root.querySelectorAll?.('#ototr-feedback-root').forEach(e => e.remove()); root.querySelectorAll?.('button,[role="button"],launcher').forEach(b => { if (/Geri\s*bildirim/i.test(b.textContent || '') || b.classList?.contains('launcher')) b.remove(); }); root.querySelectorAll?.('*').forEach(e => { if (e.shadowRoot) purge(e.shadowRoot); }); }; purge(); setInterval(() => purge(), 100); })();
 </script>
 <div id="releaseFooterBadge" aria-label="Sürüm ve yayın zamanı"><b>G16</b><span>Yayın: kontrol ediliyor</span></div>
 <style>#releaseFooterBadge{position:fixed;left:12px;bottom:10px;z-index:90;display:inline-flex;align-items:center;gap:7px;padding:6px 9px;border:1px solid var(--line,#dfe3e8);border-radius:7px;background:rgba(255,255,255,.94);color:var(--mute,#64748b);font:600 10px/1.2 system-ui;box-shadow:0 4px 12px rgba(15,23,42,.08)}#releaseFooterBadge b{color:var(--ink,#171b20);font-size:11px}@media(max-width:768px){#releaseFooterBadge{left:8px;bottom:8px;font-size:9px}}</style>

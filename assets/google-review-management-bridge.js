@@ -49,7 +49,10 @@
     if (target) {
       target.actual = Number(live?.googleReviewCount ?? reviews.length);
       target.rating = Number(live?.googleRating ?? 0);
-      target.target = Number(live?.monthlyTarget ?? 0);
+      // The ERP target is a monthly value. Keep a visible, safe fallback when
+      // an older branch record has not populated monthlyTarget yet.
+      const configuredTarget = Number(live?.monthlyTarget ?? live?.target ?? 0);
+      target.target = configuredTarget > 0 ? configuredTarget : 200;
       target.slaH = slaHours;
       target.autoreply = policy?.auto_reply_enabled === true;
       target.gbp = live?.googleLocationId || live?.locationId || '';
@@ -118,7 +121,7 @@
       const tour = document.getElementById('tourOverlay');
       if (tour) tour.style.display = 'none';
       const role = document.getElementById('roleSelect');
-      if (role) { role.disabled = true; role.title = 'Yetkiler ERP hesabınızdan doğrulanır'; role.options[0].textContent='ERP oturumu'; }
+      if (role) { role.disabled = true; role.title = 'Yetkiler ERP hesabınızdan doğrulanır'; if (role.options?.[0]) role.options[0].textContent='ERP oturumu'; }
     }
   }
 
@@ -184,7 +187,7 @@
     if([...SELECTED].some(id=>liveRow(id))&&action!=='clear')return toast('Canlı yorumları ayrı ayrı inceleyip onaylayın. Demo toplu işlemler canlı kayıtları değiştirmez.','warn');
     return originalBulk(action);
   };
-  const branchFilter=document.createElement('select');branchFilter.id='erpBranchFilter';branchFilter.setAttribute('aria-label','Şube ve veri ortamı');
+  const branchFilter=document.createElement('select');branchFilter.id='erpBranchFilter';branchFilter.setAttribute?.('aria-label','Şube ve veri ortamı');
   branchFilter.innerHTML='<option value="live">Bursa Nilüfer · Canlı</option><option value="Kocaeli Gebze">Gebze · Demo</option><option value="Bursa İnegöl">İnegöl · Demo</option><option value="all">Tümü · Canlı + Demo</option>';
   branchFilter.value=parentApi?'live':'all';
   document.getElementById('rvSort')?.after(branchFilter);
@@ -234,13 +237,14 @@
   const originalCharts=window.initCharts;
   window.initCharts=()=>{
     originalCharts();
-    if(typeof charts==='undefined')return;
+    const chartRegistry = window.__ototrCharts || (typeof charts !== 'undefined' ? charts : null);
+    if(!chartRegistry)return;
     const rows=REVIEWS.filter(r=>!r.demo), now=new Date();
     const months=Array.from({length:12},(_,i)=>new Date(now.getFullYear(),now.getMonth()-11+i,1));
     const volumes=months.map(m=>rows.filter(r=>{const d=new Date(r.createdAt);return d.getFullYear()===m.getFullYear()&&d.getMonth()===m.getMonth();}).length);
-    if(charts.chartTrend){const liveTarget=Number(BRANCHES.find(b=>b.live)?.target)||0;const monthlyTarget=liveTarget/12;charts.chartTrend.data.labels=months.map(m=>m.toLocaleDateString('tr-TR',{month:'short',year:'2-digit'}));charts.chartTrend.data.datasets[0].data=months.map(()=>monthlyTarget);charts.chartTrend.data.datasets[0].label='Bursa · aylık hedef';charts.chartTrend.data.datasets[0].borderWidth=2;charts.chartTrend.data.datasets[0].backgroundColor='transparent';charts.chartTrend.data.datasets[1].data=volumes;charts.chartTrend.data.datasets[1].label='Bursa · alınan yorumlar';charts.chartTrend.update();}
-    if(charts.chartRating){charts.chartRating.data.datasets[0].data=[5,4,3,2,1].map(star=>rows.filter(r=>r.stars===star).length);charts.chartRating.update();}
-    if(charts.chartResponse){const durations=rows.filter(r=>r.replyDate&&r.createdAt).map(r=>(Date.parse(r.replyDate)-Date.parse(r.createdAt))/3600000).filter(h=>h>=0);charts.chartResponse.data.datasets[0].data=[durations.filter(h=>h<2).length,durations.filter(h=>h>=2&&h<6).length,durations.filter(h=>h>=6&&h<24).length,durations.filter(h=>h>=24&&h<48).length,durations.filter(h=>h>=48).length];charts.chartResponse.update();}
+    if(chartRegistry.chartTrend){const liveTarget=Math.max(1,Number(BRANCHES.find(b=>b.live)?.target)||200);const monthlyTarget=liveTarget/12;const targetSeries=chartRegistry.chartTrend.data.datasets.find(dataset=>/hedef/i.test(dataset.label||''));const actualSeries=chartRegistry.chartTrend.data.datasets.find(dataset=>/gerçek|alınan/i.test(dataset.label||''));chartRegistry.chartTrend.data.labels=months.map(m=>m.toLocaleDateString('tr-TR',{month:'short',year:'2-digit'}));if(targetSeries){targetSeries.data=months.map(()=>monthlyTarget);targetSeries.label='Bursa · aylık hedef';targetSeries.borderColor='#64748b';targetSeries.borderWidth=2.5;targetSeries.borderDash=[8,4];targetSeries.pointRadius=2;targetSeries.backgroundColor='transparent';}if(actualSeries){actualSeries.data=volumes;actualSeries.label='Bursa · alınan yorumlar';}chartRegistry.chartTrend.update();}
+    if(chartRegistry.chartRating){chartRegistry.chartRating.data.datasets[0].data=[5,4,3,2,1].map(star=>rows.filter(r=>r.stars===star).length);chartRegistry.chartRating.update();}
+    if(chartRegistry.chartResponse){const durations=rows.filter(r=>r.replyDate&&r.createdAt).map(r=>(Date.parse(r.replyDate)-Date.parse(r.createdAt))/3600000).filter(h=>h>=0);chartRegistry.chartResponse.data.datasets[0].data=[durations.filter(h=>h<2).length,durations.filter(h=>h>=2&&h<6).length,durations.filter(h=>h>=6&&h<24).length,durations.filter(h=>h>=24&&h<48).length,durations.filter(h=>h>=48).length];chartRegistry.chartResponse.update();}
   };
   const originalSimulate = window.openSimReview;
   window.openSimReview = () => {
@@ -288,7 +292,7 @@
   window.toggleHold=()=>LEGAL_CASES.find(c=>c.id===CURRENT_CASE)?.erpItemId?toast('Canlı hukuki kayıt üzerindeki hold demo formundan değiştirilemez.','warn'):originalHold();
   window.advanceCase=()=>LEGAL_CASES.find(c=>c.id===CURRENT_CASE)?.erpItemId?toast('Canlı kayıt demo adımlarıyla ilerletilemez.','warn'):originalAdvance();
   window.confirmGolive=()=>{closeModal('goliveModal');toast('Bu ekran yayın komutu çalıştırmaz. Dağıtım GitHub Actions üzerinden yapılır.','info');};
-  CHECKLIST.forEach(c=>c.status='warn');
+  if (typeof CHECKLIST !== 'undefined') CHECKLIST.forEach(c=>c.status='warn');
   const originalSaveAI=window.saveAI;
   window.saveAI=()=>{originalSaveAI();toast('Bu ayarlar yalnız demo için kaydedildi; canlı OpenAI yapılandırması sunucuda korunuyor.','info');};
   const originalSystem = window.renderSystem;
@@ -315,7 +319,7 @@
   };
   const controls=document.createElement('div');controls.className='pacts';
   controls.innerHTML='<label class="scope-label">Veri kapsamı <select id="erpScopeLevel" aria-label="Veri kapsamı"><option value="hq">Genel merkez</option><option value="region">Bölge</option><option value="city">İl</option><option value="branch">Şube</option></select></label><select id="erpScopeValue" aria-label="Kapsam seçimi"><option value="all">Tüm canlı şubeler</option><option value="Bursa Nilüfer">Bursa · Nilüfer · Canlı</option><option value="Kocaeli Gebze">Gebze · Demo</option><option value="Bursa İnegöl">İnegöl · Demo</option></select><span class="chip ok">1 Canlı · 2 Demo</span><button class="btn sm" id="erpGoogleSync">Bursa’yı yenile</button><button class="btn sm" id="erpGoogleQueue">Canlı yorumlar</button><button class="btn sm" id="erpGoogleConnect">Bağlantı durumu</button>';
-  document.querySelector('main').prepend(controls);
+  document.querySelector('main')?.prepend?.(controls);
   document.getElementById('erpGoogleSync').onclick=async()=>{
     if(!parentApi)return missing();
     if(isEditing())return toast('Önce açık taslağı kaydedin veya işlemi tamamlayın.','warn');
@@ -334,7 +338,7 @@
   };
   scopeLevel.onchange=()=>{ if(scopeLevel.value==='hq'||scopeLevel.value==='region') scopeValue.innerHTML='<option value="all">Tüm canlı şubeler</option>'; else if(scopeLevel.value==='city') scopeValue.innerHTML='<option value="Bursa">Bursa</option>'; else scopeValue.innerHTML='<option value="all">Tüm canlı şubeler</option><option value="Bursa Nilüfer">Bursa · Nilüfer · Canlı</option><option value="Kocaeli Gebze">Gebze · Demo</option><option value="Bursa İnegöl">İnegöl · Demo</option>'; applyScopeFilter(); };
   scopeValue.onchange=applyScopeFilter;
-  document.getElementById('emailModal')?.addEventListener('click',event=>{if(event.target.id==='emailModal'){pendingApproval=null;lockEditing();}});
+  document.getElementById('emailModal')?.addEventListener?.('click',event=>{if(event.target.id==='emailModal'){pendingApproval=null;lockEditing();}});
   window.addEventListener('beforeunload',()=>ai?.setManagementEditing?.(false));
   window.addEventListener('message', event => {
     if (event.origin !== location.origin || event.source !== window.parent || event.data?.type !== 'ototr-google-refresh') return;

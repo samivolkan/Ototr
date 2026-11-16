@@ -3053,7 +3053,7 @@
       'assets/google-review-analytics.js?v=1',
       'assets/google-review-dashboard.js?v=1',
       'assets/google-review-refresh.js?v=google-refresh-5',
-      'assets/google-review-command-center.js?v=20261116-10'
+      'assets/google-review-command-center.js?v=20261116-11'
     ];
     const loadNext=(i)=>{ if(i>=modules.length)return; const s=document.createElement('script'); s.src=modules[i]; s.onload=()=>loadNext(i+1); s.onerror=()=>loadNext(i+1); document.head.appendChild(s); };
     const start=()=>loadNext(0);
@@ -3171,6 +3171,7 @@ export default router;
         document.body.append(profile);
       }
       const exit = document.getElementById('ototr-account-exit');
+      document.getElementById('ototr-feedback-root')?.remove();
       document.querySelectorAll('button[aria-label="Geri bildirim merkezi"]').forEach(button => { button.remove(); });
       document.querySelectorAll('button,[role="button"]').forEach(button => { if (/Geri\s*bildirim/i.test(button.textContent || '')) button.remove(); });
       if (exit && exit.parentElement !== profile) profile.append(exit);

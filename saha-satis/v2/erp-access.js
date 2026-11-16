@@ -1,1 +1,71 @@
-import{o as e,r as t,t as n}from"./assets/feedbackLoader-Bju5DneL.js";var r=`/Ototr/saha-satis/v2/`.replace(/saha-satis\/$/,``),i=()=>{window.location.replace(r+`saha-satis/?returnTo=`+encodeURIComponent(location.pathname+location.search+location.hash))},a=!1;async function o(){if(!a){a=!0;try{let{data:{user:r},error:a}=await t.auth.getUser();if(a||!r){i();return}let o=await e();if(!o.me){i();return}if(document.documentElement.classList.remove(`ototr-access-locked`),n(o),document.getElementById(`ototr-access-status`)?.remove(),!document.getElementById(`ototr-account-exit`)){let e=document.createElement(`button`);e.id=`ototr-account-exit`,e.type=`button`,e.textContent=`Güvenli çıkış`,e.setAttribute(`aria-label`,`ERP hesabından çıkış yap`),e.addEventListener(`click`,async()=>{e.disabled=!0;try{await t.auth.signOut()}finally{i()}}),document.body.append(e)}}catch{document.documentElement.classList.add(`ototr-access-locked`),i()}finally{a=!1}}}t.auth.onAuthStateChange(e=>{e===`SIGNED_OUT`?(n(null),document.documentElement.classList.add(`ototr-access-locked`),i()):e===`SIGNED_IN`&&setTimeout(()=>void o(),0)}),window.addEventListener(`pageshow`,()=>void o()),document.addEventListener(`visibilitychange`,()=>{document.visibilityState===`visible`&&o()}),setInterval(()=>{document.visibilityState===`visible`&&o()},6e4),o();
+import { o as getMe, r as supabase } from "./assets/feedbackLoader-Bju5DneL.js";
+
+const basePath = `/Ototr/saha-satis/v2/`.replace(/saha-satis\/v2\/$/, ``);
+const redirectToLogin = () => {
+  window.location.replace(
+    `${basePath}saha-satis/v2/?returnTo=${encodeURIComponent(location.pathname + location.search + location.hash)}`,
+  );
+};
+
+let checking = false;
+
+async function ensureAccess() {
+  if (checking) return;
+  checking = true;
+  try {
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (error || !user) {
+      redirectToLogin();
+      return;
+    }
+
+    const me = await getMe();
+    if (!me.me) {
+      redirectToLogin();
+      return;
+    }
+
+    document.documentElement.classList.remove(`ototr-access-locked`);
+    document.getElementById(`ototr-access-status`)?.remove();
+
+    if (!document.getElementById(`ototr-account-exit`)) {
+      const button = document.createElement(`button`);
+      button.id = `ototr-account-exit`;
+      button.type = `button`;
+      button.textContent = `Güvenli çıkış`;
+      button.setAttribute(`aria-label`, `ERP hesabından çıkış yap`);
+      button.addEventListener(`click`, async () => {
+        button.disabled = true;
+        try {
+          await supabase.auth.signOut();
+        } finally {
+          redirectToLogin();
+        }
+      });
+      document.body.append(button);
+    }
+  } catch {
+    document.documentElement.classList.add(`ototr-access-locked`);
+    redirectToLogin();
+  } finally {
+    checking = false;
+  }
+}
+
+supabase.auth.onAuthStateChange((event) => {
+  if (event === `SIGNED_OUT`) {
+    document.documentElement.classList.add(`ototr-access-locked`);
+    redirectToLogin();
+  } else if (event === `SIGNED_IN`) {
+    setTimeout(() => void ensureAccess(), 0);
+  }
+});
+
+window.addEventListener(`pageshow`, () => void ensureAccess());
+document.addEventListener(`visibilitychange`, () => {
+  if (document.visibilityState === `visible`) void ensureAccess();
+});
+setInterval(() => {
+  if (document.visibilityState === `visible`) void ensureAccess();
+}, 60_000);
+void ensureAccess();
