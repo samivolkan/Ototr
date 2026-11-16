@@ -54,3 +54,42 @@ Panel masaüstünde ERP içeriğini tamamen kapatmadan sağ kenarda açılıyor.
 ## Final result
 
 passed
+
+---
+
+# Yorum Sayfası 2 — 16.11.2026 tasarım doğrulaması
+
+## Kaynak, durum ve kanıt
+
+- Kaynak: kullanıcının `ototr-google-yorum-duzeltilmis.html` dosyası; genel bakış, son 12 ay, masaüstü.
+- Uygulama: `google-review-management.html?variant=2`; mevcut ERP köprüsü ve ayrı sunum katmanı.
+- Masaüstü: 1920 × 882 tarayıcı alanı, kaydırma çubuğu hariç 1905 px içerik. Mobil: 390 × 844.
+- Yerel kanıt klasörü: `review-page-2-evidence` (görev çalışma alanında; özel müşteri ekranları nedeniyle Git deposuna alınmadı).
+- Kaynak tam görünüm: `01-source-overview.jpg`; uygulama tam görünüm: `06-alternative-desktop-final.jpg`; mobil: `05-alternative-mobile.jpg`.
+- Karşılaştırılan durum: genel bakış / son 12 ay. Kaynak 20 örnek şubeyi, uygulama yalnız seçili üç şubeden birini gösterir. Sayı farkı bilinçli veri kapsamı farkıdır.
+
+## Beş görsel kontrol
+
+- Tipografi: DM Sans, koyu güçlü başlıklar, küçük yardımcı metinler ve aynı OTOTR marka yapısı korundu.
+- Aralık: 1440 px merkez içerik, altı kart, iki sütunlu ana grafik düzeni; mobilde iki kart ve tek grafik sütunu.
+- Renk: Koyu menü, açık gri arka plan, beyaz kartlar, mavi yorum, mor eğilim, kırmızı hedef. Demo uyarısı ayrı sarı alanda.
+- Varlık ve ikonlar: Kaynağın marka/menü işaretleri korunur; yeni dış görsel veya rastgele grafik değeri eklenmedi.
+- Metin: Canlı/demo, dönem, kayıtlı hedef ve eksik ölçüm durumu açık. Taklit A/B başarı yüzdesi gösterilmez.
+
+## Düzeltme döngüsü
+
+1. İlk yakalamada sabit 54 px üst başlık ikinci menü satırını beyaz içerik üzerine taşırıyordu (P1).
+2. Yalnız alternatif için otomatik başlık yüksekliği ve tam genişlik ikinci satır uygulandı.
+3. Son yakalamada iki menü satırı koyu alan içinde; yatay taşma yok. Mobilde 375 px içerik 390 px görünüm alanı içinde kaldı.
+
+## Etkileşim ve teknik kontrol
+
+- Üç şube seçimi ve dört dönem seçimi; canlı/demo veri ayrımı.
+- Demo hedefi Kaydet, yeniden yükle ve aynı değeri gör; ilerleme ve hedef serisinin güncellenmesi.
+- Yorum detayı ve demo alternatif yanıt; mobil liste ve detay genişliği.
+- Klavye odağı, menü Enter/Space ve grafiklerin erişilebilir veri açıklamaları.
+- Chrome konsolunda alternatif sayfaya ait hata/uyarı yok.
+- 71 hedefli test, JS sözdizimi ve diff kontrolü geçti.
+- Canlı Google'a müşteri yanıtı gönderimi ve canlı hedef değişikliği bu tasarım testi kapsamında yapılmadı.
+
+final result: passed
