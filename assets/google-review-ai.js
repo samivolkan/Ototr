@@ -317,6 +317,29 @@
     showEditor({ item, branch, review, identity: { account_id: item.account_id, location_id: item.location_id, review_id: item.review_id, branch_id: item.branch_id }, source: item.draft_source, busy: false }, item.kind === 'reply' ? item.reply_text : item.note);
   }
 
+  async function regeneratePublishedItem(id) {
+    const item = workflow.items.find(row => row.id === id);
+    if (!item || item.kind !== 'reply' || item.status !== 'published') return '';
+    const branch = window.OTOTRGoogleReputation?.getBranchById(item.branch_id) || { id: item.branch_id, name: item.branch_name, replySignatureName: item.branch_name };
+    const liveReview = window.OTOTRGoogleReputation?.demoReviews?.find(row => row.branchId === item.branch_id && row.googleReviewId === item.review_id);
+    const review = { id: item.review_id, googleReviewId: item.review_id, branchId: item.branch_id, rating: item.review_snapshot?.rating, comment: item.review_snapshot?.comment, reviewerName: liveReview?.reviewerName || item.review_snapshot?.reviewer_name || '', replyText: liveReview?.replyText || item.reply_text };
+    const generated = await requestDraft(review, branch, item.reply_text);
+    const text = String(generated?.reply || '').trim();
+    if (!text) throw new Error('Alternatif AI yanıtı boş döndü.');
+    const data = await googleBusinessRequest('save_draft', { account_id: item.account_id, location_id: item.location_id, review_id: item.review_id, branch_id: item.branch_id, item_id: item.id, expected_version: item.version, reply_text: text, draft_source: 'openai', generation_id: generated.generation_id, edit_published: true });
+    remember(data.item);
+    await refreshWorkflow();
+    openItem(data.item.id);
+    return data.item;
+  }
+
+  async function regenerateItem(id) {
+    const item = workflow.items.find(row => row.id === id);
+    if (!item) return '';
+    openItem(id);
+    return regenerateEditor();
+  }
+
   async function generate(reviewId) {
     const api = window.OTOTRGoogleReputation, review = api?.getReviewById(reviewId), branch = review && api?.getBranchById(review.branchId);
     if (!review || !branch) return '';
@@ -692,7 +715,7 @@
     getWorkflowItems: workflowItems,
     getWorkflowState: () => ({ loaded: workflow.loaded, loading: workflow.loading, error: workflow.error, lastSuccessAt: workflow.lastSuccessAt }),
     getRefreshState: () => ({ busy: managementEditing || managementLocks.size > 0 || workflow.loading || automaticVerification.busy || Boolean(editor?.busy) || pendingTasks.size > 0 || editingCards(), lastSuccessAt: workflow.lastSuccessAt }),
-    refreshWorkflow, renderWorkflow, createTask, openItem,
+    refreshWorkflow, renderWorkflow, createTask, openItem, regenerateItem, regeneratePublishedItem,
     renderReplyCard, renderAutoDraftSummary, renderAutoDraftMiniSummary, preparePendingDrafts, verifyPendingReply
   };
     if (typeof document !== 'undefined') {

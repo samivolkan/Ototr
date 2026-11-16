@@ -199,6 +199,14 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
 .li p{margin:0;color:var(--i2);font-size:12px;line-height:1.4;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 .bulk-bar{position:relative;bottom:auto;background:var(--nav);color:#fff;padding:9px 12px;display:none;align-items:center;gap:8px;border-radius:var(--r);margin:8px 0 0;z-index:10;flex-wrap:wrap;box-shadow:0 8px 20px rgba(15,23,42,.18);animation:bulkDrop .16s ease-out}
 .inline-review-actions{display:flex;gap:6px;flex-wrap:wrap;padding:8px 12px 10px 42px;background:#f8fafc;border-top:1px solid var(--l2);border-bottom:1px solid var(--l2)}
+.inline-action-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;width:100%}
+.inline-action-label{font-size:10px;font-weight:700;color:var(--mute);text-transform:uppercase;letter-spacing:.45px;margin-right:2px}
+.inline-action-more,.action-more{width:100%;border:1px solid var(--l2);border-radius:7px;background:var(--surface)}
+.inline-action-more summary,.action-more summary{cursor:pointer;list-style:none;padding:6px 8px;font-size:11px;font-weight:700;color:var(--i2);display:flex;align-items:center;gap:6px}
+.inline-action-more summary::-webkit-details-marker,.action-more summary::-webkit-details-marker{display:none}
+.inline-action-more summary::before,.action-more summary::before{content:'＋';font-size:14px;color:var(--blue)}
+.inline-action-more[open] summary::before,.action-more[open] summary::before{content:'−'}
+.inline-action-more .inline-action-row,.action-more-body{padding:0 8px 8px}
 .inline-review-actions button{border:1px solid #cfd7e4;background:#fff;border-radius:6px;padding:5px 8px;font-size:11px;cursor:pointer;color:#1f2937}
 .inline-review-actions button.primary{background:#111827;color:#fff;border-color:#111827}
 .inline-review-actions button.danger{color:#b42318;border-color:#f3b7b1;background:#fff7f5}
@@ -219,6 +227,8 @@ textarea{width:100%;min-height:110px;border:1px solid var(--line);background:var
 textarea:focus{background:var(--surface);border-color:var(--blue);box-shadow:0 0 0 3px var(--bbg);outline:none}
 textarea[readonly]{opacity:.75;cursor:default}
 .actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+.actions > .action-more{flex-basis:100%;margin-top:2px}
+.action-more-body{display:flex;gap:6px;flex-wrap:wrap}
 .actions-divider{height:1px;background:var(--l2);margin:14px 0 10px}
 .route-row{display:flex;gap:6px;flex-wrap:wrap}
 .route-row button{flex:1;min-width:110px}
@@ -1697,7 +1707,7 @@ function renderReviews(){
           <div class="row2">${r.store} · ${r.time}${r.escalated?' · ⚠':''}</div>
           <p>${r.text}</p>
         </div>
-      </div>${SELECTED.has(r.id)?`<div class="inline-review-actions" onclick="event.stopPropagation()"><button class="primary" onclick="selectReview(${r.id})">Detayı aç</button><button onclick="openInlineAction(${r.id},'edit')">✎ Taslağı düzenle</button><button onclick="openInlineAction(${r.id},'ai')">✦ Alternatif AI</button><button onclick="requestHumanApproval(${r.id})">✓ İnsan onayı</button><button onclick="routeReview(${r.id},'store')">🏬 Şubeye</button><button onclick="escalateRegion(${r.id})">↗ Bölgeye</button><button onclick="addInternalNote(${r.id})">📝 Dahili not</button><button onclick="routeReview(${r.id},'legal')">⚖ Hukuka</button><button onclick="routeReview(${r.id},'complaint')">📨 Şikâyete</button><button class="danger" onclick="markDuplicate(${r.id})">⊘ Mükerrer işaretle</button></div>`:""}`;
+      </div>${SELECTED.has(r.id)?`<div class="inline-review-actions" onclick="event.stopPropagation()"><div class="inline-action-row"><span class="inline-action-label">Hızlı işlemler</span><button class="primary" onclick="selectReview(${r.id})">Detayı aç</button><button onclick="openInlineAction(${r.id},'edit')">✎ Taslağı düzenle</button><button onclick="openInlineAction(${r.id},'ai')">✦ Alternatif AI</button><button onclick="requestHumanApproval(${r.id})">✓ İnsan onayı</button></div><details class="inline-action-more"><summary>Diğer işlemler</summary><div class="inline-action-row"><button onclick="routeReview(${r.id},'store')">🏬 Şubeye</button><button onclick="escalateRegion(${r.id})">↗ Bölgeye</button><button onclick="addInternalNote(${r.id})">📝 Dahili not</button><button onclick="routeReview(${r.id},'legal')">⚖ Hukuka</button><button onclick="routeReview(${r.id},'complaint')">📨 Şikâyete</button><button onclick="openReviewHistory(${r.id})">📋 İşlem geçmişi</button><button class="danger" onclick="markDuplicate(${r.id})">⊘ Mükerrer işaretle</button></div></details></div>`:""}`;
     }).join("");
   }
 
@@ -1732,7 +1742,7 @@ function renderReviews(){
       <div class="draft-label"><h4>${isFinal ? "Gönderilen" : "AI taslağı"}</h4>${isFinal ? `<span class="chip ok">Gönderildi</span>` : `<span class="chip">${idx+1}/${r.drafts.length}</span>`}</div>
       <textarea id="draftBox" ${isFinal||isRouted?"readonly":""}>${draft}</textarea>
       <div class="actions">
-        ${isFinal ? `<button class="btn ghost" onclick="editSentReply(${r.id})">✎ Yanıtı düzenle</button><button class="btn" onclick="openInlineAction(${r.id},'ai')">✦ Alternatif AI</button><button class="btn p" onclick="sendUpdatedReply(${r.id})">↗ Güncel yanıtı gönder</button>`
+        ${isFinal ? `<button class="btn ghost" onclick="editSentReply(${r.id})">✎ Yanıtı düzenle</button><button class="btn" onclick="openInlineAction(${r.id},'ai')">✦ Alternatif AI</button><button class="btn p" onclick="sendUpdatedReply(${r.id})">↗ Güncel yanıtı gönder</button><details class="action-more"><summary>Diğer işlemler</summary><div class="action-more-body"><button class="btn ghost sm" onclick="window.verifyLiveReply?.(${r.id})">✓ Google’da tekrar kontrol et</button><button class="btn ghost sm" onclick="routeReview(${r.id},'store')">🏬 Şubeye</button><button class="btn ghost sm" onclick="escalateRegion(${r.id})">↗ Bölgeye</button><button class="btn ghost sm" onclick="routeReview(${r.id},'legal')">⚖ Hukuk</button><button class="btn ghost sm" onclick="routeReview(${r.id},'complaint')">📨 Şikâyet</button><button class="btn ghost sm" onclick="openReviewHistory(${r.id})">📋 İşlem geçmişi</button></div></details>`
         : isRouted ? `<span class="chip purple" style="padding:8px 12px">Sevk edildi</span><button class="btn" onclick="closeRouting(${r.id})">Kapat</button>`
         : `<button class="btn p" onclick="openEmail(${r.id})">✓ Onayla</button><button class="btn" onclick="regenDraft(${r.id})">↻ Yeniden</button>`}
       </div>
@@ -1757,6 +1767,7 @@ function renderReviews(){
 }
 
 function selectReview(id){ SEL = id; renderReviews(); }
+function openReviewHistory(id){ selectReview(id); setTimeout(() => document.querySelector('[data-rtab="history"]')?.click(), 0); }
 function toggleSelect(id){ SELECTED.has(id) ? SELECTED.delete(id) : SELECTED.add(id); renderReviews(); }
 function openInlineAction(id, action){ selectReview(id); if(action==='edit') editSentReply(id); else if(action==='ai') regenDraft(id); }
 function editSentReply(id){ const box=$('#draftBox'); if(!box) return; box.readOnly=false; box.focus(); box.dataset.editing='1'; box.style.borderColor='var(--blue)'; toast('Yanıt düzenleme modu açıldı. Değişiklikten sonra Güncel yanıtı gönder seçeneğini kullanın.','info'); }
@@ -2969,7 +2980,7 @@ renderNotifications();
 
 if (!STATE.onboarded) setTimeout(startTour, 500);
 </script>
-<script src="assets/google-review-management-bridge.js?v=20261116-11"></script>
+<script src="assets/google-review-management-bridge.js?v=20261116-12"></script>
 <script src="assets/google-review-management-controller.js?v=20261116-6"></script>
 <script src="assets/google-review-live-views.js?v=20261116-7"></script>
 <script src="assets/google-review-enhancements.js?v=20261116-6"></script>

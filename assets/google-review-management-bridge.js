@@ -171,7 +171,7 @@
     } catch(e) {toast(e.message || 'ERP işlemi başarısız; kayıt korunuyor.','warn');}
     finally {busy=false;lockEditing();}
   }
-  const originalEmail=window.openEmail, originalConfirm=window.confirmEmail, originalRegen=window.regenDraft;
+  const originalEmail=window.openEmail, originalConfirm=window.confirmEmail, originalRegen=window.regenDraft, originalEdit=window.editSentReply, originalSendUpdated=window.sendUpdatedReply;
   window.openEmail=id=>{
     const row=liveRow(id);if(!row)return originalEmail(id);
     const item=currentItem(row);
@@ -196,7 +196,49 @@
   };
   const originalClose=window.closeModal;
   window.closeModal=id=>{if(id==='emailModal'){pendingApproval=null;lockEditing();}return originalClose(id);};
-  window.regenDraft=id=>liveRow(id)?act(id,currentItem(liveRow(id))?.reply_text?'regenerate':'prepare'):originalRegen(id);
+  async function regenerateLiveReply(id) {
+    const row=liveRow(id), item=row && currentItem(row);
+    if (!row) return toast('Bu canlı yorum için ERP yanıt kaydı bulunamadı. Önce Bursa’yı yenileyin.','warn');
+    if (dirty.has(id)) return toast('Önce açık düzenlemeyi kaydedin veya vazgeçin.','warn');
+    if (!item && ai?.generate) return ai.generate(row.erpReviewId);
+    if (!item) return toast('Bu canlı yorum için ERP yanıt kaydı bulunamadı. Önce Bursa’yı yenileyin.','warn');
+    const regenerate = ai?.['regeneratePublishedItem'] || ai?.['regenerateItem'];
+    if (regenerate) return regenerate(item.id);
+    if (ai?.generate) return ai.generate(row.erpReviewId);
+    if (ai?.['openItem']) { ai['openItem'](item.id); return toast('ERP yanıt düzenleyicisi açıldı. Yeni yanıt hazırla seçeneğini kullanın.','info'); }
+    return missing();
+  }
+  async function editLiveReply(id) {
+    const row=liveRow(id), item=row && currentItem(row), box=document.getElementById('draftBox');
+    if (!row || !item || !box) return missing();
+    if (busy) return;
+    if (item.review_snapshot?.legal_hold) return toast('Hukuki bekletme aktif; canlı yanıt değiştirilemez.','warn');
+    box.readOnly=false; box.dataset.liveEditing='1'; box.focus();
+    dirty.set(id,{text:box.value,version:item.version,published:true}); lockEditing();
+    toast('Yanıt düzenleme modu açıldı. Değişiklikten sonra “Güncel yanıtı gönder” seçeneğini kullanın.','info');
+  }
+  async function sendLiveUpdatedReply(id) {
+    const row=liveRow(id), item=row && currentItem(row), box=document.getElementById('draftBox');
+    if (!row || !item || !box) return missing();
+    const text=box.value.trim();
+    if (!dirty.has(id)) return toast('Önce “Yanıtı düzenle” seçeneğini açın.','info');
+    if (!text || text.length > 4000) return toast('Yanıt 1–4000 karakter olmalıdır.','warn');
+    if (!ai?.googleBusinessRequest) return missing();
+    busy=true; lockEditing();
+    try {
+      const data=await ai.googleBusinessRequest('save_draft',{account_id:item.account_id,location_id:item.location_id,review_id:item.review_id,branch_id:item.branch_id,item_id:item.id,expected_version:item.version,reply_text:text,draft_source:'manual',edit_published:true});
+      dirty.delete(id); box.readOnly=true; box.dataset.liveEditing='';
+      await ai.refreshWorkflow?.();
+      hydrateLiveNilufer(); renderReviews();
+      ai?.['openItem']?.(data.item.id);
+      toast('Güncel yanıt kaydedildi; yayın için insan onayı bekleniyor.','ok');
+      return data;
+    } catch (e) { toast(e.message || 'Güncel yanıt kaydedilemedi.','warn'); }
+    finally { busy=false; lockEditing(); }
+  }
+  window.editSentReply=id=>liveRow(id)?editLiveReply(id):originalEdit?.(id);
+  window.sendUpdatedReply=id=>liveRow(id)?sendLiveUpdatedReply(id):originalSendUpdated?.(id);
+  window.regenDraft=id=>liveRow(id)?regenerateLiveReply(id):originalRegen(id);
   window.saveLiveDraft=id=>{const edit=dirty.get(id);if(edit)return act(id,'save',{text:edit.text,version:edit.version});};
   window.verifyLiveReply=id=>act(id,'verify');
   const originalRoute=window.routeReview;
@@ -228,7 +270,7 @@
     if(selected&&meta){const badge=document.createElement('span');badge.className='chip '+(selected.demo?'warn':'ok');badge.textContent=selected.demo?'Demo · Google’a gönderilmez':'Bursa · Canlı Google kaydı';meta.prepend(badge);}
     if(!row||!box)return result;
     const item=currentItem(row),edit=dirty.get(row.id);
-    const editable=!row.replyDate && row.status!=='gonderildi' && ['approval_pending','publish_failed'].includes(item?.status);
+    const editable=Boolean(edit) || (!row.replyDate && row.status!=='gonderildi' && ['approval_pending','publish_failed'].includes(item?.status));
     box.readOnly=!editable;
     box.maxLength=4000;
     if(edit)box.value=edit.text;
@@ -237,6 +279,8 @@
     const actions=document.querySelector('#rvTab-detail .actions');
     if(actions && row.status!=='gonderildi'){
       actions.innerHTML=`<button class="btn p" onclick="openEmail(${row.id})" ${editable?'':'disabled'}>✓ Onayla</button><button class="btn" onclick="regenDraft(${row.id})">↻ ${item?.reply_text?'Yeniden':'Taslak hazırla'}</button><button class="btn" onclick="saveLiveDraft(${row.id})" ${editable?'':'disabled'}>Kaydet</button>${['publishing','publish_unknown','publish_failed'].includes(item?.status)?`<button class="btn" onclick="verifyLiveReply(${row.id})">Yayın sonucunu kontrol et</button>`:''}`;
+    } else if(actions){
+      actions.innerHTML=`<button class="btn ghost" onclick="editSentReply(${row.id})">✎ Yanıtı düzenle</button><button class="btn" onclick="regenDraft(${row.id})">✦ Alternatif AI</button><button class="btn p" onclick="sendUpdatedReply(${row.id})">↗ Güncel yanıtı gönder</button><details class="action-more"><summary>Diğer işlemler</summary><div class="action-more-body"><button class="btn ghost sm" onclick="verifyLiveReply(${row.id})">✓ Google’da tekrar kontrol et</button><button class="btn ghost sm" onclick="routeReview(${row.id},'store')">🏬 Şubeye</button><button class="btn ghost sm" onclick="escalateRegion(${row.id})">↗ Bölgeye</button><button class="btn ghost sm" onclick="routeReview(${row.id},'legal')">⚖ Hukuk</button><button class="btn ghost sm" onclick="routeReview(${row.id},'complaint')">📨 Şikâyet</button><button class="btn ghost sm" onclick="openReviewHistory(${row.id})">📋 İşlem geçmişi</button></div></details>`;
     }
     const label=document.querySelector('.draft-label .chip');
     if(label)label.textContent=row.status==='gonderildi'?'Google yanıtı':item?`${item.draft_source==='openai'?'OpenAI':item.draft_source==='manual'?'Elle düzenlenen':'Şablon'} · ${item.review_snapshot?.rejection ? 'Reddedildi · yeniden düzenleyin' : item.status}`:'ERP taslağı bekleniyor';
