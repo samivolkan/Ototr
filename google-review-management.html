@@ -132,6 +132,11 @@ button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-vis
 .target-fill{height:100%;border-radius:999px;max-width:100%}
 .target-list-row b{font-size:11px}
 .target-list-row .branch-meta{display:block;color:var(--mute);font-size:9px;margin-top:2px}
+.target-branch-item{padding:8px 0;border-bottom:1px solid var(--l2)}
+.target-branch-item:last-child{border-bottom:0}
+.target-edit{display:flex;align-items:center;gap:6px;margin-top:6px}
+.target-edit input{width:82px;background:var(--surface);border:1px solid var(--line);border-radius:var(--rs);padding:6px 7px;font-size:11px}
+.target-edit .btn{padding:5px 9px;font-size:11px}
 @media(max-width:1100px){.target-panel{grid-column:span 12}}
 
 /* FILTER */
@@ -2727,7 +2732,39 @@ function renderTargetBreakdown(){
   const branches = metrics.slice().sort((a,b)=>b.realization-a.realization);
   const bar = (m, label) => `<div class="target-bar-item" title="${label}: ${m.realization.toFixed(0)}% (${m.actual}/${m.target})"><div class="target-bar-value">${Math.round(m.realization)}</div><div class="target-bar" style="height:${Math.max(5,Math.min(100,m.realization))}%;background:${targetTone(m.realization)}"></div><div class="target-bar-label">${label}</div></div>`;
   const row = (m, label, meta='') => `<div class="target-list-row"><div class="label">${label}${meta?`<span class="branch-meta">${meta}</span>`:''}</div><div class="target-track"><div class="target-fill" style="width:${Math.max(2,Math.min(100,m.realization))}%;background:${targetTone(m.realization)}"></div></div><b>${Math.round(m.realization)}</b></div>`;
-  host.innerHTML = `<div class="card2" style="padding:18px"><div class="target-breakdown-head"><div><h3>Hedef gerçekleşmesi kırılımı</h3><p>Bölge, il ve şube düzeyinde · kesikli çizgi %100 hedef</p></div><div class="target-legend"><span class="chip ok">Hedefe ≥ %100</span><span class="chip warn">Risk %88–99</span><span class="chip bad">Geride &lt; %88</span></div></div><div class="target-grid"><div class="target-panel"><h4>Bölge bazlı</h4><div class="target-sub">${regionAgg.length} bölge · gerçekleşme %</div><div class="target-bars">${regionAgg.map(m=>bar(m,m.label)).join('')}</div></div><div class="target-panel"><h4>İl bazlı</h4><div class="target-sub">${cityAgg.length} il · gerçekleşme %</div><div class="target-list">${cityAgg.map(m=>row(m,m.label)).join('')}</div></div><div class="target-panel"><h4>Şube bazlı</h4><div class="target-sub">${branches.length} şube · Bursa canlı, demo şubeler ayrı</div><div class="target-list">${branches.map(m=>row(m,`${m.branch.city} ${m.branch.name}`,m.branch.live?'Canlı':'Demo')).join('')}</div></div></div></div>`;
+  const branchRow = m => `<div class="target-branch-item"><div class="target-list-row"><div class="label">${m.branch.city} ${m.branch.name}<span class="branch-meta">${m.branch.live?'Bursa canlı ERP':'Demo şube'}</span></div><div class="target-track"><div class="target-fill" style="width:${Math.max(2,Math.min(100,m.realization))}%;background:${targetTone(m.realization)}"></div></div><b>${Math.round(m.realization)}</b></div><div class="target-edit"><input id="target-input-${m.branch.id}" type="number" min="1" max="10000" step="1" value="${m.target}" aria-label="${m.branch.city} ${m.branch.name} aylık hedef"><button class="btn sm ghost" onclick="saveBreakdownTarget('${m.branch.id}')">Kaydet</button></div></div>`;
+  host.innerHTML = `<div class="card2" style="padding:18px"><div class="target-breakdown-head"><div><h3>Hedef gerçekleşmesi kırılımı</h3><p>Bölge, il ve şube düzeyinde · kesikli çizgi %100 hedef</p></div><div class="target-legend"><span class="chip ok">Hedefe ≥ %100</span><span class="chip warn">Risk %88–99</span><span class="chip bad">Geride &lt; %88</span></div></div><div class="target-grid"><div class="target-panel"><h4>Bölge bazlı</h4><div class="target-sub">${regionAgg.length} bölge · gerçekleşme %</div><div class="target-bars">${regionAgg.map(m=>bar(m,m.label)).join('')}</div></div><div class="target-panel"><h4>İl bazlı</h4><div class="target-sub">${cityAgg.length} il · gerçekleşme %</div><div class="target-list">${cityAgg.map(m=>row(m,m.label)).join('')}</div></div><div class="target-panel"><h4>Şube bazlı hedef</h4><div class="target-sub">${branches.length} şube · aylık hedef girip kaydedin</div><div class="target-list">${branches.map(branchRow).join('')}</div></div></div></div>`;
+}
+
+async function saveBreakdownTarget(id){
+  const branch = BRANCHES.find(b => b.id === id);
+  const input = document.getElementById(`target-input-${id}`);
+  const value = Number(input?.value);
+  if (!branch || !Number.isSafeInteger(value) || value < 1 || value > 10000) return toast('Hedef 1–10000 arasında tam sayı olmalı.', 'warn');
+  const button = input?.nextElementSibling;
+  if (button) button.disabled = true;
+  try {
+    if (!branch.live) {
+      branch.target = value;
+      saveState();
+      renderPerformance();
+      return toast(`${branch.city} ${branch.name} demo hedefi kaydedildi.`, 'ok');
+    }
+    const api = window.OTOTRGoogleReviewAI || window.parent?.OTOTRGoogleReviewAI;
+    if (!api?.googleBusinessRequest) throw new Error('ERP hedef servisi hazır değil. Bağlantıyı yenileyin.');
+    const month = new Date().toISOString().slice(0, 7) + '-01';
+    const listed = await api.googleBusinessRequest('targets_list');
+    const previous = (listed.items || []).find(t => t.branch_id === 'branch-google-nilufer' && t.month === month);
+    const result = await api.googleBusinessRequest('target_save', { branch_id:'branch-google-nilufer', month, target:value, expected_version:previous?.version || 0 });
+    if (!result?.item) throw new Error('Kaydedilen hedef doğrulanamadı.');
+    branch.target = value;
+    const management = window.parent?.OTOTRReviewManagement?.state || window.OTOTRReviewManagement?.state;
+    if (management) management.targets = [...(management.targets || []).filter(t => !(t.branch_id === 'branch-google-nilufer' && t.month === month)), result.item];
+    renderPerformance();
+    toast('Bursa Nilüfer canlı hedefi ERP’ye kaydedildi.', 'ok');
+  } catch (error) {
+    toast(error.message || 'Hedef kaydedilemedi.', 'warn');
+  } finally { if (button?.isConnected) button.disabled = false; }
 }
 
 function openReviewFromStore(id){
