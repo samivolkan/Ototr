@@ -11,6 +11,28 @@
     try { return embedded && window.parent.location.origin === location.origin ? (window.parent.OTOTRGoogleReviewAI || null) : null; }
     catch (_) { return null; }
   };
+  let aiLoadPromise;
+  function ensureParentAI() {
+    if (!embedded) return Promise.resolve(null);
+    const existing = getAI();
+    if (existing) return Promise.resolve(existing);
+    if (!aiLoadPromise) aiLoadPromise = new Promise(resolve => {
+      try {
+        const doc = window.parent.document;
+        const found = doc.querySelector('script[data-ototr-google-ai]');
+        if (found) { found.addEventListener('load', () => resolve(getAI()), { once: true }); setTimeout(() => resolve(getAI()), 1500); return; }
+        const script = doc.createElement('script');
+        script.src = new URL('assets/google-review-ai.js?v=google-workflow-24', window.parent.location.href).href;
+        script.dataset.ototrGoogleAi = '1';
+        script.onload = () => resolve(getAI());
+        script.onerror = () => resolve(null);
+        doc.head.appendChild(script);
+        setTimeout(() => resolve(getAI()), 3000);
+      } catch (_) { resolve(null); }
+    });
+    return aiLoadPromise;
+  }
+  void ensureParentAI();
   const aiProxy = (name) => (...args) => getAI()?.[name]?.(...args);
   const escape = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const liveIds = new Map();
@@ -230,7 +252,8 @@
     const row=liveRow(id), item=row && currentItem(row);
     if (!row) return toast('Bu canlı yorum için ERP yanıt kaydı bulunamadı. Önce Bursa’yı yenileyin.','warn');
     if (dirty.has(id)) return toast('Önce açık düzenlemeyi kaydedin veya vazgeçin.','warn');
-    const ai = getAI();
+    let ai = getAI();
+    if (!ai) { ai = await ensureParentAI(); }
     if (!item && ai?.generate) return ai.generate(row.erpReviewId);
     if (!item) return toast('Bu canlı yorum için ERP yanıt kaydı bulunamadı. Önce Bursa’yı yenileyin.','warn');
     const regenerate = ai?.['regeneratePublishedItem'] || ai?.['regenerateItem'];
