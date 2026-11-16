@@ -27,7 +27,7 @@ function injectedSupabaseKey(legacyName: string, dictionaryName: string) {
   if (typeof name !== 'string' || !name) throw new RequestError('AI kimlik doğrulama yapılandırması eksik.', 503);
   return env(name);
 }
-async function authorize(req: Request) {
+async function authorize(req: Request, branchId = 'branch-google-nilufer') {
   const authorization = req.headers.get('authorization') || '';
   if (!/^Bearer\s+\S+$/i.test(authorization)) throw new RequestError('ERP oturumu gerekli.', 401);
   const client = createClient(env('SUPABASE_URL'), injectedSupabaseKey('SUPABASE_ANON_KEY', 'SUPABASE_PUBLISHABLE_KEYS'), { auth: { persistSession: false, autoRefreshToken: false } });
@@ -38,7 +38,7 @@ async function authorize(req: Request) {
   if (result.error) throw new RequestError('Google yorum yönetimi yetkisi kontrol edilemedi.', 503);
   const allowed = (Deno.env.get('GOOGLE_BUSINESS_ADMIN_USER_IDS') || '').split(',').map(value => value.trim()).filter(Boolean);
   if (result.data?.connected_by === data.user.id || allowed.includes(data.user.id)) return { db, userId: data.user.id, role: 'admin' };
-  const grant = await db.from('google_review_management_resources').select('data').eq('connection_id', 'ototr-primary').eq('branch_id', 'branch-google-nilufer').eq('kind', 'user_permissions').eq('key', data.user.id).eq('archived', false).maybeSingle();
+  const grant = await db.from('google_review_management_resources').select('data').eq('connection_id', 'ototr-primary').eq('branch_id', branchId).eq('kind', 'user_permissions').eq('key', data.user.id).eq('archived', false).maybeSingle();
   const profile = await db.from('app_users').select('id').eq('auth_user_id', data.user.id).eq('is_active', true).limit(1).maybeSingle();
   if (grant.error || profile.error) throw new RequestError('AI yönetim yetkisi kontrol edilemedi.', 503);
   if (!profile.data || grant.data?.data?.active !== true || grant.data.data.user_id !== data.user.id || !['viewer', 'operator', 'legal', 'admin'].includes(grant.data.data.role)) throw new RequestError('AI yorum yanıtları yalnızca yetkilendirilmiş genel merkez hesabına açıktır.', 403);
@@ -53,8 +53,8 @@ const aiTimeout = (error: any) => ['TimeoutError', 'AbortError'].includes(error?
 function aiDatabaseError(error: any) {
   if (error) throw new RequestError('AI ayar veya ölçüm kayıtlarına erişilemiyor. Yönetim veritabanı kurulumunu kontrol edin.', 503);
 }
-async function aiRuntime(db: any) {
-  const result = await db.from('google_review_management_resources').select('id,kind,key,data,version').eq('connection_id', aiConnectionId).eq('branch_id', aiBranchId).eq('archived', false).in('kind', ['ai_config', 'experiments', 'branch_settings']).order('id').limit(1000);
+async function aiRuntime(db: any, branchId = aiBranchId) {
+  const result = await db.from('google_review_management_resources').select('id,kind,key,data,version').eq('connection_id', aiConnectionId).eq('branch_id', branchId).eq('archived', false).in('kind', ['ai_config', 'experiments', 'branch_settings']).order('id').limit(1000);
   aiDatabaseError(result.error);
   // Never generate from a truncated settings read: the missing row may be a lifecycle lock.
   if ((result.data || []).length >= 1000) throw new RequestError('AI ayar listesi sınırı doldu. Kullanılmayan deneyleri arşivleyin.', 413);
@@ -64,13 +64,13 @@ async function aiRuntime(db: any) {
       (config.banned_words !== undefined && (!Array.isArray(config.banned_words) || config.banned_words.length > 100 || config.banned_words.some((word: any) => typeof word !== 'string' || !word.trim() || word.length > 100)))) throw new RequestError('Kayıtlı AI ayarları geçersiz. Ayarları düzeltin.', 503);
   const branch = rows.find((row: any) => row.kind === 'branch_settings' && row.key === 'default')?.data || {};
   const lifecycle = branch.lifecycle || 'active', tone = branch.tone || 'inherit';
-  if (!['active', 'paused', 'archived'].includes(lifecycle) || !['inherit', 'samimi', 'profesyonel', 'empatik', 'temkinli'].includes(tone)) throw new RequestError('Kayıtlı şube ayarları geçersiz.', 503);
+  if (!['active', 'live', 'onboarding', 'live_candidate', 'demo', 'paused', 'archived'].includes(lifecycle) || !['inherit', 'samimi', 'profesyonel', 'empatik', 'temkinli'].includes(tone)) throw new RequestError('Kayıtlı şube ayarları geçersiz.', 503);
   return { config: { persona: config.persona || '', knowledge_lock: config.knowledge_lock || '', banned_words: config.banned_words || [] }, branch: { lifecycle, tone }, experiments: rows.filter((row: any) => row.kind === 'experiments') };
 }
 async function sha256(value: string) {
   return Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value))), byte => byte.toString(16).padStart(2, '0')).join('');
 }
-async function experimentFor(runtime: any, reviewId: string | null, context: string, preview?: any) {
+async function experimentFor(runtime: any, reviewId: string | null, context: string, preview?: any, branchId = aiBranchId) {
   if (context === 'playground') {
     if (!preview?.experiment_id) return null;
     const row = runtime.experiments.find((row: any) => row.id === preview.experiment_id);
@@ -82,7 +82,7 @@ async function experimentFor(runtime: any, reviewId: string | null, context: str
   if (!row) return null;
   if (typeof row.data.variant_a !== 'string' || typeof row.data.variant_b !== 'string' || !Number.isInteger(row.data.traffic_percent) || row.data.traffic_percent < 1 || row.data.traffic_percent > 100) throw new RequestError('Kayıtlı AI deneyi geçersiz.', 503);
   // Stable across retries and config versions. Never randomize a review twice.
-  const hash = await sha256(`${row.id}|${aiBranchId}|${reviewId}`);
+  const hash = await sha256(`${row.id}|${branchId}|${reviewId}`);
   if (parseInt(hash.slice(0, 8), 16) % 100 >= row.data.traffic_percent) return null;
   const variant = parseInt(hash.slice(8, 16), 16) % 2 === 0 ? 'a' : 'b';
   return { id: row.id, version: row.version, variant, instruction: row.data[`variant_${variant}`] };
@@ -109,20 +109,20 @@ function usageMetrics(payload: any, requestedModel: string, elapsed: number) {
     ? ((input - cached) * inputPrice + cached * (cachedPrice || 0) + output * outputPrice) / 1_000_000 : null;
   return { model, input_tokens: input, output_tokens: output, cached_input_tokens: cached, total_tokens: total, latency_ms: Math.max(0, Math.round(elapsed)), input_price_per_million: inputPrice, output_price_per_million: outputPrice, cached_input_price_per_million: cachedPrice, cost_usd: cost };
 }
-async function recordGeneration(db: any, info: any) {
-  const row = { id: crypto.randomUUID(), connection_id: aiConnectionId, branch_id: aiBranchId, ...info };
+async function recordGeneration(db: any, info: any, branchId = aiBranchId) {
+  const row = { id: crypto.randomUUID(), connection_id: aiConnectionId, branch_id: branchId, ...info };
   const result = await db.from(generationTable).insert(row).select('id').single();
   if (result.error?.code === '23505') return row.id; // Same attempt retried after an ambiguous DB response.
   aiDatabaseError(result.error);
   if (!result.data?.id) throw new RequestError('AI ölçüm kaydı doğrulanamadı. Taslak kaydedilmedi.', 503);
   return row.id;
 }
-async function aiAnalytics(db: any) {
+async function aiAnalytics(db: any, branchId = aiBranchId) {
   const since = new Date(Date.now() - 30 * 86400_000).toISOString();
   const columns = 'id,context,model,input_tokens,output_tokens,cached_input_tokens,total_tokens,latency_ms,status,failure_code,quality_score,requires_human_review,experiment_id,experiment_version,variant,cost_usd,created_at';
   const recorded: any[] = [];
   for (let offset = 0; offset <= 2000; offset += 500) {
-    const page = await db.from(generationTable).select(columns).eq('connection_id', aiConnectionId).eq('branch_id', aiBranchId).gte('created_at', since).order('created_at', { ascending: false }).order('id').range(offset, Math.min(offset + 499, 2000));
+    const page = await db.from(generationTable).select(columns).eq('connection_id', aiConnectionId).eq('branch_id', branchId).gte('created_at', since).order('created_at', { ascending: false }).order('id').range(offset, Math.min(offset + 499, 2000));
     aiDatabaseError(page.error); recorded.push(...(page.data || []));
     if ((page.data || []).length < 500) break;
   }
@@ -130,7 +130,7 @@ async function aiAnalytics(db: any) {
   const outcomes: any[] = [];
   for (let index = 0; index < ids.length; index += 100) {
     for (let offset = 0; offset < 10000; offset += 500) {
-      const page = await db.from(outcomeTable).select('generation_id,action').eq('connection_id', aiConnectionId).eq('branch_id', aiBranchId).in('generation_id', ids.slice(index, index + 100)).order('id').range(offset, offset + 499);
+      const page = await db.from(outcomeTable).select('generation_id,action').eq('connection_id', aiConnectionId).eq('branch_id', branchId).in('generation_id', ids.slice(index, index + 100)).order('id').range(offset, offset + 499);
       aiDatabaseError(page.error); outcomes.push(...(page.data || []));
       if ((page.data || []).length < 500) break;
       if (offset === 9500) throw new RequestError('AI sonuç kayıtları tek rapor sınırını aşıyor.', 413);
@@ -327,23 +327,28 @@ Deno.serve(async (req: Request) => {
 
   let telemetry: any = null, telemetrySaved = false;
   try {
-    const auth = await authorize(req);
     let body: any;
     try { body = await req.json(); } catch (_) { throw new RequestError('Geçersiz JSON isteği.', 400); }
     const review = body?.review;
     const branchId = String(body?.branch?.id || '');
-    const branch = branches[branchId];
-    if (branchId !== aiBranchId || !['generate', 'playground', 'analytics'].includes(body?.action)) return json({ error: 'Canlı AI işlemleri yalnızca Bursa Nilüfer için kullanılabilir.' }, 400);
-    if (body.action === 'analytics') return json(await aiAnalytics(auth.db));
+    const preAuth = await authorize(req, branchId === aiBranchId || /^branch-custom-[A-Za-z0-9-]{8,80}$/.test(branchId) ? branchId : aiBranchId);
+    const registry = /^branch-custom-/.test(branchId) ? await preAuth.db.from('google_review_branch_registry').select('id,name,city,region,mode,lifecycle,active').eq('connection_id', aiConnectionId).eq('id', branchId).maybeSingle() : { data: null, error: null };
+    if (registry.error) throw new RequestError('Şube AI ayarı okunamadı.', 503);
+    const branch = branches[branchId] || (registry.data ? { name: registry.data.name, city: registry.data.city, district: registry.data.region } : null);
+    const isManaged = branchId === aiBranchId || Boolean(registry.data);
+    if (!isManaged || !['generate', 'playground', 'analytics'].includes(body?.action)) return json({ error: 'AI işlemi kayıtlı ve etkin bir şube kapsamı gerektirir.' }, 400);
+    if (registry.data && (registry.data.active === false || !['live', 'active'].includes(registry.data.lifecycle))) throw new RequestError('Şube onboarding doğrulaması tamamlanmadı. AI üretimi canlı aktivasyondan sonra açılır.', 409);
+    const auth = preAuth;
+    if (body.action === 'analytics') return json(await aiAnalytics(auth.db, branchId));
     if (auth.role === 'viewer') throw new RequestError('AI üretimi için operatör yetkisi gerekli.', 403);
     if (!review || !branch) return json({ error: 'Geçersiz istek.' }, 400);
     const context = body.action === 'playground' ? 'playground' : 'generate';
     const reviewKey = review.googleReviewId || review.id;
     if (reviewKey != null && (typeof reviewKey !== 'string' || reviewKey.length > 512 || /[\u0000-\u001f]/.test(reviewKey))) throw new RequestError('Geçerli yorum kimliği gerekli.', 400);
     const reviewId = context === 'playground' ? null : reviewKey || null;
-    const runtime = await aiRuntime(auth.db);
-    if (runtime.branch.lifecycle !== 'active') throw new RequestError(runtime.branch.lifecycle === 'paused' ? 'Bursa şubesi duraklatıldı. AI üretimi kapalı.' : 'Bursa şubesi arşivlendi. AI üretimi kapalı.', 409);
-    const experiment = await experimentFor(runtime, reviewId, context, body);
+    const runtime = await aiRuntime(auth.db, branchId);
+    if (!['active', 'live'].includes(runtime.branch.lifecycle)) throw new RequestError('Şube canlı AI üretimine açık değil.', 409);
+    const experiment = await experimentFor(runtime, reviewId, context, body, branchId);
     const rating = Number(review.rating);
     const comment = String(review.comment || '').trim().slice(0, 3000).replace(/^Yorum metni paylaşılmamış\.$/, '');
     if (!Number.isInteger(rating) || rating < 1 || rating > 5) return json({ error: '1–5 arasında geçerli puan zorunludur.' }, 400);
@@ -364,7 +369,7 @@ Deno.serve(async (req: Request) => {
       onceki_yanit: previousReply || null, hedef_kelime_araligi: wordTarget });
     const model = Deno.env.get('OPENAI_MODEL') || 'gpt-5-mini';
     const startedAt = Date.now();
-    telemetry = { id: crypto.randomUUID(), db: auth.db, startedAt, model, actor_id: auth.userId, review_id: reviewId, context, experiment_id: experiment?.id || null, experiment_version: experiment?.version || null, variant: experiment?.variant || null, payload: null };
+    telemetry = { id: crypto.randomUUID(), db: auth.db, branch_id: branchId, startedAt, model, actor_id: auth.userId, review_id: reviewId, context, experiment_id: experiment?.id || null, experiment_version: experiment?.version || null, variant: experiment?.variant || null, payload: null };
     const response = await fetch('https://api.openai.com/v1/responses', {
       method: 'POST',
       signal: AbortSignal.timeout(25000),
@@ -408,14 +413,14 @@ Deney üslup tercihi: ${JSON.stringify(experiment?.instruction || '')}`,
       else if (draft.suggested_route === 'standard') draft.suggested_route = 'branch_manager';
     }
     const metrics = usageMetrics(payload, model, Date.now() - startedAt);
-    const generationId = await recordGeneration(auth.db, { id: telemetry.id, ...metrics, actor_id: auth.userId, review_id: reviewId, context, status: 'succeeded', failure_code: null, quality_score: draft.quality_score, requires_human_review: draft.requires_human_review, reply_sha256: await sha256(draft.reply.trim()), experiment_id: experiment?.id || null, experiment_version: experiment?.version || null, variant: experiment?.variant || null });
+    const generationId = await recordGeneration(auth.db, { id: telemetry.id, ...metrics, actor_id: auth.userId, review_id: reviewId, context, status: 'succeeded', failure_code: null, quality_score: draft.quality_score, requires_human_review: draft.requires_human_review, reply_sha256: await sha256(draft.reply.trim()), experiment_id: experiment?.id || null, experiment_version: experiment?.version || null, variant: experiment?.variant || null }, branchId);
     telemetrySaved = true;
     return json({ ...draft, generation_id: generationId, experiment_id: experiment?.id || null, experiment_version: experiment?.version || null, variant: experiment?.variant || null, manual_approval_required: true, playground: context === 'playground', usage: { model: metrics.model, input_tokens: metrics.input_tokens, output_tokens: metrics.output_tokens, cached_input_tokens: metrics.cached_input_tokens, total_tokens: metrics.total_tokens, latency_ms: metrics.latency_ms, cost_usd: metrics.cost_usd } });
   } catch (error) {
     if (telemetry && !telemetrySaved) {
       try {
-        const { db, startedAt, payload, model, ...info } = telemetry;
-        await recordGeneration(db, { ...info, ...usageMetrics(payload, model, Date.now() - startedAt), status: 'failed', failure_code: info.failure_code || (error instanceof RequestError ? `validation_${error.status}` : aiTimeout(error) ? 'timeout' : 'provider_error'), quality_score: null, requires_human_review: null, reply_sha256: null });
+        const { db, startedAt, payload, model, branch_id, ...info } = telemetry;
+        await recordGeneration(db, { ...info, ...usageMetrics(payload, model, Date.now() - startedAt), status: 'failed', failure_code: info.failure_code || (error instanceof RequestError ? `validation_${error.status}` : aiTimeout(error) ? 'timeout' : 'provider_error'), quality_score: null, requires_human_review: null, reply_sha256: null }, branch_id);
       } catch (_) { return json({ error: 'AI üretimi veya ölçüm kaydı tamamlanamadı. Mevcut taslak korundu; sunucu kayıtlarını kontrol edin.' }, 503); }
     }
     if (error instanceof RequestError) return json({ error: error.message }, error.status);

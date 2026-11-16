@@ -2883,7 +2883,10 @@ googleReputationData.branches.forEach(branch=>{
   if(branch.demo&&!branch.publicProfileUrl){ const profileUrl=`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(branch.name)}`; branch.mapsUrl=profileUrl; branch.publicProfileUrl=profileUrl; }
   if(!branch.demo) ['googleRating','googleReviewCount','previousRating','reputationScore','last30DaysReviewCount','negativeReviewRate','unrepliedCount','criticalCount'].forEach(key=>{branch[key]=null;});
 });
-function googleBranches(){ const settings=googleBranchSettings?.()||{},base=googleReputationData.branches.filter(branch=>!['branch-google-inegol','branch-google-istanbul'].includes(branch.id)),custom=googleCustomBranches(); return [...base,...custom].filter(branch=>settings[branch.id]?.removed!==true&&(googleReputationState.demoMode||!branch.demo)).map(branch=>{const s=settings[branch.id]||{};Object.assign(branch,{googleBusinessGroupId:s.accountId||branch.googleBusinessGroupId,storeCode:s.storeCode||branch.storeCode,googleBusinessLocationId:s.locationId||branch.googleBusinessLocationId,configuredActive:s.active!==false,custom:branch.custom===true,replySignatureName:branch.id==='branch-google-nilufer'?'OTOTR Bursa Nilüfer Otoekspertiz Ekibi':branch.replySignatureName});return branch;}); }
+const builtInInegol=googleReputationData.branches.find(branch=>branch.id==='branch-google-inegol');
+if(builtInInegol) Object.assign(builtInInegol,{demo:true,demoReviewCount:0,demoRating:0,demoUnrepliedCount:0,demoCriticalCount:0,integrationStatus:'Demo veri · canlı bağlantı kapalı',dataMode:'Demo şube'});
+function googleAllBranches(){ const settings=googleBranchSettings?.()||{},base=googleReputationData.branches.filter(branch=>branch.id!=='branch-google-istanbul'),custom=googleCustomBranches(); return [...base,...custom].filter(branch=>settings[branch.id]?.removed!==true).map(branch=>{const s=settings[branch.id]||{};Object.assign(branch,{googleBusinessGroupId:s.accountId||branch.googleBusinessGroupId,storeCode:s.storeCode||branch.storeCode,googleBusinessLocationId:s.locationId||branch.googleBusinessLocationId,configuredActive:s.active!==false,custom:branch.custom===true,replySignatureName:branch.id==='branch-google-nilufer'?'OTOTR Bursa Nilüfer Otoekspertiz Ekibi':branch.replySignatureName});return branch;}); }
+function googleBranches(){ return googleAllBranches().filter(branch=>googleReputationState.demoMode||!branch.demo); }
 function googleOperationalBranches(){ return googleBranches().filter(branch=>branch.configuredActive!==false); }
 function googleReviews(){
   googleReputationData.reviews.forEach(review=>{
@@ -3016,11 +3019,47 @@ const GOOGLE_BRANCH_SETTINGS_KEY='ototr.google.review.branch.settings.v1';
 const GOOGLE_CUSTOM_BRANCHES_KEY='ototr.google.review.custom.branches.v1';
 function googleBranchSettings(){try{return JSON.parse(localStorage.getItem(GOOGLE_BRANCH_SETTINGS_KEY)||'{}')||{};}catch(_){return {};}}
 function googleCustomBranches(){try{return JSON.parse(localStorage.getItem(GOOGLE_CUSTOM_BRANCHES_KEY)||'[]')||[];}catch(_){return [];}}
+let googleBranchRegistryPromise=null;
+function googleMergeBranchRegistry(items){
+  if(!Array.isArray(items)) return [];
+  const builtins=new Set(['branch-google-nilufer','branch-google-gebze','branch-google-inegol']);
+  const customCache=googleCustomBranches();
+  items.forEach(row=>{
+    if(!row?.id) return;
+    const existing=googleReputationData.branches.find(branch=>branch.id===row.id);
+    const lifecycle=String(row.lifecycle||row.mode||'onboarding');
+    const isLive=row.id==='branch-google-nilufer'||['live','active'].includes(lifecycle);
+    const normalized={
+      id:String(row.id), name:String(row.name||'').replace(/^OTOTR\s+Oto\s+Ekspertiz\s+/i,''), city:String(row.city||''), region:String(row.region||'Diğer'),
+      googleBusinessGroupId:String(row.account_id||''), storeCode:String(row.store_code||''), googleBusinessLocationId:String(row.location_id||''),
+      custom:!builtins.has(String(row.id)), demo:!isLive, lifecycle, mode:row.mode||lifecycle, target:Number(row.target||0)||0,
+      slaH:Number(row.sla_hours||24)||24, integrationStatus:isLive?'Google hesabı bağlı · yorumlar alınabilir':lifecycle==='onboarding'?'Onboarding · Google doğrulaması bekliyor':'Demo veri · canlı bağlantı kapalı', dataMode:isLive?'Google Business Profile canlı':lifecycle==='onboarding'?'Şube onboarding':'Demo şube'
+    };
+    if(existing) Object.assign(existing,normalized); else googleReputationData.branches.push(normalized);
+    if(normalized.custom){
+      const at=customCache.findIndex(branch=>branch.id===normalized.id);
+      if(at>=0) customCache[at]={...customCache[at],...normalized}; else customCache.push(normalized);
+    }
+  });
+  try { localStorage.setItem(GOOGLE_CUSTOM_BRANCHES_KEY,JSON.stringify(customCache)); } catch(_) {}
+  return items;
+}
+async function refreshGoogleBranchRegistry(){
+  if(googleBranchRegistryPromise) return googleBranchRegistryPromise;
+  googleBranchRegistryPromise=(async()=>{
+    const api=window.OTOTRGoogleReviewAI;
+    if(!api?.googleBusinessRequest) return [];
+    try { const data=await api.googleBusinessRequest('branch_list'); const items=Array.isArray(data?.items)?data.items:[]; googleMergeBranchRegistry(items); return items; }
+    catch(_) { return []; }
+    finally { googleBranchRegistryPromise=null; }
+  })();
+  return googleBranchRegistryPromise;
+}
 function googleSaveBranchSettings(id,patch){try{const all=googleBranchSettings();all[id]={...(all[id]||{}),...patch,updatedAt:new Date().toISOString()};localStorage.setItem(GOOGLE_BRANCH_SETTINGS_KEY,JSON.stringify(all));return true;}catch(_){return false;}}
 function googleRemoveBranch(id){try{const custom=googleCustomBranches(),isCustom=custom.some(branch=>branch.id===id),all=googleBranchSettings();if(isCustom){localStorage.setItem(GOOGLE_CUSTOM_BRANCHES_KEY,JSON.stringify(custom.filter(branch=>branch.id!==id)));delete all[id];}else all[id]={...(all[id]||{}),active:false,removed:true,updatedAt:new Date().toISOString()};localStorage.setItem(GOOGLE_BRANCH_SETTINGS_KEY,JSON.stringify(all));return true;}catch(_){return false;}}
 function googleConnectionMask(value){const text=String(value||'');if(text.length<9)return text||'—';return `${text.slice(0,5)}${'•'.repeat(Math.min(10,text.length-9))}${text.slice(-4)}`;}
 function googleBranchSettingsPanel(){
-  const settings=googleBranchSettings(),branches=googleBranches(),active=branches.filter(branch=>(settings[branch.id]?.active!==false)).length,live=branches.filter(branch=>!branch.demo).length,demo=branches.filter(branch=>branch.demo).length,lastSync=branches.find(branch=>branch.id==='branch-google-nilufer')?.lastSyncedAt||'Henüz eşitlenmedi';
+  const settings=googleBranchSettings(),branches=googleAllBranches(),active=branches.filter(branch=>(settings[branch.id]?.active!==false)).length,live=branches.filter(branch=>!branch.demo).length,demo=branches.filter(branch=>branch.demo).length,lastSync=branches.find(branch=>branch.id==='branch-google-nilufer')?.lastSyncedAt||'Henüz eşitlenmedi';
   const demoStoreCodes={'branch-google-ankara':'389201936100034456','branch-google-izmir':'921356408200067781','branch-google-istanbul':'663284197500089012'};
   const rows=branches.map(branch=>{const s=settings[branch.id]||{},isActive=s.active!==false,accountId=s.accountId||branch.googleBusinessGroupId||(branch.demo?'114698852482564472140':''),storeCode=s.storeCode||branch.storeCode||demoStoreCodes[branch.id]||'',isLive=!branch.demo,isConnected=isLive&&googleReputationState.connected===true&&Boolean(accountId)&&Boolean(storeCode)&&branch.synced===true&&!branch.syncError,statusLabel=isConnected?'Bağlı':'Bağlantı kontrolü gerekli',statusSub=isConnected?'Google işletme bağlantısı hazır':isLive?'Kimlik doğrulaması bekliyor':'Senkronizasyon bekliyor',sourceLabel=isLive?'Canlı bağlantı adayı':'Demo şube';return `<div class="google-connection-row${isActive?'':' is-passive'}" data-google-branch-setting="${googleEsc(branch.id)}" data-google-connection-search="${googleEsc(`${branch.name} ${branch.city||''} ${branch.region||''} ${accountId} ${storeCode}`.toLocaleLowerCase('tr-TR'))}" data-google-connection-source="${isLive?'live':'demo'}" data-google-connection-status="${isConnected?'connected':'pending'}" data-google-connection-active="${isActive?'1':'0'}">
     <label class="google-connection-pick"><input type="checkbox" data-google-branch-select aria-label="${googleEsc(branch.name)} seç"></label>
@@ -3251,7 +3290,7 @@ async function syncLiveGoogleReviews(branchId='',options={}){
   const startedAt=Date.now();
   googleReputationState.loading=true; googleReputationState.error=''; googleReputationState.progress=branchId?'Şube yorumları alınıyor…':'Aktif şubelerin yorumları birlikte alınıyor…'; refreshGoogleReputationPage();
   try {
-    const api=window.OTOTRGoogleReviewAI,targets=branchId?googleOperationalBranches().filter(branch=>branch.id===branchId&&!branch.demo):googleOperationalBranches().filter(branch=>branch.id==='branch-google-nilufer');
+    const api=window.OTOTRGoogleReviewAI,targets=branchId?googleOperationalBranches().filter(branch=>branch.id===branchId&&!branch.demo):googleOperationalBranches().filter(branch=>!branch.demo);
     if(!api?.googleBusinessRequest) throw new Error('Google bağlantı modülü henüz hazır değil. Sayfayı yenileyip tekrar deneyin.');
     if(!targets.length) throw new Error('Aktif ve canlı Google şubesi bulunamadı. Şube bağlantı ayarlarını kontrol edin.');
     let payload;
@@ -3669,7 +3708,18 @@ document.addEventListener?.('click',e=>{const bulk=e.target.closest?.('[data-goo
 document.addEventListener?.('input',e=>{if(e.target.matches('[data-google-connection-search-input]'))googleApplyConnectionFilters(e.target.closest('.google-branch-settings-panel'));});
 document.addEventListener?.('change',e=>{if(e.target.matches('[data-google-connection-status-filter],[data-google-connection-source-filter],[data-google-connection-active-only]'))googleApplyConnectionFilters(e.target.closest('.google-branch-settings-panel'));});
 document.addEventListener?.('click',e=>{if(e.target.closest?.('[data-google-sync-logs]'))toast?.(`Son Google senkronizasyon durumu: ${googleReputationState.lastSync}`);});
-document.addEventListener?.('submit',e=>{const form=e.target.closest?.('[data-google-branch-add]');if(!form)return;e.preventDefault();const data=new FormData(form),name=String(data.get('name')||'').trim(),accountId=String(data.get('accountId')||'').trim(),storeCode=String(data.get('storeCode')||'').trim(),locationId=String(data.get('locationId')||'').trim();if(!name)return;const id='branch-custom-'+Date.now(),configuredLive=Boolean(accountId&&storeCode),branch={id,name:`OTOTR Oto Ekspertiz ${name}`,city:String(data.get('city')||'').trim(),region:String(data.get('region')||'').trim()||'Diğer',googleBusinessGroupId:accountId,storeCode,googleBusinessLocationId:locationId,connectionMode:String(data.get('connectionMode')||'Google Business Profile'),custom:true,demo:!configuredLive,demoReviewCount:0,demoRating:0,demoUnrepliedCount:0,demoCriticalCount:0,googleRating:configuredLive?null:0,googleReviewCount:configuredLive?null:0,unrepliedCount:configuredLive?null:0,criticalCount:configuredLive?null:0,integrationStatus:configuredLive?'Canlı bağlantı adayı':'Demo veri · bağlantı bilgisi bekleniyor',dataMode:configuredLive?'Canlı bağlantı adayı':'Demo şube'};try{localStorage.setItem(GOOGLE_CUSTOM_BRANCHES_KEY,JSON.stringify([...googleCustomBranches(),branch]));toast?.(configuredLive?'Şube canlı senkronizasyon kuyruğuna eklendi.':'Şube demo olarak eklendi; hesap ve mağaza kodunu sonra tamamlayabilirsiniz.');refreshGoogleReputationPage();}catch(_){toast?.('Şube eklenemedi. Tarayıcı depolama iznini kontrol edin.');}});
+document.addEventListener?.('submit',async e=>{const form=e.target.closest?.('[data-google-branch-add]');if(!form)return;e.preventDefault();const data=new FormData(form),name=String(data.get('name')||'').trim(),city=String(data.get('city')||'').trim(),region=String(data.get('region')||'').trim()||'Diğer',accountId=String(data.get('accountId')||'').trim(),storeCode=String(data.get('storeCode')||'').trim(),locationId=String(data.get('locationId')||'').trim();if(!name||!city)return;const rawId=globalThis.crypto?.randomUUID?.()||String(Date.now()),id='branch-custom-'+String(rawId).replace(/-/g,'').slice(0,16),configuredLive=Boolean(accountId&&storeCode),request=window.OTOTRGoogleReviewAI?.googleBusinessRequest;try{
+  if(request){
+    const result=await request('branch_create',{id,name,city,region,account_id:accountId||undefined,store_code:storeCode||undefined,location_id:locationId||undefined,target:30,sla_hours:24,interval_minutes:60});
+    if(result?.item) googleMergeBranchRegistry([result.item]);
+    toast?.(configuredLive?'Şube ERP’ye kaydedildi; Google konum doğrulamasından sonra canlıya alınabilir.':'Şube ERP’ye kaydedildi; onboarding tamamlanana kadar demo/onboarding kapsamındadır.');
+  } else {
+    const branch={id,name:`OTOTR Oto Ekspertiz ${name}`,city,region,googleBusinessGroupId:accountId,storeCode,googleBusinessLocationId:locationId,connectionMode:String(data.get('connectionMode')||'Google Business Profile'),custom:true,demo:!configuredLive,demoReviewCount:0,demoRating:0,demoUnrepliedCount:0,demoCriticalCount:0,googleRating:configuredLive?null:0,googleReviewCount:configuredLive?null:0,unrepliedCount:configuredLive?null:0,criticalCount:configuredLive?null:0,integrationStatus:configuredLive?'Canlı bağlantı adayı':'Demo veri · bağlantı bilgisi bekleniyor',dataMode:configuredLive?'Canlı bağlantı adayı':'Demo şube'};
+    localStorage.setItem(GOOGLE_CUSTOM_BRANCHES_KEY,JSON.stringify([...googleCustomBranches(),branch]));
+    toast?.(configuredLive?'Şube yerel canlı senkronizasyon kuyruğuna eklendi.':'Şube yerel demo olarak eklendi; ERP oturumu açıldığında sunucu onboarding kaydı oluşturulmalıdır.');
+  }
+  form.reset();refreshGoogleReputationPage();
+}catch(error){toast?.(error?.message||'Şube kaydı oluşturulamadı.');}});
 document.addEventListener?.('click',e=>{
   const link=e.target.closest?.('[data-google-center-scroll="google-reply-workspace"]');
   if(!googleReputationState.demoMode||!link||window.__OTOTR_DEMO_INBOX_FALLBACK_USED||googleReputationState.selectedBranchId!=='branch-google-nilufer'||googleReviews().some(review=>review.branchId==='branch-google-nilufer')||!googleReviews().some(review=>review.demo)) return;
@@ -3684,6 +3734,7 @@ async function refreshGoogleBusinessConnectionStatus(retry=0){
     return;
   }
   try {
+    await refreshGoogleBranchRegistry();
     const status=await window.OTOTRGoogleReviewAI.googleBusinessStatus();
     googleReputationState.connected=Boolean(status.connected);
     if(status.reconnection_required) googleReputationState.error='Google uygulama bağlantısı değişti. Google Hesabını Bağla ile dijital@ototr.com hesabını yeniden yetkilendirin.';

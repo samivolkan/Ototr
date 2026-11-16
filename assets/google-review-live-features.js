@@ -1,6 +1,7 @@
 (function (root) {
   'use strict';
   const BRANCH = 'branch-google-nilufer';
+  const currentBranch = () => root?.OTOTRReviewLiveViews?.getBranchId?.() || BRANCH;
   const events = [['sla_overdue', 'SLA aşımı'], ['critical_review', 'Kritik yorum'], ['legal_hold', 'Hukuki bekletme']];
   const field = (key, label, type = 'text', options = {}) => ({ key, label, type, ...options });
   const definitions = {
@@ -9,7 +10,7 @@
     escalation_rules: { title: 'Yükseltme kuralı', defaults: { event: 'sla_overdue', after_hours: 24, enabled: true }, fields: [field('name', 'Kural adı'), field('event', 'Olay', 'select', { options: events }), field('after_hours', 'Olaydan sonraki bekleme (saat)', 'number', { min: 0, max: 168 }), field('to_role', 'Sorumlu rol', 'roles'), field('enabled', 'Kural etkin', 'checkbox')] },
     notification_rules: { title: 'Bildirim tercihi', defaults: { event: 'critical_review', enabled: true, channels: ['in_app'] }, fields: [field('user_id', 'Kullanıcı', 'users'), field('event', 'Olay', 'select', { options: events }), field('enabled', 'ERP içi bildirim etkin', 'checkbox')] },
     store_groups: { title: 'Şube grubu', defaults: { branch_ids: [BRANCH] }, fields: [field('name', 'Grup adı')], note: 'Bu canlı kapsamda gruba Bursa Nilüfer eklenir. Demo şubeler canlı gruba alınmaz.' },
-    branch_settings: { title: 'Bursa şube ayarları', singleton: true, defaults: { lifecycle: 'active', tone: 'inherit', sla_hours: 24 }, fields: [field('lifecycle', 'Yaşam döngüsü', 'select', { options: [['active', 'Aktif'], ['paused', 'Duraklatıldı'], ['archived', 'Arşiv']] }), field('tone', 'Yanıt tonu', 'select', { options: [['inherit', 'Genel ayardan'], ['samimi', 'Samimi'], ['profesyonel', 'Profesyonel'], ['empatik', 'Empatik'], ['temkinli', 'Temkinli']] }), field('sla_hours', 'Yanıt SLA (saat)', 'number', { min: 1, max: 168 })] },
+    branch_settings: { title: 'Şube ayarları', singleton: true, defaults: { lifecycle: 'active', tone: 'inherit', sla_hours: 24 }, fields: [field('lifecycle', 'Yaşam döngüsü', 'select', { options: [['onboarding', 'Onboarding'], ['demo', 'Demo'], ['live_candidate', 'Canlı adayı'], ['active', 'Aktif'], ['live', 'Canlı'], ['paused', 'Duraklatıldı'], ['archived', 'Arşiv']] }), field('tone', 'Yanıt tonu', 'select', { options: [['inherit', 'Genel ayardan'], ['samimi', 'Samimi'], ['profesyonel', 'Profesyonel'], ['empatik', 'Empatik'], ['temkinli', 'Temkinli']] }), field('sla_hours', 'Yanıt SLA (saat)', 'number', { min: 1, max: 168 })] },
     delegations: { title: 'Yetki devri', defaults: { scope: 'tasks', active: true }, fields: [field('from_user_id', 'Devreden', 'users'), field('to_user_id', 'Devralan', 'users'), field('starts_at', 'Başlangıç', 'datetime-local'), field('ends_at', 'Bitiş', 'datetime-local'), field('scope', 'Kapsam', 'select', { options: [['approvals', 'Yanıt onayları'], ['tasks', 'Görevler']] }), field('active', 'Devir etkin', 'checkbox')] },
     legal_cases: { title: 'Hukuk dosyası bilgileri', defaults: { category: 'Google yorum incelemesi', notes: '', stage: 'open' }, fields: [field('work_item_id', 'Bağlı hukuk görevi', 'legalTasks'), field('category', 'Kategori'), field('assignee_id', 'Sorumlu (isteğe bağlı)', 'users', { optional: true }), field('notes', 'Dosya notu', 'textarea', { optional: true }), field('stage', 'Aşama', 'select', { options: [['open', 'Açık'], ['review', 'İnceleniyor'], ['responded', 'Yanıtlandı'], ['closed', 'Kapandı']] })] },
     complaints: { title: 'Şikayet bilgileri', defaults: { category: 'Müşteri deneyimi', severity: 'normal', notes: '', stage: 'received' }, fields: [field('work_item_id', 'Bağlı şikayet görevi', 'complaintTasks'), field('category', 'Kategori'), field('assignee_id', 'Sorumlu (isteğe bağlı)', 'users', { optional: true }), field('severity', 'Önem', 'select', { options: [['normal', 'Normal'], ['high', 'Yüksek'], ['critical', 'Kritik']] }), field('notes', 'Şikayet notu', 'textarea', { optional: true }), field('stage', 'Aşama', 'select', { options: [['received', 'Alındı'], ['assigned', 'Atandı'], ['in_progress', 'İşlemde'], ['resolved', 'Çözüldü']] })] },
@@ -72,7 +73,7 @@
   }
   function sameNameGroups(tasks) {
     const groups = new Map();
-    tasks.filter(task => task.branch_id === BRANCH && task.kind === 'complaint').forEach(task => {
+    tasks.filter(task => task.branch_id === currentBranch() && task.kind === 'complaint').forEach(task => {
       const name = String(task.review_snapshot?.reviewer_name || '').trim();
       const key = name.toLocaleLowerCase('tr-TR');
       if (!key || ['anonim', 'google kullanıcısı', 'anonymous'].includes(key)) return;
@@ -90,7 +91,7 @@
   const document = root.document;
   const api = () => root.OTOTRReviewManagement;
   const state = () => api()?.state || {};
-  const isLive = () => root.OTOTRReviewLiveViews?.getScope() === 'live';
+  const isLive = () => root.OTOTRReviewLiveViews?.isLive?.() ?? (root.OTOTRReviewLiveViews?.getScope?.() === 'live');
   const resourceList = kind => (state().resources?.[kind] || []).filter(row => !row.archived);
   const find = (kind, id) => resourceList(kind).find(row => row.id === id);
   const first = kind => resourceList(kind)[0];
@@ -101,7 +102,7 @@
   const labelUser = id => extendedUsers().find(user => user.user_id === id)?.full_name || 'ERP kullanıcısı';
   let ai = null;
   try { if (root.parent !== root && root.parent.location.origin === root.location.origin) ai = root.parent.OTOTRGoogleReviewAI; } catch (_) {}
-  const workItems = () => (ai?.getWorkflowItems?.() || []).filter(item => item.branch_id === BRANCH);
+  const workItems = () => (ai?.getWorkflowItems?.() || []).filter(item => item.branch_id === currentBranch());
   const itemById = id => workItems().find(item => item.id === id);
   const byId = id => document.getElementById(id);
   // The imported demo renderer expects its own field IDs. Restore its unchanged
@@ -228,16 +229,43 @@
     if (invite) { enable(invite); invite.textContent = actor().is_owner ? 'Modül yetkisi tanımla' : 'Kullanıcıları yenile'; invite.onclick = () => actor().is_owner ? openEditor('user_permissions') : run(invite, refresh); }
     set('permTable', `<thead><tr><th>Kullanıcı</th><th>ERP rolü</th><th>Yorum modülü rolü</th><th>Durum</th><th></th></tr></thead><tbody>${extendedUsers().map(user => { const p = resourceList('user_permissions').find(row => row.data.user_id === user.user_id); return `<tr><td>${esc(user.full_name)}</td><td>${esc(user.role)}</td><td>${p ? esc(p.data.role) : 'ERP rolünden'}</td><td>${p ? p.data.active ? 'Etkin' : 'Pasif' : user.is_active === false ? 'Pasif' : 'Etkin'}</td><td>${actor().is_owner ? p ? editButton('user_permissions', p) : button('Yetki tanımla', 'permission', `data-user="${esc(user.user_id)}"`) : 'Yetki değişikliği sistem sahibine aittir'}</td></tr>`; }).join('')}</tbody>`);
   }
+  const onboardingCache = new Map();
+  async function loadBranchOnboarding(id) {
+    try { const result = await request('branch_onboarding', { branch_id: id }); onboardingCache.set(id, result); if (isLive() || root.OTOTRReviewLiveViews?.getBranchId?.() === id) renderBranchSettings(); return result; }
+    catch (error) { onboardingCache.set(id, { error: error.message }); return null; }
+  }
+  async function activateBranch(id) {
+    const result = await request('branch_activate', { branch_id: id });
+    onboardingCache.set(id, { ...(onboardingCache.get(id) || {}), ...(result || {}), checklist: result.checklist || {} });
+    await refresh();
+    root.OTOTRReviewLiveViews?.setBranchRegistry?.((await request('branch_list')).items || []);
+    root.toast('Google konumu doğrulandı; şube canlı akışa alındı.', 'ok');
+    renderBranchSettings();
+    return result;
+  }
   function renderBranchSettings() {
-    const row = first('branch_settings'), data = row?.data;
-    set('storeGrid', `<div class="store-card"><div class="sc-head"><div class="sc-name">Bursa · Nilüfer</div><span class="chip ok">Canlı</span></div><div class="sc-meta">${data ? `Durum: ${esc(data.lifecycle)}<br>Yanıt tonu: ${esc(data.tone)}<br>SLA: ${Number(data.sla_hours)} saat` : `ERP SLA: ${Number(state().policy?.default_sla_hours) || '—'} saat<br>Şube yaşam ayarı henüz kaydedilmedi.`}</div><div class="sc-foot">${createButton('branch_settings', 'Şube ayarlarını düzenle')}${button('Yorumlara git', 'reviews')}</div></div>`);
+    const registry = root.OTOTRReviewLiveViews?.getBranchRegistry?.() || [];
+    const branches = registry.length ? registry : [{ id: BRANCH, name: 'Bursa Nilüfer', city: 'Bursa', region: 'Marmara', lifecycle: 'live', target: 30, sla_hours: state().policy?.default_sla_hours || 24 }];
+    const cardsHtml = branches.map(branch => {
+      const data = resourceList('branch_settings').find(row => row.branch_id === branch.id)?.data || (branch.id === currentBranch() ? first('branch_settings')?.data : null);
+      const onboarding = onboardingCache.get(branch.id);
+      const checklist = onboarding?.checklist || branch.onboarding || {};
+      const checks = Object.entries(checklist).filter(([key]) => ['google_account','store_code','location_id','google_verified','target','sla','ai','collection','permissions','active','live'].includes(key));
+      const done = checks.filter(([, value]) => value === true).length;
+      const live = ['live','active'].includes(branch.lifecycle) || branch.id === BRANCH;
+      const status = live ? 'Canlı' : branch.lifecycle === 'onboarding' ? 'Onboarding' : 'Demo / aday';
+      const scoped = branch.id === currentBranch();
+      return `<div class="store-card" data-branch-card="${esc(branch.id)}"><div class="sc-head"><div class="sc-name">${esc(`${branch.city || ''} ${branch.name || ''}`.trim())}</div><span class="chip ${live ? 'ok' : 'warn'}">${status}</span></div><div class="sc-meta">${data ? `Durum: ${esc(data.lifecycle)}<br>Yanıt tonu: ${esc(data.tone)}<br>SLA: ${Number(data.sla_hours)} saat` : `SLA: ${Number(branch.sla_hours || branch.slaH || 24)} saat<br>Hedef: ${Number(branch.target || 0) || '—'}`}<br>Google: ${branch.location_id || branch.googleBusinessLocationId ? 'Konum tanımlı' : 'Konum bekleniyor'}<br>Onboarding: ${checks.length ? `${done}/${checks.length} kontrol` : 'Kontrol bekleniyor'}</div><div class="sc-foot">${scoped && live ? createButton('branch_settings', 'Şube ayarlarını düzenle') : button('Bu şubeyi aç', 'branch-scope', `data-id="${esc(branch.id)}"`)}${button('Onboarding kontrolü', 'branch-onboarding', `data-id="${esc(branch.id)}"`)}${!live && branch.id.startsWith('branch-custom-') ? button('Google doğrula ve aktifleştir', 'branch-activate', `data-id="${esc(branch.id)}"`) : ''}${scoped ? button('Yorumlara git', 'reviews') : ''}</div></div>`;
+    }).join('');
+    set('storeGrid', cardsHtml || empty('Henüz kayıtlı şube yok.'));
     const add = document.querySelector('#settings-stores .head button'); if (add) { enable(add); add.textContent = 'Yeni şube ekle'; add.onclick = () => openBranchCreate(); }
+    branches.filter(branch => !onboardingCache.has(branch.id)).slice(0, 20).forEach(branch => { void loadBranchOnboarding(branch.id); });
   }
   function openBranchCreate() {
     let modal=byId('erpBranchCreateModal'); if(!modal){modal=document.createElement('div');modal.id='erpBranchCreateModal';modal.className='mbd';document.body.append(modal);}
-    modal.innerHTML='<div class="modal" role="dialog" aria-modal="true"><div class="mhead"><h3>Yeni şube</h3><button class="btn sm" data-close>Kapat</button></div><div class="mbody"><p>Yeni şube güvenli başlangıç olarak demo açılır. Google hesap ve mağaza kodu girilirse canlı bağlantı adayı olur; canlıya alma ayrıca doğrulanır.</p><div class="frow"><label>Şube adı</label><input id="brName" maxlength="160"></div><div class="frow"><label>İl</label><input id="brCity" maxlength="80"></div><div class="frow"><label>Bölge</label><input id="brRegion" maxlength="80"></div><div class="frow"><label>Google hesap ID (opsiyonel)</label><input id="brAccount" inputmode="numeric"></div><div class="frow"><label>Mağaza kodu (opsiyonel)</label><input id="brStore" inputmode="numeric"></div><div class="frow"><label>Google konum ID (opsiyonel)</label><input id="brLocation" inputmode="numeric"></div><p id="brError" role="alert"></p></div><div class="mfoot"><button class="btn" data-close>Vazgeç</button><button class="btn p" data-save>ERP’ye kaydet</button></div></div>';
+    modal.innerHTML='<div class="modal" role="dialog" aria-modal="true"><div class="mhead"><h3>Yeni şube</h3><button class="btn sm" data-close>Kapat</button></div><div class="mbody"><p>Yeni şube güvenli başlangıç olarak onboarding/demo açılır. Google hesap, mağaza ve konum kimlikleri doğrulanmadan canlı yorum toplama, AI yayını veya mesaj gönderimi açılmaz.</p><div class="frow"><label>Şube adı</label><input id="brName" maxlength="160"></div><div class="frow"><label>İl</label><input id="brCity" maxlength="80"></div><div class="frow"><label>Bölge</label><input id="brRegion" maxlength="80"></div><div class="grid2"><label>Google hesap ID (opsiyonel)<input id="brAccount" inputmode="numeric"></label><label>Mağaza kodu (opsiyonel)<input id="brStore" inputmode="numeric"></label><label>Google konum ID (opsiyonel)<input id="brLocation" inputmode="numeric"></label><label>Aylık yorum hedefi<input id="brTarget" type="number" min="1" max="10000" value="30"></label><label>Yanıt SLA (saat)<input id="brSla" type="number" min="1" max="168" value="24"></label><label>Google senkron aralığı (dk)<input id="brInterval" type="number" min="5" max="1440" value="60"></label></div><p id="brError" role="alert"></p></div><div class="mfoot"><button class="btn" data-close>Vazgeç</button><button class="btn p" data-save>ERP’ye kaydet</button></div></div>';
     modal.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>root.closeModal('erpBranchCreateModal'));
-    modal.querySelector('[data-save]').onclick=async()=>{const b=modal.querySelector('[data-save]');b.disabled=true;try{await request('branch_create',{id:'branch-custom-'+crypto.randomUUID().replaceAll('-','').slice(0,16),name:byId('brName').value,city:byId('brCity').value,region:byId('brRegion').value,account_id:byId('brAccount').value,store_code:byId('brStore').value,location_id:byId('brLocation').value});root.closeModal('erpBranchCreateModal');root.toast('Yeni şube ERP’ye kaydedildi. Demo kapsamıyla başladı.','ok');await refresh();}catch(e){byId('brError').textContent=e.message;b.disabled=false;}};
+    modal.querySelector('[data-save]').onclick=async()=>{const b=modal.querySelector('[data-save]');b.disabled=true;try{const result=await request('branch_create',{id:'branch-custom-'+crypto.randomUUID().replaceAll('-','').slice(0,16),name:byId('brName').value,city:byId('brCity').value,region:byId('brRegion').value,account_id:byId('brAccount').value,store_code:byId('brStore').value,location_id:byId('brLocation').value,target:Number(byId('brTarget').value),sla_hours:Number(byId('brSla').value),interval_minutes:Number(byId('brInterval').value)});root.closeModal('erpBranchCreateModal');const list=await request('branch_list');root.OTOTRReviewLiveViews?.setBranchRegistry?.(list.items||[]);root.OTOTRReviewLiveViews?.setScope?.(result.item?.id || list.items?.find(item=>item.name===byId('brName').value)?.id || currentBranch());root.toast('Yeni şube ERP’ye kaydedildi. Onboarding kontrolü tamamlanmadan canlı işlem kapalıdır.','ok');await refresh();renderBranchSettings();}catch(e){byId('brError').textContent=e.message;b.disabled=false;}};
     root.openModal('erpBranchCreateModal');
   }
   function renderSavedViews() {
@@ -245,11 +273,12 @@
     set('savedViewsList', `<p>Bu tarayıcıda saklanan Bursa filtre tercihleridir. Görünüm açılınca güncel canlı ERP yorumları filtrelenir.</p><div class="pacts">${button('Geçerli yorum filtresini kaydet', 'new-saved')}</div>` + (views.map(view => `<div class="saved-view"><div class="sv-info"><div class="sv-name">${esc(view.name)}</div><div class="sv-filters">Bursa canlı · ${esc(view.filters?.filter || 'hepsi')}</div></div>${button('Aç', 'apply-saved', `data-id="${esc(view.id)}"`)}${button('Sil', 'delete-saved', `data-id="${esc(view.id)}"`)}</div>`).join('') || empty('Bu tarayıcıda Bursa için kayıtlı filtre yok.')));
   }
   function renderIntegrations() {
-    set('intGrid', `<div class="card"><h3>Google Business Profile</h3><p>${state().settings?.google_connected === true ? 'Mevcut ERP Google bağlantısı kayıtlı.' : 'Google bağlantısı doğrulanmadı.'}</p><div class="pacts">${button('Bağlantıyı kontrol et', 'google-status')}${button('Google yetkilendirmesi', 'google-connect')}${button('Bursa yorumlarını yenile', 'google-sync')}</div></div><div class="card"><h3>OpenAI</h3><p>${state().settings?.openai_configured === true ? `Mevcut ERP yapılandırması · ${esc(state().settings.openai_model || 'model sunucuda')}` : 'Yapılandırma durumu alınamadı.'}</p><div class="pacts">${button('Gerçek test alanını aç', 'open-playground')}${button('Kullanım kayıtları', 'open-ai-quality')}</div></div><div class="card"><h3>ERP içi bildirimler</h3><p>Kişisel kurallar ve okundu bilgisi sunucuda saklanır.</p><div class="pacts">${button('Bildirim tercihleri', 'open-notification-rules')}${button('Bildirimleri aç', 'notifications')}</div></div><div class="card" id="reviewCollectionCard" style="grid-column:1/-1"><h3>Ekspertiz sonrası yorum toplama · Bursa</h3><p>Hizmet tamamlandıktan sonra müşteriye tekil, saat bazlı SMS/WhatsApp/e-posta isteği kuyruğa alınır. Gebze ve İnegöl demo kapsamındadır.</p><div class="grid2"><label>Aktif <input id="collectionEnabled" type="checkbox"></label><label>Gönderim saati <input id="collectionHour" type="number" min="0" max="23" value="18"></label><label>Hizmet sonrası bekleme (dk) <input id="collectionDelay" type="number" min="0" max="10080" value="120"></label><label>Kanal <select id="collectionChannel"><option value="sms">SMS</option><option value="whatsapp">WhatsApp</option><option value="email">E-posta</option></select></label></div><label>Mesaj şablonu <textarea id="collectionTemplate" rows="3">Merhaba {{musteri_adi}}, hizmet deneyiminizi değerlendirmek ister misiniz? {{yorum_linki}}</textarea></label><div class="pacts"><button class="micro-btn primary" data-feature="collection-save">Ayarları kaydet</button><button class="micro-btn" data-feature="collection-refresh">Kuyruğu yenile</button><button class="micro-btn" data-feature="collection-run">Vadesi gelenleri çalıştır</button></div><p id="collectionStatus" role="status"></p><div id="collectionQueue"></div></div>`);
+    const branchName = `${root.OTOTRReviewLiveViews?.getBranchRegistry?.().find(item => item.id === currentBranch())?.city || ''} ${root.OTOTRReviewLiveViews?.getBranchRegistry?.().find(item => item.id === currentBranch())?.name || 'Şube'}`.trim();
+    set('intGrid', `<div class="card"><h3>Google Business Profile</h3><p>${state().settings?.google_connected === true ? 'Mevcut ERP Google bağlantısı kayıtlı.' : 'Google bağlantısı doğrulanmadı.'}</p><div class="pacts">${button('Bağlantıyı kontrol et', 'google-status')}${button('Google yetkilendirmesi', 'google-connect')}${button(`${branchName} yorumlarını yenile`, 'google-sync')}</div></div><div class="card"><h3>OpenAI</h3><p>${state().settings?.openai_configured === true ? `Mevcut ERP yapılandırması · ${esc(state().settings.openai_model || 'model sunucuda')}` : 'Yapılandırma durumu alınamadı.'}</p><div class="pacts">${button('Gerçek test alanını aç', 'open-playground')}${button('Kullanım kayıtları', 'open-ai-quality')}</div></div><div class="card"><h3>ERP içi bildirimler</h3><p>Kişisel kurallar ve okundu bilgisi sunucuda saklanır.</p><div class="pacts">${button('Bildirim tercihleri', 'open-notification-rules')}${button('Bildirimleri aç', 'notifications')}</div></div><div class="card" id="reviewCollectionCard" style="grid-column:1/-1"><h3>Ekspertiz sonrası yorum toplama · ${esc(branchName)}</h3><p>Hizmet tamamlandıktan sonra müşteriye tekil, saat bazlı SMS/WhatsApp/e-posta isteği kuyruğa alınır. Demo/onboarding şubelerinde dış gönderim kapalıdır.</p><div class="grid2"><label>Aktif <input id="collectionEnabled" type="checkbox"></label><label>Gönderim saati <input id="collectionHour" type="number" min="0" max="23" value="18"></label><label>Hizmet sonrası bekleme (dk) <input id="collectionDelay" type="number" min="0" max="10080" value="120"></label><label>Kanal <select id="collectionChannel"><option value="sms">SMS</option><option value="whatsapp">WhatsApp</option><option value="email">E-posta</option></select></label></div><label>Mesaj şablonu <textarea id="collectionTemplate" rows="3">Merhaba {{musteri_adi}}, hizmet deneyiminizi değerlendirmek ister misiniz? {{yorum_linki}}</textarea></label><div class="pacts"><button class="micro-btn primary" data-feature="collection-save">Ayarları kaydet</button><button class="micro-btn" data-feature="collection-refresh">Kuyruğu yenile</button><button class="micro-btn" data-feature="collection-run">Vadesi gelenleri çalıştır</button></div><p id="collectionStatus" role="status"></p><div id="collectionQueue"></div></div>`);
     loadCollection();
   }
   async function loadCollection(){ try { const data=await request('collection_read'); const p=data.policy||{}; ['Enabled','Hour','Delay','Channel','Template'].forEach(k=>{const el=byId('collection'+k); if(!el)return; const key=k==='Enabled'?'enabled':k==='Hour'?'send_hour':k==='Delay'?'delay_minutes':k==='Channel'?'channel':'template'; if(k==='Enabled')el.checked=Boolean(p[key]); else el.value=p[key]??el.value;}); const q=byId('collectionQueue'); if(q) q.innerHTML=(data.queue||[]).map(x=>`<div class="watch-row"><div class="info"><b>${esc(x.customer_name||'Müşteri')}</b><small>${esc(x.channel)} · ${esc(x.status)} · ${esc(when(x.scheduled_at))}</small></div></div>`).join('')||'<p>Bekleyen yorum isteği yok.</p>'; } catch(e){ const s=byId('collectionStatus'); if(s)s.textContent=e.message; } }
-  async function saveCollection(){ const payload={enabled:byId('collectionEnabled')?.checked,send_hour:Number(byId('collectionHour')?.value),delay_minutes:Number(byId('collectionDelay')?.value),channel:byId('collectionChannel')?.value,template:byId('collectionTemplate')?.value}; const result=await request('collection_save_policy',payload); if(byId('collectionStatus'))byId('collectionStatus').textContent='Bursa yorum toplama ayarı kaydedildi.'; return result; }
+  async function saveCollection(){ const payload={enabled:byId('collectionEnabled')?.checked,send_hour:Number(byId('collectionHour')?.value),delay_minutes:Number(byId('collectionDelay')?.value),channel:byId('collectionChannel')?.value,template:byId('collectionTemplate')?.value}; const result=await request('collection_save_policy',payload); if(byId('collectionStatus'))byId('collectionStatus').textContent=`${currentBranch()} yorum toplama ayarı kaydedildi.`; return result; }
   function renderSystemFeatures() {
     document.querySelectorAll('#healthMetrics .md').forEach(node => { if (/Uptime|telemetri/.test(node.textContent)) node.textContent = 'AI çağrı süreleri kullanım kayıtlarında'; });
     set('escGrid', note() + `<div class="pacts">${createButton('escalation_rules', 'Yeni kural')}${button('Kuralları şimdi değerlendir', 'run-escalation')}</div>` + cards('escalation_rules', row => `<b>${esc(row.data.name)}</b><p>${esc(events.find(e => e[0] === row.data.event)?.[1] || row.data.event)} · ${Number(row.data.after_hours)} saat · ${esc(row.data.to_role)} · ${row.data.enabled ? 'Etkin' : 'Pasif'}</p>`));
@@ -323,7 +352,7 @@
     if (local.analyticsLoading) return;
     if (!api()?.aiRequest) throw new Error('AI analiz servisi hazır değil.');
     local.analyticsLoading = true;
-    try { local.analytics = await api().aiRequest('analytics', { branch: { id: BRANCH } }); local.analyticsError = null; }
+    try { local.analytics = await api().aiRequest('analytics', { branch: { id: currentBranch() } }); local.analyticsError = null; }
     catch (error) { local.analyticsError = error.message; throw error; }
     finally { local.analyticsLoading = false; if (isLive()) { renderExperiments(); set('aiqMetrics', analyticsSummary()); if (STATE.view === 'system') renderSystemFeatures(); } }
   }
@@ -337,7 +366,7 @@
   }
   function renderAIConfig() {
     const saved = first('ai_config'), data = local.aiDraft?.data || saved?.data || definitions.ai_config.defaults;
-    set('ai-config', `<div class="card"><div class="head"><h3>AI yanıt ayarları · Bursa</h3></div>${note()}<p>${saved ? 'Mevcut ERP OpenAI bağlantısı korunur. Bu ayarlar gerçek taslak yönergesine eklenir.' : 'Henüz özel yönerge kaydı yok. Kaydettiğiniz bilgiler gerçek taslak üretiminde kullanılır.'}</p><div class="grid2"><div><div class="frow"><label for="erpAiPersona">Marka kişiliği</label><textarea id="erpAiPersona" rows="4">${esc(data.persona)}</textarea></div><div class="frow"><label for="erpAiBanned">Yasaklı ifadeler (satır başına bir ifade)</label><textarea id="erpAiBanned" rows="4">${esc((data.banned_words || []).join('\n'))}</textarea></div><div class="frow"><label for="erpAiKnowledge">Kullanılabilecek bilgiler</label><textarea id="erpAiKnowledge" rows="5">${esc(data.knowledge_lock)}</textarea></div></div><div><div class="ai-toggle"><div class="tm"><div class="tl">Yetkili insan onayı</div><div class="ts">Google yayını öncesi zorunlu</div></div><span class="chip ok">Aktif</span></div><div class="ai-toggle"><div class="tm"><div class="tl">Hukuki bekletme</div><div class="ts">Bekletilen kayıtta yayın engellenir</div></div><span class="chip ok">Sunucu denetimi</span></div><div class="ai-toggle"><div class="tm"><div class="tl">Gerçek taslak kaynağı</div><div class="ts">Üretim kaydı, model, kullanım ve sonuç izlenir</div></div><span class="chip info">ERP</span></div><p>${esc(state().settings?.openai_model || 'Model mevcut ERP ayarından alınır.')}</p></div></div><div class="pacts">${button('AI ayarlarını kaydet', 'save-ai')}${button('Gerçek kullanım kayıtlarını yenile', 'analytics')}</div><p id="erpAiSaveStatus" role="status"></p></div>`);
+    set('ai-config', `<div class="card"><div class="head"><h3>AI yanıt ayarları · ${esc(currentBranch())}</h3></div>${note()}<p>${saved ? 'Mevcut ERP OpenAI bağlantısı korunur. Bu ayarlar gerçek taslak yönergesine eklenir.' : 'Henüz özel yönerge kaydı yok. Kaydettiğiniz bilgiler gerçek taslak üretiminde kullanılır.'}</p><div class="grid2"><div><div class="frow"><label for="erpAiPersona">Marka kişiliği</label><textarea id="erpAiPersona" rows="4">${esc(data.persona)}</textarea></div><div class="frow"><label for="erpAiBanned">Yasaklı ifadeler (satır başına bir ifade)</label><textarea id="erpAiBanned" rows="4">${esc((data.banned_words || []).join('\n'))}</textarea></div><div class="frow"><label for="erpAiKnowledge">Kullanılabilecek bilgiler</label><textarea id="erpAiKnowledge" rows="5">${esc(data.knowledge_lock)}</textarea></div></div><div><div class="ai-toggle"><div class="tm"><div class="tl">Yetkili insan onayı</div><div class="ts">Google yayını öncesi zorunlu</div></div><span class="chip ok">Aktif</span></div><div class="ai-toggle"><div class="tm"><div class="tl">Hukuki bekletme</div><div class="ts">Bekletilen kayıtta yayın engellenir</div></div><span class="chip ok">Sunucu denetimi</span></div><div class="ai-toggle"><div class="tm"><div class="tl">Gerçek taslak kaynağı</div><div class="ts">Üretim kaydı, model, kullanım ve sonuç izlenir</div></div><span class="chip info">ERP</span></div><p>${esc(state().settings?.openai_model || 'Model mevcut ERP ayarından alınır.')}</p></div></div><div class="pacts">${button('AI ayarlarını kaydet', 'save-ai')}${button('Gerçek kullanım kayıtlarını yenile', 'analytics')}</div><p id="erpAiSaveStatus" role="status"></p></div>`);
     ['erpAiPersona', 'erpAiBanned', 'erpAiKnowledge'].forEach(id => byId(id).addEventListener('input', () => { if (!local.aiDraft) local.aiDraft = { row: saved ? { ...saved } : null, createId: root.crypto.randomUUID() }; local.aiDraft.data = { persona: byId('erpAiPersona').value, banned_words: byId('erpAiBanned').value.split(/\r?\n/), knowledge_lock: byId('erpAiKnowledge').value }; }));
     renderExperiments();
     set('aiqMetrics', analyticsSummary());
@@ -365,7 +394,7 @@
     if (!pg.comment || pg.comment.length > 3000) throw new Error('1–3000 karakterlik test senaryosu girin.');
     if (!api()?.aiRequest) throw new Error('AI test servisi hazır değil.');
     pg.busy = true;
-    try { pg.result = await api().aiRequest('playground', { branch: { id: BRANCH }, review: { rating: pg.rating, comment: pg.comment } }); }
+    try { pg.result = await api().aiRequest('playground', { branch: { id: currentBranch() }, review: { rating: pg.rating, comment: pg.comment } }); }
     finally { pg.busy = false; if (isLive()) renderPlayground(); }
   }
 
@@ -392,7 +421,7 @@
     root.openModal('erpTemplateApplyModal');
   }
   function renderReadiness() {
-    const checks = [['Google bağlantısı', state().settings?.google_connected === true], ['Canlı modül kaydı servisi', ready()], ['ERP politika kaydı', Boolean(state().policy?.updated_at)], ['OpenAI yapılandırması', state().settings?.openai_configured === true], ['Bursa canlı kapsamı', state().branch_id === BRANCH]];
+    const checks = [['Google bağlantısı', state().settings?.google_connected === true], ['Canlı modül kaydı servisi', ready()], ['ERP politika kaydı', Boolean(state().policy?.updated_at)], ['OpenAI yapılandırması', state().settings?.openai_configured === true], [`${currentBranch()} kapsamı`, state().branch_id === currentBranch()]];
     if (byId('ghScore')) byId('ghScore').textContent = `${checks.filter(([, ok]) => ok).length}/${checks.length}`;
     const hero = document.querySelector('#view-golive .golive-hero');
     if (hero) { const title = hero.querySelector('h2'), sub = hero.querySelector('p'), scoreLabel = hero.querySelector('.gh-label'), action = hero.querySelector('button'); if (title) title.textContent = 'Canlı kapsam kontrolü'; if (sub) sub.textContent = 'Bursa canlı · Gebze ve İnegöl demo. Bu işlem gerçek bağlantı ve kayıt durumlarını yeniden okur.'; if (scoreLabel) scoreLabel.textContent = 'Doğrulanan bağlantı ve kayıtlar'; if (action) { enable(action); action.textContent = 'Bağlantıları şimdi doğrula'; action.onclick = () => run(action, async () => { await refresh(); local.validation = new Date().toISOString(); renderReadiness(); root.toast('Canlı kapsam kontrolü tamamlandı.', 'ok'); }); } }
@@ -434,10 +463,13 @@
     return oldApplyView(id);
   };
   document.addEventListener('click', event => {
-    const element = event.target.closest('[data-feature]'); if (!element || !isLive()) return;
+    const element = event.target.closest('[data-feature]'); if (!element || (!isLive() && !['branch-scope','branch-onboarding','branch-activate'].includes(element.dataset.feature))) return;
     const { feature: action, kind, id, work, user } = element.dataset;
     event.preventDefault();
     if (action === 'create') return openEditor(kind);
+    if (action === 'branch-scope') { root.OTOTRReviewLiveViews?.setScope(id); return; }
+    if (action === 'branch-onboarding') return run(element, async () => { const data = onboardingCache.get(id) || await loadBranchOnboarding(id); const checklist = data?.checklist || {}; const done = Object.entries(checklist).filter(([, value]) => value === true).map(([key]) => key).join(', ') || 'Henüz yok'; root.toast(`${id}: tamamlanan kontroller — ${done}`, data?.ready ? 'ok' : 'info'); renderBranchSettings(); });
+    if (action === 'branch-activate') return run(element, () => activateBranch(id));
     if (action === 'edit') return openEditor(kind, id);
     if (action === 'permission') return openEditor('user_permissions', null, { user_id: user });
     if (action === 'new-linked') return openEditor(kind, null, { work_item_id: work });
@@ -481,7 +513,7 @@
     });
   });
   document.addEventListener('keydown', event => { if (event.key === 'Escape' && local.modal) closeEditor(); });
-  root.OTOTRReviewCollection = { enqueueCompletedService: async function(payload){ if(!payload||!payload.service_id||!payload.recipient) throw new Error('Yorum toplama için hizmet kimliği ve müşteri iletişim bilgisi gerekli.'); return request('collection_enqueue',{...payload,branch_id:BRANCH}); }, runDue: async function(){ return request('collection_run_due'); } };
+  root.OTOTRReviewCollection = { enqueueCompletedService: async function(payload){ if(!payload||!payload.service_id||!payload.recipient) throw new Error('Yorum toplama için hizmet kimliği ve müşteri iletişim bilgisi gerekli.'); return request('collection_enqueue',{...payload,branch_id:currentBranch()}); }, runDue: async function(){ return request('collection_run_due'); } };
   root.OTOTRReviewLiveFeatures = { ...pure, openEditor, refresh, renderAIConfig, loadAnalytics };
   root.OTOTRReviewLiveViews?.rerender();
 })(typeof window === 'undefined' ? null : window);

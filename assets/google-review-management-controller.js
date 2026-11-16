@@ -1,31 +1,32 @@
 (function () {
   'use strict';
   const BRANCH = 'branch-google-nilufer';
+  const currentBranch = () => window.OTOTRReviewLiveViews?.getBranchId?.() || BRANCH;
   let ai = null;
   try { if (window.parent !== window && window.parent.location.origin === location.origin) ai = window.parent.OTOTRGoogleReviewAI; } catch (_) {}
   const state = {loaded:false,loading:false,error:null,policy:null,audit:[],users:[],jobs:[],notifications:[],targets:[],templates:[],escalations:[],capabilities:{},settings:{},resources:{},inAppNotifications:[],extendedUsers:[],actor:null,extendedLoaded:false,extendedError:null};
   const locks = new Set();
   const byId = id => document.getElementById(id);
   const escape = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const liveScope = () => (window.OTOTRReviewLiveViews?.getScope?.() || 'live') === 'live';
+  const liveScope = () => window.OTOTRReviewLiveViews?.isLive?.() ?? ((window.OTOTRReviewLiveViews?.getScope?.() || 'live') === 'live');
   const items = () => ai?.getWorkflowItems?.() || [];
-  const itemById = id => items().find(item => item.id === id && item.branch_id === BRANCH);
+  const itemById = id => items().find(item => item.id === id && item.branch_id === currentBranch());
   const month = () => { const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Istanbul',year:'numeric',month:'2-digit'}).formatToParts(new Date()); return `${parts.find(p=>p.type==='year').value}-${parts.find(p=>p.type==='month').value}-01`; };
 
   async function request(action, payload={}) {
     if (!ai?.googleBusinessRequest) throw new Error('Yetkili ERP oturumu gerekli. Canlı kayıt değiştirilmedi.');
-    if (!liveScope() && !['management_read','management_extended_read','targets_list','workflow_list','audit_list','operations_list','status'].includes(action)) throw new Error('Demo şube kapsamından Bursa kaydı değiştirilemez. Önce Bursa’yı seçin.');
-    return ai.googleBusinessRequest(action, {...payload,branch_id:BRANCH});
+    if (!liveScope() && !['management_read','management_extended_read','targets_list','workflow_list','audit_list','operations_list','status','branch_list','branch_onboarding','branch_activate'].includes(action)) throw new Error('Demo şube kapsamından canlı kayıt değiştirilemez. Önce canlı bir şube seçin.');
+    return ai.googleBusinessRequest(action, {...payload,branch_id:currentBranch()});
   }
   async function aiRequest(action, payload={}) {
-    if (!liveScope()) throw new Error('AI canlı işlemleri yalnız Bursa kapsamında kullanılabilir.');
+    if (!liveScope()) throw new Error('AI işlemleri yalnızca canlı ve aktifleştirilmiş şube kapsamında kullanılabilir.');
     if (!ai?.requestAI) throw new Error('AI bağlantısı için ERP sayfasını yenileyin.');
-    return ai.requestAI(action,{...payload,branch:{id:BRANCH}});
+    return ai.requestAI(action,{...payload,branch:{id:currentBranch()}});
   }
   function notifyReady() {
     window.OTOTRReviewBridge?.hydrate?.();
     const target = state.targets.find(row => row.month === month());
-    if (typeof BRANCHES !== 'undefined' && BRANCHES[0] && target) BRANCHES[0].target = target.target;
+      if (typeof BRANCHES !== 'undefined' && target) { const branch = BRANCHES.find(b => b.id === currentBranch()); if (branch) branch.target = target.target; }
     window.dispatchEvent(new CustomEvent('ototr-management-ready'));
     if (!window.OTOTRReviewBridge?.isEditing?.()) window.OTOTRReviewLiveViews?.rerender?.();
   }
@@ -33,14 +34,15 @@
     if (state.loading) return state;
     state.loading = true;
     try {
+      try { const branches = await request('branch_list'); window.OTOTRReviewLiveViews?.setBranchRegistry?.(branches.items || []); } catch (_) { /* Existing Bursa view can continue when registry is unavailable. */ }
       const data = await request('management_read');
-      if (data?.branch_id !== BRANCH || !data.policy) throw new Error('Canlı yönetim verisi doğrulanamadı.');
+      if (data?.branch_id !== currentBranch() || !data.policy) throw new Error('Şube yönetim verisi doğrulanamadı.');
       Object.assign(state,data,{loaded:true,error:null});
-      try { state.targets = ((await request('targets_list')).items || []).filter(row=>row.branch_id===BRANCH && /^20\d{2}-(0[1-9]|1[0-2])-01$/.test(row.month) && Number.isInteger(row.target) && row.target>0 && Number.isInteger(row.version) && row.version>0); state.targetError = null; }
+      try { state.targets = ((await request('targets_list')).items || []).filter(row=>row.branch_id===currentBranch() && /^20\d{2}-(0[1-9]|1[0-2])-01$/.test(row.month) && Number.isInteger(row.target) && row.target>0 && Number.isInteger(row.version) && row.version>0); state.targetError = null; }
       catch (error) { state.targets = []; state.targetError = error.message; }
       try {
         const extended = await request('management_extended_read');
-        if (extended?.branch_id !== BRANCH || !extended.capabilities?.extended_management) throw new Error('Genişletilmiş Bursa kayıtları doğrulanamadı.');
+        if (extended?.branch_id !== currentBranch() || !extended.capabilities?.extended_management) throw new Error('Genişletilmiş şube kayıtları doğrulanamadı.');
         Object.assign(state,{resources:extended.resources || {},inAppNotifications:extended.notifications || [],extendedUsers:extended.users || [],actor:extended.actor || null,extendedLoaded:true,extendedError:null,capabilities:{...state.capabilities,...extended.capabilities}});
       } catch (error) { state.extendedLoaded=false; state.extendedError=error.message || 'Bursa kayıtları alınamadı.'; }
     } catch (error) { state.error = error.message || 'Canlı yönetim verileri alınamadı.'; }
@@ -132,18 +134,18 @@
   window.approveApp=id=>{const row=APPROVALS.find(row=>row.id===id);if(!row?.erpItemId)return originalApprove(id);const item=itemById(row.erpItemId);if(item)openReview(item);};
   window.rejectApp=id=>{const row=APPROVALS.find(row=>row.id===id);if(!row?.erpItemId)return originalReject(id);const item=itemById(row.erpItemId);if(!item)return;const reason=prompt('Taslağın red gerekçesi (yanıt Google’a gönderilmez):');if(reason)handle(()=>rejectDraft(item.id,reason,item.version),'Taslak reddedildi; metin ve gerekçe kayıtta korundu.');};
   const originalTarget=window.setTarget;
-  window.setTarget=(id,value)=>id===BRANCHES[0]?.id?handle(()=>saveTarget(value),'Bursa aylık hedefi kaydedildi.'):originalTarget(id,value);
+  window.setTarget=(id,value)=>id===currentBranch()?handle(()=>saveTarget(value),'Şube aylık hedefi kaydedildi.'):originalTarget(id,value);
   const originalDrawer=window.openDrawer,originalSaveDrawer=window.saveDrawer;
   window.openDrawer=(id,...args)=>{
     const result=originalDrawer(id,...args);
-    if(typeof CURRENT_DRAWER!=='undefined' && CURRENT_DRAWER===BRANCHES[0]){
+    if(typeof CURRENT_DRAWER!=='undefined' && CURRENT_DRAWER?.id===currentBranch()){
       ['dTone','dGbp','dLifecycle'].forEach(id=>{if(byId(id)){byId(id).disabled=true;byId(id).title='Mevcut ERP yapılandırması; bu formdan değiştirilemez.';}});
       if(state.policy && byId('dSla')){byId('dSla').innerHTML='<option></option>';byId('dSla').firstElementChild.value=state.policy.default_sla_hours;byId('dSla').firstElementChild.textContent=state.policy.default_sla_hours+' saat';for(const hours of [12,24,48,72,168])if(hours!==state.policy.default_sla_hours){const option=document.createElement('option');option.value=hours;option.textContent=hours+' saat';byId('dSla').append(option);}}
     }
     return result;
   };
   window.saveDrawer=async()=>{
-    if(typeof CURRENT_DRAWER==='undefined' || CURRENT_DRAWER!==BRANCHES[0])return originalSaveDrawer();
+    if(typeof CURRENT_DRAWER==='undefined' || CURRENT_DRAWER?.id!==currentBranch())return originalSaveDrawer();
     const hours=Number(byId('dSla')?.value),target=Number(byId('dTarget')?.value);
     const currentTarget=state.targets.find(row=>row.month===month());
     if(hours!==Number(state.policy?.default_sla_hours) && !await handle(()=>savePolicy(hours),'Bursa SLA kaydedildi.'))return;

@@ -3076,11 +3076,11 @@ renderNotifications();
 
 if (!STATE.onboarded) setTimeout(startTour, 500);
 </script>
-<script src="assets/google-review-management-bridge.js?v=20261116-13"></script>
-<script src="assets/google-review-management-controller.js?v=20261116-7"></script>
-<script src="assets/google-review-live-views.js?v=20261116-8"></script>
-<script src="assets/google-review-enhancements.js?v=20261116-6"></script>
-<script src="assets/google-review-live-features.js?v=20261116-6"></script>
+<script src="assets/google-review-management-bridge.js?v=20261116-14"></script>
+<script src="assets/google-review-management-controller.js?v=20261116-8"></script>
+<script src="assets/google-review-live-views.js?v=20261116-9"></script>
+<script src="assets/google-review-enhancements.js?v=20261116-7"></script>
+<script src="assets/google-review-live-features.js?v=20261116-7"></script>
 <script>
   (() => { const purge = (root=document) => { root.getElementById?.('langSel')?.remove(); root.getElementById?.('ototr-feedback-root')?.remove(); root.querySelectorAll?.('#ototr-feedback-root').forEach(e => e.remove()); root.querySelectorAll?.('button,[role="button"],launcher').forEach(b => { if (/Geri\s*bildirim/i.test(b.textContent || '') || b.classList?.contains('launcher')) b.remove(); }); root.querySelectorAll?.('*').forEach(e => { if (e.shadowRoot) purge(e.shadowRoot); }); }; purge(); setInterval(() => purge(), 100); })();
 </script>

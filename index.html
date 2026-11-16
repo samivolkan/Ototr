@@ -3049,11 +3049,11 @@
   // optional modules; the AI/status retry in app-core waits for their arrival.
   (function(){
     const modules=[
-      'assets/google-review-ai.js?v=google-workflow-22',
+      'assets/google-review-ai.js?v=google-workflow-23',
       'assets/google-review-analytics.js?v=1',
       'assets/google-review-dashboard.js?v=1',
       'assets/google-review-refresh.js?v=google-refresh-5',
-      'assets/google-review-command-center.js?v=20261116-12'
+      'assets/google-review-command-center.js?v=20261116-13'
     ];
     const loadNext=(i)=>{ if(i>=modules.length)return; const s=document.createElement('script'); s.src=modules[i]; s.onload=()=>loadNext(i+1); s.onerror=()=>loadNext(i+1); document.head.appendChild(s); };
     const start=()=>loadNext(0);

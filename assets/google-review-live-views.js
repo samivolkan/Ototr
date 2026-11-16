@@ -57,16 +57,23 @@
       count: totals.get(month.toISOString().slice(0, 7)) || 0,
     }));
   }
+  const scopeAliases = { live: 'branch-google-nilufer', gebze: 'branch-google-gebze', inegol: 'branch-google-inegol' };
+  function branchIdForScope(value) { return scopeAliases[value] || value; }
+  function branchIndexForId(id) { return id === 'branch-google-gebze' ? 1 : id === 'branch-google-inegol' ? 2 : id === 'branch-google-nilufer' ? 0 : -1; }
   function scopeRows(rows, scope, branches) {
-    const index = scope === 'gebze' ? 1 : scope === 'inegol' ? 2 : 0;
-    const branch = branches[index];
+    const branchId = branchIdForScope(scope), index = branchIndexForId(branchId);
+    const branch = (branches || []).find(item => item.id === branchId || item.erpBranchId === branchId) || (index >= 0 ? branches?.[index] : null);
     if (!branch) return [];
-    const name = `${branch.city} ${branch.name}`;
-    return rows.filter(r => r.store === name && (scope === 'live' ? r.demo === false && !!r.erpReviewId : r.demo === true));
+    const name = `${branch.city || ''} ${branch.name || ''}`.trim();
+    const custom = index < 0;
+    return rows.filter(r => {
+      const sameBranch = r.branchId === branchId || r.branch_id === branchId || r.store === name || (!custom && Number(r.branchIdx) === index);
+      return sameBranch && (branch.demo || scope === 'gebze' || scope === 'inegol' ? r.demo === true : r.demo === false && (!!r.erpReviewId || custom));
+    });
   }
   function scopeRecords(rows, scope) {
-    const index = scope === 'gebze' ? 1 : scope === 'inegol' ? 2 : 0;
-    return rows.filter(r => Number(r.branchIdx) === index && (scope === 'live' ? !!r.erpItemId : !r.erpItemId));
+    const branchId = branchIdForScope(scope), index = branchIndexForId(branchId), custom = index < 0;
+    return rows.filter(r => (r.branch_id === branchId || (!custom && Number(r.branchIdx) === index)) && (branchId === 'branch-google-nilufer' || custom ? !!r.erpItemId : !r.erpItemId));
   }
   const pure = { timestamp, monthKey, aggregateReviews, monthlySeries, scopeRows, scopeRecords };
   if (typeof module === 'object' && module.exports) module.exports = pure;
@@ -74,8 +81,21 @@
 
   const document = root.document;
   let scope = 'live';
-  const label = () => scope === 'gebze' ? 'Gebze · demo' : scope === 'inegol' ? 'İnegöl · demo' : 'Bursa Nilüfer · canlı';
-  const live = () => scope === 'live';
+  let branchRegistry = [];
+  const registryBranch = id => branchRegistry.find(branch => branch.id === id) || null;
+  const branchObject = id => {
+    if (typeof BRANCHES !== 'undefined' && Array.isArray(BRANCHES)) {
+      const mapped = BRANCHES.find(branch => branch.id === id || branch.erpBranchId === id);
+      if (mapped) return mapped;
+    }
+    const fromRegistry = registryBranch(id);
+    if (fromRegistry) return fromRegistry;
+    return null;
+  };
+  const currentBranch = () => branchObject(branchIdForScope(scope)) || (typeof BRANCHES !== 'undefined' ? BRANCHES[0] : null);
+  const branchIsLive = branch => Boolean(branch && (branch.id === 'branch-google-nilufer' || branch.live === true || ['active', 'live'].includes(branch.lifecycle) || branch.mode === 'live'));
+  const label = () => { const branch = currentBranch(); if (!branch) return 'Şube kapsamı'; return `${branch.city || ''} ${branch.name || ''} · ${branchIsLive(branch) ? 'canlı' : branch.lifecycle === 'onboarding' ? 'onboarding' : 'demo'}`.trim(); };
+  const live = () => branchIsLive(currentBranch()) && !['branch-google-gebze', 'branch-google-inegol'].includes(branchIdForScope(scope));
   const management = () => root.OTOTRReviewManagement?.state || {};
   const policy = () => management().policy || {};
   let parentApi = null, ai = null;
@@ -104,20 +124,56 @@
     return scopeRecords(collections[name] || [], scope);
   };
   const rows = () => scopeRows(REVIEWS, scope, BRANCHES);
-  const stats = () => aggregateReviews(rows(), { slaHours: live() ? policy().default_sla_hours : BRANCHES[scope === 'gebze' ? 1 : 2]?.slaH });
+  const stats = () => aggregateReviews(rows(), { slaHours: live() ? (Number(policy().default_sla_hours) || Number(currentBranch()?.slaH) || 24) : Number(currentBranch()?.slaH) });
+  function normalizeRegistryBranch(row) {
+    if (!row?.id) return null;
+    const known = (typeof BRANCHES !== 'undefined' && Array.isArray(BRANCHES)) ? BRANCHES.find(branch => branch.id === row.id) : null;
+    const rawName = String(row.name || known?.name || row.id).replace(/^OTOTR(?: Oto Ekspertiz)?\s+/i, '').replace(/\s+Şubesi?$/i, '').trim();
+    const city = String(row.city || known?.city || '').trim();
+    const branch = { ...(known || {}), ...row, id: row.id, name: known?.name || rawName, city, region: row.region || known?.region || 'Diğer' };
+    const lifecycle = row.lifecycle || row.mode || known?.lifecycle || (row.id === 'branch-google-nilufer' ? 'live' : 'demo');
+    branch.lifecycle = lifecycle;
+    branch.mode = row.mode || lifecycle;
+    branch.live = row.id === 'branch-google-nilufer' || lifecycle === 'live' || lifecycle === 'active';
+    branch.demo = !branch.live;
+    branch.target = Number(row.target ?? known?.target ?? 0) || 0;
+    branch.slaH = Number(row.sla_hours ?? known?.slaH ?? 24) || 24;
+    branch.gbp = row.location_id || row.googleBusinessLocationId || known?.gbp || '';
+    branch.lastSync = row.last_sync_at || row.lastSyncedAt || known?.lastSync || '';
+    branch.googleBusinessGroupId = row.account_id || row.googleBusinessGroupId || known?.googleBusinessGroupId || '';
+    branch.storeCode = row.store_code || row.storeCode || known?.storeCode || '';
+    branch.googleBusinessLocationId = row.location_id || row.googleBusinessLocationId || known?.googleBusinessLocationId || '';
+    branch.custom = String(row.id).startsWith('branch-custom-');
+    return branch;
+  }
+  function setBranchRegistry(items) {
+    if (!Array.isArray(items)) return [];
+    branchRegistry = items.map(normalizeRegistryBranch).filter(Boolean);
+    if (typeof BRANCHES !== 'undefined' && Array.isArray(BRANCHES)) {
+      for (const incoming of branchRegistry) {
+        const index = branchIndexForId(incoming.id);
+        const existing = BRANCHES.find(branch => branch.id === incoming.id) || (index >= 0 ? BRANCHES[index] : null);
+        if (existing) Object.assign(existing, incoming, { id: existing.id, erpBranchId: incoming.id });
+        else BRANCHES.push(incoming);
+      }
+    }
+    root.dispatchEvent?.(new CustomEvent('ototr-branch-registry-ready'));
+    if (byId('erpGlobalScope')) scopeNotice();
+    return branchRegistry;
+  }
   const currentTarget = () => {
     const month = `${monthKey(Date.now())}-01`;
-    return (management().targets || []).find(t => t.branch_id === 'branch-google-nilufer' && t.month === month);
+    return (management().targets || []).find(t => t.branch_id === branchIdForScope(scope) && t.month === month);
   };
   function livePolicyEditor() {
     const available = management().loaded && !management().error;
-    return `<div class="frow"><label for="erpLiveSla">Bursa yanıt SLA (saat)</label><div class="pacts"><input id="erpLiveSla" type="number" min="1" max="168" step="1" value="${Number(policy().default_sla_hours) || ''}" ${available ? '' : 'disabled'} style="width:100px"><button class="btn sm p" id="erpSaveLiveSla" ${available ? '' : 'disabled'}>SLA kaydet</button></div><small>Mevcut ERP politikasına kaydedilir; 1–168 saat.</small></div>`;
+    return `<div class="frow"><label for="erpLiveSla">${esc(currentBranch()?.name || 'Şube')} yanıt SLA (saat)</label><div class="pacts"><input id="erpLiveSla" type="number" min="1" max="168" step="1" value="${Number(policy().default_sla_hours) || Number(currentBranch()?.slaH) || ''}" ${available ? '' : 'disabled'} style="width:100px"><button class="btn sm p" id="erpSaveLiveSla" ${available ? '' : 'disabled'}>SLA kaydet</button></div><small>Mevcut ERP politikasına kaydedilir; 1–168 saat.</small></div>`;
   }
   function wirePolicyEditor() {
     const button = byId('erpSaveLiveSla');
     if (button) button.onclick = async () => {
       button.disabled = true;
-      try { await root.OTOTRReviewManagement.savePolicy(byId('erpLiveSla').value); root.toast('Bursa SLA ayarı kaydedildi.', 'ok'); }
+      try { await root.OTOTRReviewManagement.savePolicy(byId('erpLiveSla').value); root.toast(`${currentBranch()?.name || 'Şube'} SLA ayarı kaydedildi.`, 'ok'); }
       catch (error) { root.toast(error.message || 'Ayar kaydedilemedi.', 'warn'); }
       finally { if (button.isConnected) button.disabled = false; }
     };
@@ -152,7 +208,7 @@
   }
 
   const originalBranches = root.filteredBranches;
-  root.filteredBranches = function () { const chosen = BRANCHES[scope === 'gebze' ? 1 : scope === 'inegol' ? 2 : 0]; return originalBranches().filter(b => b === chosen); };
+  root.filteredBranches = function () { const chosen = currentBranch(); return chosen ? originalBranches().filter(b => b === chosen || b.id === chosen.id) : originalBranches(); };
   const originalRoleReviews = root.roleReviews;
   root.roleReviews = function () { const allowed = new Set(rows().map(r => r.id)); return originalRoleReviews().filter(r => allowed.has(r.id)); };
 
@@ -164,31 +220,39 @@
       const caption = document.createElement('span'); caption.className = 'chip'; caption.textContent = 'Veri kapsamı';
       select = document.createElement('select'); select.id = 'erpGlobalScope'; select.setAttribute('aria-label', 'Tüm menüler için şube ve veri kapsamı');
       select.className = 'btn sm';
-      [['live', 'Bursa Nilüfer · Canlı'], ['gebze', 'Gebze · Demo'], ['inegol', 'İnegöl · Demo']].forEach(([value, text]) => { const option = document.createElement('option'); option.value = value; option.textContent = text; select.append(option); });
       group.append(caption, select); host?.prepend(group);
       select.addEventListener('change', () => setScope(select.value));
     }
+    const options = [{ value: 'live', branch: branchObject('branch-google-nilufer') }, { value: 'gebze', branch: branchObject('branch-google-gebze') }, { value: 'inegol', branch: branchObject('branch-google-inegol') }, ...branchRegistry.filter(branch => !['branch-google-nilufer', 'branch-google-gebze', 'branch-google-inegol'].includes(branch.id)).map(branch => ({ value: branch.id, branch }))].filter(item => item.branch);
+    select.innerHTML = '';
+    options.forEach(({ value, branch }) => { const option = document.createElement('option'); option.value = value; option.textContent = `${branch.city || ''} ${branch.name || ''} · ${branchIsLive(branch) ? 'Canlı' : branch.lifecycle === 'onboarding' ? 'Onboarding' : 'Demo'}`.trim(); select.append(option); });
     select.value = scope;
     const note = byId('erpDataScope');
-    if (note) { note.className = `chip ${live() && !management().error ? 'info' : 'warn'}`; note.textContent = live() ? `Bursa · canlı ERP yorumları. Hesaplamalar alınan kayıtlarla sınırlıdır. ${management().loaded && !management().error ? 'Yönetim kayıtları alındı; eksik ölçümler “—”.' : readEmpty('')}` : `${label()} · Örnek veriler; canlı Google hesabına işlem gönderilmez.`; }
+    if (note) { note.className = `chip ${live() && !management().error ? 'info' : 'warn'}`; note.textContent = live() ? `${label()} ERP yorumları. Hesaplamalar alınan kayıtlarla sınırlıdır. ${management().loaded && !management().error ? 'Yönetim kayıtları alındı; eksik ölçümler “—”.' : readEmpty('')}` : `${label()} · Örnek/onboarding veriler; canlı Google hesabına işlem gönderilmez.`; }
     const localFilter = byId('erpBranchFilter');
     if (localFilter) {
-      localFilter.value = live() ? 'live' : scope === 'gebze' ? 'Kocaeli Gebze' : 'Bursa İnegöl';
+      const selectedBranch = currentBranch();
+      if (selectedBranch && !Array.from(localFilter.options).some(option => option.value === selectedBranch.id)) {
+        const option = document.createElement('option'); option.value = selectedBranch.id; option.textContent = `${selectedBranch.city || ''} ${selectedBranch.name || ''} · ${branchIsLive(selectedBranch) ? 'Canlı' : 'Demo'}`.trim(); localFilter.append(option);
+      }
+      localFilter.value = scope === 'live' ? 'live' : scope === 'gebze' ? 'Kocaeli Gebze' : scope === 'inegol' ? 'Bursa İnegöl' : currentBranch()?.id || scope;
       if (!localFilter.dataset.globalScopeBound) {
         localFilter.dataset.globalScopeBound = '1';
         Array.from(localFilter.options).filter(option => option.value === 'all').forEach(option => option.remove());
-        localFilter.addEventListener('change', () => setScope(localFilter.value === 'Kocaeli Gebze' ? 'gebze' : localFilter.value === 'Bursa İnegöl' ? 'inegol' : 'live'));
+        localFilter.addEventListener('change', () => setScope(localFilter.value === 'Kocaeli Gebze' ? 'gebze' : localFilter.value === 'Bursa İnegöl' ? 'inegol' : localFilter.value === 'live' ? 'live' : localFilter.value));
       }
     }
   }
   function setScope(value) {
-    if (!['live', 'gebze', 'inegol'].includes(value)) value = 'live';
+    if (!['live', 'gebze', 'inegol'].includes(value) && !branchRegistry.some(branch => branch.id === value)) value = 'live';
     if (root.OTOTRReviewBridge?.isEditing?.()) { root.toast?.('Önce açık taslağı kaydedin.', 'warn'); scopeNotice(); return; }
     scope = value; restoreControls();
     FILTER_REGION = ''; FILTER_CITY = '';
     if (typeof SEL !== 'undefined') SEL = null;
     if (typeof SELECTED !== 'undefined') SELECTED.clear();
-    if (STATE.view === 'store') STATE.currentStore = BRANCHES[scope === 'gebze' ? 1 : scope === 'inegol' ? 2 : 0]?.id;
+    if (STATE.view === 'store') STATE.currentStore = currentBranch()?.id;
+    if (scope !== 'live') root.OTOTRReviewManagement?.refresh?.().catch?.(() => {});
+    ai?.refreshWorkflow?.().catch?.(() => {});
     scopeNotice(); rerender();
   }
   function rerender() { root.switchView(STATE.view || 'overview'); }
@@ -208,7 +272,7 @@
   const originalHistory = root.renderHistory;
   root.renderHistory = function (review) {
     if (review.demo) return originalHistory(review);
-    const itemIds = new Set((ai?.getWorkflowItems?.() || []).filter(item => item.branch_id === 'branch-google-nilufer' && item.review_id === review.googleReviewId).map(item => item.id));
+    const itemIds = new Set((ai?.getWorkflowItems?.() || []).filter(item => item.branch_id === branchIdForScope(scope) && item.review_id === review.googleReviewId).map(item => item.id));
     const entries = (management().audit || []).filter(entry => itemIds.has(entry.entity_id));
     return entries.map(entry => `<div style="padding:10px 0;border-bottom:1px solid var(--l2)"><b style="font-size:12.5px">${esc(entry.action)}${entry.detail ? ` · ${esc(entry.detail)}` : ''}</b><div style="font-size:11px;color:var(--mute)">${esc(entry.actor_role || 'ERP')} · ${esc(dateText(entry.created_at))}</div></div>`).join('') || empty(readEmpty('Alınan işlem kayıtlarında bu yoruma bağlı kayıt bulunmuyor.'));
   };
@@ -236,8 +300,10 @@
     charts[id] = new Chart(byId(id), { type, data: { labels, datasets }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: datasets.length > 1 } }, scales: type === 'doughnut' ? {} : { y: { beginAtZero: true }, x: { grid: { display: false } } } } });
   }
   function realCharts(store = false) {
-    const a = stats(), series = monthlySeries(rows());
-    chart(store ? 'storeTrendChart' : 'chartTrend', 'line', series.map(m => m.label), [{ label: 'Alınan yorumlar', data: series.map(m => m.count), borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,.1)', fill: true, tension: .3 }]);
+    const a = stats(), series = monthlySeries(rows()), target = currentTarget(), targetValue = Number(target?.monthly_target ?? target?.target ?? currentBranch()?.target ?? 0);
+    const trendDatasets = [{ label: 'Alınan yorumlar', data: series.map(m => m.count), borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,.1)', fill: true, tension: .3 }];
+    if (live() && Number.isFinite(targetValue) && targetValue > 0) trendDatasets.push({ label: `${currentBranch()?.name || 'Şube'} · hedef`, data: series.map(() => targetValue), borderColor: '#e11d48', borderDash: [8, 5], pointRadius: 2, fill: false, tension: 0 });
+    chart(store ? 'storeTrendChart' : 'chartTrend', 'line', series.map(m => m.label), trendDatasets);
     chart(store ? 'storeRatingChart' : 'chartRating', 'bar', ['5★', '4★', '3★', '2★', '1★'], [{ label: 'Alınan yorumlar', data: a.ratingCounts, backgroundColor: ['#12805c', '#6bbf9b', '#fbbf24', '#fb923c', '#b42318'] }]);
     if (!store) {
       chart('chartRegion', 'bar', [label()], [{ label: 'Alınan yorumlar', data: [a.count], backgroundColor: '#2563eb' }]);
@@ -247,7 +313,7 @@
   root.initCharts = () => realCharts(false);
 
   wrap('renderPerformance', () => {
-    const a = stats(), b = BRANCHES[0];
+    const a = stats(), b = currentBranch() || BRANCHES[0];
     const target = currentTarget();
     const rawTarget = target?.monthly_target ?? target?.target ?? null;
     const targetValue = Number.isFinite(Number(rawTarget)) && rawTarget !== null ? Number(rawTarget) : null;
@@ -257,8 +323,10 @@
     const progressText = progress === null ? '—' : `${Math.round(progress)}%`;
     const progressBar = progress === null
       ? '<span style="color:var(--mute)">Hedef girilmedi</span>'
-      : `<div style="display:flex;align-items:center;gap:7px;min-width:150px"><div style="height:8px;flex:1;background:var(--l2);border-radius:999px;overflow:hidden" role="progressbar" aria-label="Bursa Nilüfer hedef ilerlemesi" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(progress)}"><div style="height:100%;width:${progress}%;background:${progress >= 100 ? 'var(--ok)' : progress >= 50 ? 'var(--warn)' : 'var(--bad)'};border-radius:999px"></div></div><b style="font-size:11px;min-width:32px;text-align:right">${progressText}</b></div>`;
-    set('perfTable', `<thead><tr><th>Birim</th><th class="n">Aylık hedef</th><th class="n">Bu ay alınan</th><th style="min-width:190px">İlerleme</th><th class="n">Puan</th><th class="n">Yanıt</th><th class="n">SLA</th><th class="n">1–2 yıldız</th><th>Durum</th></tr></thead><tbody><tr><td><a href="#" onclick="openStore('${esc(b.id)}');return false">Bursa Nilüfer</a></td><td class="n"><input aria-label="Bursa aylık hedef" type="number" min="1" max="10000" value="${targetValue === null ? '' : targetValue}" placeholder="—" style="width:85px" onchange="setTarget('${esc(b.id)}',this.value)" ${management().loaded && !management().error && !management().targetError ? '' : 'disabled'}></td><td class="n">${a.monthCount}</td><td>${progressBar}</td><td class="n">${number(a.average)}</td><td class="n">${percent(a.responseRate)}</td><td class="n">${percent(a.slaRate)}</td><td class="n">${a.lowRating}</td><td><span class="chip ok">Canlı</span></td></tr><tr><td colspan="9" style="color:var(--mute)">İlerleme bu ay alınan Bursa yorumlarının kayıtlı aylık hedefe oranıdır. Puan ve oranlar alınan kayıtları kapsar.</td></tr></tbody>`);
+      : `<div style="display:flex;align-items:center;gap:7px;min-width:150px"><div style="height:8px;flex:1;background:var(--l2);border-radius:999px;overflow:hidden" role="progressbar" aria-label="${esc(b.name || 'Şube')} hedef ilerlemesi" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(progress)}"><div style="height:100%;width:${progress}%;background:${progress >= 100 ? 'var(--ok)' : progress >= 50 ? 'var(--warn)' : 'var(--bad)'};border-radius:999px"></div></div><b style="font-size:11px;min-width:32px;text-align:right">${progressText}</b></div>`;
+    const branchLabel = `${b.city || ''} ${b.name || ''}`.trim();
+    const statusLabel = branchIsLive(b) ? 'Canlı' : b.lifecycle === 'onboarding' ? 'Onboarding' : 'Demo';
+    set('perfTable', `<thead><tr><th>Birim</th><th class="n">Aylık hedef</th><th class="n">Bu ay alınan</th><th style="min-width:190px">İlerleme</th><th class="n">Puan</th><th class="n">Yanıt</th><th class="n">SLA</th><th class="n">1–2 yıldız</th><th>Durum</th></tr></thead><tbody><tr><td><a href="#" onclick="openStore('${esc(b.id)}');return false">${esc(branchLabel || 'Şube')}</a></td><td class="n"><input aria-label="${esc(branchLabel)} aylık hedef" type="number" min="1" max="10000" value="${targetValue === null ? '' : targetValue}" placeholder="—" style="width:85px" onchange="setTarget('${esc(b.id)}',this.value)" ${live() && management().loaded && !management().error && !management().targetError ? '' : 'disabled'}></td><td class="n">${a.monthCount}</td><td>${progressBar}</td><td class="n">${number(a.average)}</td><td class="n">${percent(a.responseRate)}</td><td class="n">${percent(a.slaRate)}</td><td class="n">${a.lowRating}</td><td><span class="chip ${branchIsLive(b) ? 'ok' : 'warn'}">${statusLabel}</span></td></tr><tr><td colspan="9" style="color:var(--mute)">İlerleme bu ay alınan ${esc(branchLabel || 'şube')} yorumlarının kayıtlı aylık hedefe oranıdır. Puan ve oranlar alınan kayıtları kapsar.</td></tr></tbody>`);
     if (typeof root.renderTargetBreakdown === 'function') root.renderTargetBreakdown();
   }, false);
 
@@ -395,10 +463,11 @@
   root.exportPerformance = () => {
     if (!live()) return originalExportPerformance();
     const a = stats();
-    root.downloadCSV('bursa-canli-performans.csv', [['Şube', 'Alınan yorumlar', 'Bu ay alınan', 'Puan', 'Yanıt%', 'SLA%', 'SLA saati'], ['Bursa Nilüfer', a.count, a.monthCount, number(a.average), percent(a.responseRate), percent(a.slaRate), a.slaHours ?? 'Sağlanmadı']]);
+    const branch = currentBranch();
+    root.downloadCSV(`${(branch?.name || 'sube').toLocaleLowerCase('tr-TR').replace(/\s+/g, '-')}-canli-performans.csv`, [['Şube', 'Alınan yorumlar', 'Bu ay alınan', 'Puan', 'Yanıt%', 'SLA%', 'SLA saati'], [`${branch?.city || ''} ${branch?.name || ''}`.trim(), a.count, a.monthCount, number(a.average), percent(a.responseRate), percent(a.slaRate), a.slaHours ?? 'Sağlanmadı']]);
   };
 
-  root.OTOTRReviewLiveViews = { ...pure, getScope: () => scope, setScope, rerender, scopedReviews: rows, scopedCollection: records, auditRows };
+  root.OTOTRReviewLiveViews = { ...pure, getScope: () => scope, getBranchId: () => branchIdForScope(scope), isLive: () => live(), setScope, setBranchRegistry, getBranchRegistry: () => branchRegistry.slice(), rerender, scopedReviews: rows, scopedCollection: records, auditRows };
   if (byId('erpGoogleQueue')) byId('erpGoogleQueue').onclick = () => { setScope('live'); root.switchView('reviews'); };
   if (byId('erpGoogleConnect')) byId('erpGoogleConnect').onclick = () => { setScope('live'); root.switchView('system'); };
   // Disabled controls also have command-palette/keyboard entry points. Guard the

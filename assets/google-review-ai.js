@@ -190,12 +190,12 @@
     // by deriving the stable identifiers from the configured GBP mapping and
     // the review's canonical id.
     const identity = {
-      account_id: branch.googleBusinessAccountId || branch.googleBusinessGroupId || '114698852482564472140',
-      location_id: branch.googleBusinessLocationId || '13476693615171033693',
+      account_id: branch.googleBusinessAccountId || branch.googleBusinessGroupId || '',
+      location_id: branch.googleBusinessLocationId || branch.locationId || '',
       review_id: review.googleReviewId || review.id,
       branch_id: branch.id
     };
-    if (!identity.account_id || !identity.location_id || !identity.review_id) throw new Error('Önce bu şubenin gerçek Google yorumlarını senkronize edin.');
+    if (!identity.account_id || !identity.location_id || !identity.review_id) throw new Error('Önce bu şubenin gerçek Google hesap ve konum kimliklerini doğrulayıp yorumlarını senkronize edin.');
     return identity;
   }
 
@@ -666,7 +666,7 @@
   // Data-only interface for the new DeepSeek screen: never opens legacy UI.
   async function manageReview(reviewId, action, options = {}) {
     const context = cardContext(reviewId);
-    if (!context || context.review.demo || context.branch.demo || context.branch.id !== 'branch-google-nilufer') throw new Error('Canlı işlem yalnız Bursa Nilüfer için kullanılabilir.');
+    if (!context || context.review.demo || context.branch.demo || !['live','active'].includes(context.branch.lifecycle || (context.branch.id === 'branch-google-nilufer' ? 'live' : ''))) throw new Error('Canlı işlem için şubenin Google konumu doğrulanıp aktifleştirilmiş olmalı; canlı yönetim yalnız Bursa veya onboarding’i tamamlanmış yeni şubelerde açıktır.');
     const {review, branch, item} = context;
     if (managementLocks.has(reviewId) || publicationLocks.has(item?.id)) throw new Error('Bu yorum için işlem sürüyor.');
     const identity = identityFor(review, branch);

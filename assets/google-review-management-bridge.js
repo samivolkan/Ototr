@@ -10,7 +10,11 @@
   let nextId = -1; // Demo forms allocate positive IDs; keep the namespaces disjoint.
   const workIds = new Map();
   const liveBranchId = 'branch-google-nilufer';
-  const allowedNames = new Set(['Bursa Nilüfer', 'Kocaeli Gebze', 'Bursa İnegöl']);
+  const builtinIds = new Set(['branch-google-nilufer', 'branch-google-gebze', 'branch-google-inegol']);
+  const currentBranchId = () => window.OTOTRReviewLiveViews?.getBranchId?.() || liveBranchId;
+  const currentBranchIsLive = () => window.OTOTRReviewLiveViews?.isLive?.() ?? currentBranchId() === liveBranchId;
+  const branchIndex = id => id === 'branch-google-gebze' ? 1 : id === 'branch-google-inegol' ? 2 : id === liveBranchId ? 0 : -1;
+  const branchTarget = id => typeof BRANCHES !== 'undefined' && Array.isArray(BRANCHES) ? BRANCHES.find(branch => branch.id === id || branch.erpBranchId === id) || (branchIndex(id) >= 0 ? BRANCHES[branchIndex(id)] : null) : null;
 
   function branchFullName(branch) {
     return `${branch.city || ''} ${branch.name || ''}`.trim();
@@ -20,15 +24,21 @@
     if (typeof BRANCHES === 'undefined' || !Array.isArray(BRANCHES)) return;
     BRANCHES.forEach((branch, index) => {
       const fullName = branchFullName(branch);
-      branch.hidden = !allowedNames.has(fullName);
-      branch.live = index === 0;
-      branch.demo = index === 1 || index === 2;
+      const known = builtinIds.has(branch.id) || index < 3 || String(branch.id || '').startsWith('branch-custom-');
+      branch.hidden = !known;
+      branch.erpBranchId = branch.erpBranchId || (index === 0 ? liveBranchId : index === 1 ? 'branch-google-gebze' : index === 2 ? 'branch-google-inegol' : branch.id);
+      branch.live = branch.erpBranchId === liveBranchId || branch.lifecycle === 'live' || branch.lifecycle === 'active' || branch.mode === 'live';
+      branch.demo = !branch.live;
       if (branch.demo) {
         branch.gbp = '';
         branch.lastSync = 'Demo veri · dış gönderim kapalı';
       }
     });
-    BRANCHES.splice(3);
+    // Keep custom registry branches; only the static seed rows outside the
+    // three supported built-ins are discarded.
+    for (let i = BRANCHES.length - 1; i >= 3; i--) {
+      if (!String(BRANCHES[i]?.id || '').startsWith('branch-custom-')) BRANCHES.splice(i, 1);
+    }
     [LEGAL_CASES, COMPLAINTS, APPROVALS].forEach(rows => rows?.forEach(row => { row.branchIdx = 1 + Number(row.branchIdx || 0) % 2; }));
     if (typeof REVIEWS !== 'undefined' && Array.isArray(REVIEWS)) {
       REVIEWS.forEach((review, index) => {
@@ -40,31 +50,39 @@
 
   function hydrateLiveNilufer() {
     if (typeof BRANCHES === 'undefined' || typeof REVIEWS === 'undefined') return;
-    const live = parentApi?.getBranchById?.(liveBranchId);
-    const reviews = parentApi?.fetchGoogleReviews?.(liveBranchId) || [];
+    // Keep this loader callable by the legacy embedded test harness as well
+    // as by the dynamic branch registry in the live shell.
+    const branchId = typeof currentBranchId === 'function' ? currentBranchId() : liveBranchId;
+    const liveEnabled = typeof currentBranchIsLive === 'function' ? currentBranchIsLive() : branchId === liveBranchId;
+    const targetFor = typeof branchTarget === 'function' ? branchTarget : (id => BRANCHES.find(branch => branch.id === id || branch.erpBranchId === id));
+    const indexFor = typeof branchIndex === 'function' ? branchIndex : (id => id === liveBranchId ? 0 : -1);
+    if (!liveEnabled) return;
+    const live = parentApi?.getBranchById?.(branchId);
+    const reviews = parentApi?.fetchGoogleReviews?.(branchId) || [];
     const items = ai?.getWorkflowItems?.() || [];
     const policy = window.OTOTRReviewManagement?.state?.policy;
-    const slaHours = Number(policy?.default_sla_hours) || 24;
-    const target = BRANCHES[0];
+    const registry = window.OTOTRReviewLiveViews?.getBranchRegistry?.().find(item => item.id === branchId);
+    const slaHours = Number(policy?.default_sla_hours) || Number(registry?.sla_hours) || 24;
+    const target = targetFor(branchId);
     if (target) {
       target.actual = Number(live?.googleReviewCount ?? reviews.length);
       target.rating = Number(live?.googleRating ?? 0);
       // The ERP target is a monthly value. Keep a visible, safe fallback when
       // an older branch record has not populated monthlyTarget yet.
-      const configuredTarget = Number(live?.monthlyTarget ?? live?.target ?? 0);
+      const configuredTarget = Number(live?.monthlyTarget ?? live?.target ?? registry?.target ?? 0);
       target.target = configuredTarget > 0 ? configuredTarget : 200;
       target.slaH = slaHours;
       target.autoreply = policy?.auto_reply_enabled === true;
-      target.gbp = live?.googleLocationId || live?.locationId || '';
+      target.gbp = live?.googleLocationId || live?.locationId || registry?.location_id || '';
       target.slaRate = 0;
       target.responseRate = reviews.length ? Math.round(reviews.filter(r => r.isReplied).length / reviews.length * 100) : 0;
       target.criticalRate = reviews.length ? Math.round(reviews.filter(r => r.rating <= 2).length / reviews.length * 100) : 0;
       target.lastSync = live?.lastSyncedAt ? new Date(live.lastSyncedAt).toLocaleString('tr-TR') : 'Senkronizasyon bekleniyor';
     }
-    const mapped = reviews.filter(review => !review.demo && review.id && review.branchId === liveBranchId).map(review => {
+    const mapped = reviews.filter(review => !review.demo && review.id && (review.branchId === branchId || !review.branchId)).map(review => {
       if (!liveIds.has(review.id)) liveIds.set(review.id, nextId--);
-      const item = items.find(i => i.kind === 'reply' && i.branch_id === liveBranchId && i.review_id === review.googleReviewId);
-      const task = items.find(i => i.kind !== 'reply' && i.status === 'open' && i.branch_id === liveBranchId && i.review_id === review.googleReviewId);
+      const item = items.find(i => i.kind === 'reply' && i.branch_id === branchId && i.review_id === review.googleReviewId);
+      const task = items.find(i => i.kind !== 'reply' && i.status === 'open' && i.branch_id === branchId && i.review_id === review.googleReviewId);
       const routedTo = task?.kind === 'branch' ? 'store' : task?.kind || null;
       const replyDate = review.replyUpdatedAt || review.replyDate || null;
       return ({
@@ -72,7 +90,8 @@
       erpReviewId: review.id,
       demo: false,
       googleReviewId: review.googleReviewId,
-      store: 'Bursa Nilüfer',
+      branchId,
+      store: `${live?.city || live?.name?.match?.(/(Bursa|Kocaeli|İstanbul|Ankara)\s+([^,]+)/)?.[1] || target?.city || ''} ${live?.name?.replace?.(/^OTOTR(?: Oto Ekspertiz)?\s+/i, '').replace?.(/\s+Şubesi?$/i, '') || target?.name || ''}`.trim(),
       author: escape(review.reviewerName || 'Google kullanıcısı'),
       stars: Math.max(1, Math.min(5, Number(review.rating) || 1)),
       risk: Number(review.starRating || review.rating || 0) <= 2 ? 85 : Number(review.starRating || review.rating || 0) === 3 ? 45 : 8,
@@ -92,10 +111,10 @@
     REVIEWS.splice(0, REVIEWS.length, ...mapped, ...REVIEWS.filter(review => review.demo));
     const replace = (collection, kind, convert) => {
       const demo = collection.filter(row => !row.erpItemId);
-      const liveItems = items.filter(item => item.branch_id === liveBranchId && item.kind === kind);
+      const liveItems = items.filter(item => item.branch_id === branchId && item.kind === kind);
       collection.splice(0, collection.length, ...liveItems.map(item => {
         if (!workIds.has(item.id)) workIds.set(item.id, `ERP-${workIds.size + 1}`);
-        return {id:workIds.get(item.id), erpItemId:item.id, branchIdx:0, version:item.version, googleReviewId:item.review_id,
+        return {id:workIds.get(item.id), erpItemId:item.id, branchIdx:Math.max(0, indexFor(branchId)), branch_id:branchId, version:item.version, googleReviewId:item.review_id,
           customer:escape(item.review_snapshot?.reviewer_name || 'Google kullanıcısı'),
           text:escape(item.reply_text || item.note || ''), ...convert(item)};
       }), ...demo);
@@ -108,6 +127,8 @@
       if(item && (['published','done','closed','rejected'].includes(item.status) || item.review_snapshot?.rejection)) APPROVALS.splice(i,1);
     }
   }
+
+  const hydrateLiveBranch = hydrateLiveNilufer;
 
   function markEnvironment() {
     document.documentElement.dataset.erpEmbedded = embedded ? 'true' : 'false';
@@ -127,15 +148,15 @@
 
   const avatar=document.getElementById('userAvatar');if(avatar)avatar.textContent='ERP';
   applyScope();
-  hydrateLiveNilufer();
+  hydrateLiveBranch();
   markEnvironment();
   const missing = () => toast('Canlı işlem için ERP oturumu ve Google bağlantısı gerekli.', 'warn');
   const liveRow = id => REVIEWS.find(r => r.id === id && !r.demo);
   const dirty = new Map();
   let pendingApproval = null, busy = false;
-  const currentItem = row => ai?.getWorkflowItems?.().find(i=>i.kind==='reply' && i.branch_id===liveBranchId && i.review_id===row.googleReviewId);
+  const currentItem = row => ai?.getWorkflowItems?.().find(i=>i.kind==='reply' && i.branch_id===currentBranchId() && i.review_id===row.googleReviewId);
   const isEditing = () => dirty.size>0 || Boolean(pendingApproval) || busy;
-  window.OTOTRReviewBridge = {hydrate:hydrateLiveNilufer,isEditing};
+  window.OTOTRReviewBridge = {hydrate:hydrateLiveBranch,isEditing};
   const lockEditing = () => ai?.setManagementEditing?.(isEditing());
   async function act(id, action, extra={}) {
     const row=liveRow(id); if(!row) return missing();
@@ -145,13 +166,13 @@
     if (!ai?.manageReview) {
       if (['prepare','regenerate'].includes(action) && ai?.generate) {
         const result = await ai.generate(row.erpReviewId);
-        hydrateLiveNilufer();
+        hydrateLiveBranch();
         if (typeof renderReviews === 'function') renderReviews();
         return result;
       }
       if (['branch','legal','complaint'].includes(action) && ai?.createTask) {
         const result = await ai.createTask(row.erpReviewId, action);
-        hydrateLiveNilufer();
+        hydrateLiveBranch();
         if (typeof renderReviews === 'function') renderReviews();
         return result;
       }
@@ -166,7 +187,7 @@
       if(['publish','verify'].includes(action)) {
         toast(result.status==='published'?'Google yayını doğrulandı.':'Yayın sonucu: '+result.status,result.status==='published'?'ok':'warn');
       } else toast(result.status==='draft_failed'?'Taslak üretilemedi; yeniden deneyebilirsiniz.':'ERP kaydı güncellendi.',result.status==='draft_failed'?'warn':'ok');
-      hydrateLiveNilufer();renderReviews();
+      hydrateLiveBranch();renderReviews();
       return result;
     } catch(e) {toast(e.message || 'ERP işlemi başarısız; kayıt korunuyor.','warn');}
     finally {busy=false;lockEditing();}
@@ -182,7 +203,7 @@
       return toast('Önce geçerli bir taslak hazırlayın.','warn');
     }
     pendingApproval={id,version:item.version,text:item.reply_text};lockEditing();
-    document.getElementById('emailFrom').textContent='Bursa Nilüfer · canlı Google yayını';
+    document.getElementById('emailFrom').textContent=`${branchTarget(currentBranchId())?.city || ''} ${branchTarget(currentBranchId())?.name || 'Şube'} · canlı Google yayını`.trim();
     document.getElementById('emailTo').textContent='Google yorumu';
     document.getElementById('emailReview').textContent=parentApi.getReviewById(row.erpReviewId)?.comment || '';
     document.getElementById('emailResp').textContent=item.reply_text;
@@ -229,7 +250,7 @@
       const data=await ai.googleBusinessRequest('save_draft',{account_id:item.account_id,location_id:item.location_id,review_id:item.review_id,branch_id:item.branch_id,item_id:item.id,expected_version:item.version,reply_text:text,draft_source:'manual',edit_published:true});
       dirty.delete(id); box.readOnly=true; box.dataset.liveEditing='';
       await ai.refreshWorkflow?.();
-      hydrateLiveNilufer(); renderReviews();
+      hydrateLiveBranch(); renderReviews();
       ai?.['openItem']?.(data.item.id);
       toast('Güncel yanıt kaydedildi; yayın için insan onayı bekleniyor.','ok');
       return data;
@@ -258,9 +279,29 @@
   branchFilter.innerHTML='<option value="live">Bursa Nilüfer · Canlı</option><option value="Kocaeli Gebze">Gebze · Demo</option><option value="Bursa İnegöl">İnegöl · Demo</option><option value="all">Tümü · Canlı + Demo</option>';
   branchFilter.value=parentApi?'live':'all';
   document.getElementById('rvSort')?.after(branchFilter);
+  const refreshBranchControls=()=>{
+    const registry=window.OTOTRReviewLiveViews?.getBranchRegistry?.()||[];
+    const known=registry.filter(item=>item?.id);
+    const custom=known.filter(item=>String(item.id).startsWith('branch-custom-'));
+    custom.forEach(item=>{ if(!Array.from(branchFilter.options).some(option=>option.value===item.id)){ const option=document.createElement('option');option.value=item.id;option.textContent=`${item.city||''} ${item.name||''} · ${['live','active'].includes(item.lifecycle)?'Canlı':item.lifecycle==='onboarding'?'Onboarding':'Demo'}`.trim();branchFilter.insertBefore(option,branchFilter.querySelector('option[value="all"]')); } });
+    const scopeValue=document.getElementById('erpScopeValue');
+    if(scopeValue&&document.getElementById('erpScopeLevel')?.value==='branch'){
+      scopeValue.innerHTML='<option value="all">Tüm canlı şubeler</option>'+known.map(item=>`<option value="${escape(item.id)}">${escape(`${item.city||''} ${item.name||''}`.trim())} · ${['live','active'].includes(item.lifecycle)?'Canlı':item.lifecycle==='onboarding'?'Onboarding':'Demo'}</option>`).join('');
+      scopeValue.value=currentBranchId();
+    }
+    const count=document.querySelector('#erpGoogleSync')?.parentElement?.querySelector('.chip.ok');
+    if(count) count.textContent=`${known.filter(item=>item.lifecycle==='live'||item.id===liveBranchId).length||1} Canlı · ${known.filter(item=>item.lifecycle!=='live'&&item.id!==liveBranchId).length||2} Demo/Onboarding`;
+  };
   const originalFiltered=typeof window.getFilteredReviews === 'function' ? window.getFilteredReviews : () => REVIEWS;
-  window.getFilteredReviews=()=>originalFiltered().filter(row=>branchFilter.value==='all'||(branchFilter.value==='live'?!row.demo:row.demo&&row.store===branchFilter.value));
-  branchFilter.onchange=()=>{SELECTED.clear();SEL=null;renderReviews();};
+  window.getFilteredReviews=()=>originalFiltered().filter(row=>{
+    if(branchFilter.value==='all') return true;
+    if(branchFilter.value==='live') return !row.demo && (row.branchId===liveBranchId || !row.branchId);
+    if(String(branchFilter.value).startsWith('branch-')) return row.branchId===branchFilter.value || row.branch_id===branchFilter.value;
+    return row.demo&&row.store===branchFilter.value;
+  });
+  branchFilter.onchange=()=>{SELECTED.clear();SEL=null;const value=branchFilter.value==='live'? 'live' : branchFilter.value==='Kocaeli Gebze' ? 'gebze' : branchFilter.value==='Bursa İnegöl' ? 'inegol' : branchFilter.value;window.OTOTRReviewLiveViews?.setScope?.(value);hydrateLiveBranch();renderReviews();};
+  window.addEventListener('ototr-branch-registry-ready',refreshBranchControls);
+  refreshBranchControls();
   const originalRender=window.renderReviews;
   window.renderReviews=(...args)=>{
     const result=originalRender(...args),row=liveRow(SEL),box=document.getElementById('draftBox');
@@ -399,7 +440,7 @@
   document.getElementById('erpGoogleSync').onclick=async()=>{
     if(!parentApi)return missing();
     if(isEditing())return toast('Önce açık taslağı kaydedin veya işlemi tamamlayın.','warn');
-    try {await parentApi.syncGoogleReviewsForBranch(liveBranchId,{quiet:true});hydrateLiveNilufer();switchView(STATE.view||'overview');}catch(e){toast(e.message,'warn');}
+    try {await parentApi.syncGoogleReviewsForBranch(currentBranchId(),{quiet:true});hydrateLiveBranch();switchView(STATE.view||'overview');}catch(e){toast(e.message,'warn');}
   };
   document.getElementById('erpGoogleQueue').onclick=()=>switchView('reviews');
   document.getElementById('erpGoogleConnect').onclick=()=>switchView('system');
@@ -408,23 +449,23 @@
     const level=scopeLevel.value,value=scopeValue.value;
     FILTER_REGION=''; FILTER_CITY='';
     if(level==='city'&&value==='Bursa') FILTER_CITY='Bursa';
-    if(level==='branch'&&value!=='all'){ branchFilter.value=value; }
+    if(level==='branch'&&value!=='all'){ branchFilter.value=value; window.OTOTRReviewLiveViews?.setScope?.(value); }
     if(level==='hq'||level==='region'||(level==='branch'&&value==='all')) branchFilter.value='live';
     SELECTED.clear(); renderNav(); switchView(STATE.view||'overview');
   };
-  scopeLevel.onchange=()=>{ if(scopeLevel.value==='hq'||scopeLevel.value==='region') scopeValue.innerHTML='<option value="all">Tüm canlı şubeler</option>'; else if(scopeLevel.value==='city') scopeValue.innerHTML='<option value="Bursa">Bursa</option>'; else scopeValue.innerHTML='<option value="all">Tüm canlı şubeler</option><option value="Bursa Nilüfer">Bursa · Nilüfer · Canlı</option><option value="Kocaeli Gebze">Gebze · Demo</option><option value="Bursa İnegöl">İnegöl · Demo</option>'; applyScopeFilter(); };
+  scopeLevel.onchange=()=>{ if(scopeLevel.value==='hq'||scopeLevel.value==='region') scopeValue.innerHTML='<option value="all">Tüm canlı şubeler</option>'; else if(scopeLevel.value==='city'){ const cities=[...new Set((window.OTOTRReviewLiveViews?.getBranchRegistry?.()||[]).map(item=>item.city).filter(Boolean))]; scopeValue.innerHTML=cities.map(city=>`<option value="${escape(city)}">${escape(city)}</option>`).join('')||'<option value="Bursa">Bursa</option>'; } else { scopeValue.innerHTML='<option value="all">Tüm canlı şubeler</option>'; refreshBranchControls(); } applyScopeFilter(); };
   scopeValue.onchange=applyScopeFilter;
   document.getElementById('emailModal')?.addEventListener?.('click',event=>{if(event.target.id==='emailModal'){pendingApproval=null;lockEditing();}});
   window.addEventListener('beforeunload',()=>ai?.setManagementEditing?.(false));
   window.addEventListener('message', event => {
     if (event.origin !== location.origin || event.source !== window.parent || event.data?.type !== 'ototr-google-refresh') return;
     if(isEditing())return;
-    hydrateLiveNilufer();
+    hydrateLiveBranch();
     if (typeof switchView === 'function') switchView(STATE?.view || 'overview');
   });
   if (typeof switchView === 'function') switchView(STATE?.view || 'overview');
   // Workflow refresh uses the existing authenticated ERP gateway. No API secrets live here.
   if (ai?.refreshWorkflow) Promise.resolve(ai.refreshWorkflow()).then(() => {
-    hydrateLiveNilufer(); switchView(STATE.view || 'overview');
+    hydrateLiveBranch(); switchView(STATE.view || 'overview');
   }).catch(() => toast('ERP kuyruğu alınamadı. Bağlantılar ekranını kontrol edin.', 'warn'));
 })();

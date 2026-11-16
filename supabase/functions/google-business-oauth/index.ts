@@ -150,6 +150,50 @@ const branches: Record<string, { name: string; storeCode: string; locationId: st
   'branch-google-gebze': { name: 'OTOTR Gebze Şube', storeCode: '05971556162544786377', locationId: '7218866682466737157' },
   'branch-google-inegol': { name: 'OTOTR Bursa İnegöl Şube', storeCode: '03710924650104046695', locationId: '16859471132010192752' },
 };
+const customBranchPattern = /^branch-custom-[A-Za-z0-9-]{8,80}$/;
+type BranchRegistryRow = { id: string; name: string; city: string; region: string; account_id?: string | null; store_code?: string | null; location_id?: string | null; mode?: string; lifecycle?: string; interval_minutes?: number; sla_hours?: number; target?: number; active?: boolean; google_verified_at?: string | null; last_sync_at?: string | null; onboarding?: Record<string, unknown> | null };
+async function loadBranchRegistry(db: ReturnType<typeof admin>): Promise<BranchRegistryRow[]> {
+  let result: any;
+  try {
+    result = await db.from('google_review_branch_registry').select('id,name,city,region,account_id,store_code,location_id,mode,lifecycle,interval_minutes,sla_hours,target,active,google_verified_at,last_sync_at,onboarding,created_at,updated_at').eq('connection_id', connectionId).order('name');
+  } catch (error) {
+    // The built-in Bursa/demo view remains readable during the short window
+    // before the lifecycle migration is applied. Other errors still surface.
+    if (String((error as any)?.message || error).startsWith('Unexpected table google_review_branch_registry')) return [];
+    throw error;
+  }
+  if (result?.error && ['42P01', 'PGRST205'].includes(String(result.error.code || ''))) return [];
+  databaseFailure(result?.error);
+  const rows = (result.data || []) as BranchRegistryRow[];
+  for (const row of rows) branches[row.id] = { name: row.name, storeCode: String(row.store_code || ''), locationId: String(row.location_id || '') };
+  return rows;
+}
+function branchIdOf(body: any) { return String(body?.branch_id || managementBranchId); }
+function managedBranchId(id: unknown) { const value = String(id || ''); return value === managementBranchId || customBranchPattern.test(value); }
+function registryRow(rows: BranchRegistryRow[], id: string) { return rows.find(row => row.id === id) || null; }
+function branchCanRead(row: BranchRegistryRow | null) { return !row || row.active !== false; }
+function branchCanPublish(row: BranchRegistryRow | null) { return !row || row.lifecycle === 'live' || row.lifecycle === 'active'; }
+function branchCanSync(row: BranchRegistryRow | null) { return !row || (row.active !== false && (row.lifecycle === 'live' || row.lifecycle === 'active')); }
+async function seedBranchDefaults(db: ReturnType<typeof admin>, row: BranchRegistryRow, userId: string) {
+  const now = new Date().toISOString();
+  const lifecycle = row.lifecycle || (row.mode === 'live_candidate' ? 'live_candidate' : 'demo');
+  const defaults = [
+    { kind: 'branch_settings', data: { lifecycle, tone: 'inherit', sla_hours: Number(row.sla_hours || 24) } },
+    { kind: 'ai_config', data: { persona: '', banned_words: [], knowledge_lock: '' } },
+    { kind: 'retention_policy', data: { review_days: 365, closed_task_days: 365, audit_days: 1825 } },
+    { kind: 'escalation_rules', key: 'sla_overdue', data: { name: 'SLA aşımı', event: 'sla_overdue', after_hours: 0, to_role: 'admin', enabled: true } },
+  ];
+  for (const item of defaults) {
+    const key = item.key || 'default';
+    const result = await db.from('google_review_management_resources').upsert({ connection_id: connectionId, branch_id: row.id, kind: item.kind, key, data: item.data, version: 1, created_by: userId, updated_by: userId, updated_at: now }, { onConflict: 'connection_id,branch_id,kind,key', ignoreDuplicates: true });
+    databaseFailure(result.error);
+  }
+  const month = `${new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Istanbul', year: 'numeric', month: '2-digit' }).format(new Date())}-01`;
+  const target = await db.from('google_review_targets').upsert({ connection_id: connectionId, branch_id: row.id, month, target: Number(row.target || 30), version: 1, updated_by: userId, updated_at: now }, { onConflict: 'connection_id,branch_id,month', ignoreDuplicates: true });
+  databaseFailure(target.error);
+  const policy = await db.from('google_review_collection_policies').upsert({ connection_id: connectionId, branch_id: row.id, enabled: false, send_hour: 18, delay_minutes: 120, cooldown_days: 30, channel: 'sms', template: 'Merhaba {{musteri_adi}}, hizmet deneyiminizi değerlendirmek ister misiniz? {{yorum_linki}}', updated_by: userId, updated_at: now }, { onConflict: 'connection_id,branch_id', ignoreDuplicates: true });
+  databaseFailure(policy.error);
+}
 function syncBranchIds(value: unknown): string[] {
   if (value === undefined) return ['branch-google-nilufer'];
   if (!Array.isArray(value) || !value.length || value.length > 3 || value.some(id => typeof id !== 'string' || (!Object.hasOwn(branches, id) && !/^branch-custom-[A-Za-z0-9-]{8,80}$/.test(id)))) {
@@ -315,11 +359,11 @@ function reviewUrl(item: { account_id: string; location_id: string; review_id: s
 function workIdentity(body: any) {
   const account_id = String(body.account_id || ''), location_id = String(body.location_id || ''), review_id = String(body.review_id || '');
   const branch_id = String(body.branch_id || '');
-  if (!/^\d+$/.test(account_id) || !/^\d+$/.test(location_id) || !review_id || review_id.length > 512 || !Object.hasOwn(branches, branch_id)) {
+  if (!/^\d+$/.test(account_id) || !/^\d+$/.test(location_id) || !review_id || review_id.length > 512 || !managedBranchId(branch_id) || !Object.hasOwn(branches, branch_id)) {
     throw new RequestError('Geçerli hesap, şube ve Google yorum kimliği gerekli.', 400);
   }
   managementScope({ branch_id });
-  return { connection_id: connectionId, account_id, location_id, review_id, branch_id, branch_name: branches[branch_id].name };
+  return { connection_id: connectionId, account_id, location_id, review_id, branch_id, branch_name: branches[branch_id]?.name || branch_id };
 }
 function workId(body: any) {
   const id = String(body.item_id || '');
@@ -336,7 +380,8 @@ function databaseFailure(error: any) {
 const managementBranchId = 'branch-google-nilufer';
 const policyColumns = 'auto_reply_enabled,default_sla_hours,approver_roles,updated_at';
 function managementScope(body: any) {
-  if (body.branch_id !== managementBranchId) throw new RequestError('Canlı yönetim yalnızca Bursa Nilüfer için kullanılabilir. Diğer şubeler demodur.', 400);
+  const branchId = branchIdOf(body);
+  if (!managedBranchId(branchId)) throw new RequestError('Bu demo şube canlı yönetim kapsamına alınamaz. Önce yeni şubeyi onboarding akışından aktifleştirin.', 400);
 }
 function managementFields(body: any, fields: string[]) {
   const allowed = new Set(['action', 'entity', 'branch_id', ...fields]);
@@ -344,6 +389,7 @@ function managementFields(body: any, fields: string[]) {
 }
 async function readManagement(db: any, user: any, body: any, connection: any, clientMatches: boolean) {
   managementScope(body);
+  const branchId = branchIdOf(body);
   const results = await Promise.all([
     db.from('google_review_policies').select(policyColumns).eq('connection_id', connectionId).maybeSingle(),
     db.from('google_review_audit_log').select('id,actor_id,actor_role,action,entity_type,entity_id,before_state,after_state,detail,created_at').eq('connection_id', connectionId).order('created_at', { ascending: false }).limit(200),
@@ -353,15 +399,18 @@ async function readManagement(db: any, user: any, body: any, connection: any, cl
   ]);
   for (const result of results) databaseFailure(result.error);
   if (!results[0].data) throw new RequestError('Google yorum politikası bulunamadı.', 503);
+  const registry = branchId === managementBranchId ? null : await db.from('google_review_branch_registry').select('sla_hours,lifecycle,active').eq('connection_id', connectionId).eq('id', branchId).maybeSingle();
+  if (registry) databaseFailure(registry.error);
+  const policy = registry?.data ? { ...results[0].data, default_sla_hours: registry.data.sla_hours, updated_at: results[0].data.updated_at } : results[0].data;
   const allowedUsers = new Set([connection.connected_by, ...(Deno.env.get('GOOGLE_BUSINESS_ADMIN_USER_IDS') || '').split(',').map(value => value.trim()).filter(Boolean)]);
   return {
-    branch_id: managementBranchId,
-    policy: results[0].data,
+    branch_id: branchId,
+    policy,
     audit: results[1].data || [],
     users: (results[2].data || []).map((row: any) => ({ id: row.id, full_name: row.full_name, role: row.role, is_active: row.is_active, branch_id: row.branch_id, google_management_enabled: allowedUsers.has(row.auth_user_id) })),
     jobs: results[3].data || [], notifications: results[4].data || [], templates: [], escalations: [],
     capabilities: { policy_sla: true, task_status: true, legal_hold: true, reject_draft: true, audit: true, users_read: true, users_write: false, templates: false, escalation_rules: false, notifications_read: true, notification_rules: false, auto_reply: false },
-    settings: { google_connected: clientMatches, connected_at: connection.connected_at || null, manual_approval_required: true, openai_configured: Boolean(Deno.env.get('OPENAI_API_KEY')), openai_model: Deno.env.get('OPENAI_MODEL') || 'gpt-5-mini' },
+    settings: { google_connected: clientMatches, connected_at: connection.connected_at || null, manual_approval_required: true, openai_configured: Boolean(Deno.env.get('OPENAI_API_KEY')), openai_model: Deno.env.get('OPENAI_MODEL') || 'gpt-5-mini', lifecycle: registry?.data?.lifecycle || 'live', branch_active: registry?.data?.active !== false },
   };
 }
 async function replyLegalHold(db: any, user: any, task: any, hold: boolean) {
@@ -383,9 +432,10 @@ async function assertNoLegalHold(db: any, item: any) {
 }
 async function updateManagementTask(db: any, user: any, body: any, requestId?: string) {
   managementScope(body);
+  const branchId = branchIdOf(body);
   managementFields(body, ['item_id', 'expected_version', 'status', 'hold', 'note']);
   const item = await getWork(db, body);
-  if (item.branch_id !== managementBranchId || !taskKinds.includes(item.kind)) throw new RequestError('Bu kayıt Bursa yönetim görevi değil.', 400);
+  if (item.branch_id !== branchId || !taskKinds.includes(item.kind)) throw new RequestError('Bu kayıt seçili şubenin yönetim görevi değil.', 400);
   if (!['status', 'hold', 'note'].some(key => Object.hasOwn(body, key))) throw new RequestError('Değiştirilecek görev alanı gerekli.', 400);
   if (body.status !== undefined && !['open', 'done'].includes(body.status)) throw new RequestError('Geçersiz görev durumu.', 400);
   if (body.note !== undefined && (typeof body.note !== 'string' || body.note.length > 2000)) throw new RequestError('Görev notu en fazla 2000 karakter olmalıdır.', 400);
@@ -407,10 +457,22 @@ async function updateManagementTask(db: any, user: any, body: any, requestId?: s
 }
 async function updateManagement(db: any, user: any, body: any, requestId?: string) {
   managementScope(body);
+  const branchId = branchIdOf(body);
   if (body.entity === 'task') return await updateManagementTask(db, user, body, requestId);
   if (body.entity !== 'policy') throw new RequestError('Bu yönetim alanı sunucuda desteklenmiyor.', 400);
   managementFields(body, ['expected_updated_at', 'default_sla_hours']);
   if (!Number.isSafeInteger(body.default_sla_hours) || body.default_sla_hours < 1 || body.default_sla_hours > 168 || typeof body.expected_updated_at !== 'string' || !Number.isFinite(Date.parse(body.expected_updated_at))) throw new RequestError('SLA 1–168 saat ve güncel kayıt sürümü gerekli.', 400);
+  if (branchId !== managementBranchId) {
+    const registry = await db.from('google_review_branch_registry').select('id,sla_hours,active,lifecycle').eq('connection_id', connectionId).eq('id', branchId).maybeSingle();
+    databaseFailure(registry.error);
+    if (!registry.data || registry.data.active === false) throw new RequestError('Şube kaydı bulunamadı veya pasif.', 404);
+    if (!branchCanRead(registry.data)) throw new RequestError('Şube pasif.', 409);
+    const saved = await db.from('google_review_branch_registry').update({ sla_hours: body.default_sla_hours, updated_by: user.id, updated_at: new Date().toISOString() }).eq('connection_id', connectionId).eq('id', branchId).select('id,sla_hours,updated_at').maybeSingle();
+    databaseFailure(saved.error);
+    if (!saved.data) throw new RequestError('Şube SLA ayarı kaydedilemedi.', 503);
+    await writeGoogleAudit(db, { userId: user.id, role: 'OPERATOR', action: 'policy_update', entityType: 'google_review_branch_registry', entityId: branchId, beforeState: { default_sla_hours: registry.data.sla_hours }, afterState: { default_sla_hours: saved.data.sla_hours }, detail: `${branchId} şube SLA süresi güncellendi.`, requestId });
+    return { policy: { connection_id: connectionId, branch_id: branchId, default_sla_hours: saved.data.sla_hours, updated_at: saved.data.updated_at } };
+  }
   const before = await db.from('google_review_policies').select(policyColumns).eq('connection_id', connectionId).maybeSingle();
   databaseFailure(before.error);
   if (!before.data || before.data.updated_at !== body.expected_updated_at) throw new RequestError('Politika başka oturumda değişti. Ayarları yenileyin.', 409);
@@ -422,10 +484,11 @@ async function updateManagement(db: any, user: any, body: any, requestId?: strin
 }
 async function rejectDraft(db: any, user: any, body: any, requestId?: string) {
   managementScope(body);
+  const branchId = branchIdOf(body);
   managementFields(body, ['item_id', 'expected_version', 'reason']);
   if (typeof body.reason !== 'string' || !body.reason.trim() || body.reason.length > 1000) throw new RequestError('1–1000 karakter ret gerekçesi gerekli.', 400);
   const item = await getWork(db, body);
-  if (item.branch_id !== managementBranchId || item.kind !== 'reply' || !['approval_pending', 'publish_failed'].includes(item.status)) throw new RequestError('Yalnızca yayınlanmamış, sonucu kesin taslak reddedilebilir.', 409);
+  if (item.branch_id !== branchId || item.kind !== 'reply' || !['approval_pending', 'publish_failed'].includes(item.status)) throw new RequestError('Yalnızca seçili şubeye ait yayınlanmamış taslak reddedilebilir.', 409);
   const rejection = { reason: body.reason.trim(), rejected_at: new Date().toISOString(), rejected_by: user.id };
   // The current schema requires draft_failed to have an empty reply. Retain the
   // actual draft under publish_failed plus explicit rejection metadata instead.
@@ -463,7 +526,8 @@ function withReviewReplyUrl(snapshot: any, value: unknown) {
 }
 async function verifiedReview(identity: ReturnType<typeof workIdentity>, token: string, signal?: AbortSignal) {
   const location = await googleJson(`https://mybusinessbusinessinformation.googleapis.com/v1/locations/${identity.location_id}?readMask=name,title,storeCode`, token, signal ? { signal } : {}, Boolean(signal));
-  if ((String(location.storeCode || '') !== branches[identity.branch_id].storeCode && !(identity.location_id === branches[identity.branch_id].locationId && location.name === `locations/${branches[identity.branch_id].locationId}`)) || Object.entries(branches).some(([id, branch]) => id !== identity.branch_id && (location.storeCode === branch.storeCode || location.name === `locations/${branch.locationId}`))) throw new RequestError('Google konumu seçilen OTOTR şubesiyle eşleşmiyor.', 409);
+  const expected = branches[identity.branch_id];
+  if (!expected || ((String(location.storeCode || '') !== expected.storeCode && !(identity.location_id === expected.locationId && location.name === `locations/${expected.locationId}`)) || Object.entries(branches).some(([id, branch]) => id !== identity.branch_id && branch.storeCode && (location.storeCode === branch.storeCode || location.name === `locations/${branch.locationId}`)))) throw new RequestError('Google konumu seçilen OTOTR şubesiyle eşleşmiyor.', 409);
   const review = await googleJson(reviewUrl(identity), token, signal ? { signal } : {}, Boolean(signal));
   if (String(review.reviewId || review.name?.split('/').pop() || '') !== identity.review_id) throw new RequestError('Google yorum kimliği doğrulanamadı.', 409);
   const stars: Record<string, number> = { ONE: 1, TWO: 2, THREE: 3, FOUR: 4, FIVE: 5 };
@@ -722,8 +786,11 @@ Deno.serve(async (req) => {
     const db = admin();
     const connection = await authorizedConnection(db, user.id);
     const access = connection._reviewAccess;
-    if (body.branch_id !== undefined && body.branch_id !== managementBranchId) throw new RequestError('Canlı işlemler yalnız Bursa Nilüfer içindir.',400);
-    const readActions = new Set(['status','management_read','management_extended_read','operations_list','targets_list','workflow_list','audit_list','reviews']);
+    const branchRows = await loadBranchRegistry(db);
+    const requestedBranch = body.branch_id === undefined ? managementBranchId : String(body.branch_id);
+    if (body.branch_id !== undefined && (!managedBranchId(requestedBranch) || (requestedBranch.startsWith('branch-custom-') && !registryRow(branchRows, requestedBranch)))) throw new RequestError('Şube kaydı bulunamadı veya bu kapsam canlı yönetim için açılmadı.',400);
+    const requestedRegistry = registryRow(branchRows, requestedBranch);
+    const readActions = new Set(['status','management_read','management_extended_read','operations_list','targets_list','workflow_list','audit_list','reviews','branch_list','branch_onboarding']);
     const approvalAction = ['publish_reply','verify_reply','reject_draft'].includes(body.action) && access.can_approve;
     if (access.role === 'viewer' && !readActions.has(body.action) && body.action !== 'notification_read' && !approvalAction) throw new RequestError('Bu kullanıcı yorumları yalnızca görüntüleyebilir.',403);
     if (access.source==='delegation' && !readActions.has(body.action) && body.action!=='notification_read' && !approvalAction && !(access.delegated_scopes.includes('tasks') && ['create_task','update_task','management_update'].includes(body.action))) throw new RequestError('İşlem süreli delegasyon kapsamının dışında.',403);
@@ -735,6 +802,8 @@ Deno.serve(async (req) => {
       if(config?.location_id && String(config.location_id)!==branches[managementBranchId].locationId || config?.store_code && String(config.store_code)!==branches[managementBranchId].storeCode) throw new RequestError('Kayıtlı Bursa bağlantısı değiştirilemez.',403);
     }
     if ((body.action === 'management_update' && body.entity === 'policy' || body.action === 'target_save') && access.role !== 'admin') throw new RequestError('Bu ayarı değiştirmek için yönetici yetkisi gerekli.',403);
+    if (requestedRegistry && requestedRegistry.active === false && !['branch_list','branch_onboarding','management_read','management_extended_read'].includes(body.action)) throw new RequestError('Pasif şube üzerinde işlem yapılamaz.',409);
+    if (requestedRegistry && ['sync_reviews','prepare_draft','save_draft','publish_reply','verify_reply','auto_publish_safe','collection_enqueue','collection_run_due','create_task','update_task','reject_draft','bulk_route','template_apply','escalation_run'].includes(body.action) && !branchCanSync(requestedRegistry)) throw new RequestError('Şube Google doğrulaması ve canlı aktivasyonu tamamlanmadan bu işlem açılamaz.',409);
     if (['management_extended_read','resource_save','resource_archive','notification_read','escalation_run','retention_preview','template_apply'].includes(body.action)) {
       const result=await handleReviewManagement({db,user,body,connection,role:access.role,canAdmin:access.role==='admin',canManageGrants:access.is_owner});
       if(body.action==='template_apply' && result?.item && result.changed_existing_text) await recordAiOutcome(db,{item:result.item,actorId:user.id,action:'edited'});
@@ -742,31 +811,33 @@ Deno.serve(async (req) => {
     }
     if (['collection_read','collection_save_policy','collection_enqueue','collection_queue','collection_run_due'].includes(body.action)) {
       if (body.action !== 'collection_read' && access.role !== 'admin' && !access.is_owner) throw new RequestError('Yorum toplama ayarları için yönetici yetkisi gerekli.',403);
-      const policyRow = await db.from('google_review_collection_policies').select('*').eq('connection_id', connectionId).maybeSingle();
+      const collectionBranch = branchIdOf(body);
+      if (['branch-google-gebze','branch-google-inegol'].includes(collectionBranch) && body.action !== 'collection_read') throw new RequestError('Demo şubede dış yorum toplama işlemi açılamaz.',409);
+      const policyRow = await db.from('google_review_collection_policies').select('*').eq('connection_id', connectionId).eq('branch_id', collectionBranch).maybeSingle();
       databaseFailure(policyRow.error);
       if (body.action === 'collection_read') {
-        const queue = await db.from('google_review_collection_outbox').select('id,branch_id,service_id,customer_name,channel,scheduled_at,status,reason,sent_at,created_at').eq('connection_id', connectionId).order('scheduled_at',{ascending:false}).limit(100);
+        const queue = await db.from('google_review_collection_outbox').select('id,branch_id,service_id,customer_name,channel,scheduled_at,status,reason,sent_at,created_at').eq('connection_id', connectionId).eq('branch_id', collectionBranch).order('scheduled_at',{ascending:false}).limit(100);
         databaseFailure(queue.error);
-        return json({policy: policyRow.data || {connection_id:connectionId,branch_id:managementBranchId,enabled:false,send_hour:18,delay_minutes:120,channel:'sms',cooldown_days:30,template:'Merhaba {{musteri_adi}}, hizmet deneyiminizi değerlendirmek ister misiniz? {{yorum_linki}}'}, queue: queue.data || []});
+        return json({policy: policyRow.data || {connection_id:connectionId,branch_id:collectionBranch,enabled:false,send_hour:18,delay_minutes:120,channel:'sms',cooldown_days:30,template:'Merhaba {{musteri_adi}}, hizmet deneyiminizi değerlendirmek ister misiniz? {{yorum_linki}}'}, queue: queue.data || []});
       }
       if (body.action === 'collection_save_policy') {
         const sendHour=Number(body.send_hour), delay=Number(body.delay_minutes), cooldown=Number(body.cooldown_days||30), channel=String(body.channel||'sms');
         if (!Number.isInteger(sendHour)||sendHour<0||sendHour>23||!Number.isInteger(delay)||delay<0||delay>10080||!Number.isInteger(cooldown)||cooldown<1||cooldown>365||!['sms','whatsapp','email'].includes(channel)) throw new RequestError('Yorum toplama ayarları geçersiz.',400);
-        const saved=await db.from('google_review_collection_policies').upsert({connection_id:connectionId,branch_id:managementBranchId,enabled:Boolean(body.enabled),send_hour:sendHour,delay_minutes:delay,cooldown_days:cooldown,channel,template:String(body.template||'').slice(0,1000),updated_by:user.id,updated_at:new Date().toISOString()}).select('*').single();
+        const saved=await db.from('google_review_collection_policies').upsert({connection_id:connectionId,branch_id:collectionBranch,enabled:Boolean(body.enabled),send_hour:sendHour,delay_minutes:delay,cooldown_days:cooldown,channel,template:String(body.template||'').slice(0,1000),updated_by:user.id,updated_at:new Date().toISOString()},{onConflict:'connection_id,branch_id'}).select('*').single();
         databaseFailure(saved.error); return json({policy:saved.data});
       }
       if (body.action === 'collection_enqueue') {
-        if (body.branch_id !== managementBranchId) throw new RequestError('Yorum toplama yalnız Bursa canlı şubesinde etkin.',400);
+        if (collectionBranch !== managementBranchId && !customBranchPattern.test(collectionBranch)) throw new RequestError('Yorum toplama kapsamı geçersiz.',400);
         const serviceId=String(body.service_id||'').trim(), recipient=String(body.recipient||'').trim();
         if (!serviceId||!recipient) throw new RequestError('Hizmet ve alıcı bilgisi gerekli.',400);
         const policy=policyRow.data; if (!policy?.enabled) return json({queued:false,reason:'policy_disabled'});
         const scheduled=new Date(Date.now()+Number(policy.delay_minutes)*60000); const keyDate=new Date(scheduled); keyDate.setHours(Number(policy.send_hour),0,0,0); if(keyDate.getTime()<scheduled.getTime()) keyDate.setDate(keyDate.getDate()+1);
-        const inserted=await db.from('google_review_collection_outbox').upsert({connection_id:connectionId,branch_id:managementBranchId,service_id:serviceId,customer_name:String(body.customer_name||'').slice(0,160),recipient,channel:policy.channel,scheduled_at:keyDate.toISOString(),status:'queued'},{onConflict:'connection_id,service_id',ignoreDuplicates:true}).select('id,scheduled_at,status').maybeSingle();
+        const inserted=await db.from('google_review_collection_outbox').upsert({connection_id:connectionId,branch_id:collectionBranch,service_id:serviceId,customer_name:String(body.customer_name||'').slice(0,160),recipient,channel:policy.channel,scheduled_at:keyDate.toISOString(),status:'queued'},{onConflict:'connection_id,branch_id,service_id',ignoreDuplicates:true}).select('id,scheduled_at,status').maybeSingle();
         databaseFailure(inserted.error); return json({queued:Boolean(inserted.data),item:inserted.data||null,reason:inserted.data?'queued':'duplicate'});
       }
       if (body.action === 'collection_run_due') {
         if (access.role !== 'admin' || !access.is_owner) throw new RequestError('Gönderim worker yalnızca bağlantı sahibi tarafından çalıştırılabilir.',403);
-        const due=await db.from('google_review_collection_outbox').select('*').eq('connection_id',connectionId).eq('branch_id',managementBranchId).eq('status','queued').lte('scheduled_at',new Date().toISOString()).limit(100);
+        const due=await db.from('google_review_collection_outbox').select('*').eq('connection_id',connectionId).eq('branch_id',collectionBranch).eq('status','queued').lte('scheduled_at',new Date().toISOString()).limit(100);
         databaseFailure(due.error); const providerUrl=Deno.env.get('REVIEW_COLLECTION_PROVIDER_URL')||''; const providerToken=Deno.env.get('REVIEW_COLLECTION_PROVIDER_TOKEN')||''; let sent=0, skipped=0, failed=0;
         for(const row of (due.data||[])) {
           if(!providerUrl || !providerToken){ await db.from('google_review_collection_outbox').update({status:'dry_run',reason:'provider_not_configured'}).eq('id',row.id); skipped++; continue; }
@@ -774,22 +845,59 @@ Deno.serve(async (req) => {
         }
         return json({processed:(due.data||[]).length,sent,skipped,failed,dry_run:!providerUrl});
       }
-      const queue=await db.from('google_review_collection_outbox').select('id,branch_id,service_id,customer_name,channel,scheduled_at,status,reason,sent_at,created_at').eq('connection_id',connectionId).order('scheduled_at',{ascending:false}).limit(100); databaseFailure(queue.error); return json({queue:queue.data||[]});
+      const queue=await db.from('google_review_collection_outbox').select('id,branch_id,service_id,customer_name,channel,scheduled_at,status,reason,sent_at,created_at').eq('connection_id',connectionId).eq('branch_id',collectionBranch).order('scheduled_at',{ascending:false}).limit(100); databaseFailure(queue.error); return json({queue:queue.data||[]});
     }
     if (body.action === 'branch_list') {
-      const rows=await db.from('google_review_branch_registry').select('id,name,city,region,account_id,store_code,location_id,mode,interval_minutes,sla_hours,target,active,created_at,updated_at').eq('connection_id',connectionId).order('name');
-      databaseFailure(rows.error); return json({items:rows.data||[]});
+      const builtIns = [
+        { id: 'branch-google-nilufer', name: 'OTOTR Bursa Nilüfer Şube', city: 'Bursa', region: 'Marmara', account_id: '114698852482564472140', store_code: branches['branch-google-nilufer'].storeCode, location_id: branches['branch-google-nilufer'].locationId, mode: 'live', lifecycle: 'live', interval_minutes: 60, sla_hours: 24, target: 30, active: true, google_verified_at: null, last_sync_at: null, onboarding: { google_account: true, google_location: true, target: true, sla: true, ai: true, collection: true } },
+        { id: 'branch-google-gebze', name: 'OTOTR Gebze Şube', city: 'Kocaeli', region: 'Marmara', account_id: null, store_code: branches['branch-google-gebze'].storeCode, location_id: branches['branch-google-gebze'].locationId, mode: 'demo', lifecycle: 'demo', interval_minutes: 60, sla_hours: 24, target: 30, active: true, google_verified_at: null, last_sync_at: null, onboarding: { demo: true } },
+        { id: 'branch-google-inegol', name: 'OTOTR Bursa İnegöl Şube', city: 'Bursa', region: 'Marmara', account_id: null, store_code: branches['branch-google-inegol'].storeCode, location_id: branches['branch-google-inegol'].locationId, mode: 'demo', lifecycle: 'demo', interval_minutes: 60, sla_hours: 24, target: 30, active: true, google_verified_at: null, last_sync_at: null, onboarding: { demo: true } },
+      ];
+      return json({items:[...builtIns,...branchRows]});
     }
     if (body.action === 'branch_create') {
       if (!access.is_owner) throw new RequestError('Şube ekleme yalnızca bağlantı sahibi tarafından yapılabilir.',403);
       const name=String(body.name||'').trim(), city=String(body.city||'').trim(), region=String(body.region||'').trim();
       if(!/^branch-custom-[A-Za-z0-9-]{8,80}$/.test(String(body.id||''))||name.length<2||city.length<2||region.length<2) throw new RequestError('Şube kimliği, ad, il ve bölge geçerli olmalı.',400);
-      const row={id:String(body.id),connection_id:connectionId,name,city,region,account_id:body.account_id?String(body.account_id):null,store_code:body.store_code?String(body.store_code):null,location_id:body.location_id?String(body.location_id):null,mode:(body.account_id&&body.store_code)?'live_candidate':'demo',interval_minutes:Number(body.interval_minutes||60),sla_hours:Number(body.sla_hours||24),target:Number(body.target||30),created_by:user.id,updated_by:user.id};
+      const account_id=body.account_id?String(body.account_id).trim():null,store_code=body.store_code?String(body.store_code).trim():null,location_id=body.location_id?String(body.location_id).trim():null;
+      if ((account_id && !/^\d{1,32}$/.test(account_id)) || (store_code && !/^\d{1,64}$/.test(store_code)) || (location_id && !/^\d{1,32}$/.test(location_id))) throw new RequestError('Google hesap, mağaza ve konum kimlikleri yalnızca sayılardan oluşmalı.',400);
+      const mode=(account_id&&store_code)?'live_candidate':'demo';
+      const lifecycle=mode==='live_candidate'?'live_candidate':'demo';
+      const row={id:String(body.id),connection_id:connectionId,name,city,region,account_id,store_code,location_id,mode,lifecycle,interval_minutes:Number(body.interval_minutes||60),sla_hours:Number(body.sla_hours||24),target:Number(body.target||30),active:true,onboarding:{google_account:Boolean(account_id),google_location:Boolean(location_id),store_code:Boolean(store_code),target:true,sla:true,ai:false,collection:false,permissions:false},created_by:user.id,updated_by:user.id};
       if(row.interval_minutes<5||row.interval_minutes>1440||row.sla_hours<1||row.sla_hours>168||row.target<1||row.target>10000) throw new RequestError('Kontrol aralığı, SLA veya hedef geçersiz.',400);
-      const saved=await db.from('google_review_branch_registry').insert(row).select('id,name,city,region,account_id,store_code,location_id,mode,interval_minutes,sla_hours,target,active,created_at,updated_at').maybeSingle();
-      databaseFailure(saved.error); return json({item:saved.data},201);
+      const saved=await db.from('google_review_branch_registry').insert(row).select('id,name,city,region,account_id,store_code,location_id,mode,lifecycle,interval_minutes,sla_hours,target,active,google_verified_at,last_sync_at,onboarding,created_at,updated_at').maybeSingle();
+      if (saved.error?.code === '23505') throw new RequestError('Bu şube kimliği veya Google konumu zaten kayıtlı.',409);
+      databaseFailure(saved.error); if(!saved.data) throw new RequestError('Şube kaydı oluşturulamadı.',503);
+      await seedBranchDefaults(db, saved.data as BranchRegistryRow, user.id);
+      await writeGoogleAudit(db,{userId:user.id,role:'ADMIN',action:'branch_create',entityType:'branch',entityId:saved.data.id,afterState:{name,city,region,mode,lifecycle},detail:'Yeni Google yorum şubesi onboarding kaydı oluşturuldu.'});
+      return json({item:saved.data,onboarding:{...row.onboarding,lifecycle,activation_required:true}},201);
     }
-    if (['prepare_draft','save_draft','publish_reply'].includes(body.action)) await assertReviewLifecycle({db,connection});
+    if (body.action === 'branch_onboarding') {
+      const branchId = branchIdOf(body); if (!managedBranchId(branchId)) throw new RequestError('Geçersiz şube.',400);
+      const row = branchId === managementBranchId ? null : registryRow(branchRows, branchId);
+      if (branchId !== managementBranchId && !row) throw new RequestError('Şube kaydı bulunamadı.',404);
+      const settings = await db.from('google_review_management_resources').select('data').eq('connection_id',connectionId).eq('branch_id',branchId).eq('kind','branch_settings').eq('key','default').eq('archived',false).maybeSingle(); databaseFailure(settings.error);
+      const target = await db.from('google_review_targets').select('target,version,month').eq('connection_id',connectionId).eq('branch_id',branchId).order('month',{ascending:false}).limit(1); databaseFailure(target.error);
+      const policy = await db.from('google_review_collection_policies').select('enabled,updated_at').eq('connection_id',connectionId).eq('branch_id',branchId).maybeSingle(); databaseFailure(policy.error);
+      const checklist = { identity:true, google_account:branchId===managementBranchId || Boolean(row?.account_id), store_code:branchId===managementBranchId || Boolean(row?.store_code), location_id:branchId===managementBranchId || Boolean(row?.location_id), google_verified:branchId===managementBranchId || Boolean(row?.google_verified_at), target:Boolean(target.data?.length), sla:branchId===managementBranchId || Boolean(settings.data?.sla_hours || row?.sla_hours), ai:Boolean(settings.data), collection:Boolean(policy.data), permissions:access.is_owner, active:branchId===managementBranchId || row?.active!==false, live:branchId===managementBranchId || row?.lifecycle==='live' };
+      return json({branch_id:branchId,branch:row,settings:settings.data||null,target:target.data?.[0]||null,collection:policy.data||null,checklist,ready:Object.values(checklist).every(Boolean)});
+    }
+    if (body.action === 'branch_activate') {
+      if (!access.is_owner) throw new RequestError('Şube aktifleştirme yalnızca bağlantı sahibi tarafından yapılabilir.',403);
+      const branchId=String(body.branch_id||''); if(!customBranchPattern.test(branchId)) throw new RequestError('Yalnızca yeni özel şube kimliği aktifleştirilebilir.',400);
+      const row=registryRow(branchRows,branchId); if(!row) throw new RequestError('Şube kaydı bulunamadı.',404);
+      if(!row.account_id||!row.store_code||!row.location_id) throw new RequestError('Google hesap ID, mağaza kodu ve konum ID aktivasyon için zorunlu.',400);
+      const token=await accessToken(await decrypt(connection.refresh_token_encrypted));
+      const location=await googleJson(`https://mybusinessbusinessinformation.googleapis.com/v1/locations/${row.location_id}?readMask=name,title,storeCode`,token);
+      if(String(location.storeCode||'')!==String(row.store_code)||String(location.name||'')!==`locations/${row.location_id}`) throw new RequestError('Google konumu verilen mağaza koduyla eşleşmiyor.',409);
+      const now=new Date().toISOString(), onboarding={...(row.onboarding||{}),google_account:true,store_code:true,location_id:true,google_verified:true,ai:true,collection:true,permissions:true};
+      const updated=await db.from('google_review_branch_registry').update({mode:'live_candidate',lifecycle:'live',google_verified_at:now,updated_by:user.id,updated_at:now,onboarding}).eq('connection_id',connectionId).eq('id',branchId).select('id,name,city,region,account_id,store_code,location_id,mode,lifecycle,interval_minutes,sla_hours,target,active,google_verified_at,last_sync_at,onboarding,created_at,updated_at').maybeSingle();
+      databaseFailure(updated.error); if(!updated.data) throw new RequestError('Şube aktifleştirilemedi.',503);
+      await seedBranchDefaults(db, updated.data as BranchRegistryRow, user.id);
+      await writeGoogleAudit(db,{userId:user.id,role:'ADMIN',action:'branch_activate',entityType:'branch',entityId:branchId,afterState:{lifecycle:'live',google_verified_at:now},detail:'Google konumu doğrulandı; şube canlı yorum akışına açıldı.'});
+      return json({item:updated.data,checklist:{...onboarding,live:true}});
+    }
+    if (['prepare_draft','save_draft','publish_reply'].includes(body.action)) await assertReviewLifecycle({db,connection,branchId:branchIdOf(body)});
     if (body.action === 'auto_publish_safe') {
       if (access.role !== 'admin' || !access.is_owner) throw new RequestError('Otomatik yayın yalnızca bağlantı sahibi yönetici tarafından çalıştırılabilir.',403);
       const item = await getWork(db, body);
@@ -821,12 +929,12 @@ Deno.serve(async (req) => {
       return json(result);
     }
     if (body.action === 'operations_list') {
-      const { data, error } = await db.from('google_review_operations').select('review_id,branch_id,status,version,updated_at').eq('connection_id', connectionId).eq('branch_id',managementBranchId).order('updated_at', { ascending: false }).limit(5000);
+      const { data, error } = await db.from('google_review_operations').select('review_id,branch_id,status,version,updated_at').eq('connection_id', connectionId).eq('branch_id',branchIdOf(body)).order('updated_at', { ascending: false }).limit(5000);
       databaseFailure(error); return json({ items: data || [] });
     }
     if (body.action === 'operation_save') {
       const { review_id, branch_id, status, expected_version } = body;
-      if (typeof review_id !== 'string' || !review_id || review_id.length > 512 || branch_id !== 'branch-google-nilufer' || !['new','reviewing','reply_waiting','branch_action','resolved','follow_up'].includes(status) || !Number.isSafeInteger(expected_version) || expected_version < 0) throw new RequestError('Yorum, şube, durum ve sürüm bilgisi geçerli olmalı.', 400);
+      if (typeof review_id !== 'string' || !review_id || review_id.length > 512 || branch_id !== branchIdOf(body) || !managedBranchId(branch_id) || !['new','reviewing','reply_waiting','branch_action','resolved','follow_up'].includes(status) || !Number.isSafeInteger(expected_version) || expected_version < 0) throw new RequestError('Yorum, şube, durum ve sürüm bilgisi geçerli olmalı.', 400);
       const row = { connection_id: connectionId, review_id, branch_id, status, version: expected_version + 1, updated_by: user.id, updated_at: new Date().toISOString() };
       const result = expected_version === 0
         ? await db.from('google_review_operations').insert(row).select('review_id,branch_id,status,version,updated_at').maybeSingle()
@@ -835,12 +943,12 @@ Deno.serve(async (req) => {
       databaseFailure(result.error); return json({ item: result.data });
     }
     if (body.action === 'targets_list') {
-      const { data, error } = await db.from('google_review_targets').select('branch_id,month,target,version,updated_at').eq('connection_id', connectionId).eq('branch_id',managementBranchId).order('month', { ascending: false }).limit(1000);
+      const { data, error } = await db.from('google_review_targets').select('branch_id,month,target,version,updated_at').eq('connection_id', connectionId).eq('branch_id',branchIdOf(body)).order('month', { ascending: false }).limit(1000);
       databaseFailure(error); return json({ items: data || [] });
     }
     if (body.action === 'target_save') {
       const { branch_id, month, target, expected_version } = body;
-      if (branch_id !== 'branch-google-nilufer' || typeof month !== 'string' || !/^20\d{2}-(0[1-9]|1[0-2])-01$/.test(month) || !Number.isSafeInteger(target) || target < 1 || target > 10000 || !Number.isSafeInteger(expected_version) || expected_version < 0) throw new RequestError('Şube, ay ve 1–10000 arası tam sayı hedef gerekli.', 400);
+      if (branch_id !== branchIdOf(body) || !managedBranchId(branch_id) || typeof month !== 'string' || !/^20\d{2}-(0[1-9]|1[0-2])-01$/.test(month) || !Number.isSafeInteger(target) || target < 1 || target > 10000 || !Number.isSafeInteger(expected_version) || expected_version < 0) throw new RequestError('Şube, ay ve 1–10000 arası tam sayı hedef gerekli.', 400);
       const row = { connection_id: connectionId, branch_id, month, target, version: expected_version + 1, updated_by: user.id, updated_at: new Date().toISOString() };
       const result = expected_version === 0
         ? await db.from('google_review_targets').insert(row).select('branch_id,month,target,version,updated_at').maybeSingle()
@@ -851,7 +959,7 @@ Deno.serve(async (req) => {
     if (body.action === 'workflow_list') {
       const offset = Number(body.offset || 0);
       if (!Number.isSafeInteger(offset) || offset < 0) throw new RequestError('Geçersiz liste sayfası.', 400);
-      const { data, error } = await db.from(workTable).select('*').eq('connection_id', connectionId).eq('branch_id',managementBranchId).order('created_at', { ascending: false }).order('id', { ascending: false }).range(offset, offset + 99);
+      const { data, error } = await db.from(workTable).select('*').eq('connection_id', connectionId).eq('branch_id',branchIdOf(body)).order('created_at', { ascending: false }).order('id', { ascending: false }).range(offset, offset + 99);
       databaseFailure(error); return json({ items: data || [], next_offset: data?.length === 100 ? offset + 100 : null });
     }
     if (body.action === 'update_task') {
@@ -880,6 +988,7 @@ Deno.serve(async (req) => {
     }
     if (body.action === 'bulk_route') {
       const authorization = await authorizedGoogleRole(db, user.id, 'bulk_route');
+      const bulkBranch = branchIdOf(body);
       const itemIds = Array.isArray(body.item_ids) ? [...new Set(body.item_ids.map((value: unknown) => String(value).trim()).filter(value => /^[0-9a-f-]{36}$/i.test(value)))] : [];
       if (!itemIds.length || itemIds.length > 100) throw new RequestError('Toplu sevk için 1–100 arası geçerli görev seçin.', 400);
       const idempotencyKey = String(body.idempotency_key || '').trim();
@@ -889,7 +998,7 @@ Deno.serve(async (req) => {
       if (existing.data) return json({ job: existing.data, replayed: true });
       const selected = await db.from(workTable).select('id,status,kind,branch_id').eq('connection_id', connectionId).in('id', itemIds);
       databaseFailure(selected.error);
-      if ((selected.data || []).some((item: any) => item.branch_id !== managementBranchId)) throw new RequestError('Demo şubeler canlı sevk kuyruğuna alınamaz.', 400);
+      if ((selected.data || []).some((item: any) => item.branch_id !== bulkBranch)) throw new RequestError('Seçili şube dışındaki kayıtlar aynı kuyruğa alınamaz.', 400);
       const eligible = (selected.data || []).filter((item: any) => item.kind === 'reply' && ['approval_pending', 'publish_failed', 'publish_unknown'].includes(item.status));
       if (!eligible.length) throw new RequestError('Sevk kuyruğuna alınabilecek onay bekleyen yanıt bulunamadı.', 409);
       const created = await db.from('google_review_bulk_jobs').insert({ connection_id: connectionId, job_type: 'route', status: 'queued', requested_by: user.id, idempotency_key: idempotencyKey, total_count: eligible.length, progress: { source: 'google_review_center', requested_count: itemIds.length } }).select('*').maybeSingle();
@@ -915,7 +1024,12 @@ Deno.serve(async (req) => {
         const token = await accessToken(await decrypt(connection.refresh_token_encrypted), signal);
         const sinceByBranch = body.since_by_branch && typeof body.since_by_branch === 'object' ? body.since_by_branch : {};
         const branchConfigs = syncBranchConfigs(body.branch_configs, syncTargets);
-        return json(await syncReviews(syncTargets, token, signal, sinceByBranch, branchConfigs));
+        const synced = await syncReviews(syncTargets, token, signal, sinceByBranch, branchConfigs);
+        const syncedAt = new Date().toISOString();
+        for (const branch of synced.branches || []) {
+          if (customBranchPattern.test(branch.branch_id)) await db.from('google_review_branch_registry').update({ last_sync_at: syncedAt, updated_at: syncedAt }).eq('connection_id', connectionId).eq('id', branch.branch_id);
+        }
+        return json({ ...synced, synced_at: syncedAt });
       } catch (error) {
         if (signal.aborted) throw new GoogleApiError('Google senkronizasyonu zaman aşımına uğradı. Önceki veriler korunuyor.', 504, 'GOOGLE_SYNC_TIMEOUT');
         throw error;
