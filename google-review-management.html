@@ -568,36 +568,26 @@ textarea[readonly]{opacity:.75;cursor:default}
 #erpDataScope{white-space:normal;max-width:100%;line-height:1.5}
 .ph>div,.split>*,.chart-grid>*,.grid2>*{min-width:0}
 @media(max-width:768px){.split{grid-template-columns:minmax(0,1fr)}.detail .actions,.route-row{flex-wrap:wrap}.review-quote{overflow-wrap:anywhere}}
-</style><style id="review-sidebar-layout">
-.topbar{height:54px;flex-wrap:nowrap}
-.menu-toggle{display:none}
-.review-sidebar{position:fixed;top:54px;bottom:0;left:0;width:208px;background:var(--nav);border-right:1px solid rgba(255,255,255,.08);z-index:95;overflow-y:auto;padding:20px 12px}
-.sidebar-title{color:rgba(255,255,255,.4);font-size:10px;font-weight:600;letter-spacing:1.1px;padding:0 12px 12px;text-transform:uppercase}
-.release-badge{display:flex;align-items:center;gap:6px;margin-left:10px;padding:5px 8px;border:1px solid rgba(255,255,255,.16);border-radius:7px;color:#dbeafe;font-size:10px;line-height:1.15;white-space:nowrap;background:rgba(37,99,235,.16)}.release-badge b{color:#fff;font-size:11px}.release-badge small{color:#a5b4fc}
-.review-sidebar .topnav{display:flex;flex-direction:column;gap:4px;overflow:visible}
-.review-sidebar .topnav a{padding:11px 12px;border:0;border-left:3px solid transparent;border-radius:7px;font-size:12px;text-decoration:none;white-space:normal;min-height:42px}
-.review-sidebar .topnav a.on{background:rgba(232,40,26,.13);border-left-color:var(--red);color:#fff}
-.sidebar-backdrop{display:none}
-main{margin-left:208px;width:calc(100% - 208px);max-width:none;padding:22px}
-.mob{display:none!important}
-@media(max-width:768px){
- body{padding-bottom:0}
- main{margin:0;width:100%;padding:12px}
- .menu-toggle{display:grid;flex-shrink:0}
- .topbar .role-sel,.topbar .uchip{display:none}
- .review-sidebar{width:min(260px,85vw);z-index:120;transform:translateX(-100%);visibility:hidden;transition:transform .18s ease,visibility .18s}
- body.review-menu-open .review-sidebar{transform:translateX(0);visibility:visible}
- body.review-menu-open .sidebar-backdrop{display:block;position:fixed;inset:54px 0 0;background:rgba(0,0,0,.4);border:0;z-index:110}
- .bulk-bar{bottom:auto}
- .tc{bottom:12px}
-}
-@media print{.review-sidebar,.sidebar-backdrop,.menu-toggle{display:none!important}main{margin:0;width:100%}}
+</style><style id="review-shell-layout">
+/* DeepSeek reference shell: keep navigation in the top bar while live data
+   integrations continue to render inside the existing module. */
+.topbar{height:54px;flex-wrap:wrap}
+.menu-toggle,.sidebar-backdrop,.review-sidebar{display:none!important}
+.topbar .topnav{display:flex;gap:0;overflow-x:auto;flex:1;scrollbar-width:none;min-width:0}
+.topbar .topnav::-webkit-scrollbar{display:none}
+.topbar .topnav a{padding:17px 9px;color:rgba(255,255,255,.6);font-size:11.5px;font-weight:500;border-bottom:2px solid transparent;transition:.15s;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:4px;text-decoration:none}
+.topbar .topnav a:hover{color:#fff;background:rgba(255,255,255,.04)}
+.topbar .topnav a.on{color:#fff;border-bottom-color:var(--red)}
+.release-badge{display:none!important}
+main{margin:0 auto;width:auto;max-width:1440px;padding:20px}
+@media(max-width:1100px){.topbar .topnav{order:10;flex-basis:100%;height:36px}.topbar{height:auto;min-height:54px;padding-bottom:4px}.topbar .topnav a{padding:9px 8px 8px;font-size:11px}}
+@media(max-width:768px){body{padding-bottom:0}main{width:100%;padding:12px}.topbar .role-sel,.topbar .uchip{display:none}.bulk-bar{bottom:auto}.tc{bottom:12px}}
+@media print{main{margin:0;width:100%}}
 </style></head><body>
 
 <header class="topbar">
-  <button class="ibtn menu-toggle" id="reviewMenuToggle" aria-label="Menüyü aç" aria-controls="reviewSidebar" aria-expanded="false" onclick="toggleReviewMenu()">☰</button>
   <div class="brand"><span class="bm">OTO</span><span style="color:var(--red)">TR</span><span class="bsub">Google Yorum Yönetim</span></div>
-  <div class="release-badge" id="releaseBadge" title="Arayüz sürümü ve veri yenileme durumu"><b>G16</b><span>16.11.2026</span><small id="dataFreshness">Veri: kontrol ediliyor</small></div>
+  <nav class="topnav" id="topnav" aria-label="Yorum ekranları"></nav>
   <div class="searchbar">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
     <input placeholder="Ara..." readonly onclick="openCmdk()">
@@ -626,11 +616,6 @@ main{margin-left:208px;width:calc(100% - 208px);max-width:none;padding:22px}
   </select>
   <div class="uchip"><b id="userAvatar">MK</b></div>
 </header>
-<button class="sidebar-backdrop" id="reviewSidebarBackdrop" aria-label="Menüyü kapat" onclick="closeReviewMenu()" tabindex="-1"></button>
-<aside class="review-sidebar" id="reviewSidebar" aria-label="Yorum yönetimi menüsü">
-  <div class="sidebar-title">Yorum Yönetimi</div>
-  <nav class="topnav" id="topnav" aria-label="Yorum ekranları"></nav>
-</aside>
 
 <main>
   <div class="ph">
@@ -1512,12 +1497,14 @@ function closeReviewMenu(){
   const opened=document.body.classList.contains('review-menu-open');
   document.body.classList.remove('review-menu-open');
   const button=document.getElementById('reviewMenuToggle');
+  if(!button) return;
   button.setAttribute('aria-expanded','false');button.setAttribute('aria-label','Menüyü aç');
   if(opened)button.focus();
 }
 function toggleReviewMenu(){
   const open=document.body.classList.toggle('review-menu-open');
   const button=document.getElementById('reviewMenuToggle');
+  if(!button) return;
   button.setAttribute('aria-expanded',String(open));button.setAttribute('aria-label',open?'Menüyü kapat':'Menüyü aç');
   if(open)document.querySelector('#topnav a.on')?.focus();
 }
@@ -3101,12 +3088,13 @@ if (!STATE.onboarded) setTimeout(startTour, 500);
   fetch('release.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(meta => {
     if (!meta) return;
     const badge = document.getElementById('releaseBadge');
-    if (!badge) return;
-    const build = badge.querySelector('b');
-    const date = badge.querySelector('span');
-    if (build) build.textContent = meta.version || build.textContent;
-    if (date) date.textContent = meta.date || date.textContent;
-    badge.title = `Sürüm ${meta.version || ''} · commit ${meta.commit || ''}`;
+    if (badge) {
+      const build = badge.querySelector('b');
+      const date = badge.querySelector('span');
+      if (build) build.textContent = meta.version || build.textContent;
+      if (date) date.textContent = meta.date || date.textContent;
+      badge.title = `Sürüm ${meta.version || ''} · commit ${meta.commit || ''}`;
+    }
     const footer = document.getElementById('releaseFooterBadge');
     if (footer) { footer.querySelector('b').textContent = meta.date || ''; footer.querySelector('span').textContent = `${meta.time || ''} · Güncelleme #${meta.run || ''}`.trim(); footer.title = 'Sürüm güncelleme zamanı'; }
   }).catch(() => {});
