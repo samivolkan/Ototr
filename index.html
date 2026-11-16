@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="ototr-version" content="SVK v1.0.233-cancel-first" />
   <title>OTOTR Genel Merkez ERP + CRM</title>
+  <link rel="canonical" href="https://samivolkan.github.io/Ototr/index.html#google-reviews">
   <link rel="icon" type="image/svg+xml" href="docs/ototr-favicon.svg">
   <link rel="stylesheet" href="assets/ototr-ai-assistant.css?v=2">
   <link rel="stylesheet" href="assets/erp-arge-center.css?v=20261113-3">
@@ -19,6 +20,11 @@
   <script>
     (function(){
       try{
+        const currentUrl = new URL(window.location.href);
+        if (currentUrl.searchParams.has('release') && [...currentUrl.searchParams.keys()].every(key => key === 'release')) {
+          currentUrl.search = '';
+          history.replaceState(null, document.title, `${currentUrl.pathname}${currentUrl.hash || '#google-reviews'}`);
+        }
         window.__OTOTR_DEALER_STANDALONE__ = false;
         if(window.__OTOTR_DEALER_STANDALONE__){
           document.documentElement.classList.add('dealer-standalone-root');
@@ -3053,7 +3059,7 @@
       'assets/google-review-analytics.js?v=1',
       'assets/google-review-dashboard.js?v=1',
       'assets/google-review-refresh.js?v=google-refresh-5',
-      'assets/google-review-command-center.js?v=20261116-13'
+      'assets/google-review-command-center.js?v=20261116-14'
     ];
     const loadNext=(i)=>{ if(i>=modules.length)return; const s=document.createElement('script'); s.src=modules[i]; s.onload=()=>loadNext(i+1); s.onerror=()=>loadNext(i+1); document.head.appendChild(s); };
     const start=()=>loadNext(0);

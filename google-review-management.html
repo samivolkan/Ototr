@@ -650,7 +650,7 @@ main{margin-left:208px;width:calc(100% - 208px);max-width:none;padding:22px}
       <div class="chart-card span-8">
         <div class="chart-head">
           <h3>Yorum hacmi — hedefe karşı <span class="sub">son 12 ay</span></h3>
-          <div class="chart-legend"><span><i style="background:#2563eb"></i>Gerçek</span><span><i style="background:#94a3b8"></i>Hedef</span></div>
+          <div class="chart-legend"><span><i style="background:#2563eb"></i>Gerçek</span><span><i style="background:#7c3aed"></i>Yorum trendi</span><span><i style="background:#e11d48"></i>Hedef</span></div>
         </div>
         <div class="chart-wrap h-260"><canvas id="chartTrend"></canvas></div>
       </div>
@@ -1625,6 +1625,15 @@ const charts = {};
 // already-painted chart without depending on a module/global lexical quirk.
 window.__ototrCharts = charts;
 function destroyChart(id){ if (charts[id]){ charts[id].destroy(); delete charts[id]; } }
+function googleCommentTrendSeries(values){
+  const numbers = values.map(value => Number(value) || 0);
+  if (!numbers.length) return [];
+  const n = numbers.length, meanX = (n - 1) / 2, meanY = numbers.reduce((sum, value) => sum + value, 0) / n;
+  const denominator = numbers.reduce((sum, _, index) => sum + (index - meanX) ** 2, 0);
+  const slope = denominator ? numbers.reduce((sum, value, index) => sum + (index - meanX) * (value - meanY), 0) / denominator : 0;
+  const intercept = meanY - slope * meanX;
+  return numbers.map((_, index) => Math.max(0, Number((intercept + slope * index).toFixed(2))));
+}
 
 function initCharts(){
   const isDark = document.documentElement.dataset.theme === "dark";
@@ -1640,6 +1649,7 @@ function initCharts(){
     charts.chartTrend = new Chart(ctxT, {
     type:"line", data:{ labels:SEED.MONTHS, datasets:[
       { label:"Gerçek", data:SEED.VOL, borderColor:"#2563eb", backgroundColor:(c)=>{ const g=c.chart.ctx.createLinearGradient(0,0,0,240); g.addColorStop(0,"rgba(37,99,235,.22)"); g.addColorStop(1,"rgba(37,99,235,0)"); return g; }, borderWidth:2.5, pointRadius:3, pointBackgroundColor:"#fff", pointBorderColor:"#2563eb", pointBorderWidth:2, fill:true, tension:.35 },
+      { label:"Yorum trendi", data:googleCommentTrendSeries(SEED.VOL), borderColor:"#7c3aed", backgroundColor:"transparent", borderWidth:2, borderDash:[5,4], pointRadius:0, fill:false, tension:0, order:1 },
       { label:"Hedef", data:Array(12).fill(monthlyTarget), borderColor:"#e11d48", backgroundColor:"transparent", borderWidth:3, borderDash:[10,5], pointRadius:3, pointBackgroundColor:"#fff", pointBorderColor:"#e11d48", pointBorderWidth:2, fill:false, tension:0, order:2 }
     ]},
     options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false} }, scales:{ x:{grid:{display:false}, ticks:{color:text, font}}, y:{beginAtZero:true, grid:{color:grid, drawBorder:false}, ticks:{color:text, font, stepSize:25}} } }
@@ -2786,7 +2796,8 @@ function renderStoreCharts(b){
     charts.storeTrendChart = new Chart(ctxT, {
       type:"line", data:{ labels:SEED.MONTHS, datasets:[
         { label:"Hedef", data:tgt, borderColor:isDark?"#475569":"#cbd5e1", backgroundColor:"transparent", borderWidth:1.8, borderDash:[6,4], pointRadius:0, tension:.35 },
-        { label:"Gerçek", data:vol, borderColor:"#2563eb", backgroundColor:"rgba(37,99,235,.1)", borderWidth:2.5, pointRadius:3, pointBackgroundColor:"#fff", pointBorderColor:"#2563eb", pointBorderWidth:2, fill:true, tension:.35 }
+        { label:"Gerçek", data:vol, borderColor:"#2563eb", backgroundColor:"rgba(37,99,235,.1)", borderWidth:2.5, pointRadius:3, pointBackgroundColor:"#fff", pointBorderColor:"#2563eb", pointBorderWidth:2, fill:true, tension:.35 },
+        { label:"Yorum trendi", data:googleCommentTrendSeries(vol), borderColor:"#7c3aed", backgroundColor:"transparent", borderWidth:2, borderDash:[5,4], pointRadius:0, tension:0, fill:false, order:1 }
       ]},
       options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false} }, scales:{ x:{grid:{display:false}, ticks:{color:text, font}}, y:{beginAtZero:true, grid:{color:grid, drawBorder:false}, ticks:{color:text, font}} } }
     });
@@ -3076,9 +3087,9 @@ renderNotifications();
 
 if (!STATE.onboarded) setTimeout(startTour, 500);
 </script>
-<script src="assets/google-review-management-bridge.js?v=20261116-14"></script>
+<script src="assets/google-review-management-bridge.js?v=20261116-15"></script>
 <script src="assets/google-review-management-controller.js?v=20261116-8"></script>
-<script src="assets/google-review-live-views.js?v=20261116-9"></script>
+<script src="assets/google-review-live-views.js?v=20261116-10"></script>
 <script src="assets/google-review-enhancements.js?v=20261116-7"></script>
 <script src="assets/google-review-live-features.js?v=20261116-7"></script>
 <script>

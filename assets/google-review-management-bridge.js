@@ -88,7 +88,8 @@
     if (!liveEnabled) return;
     const live = parentApi?.getBranchById?.(branchId);
     const reviews = parentApi?.fetchGoogleReviews?.(branchId) || [];
-    const items = getAI()?.getWorkflowItems?.() || [];
+    const aiApi = typeof ai !== 'undefined' ? ai : getAI();
+    const items = aiApi?.getWorkflowItems?.() || [];
     const policy = window.OTOTRReviewManagement?.state?.policy;
     const registry = window.OTOTRReviewLiveViews?.getBranchRegistry?.().find(item => item.id === branchId);
     const slaHours = Number(policy?.default_sla_hours) || Number(registry?.sla_hours) || 24;
@@ -213,7 +214,7 @@
     busy=true;lockEditing();
     try {
       const item=currentItem(row);
-      const result=await api.manageReview(row.erpReviewId,action,{version:item?.version,...extra});
+      const result=await (ai && ai.manageReview ? ai.manageReview.bind(ai) : api.manageReview.bind(api))(row.erpReviewId,action,{version:item?.version,...extra});
       dirty.delete(id);
       if(['publish','verify'].includes(action)) {
         toast(result.status==='published'?'Google yayını doğrulandı.':'Yayın sonucu: '+result.status,result.status==='published'?'ok':'warn');

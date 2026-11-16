@@ -57,6 +57,17 @@
       count: totals.get(month.toISOString().slice(0, 7)) || 0,
     }));
   }
+  function commentTrendSeries(values) {
+    const numbers = values.map(value => Number(value) || 0);
+    if (!numbers.length) return [];
+    const n = numbers.length;
+    const meanX = (n - 1) / 2;
+    const meanY = numbers.reduce((sum, value) => sum + value, 0) / n;
+    const denominator = numbers.reduce((sum, _, index) => sum + (index - meanX) ** 2, 0);
+    const slope = denominator ? numbers.reduce((sum, value, index) => sum + (index - meanX) * (value - meanY), 0) / denominator : 0;
+    const intercept = meanY - slope * meanX;
+    return numbers.map((_, index) => Math.max(0, Number((intercept + slope * index).toFixed(2))));
+  }
   const scopeAliases = { live: 'branch-google-nilufer', gebze: 'branch-google-gebze', inegol: 'branch-google-inegol' };
   function branchIdForScope(value) { return scopeAliases[value] || value; }
   function branchIndexForId(id) { return id === 'branch-google-gebze' ? 1 : id === 'branch-google-inegol' ? 2 : id === 'branch-google-nilufer' ? 0 : -1; }
@@ -75,7 +86,7 @@
     const branchId = branchIdForScope(scope), index = branchIndexForId(branchId), custom = index < 0;
     return rows.filter(r => (r.branch_id === branchId || (!custom && Number(r.branchIdx) === index)) && (branchId === 'branch-google-nilufer' || custom ? !!r.erpItemId : !r.erpItemId));
   }
-  const pure = { timestamp, monthKey, aggregateReviews, monthlySeries, scopeRows, scopeRecords };
+  const pure = { timestamp, monthKey, aggregateReviews, monthlySeries, commentTrendSeries, scopeRows, scopeRecords };
   if (typeof module === 'object' && module.exports) module.exports = pure;
   if (!root || !root.document) return;
 
@@ -301,7 +312,11 @@
   }
   function realCharts(store = false) {
     const a = stats(), series = monthlySeries(rows()), target = currentTarget(), targetValue = Number(target?.monthly_target ?? target?.target ?? currentBranch()?.target ?? 0);
-    const trendDatasets = [{ label: 'Alınan yorumlar', data: series.map(m => m.count), borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,.1)', fill: true, tension: .3 }];
+    const counts = series.map(m => m.count);
+    const trendDatasets = [
+      { label: 'Alınan yorumlar', data: counts, borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,.1)', fill: true, tension: .3 },
+      { label: 'Yorum trendi', data: commentTrendSeries(counts), borderColor: '#7c3aed', backgroundColor: 'transparent', borderDash: [5, 4], pointRadius: 0, fill: false, tension: 0, order: 1 },
+    ];
     if (live() && Number.isFinite(targetValue) && targetValue > 0) trendDatasets.push({ label: `${currentBranch()?.name || 'Şube'} · hedef`, data: series.map(() => targetValue), borderColor: '#e11d48', borderDash: [8, 5], pointRadius: 2, fill: false, tension: 0 });
     chart(store ? 'storeTrendChart' : 'chartTrend', 'line', series.map(m => m.label), trendDatasets);
     chart(store ? 'storeRatingChart' : 'chartRating', 'bar', ['5★', '4★', '3★', '2★', '1★'], [{ label: 'Alınan yorumlar', data: a.ratingCounts, backgroundColor: ['#12805c', '#6bbf9b', '#fbbf24', '#fb923c', '#b42318'] }]);
