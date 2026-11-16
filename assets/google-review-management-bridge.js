@@ -4,7 +4,14 @@
   const embedded = new URLSearchParams(location.search).get('embedded') === '1' && window.parent !== window;
   let parentApi = null;
   try { if (embedded && window.parent.location.origin === location.origin) parentApi = window.parent.OTOTRGoogleReputation; } catch (_) {}
-  const ai = parentApi ? window.parent.OTOTRGoogleReviewAI : null;
+  // The ERP shell loads optional Google modules asynchronously. Resolve the
+  // parent API lazily so the iframe never captures a null API during the first
+  // paint (the old behavior made "Yeni yanıt" appear to do nothing).
+  const getAI = () => {
+    try { return embedded && window.parent.location.origin === location.origin ? (window.parent.OTOTRGoogleReviewAI || null) : null; }
+    catch (_) { return null; }
+  };
+  const aiProxy = (name) => (...args) => getAI()?.[name]?.(...args);
   const escape = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const liveIds = new Map();
   let nextId = -1; // Demo forms allocate positive IDs; keep the namespaces disjoint.
@@ -59,7 +66,7 @@
     if (!liveEnabled) return;
     const live = parentApi?.getBranchById?.(branchId);
     const reviews = parentApi?.fetchGoogleReviews?.(branchId) || [];
-    const items = ai?.getWorkflowItems?.() || [];
+    const items = getAI()?.getWorkflowItems?.() || [];
     const policy = window.OTOTRReviewManagement?.state?.policy;
     const registry = window.OTOTRReviewLiveViews?.getBranchRegistry?.().find(item => item.id === branchId);
     const slaHours = Number(policy?.default_sla_hours) || Number(registry?.sla_hours) || 24;
@@ -154,24 +161,26 @@
   const liveRow = id => REVIEWS.find(r => r.id === id && !r.demo);
   const dirty = new Map();
   let pendingApproval = null, busy = false;
-  const currentItem = row => ai?.getWorkflowItems?.().find(i=>i.kind==='reply' && i.branch_id===currentBranchId() && i.review_id===row.googleReviewId);
+  const currentItem = row => getAI()?.getWorkflowItems?.().find(i=>i.kind==='reply' && i.branch_id===currentBranchId() && i.review_id===row.googleReviewId);
   const isEditing = () => dirty.size>0 || Boolean(pendingApproval) || busy;
   window.OTOTRReviewBridge = {hydrate:hydrateLiveBranch,isEditing};
-  const lockEditing = () => ai?.setManagementEditing?.(isEditing());
+  const lockEditing = () => getAI()?.setManagementEditing?.(isEditing());
   async function act(id, action, extra={}) {
     const row=liveRow(id); if(!row) return missing();
     // Older ERP shells exposed generate/createTask before manageReview. Keep
     // those calls as a compatibility fallback without bypassing the current
     // authenticated manageReview workflow when it is available.
-    if (!ai?.manageReview) {
-      if (['prepare','regenerate'].includes(action) && ai?.generate) {
-        const result = await ai.generate(row.erpReviewId);
+    const ai = getAI();
+    const api = getAI();
+    if (!api?.manageReview) {
+      if (['prepare','regenerate'].includes(action) && api?.generate) {
+        const result = await api.generate(row.erpReviewId);
         hydrateLiveBranch();
         if (typeof renderReviews === 'function') renderReviews();
         return result;
       }
-      if (['branch','legal','complaint'].includes(action) && ai?.createTask) {
-        const result = await ai.createTask(row.erpReviewId, action);
+      if (['branch','legal','complaint'].includes(action) && api?.createTask) {
+        const result = await api.createTask(row.erpReviewId, action);
         hydrateLiveBranch();
         if (typeof renderReviews === 'function') renderReviews();
         return result;
@@ -182,7 +191,7 @@
     busy=true;lockEditing();
     try {
       const item=currentItem(row);
-      const result=await ai.manageReview(row.erpReviewId,action,{version:item?.version,...extra});
+      const result=await api.manageReview(row.erpReviewId,action,{version:item?.version,...extra});
       dirty.delete(id);
       if(['publish','verify'].includes(action)) {
         toast(result.status==='published'?'Google yayını doğrulandı.':'Yayın sonucu: '+result.status,result.status==='published'?'ok':'warn');
@@ -199,7 +208,7 @@
     if(dirty.has(id))return toast('Önce düzenlediğiniz taslağı kaydedin.','warn');
     if(item?.review_snapshot?.rejection)return toast('Bu taslak reddedildi. Önce düzenleyip yeniden kaydedin.','warn');
     if(!item?.reply_text || !['approval_pending','publish_failed'].includes(item.status)) {
-      if (!ai?.manageReview && ai?.generate) return ai.generate(row.erpReviewId);
+      if (!getAI()?.manageReview && getAI()?.generate) return getAI().generate(row.erpReviewId);
       return toast('Önce geçerli bir taslak hazırlayın.','warn');
     }
     pendingApproval={id,version:item.version,text:item.reply_text};lockEditing();
@@ -221,6 +230,7 @@
     const row=liveRow(id), item=row && currentItem(row);
     if (!row) return toast('Bu canlı yorum için ERP yanıt kaydı bulunamadı. Önce Bursa’yı yenileyin.','warn');
     if (dirty.has(id)) return toast('Önce açık düzenlemeyi kaydedin veya vazgeçin.','warn');
+    const ai = getAI();
     if (!item && ai?.generate) return ai.generate(row.erpReviewId);
     if (!item) return toast('Bu canlı yorum için ERP yanıt kaydı bulunamadı. Önce Bursa’yı yenileyin.','warn');
     const regenerate = ai?.['regeneratePublishedItem'] || ai?.['regenerateItem'];
@@ -244,14 +254,15 @@
     const text=box.value.trim();
     if (!dirty.has(id)) return toast('Önce “Yanıtı düzenle” seçeneğini açın.','info');
     if (!text || text.length > 4000) return toast('Yanıt 1–4000 karakter olmalıdır.','warn');
-    if (!ai?.googleBusinessRequest) return missing();
+    const api = getAI();
+    if (!api?.googleBusinessRequest) return missing();
     busy=true; lockEditing();
     try {
-      const data=await ai.googleBusinessRequest('save_draft',{account_id:item.account_id,location_id:item.location_id,review_id:item.review_id,branch_id:item.branch_id,item_id:item.id,expected_version:item.version,reply_text:text,draft_source:'manual',edit_published:true});
+      const data=await api.googleBusinessRequest('save_draft',{account_id:item.account_id,location_id:item.location_id,review_id:item.review_id,branch_id:item.branch_id,item_id:item.id,expected_version:item.version,reply_text:text,draft_source:'manual',edit_published:true});
       dirty.delete(id); box.readOnly=true; box.dataset.liveEditing='';
-      await ai.refreshWorkflow?.();
+      await api.refreshWorkflow?.();
       hydrateLiveBranch(); renderReviews();
-      ai?.['openItem']?.(data.item.id);
+      api?.['openItem']?.(data.item.id);
       toast('Güncel yanıt kaydedildi; yayın için insan onayı bekleniyor.','ok');
       return data;
     } catch (e) { toast(e.message || 'Güncel yanıt kaydedilemedi.','warn'); }
@@ -385,7 +396,7 @@
     window[name] = (id, ...args) => {
       const row = collection.find(row => row.id === id);
       if (row?.erpItemId) {
-        if (ai?.['openItem']) return ai['openItem'](row.erpItemId);
+        if (getAI()?.['openItem']) return getAI()['openItem'](row.erpItemId);
         const review=REVIEWS.find(r=>!r.demo && currentItem(r)?.id===row.erpItemId);
         if(review){ switchView('reviews'); if (typeof selectReview === 'function') selectReview(review.id); else { SEL=review.id; renderReviews?.(); } }
         else toast('Bu canlı görev ERP kuyruğunda kayıtlıdır. Demo adımları canlı görevi değiştiremez.', 'info');
@@ -414,11 +425,11 @@
   window.saveAI=()=>{originalSaveAI();toast('Bu ayarlar yalnız demo için kaydedildi; canlı OpenAI yapılandırması sunucuda korunuyor.','info');};
   const originalSystem = window.renderSystem;
   window.renderSystem = (...args) => {
-    const result=originalSystem(...args), workflow=ai?.getWorkflowState?.();
+    const result=originalSystem(...args), workflow=getAI()?.getWorkflowState?.();
     document.getElementById('healthMetrics').innerHTML = `<div class="metric"><div class="ml">ERP kayıt bağlantısı</div><div class="mv">${workflow?.loaded && !workflow.error ? 'Hazır' : 'Doğrulanmadı'}</div><div class="md">${escape(workflow?.error || 'Yetkili ERP oturumu üzerinden')}</div></div>`;
     document.getElementById('svcGrid').innerHTML = '<div class="card">Google bağlantısı kontrol ediliyor…</div>';
     document.getElementById('quotaList').textContent = 'Kota, maliyet, SMTP, Slack ve WhatsApp sağlık ölçümleri bu ERP servisinden sağlanmıyor.';
-    if(ai?.googleBusinessStatus) Promise.resolve(ai.googleBusinessStatus()).then(status=>{
+    if(getAI()?.googleBusinessStatus) Promise.resolve(getAI().googleBusinessStatus()).then(status=>{
       document.getElementById('svcGrid').textContent = status?.connected ? 'Google: bağlı · OpenAI: ERP taslak servisinden çağrılır; her taslağın kaynağı kayıtta gösterilir.' : 'Google bağlantısı doğrulanamadı. Bağlantılar ekranını kontrol edin.';
     }).catch(()=>{document.getElementById('svcGrid').textContent='Google bağlantı sorgusu başarısız.';});
     return result;
@@ -456,7 +467,7 @@
   scopeLevel.onchange=()=>{ if(scopeLevel.value==='hq'||scopeLevel.value==='region') scopeValue.innerHTML='<option value="all">Tüm canlı şubeler</option>'; else if(scopeLevel.value==='city'){ const cities=[...new Set((window.OTOTRReviewLiveViews?.getBranchRegistry?.()||[]).map(item=>item.city).filter(Boolean))]; scopeValue.innerHTML=cities.map(city=>`<option value="${escape(city)}">${escape(city)}</option>`).join('')||'<option value="Bursa">Bursa</option>'; } else { scopeValue.innerHTML='<option value="all">Tüm canlı şubeler</option>'; refreshBranchControls(); } applyScopeFilter(); };
   scopeValue.onchange=applyScopeFilter;
   document.getElementById('emailModal')?.addEventListener?.('click',event=>{if(event.target.id==='emailModal'){pendingApproval=null;lockEditing();}});
-  window.addEventListener('beforeunload',()=>ai?.setManagementEditing?.(false));
+  window.addEventListener('beforeunload',()=>getAI()?.setManagementEditing?.(false));
   window.addEventListener('message', event => {
     if (event.origin !== location.origin || event.source !== window.parent || event.data?.type !== 'ototr-google-refresh') return;
     if(isEditing())return;
@@ -465,7 +476,7 @@
   });
   if (typeof switchView === 'function') switchView(STATE?.view || 'overview');
   // Workflow refresh uses the existing authenticated ERP gateway. No API secrets live here.
-  if (ai?.refreshWorkflow) Promise.resolve(ai.refreshWorkflow()).then(() => {
+  if (getAI()?.refreshWorkflow) Promise.resolve(getAI().refreshWorkflow()).then(() => {
     hydrateLiveBranch(); switchView(STATE.view || 'overview');
   }).catch(() => toast('ERP kuyruğu alınamadı. Bağlantılar ekranını kontrol edin.', 'warn'));
 })();
