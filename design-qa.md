@@ -93,3 +93,11 @@ passed
 - Canlı Google'a müşteri yanıtı gönderimi ve canlı hedef değişikliği bu tasarım testi kapsamında yapılmadı.
 
 final result: passed
+
+### Canlı yayın son kontrolü
+
+- Yayında ERP kayıtları, aylık hedef ve gerçekleşme/ilerleme alanları doğrulandı.
+- ERP'nin zaten Türkçe biçimlenmiş senkronizasyon tarihi yeniden `Date` ile ayrıştırıldığında `Invalid Date` oluşturuyordu. Köprü Türkçe etiketi koruyacak şekilde düzeltildi; gün/ay karışmasına karşı regresyon testi eklendi.
+- Alternatif sayfada dış ERP kabuğunun ikinci profil kontrolü gizlendi; çıkış işlemi başlıktaki açılır Profil menüsünde tutuldu. Yayın sayacı yalnız bir kez sol altta gösterilir.
+- Hedefli test kapsamı bu düzeltmeyle 72 teste çıktı.
+- Gebze/İnegöl'den canlı şubeye dönüşte demo yönetim isteğinin canlı hedef formunu kilitlemesi giderildi. Demo kapsamı yönetim servisini çağırmaz; Nilüfer'e dönüş mevcut ERP okumasını yeniler.

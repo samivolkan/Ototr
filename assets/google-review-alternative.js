@@ -69,6 +69,19 @@
   if (!second) return;
 
   doc.title = 'OTOTR · Yorum Sayfası 2';
+  try {
+    if (root.parent !== root && root.parent.location.origin === location.origin) {
+      doc.documentElement.classList.add('review-embedded');
+      const parentDoc = root.parent.document;
+      if (!parentDoc.getElementById('reviewPage2ShellStyle')) {
+        const style = parentDoc.createElement('style'); style.id = 'reviewPage2ShellStyle';
+        // Active only while this alternative iframe is mounted. The ERP's
+        // profile control returns normally when navigating to another module.
+        style.textContent = 'body:has(.google-management-frame[src*="variant=2"]) #ototr-profile-actions{display:none!important}';
+        parentDoc.head.append(style);
+      }
+    }
+  } catch (_) { /* A standalone preview has its own header controls. */ }
   const subtitle = doc.querySelector('.bsub'); if (subtitle) subtitle.textContent = 'Google Yorum · 2';
   const live = () => root.OTOTRReviewLiveViews;
   const branchId = () => live()?.getBranchId?.() || BRANCH_IDS[0];
@@ -95,6 +108,23 @@
   doc.querySelector('main')?.prepend(scopeBar);
   const branchSelect = byId('erpGlobalScope');
   if (branchSelect) scopeBar.append(branchSelect.parentElement);
+  const managementApi = root.OTOTRReviewManagement;
+  if (managementApi) {
+    const sharedRefresh = managementApi.refresh;
+    // Demo menus do not need live management requests. A failed demo read
+    // must not leave the live target editor disabled when returning to Bursa.
+    managementApi.refresh = function (...args) {
+      return isLive() ? sharedRefresh.apply(this, args) : Promise.resolve(managementApi.state);
+    };
+    let liveRefreshPending = false;
+    const refreshSelectedLiveBranch = () => {
+      if (!liveRefreshPending || !isLive() || management().loading) return;
+      liveRefreshPending = false;
+      managementApi.refresh().catch(() => root.toast('Canlı yönetim verisi yenilenemedi.', 'warn'));
+    };
+    branchSelect?.addEventListener('change', () => { liveRefreshPending = isLive(); refreshSelectedLiveBranch(); });
+    root.addEventListener('ototr-management-ready', refreshSelectedLiveBranch);
+  }
   const periodLabel = node('label', 'Dönem'); periodLabel.htmlFor = 'v2Period';
   const periodSelect = node('select'); periodSelect.id = 'v2Period'; periodSelect.setAttribute('aria-label', 'Analiz dönemi');
   for (const [value, label] of Object.entries(PERIODS)) { const option = node('option', label); option.value = value; periodSelect.append(option); }
@@ -209,7 +239,7 @@
 
   root.renderPerformance = function () {
     const a = stats(rows()), monthly = stats(periodRows(allRows(), 'month')), target = currentTarget();
-    const ratio = progress(monthly.count, target), canSave = !isLive() || (management().loaded && !management().error && !management().targetError);
+    const ratio = progress(monthly.count, target), canSave = !isLive() || (management().loaded && !management().loading && !management().error && !management().targetError);
     const head = byId('perfTable')?.closest('.card2')?.querySelector('.head'); if (head) head.classList.add('v2-performance-head');
     byId('perfTable').innerHTML = `<thead><tr><th>Şube</th><th class="n">Bu ayın hedefi</th><th class="n">Bu ay alınan</th><th>Hedef ilerlemesi</th><th class="n">Dönem yorumları</th><th class="n">Puan</th><th class="n">Yanıt</th><th>Ortam</th></tr></thead><tbody><tr><td>${html(branchName())}</td><td><div class="v2-target-editor"><input id="v2Target" aria-label="${html(branchName())} aylık hedef" type="number" min="1" max="10000" step="1" value="${target ?? ''}" placeholder="Hedef" ${canSave ? '' : 'disabled'}><button id="v2SaveTarget" class="btn sm p" ${canSave ? '' : 'disabled'}>Kaydet</button></div></td><td class="n">${monthly.count}</td><td>${ratio == null ? 'Hedef girilmedi' : `<div class="v2-progress"><progress aria-label="Hedef ilerlemesi" max="100" value="${Math.min(100, ratio)}"></progress><b>${ratio}%</b></div>`}</td><td class="n">${a.count}</td><td class="n">${fmt(a.average)}</td><td class="n">${pct(a.responseRate)}</td><td><span class="chip ${isLive() ? 'ok' : 'warn'}">${isLive() ? 'Canlı' : 'Demo'}</span></td></tr></tbody>`;
     byId('v2SaveTarget').onclick = saveTarget;
@@ -224,6 +254,8 @@
     const value = Number(byId('v2Target')?.value), button = byId('v2SaveTarget');
     if (!Number.isInteger(value) || value < 1 || value > 10000) return root.toast('Hedef 1–10000 arasında tam sayı olmalı.', 'warn');
     button.disabled = true;
+    if (branchSelect) branchSelect.disabled = true;
+    periodSelect.disabled = true;
     try {
       if (isLive()) {
         await root.OTOTRReviewManagement.saveTarget(value);
@@ -236,7 +268,11 @@
       }
       root.renderPerformance(); root.toast(`${branchName()} ${isLive() ? 'ERP' : 'demo'} hedefi kaydedildi.`, 'ok');
     } catch (error) { root.toast(error.message || 'Hedef kaydedilemedi.', 'warn'); }
-    finally { if (button.isConnected) button.disabled = false; }
+    finally {
+      if (button.isConnected) button.disabled = false;
+      if (branchSelect) branchSelect.disabled = false;
+      periodSelect.disabled = false;
+    }
   }
   root.exportPerformance = function () {
     const a = stats(rows()), monthly = stats(periodRows(allRows(), 'month'));

@@ -28,7 +28,7 @@ Kaynakta örnek değerlerle çalışan A/B başarı puanları, rastgele performa
 
 ## Doğrulama
 
-- 71 hedefli otomatik test geçti: canlı/demo ayrımı, ay sınırları, hedef serisi, API ve yanıt iş akışı kontrolleri.
+- 72 hedefli otomatik test geçti: canlı/demo ayrımı, ay sınırları, hedef serisi, Türkçe senkronizasyon tarihi, API ve yanıt iş akışı kontrolleri.
 - JavaScript sözdizimi ve `git diff --check` geçti.
 - Chrome masaüstü ve 390 × 844 mobil görünüm kontrol edildi.
 - Demo şube/dönem değişimi, hedef kaydetme ve yeniden yükleme sonrası kalıcılığı, yorum detayı ve alternatif taslak denemesi kontrol edildi.

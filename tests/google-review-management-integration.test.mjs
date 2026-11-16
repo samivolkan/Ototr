@@ -59,3 +59,13 @@ test('bridge carries ERP replyUpdatedAt into SLA dates and response history', ()
   assert.equal(reviews[0].pipeline.stages.responded.ts,reviews[0].replyDate);
   assert.equal((Date.parse(reviews[0].replyDate)-Date.parse(reviews[0].createdAt))/3600000,1);
 });
+
+test('ERP Turkish synchronization labels are preserved without day/month reparsing', () => {
+  const source=bridge.slice(bridge.indexOf('  function hydrateLiveNilufer()'),bridge.indexOf('  function markEnvironment()'));
+  for (const label of ['16.11.2026 23:12:00','7.11.2026 09:30:00']) {
+    const branches=[{id:'branch-google-nilufer'}];
+    const context={BRANCHES:branches,REVIEWS:[],LEGAL_CASES:[],COMPLAINTS:[],APPROVALS:[],liveBranchId:'branch-google-nilufer',liveIds:new Map(),workIds:new Map(),nextId:-1,escape:String,window:{},ai:{getWorkflowItems:()=>[]},parentApi:{getBranchById:()=>({lastSyncedAt:label}),fetchGoogleReviews:()=>[]}};
+    vm.runInNewContext(source+';hydrateLiveNilufer();',context);
+    assert.equal(branches[0].lastSync,label);
+  }
+});

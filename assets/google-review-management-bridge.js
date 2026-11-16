@@ -107,7 +107,13 @@
       target.slaRate = 0;
       target.responseRate = reviews.length ? Math.round(reviews.filter(r => r.isReplied).length / reviews.length * 100) : 0;
       target.criticalRate = reviews.length ? Math.round(reviews.filter(r => r.rating <= 2).length / reviews.length * 100) : 0;
-      target.lastSync = live?.lastSyncedAt ? new Date(live.lastSyncedAt).toLocaleString('tr-TR') : 'Senkronizasyon bekleniyor';
+      // The ERP already formats this display field in Turkish. Parsing it
+      // again can fail, or silently swap day/month for dates such as 7.11.
+      const syncText = String(live?.lastSyncedAt || '');
+      const localizedSync = /^\d{1,2}\.\d{1,2}\.\d{4}(?:,)?\s+\d{1,2}:\d{2}(?::\d{2})?$/.test(syncText);
+      const syncDate = syncText ? new Date(syncText) : null;
+      target.lastSync = localizedSync ? syncText : Number.isFinite(syncDate?.getTime())
+        ? syncDate.toLocaleString('tr-TR') : syncText ? 'Zaman bilgisi alınamadı' : 'Senkronizasyon bekleniyor';
     }
     const mapped = reviews.filter(review => !review.demo && review.id && (review.branchId === branchId || !review.branchId)).map(review => {
       if (!liveIds.has(review.id)) liveIds.set(review.id, nextId--);
