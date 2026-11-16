@@ -105,7 +105,7 @@
     replace(APPROVALS, 'reply', item => ({type:'ERP yanıtı · '+escape(item.review_snapshot?.rejection ? 'Reddedildi' : item.status),level:1,total:1,assignedTo:'ERP yetkili onayı',slaH:slaHours,openedAt:Date.parse(item.created_at)}));
     for (let i=APPROVALS.length-1;i>=0;i--) {
       const item=items.find(item=>item.id===APPROVALS[i].erpItemId);
-      if(item && (!['approval_pending','publish_failed','publish_unknown'].includes(item.status) || item.review_snapshot?.rejection)) APPROVALS.splice(i,1);
+      if(item && (['published','done','closed','rejected'].includes(item.status) || item.review_snapshot?.rejection)) APPROVALS.splice(i,1);
     }
   }
 
@@ -138,7 +138,25 @@
   window.OTOTRReviewBridge = {hydrate:hydrateLiveNilufer,isEditing};
   const lockEditing = () => ai?.setManagementEditing?.(isEditing());
   async function act(id, action, extra={}) {
-    const row=liveRow(id); if(!row || !ai?.manageReview) return missing();
+    const row=liveRow(id); if(!row) return missing();
+    // Older ERP shells exposed generate/createTask before manageReview. Keep
+    // those calls as a compatibility fallback without bypassing the current
+    // authenticated manageReview workflow when it is available.
+    if (!ai?.manageReview) {
+      if (['prepare','regenerate'].includes(action) && ai?.generate) {
+        const result = await ai.generate(row.erpReviewId);
+        hydrateLiveNilufer();
+        if (typeof renderReviews === 'function') renderReviews();
+        return result;
+      }
+      if (['branch','legal','complaint'].includes(action) && ai?.createTask) {
+        const result = await ai.createTask(row.erpReviewId, action);
+        hydrateLiveNilufer();
+        if (typeof renderReviews === 'function') renderReviews();
+        return result;
+      }
+      return missing();
+    }
     if(busy)return;
     busy=true;lockEditing();
     try {
@@ -159,7 +177,10 @@
     const item=currentItem(row);
     if(dirty.has(id))return toast('Önce düzenlediğiniz taslağı kaydedin.','warn');
     if(item?.review_snapshot?.rejection)return toast('Bu taslak reddedildi. Önce düzenleyip yeniden kaydedin.','warn');
-    if(!item?.reply_text || !['approval_pending','publish_failed'].includes(item.status))return toast('Önce geçerli bir taslak hazırlayın.','warn');
+    if(!item?.reply_text || !['approval_pending','publish_failed'].includes(item.status)) {
+      if (!ai?.manageReview && ai?.generate) return ai.generate(row.erpReviewId);
+      return toast('Önce geçerli bir taslak hazırlayın.','warn');
+    }
     pendingApproval={id,version:item.version,text:item.reply_text};lockEditing();
     document.getElementById('emailFrom').textContent='Bursa Nilüfer · canlı Google yayını';
     document.getElementById('emailTo').textContent='Google yorumu';
@@ -184,14 +205,18 @@
   window.closeRouting=id=>liveRow(id)?toast('Canlı görev durumu ERP kaydı üzerinden takip edilir.','info'):originalCloseRoute(id);
   const originalBulk=window.bulkAction;
   window.bulkAction=action=>{
-    if([...SELECTED].some(id=>liveRow(id))&&action!=='clear')return toast('Canlı yorumları ayrı ayrı inceleyip onaylayın. Demo toplu işlemler canlı kayıtları değiştirmez.','warn');
+    if([...SELECTED].some(id=>liveRow(id))&&action!=='clear') {
+      toast('Canlı yorumları ayrı ayrı inceleyip onaylayın. Demo toplu işlemler canlı kayıtları değiştirmez.','warn');
+      parentApi?.['setCenterView']?.('inbox','waiting');
+      return;
+    }
     return originalBulk(action);
   };
   const branchFilter=document.createElement('select');branchFilter.id='erpBranchFilter';branchFilter.setAttribute?.('aria-label','Şube ve veri ortamı');
   branchFilter.innerHTML='<option value="live">Bursa Nilüfer · Canlı</option><option value="Kocaeli Gebze">Gebze · Demo</option><option value="Bursa İnegöl">İnegöl · Demo</option><option value="all">Tümü · Canlı + Demo</option>';
   branchFilter.value=parentApi?'live':'all';
   document.getElementById('rvSort')?.after(branchFilter);
-  const originalFiltered=window.getFilteredReviews;
+  const originalFiltered=typeof window.getFilteredReviews === 'function' ? window.getFilteredReviews : () => REVIEWS;
   window.getFilteredReviews=()=>originalFiltered().filter(row=>branchFilter.value==='all'||(branchFilter.value==='live'?!row.demo:row.demo&&row.store===branchFilter.value));
   branchFilter.onchange=()=>{SELECTED.clear();SEL=null;renderReviews();};
   const originalRender=window.renderReviews;
@@ -274,10 +299,17 @@
     const original = window[name];
     window[name] = (id, ...args) => {
       const row = collection.find(row => row.id === id);
-      if (row?.erpItemId) { const review=REVIEWS.find(r=>!r.demo && currentItem(r)?.id===row.erpItemId); if(review){ switchView('reviews');selectReview(review.id); } else toast('Bu canlı görev ERP kuyruğunda kayıtlıdır. Demo adımları canlı görevi değiştiremez.', 'info'); return; }
+      if (row?.erpItemId) {
+        if (ai?.['openItem']) return ai['openItem'](row.erpItemId);
+        const review=REVIEWS.find(r=>!r.demo && currentItem(r)?.id===row.erpItemId);
+        if(review){ switchView('reviews'); if (typeof selectReview === 'function') selectReview(review.id); else { SEL=review.id; renderReviews?.(); } }
+        else toast('Bu canlı görev ERP kuyruğunda kayıtlıdır. Demo adımları canlı görevi değiştiremez.', 'info');
+        return;
+      }
       return original(id, ...args);
     };
   }
+  if (typeof window.openCaseDetail !== 'function' && typeof window.openCase === 'function') window.openCaseDetail = window.openCase;
   const originalNewCase = window.saveCase;
   window.saveCase = () => {
     if (document.getElementById('lcBranch')?.value === '0') {
