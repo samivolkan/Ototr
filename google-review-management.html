@@ -1591,7 +1591,7 @@ function initCharts(){
   const ctxT = document.getElementById("chartTrend");
   if (ctxT) charts.chartTrend = new Chart(ctxT, {
     type:"line", data:{ labels:SEED.MONTHS, datasets:[
-      { label:"Hedef", data:SEED.TGT, borderColor:isDark?"#475569":"#cbd5e1", backgroundColor:"transparent", borderWidth:1.8, borderDash:[6,4], pointRadius:0, tension:.35 },
+      { label:"Hedef", data:(BRANCHES?.find(b=>b.live)?.target ? Array(12).fill(Number(BRANCHES.find(b=>b.live).target)/12) : SEED.TGT), borderColor:isDark?"#475569":"#cbd5e1", backgroundColor:"transparent", borderWidth:1.8, borderDash:[6,4], pointRadius:0, tension:.35 },
       { label:"Gerçek", data:SEED.VOL, borderColor:"#2563eb", backgroundColor:(c)=>{ const g=c.chart.ctx.createLinearGradient(0,0,0,240); g.addColorStop(0,"rgba(37,99,235,.22)"); g.addColorStop(1,"rgba(37,99,235,0)"); return g; }, borderWidth:2.5, pointRadius:3, pointBackgroundColor:"#fff", pointBorderColor:"#2563eb", pointBorderWidth:2, fill:true, tension:.35 }
     ]},
     options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false} }, scales:{ x:{grid:{display:false}, ticks:{color:text, font}}, y:{beginAtZero:true, grid:{color:grid, drawBorder:false}, ticks:{color:text, font, stepSize:25}} } }
