@@ -1,10 +1,10 @@
-import {sourceIcon,reportCards,performanceCards} from './visuals.mjs?v=20261117-visual-2';
-import {createParityUI} from './parity-ui.mjs?v=20261117-visual-2';
-import {reportCatalog,catalogData} from './report-catalog.mjs?v=20261117-visual-2';
-import {createShiftUI} from './shift-ui.mjs?v=20261117-visual-2';
-import {browserCloud} from './cloud.mjs?v=20261117-visual-2';
-import {leaveTypes,reportFields,reportData,policyBalance} from './workflows.mjs?v=20261117-visual-2';
-import {csv,escapeHTML as esc,money,dateText,DAY,iso} from './model.mjs?v=20261117-visual-2';
+import {sourceIcon,reportCards,performanceCards} from './visuals.mjs?v=20261117-modules-1';
+import {createParityUI} from './parity-ui.mjs?v=20261117-modules-1';
+import {reportCatalog,catalogData} from './report-catalog.mjs?v=20261117-modules-1';
+import {createShiftUI} from './shift-ui.mjs?v=20261117-modules-1';
+import {browserCloud} from './cloud.mjs?v=20261117-modules-1';
+import {leaveTypes,reportFields,reportData,policyBalance} from './workflows.mjs?v=20261117-modules-1';
+import {csv,escapeHTML as esc,money,dateText,DAY,iso} from './model.mjs?v=20261117-modules-1';
 
 export function createAdvanced(c){
  const {store,field,check,btn,modal,table,header,tabs,panel,notice,download,person,render,navigate,toast}=c;
