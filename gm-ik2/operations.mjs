@@ -28,6 +28,15 @@ export class HrStore extends WorkflowStore {
   for(const a of this.state.assessments){if(a.reviewerAssignments!==undefined&&(!Array.isArray(a.reviewerAssignments)||a.reviewerAssignments.some(r=>!a.participants?.includes(r.employeeId)||!validIds(r.reviewers)||!r.reviewers.length)))throw Error('Değerlendirici yedeği geçersiz.');if(a.reviews!==undefined&&(!Array.isArray(a.reviews)||a.reviews.some(r=>!a.reviewerAssignments?.some(t=>t.employeeId===r.employeeId&&t.reviewers.includes(r.reviewerId))||!Array.isArray(r.answers)||r.answers.length!==a.questions.length||r.answers.some(v=>typeof v!=='number'||!Number.isFinite(v)||v<0||v>100))))throw Error('Soru yanıtı yedeği geçersiz.');}
   for(const c of this.state.compensations){if(c.approvalChain!==undefined&&!validIds(c.approvalChain))throw Error('Ücret onay zinciri geçersiz.');for(const p of c.proposals||[])if(p.approvers&&(!validIds(p.approvers)||!Array.isArray(p.approvals)||p.approvals.length>p.approvers.length||p.approvals.some((v,i)=>v.actor!==p.approvers[i])))throw Error('Ücret onay kaydı geçersiz.');}
   const seen=new Set();for(const r of this.state.timesheets){validDate(r.date);const key=r.employeeId+'|'+r.date;if(seen.has(key)||!Number.isFinite(Number(r.hours))||Number(r.hours)<0||Number(r.hours)>24)throw Error('Puantaj yedeği geçersiz.');seen.add(key);}
+  const externalIds=new Set(),intervals=new Map();
+  for(const r of this.state.clockEntries||[]){
+   const from=Date.parse(r.in),to=r.out?Date.parse(r.out):Infinity;
+   if(!ids.includes(r.employeeId)||!Number.isFinite(from)||r.out&&(!Number.isFinite(to)||to<from||to-from>DAY))throw Error('PDKS yedeğinde tarih veya çalışan geçersiz.');
+   if(r.externalId){if(externalIds.has(r.externalId))throw Error('PDKS cihaz kimliği yinelenmiş.');externalIds.add(r.externalId);}
+   const previous=intervals.get(r.employeeId)||[];
+   if(previous.some(x=>x.from<to&&x.to>from))throw Error('PDKS yedeğinde çakışan oturumlar var.');
+   previous.push({from,to});intervals.set(r.employeeId,previous);
+  }
   attendanceDays(this.state.clockEntries||[]);
  }
  saveEmployee(input,id){if(input.policyId&&!this.state.policies.some(p=>p.id===input.policyId))throw Error('İzin politikası bulunamadı.');if(id===this.actor&&input.status==='inactive')throw Error('Kendi hesabınızı pasife alamazsınız.');return super.saveEmployee(input,id);}

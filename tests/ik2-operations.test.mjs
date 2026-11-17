@@ -3,6 +3,14 @@ import assert from 'node:assert/strict';
 import {HrStore,attendanceDays} from '../gm-ik2/operations.mjs';
 import {policyBalance} from '../gm-ik2/workflows.mjs';
 import {reportData} from '../gm-ik2/workflows.mjs';
+test('malformed and overlapping clock backups cannot replace valid state',()=>{
+ const s=new HrStore(),before=structuredClone(s.state);
+ const row={id:'clock-test',employeeId:'e2',in:'2026-11-17T06:00:00Z',out:null};
+ for(const entries of [[{...row,in:'invalid'}],[row,{...row,id:'clock-test-2'}],[{...row,out:'2026-11-17T07:00:00Z',externalId:'device-1'},{...row,id:'clock-test-2',in:'2026-11-18T06:00:00Z',out:'2026-11-18T07:00:00Z',externalId:'device-1'}]]){
+  const backup=structuredClone(before);backup.clockEntries=entries;
+  assert.throws(()=>s.restore(backup));assert.deepEqual(s.state,before);
+ }
+});
 test('attendance splits overnight sessions at Istanbul midnight',()=>{const rows=attendanceDays([{id:'c1',employeeId:'e2',in:'2026-11-17T20:00:00Z',out:'2026-11-17T23:00:00Z'}]);assert.deepEqual(rows.map(r=>[r.date,r.hours]),[['2026-11-17',1],['2026-11-18',2]]);});
 test('multiple sessions aggregate once and synchronization is idempotent',()=>{let now='2026-11-17T06:00:00Z';const s=new HrStore(undefined,{now:()=>now});s.clock('e1','in');now='2026-11-17T10:00:00Z';s.clock('e1','out');now='2026-11-17T11:00:00Z';s.clock('e1','in');now='2026-11-17T15:00:00Z';s.clock('e1','out');s.syncAttendance();assert.equal(s.state.timesheets.length,1);assert.equal(s.state.timesheets[0].hours,8);new HrStore(s.state);});
 test('manual attendance overrides are preserved until explicitly switched',()=>{let now='2026-11-17T06:00:00Z';const s=new HrStore(undefined,{now:()=>now});s.clock('e1','in');now='2026-11-17T07:00:00Z';s.clock('e1','out');s.timesheet({employeeId:'e1',date:'2026-11-17',hours:7,note:'Düzeltme'});assert.equal(s.syncAttendance().length,1);assert.equal(s.state.timesheets[0].hours,7);s.useClockAttendance('e1','2026-11-17');assert.equal(s.state.timesheets[0].hours,1);});
