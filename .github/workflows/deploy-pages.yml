@@ -56,7 +56,7 @@ jobs:
         run: node scripts/apply-erp-access-gate.cjs
 
       - name: Verify IK2 demo workflows
-        run: node --test tests/ik2-model.test.mjs tests/ik2-workflows.test.mjs tests/ik2-navigation.test.mjs tests/ik2-audit-regressions.test.mjs tests/ik2-operations.test.mjs tests/ik2-cloud.test.mjs
+        run: node --test tests/ik2-model.test.mjs tests/ik2-workflows.test.mjs tests/ik2-navigation.test.mjs tests/ik2-audit-regressions.test.mjs tests/ik2-operations.test.mjs tests/ik2-cloud.test.mjs tests/ik2-parity.test.mjs
 
       - name: Stage public assets without backend data
         run: rsync -a --exclude='.git' --exclude='backend' --exclude='.env*' --exclude='*.sqlite*' --exclude='node_modules' ./ /tmp/ototr-pages/
