@@ -36,7 +36,7 @@ Test: `node --test tests/ik2-model.test.mjs tests/ik2-workflows.test.mjs tests/i
 
 ## Doğrulama — 17 Kasım 2026
 
-54 İK2 otomatik testi ve mevcut ERP menüsünün 3 regresyon testi. Pages yayınına İK2 test adımı eklendi.
+62 İK2 otomatik testi ve mevcut ERP menüsünün 3 regresyon testi. Pages yayınına İK2 test adımı eklendi.
 
 Tarayıcıda 44 ana/alt görünümün açılması; çalışan oluşturma ve boş alan hatası; altı adımlı politika; iki ayrı kişiyle onay; çalışan rolünde başka özlük dosyası/bordro engeli; yedi adımlı performans ve 75/80 puanlarından %60 ağırlıkla 77 sonucu kontrol edildi.
 
@@ -63,3 +63,9 @@ Bu maddeler tamamlanmış demo işlevleriyle karıştırılmamalıdır. Canlı �
 ## Lisans ve gizlilik
 
 Yerel Lucide 0.468.0 ikonlarının lisansı `vendor/LUCIDE-LICENSE` dosyasındadır. Kaynak ürünün logosu, çalışan fotoğrafları, ekran kayıtları veya özel verileri Git'e eklenmez.
+
+## İkinci modül denetimi — 17 Kasım 2026
+
+49 ana/alt görünüm açıldı; 28 bağımsız sentetik iş akışı ve durumun yeniden yüklenmesi doğrulandı. Sekiz yeni regresyon testiyle gece vardiyası–ertesi gün izin çakışması, puanlandıktan sonra ağırlık değişimi, bekleyen onaylayıcının pasife alınması, teklif altına bütçe indirilmesi, tamamlanan akışın görev değişimi, kullanılan birimin kaldırılması, bozuk bordro yedeği ve bozuk özlük içe aktarımı düzeltildi. Toplam 65 test (62 İK2 + 3 ERP menüsü) geçti. Bu sayılar tüm olası senaryoların veya Kolay İK eşdeğerliğinin kanıtı değildir.
+
+PDKS giriş/çıkış kayıtları manuel puantaja otomatik aktarılmaz. Gelecek tarihli maaş/pozisyon kayıtlarının otomatik yürürlüğe girmesi için zamanlayıcı yoktur. Bu iki eksik, mevcut demo davranışının sınırıdır.
