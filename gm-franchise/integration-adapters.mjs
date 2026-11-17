@@ -4,7 +4,7 @@ export const FRANCHISE_INTEGRATIONS = Object.freeze({
   finance: { label: "Finans", route: "../index.html#finance", events: ["payment_plan.created", "opening_payment.verified", "royalty_profile.created"] },
   accounting: { label: "Muhasebe", route: "../index.html#accounting", events: ["chart_of_accounts.created", "current_account.created", "opening_balance.reconciled"] },
   legal: { label: "Hukuk", route: "../index.html#legal", events: ["due_diligence.completed", "contract.signed", "territory.approved"] },
-  hr: { label: "İnsan Kaynakları", route: "../gm-ik/#ise_alim", events: ["staffing_plan.created", "employee.hired", "employment_file.completed"] },
+  hr: { label: "İnsan Kaynakları", route: "../ik-ototr/#candidates", events: ["staffing_plan.created", "employee.hired", "employment_file.completed"] },
   academy: { label: "Academy", route: "../index.html#academy", events: ["course.assigned", "certificate.issued", "certificate.expired"] },
   operations: { label: "Operasyon", route: "../index.html#operations", events: ["site_visit.completed", "trial_operation.completed"] },
   procurement: { label: "Tedarik", route: "../index.html#procurement", events: ["equipment.ordered", "equipment.delivered", "calibration.verified"] },

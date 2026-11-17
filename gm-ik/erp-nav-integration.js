@@ -10,7 +10,7 @@
 
     const heading = document.createElement('div');
     heading.className = 'nav-title';
-    heading.textContent = 'GM İK Sistemi';
+    heading.textContent = 'GM İK · Korunan Şablon';
     heading.setAttribute('data-gm-hr-heading', '');
 
     const node = document.createElement('div');
@@ -18,8 +18,8 @@
     const button = document.createElement('button');
     button.type = 'button';
     button.setAttribute(marker, '');
-    button.setAttribute('aria-label', 'GM İK Sistemi pilotunu aç');
-    button.innerHTML = '<i data-lucide="users-round" aria-hidden="true"></i><span>İK Yönetim Merkezi</span>';
+    button.setAttribute('aria-label', 'GM İK · Korunan Şablon pilotunu aç');
+    button.innerHTML = '<i data-lucide="users-round" aria-hidden="true"></i><span>Eski GM İK Şablonu</span>';
     button.addEventListener('click', () => window.location.assign(moduleUrl));
     node.appendChild(button);
 

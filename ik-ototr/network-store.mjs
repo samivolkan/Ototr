@@ -9,7 +9,7 @@ export class HrStore extends Base {
  managerOptions(employee){const rows=this.readable('employees').filter(e=>e.status==='active'&&e.id!==employee.id);if(employee.managerId&&!rows.some(e=>e.id===employee.managerId))rows.push(this.employee(employee.managerId));return rows.map(e=>[e.id,e.name]);}
  inScope(id){return !this.scope||this.state.employees.some(e=>e.id===id&&e.branch===this.scope);}
  allowedEmployee(id){return this.inScope(id)&&super.allowedEmployee(id);}
- allowedRoute(route,id){return (route!=='employee'||this.inScope(id))&&super.allowedRoute(route,id);}
+ allowedRoute(route,id){if(this.permissions?.financial===false&&['payroll','compensation','reports','expenses','integrations'].includes(route))return false;return (route!=='employee'||this.inScope(id))&&super.allowedRoute(route,id);}
  readable(collection){let rows=super.readable(collection);if(!this.scope)return rows;const allowed=id=>this.inScope(id);
   if(collection==='employees')return rows.filter(e=>e.branch===this.scope);
   if(collection==='payrolls')return rows.map(p=>({...p,rows:p.rows.filter(r=>allowed(r.employeeId))})).filter(p=>p.rows.length);

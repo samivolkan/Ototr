@@ -1,0 +1,52 @@
+-- Run as database owner. All writes, including business actions, are rolled back.
+begin;
+select set_config('test.hq',(select user_id::text from ik_ototr_private.members where headquarters and enabled limit 1),true);
+select set_config('test.source',(select user_id::text from ik_ototr_private.members where unit='Gebze' and not headquarters and can_write and enabled order by user_id limit 1),true);
+select set_config('test.source2',(select user_id::text from ik_ototr_private.members where unit='Gebze' and not headquarters and can_write and enabled order by user_id offset 1 limit 1),true);
+select set_config('test.target',(select user_id::text from ik_ototr_private.members where unit='Nilüfer' and not headquarters and can_write and enabled limit 1),true);
+set local role authenticated;
+select set_config('request.jwt.claims',jsonb_build_object('sub',current_setting('test.source'),'role','authenticated')::text,true);
+do $$ declare r jsonb; i int; a jsonb;begin
+ if exists(select 1 from public.ik_ototr_business where kind<>'organization' and unit='Nilüfer') then raise exception 'Cross-branch read';end if;
+ if not exists(select 1 from public.ik_ototr_business where kind='organization') then raise exception 'Shared organization missing';end if;
+ begin perform public.ik_ototr_business_action(null,null,'create','{"kind":"position","unit":"Nilüfer","payload":{"title":"QA","department":"QA","capacity":1}}');raise exception 'Cross-branch write allowed';exception when insufficient_privilege then null;end;
+ r:=public.ik_ototr_business_action(null,null,'create','{"kind":"enrollment","unit":"Gebze","employeeId":"e9","payload":{"course":"isg"}}');
+ begin perform public.ik_ototr_business_action(r->>'id',(r->>'revision')::bigint,'exam','{"answers":[0,1,2]}');raise exception 'Exam before lessons';exception when others then if sqlerrm not like '%dersleri%' then raise;end if;end;
+ for i in 0..2 loop r:=public.ik_ototr_business_action(r->>'id',(r->>'revision')::bigint,'lesson',jsonb_build_object('index',i));end loop;
+ r:=public.ik_ototr_business_action(r->>'id',(r->>'revision')::bigint,'exam','{"answers":[0,0,0]}');if r->>'state'<>'failed' then raise exception 'Low score passed';end if;
+ r:=public.ik_ototr_business_action(r->>'id',(r->>'revision')::bigint,'exam','{"answers":[0,1,2]}');if r->>'state'<>'passed' or r#>>'{payload,validUntil}' is null then raise exception 'Certificate missing';end if;
+ begin perform public.ik_ototr_business_action(r->>'id',1,'exam','{"answers":[0,1,2]}');raise exception 'Stale write accepted';exception when sqlstate 'PT409' then null;end;
+ a:=public.ik_ototr_business_action(null,null,'create',jsonb_build_object('kind','assignment','unit','Gebze','toUnit','Nilüfer','employeeId','e8','payload',jsonb_build_object('skill','Motor','start',(now() at time zone 'Europe/Istanbul')::date,'end',(now() at time zone 'Europe/Istanbul')::date+1,'reason','Kurgusal kabul testi')));
+ perform set_config('test.assignment',a->>'id',true);
+ begin perform public.ik_ototr_business_action(a->>'id',1,'approve','{}');raise exception 'Self approval accepted';exception when insufficient_privilege then null;end;
+ r:=public.ik_ototr_business_action(null,null,'create','{"kind":"integration","unit":"Gebze","payload":{"event":"staffing_plan.created","period":"2099-01"}}');
+ r:=public.ik_ototr_business_action(r->>'id',1,'dispatch','{}');if r->>'state'<>'acknowledged' or r#>>'{payload,realDelivery}'<>'false' then raise exception 'Wrong demo delivery';end if;
+ begin perform public.ik_ototr_business_action(r->>'id',2,'dispatch','{}');raise exception 'Duplicate dispatch';exception when others then if sqlerrm not like '%daha önce%' then raise;end if;end;
+ r:=public.ik_ototr_business_action(null,null,'create',jsonb_build_object('kind','lifecycle','unit','Gebze','employeeId','e9','payload',jsonb_build_object('type','offboarding','date',(now() at time zone 'Europe/Istanbul')::date,'reason','Kurgusal kabul testi')));
+ for i in 0..7 loop r:=public.ik_ototr_business_action(r->>'id',(r->>'revision')::bigint,'check',jsonb_build_object('index',i));end loop;
+ begin perform public.ik_ototr_business_action(r->>'id',(r->>'revision')::bigint,'complete','{}');raise exception 'Asset guard bypassed';exception when others then if sqlerrm not like '%zimmet%' then raise;end if;end;
+ r:=public.ik_ototr_business_action(null,null,'create','{"kind":"inspection","unit":"Gebze","employeeId":"e8","payload":{"reference":"DEMO-QA","skill":"Motor"}}');
+ r:=public.ik_ototr_business_action(r->>'id',1,'submit','{}');perform set_config('test.inspection',r->>'id',true);
+ begin perform public.ik_ototr_business_action(r->>'id',2,'approve','{}');raise exception 'Self technical approval';exception when insufficient_privilege then null;end;
+end $$;
+select set_config('request.jwt.claims',jsonb_build_object('sub',current_setting('test.source2'),'role','authenticated')::text,true);
+select public.ik_ototr_business_action(current_setting('test.assignment'),1,'approve','{}')->>'state' as source_approval;
+select set_config('request.jwt.claims',jsonb_build_object('sub',current_setting('test.target'),'role','authenticated')::text,true);
+do $$ begin
+ if not exists(select 1 from public.ik_ototr_business where id=current_setting('test.assignment')) then raise exception 'Destination cannot see assignment';end if;
+ if exists(select 1 from public.ik_ototr_read_units() where unit='Gebze') then raise exception 'Destination saw private personnel';end if;
+ perform public.ik_ototr_business_action(current_setting('test.assignment'),2,'approve','{}');
+end $$;
+select set_config('request.jwt.claims',jsonb_build_object('sub',current_setting('test.hq'),'role','authenticated')::text,true);
+do $$ declare r jsonb; nodes jsonb;begin
+ r:=public.ik_ototr_business_action(current_setting('test.assignment'),3,'approve','{}');if r->>'state'<>'approved' then raise exception 'HQ final approval failed';end if;
+ r:=public.ik_ototr_business_action(current_setting('test.assignment'),4,'complete','{}');if r->>'state'<>'completed' then raise exception 'Assignment completion failed';end if;
+ r:=public.ik_ototr_business_action(current_setting('test.inspection'),2,'approve','{}');if r->>'state'<>'published' then raise exception 'Technical approval failed';end if;
+ r:=public.ik_ototr_business_action(current_setting('test.inspection'),3,'revise','{"reason":"Kurgusal yeniden inceleme"}');if r->>'state'<>'revision' then raise exception 'Revision failed';end if;
+ select payload->'nodes' into nodes from public.ik_ototr_business where id='org-main';
+ nodes:=jsonb_set(nodes,'{0,parent}','"aka"');
+ begin perform public.ik_ototr_business_action('org-main',1,'edit',jsonb_build_object('nodes',nodes));raise exception 'Organization cycle accepted';exception when others then if sqlerrm not like '%döngüsü%' then raise;end if;end;
+end $$;
+reset role;
+rollback;
+select 'PASS: scope, shared organization, academy, certificate, optimistic conflict, three-stage assignment, no self approval, destination privacy, offboarding asset gate, idempotent demo delivery, technical four-eyes and organization cycle; all writes rolled back' as result;

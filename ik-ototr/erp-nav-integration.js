@@ -5,14 +5,14 @@
   if(!nav||nav.querySelector('[data-ik-ototr-link]'))return;
   const node=document.createElement('div');node.className='nav-node';
   const button=document.createElement('button');button.type='button';button.dataset.ikOtotrLink='';
-  button.textContent='İK OTOTR · Merkez ve Bayiler';
+  button.textContent='İK OTOTR · Ana İK Uygulaması';
   node.append(button);
   const hr=nav.querySelector('[data-nav-route="hr"]')?.closest('.nav-node');
   if(hr)hr.after(node);else nav.append(node);
  }
  // The ERP can rebuild navigation markup. Delegate so a cloned button still works.
  document.addEventListener('click',event=>{
-  const button=event.target.closest('[data-ik-ototr-link]');
+  const button=event.target.closest('[data-ik-ototr-link], [data-nav-route="hr"]');
   if(!button)return;
   event.preventDefault();
   event.stopImmediatePropagation();

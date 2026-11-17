@@ -35,3 +35,20 @@ CI ile aynı komutta 125 test geçti. Supabase'de gerçek `authenticated` / `ano
 Güvenlik taramasında proje genelindeki mevcut sızdırılmış parola korumasının kapalı olduğu uyarısı ayrıca görülmüştür; bu sürüm Auth ayarlarını değiştirmez.
 
 Canlı G710 kontrolünde Gebze hesabının yalnızca 3 çalışanı gördüğü ve iki sekme arasında telefon alanı değişikliğinin aktarıldığı doğrulandı. Test alanı eski değerine geri getirildi. Çakışma yanıtı HTTP 409 olarak ayrıldı; SDK tekrar denemesi kapatıldı ve veri isteklerine 15 saniye zaman aşımı eklendi.
+
+## Ana İK uygulaması ve GM İK taşıması — 18 Kasım 2026
+
+ERP İK girişi artık İK OTOTR'ye gider. Eski GM İK korunan şablon olarak açılabilir; İK2 tasarım şablonu korunur. Mevcut arayüz bileşenleriyle altı ekran eklendi:
+
+1. Organizasyon/Kadro: eski 13 merkez birimi, döngü engeli, pozisyon kapasitesi ve açık kadro. Merkez ağacı yalnızca merkezce düzenlenir.
+2. Görevlendirme: kaynak bayi, hedef bayi ve merkez sıralı onayları; ayrı onaylayan; tarih çakışması ve görev sonuna kadar sertifika kapısı. Hedefe yalnızca görev kaydı açılır, özlük dosyası taşınmaz.
+3. Akademi: üç ders, üç sorulu sunucuda puanlanan sınav, başarısız tekrar, süreli demo sertifikası ve kariyer öneri matrisi.
+4. İşe giriş/ayrılış: kontrol listeleri; zimmet, bekleyen talepler, yönetici/onaylayıcı devri, açık görevlendirme engelleri. Tamamlanan ayrılış çalışanı pasifleştirir. SGK/ERP hesap kapatma otomasyonu değildir.
+5. Teknik kontroller: sertifika ve kalibrasyon kapısı, ayrı merkez onaylayan, gerekçeli revizyon. Gerçek ekspertiz raporuna yazmaz. Sağlık/disiplin notları ayrı yetkili demo tablosundadır.
+6. Franchise/Finans: birim/dönem başına tek demo olay paketi ve demo alındı kaydı. Mevcut Franchise/Finance tablolarına yazmaz; gerçek bordro, muhasebe, royalti, ödeme bağlantısı değildir.
+
+Yeni iş kayıtları ayrı sunucu tablosunda sürümlenir, 5 saniyelik görünür sayfa yenilemesiyle paylaşılır; her RPC gerçek ERP kullanıcısıyla audit izi bırakır. Demo başlangıcı: 1 merkez ağacı, 12 pozisyon, 4 örnek sertifika, 4 işe giriş listesi, 4 kalibrasyon. İlave test kayıtları açıkça demo olarak işaretlenir.
+
+Alan güvenliği: ham birim tablosuna SELECT kapalıdır. Okuma RPC'si bayi hesaplarına kimlik/banka ve yetkisiz sağlık alanlarını göndermez. Salt okunur hesaplarda ücret ve finans dizileri de çıkarılır. Maskeli kayıt güncellenirken mevcut korunan değerler sunucuda korunur. Merkezin kimlik ve disiplin yetkisi vardır; sağlık yetkisi varsayılan kapalıdır. Hiçbir arayüz düğmesi yetki yükseltmez.
+
+Doğrulama: CI ile aynı 133 test geçti. `tests/ik-ototr-business-security.sql` ve `tests/ik-ototr-field-security.sql` sunucuda authenticated rolüyle çalıştırıldı; test değişiklikleri rollback edildi. Yerel tarayıcıda altı ekran, kadro düzenleme, ders/sınav/sertifika, kontrol listesi ve eksik kontrol engeli, demo aktarım, kısıtlı demo notu denendi. Merkez ve bayi rol ayrımları SQL kabul testleriyle ayrıca doğrulandı.
