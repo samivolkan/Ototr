@@ -1,7 +1,7 @@
 // This adapter is dormant until a real account is explicitly provisioned.
 // It never treats the browser's demo role selector as an authorization claim.
 export class CloudWorkspace {
- constructor({url,key,getToken,fetchImpl=fetch}){const parsed=new URL(url);if(parsed.protocol!=='https:')throw Error('Sunucu adresi HTTPS olmalıdır.');if(!key?.startsWith('sb_publishable_'))throw Error('Yayınlanabilir anahtar gerekir.');this.url=parsed.origin;this.key=key;this.getToken=getToken;this.fetch=fetchImpl;}
+ constructor({url,key,getToken,fetchImpl=fetch}){const parsed=new URL(url);if(parsed.protocol!=='https:')throw Error('Sunucu adresi HTTPS olmalıdır.');if(!key?.startsWith('sb_publishable_'))throw Error('Yayınlanabilir anahtar gerekir.');this.url=parsed.origin;this.key=key;this.getToken=getToken;this.fetch=(...args)=>fetchImpl.apply(globalThis,args);}
  async request(path,options={}){const token=await this.getToken();if(!token)throw Error('ERP oturumu bulunamadı.');const response=await this.fetch(this.url+'/rest/v1/'+path,{...options,headers:{apikey:this.key,authorization:'Bearer '+token,'content-type':'application/json',prefer:'return=representation',...options.headers},cache:'no-store',credentials:'omit',referrerPolicy:'no-referrer'});if(!response.ok){if([401,403].includes(response.status))throw Error('Sunucu İK2 erişimi atanmadı veya oturum sona erdi.');if(response.status===409)throw Error('Sunucu kaydı başka bir işlemle değişti. Önce yeniden yükleyin.');throw Error('Sunucu işlemi tamamlanamadı ('+response.status+').');}return response.json();}
  id(id){if(!/^[-a-z0-9_]{1,80}$/.test(id))throw Error('Çalışma alanı adı geçersiz.');return encodeURIComponent(id);}
  context(){return this.request('rpc/ik2_context',{method:'POST',body:'{}'});}

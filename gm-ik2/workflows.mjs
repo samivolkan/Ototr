@@ -1,4 +1,4 @@
-import {HrStore as Base, seed as baseSeed, clone, DAY, iso, leaveDays, shiftMinutes} from './model.mjs?v=20261117-shifts-3';
+import {HrStore as Base, seed as baseSeed, clone, DAY, iso, leaveDays, shiftMinutes} from './model.mjs?v=20261117-shifts-4';
 
 export const leaveTypes=['Yıllık İzin','Hastalık İzni','Mazeret İzni','Ücretsiz İzin','Evlilik İzni','Doğum İzni','Doğum Sonrası İzni','Babalık İzni','Askerlik İzni','İş Arama İzni','Süt İzni','Vefat İzni','Yol İzni'];
 const num=(v,label,min=0,max=1e9)=>{if(v===''||v===null||v===undefined||!Number.isFinite(Number(v))||Number(v)<min||Number(v)>max)throw Error(`${label}: ${min}–${max} aralığında sayı girin.`);return Number(v);};

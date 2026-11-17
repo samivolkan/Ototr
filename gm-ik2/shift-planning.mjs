@@ -1,4 +1,4 @@
-import {DAY,iso,shiftMinutes} from './model.mjs?v=20261117-shifts-3';
+import {DAY,iso,shiftMinutes} from './model.mjs?v=20261117-shifts-4';
 export const limitFields=[['daily','Günlük saat',24],['weekly','Haftalık saat',168],['monthly','Aylık saat',744],['days','Haftalık gün',7],['consecutive','Ardışık gün',31]];
 export function shiftLimits(settings,part=false){return {...(part?{daily:4,weekly:32,monthly:140,days:4,consecutive:4}:{daily:settings.maxDailyHours,weekly:settings.maxWeeklyHours,monthly:204,days:6,consecutive:6}),...settings.shiftLimits?.[part?'part':'full'],...(!part?{daily:settings.maxDailyHours,weekly:settings.maxWeeklyHours}:{})};}
 export function validateShiftLimits(value){for(const group of ['full','part'])for(const [key,label,max] of limitFields){const v=value?.[group]?.[key];if(typeof v!=='number'||!Number.isFinite(v)||v<=0||v>max||(['days','consecutive'].includes(key)&&!Number.isInteger(v)))throw Error(label+' limiti geçersiz.');}return value;}

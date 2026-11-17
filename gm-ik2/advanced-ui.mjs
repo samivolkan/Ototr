@@ -1,7 +1,7 @@
-import {createShiftUI} from './shift-ui.mjs?v=20261117-shifts-3';
-import {browserCloud} from './cloud.mjs?v=20261117-shifts-3';
-import {leaveTypes,reportFields,reportData,policyBalance} from './workflows.mjs?v=20261117-shifts-3';
-import {csv,escapeHTML as esc,money,dateText,DAY,iso} from './model.mjs?v=20261117-shifts-3';
+import {createShiftUI} from './shift-ui.mjs?v=20261117-shifts-4';
+import {browserCloud} from './cloud.mjs?v=20261117-shifts-4';
+import {leaveTypes,reportFields,reportData,policyBalance} from './workflows.mjs?v=20261117-shifts-4';
+import {csv,escapeHTML as esc,money,dateText,DAY,iso} from './model.mjs?v=20261117-shifts-4';
 
 export function createAdvanced(c){
  const {store,field,check,btn,modal,table,header,tabs,panel,notice,download,person,render,navigate,toast}=c;
