@@ -1,7 +1,7 @@
-import {HrStore,seed} from './operations.mjs';
-import {policyBalance as balance} from './workflows.mjs';
-import {createAdvanced} from './advanced-ui.mjs';
-import {money,dateText,escapeHTML as esc,csv,iso,DAY} from './model.mjs';
+import {HrStore,seed} from './operations.mjs?v=20261117-shifts-3';
+import {policyBalance as balance} from './workflows.mjs?v=20261117-shifts-3';
+import {createAdvanced} from './advanced-ui.mjs?v=20261117-shifts-3';
+import {money,dateText,escapeHTML as esc,csv,iso,DAY} from './model.mjs?v=20261117-shifts-3';
 const KEY='ototr.ik2.demo.v2', $=s=>document.querySelector(s);
 let loaded;try{loaded=JSON.parse(localStorage.getItem(KEY)||'null');}catch{}
 const store=new HrStore(loaded||seed(),{persist:data=>{const current=JSON.parse(localStorage.getItem(KEY)||'null');if(current&&current.revision!==data.revision-1)throw Error('Demo başka sekmede değişmiş. Sayfayı yenileyin.');localStorage.setItem(KEY,JSON.stringify(data));}});
