@@ -1,5 +1,5 @@
-import {DAY,iso,dateText,csv,escapeHTML as esc} from './model.mjs?v=20261117-parity-1';
-import {shiftLimits,limitFields} from './shift-planning.mjs?v=20261117-parity-1';
+import {DAY,iso,dateText,csv,escapeHTML as esc} from './model.mjs?v=20261117-visual-1';
+import {shiftLimits,limitFields} from './shift-planning.mjs?v=20261117-visual-1';
 export function createShiftUI(c){
  const {store,field,check,btn,modal,table,header,tabs,notice,download,person,render}=c;
  let date=store.state.today,branch='',department='',employee='';

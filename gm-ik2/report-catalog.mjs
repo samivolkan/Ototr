@@ -1,5 +1,5 @@
-import {policyBalance} from './workflows.mjs?v=20261117-parity-1';
-import {iso,leaveDays} from './model.mjs?v=20261117-parity-1';
+import {policyBalance} from './workflows.mjs?v=20261117-visual-1';
+import {iso,leaveDays} from './model.mjs?v=20261117-visual-1';
 export const reportCatalog=[['employees','Çalışan','Mevcut çalışan listesi'],['hires','İdari','İşe alım raporu'],['departures','İdari','İşten ayrılanlar'],['birthdays','Çalışan','Doğum günü listesi'],['balances','İdari','İzin bakiye raporu'],['leaves','İdari','Kullanılan izin raporu'],['salary','Finans','Maaş bilgileri'],['payroll','Finans','Bordro maliyet raporu'],['adjustments','Finans','Ek ödeme ve kesinti'],['assets','İdari','Zimmet raporu'],['education','Çalışan','Eğitim dağılımı'],['branches','Çalışan','Şube dağılımı'],['turnover','İdari','Çalışan dönüşüm raporu'],['clock','İdari','Giriş ve çıkış raporu'],['age','Çalışan','Yaş dağılımı'],['gender','Çalışan','Cinsiyet dağılımı'],['enforcement','Finans','Demo icra kontrolü'],['incentive','Finans','Demo teşvik kontrolü'],['workforce','İdari','Demo işgücü çizelgesi']];
 export function catalogData(store,id,{month=store.state.today.slice(0,7),branch=''}={}){
  if(!/^\d{4}-(0[1-9]|1[0-2])$/.test(month))throw Error('Rapor dönemi geçersiz.');
