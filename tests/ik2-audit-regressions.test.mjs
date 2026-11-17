@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {HrStore,seed} from '../gm-ik2/workflows.mjs';
+import {HrStore,seed} from '../gm-ik2/operations.mjs';
 const leave={employeeId:'e4',type:'İzin',leaveType:'Yıllık İzin',start:'2026-11-18',end:'2026-11-18'};
 const night={employeeId:'e4',date:'2026-11-17',start:'22:00',end:'06:00',breakMinutes:60};
 test('A01 overnight shift and next-day leave conflict in both directions',()=>{const s=new HrStore();const id=s.request(leave);s.decide(id,'approved');assert.throws(()=>s.shift(night),/çakış/);const t=new HrStore();t.shift(night);const request=t.request(leave);assert.throws(()=>t.decide(request,'approved'),/çakış/);assert.equal(t.state.requests.at(-1).approvals.length,0);});
@@ -11,3 +11,9 @@ test('A05 completed workflow must be explicitly reopened before task edits',()=>
 test('A06 company settings cannot orphan employee units',()=>{const s=new HrStore();assert.throws(()=>s.settings({branches:['Nilüfer']}));assert.throws(()=>s.settings({departments:['Operasyon']}));assert(s.state.settings.branches.includes('Gebze'));s.saveEmployee({...s.employee('e2'),phone:'demo'},'e2');});
 test('A07 malformed payroll backup rejected before replacement',()=>{const s=new HrStore(),data=seed();data.payrolls=[{id:'bad-payroll',month:'2026-11',status:'draft'}];const before=structuredClone(s.state);assert.throws(()=>s.restore(data),/bordro|Bordro/);assert.deepEqual(s.state,before);});
 test('A08 malformed employee import rejected atomically',()=>{const s=new HrStore(),before=structuredClone(s.state);assert.throws(()=>s.importRows('employees',[{name:'Geçerli Demo',start:'2026-11-17',salary:1},{name:'Hatalı Demo',start:'2026-11-17',salary:1,positions:{}}]));assert.deepEqual(s.state,before);assert.doesNotThrow(()=>new HrStore(s.state));});
+
+import {catalogData,reportCatalog} from '../gm-ik2/report-catalog.mjs';
+
+test('all report catalog entries render valid tables and finance denies employee role',()=>{const s=new HrStore();for(const [id] of reportCatalog){const r=catalogData(s,id);assert.ok(r.header.length);assert.ok(r.rows.every(row=>row.length===r.header.length),id);}assert.throws(()=>catalogData(s,'employees',{month:'2026-13'}));s.role='employee';s.actor='e2';assert.throws(()=>catalogData(s,'salary'));});
+test('monthly leave report clips cross-month calendar leave using captured policy',()=>{const s=new HrStore();s.state.requests.push({id:'report-leave',employeeId:'e5',type:'İzin',leaveType:'Mazeret İzni',status:'approved',start:'2026-10-30',end:'2026-11-02',days:4,policyCalendarDays:true,policyWeekdays:[1,2,3,4,5]});const r=catalogData(s,'leaves',{month:'2026-11'});assert.equal(r.rows.at(-1).at(-1),2);});
+test('departures and turnover include completed periods after rehire',()=>{const s=new HrStore();s.endEmployment('e8','2026-11-16','İstifa');s.rehire('e8','2026-11-17');assert.equal(catalogData(s,'departures').rows.length,1);assert.equal(catalogData(s,'turnover').rows[0][3],1);});

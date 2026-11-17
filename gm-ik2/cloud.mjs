@@ -1,4 +1,4 @@
-// This adapter is dormant until a real account is explicitly provisioned.
+// Access is limited by server policies to active ERP accounts and synthetic data.
 // It never treats the browser's demo role selector as an authorization claim.
 export class CloudWorkspace {
  constructor({url,key,getToken,fetchImpl=fetch}){const parsed=new URL(url);if(parsed.protocol!=='https:')throw Error('Sunucu adresi HTTPS olmalıdır.');if(!key?.startsWith('sb_publishable_'))throw Error('Yayınlanabilir anahtar gerekir.');this.url=parsed.origin;this.key=key;this.getToken=getToken;this.fetch=(...args)=>fetchImpl.apply(globalThis,args);}
@@ -7,6 +7,7 @@ export class CloudWorkspace {
  context(){return this.request('rpc/ik2_context',{method:'POST',body:'{}'});}
  async load(id){const rows=await this.request('ik2_workspaces?id=eq.'+this.id(id)+'&select=id,document,revision,updated_at');return rows[0]||null;}
  async save(id,document,expectedRevision){if(document.mode!=='synthetic-demo')throw Error('Yalnızca demo çalışma alanı desteklenir.');const serialized=JSON.stringify(document);if(new TextEncoder().encode(serialized).length>4900000)throw Error('Sunucu kaydı 4,9 MB sınırını aşıyor.');const exists=expectedRevision!==null;if(exists&&(!Number.isSafeInteger(expectedRevision)||expectedRevision<1))throw Error('Sunucu sürümü geçersiz.');const path='ik2_workspaces'+(exists?'?id=eq.'+this.id(id)+'&revision=eq.'+expectedRevision:'');this.id(id);const rows=await this.request(path,{method:exists?'PATCH':'POST',body:JSON.stringify({...(exists?{}:{id}),document,revision:exists?expectedRevision+1:1})});if(rows.length!==1)throw Error('Sunucu sürümü değişti veya erişim kapandı. Yeniden yükleyin.');return rows[0];}
+ async snapshot(id,revision){if(!Number.isSafeInteger(revision)||revision<1)throw Error('Sürüm geçersiz.');const rows=await this.request('ik2_workspace_events?workspace_id=eq.'+this.id(id)+'&revision=eq.'+revision+'&select=revision,snapshot');return rows[0]||null;}
  history(id){return this.request('ik2_workspace_events?workspace_id=eq.'+this.id(id)+'&select=id,revision,occurred_at&order=revision.desc&limit=20');}
 }
 
