@@ -1,6 +1,6 @@
 # OTOTR İK2 — sentetik demo
 
-Kolay İK'da incelenen ekran ve akışlardan geliştirilen ikinci İK çalışma alanı. Mevcut gm-ik korunur; ERP menüsüne ayrı **İK2 · Demo İK Merkezi** bağlantısı eklenir.
+Kolay İK'da incelenen ekran ve akışlardan geliştirilen ikinci İK çalışma alanı. Mevcut gm-ik korunur; ERP menüsünde İnsan Kaynakları satırının altına ayrı **İK2 · Demo İK Merkezi** bağlantısı eklenir.
 
 Bu sürüm tarayıcıda çalışan kapsamlı bir demodur. Kolay İK'nın tüm ürün yeteneklerine veya piksel düzeyinde birebirliğine sahip olduğu iddia edilmez. Gerçek çalışan verisi için üretim sistemi değildir.
 
@@ -8,7 +8,7 @@ Bu sürüm tarayıcıda çalışan kapsamlı bir demodur. Kolay İK'nın tüm ü
 
 Depo kökünde `python -m http.server 8172 --bind 127.0.0.1`, ardından `http://127.0.0.1:8172/gm-ik2/`.
 
-Test: `node --test tests/ik2-model.test.mjs tests/ik2-workflows.test.mjs`
+Test: `node --test tests/ik2-model.test.mjs tests/ik2-workflows.test.mjs tests/ik2-navigation.test.mjs`
 
 ## Çalışan demo akışları
 
@@ -36,7 +36,7 @@ Test: `node --test tests/ik2-model.test.mjs tests/ik2-workflows.test.mjs`
 
 ## Doğrulama — 17 Kasım 2026
 
-52 İK2 otomatik testi ve mevcut ERP menüsünün 3 regresyon testi. Pages yayınına İK2 test adımı eklendi.
+54 İK2 otomatik testi ve mevcut ERP menüsünün 3 regresyon testi. Pages yayınına İK2 test adımı eklendi.
 
 Tarayıcıda 44 ana/alt görünümün açılması; çalışan oluşturma ve boş alan hatası; altı adımlı politika; iki ayrı kişiyle onay; çalışan rolünde başka özlük dosyası/bordro engeli; yedi adımlı performans ve 75/80 puanlarından %60 ağırlıkla 77 sonucu kontrol edildi.
 

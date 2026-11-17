@@ -1,0 +1,8 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import vm from 'node:vm';
+const source=await readFile(new URL('../gm-ik2/erp-nav-integration.js',import.meta.url),'utf8');
+function setup(){const handlers={};let destination;const element=()=>({dataset:{},children:[],append(child){this.children.push(child);},querySelector(){return this.children.flatMap(x=>x.children).find(x=>'ik2Link' in x.dataset);}});const nav=element();vm.runInNewContext(source,{URL,document:{readyState:'complete',baseURI:'https://samivolkan.github.io/Ototr/index.html#dashboard',getElementById:()=>nav,createElement:element,addEventListener:(name,callback,capture)=>{handlers[name]={callback,capture};}},window:{location:{assign:url=>destination=url}},MutationObserver:class{constructor(callback){this.callback=callback;}observe(){}}});return{handlers,nav,destination:()=>destination};}
+test('IK2 navigation survives a markup-only replacement of its button',()=>{const s=setup();assert.equal(s.nav.children.length,1);const clonedButton={dataset:{ik2Link:''}};let prevented=false,stopped=false;s.handlers.click.callback({target:{closest:selector=>selector==='[data-ik2-link]'?clonedButton:null},preventDefault:()=>prevented=true,stopImmediatePropagation:()=>stopped=true});assert.equal(s.destination(),'https://samivolkan.github.io/Ototr/gm-ik2/');assert.equal(prevented,true);assert.equal(stopped,true);assert.equal(s.handlers.click.capture,true);});
+test('IK2 navigation leaves other ERP clicks alone',()=>{const s=setup();s.handlers.click.callback({target:{closest:()=>null},preventDefault:()=>assert.fail('unrelated click prevented')});assert.equal(s.destination(),undefined);});
