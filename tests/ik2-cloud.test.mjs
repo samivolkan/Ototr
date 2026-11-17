@@ -1,0 +1,8 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {CloudWorkspace} from '../gm-ik2/cloud.mjs';
+const setup=fetchImpl=>new CloudWorkspace({url:'https://example.invalid',key:'sb_publishable_demo',getToken:async()=>'fake-test-session',fetchImpl});
+test('cloud save compares server revision and rejects empty update',async()=>{let observed;const cloud=setup(async(url,options)=>{observed={url,options};return {ok:true,json:async()=>[]};});await assert.rejects(()=>cloud.save('demo',{mode:'synthetic-demo'},3),/sürümü/);assert(observed.url.endsWith('id=eq.demo&revision=eq.3'));assert.equal(JSON.parse(observed.options.body).revision,4);assert.equal(observed.options.credentials,'omit');});
+test('cloud API propagates expired authorization without fallback success',async()=>{const cloud=setup(async()=>({ok:false,status:403}));await assert.rejects(()=>cloud.context(),/erişimi/);});
+test('cloud save cannot route to arbitrary workspace filters or real-data mode',async()=>{let calls=0;const cloud=setup(async()=>{calls++;return {ok:true,json:async()=>[{revision:1}]};});await assert.rejects(()=>cloud.save('bad&or=x',{mode:'synthetic-demo'},null));await assert.rejects(()=>cloud.save('demo',{mode:'production'},null));assert.equal(calls,0);});
+test('cloud creates initial revision and returns acknowledged version',async()=>{const cloud=setup(async(url,options)=>{assert.equal(options.method,'POST');assert.equal(JSON.parse(options.body).revision,1);return{ok:true,json:async()=>[{id:'demo',revision:1}]};});assert.equal((await cloud.save('demo',{mode:'synthetic-demo'},null)).revision,1);});
