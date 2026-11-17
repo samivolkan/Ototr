@@ -1,6 +1,6 @@
-import {settingCards} from './visuals.mjs?v=20261118-network-1';
-import {profileFields,requestTypes,menuRoutes} from './parity.mjs?v=20261118-network-1';
-import {escapeHTML as esc,money,csv} from './model.mjs?v=20261118-network-1';
+import {settingCards} from './visuals.mjs?v=20261118-auth-1';
+import {profileFields,requestTypes,menuRoutes} from './parity.mjs?v=20261118-auth-1';
+import {escapeHTML as esc,money,csv} from './model.mjs?v=20261118-auth-1';
 const labels={home:'Ana Sayfa',employees:'Çalışanlar',leaves:'İzinler',reports:'Raporlar',calendar:'Takvim',payroll:'Bordro',performance:'Performans',compensation:'Ücret Değerlendirme',clock:'Demo PDKS',visa:'Vize',timesheets:'Puantaj',expenses:'Harcamalar',overtime:'Mesai',documents:'Dosyalar',assets:'Zimmetler',trainings:'Eğitimler',candidates:'İşe Alım',workflows:'İş Akışları',notifications:'Bildirimler',audit:'İşlem Geçmişi'};
 const dayNames=['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'];
 export function createParityUI(c){const {store,field,check,btn,modal,table,header,tabs,notice,render,person}=c;const grid=html=>`<div class="form-grid">${html}</div>`;const employees=()=>store.readable('employees').filter(e=>e.status==='active').map(e=>[e.id,e.name]);
