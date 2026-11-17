@@ -1,4 +1,4 @@
-import {applyFieldAccess,protectFields} from './field-access.mjs?v=20261118-business-2';
+import {applyFieldAccess,protectFields} from './field-access.mjs?v=20261118-business-3';
 import {sourceIcon,personalView} from './visuals.mjs?v=20261118-business-2';
 import {HrStore,seed} from './network-store.mjs?v=20261118-business-2';
 import {networkHome} from './network-ui.mjs?v=20261118-business-2';

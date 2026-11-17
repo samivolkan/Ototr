@@ -5,5 +5,5 @@ export function applyFieldAccess(store,sync){
 export function protectFields(store,root=document){
  const p=store.permissions;if(!p)return;
  const fields=[...(!p.identity?['identity','bank','iban']:[]),...(!p.health?['disability','bloodGroup']:[])];
- for(const name of fields)for(const el of root.querySelectorAll(`[name="${name}"]`)){el.value='';el.readOnly=true;el.title='Bu alan için sunucu yetkiniz yok';const label=el.closest('label');if(label&&!label.querySelector('.restricted-field')){const note=document.createElement('small');note.className='restricted-field';note.textContent='Kısıtlı alan';label.append(note);}}
+ for(const name of fields)for(const el of root.querySelectorAll(`[name="${name}"],[name="personal_${name}"]`)){el.value='';el.readOnly=true;el.title='Bu alan için sunucu yetkiniz yok';const label=el.closest('label');if(label&&!label.querySelector('.restricted-field')){const note=document.createElement('small');note.className='restricted-field';note.textContent='Kısıtlı alan';label.append(note);}}
 }
