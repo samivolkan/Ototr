@@ -36,3 +36,6 @@ Final test run: 117 passed, zero failed. Evidence outside the repository: final-
 ## Optional shift-module visibility — 2026-11-17
 Added Settings > System Settings > Module Settings with a persisted boolean shift toggle. Default is closed for legacy/new demo states, matching the user's excluded scope. Navigation and Discover both use allowedRoute, so the flag suppresses both entries; direct shift URLs show a closed-module message. Existing shift data is retained and reopening does not bypass role restrictions. This is demo workspace configuration, not a replacement for server authorization.
 Browser checks passed for enable/menu/discover, disable/no links, persisted closed state and direct-link handling. Automated suite: 119 passed, zero failed, including flag validation, role restrictions, reload and record preservation.
+
+## İK OTOTR variant — 2026-11-18
+Separate `ik-ototr/` copy preserves the G708 `gm-ik2/` template and storage. Variant QA and demo scope are recorded in `ik-ototr/design-qa.md` and `ik-ototr/README.md`. No existing IK2 source file was changed for this variant.
