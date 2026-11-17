@@ -33,3 +33,5 @@
 CI ile aynı komutta 125 test geçti. Supabase'de gerçek `authenticated` / `anon` rollerine geçilerek merkez, bayi, salt okunur hesap, bilinmeyen hesap, yetki yükseltme, doğrudan yazma, çapraz bayi, yanlış çalışan bağlantısı ve sürüm çakışması sınandı. Test yazıları transaction sonunda rollback edildi.
 
 Güvenlik taramasında proje genelindeki mevcut sızdırılmış parola korumasının kapalı olduğu uyarısı ayrıca görülmüştür; bu sürüm Auth ayarlarını değiştirmez.
+
+Canlı G710 kontrolünde Gebze hesabının yalnızca 3 çalışanı gördüğü ve iki sekme arasında telefon alanı değişikliğinin aktarıldığı doğrulandı. Test alanı eski değerine geri getirildi. Çakışma yanıtı HTTP 409 olarak ayrıldı; SDK tekrar denemesi kapatıldı ve veri isteklerine 15 saniye zaman aşımı eklendi.

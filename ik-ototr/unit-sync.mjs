@@ -35,7 +35,7 @@ export async function browserSync(options){
  const {r:client}=await import('../saha-satis/assets/feedbackLoader-puddZXLE.js');
  const {data,error}=await client.auth.getUser();if(error||!data?.user)throw Error('Önce ERP hesabınızla giriş yapın.');
  const check=r=>{if(r.error)throw Error(r.error.message.includes('IK_CONFLICT')?'Kayıt başka cihazda değişti. Güncel sürümü yükleyip tekrar deneyin.':r.error.message);return r.data;};
- const sync=new UnitSync({read:async()=>check(await client.from('ik_ototr_units').select('unit,document,revision').order('unit')),access:async()=>check(await client.rpc('ik_ototr_access')),save:async(target,expected,value)=>check(await client.rpc('ik_ototr_save',{target,expected,value}))},options);
+ const sync=new UnitSync({read:async()=>check(await client.from('ik_ototr_units').select('unit,document,revision').order('unit').abortSignal(AbortSignal.timeout(15000)).retry(false)),access:async()=>check(await client.rpc('ik_ototr_access').abortSignal(AbortSignal.timeout(15000)).retry(false)),save:async(target,expected,value)=>check(await client.rpc('ik_ototr_save',{target,expected,value}).abortSignal(AbortSignal.timeout(15000)).retry(false))},options);
  client.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'||session?.user?.id&&session.user.id!==data.user.id){sync.online=false;options.blocked(Error('Oturum değişti. Sayfayı yenileyin.'));}});
  await sync.load();return sync;
 }

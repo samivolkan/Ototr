@@ -1,10 +1,10 @@
-import {sourceIcon,personalView} from './visuals.mjs?v=20261118-auth-1';
-import {HrStore,seed} from './network-store.mjs?v=20261118-auth-1';
-import {networkHome} from './network-ui.mjs?v=20261118-auth-1';
-import {policyBalance as balance} from './workflows.mjs?v=20261118-auth-1';
-import {createAdvanced} from './advanced-ui.mjs?v=20261118-auth-1';
-import {money,dateText,escapeHTML as esc,csv,iso,DAY} from './model.mjs?v=20261118-auth-1';
-import {browserSync} from './unit-sync.mjs?v=20261118-auth-1';
+import {sourceIcon,personalView} from './visuals.mjs?v=20261118-auth-2';
+import {HrStore,seed} from './network-store.mjs?v=20261118-auth-2';
+import {networkHome} from './network-ui.mjs?v=20261118-auth-2';
+import {policyBalance as balance} from './workflows.mjs?v=20261118-auth-2';
+import {createAdvanced} from './advanced-ui.mjs?v=20261118-auth-2';
+import {money,dateText,escapeHTML as esc,csv,iso,DAY} from './model.mjs?v=20261118-auth-2';
+import {browserSync} from './unit-sync.mjs?v=20261118-auth-2';
 const hosted=!['localhost','127.0.0.1','[::1]'].includes(location.hostname);
 let sync;
 const KEY='ototr.ik-ototr.demo.v2', $=s=>document.querySelector(s);
