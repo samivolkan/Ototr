@@ -1,3 +1,4 @@
+import {checkShiftLimits,validateShiftLimits} from './shift-planning.mjs';
 import {HrStore as WorkflowStore,seed,policyBalance,leaveTypes} from './workflows.mjs';
 import {DAY,clone,iso,leaveDays} from './model.mjs';
 export {seed};
@@ -23,7 +24,7 @@ export function attendanceDays(entries){
 
 export class HrStore extends WorkflowStore {
  constructor(data=seed(),options={}){super(data,options);this.now=options.now||(()=>new Date().toISOString());}
- validate(){super.validate();const ids=this.state.employees.map(e=>e.id),validIds=list=>Array.isArray(list)&&list.every(id=>ids.includes(id))&&new Set(list).size===list.length;
+ validate(){super.validate();if(this.state.settings.shiftLimits)validateShiftLimits(this.state.settings.shiftLimits);const ids=this.state.employees.map(e=>e.id),validIds=list=>Array.isArray(list)&&list.every(id=>ids.includes(id))&&new Set(list).size===list.length;
   for(const e of this.state.employees){for(const p of e.positions){validDate(p.start);if(p.scheduled&&(!this.state.settings.branches.includes(p.branch)||!this.state.settings.departments.includes(p.department)||!p.title))throw Error('Planlı pozisyon geçersiz.');}for(const r of e.salaryHistory){validDate(r.start);if(!Number.isFinite(Number(r.amount))||Number(r.amount)<0)throw Error('Maaş geçmişi geçersiz.');}}
   for(const a of this.state.assessments){if(a.reviewerAssignments!==undefined&&(!Array.isArray(a.reviewerAssignments)||a.reviewerAssignments.some(r=>!a.participants?.includes(r.employeeId)||!validIds(r.reviewers)||!r.reviewers.length)))throw Error('Değerlendirici yedeği geçersiz.');if(a.reviews!==undefined&&(!Array.isArray(a.reviews)||a.reviews.some(r=>!a.reviewerAssignments?.some(t=>t.employeeId===r.employeeId&&t.reviewers.includes(r.reviewerId))||!Array.isArray(r.answers)||r.answers.length!==a.questions.length||r.answers.some(v=>typeof v!=='number'||!Number.isFinite(v)||v<0||v>100))))throw Error('Soru yanıtı yedeği geçersiz.');}
   for(const c of this.state.compensations){if(c.approvalChain!==undefined&&!validIds(c.approvalChain))throw Error('Ücret onay zinciri geçersiz.');for(const p of c.proposals||[])if(p.approvers&&(!validIds(p.approvers)||!Array.isArray(p.approvals)||p.approvals.length>p.approvers.length||p.approvals.some((v,i)=>v.actor!==p.approvers[i])))throw Error('Ücret onay kaydı geçersiz.');}
@@ -55,7 +56,8 @@ export class HrStore extends WorkflowStore {
   });
  }
  position(id,input){if(this.employee(id).positions.some(p=>p.scheduled&&p.start===input.start))throw Error('Bu tarihte planlı pozisyon var.');return super.position(id,input);}
- settings(input){for(const [key,field] of [['branches','branch'],['departments','department']])if(input[key]&&this.state.employees.some(e=>e.positions.some(p=>p.scheduled&&!input[key].includes(p[field]))))throw Error('Planlı pozisyonun kullandığı birim kaldırılamaz.');return super.settings(input);}
+ shift(input){checkShiftLimits(this.state,input);return super.shift(input);}
+ settings(input){if(input.shiftLimits)validateShiftLimits(input.shiftLimits);for(const [key,field] of [['branches','branch'],['departments','department']])if(input[key]&&this.state.employees.some(e=>e.positions.some(p=>p.scheduled&&!input[key].includes(p[field]))))throw Error('Planlı pozisyonun kullandığı birim kaldırılamaz.');return super.settings(input);}
  syncAttendanceRows(employeeId){
   const rows=attendanceDays(this.state.clockEntries.filter(r=>!employeeId||r.employeeId===employeeId));
   const conflicts=[];
