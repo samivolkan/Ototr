@@ -25,3 +25,10 @@ Report categories/templates, all four performance definition dialogs, bonus reas
 
 ## Intentional differences
 Fictional demo records and explicit demo labels replace private source records. OTOTR branding and ERP return navigation remain. Kolay subscription offers, billing and service promises are not reproduced. Report periods reflect the actual demo model. Existing ERP features remain reachable. The mobile calendar can scroll rather than reproducing source overflow. Real service integrations and shifts remain outside this acceptance scope.
+
+## Follow-up acceptance — 2026-11-17
+The prior hosted-session blocker is resolved for this run: the user signed in and authenticated form checks completed without another redirect. Menu order, notification preference, profile field policy, request settings, company settings and employee personal details were saved with their existing fictional values. Access/demo-role dialog was inspected without expanding permissions. All four performance definition dialogs opened. A fictional category named `Demo · Hizmet Kalitesi` was created and remained visible after a full browser reload. The new calendar form stayed open after an invalid submission; no calendar was created. No captured browser console errors were observed.
+
+Final visual corrections: measured system-settings card alignment (source card x332.67 vs implementation x332 at 1440 CSS px), 36px settings icons, selected navigation styling and aria-current for fixed/mobile navigation, request-settings glyph, and removal of the unrelated creation action from performance settings. Mobile check at 390px: document width375px, no horizontal page overflow. Existing scope exclusions and fictional data/brand differences remain intentional.
+
+Final test run: 117 passed, zero failed. Evidence outside the repository: final-settings.jpg, live-category-persisted.jpg, live-personal-checked.jpg and final-tests.txt in the task outputs/ik2-gorsel directory. The earlier incomplete hosted acceptance statement describes the previous run and is superseded by this follow-up for the listed forms; this does not assert exhaustive verification of every possible workflow.

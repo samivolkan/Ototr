@@ -1,5 +1,5 @@
-import {HrStore as Base,seed} from './operations.mjs?v=20261117-visual-1';
-import {clone,iso,leaveDays,shiftMinutes} from './model.mjs?v=20261117-visual-1';
+import {HrStore as Base,seed} from './operations.mjs?v=20261117-visual-2';
+import {clone,iso,leaveDays,shiftMinutes} from './model.mjs?v=20261117-visual-2';
 export {seed};
 export const profileFields={name:'Ad Soyad',phone:'Telefon',birth:'Doğum tarihi',nationality:'Uyruk',gender:'Cinsiyet',identity:'Demo kimlik referansı',education:'Eğitim düzeyi',school:'Okul',graduation:'Mezuniyet',marital:'Medeni hal',children:'Çocuk sayısı',military:'Askerlik',disability:'Demo engellilik açıklaması',bloodGroup:'Kan grubu',educationStatus:'Eğitim durumu',major:'Bölüm',spouseWorking:'Eş çalışma durumu',militaryDeferral:'Askerlik tecil tarihi',address:'Adres',bank:'Demo banka',iban:'Demo hesap referansı',emergencyName:'Acil durum kişisi',emergencyPhone:'Acil durum telefonu'};
 export const requestTypes=['İzin','Avans','Harcama','Fazla Mesai','Vize Belgesi'];

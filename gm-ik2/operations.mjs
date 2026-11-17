@@ -1,6 +1,6 @@
-import {checkShiftLimits,validateShiftLimits} from './shift-planning.mjs?v=20261117-visual-1';
-import {HrStore as WorkflowStore,seed,policyBalance,leaveTypes} from './workflows.mjs?v=20261117-visual-1';
-import {DAY,clone,iso,leaveDays} from './model.mjs?v=20261117-visual-1';
+import {checkShiftLimits,validateShiftLimits} from './shift-planning.mjs?v=20261117-visual-2';
+import {HrStore as WorkflowStore,seed,policyBalance,leaveTypes} from './workflows.mjs?v=20261117-visual-2';
+import {DAY,clone,iso,leaveDays} from './model.mjs?v=20261117-visual-2';
 export {seed};
 const OFFSET=3*3600000;
 const validDate=value=>{if(!/^\d{4}-\d{2}-\d{2}$/.test(value||'')||!Number.isFinite(Date.parse(value))||iso(value)!==value)throw Error('Tarih geçersiz.');return value;};
