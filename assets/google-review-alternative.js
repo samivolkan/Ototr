@@ -202,7 +202,7 @@
     const legend = byId('chartTrend')?.closest('.chart-card')?.querySelector('.chart-legend');
     if (legend) legend.innerHTML = '<span><i style="background:#2563eb"></i>Yorum</span><span><i style="background:#7c3aed"></i>Trend</span><span><i style="background:#e11d48"></i>Hedef</span>';
     chart('chartTrend', 'line', keys.map(key => new Date(`${key}-01T12:00:00Z`).toLocaleDateString('tr-TR', { month: 'short', year: '2-digit' })), series);
-    chartNote('chartTrend', !isLive() ? 'Demo hedef çizgisi örnek aylık hedeftir. Mor çizgi örnek yorumlardan hesaplanan eğilimdir.' : targets.some(v => v != null) ? 'Hedef yalnız kayıtlı aylarda gösterilir. Kesikli mor çizgi alınan yorumlardan hesaplanan eğilimdir; tahmin değildir.' : 'Bu dönem için kayıtlı hedef yok. Performans ekranından bu ayın hedefini kaydedebilirsiniz.');
+    chartNote('chartTrend', !isLive() ? 'Demo hedef çizgisi örnek aylık hedeftir. Mor çizgi örnek yorumlardan hesaplanan eğilimdir.' : management().error || !management().loaded ? 'Hedef kayıtları henüz doğrulanamadı. Bağlantı durumu ekranından ERP oturumunu kontrol edin.' : targets.some(v => v != null) ? 'Hedef yalnız kayıtlı aylarda gösterilir. Kesikli mor çizgi alınan yorumlardan hesaplanan eğilimdir; tahmin değildir.' : 'Bu dönem için kayıtlı hedef yok. Performans ekranından bu ayın hedefini kaydedebilirsiniz.');
     chart('chartRating', 'doughnut', ['5★', '4★', '3★', '2★', '1★'], [{ label: 'Yıldız dağılımı', data: a.ratingCounts, backgroundColor: ['#12805c', '#6bbf9b', '#fbbf24', '#fb923c', '#b42318'], borderWidth: 2 }]);
     emptyChart('chartRating', a.count > 0, 'Seçili dönemde yorum bulunmuyor.');
     const monthly = stats(periodRows(allRows(), 'month')), target = currentTarget();
@@ -228,12 +228,15 @@
     const head = byId('perfTable')?.closest('.card2')?.querySelector('.head'); if (head) head.classList.add('v2-performance-head');
     byId('perfTable').innerHTML = `<thead><tr><th>Şube</th><th class="n">Bu ayın hedefi</th><th class="n">Bu ay alınan</th><th>Hedef ilerlemesi</th><th class="n">Dönem yorumları</th><th class="n">Puan</th><th class="n">Yanıt</th><th>Ortam</th></tr></thead><tbody><tr><td>${html(branchName())}</td><td><div class="v2-target-editor"><input id="v2Target" aria-label="${html(branchName())} aylık hedef" type="number" min="1" max="10000" step="1" value="${target ?? ''}" placeholder="Hedef" ${canSave ? '' : 'disabled'}><button id="v2SaveTarget" class="btn sm p" ${canSave ? '' : 'disabled'}>Kaydet</button></div></td><td class="n">${monthly.count}</td><td>${ratio == null ? 'Hedef girilmedi' : `<div class="v2-progress"><progress aria-label="Hedef ilerlemesi" max="100" value="${Math.min(100, ratio)}"></progress><b>${ratio}%</b></div>`}</td><td class="n">${a.count}</td><td class="n">${fmt(a.average)}</td><td class="n">${pct(a.responseRate)}</td><td><span class="chip ${isLive() ? 'ok' : 'warn'}">${isLive() ? 'Canlı' : 'Demo'}</span></td></tr></tbody>`;
     byId('v2SaveTarget').onclick = saveTarget;
+    if (ratio == null && isLive() && (management().error || !management().loaded)) {
+      byId('perfTable').querySelector('tbody tr td:nth-child(4)').textContent = 'Hedef doğrulanamadı';
+    }
     root.renderTargetBreakdown(); normalizeScope();
   };
   root.renderTargetBreakdown = function () {
     const host = byId('targetBreakdown'); if (!host) return;
     const target = currentTarget(), actual = stats(periodRows(allRows(), 'month')).count, ratio = progress(actual, target);
-    host.innerHTML = `<div class="v2-period-note">Bu ayın hedef kırılımı · ${isLive() ? 'Yalnız Nilüfer canlı verisi' : 'Yalnız seçili demo şube'} · ${monthKey(Date.now())}</div><div class="v2-breakdown">${[['Bölge', 'Marmara'], ['İl', isLive() || branchId() === BRANCH_IDS[2] ? 'Bursa' : 'Kocaeli'], ['Şube', branchName()]].map(([label, value]) => `<div class="card"><h4>${label}</h4><b>${html(value)}</b><span class="v2-big">${ratio == null ? '—' : `${ratio}%`}</span><progress aria-label="${label} hedef ilerlemesi" max="100" value="${Math.min(100, ratio || 0)}"></progress><p>${actual} yorum / ${target ?? '—'} hedef · ${isLive() ? 'Canlı' : 'Demo'}</p></div>`).join('')}</div>`;
+    host.innerHTML = `<div class="v2-period-note">Bu ayın hedef kırılımı · ${isLive() ? 'Seçili şubenin canlı verisi' : 'Yalnız seçili demo şube'} · ${monthKey(Date.now())}</div><div class="v2-breakdown">${[['Bölge', branch()?.region || '—'], ['İl', branch()?.city || '—'], ['Şube', branchName()]].map(([label, value]) => `<div class="card"><h4>${label}</h4><b>${html(value)}</b><span class="v2-big">${ratio == null ? '—' : `${ratio}%`}</span><progress aria-label="${label} hedef ilerlemesi" max="100" value="${Math.min(100, ratio || 0)}"></progress><p>${actual} yorum / ${target ?? '—'} hedef · ${isLive() ? 'Canlı' : 'Demo'}</p></div>`).join('')}</div>`;
   };
   async function saveTarget() {
     const value = Number(byId('v2Target')?.value), button = byId('v2SaveTarget');

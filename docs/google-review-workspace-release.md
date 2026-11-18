@@ -36,6 +36,13 @@ Yeni bir zamanlanmış görev veya mesaj gönderimi başlatılmaz.
   önce düzenleme/kaydetme gerekir. Yayın doğrulama testleri korunur.
 - Yerel masaüstü ve 390 px ekran: tek canlı kapsam, alt menüler, şube formu,
   harita önizleme, yatay taşma ve tarayıcı hataları kontrol edildi.
+- Geçerli yorum paketinde 408 test başarılı (390 yorum testi + 18 köprü testi).
+- Canlı G715 ekranında altı menü, tek Nilüfer kapsamı, kanonik adres ve yayın
+  göstergesi doğrulandı. Şube müdürü oturumu 403 ile reddedildi; mevcut genel
+  merkez hesabıyla yeniden giriş yapılması gerekiyor. Yetki genişletilmedi.
+- Yorum istekleri ERP giriş denetiminin kullandığı güncel oturumu öncelikler;
+  süresi dolan oturumdan eski bayi hesabına geri düşmez. Hedef okunamadığında
+  hedef yokmuş gibi sunulmaz; kurulum kontrol hatası açıkça gösterilir.
 - Canlı kabul: Pages sürümünü doğrula, örnek şubeyi arayüzden kaydet, yeniden
   yüklemede kaydı/haritayı kontrol et, ana seçicide yalnız Nilüfer'i doğrula.
   Test sırasında gerçek Google yanıtı veya müşteri mesajı gönderme.

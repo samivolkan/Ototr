@@ -104,7 +104,8 @@
   });
   function visibleBranches() {
     const items=registry().filter(b=>!LEGACY_DEMOS.has(b.id) && b.active!==false && b.lifecycle!=='archived');
-    return items.some(b=>b.id===NILUFER)?items:[baseline,...items];
+    const cached=typeof BRANCHES!=='undefined'?BRANCHES.find(b=>(b.erpBranchId||b.id)===NILUFER):null;
+    return items.some(b=>b.id===NILUFER)?items:[{...cached,...baseline},...items];
   }
   function badge(b) { return b.onboarding?.test?'Test · gönderim kapalı':operationalBranches([b]).length?'Canlı':'Kurulum bekliyor'; }
   function date(value) { if(!value)return 'Henüz senkronize edilmedi';const d=new Date(value);return Number.isFinite(d.getTime())?d.toLocaleString('tr-TR'):String(value); }
@@ -126,7 +127,7 @@
       '<div class="workspace-branches"><aside class="workspace-branch-list" aria-label="Şube listesi">'+items.map(x=>'<button class="workspace-branch '+(x.id===selected?'selected':'')+'" data-select-branch="'+escape(x.id)+'" aria-pressed="'+(x.id===selected)+'"><strong>'+escape(name(x))+'</strong><span>'+escape(x.region)+' · '+escape(x.city)+'</span><em>'+badge(x)+'</em></button>').join('')+'</aside><div class="workspace-branch-detail"><div class="card"><div class="head"><div><h2>'+escape(name(b))+'</h2><p>'+escape(b.region)+' / '+escape(b.city)+'</p></div><span class="chip '+(liveBranch?'ok':'warn')+'">'+badge(b)+'</span></div>'+
       (b.onboarding?.test?'<div class="alert info">Örnek şube gerçek bir işletme değildir. Canlı raporlara katılmaz; Google yanıtı ve müşteri mesajı gönderemez.</div>':'')+
       '<div class="workspace-metrics"><div><small>Son veri</small><strong>'+escape(date(b.last_sync_at||b.lastSync))+'</strong></div><div><small>Alınan yorum</small><strong>'+(metrics?metrics.count:'—')+'</strong></div><div><small>SLA hedefi</small><strong>'+escape(b.id===NILUFER?state.policy?.default_sla_hours||'—':b.sla_hours||24)+' saat</strong></div><div><small>Kontrol sıklığı</small><strong>'+escape(b.interval_minutes||60)+' dk</strong></div></div>'+
-      '<div class="workspace-checks">'+checklist.map(([label,ok])=>'<div><span class="'+(ok?'done':'pending')+'">'+(ok?'✓':'○')+'</span><span>'+label+'</span><small>'+(ok?'Hazır':c?'Eksik':'Kontrol ediliyor')+'</small></div>').join('')+'</div>'+
+      '<div class="workspace-checks">'+checklist.map(([label,ok])=>'<div><span class="'+(ok?'done':'pending')+'">'+(ok?'✓':'○')+'</span><span>'+label+'</span><small>'+(ok?'Hazır':loadError||setupError?'Doğrulanamadı':c?'Eksik':busy?'Kontrol ediliyor':'Kontrol bekliyor')+'</small></div>').join('')+'</div>'+
       (setupError?'<p role="alert" class="workspace-error">'+escape(setupError)+'</p>':'')+
       '<div class="workspace-actions">'+(liveBranch?'<button class="btn" data-branch-action="reviews">Yorumları izle</button><button class="btn" data-branch-action="performance">Hedef ve performans</button>':'<button class="btn" data-branch-action="edit" '+(busy?'disabled':'')+'>Kurulumu düzenle</button><button class="btn p" data-branch-action="activate" '+(busy||b.onboarding?.test||!b.account_id||!b.store_code||!b.location_id?'disabled':'')+'>Google’da doğrula ve canlıya al</button>')+
       '<button class="btn" data-branch-action="check" '+(busy?'disabled':'')+'>Kurulumu kontrol et</button></div><p class="v2-chart-note">AI ve bağlantılar mevcut ERP ayarlarından kullanılır. Yeni şubede müşteri mesajı gönderimi başlangıçta kapalıdır.</p></div>'+mapPanel(b)+'</div></div>';
