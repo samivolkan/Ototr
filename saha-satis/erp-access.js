@@ -9,6 +9,14 @@ const redirectToLogin = () => {
 
 let checking = false;
 
+// Modules must use the same signed-in account as this gate, never an older
+// dealer session left in a different storage key.
+window.OTOTRGetERPAuthSession = async () => {
+  const { data, error } = await supabase.auth.getSession();
+  if (error) return null;
+  return data.session || null;
+};
+
 async function ensureAccess() {
   if (checking) return;
   checking = true;

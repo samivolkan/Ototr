@@ -33,6 +33,9 @@
   }
 
   async function session() {
+    if (typeof window.OTOTRGetERPAuthSession === 'function') {
+      try { return await window.OTOTRGetERPAuthSession(); } catch (_) { return null; }
+    }
     if (typeof window.OTOTRGetLiveSession === 'function') {
       try { return await window.OTOTRGetLiveSession(); } catch (_) {}
     }
