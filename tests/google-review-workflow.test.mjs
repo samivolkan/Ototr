@@ -60,6 +60,7 @@ function workflowFixture(options = {}) {
       then(resolve, reject) { return Promise.resolve().then(execute).then(resolve, reject); },
     };
     function execute() {
+      if (table === 'google_review_branch_registry') return { data: [], error: null };
       if (table === 'google_business_connections') return { data: clone(connection), error: null };
       if (table === 'google_review_management_resources' || table === 'app_users') return {data:mode==='many'?[]:null,error:null};
       assert.ok(['google_review_work_items','google_review_targets','google_review_policies','google_review_audit_log'].includes(table), 'Unexpected database table');

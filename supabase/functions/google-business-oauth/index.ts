@@ -173,7 +173,23 @@ function managedBranchId(id: unknown) { const value = String(id || ''); return v
 function registryRow(rows: BranchRegistryRow[], id: string) { return rows.find(row => row.id === id) || null; }
 function branchCanRead(row: BranchRegistryRow | null) { return !row || row.active !== false; }
 function branchCanPublish(row: BranchRegistryRow | null) { return !row || row.lifecycle === 'live' || row.lifecycle === 'active'; }
-function branchCanSync(row: BranchRegistryRow | null) { return !row || (row.active !== false && (row.lifecycle === 'live' || row.lifecycle === 'active')); }
+function branchCanSync(row: BranchRegistryRow | null) { return !row || (row.onboarding?.test !== true && row.active !== false && (row.lifecycle === 'live' || row.lifecycle === 'active')); }
+function branchSetup(body: Record<string, any>, previous?: BranchRegistryRow | null) {
+  const text = (key: string, max: number) => { const value=String(body[key] ?? previous?.[key as keyof BranchRegistryRow] ?? '').trim(); if(value.length<2 || value.length>max) throw new RequestError('Şube adı, il ve bölge uzunluğu geçersiz.',400); return value; };
+  const integer = (key: string, fallback: number, max: number, min=1) => { const value=Number(body[key] ?? previous?.[key as keyof BranchRegistryRow] ?? fallback); if(!Number.isInteger(value)||value<min||value>max) throw new RequestError('Kontrol aralığı, SLA veya hedef geçersiz.',400); return value; };
+  const googleId = (key: string, max: number) => { const value=String(body[key] ?? previous?.[key as keyof BranchRegistryRow] ?? '').trim(); if(value && !new RegExp('^\\d{1,'+max+'}$').test(value)) throw new RequestError('Google kimlikleri yalnızca sayılardan oluşmalı.',400); return value || null; };
+  const test = previous ? previous.onboarding?.test === true : body.test_mode === true;
+  const account_id=googleId('account_id',32), store_code=googleId('store_code',64), location_id=googleId('location_id',32);
+  if(test && (account_id||store_code||location_id)) throw new RequestError('Test şubesine canlı Google kimliği bağlanamaz.',400);
+  const rawMap = body.map === undefined ? previous?.onboarding?.map : body.map;
+  let map: {lat:number;lng:number;address:string}|null = null;
+  if(rawMap != null) {
+    const lat=Number(rawMap.lat),lng=Number(rawMap.lng),address=String(rawMap.address||'').trim();
+    if(rawMap.lat==null||rawMap.lng==null||rawMap.lat===''||rawMap.lng===''||!Number.isFinite(lat)||!Number.isFinite(lng)||Math.abs(lat)>90||Math.abs(lng)>180||address.length>300) throw new RequestError('Harita enlemi ve boylamı geçerli olmalı.',400);
+    map={lat,lng,address};
+  }
+  return {name:text('name',160),city:text('city',80),region:text('region',80),account_id,store_code,location_id,interval_minutes:integer('interval_minutes',60,1440,5),sla_hours:integer('sla_hours',24,168),target:integer('target',30,10000),onboarding:{...(previous?.onboarding||{}),test,map,google_account:Boolean(account_id),google_location:Boolean(location_id),store_code:Boolean(store_code)}};
+}
 async function seedBranchDefaults(db: ReturnType<typeof admin>, row: BranchRegistryRow, userId: string) {
   const now = new Date().toISOString();
   const lifecycle = row.lifecycle || (row.mode === 'live_candidate' ? 'live_candidate' : 'demo');
@@ -188,11 +204,21 @@ async function seedBranchDefaults(db: ReturnType<typeof admin>, row: BranchRegis
     const result = await db.from('google_review_management_resources').upsert({ connection_id: connectionId, branch_id: row.id, kind: item.kind, key, data: item.data, version: 1, created_by: userId, updated_by: userId, updated_at: now }, { onConflict: 'connection_id,branch_id,kind,key', ignoreDuplicates: true });
     databaseFailure(result.error);
   }
-  const month = `${new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Istanbul', year: 'numeric', month: '2-digit' }).format(new Date())}-01`;
+  const monthParts = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Istanbul', year: 'numeric', month: '2-digit' }).formatToParts(new Date());
+  const month = `${monthParts.find(p=>p.type==='year')!.value}-${monthParts.find(p=>p.type==='month')!.value}-01`;
   const target = await db.from('google_review_targets').upsert({ connection_id: connectionId, branch_id: row.id, month, target: Number(row.target || 30), version: 1, updated_by: userId, updated_at: now }, { onConflict: 'connection_id,branch_id,month', ignoreDuplicates: true });
   databaseFailure(target.error);
   const policy = await db.from('google_review_collection_policies').upsert({ connection_id: connectionId, branch_id: row.id, enabled: false, send_hour: 18, delay_minutes: 120, cooldown_days: 30, channel: 'sms', template: 'Merhaba {{musteri_adi}}, hizmet deneyiminizi değerlendirmek ister misiniz? {{yorum_linki}}', updated_by: userId, updated_at: now }, { onConflict: 'connection_id,branch_id', ignoreDuplicates: true });
   databaseFailure(policy.error);
+}
+async function activateBranchSettings(db: ReturnType<typeof admin>, branchId: string, userId: string) {
+  const config=await db.from('google_review_management_resources').select('data,version').eq('connection_id',connectionId).eq('branch_id',branchId).eq('kind','branch_settings').eq('key','default').eq('archived',false).maybeSingle();
+  databaseFailure(config.error);
+  if(!config.data) throw new RequestError('Şube çalışma ayarı bulunamadı. Kurulumu tekrar kaydedin.',409);
+  if(config.data.data?.lifecycle==='live')return;
+  const updated=await db.from('google_review_management_resources').update({data:{...config.data.data,lifecycle:'live'},version:config.data.version+1,updated_by:userId,updated_at:new Date().toISOString()}).eq('connection_id',connectionId).eq('branch_id',branchId).eq('kind','branch_settings').eq('key','default').eq('version',config.data.version).eq('archived',false).select('version').maybeSingle();
+  databaseFailure(updated.error);
+  if(!updated.data)throw new RequestError('Şube çalışma ayarı değişti. Kurulumu yenileyin.',409);
 }
 function syncBranchIds(value: unknown): string[] {
   if (value === undefined) return ['branch-google-nilufer'];
@@ -857,20 +883,40 @@ Deno.serve(async (req) => {
     }
     if (body.action === 'branch_create') {
       if (!access.is_owner) throw new RequestError('Şube ekleme yalnızca bağlantı sahibi tarafından yapılabilir.',403);
-      const name=String(body.name||'').trim(), city=String(body.city||'').trim(), region=String(body.region||'').trim();
-      if(!/^branch-custom-[A-Za-z0-9-]{8,80}$/.test(String(body.id||''))||name.length<2||city.length<2||region.length<2) throw new RequestError('Şube kimliği, ad, il ve bölge geçerli olmalı.',400);
-      const account_id=body.account_id?String(body.account_id).trim():null,store_code=body.store_code?String(body.store_code).trim():null,location_id=body.location_id?String(body.location_id).trim():null;
-      if ((account_id && !/^\d{1,32}$/.test(account_id)) || (store_code && !/^\d{1,64}$/.test(store_code)) || (location_id && !/^\d{1,32}$/.test(location_id))) throw new RequestError('Google hesap, mağaza ve konum kimlikleri yalnızca sayılardan oluşmalı.',400);
+      if(!customBranchPattern.test(String(body.id||''))) throw new RequestError('Şube kimliği geçerli olmalı.',400);
+      const setup=branchSetup(body);
+      const {name,city,region,account_id,store_code,location_id}=setup;
       const mode=(account_id&&store_code)?'live_candidate':'demo';
       const lifecycle=mode==='live_candidate'?'live_candidate':'demo';
-      const row={id:String(body.id),connection_id:connectionId,name,city,region,account_id,store_code,location_id,mode,lifecycle,interval_minutes:Number(body.interval_minutes||60),sla_hours:Number(body.sla_hours||24),target:Number(body.target||30),active:true,onboarding:{google_account:Boolean(account_id),google_location:Boolean(location_id),store_code:Boolean(store_code),target:true,sla:true,ai:false,collection:false,permissions:false},created_by:user.id,updated_by:user.id};
-      if(row.interval_minutes<5||row.interval_minutes>1440||row.sla_hours<1||row.sla_hours>168||row.target<1||row.target>10000) throw new RequestError('Kontrol aralığı, SLA veya hedef geçersiz.',400);
+      const row={...setup,id:String(body.id),connection_id:connectionId,mode,lifecycle,active:true,created_by:user.id,updated_by:user.id};
+      const existing=registryRow(branchRows,row.id);
+      if(existing) {
+        const same=['name','city','region','account_id','store_code','location_id','target','sla_hours','interval_minutes'].every(key=>(existing as any)[key]===(setup as any)[key]) && JSON.stringify(existing.onboarding?.map||null)===JSON.stringify(setup.onboarding.map||null) && Boolean(existing.onboarding?.test)===setup.onboarding.test;
+        if(!same) throw new RequestError('Bu şube kimliği zaten kayıtlı; kurulum listesinden düzenleyin.',409);
+        await seedBranchDefaults(db,existing,user.id);
+        return json({item:existing,reused:true});
+      }
       const saved=await db.from('google_review_branch_registry').insert(row).select('id,name,city,region,account_id,store_code,location_id,mode,lifecycle,interval_minutes,sla_hours,target,active,google_verified_at,last_sync_at,onboarding,created_at,updated_at').maybeSingle();
       if (saved.error?.code === '23505') throw new RequestError('Bu şube kimliği veya Google konumu zaten kayıtlı.',409);
       databaseFailure(saved.error); if(!saved.data) throw new RequestError('Şube kaydı oluşturulamadı.',503);
       await seedBranchDefaults(db, saved.data as BranchRegistryRow, user.id);
       await writeGoogleAudit(db,{userId:user.id,role:'ADMIN',action:'branch_create',entityType:'branch',entityId:saved.data.id,afterState:{name,city,region,mode,lifecycle},detail:'Yeni Google yorum şubesi onboarding kaydı oluşturuldu.'});
       return json({item:saved.data,onboarding:{...row.onboarding,lifecycle,activation_required:true}},201);
+    }
+    if (body.action === 'branch_update') {
+      if(!access.is_owner) throw new RequestError('Şube kurulumu yalnızca bağlantı sahibi tarafından düzenlenebilir.',403);
+      const row=registryRow(branchRows,requestedBranch);
+      if(!row || !customBranchPattern.test(requestedBranch)) throw new RequestError('Kurulum şubesi bulunamadı.',404);
+      if(['live','active'].includes(row.lifecycle||'')) throw new RequestError('Canlı şubenin bağlantısı kurulum ekranından değiştirilemez.',409);
+      if(typeof body.expected_updated_at !== 'string') throw new RequestError('Güncel şube sürümü gerekli.',400);
+      const setup=branchSetup(body,row), lifecycle=setup.account_id&&setup.store_code?'live_candidate':'demo';
+      if(setup.target!==row.target||setup.sla_hours!==row.sla_hours||setup.interval_minutes!==row.interval_minutes) throw new RequestError('Başlangıç hedefleri kurulum düzenlemesinde değiştirilemez; canlı şubenin hedef ve politika ekranlarını kullanın.',400);
+      const saved=await db.from('google_review_branch_registry').update({...setup,lifecycle,mode:lifecycle,google_verified_at:null,updated_by:user.id,updated_at:new Date().toISOString()}).eq('connection_id',connectionId).eq('id',requestedBranch).eq('updated_at',body.expected_updated_at).select('id,name,city,region,account_id,store_code,location_id,mode,lifecycle,interval_minutes,sla_hours,target,active,google_verified_at,last_sync_at,onboarding,created_at,updated_at').maybeSingle();
+      if(saved.error?.code==='23505') throw new RequestError('Bu Google konumu başka şubede kayıtlı.',409);
+      databaseFailure(saved.error); if(!saved.data) throw new RequestError('Şube başka bir oturumda değişti. Yenileyip tekrar deneyin.',409);
+      await seedBranchDefaults(db,saved.data as BranchRegistryRow,user.id);
+      await writeGoogleAudit(db,{userId:user.id,role:'ADMIN',action:'branch_update',entityType:'branch',entityId:requestedBranch,afterState:{name:setup.name,lifecycle},detail:'Şube kurulum bilgileri güncellendi.'});
+      return json({item:saved.data});
     }
     if (body.action === 'branch_onboarding') {
       const branchId = branchIdOf(body); if (!managedBranchId(branchId)) throw new RequestError('Geçersiz şube.',400);
@@ -886,14 +932,18 @@ Deno.serve(async (req) => {
       if (!access.is_owner) throw new RequestError('Şube aktifleştirme yalnızca bağlantı sahibi tarafından yapılabilir.',403);
       const branchId=String(body.branch_id||''); if(!customBranchPattern.test(branchId)) throw new RequestError('Yalnızca yeni özel şube kimliği aktifleştirilebilir.',400);
       const row=registryRow(branchRows,branchId); if(!row) throw new RequestError('Şube kaydı bulunamadı.',404);
+      if(row.onboarding?.test===true) throw new RequestError('Test şubesi canlıya alınamaz. Gerçek şube için ayrı kurulum açın.',409);
       if(!row.account_id||!row.store_code||!row.location_id) throw new RequestError('Google hesap ID, mağaza kodu ve konum ID aktivasyon için zorunlu.',400);
       const token=await accessToken(await decrypt(connection.refresh_token_encrypted));
       const location=await googleJson(`https://mybusinessbusinessinformation.googleapis.com/v1/locations/${row.location_id}?readMask=name,title,storeCode`,token);
       if(String(location.storeCode||'')!==String(row.store_code)||String(location.name||'')!==`locations/${row.location_id}`) throw new RequestError('Google konumu verilen mağaza koduyla eşleşmiyor.',409);
+      // Verify the selected account/location pair as well, before enabling sync.
+      await googleJson(`https://mybusiness.googleapis.com/v4/accounts/${row.account_id}/locations/${row.location_id}/reviews?pageSize=1`,token);
+      await seedBranchDefaults(db,row,user.id);
+      await activateBranchSettings(db,branchId,user.id);
       const now=new Date().toISOString(), onboarding={...(row.onboarding||{}),google_account:true,store_code:true,location_id:true,google_verified:true,ai:true,collection:true,permissions:true};
       const updated=await db.from('google_review_branch_registry').update({mode:'live_candidate',lifecycle:'live',google_verified_at:now,updated_by:user.id,updated_at:now,onboarding}).eq('connection_id',connectionId).eq('id',branchId).select('id,name,city,region,account_id,store_code,location_id,mode,lifecycle,interval_minutes,sla_hours,target,active,google_verified_at,last_sync_at,onboarding,created_at,updated_at').maybeSingle();
       databaseFailure(updated.error); if(!updated.data) throw new RequestError('Şube aktifleştirilemedi.',503);
-      await seedBranchDefaults(db, updated.data as BranchRegistryRow, user.id);
       await writeGoogleAudit(db,{userId:user.id,role:'ADMIN',action:'branch_activate',entityType:'branch',entityId:branchId,afterState:{lifecycle:'live',google_verified_at:now},detail:'Google konumu doğrulandı; şube canlı yorum akışına açıldı.'});
       return json({item:updated.data,checklist:{...onboarding,live:true}});
     }

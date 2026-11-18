@@ -138,10 +138,11 @@
   const stats = () => aggregateReviews(rows(), { slaHours: live() ? (Number(policy().default_sla_hours) || Number(currentBranch()?.slaH) || 24) : Number(currentBranch()?.slaH) });
   function normalizeRegistryBranch(row) {
     if (!row?.id) return null;
-    const known = (typeof BRANCHES !== 'undefined' && Array.isArray(BRANCHES)) ? BRANCHES.find(branch => branch.id === row.id) : null;
-    const rawName = String(row.name || known?.name || row.id).replace(/^OTOTR(?: Oto Ekspertiz)?\s+/i, '').replace(/\s+Şubesi?$/i, '').trim();
+    const known = (typeof BRANCHES !== 'undefined' && Array.isArray(BRANCHES)) ? BRANCHES.find(branch => branch.id === row.id || branch.erpBranchId === row.id) : null;
+    const rawName = String(row.name || known?.name || row.id).replace(/^OTOTR(?: Oto Ekspertiz)?\s+/i, '').replace(/\s+Şube(?:si)?$/i, '').trim();
     const city = String(row.city || known?.city || '').trim();
-    const branch = { ...(known || {}), ...row, id: row.id, name: known?.name || rawName, city, region: row.region || known?.region || 'Diğer' };
+    const branchName = rawName.startsWith(city + ' ') ? rawName.slice(city.length + 1) : rawName;
+    const branch = { ...(known || {}), ...row, id: row.id, name: branchName, city, region: row.region || known?.region || 'Diğer' };
     const lifecycle = row.lifecycle || row.mode || known?.lifecycle || (row.id === 'branch-google-nilufer' ? 'live' : 'demo');
     branch.lifecycle = lifecycle;
     branch.mode = row.mode || lifecycle;

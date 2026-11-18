@@ -28,6 +28,17 @@ test('management refresh loads actual policy and uses only Bursa branch',async()
   await s.api.request('management_read',{branch_id:'gebze'});
   assert.equal(s.calls[0].body.branch_id,'branch-google-nilufer');
 });
+
+test('branch setup addresses its own record without permitting cross-branch review writes',async()=>{
+  const s=await ready(setup());
+  const id='branch-custom-onboarding-example-20261119';
+  for(const action of ['branch_onboarding','branch_update','branch_activate']){
+    await s.api.request(action,{branch_id:id});
+    assert.equal(s.calls.at(-1).body.branch_id,id);
+  }
+  await s.api.request('save_draft',{branch_id:id});
+  assert.equal(s.calls.at(-1).body.branch_id,'branch-google-nilufer');
+});
 test('SLA save validates range and carries expected policy timestamp',async()=>{
   const s=await ready(setup());
   await assert.rejects(s.api.savePolicy(0),/1–168/);

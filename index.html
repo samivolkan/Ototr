@@ -21,9 +21,10 @@
     (function(){
       try{
         const currentUrl = new URL(window.location.href);
-        if (currentUrl.searchParams.has('release') && [...currentUrl.searchParams.keys()].every(key => key === 'release')) {
-          currentUrl.search = '';
-          history.replaceState(null, document.title, `${currentUrl.pathname}${currentUrl.hash || '#google-reviews'}`);
+        if (currentUrl.searchParams.has('release') || currentUrl.searchParams.has('reviewPage')) {
+          currentUrl.searchParams.delete('release');
+          currentUrl.searchParams.delete('reviewPage');
+          history.replaceState(null, document.title, `${currentUrl.pathname}${currentUrl.search}${currentUrl.hash || '#google-reviews'}`);
         }
         window.__OTOTR_DEALER_STANDALONE__ = false;
         if(window.__OTOTR_DEALER_STANDALONE__){
@@ -3057,11 +3058,11 @@
   // optional modules; the AI/status retry in app-core waits for their arrival.
   (function(){
     const modules=[
-      'assets/google-review-ai.js?v=google-workflow-23',
+      'assets/google-review-ai.js?v=google-workflow-24',
       'assets/google-review-analytics.js?v=1',
       'assets/google-review-dashboard.js?v=1',
       'assets/google-review-refresh.js?v=google-refresh-5',
-      'assets/google-review-command-center.js?v=20261116-17'
+      'assets/google-review-command-center.js?v=20261119-1'
     ];
     const loadNext=(i)=>{ if(i>=modules.length)return; const s=document.createElement('script'); s.src=modules[i]; s.onload=()=>loadNext(i+1); s.onerror=()=>loadNext(i+1); document.head.appendChild(s); };
     const start=()=>loadNext(0);

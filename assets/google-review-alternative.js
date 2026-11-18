@@ -23,19 +23,19 @@
     return rows.filter(row => keys.has(monthKey(row.createdAt)) && new Date(row.createdAt).getTime() <= now);
   }
   function scopedRows(rows, branchId) {
-    if (!BRANCH_IDS.includes(branchId)) return [];
-    const demo = branchId !== BRANCH_IDS[0];
+    if (!BRANCH_IDS.includes(branchId) && !/^branch-custom-[A-Za-z0-9-]{8,80}$/.test(branchId)) return [];
+    const demo = BRANCH_IDS.slice(1).includes(branchId);
     const name = BRANCH_NAMES[BRANCH_IDS.indexOf(branchId)];
     return rows.filter(row => {
       const identity = row.branchId || row.branch_id;
-      return row.demo === demo && (identity ? identity === branchId : row.store === name);
+      return row.demo === demo && (identity ? identity === branchId : Boolean(name) && row.store === name);
     });
   }
   function targetSeries(months, targets, branchId, demoTarget) {
-    if (!BRANCH_IDS.includes(branchId)) return months.map(() => null);
+    if (!BRANCH_IDS.includes(branchId) && !/^branch-custom-[A-Za-z0-9-]{8,80}$/.test(branchId)) return months.map(() => null);
     return months.map(month => {
       const record = targets.find(row => row.branch_id === branchId && String(row.month).slice(0, 7) === month);
-      const raw = branchId === BRANCH_IDS[0] ? record?.monthly_target ?? record?.target : demoTarget;
+      const raw = !BRANCH_IDS.slice(1).includes(branchId) ? record?.monthly_target ?? record?.target : demoTarget;
       const value = Number(raw);
       return raw != null && Number.isFinite(value) && value > 0 ? value : null;
     });
@@ -45,30 +45,12 @@
   if (typeof module === 'object' && module.exports) module.exports = pure;
   if (!root?.document) return;
 
-  const doc = root.document, second = doc.documentElement.dataset.reviewVariant === '2';
+  const doc = root.document;
+  doc.documentElement.dataset.reviewVariant = '2';
   const byId = id => doc.getElementById(id);
   const node = (tag, text, className) => { const n = doc.createElement(tag); if (text != null) n.textContent = text; if (className) n.className = className; return n; };
   const html = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  const switcher = node('nav', null, 'review-page-switch');
-  switcher.setAttribute('aria-label', 'Yorum sayfası tasarımı');
-  for (const version of [1, 2]) {
-    const url = new URL('index.html', location.href);
-    if (version === 2) url.searchParams.set('reviewPage', '2');
-    url.hash = 'google-reviews';
-    const link = node('a', `Yorum Sayfası ${version}`);
-    link.href = url.href; link.target = '_top';
-    if (version === (second ? 2 : 1)) link.setAttribute('aria-current', 'page');
-    link.addEventListener('click', event => {
-      if (root.OTOTRReviewBridge?.isEditing?.()) {
-        event.preventDefault(); root.toast('Önce açık yanıt taslağını kaydedin veya kapatın.', 'warn');
-      }
-    });
-    switcher.append(link);
-  }
-  doc.querySelector('.topbar .searchbar')?.after(switcher);
-  if (!second) return;
-
-  doc.title = 'OTOTR · Yorum Sayfası 2';
+  doc.title = 'OTOTR · Yorum Yönetimi';
   try {
     if (root.parent !== root && root.parent.location.origin === location.origin) {
       doc.documentElement.classList.add('review-embedded');
@@ -82,11 +64,11 @@
       }
     }
   } catch (_) { /* A standalone preview has its own header controls. */ }
-  const subtitle = doc.querySelector('.bsub'); if (subtitle) subtitle.textContent = 'Google Yorum · 2';
+  const subtitle = doc.querySelector('.bsub'); if (subtitle) subtitle.textContent = 'Yorum Yönetimi';
   const live = () => root.OTOTRReviewLiveViews;
   const branchId = () => live()?.getBranchId?.() || BRANCH_IDS[0];
-  const isLive = () => branchId() === BRANCH_IDS[0];
-  const branchName = () => BRANCH_NAMES[BRANCH_IDS.indexOf(branchId())] || 'Şube seçin';
+  const isLive = () => live()?.isLive?.() ?? branchId() === BRANCH_IDS[0];
+  const branchName = () => BRANCH_NAMES[BRANCH_IDS.indexOf(branchId())] || branch()?.name || 'Şube seçin';
   const branch = () => BRANCHES.find(b => (b.erpBranchId || b.id) === branchId()) || BRANCHES[BRANCH_IDS.indexOf(branchId())];
   const management = () => root.OTOTRReviewManagement?.state || {};
   const allRows = () => scopedRows(typeof REVIEWS === 'undefined' ? [] : REVIEWS, branchId());
@@ -129,7 +111,7 @@
   const periodSelect = node('select'); periodSelect.id = 'v2Period'; periodSelect.setAttribute('aria-label', 'Analiz dönemi');
   for (const [value, label] of Object.entries(PERIODS)) { const option = node('option', label); option.value = value; periodSelect.append(option); }
   periodSelect.value = period; periodLabel.append(periodSelect); scopeBar.append(periodLabel);
-  const environment = node('span', '1 canlı · 2 demo', 'chip ok'); scopeBar.append(environment);
+  const environment = node('span', 'Canlı çalışma alanı', 'chip ok'); scopeBar.append(environment);
   const refreshButtons = node('div', null, 'v2-refresh');
   ['erpGoogleSync', 'erpGoogleQueue', 'erpGoogleConnect'].forEach(id => { if (byId(id)) refreshButtons.append(byId(id)); });
   scopeBar.append(refreshButtons);
@@ -138,12 +120,15 @@
   doc.querySelector('.ph')?.after(meta);
   function normalizeScope() {
     if (branchSelect) {
-      const labels = { live: 'Bursa Nilüfer · Canlı', gebze: 'Kocaeli Gebze · Demo', inegol: 'Bursa İnegöl · Demo' };
+      const labels = { live: 'Bursa Nilüfer · Canlı' };
+      for (const row of live()?.getBranchRegistry?.() || []) {
+        if (row.id.startsWith('branch-custom-') && row.live && row.active !== false && row.google_verified_at && !row.onboarding?.test) labels[row.id] = `${row.name} · Canlı`;
+      }
       for (const option of [...branchSelect.options]) { if (labels[option.value]) option.textContent = labels[option.value]; else option.remove(); }
       branchSelect.setAttribute('aria-label', 'Şube seçimi');
     }
     const sync = byId('erpGoogleSync');
-    if (sync) { sync.hidden = !isLive(); sync.textContent = 'Nilüfer’i yenile'; }
+    if (sync) { sync.hidden = !isLive(); sync.textContent = 'Veriyi yenile'; }
     const current = byId('erpDataScope');
     if (current) current.textContent = `${branchName()} · ${isLive() ? 'Canlı ERP / Google kayıtları' : 'Demo · dış gönderim kapalı'}`;
     const currentMonth = monthKey(Date.now());
@@ -190,7 +175,7 @@
   }
   root.renderOverview = function () {
     const a = stats(rows());
-    const connection = management().error ? 'Canlı yönetim bağlantısı alınamadı; Bağlantı durumu ekranını kontrol edin.' : !management().loaded ? 'Canlı kayıtlar için ERP oturumu bekleniyor.' : `${html(branchName())} · Google kayıtları ve ERP onay akışı. Gebze ve İnegöl bu toplama dahil değildir.`;
+    const connection = management().error ? 'Canlı yönetim bağlantısı alınamadı; Bağlantı durumu ekranını kontrol edin.' : !management().loaded ? 'Canlı kayıtlar için ERP oturumu bekleniyor.' : `${html(branchName())} · Google kayıtları ve ERP onay akışı. Kurulum ve test şubeleri hesaplamaya dahil edilmez.`;
     byId('ovAlerts').innerHTML = `<div class="alert ${isLive() && management().loaded && !management().error ? 'info' : 'warn'}">${isLive() ? connection : `${html(branchName())} · Demo çalışma alanı. Yapılan denemeler Google’a gönderilmez.`}</div>`;
     const metrics = [
       ['Yorum hacmi', fmt(a.count), PERIODS[period]], ['Ort. puan', fmt(a.average), `${a.count} kayıttan hesaplandı`],
@@ -226,7 +211,7 @@
       { label: 'Kayıtlı hedef', data: [target], backgroundColor: '#cbd5e1', borderRadius: 5 },
       { label: 'Alınan yorumlar', data: [monthly.count], backgroundColor: '#e8281a', borderRadius: 5 }
     ], { indexAxis: 'y', plugins: { legend: { display: true, position: 'bottom', labels: { boxWidth: 9 } } } });
-    chartNote('chartRegion', `Bölge: Marmara · ${branchName()} · ${isLive() ? 'canlı' : 'demo'} kapsamı.`);
+    chartNote('chartRegion', `Bölge: ${branch()?.region || '—'} · ${branchName()} · ${isLive() ? 'canlı' : 'demo'} kapsamı.`);
     chart('chartResponse', 'bar', ['<2 sa', '2–6 sa', '6–24 sa', '24–48 sa', '48+ sa'], [{ label: 'Yanıt süresi', data: a.durationBuckets, backgroundColor: ['#12805c', '#6bbf9b', '#fbbf24', '#fb923c', '#b42318'], borderRadius: 4 }]);
     const responseTitle = byId('chartResponse')?.closest('.chart-card')?.querySelector('h3'); if (responseTitle) responseTitle.textContent = `Yanıt süresi · SLA ${sla()} sa`;
     emptyChart('chartResponse', a.timedAnswers > 0, 'Yanıt süresi ölçülebilen kayıt bulunmuyor.');

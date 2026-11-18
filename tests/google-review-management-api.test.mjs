@@ -30,13 +30,16 @@ function fixture(options = {}) {
     google_review_notifications: [],
     google_review_ai_generations: [],
     google_review_ai_outcomes: [],
+    google_review_branch_registry: [],
+    google_review_targets: [],
+    google_review_collection_policies: [],
   };
   const writes = [], remote = [];
   let beforeUpdate = null, afterWrite = null;
   const db = { from(table) {
     assert.ok(Object.hasOwn(tables, table), `Unexpected table ${table}`);
     const predicates = [];
-    let fields = '*', operation = 'select', values, single = false, maximum = Infinity;
+    let fields = '*', operation = 'select', values, single = false, maximum = Infinity, conflict;
     const query = {
       select(value = '*') { fields = value; return this; },
       eq(key, value) { predicates.push(row => row[key] === value); return this; },
@@ -45,11 +48,18 @@ function fixture(options = {}) {
       maybeSingle() { single = true; return this; },
       update(value) { operation = 'update'; values = value; return this; },
       insert(value) { operation = 'insert'; values = value; return this; },
+      upsert(value, options) { operation='upsert';values=value;conflict=options;return this; },
       then(resolve, reject) { return Promise.resolve().then(async () => {
         if (table === options.failTable) return { data: null, error: { code: 'XX000' } };
         if (operation === 'update' && beforeUpdate) { const fn = beforeUpdate; beforeUpdate = null; fn(table, tables); }
         let rows = tables[table].filter(row => predicates.every(predicate => predicate(row)));
-        if (operation === 'insert') { const added = { ...clone(values) }; tables[table].push(added); rows = [added]; }
+        if (operation === 'insert') { const added = { updated_at:STAMP,...clone(values) }; tables[table].push(added); rows = [added]; }
+        if (operation === 'upsert') {
+          const keys=conflict.onConflict.split(',');
+          const found=tables[table].find(row=>keys.every(key=>row[key]===values[key]));
+          if(found){if(!conflict.ignoreDuplicates)Object.assign(found,clone(values));rows=[found];}
+          else{const added={updated_at:STAMP,...clone(values)};tables[table].push(added);rows=[added];}
+        }
         if (operation === 'update') for (const row of rows) Object.assign(row, clone(values));
         if (operation !== 'select') writes.push({ table, values: clone(values), count: rows.length });
         if (operation !== 'select' && afterWrite) { const fn = afterWrite; afterWrite = null; await fn(table, tables); }
@@ -65,7 +75,7 @@ function fixture(options = {}) {
     fetch: async (...args) => { remote.push(args); throw new Error('No remote writes allowed in management test'); },
     Deno: { env: { get: key => env[key] }, serve: fn => { handler = fn; } },
   });
-  vm.runInContext(`${javascript}\nglobalThis.api = { publishWork, assertNoLegalHold };`, context);
+  vm.runInContext(`${javascript}\nglobalThis.api = { publishWork, assertNoLegalHold, activateBranchSettings };`, context);
   return { tables, writes, remote, context, db,
     race(fn) { beforeUpdate = fn; },
     afterWrite(fn) { afterWrite = fn; },
@@ -80,6 +90,60 @@ const read = { action: 'management_read', branch_id: BRANCH };
 const policy = { action: 'management_update', branch_id: BRANCH, entity: 'policy', expected_updated_at: STAMP, default_sla_hours: 48 };
 const task = { action: 'management_update', branch_id: BRANCH, entity: 'task', item_id: LEGAL, expected_version: 1 };
 const reject = { action: 'reject_draft', branch_id: BRANCH, item_id: ITEM, expected_version: 1, reason: 'Düzeltilecek içerik' };
+
+const newBranch={action:'branch_create',id:'branch-custom-test-example1',name:'Örnek Şube',city:'Bursa',region:'Marmara',test_mode:true,target:30,sla_hours:24,interval_minutes:60,map:{lat:40.19,lng:29.06,address:'Örnek konum'}};
+test('branch onboarding persists map and all initial resources with no remote sends',async()=>{
+ const f=fixture(), result=await f.request(newBranch);
+ assert.equal(result.status,201,JSON.stringify(result.data));
+ const b=result.data.item;
+ assert.equal(b.onboarding.test,true);assert.equal(b.onboarding.map.lat,40.19);
+ assert.equal(f.tables.google_review_management_resources.filter(r=>r.branch_id===b.id).length,4);
+ assert.equal(f.tables.google_review_targets[0].target,30);
+ assert.match(f.tables.google_review_targets[0].month,/^20\d{2}-\d{2}-01$/);
+ assert.equal(f.tables.google_review_collection_policies[0].enabled,false);
+ const check=await f.request({action:'branch_onboarding',branch_id:b.id});
+ assert.equal(check.data.branch_id,b.id);assert.equal(check.data.checklist.target,true);
+ assert.equal(check.data.checklist.live,false);
+ for(const action of ['branch_activate','sync_reviews','publish_reply','collection_enqueue','prepare_draft']){
+  const denied=await f.request({action,branch_id:b.id});
+  assert.equal(denied.status,409,action+JSON.stringify(denied.data));
+ }
+ assert.equal(f.remote.length,0);
+});
+test('branch setup rejects unsafe coordinates, invalid targets and live IDs on a test branch',async()=>{
+ for(const patch of [{target:'bad'},{target:0},{sla_hours:1.5},{interval_minutes:4},{map:{lat:'',lng:29}},{map:{lat:40,lng:181}},{account_id:'123'},{name:'x'}]){
+  const f=fixture(), result=await f.request({...newBranch,...patch});
+  assert.equal(result.status,400,JSON.stringify(patch)+JSON.stringify(result.data));
+  assert.equal(f.tables.google_review_branch_registry.length,0);
+ }
+ const f=fixture();
+ const result=await f.request({...newBranch,test_mode:false,account_id:'123',store_code:'456',location_id:'789'});
+ assert.equal(result.status,201,JSON.stringify(result.data));
+ assert.equal(result.data.item.lifecycle,'live_candidate');
+});
+test('branch edits are isolated, audited and reject stale writes',async()=>{
+ const f=fixture(), created=await f.request(newBranch), row=created.data.item;
+ const update={action:'branch_update',branch_id:row.id,expected_updated_at:row.updated_at,name:'Örnek Deneme Şubesi',map:{lat:40.2,lng:29.1,address:'Yeni örnek konum'}};
+ assert.equal((await f.request({...update,expected_updated_at:'stale'})).status,409);
+ const saved=await f.request(update);
+ assert.equal(saved.status,200,JSON.stringify(saved.data));
+ assert.equal(saved.data.item.name,'Örnek Deneme Şubesi');
+ assert.equal(saved.data.item.onboarding.test,true);
+ assert.equal(f.tables.google_review_targets[0].target,30);
+ assert.equal(f.tables.google_review_branch_registry.length,1);
+ assert.equal(f.remote.length,0);
+});
+
+test('verified branch activation advances the working lifecycle without losing its tone or SLA',async()=>{
+ const f=fixture(),id='branch-custom-active-example';
+ f.tables.google_review_management_resources.push({connection_id:CONNECTION,branch_id:id,kind:'branch_settings',key:'default',archived:false,version:3,data:{lifecycle:'live_candidate',tone:'empatik',sla_hours:48}});
+ await f.context.api.activateBranchSettings(f.db,id,OWNER);
+ const r=f.tables.google_review_management_resources[0];
+ assert.deepEqual(r.data,{lifecycle:'live',tone:'empatik',sla_hours:48});
+ assert.equal(r.version,4);
+ await f.context.api.activateBranchSettings(f.db,id,OWNER);
+ assert.equal(r.version,4);
+});
 
 function grant(f,role) {
   f.tables.app_users.push({id:LEGAL,auth_user_id:ITEM,full_name:'Scoped user',is_active:true,role:'EMPLOYEE'});

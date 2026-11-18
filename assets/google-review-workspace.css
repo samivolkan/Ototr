@@ -1,0 +1,42 @@
+/* Page 2 is now the sole review workspace. */
+html[data-review-variant="2"] .topbar .topnav{display:flex;gap:6px;padding:0 18px}
+html[data-review-variant="2"] #topnav button{appearance:none;border:0;border-bottom:3px solid transparent;border-radius:0;background:transparent;color:#b7c2d5;font:600 13px "DM Sans",sans-serif;padding:16px 18px;white-space:nowrap;cursor:pointer}
+html[data-review-variant="2"] #topnav button.on{color:#fff;border-bottom-color:#ef382b;background:rgba(255,255,255,.04)}
+html[data-review-variant="2"] #topnav button:hover{color:#fff;background:rgba(255,255,255,.06)}
+html[data-review-variant="2"] .topbar .searchbar{margin-left:auto}
+.workspace-subnav{display:flex;gap:6px;border-bottom:1px solid var(--line);margin:0 0 22px;overflow:auto}
+.workspace-subnav button{border:0;background:transparent;border-bottom:2px solid transparent;padding:10px 14px;cursor:pointer;color:var(--mute);white-space:nowrap;font:600 12px "DM Sans",sans-serif}
+.workspace-subnav button.on{border-color:var(--red);color:var(--ink)}
+.workspace-branch-head{display:flex;align-items:center;justify-content:space-between;gap:18px;margin:4px 0 22px}
+.workspace-branch-head h2,.workspace-branch-detail h2,.workspace-form-card h2{font-size:19px;letter-spacing:-.4px;margin:0}
+.workspace-branch-head p,.workspace-branch-detail .head p,.workspace-form-card .head p{margin:7px 0 0;color:var(--mute);font-size:12px}
+.workspace-branches{display:grid;grid-template-columns:260px minmax(0,1fr);gap:22px;align-items:start}
+.workspace-branch-list{display:grid;gap:10px}
+.workspace-branch{display:flex;flex-direction:column;align-items:flex-start;gap:9px;text-align:left;padding:18px;border:1px solid var(--line);background:var(--surface);border-radius:12px;cursor:pointer;color:var(--ink);font-family:inherit}
+.workspace-branch.selected{border-color:#e83a2f;box-shadow:0 0 0 1px #e83a2f;background:var(--surface)}
+.workspace-branch strong{font-size:13px}.workspace-branch span{font-size:11px;color:var(--mute)}.workspace-branch em{font-style:normal;font-size:11px;padding:3px 7px;border-radius:5px;background:var(--s2);color:var(--i2)}
+.workspace-branch-detail{min-width:0;display:grid;gap:18px}.workspace-branch-detail .card{margin:0;padding:24px}
+.workspace-metrics{display:grid;grid-template-columns:2fr repeat(3,1fr);gap:14px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:18px 0;margin:18px 0}
+.workspace-metrics small{display:block;color:var(--mute);font-size:11px;margin-bottom:9px}.workspace-metrics strong{font-size:13px}
+.workspace-checks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px 18px;margin:22px 0}
+.workspace-checks>div{display:grid;grid-template-columns:22px 1fr;gap:5px;font-size:12px;align-items:center}
+.workspace-checks small{grid-column:2;color:var(--mute);font-size:10px}.workspace-checks .done{color:#12805c;font-weight:700}.workspace-checks .pending{color:#b7791f}
+.workspace-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding-top:8px}
+.workspace-map{border:1px solid var(--line);border-radius:12px;background:var(--surface);overflow:hidden}
+.workspace-map .head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px;margin:0!important}.workspace-map h3{font-size:14px}
+.workspace-map .head p{font-size:11px;color:var(--mute);margin:6px 0 0}
+.workspace-map iframe{display:block;width:100%;height:290px;border:0;background:var(--s2)}
+.workspace-form-card{max-width:1020px;margin:auto!important;padding:26px!important}
+.workspace-form-card fieldset{border:0;border-top:1px solid var(--line);padding:20px 0;margin-top:20px;min-width:0}
+.workspace-form-card legend{font-size:13px;font-weight:700;padding-right:12px}
+.workspace-form-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.workspace-form-grid label{display:grid;gap:8px;font-size:12px;color:var(--i2)}
+.workspace-form-grid input{width:100%;min-width:0;background:var(--surface);color:var(--ink);border:1px solid var(--line);padding:10px;border-radius:7px;font:13px inherit}
+.workspace-form-grid input[readonly]{background:var(--s2);color:var(--mute)}
+.workspace-form-card fieldset p{font-size:12px;color:var(--mute);margin:12px 0}
+.workspace-error{color:#b42318;font-size:13px;margin:12px 0}
+#branchMapPreview:empty{display:none}#branchMapPreview{margin-top:16px}
+#settingsTabs [data-t="stores"],#settings-stores,#mobNav{display:none!important}
+html[data-review-variant="2"] button:focus-visible,html[data-review-variant="2"] input:focus-visible{outline:2px solid #2563eb;outline-offset:3px}
+@media(max-width:900px){.workspace-branches{grid-template-columns:1fr}.workspace-branch-list{display:flex;overflow:auto;padding:2px}.workspace-branch{min-width:220px}.workspace-metrics{grid-template-columns:repeat(2,1fr)}.workspace-checks{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){html[data-review-variant="2"] #topnav button{padding:13px 10px;font-size:12px}.workspace-branch-head{align-items:flex-start;flex-direction:column}.workspace-form-grid{grid-template-columns:1fr}.workspace-branch-detail .card,.workspace-form-card{padding:16px!important}.workspace-checks{grid-template-columns:1fr 1fr;gap:14px 10px}.workspace-map .head{flex-wrap:wrap}.workspace-map iframe{height:240px}}
