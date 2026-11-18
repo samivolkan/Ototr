@@ -6,7 +6,9 @@
     googleDashboardState.branchId='all';
     // Every Google review subroute uses the supplied DeepSeek document.
     window.GoogleScreenshotDashboard=function () {
-      return '<iframe class="google-management-frame" src="google-review-management.html?embedded=1&variant=2&v=20261119-1" title="OTOTR Yorum Yönetimi" loading="eager" referrerpolicy="same-origin"></iframe>';
+      const release=window.OTOTRReviewRelease;
+      const version=encodeURIComponent(release?.version && release?.commit ? release.version+'.'+release.commit : '20261119-3');
+      return '<iframe class="google-management-frame" src="google-review-management.html?embedded=1&variant=2&v='+version+'" title="OTOTR Yorum Yönetimi" loading="eager" referrerpolicy="same-origin"></iframe>';
     };
     const originalRefresh=window.refreshGoogleReputationPage;
     window.refreshGoogleReputationPage=function (...args) {

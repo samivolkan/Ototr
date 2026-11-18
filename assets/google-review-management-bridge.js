@@ -22,7 +22,9 @@
         const found = doc.querySelector('script[data-ototr-google-ai]');
         if (found) { found.addEventListener('load', () => resolve(getAI()), { once: true }); setTimeout(() => resolve(getAI()), 1500); return; }
         const script = doc.createElement('script');
-        script.src = new URL('assets/google-review-ai.js?v=google-workflow-25', window.parent.location.href).href;
+        const release=window.parent.OTOTRReviewRelease;
+        const version=encodeURIComponent(release?.version && release?.commit ? release.version+'.'+release.commit : 'google-workflow-25');
+        script.src = new URL('assets/google-review-ai.js?v='+version, window.parent.location.href).href;
         script.dataset.ototrGoogleAi = '1';
         script.onload = () => resolve(getAI());
         script.onerror = () => resolve(null);
