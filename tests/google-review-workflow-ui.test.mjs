@@ -61,8 +61,9 @@ function server() {
 }
 
 function ui(shared = server(), branchFixture = BRANCH, reviewFixture = REVIEW) {
-  const elements = new Map(), toasts = [], storageWrites = [], syncs = [], complaintCallbacks = [];
+  const elements = new Map(), toasts = [], storageWrites = [], syncs = [], complaintCallbacks = [], intervals=[];
   const document = {
+    visibilityState:'visible',
     getElementById: id => elements.get(id) || null,
     createElement: () => new Element(),
     head: { appendChild() {} },
@@ -75,10 +76,19 @@ function ui(shared = server(), branchFixture = BRANCH, reviewFixture = REVIEW) {
     toast: value => toasts.push(value),
     OTOTRGoogleReputation: { getReviewById: id => id === reviewFixture.id ? reviewFixture : null, getBranchById: id => id === branchFixture.id ? branchFixture : null, render() {}, setError() {}, syncGoogleReviewsForBranch: async id => syncs.push(id), onComplaintTaskCreated: (item, meta) => complaintCallbacks.push({ item, meta }) },
   };
-  vm.runInNewContext(source, { window, document, localStorage: { getItem: () => null, setItem: (...args) => storageWrites.push(args) }, fetch: shared.fetch, Response, URL, AbortController, AbortSignal, setTimeout: () => 1, clearTimeout() {}, console });
+  vm.runInNewContext(source, { window, document, location:{hash:'#google-reviews'},localStorage: { getItem: () => null, setItem: (...args) => storageWrites.push(args) }, fetch: shared.fetch, Response, URL, AbortController, AbortSignal, setTimeout: () => 1,setInterval:fn=>intervals.push(fn), clearTimeout() {}, console });
   const api = window.OTOTRGoogleReviewAI;
-  return { api, window, shared, toasts, storageWrites, syncs, complaintCallbacks, modal: () => elements.get('googleReviewAiModal'), element: selector => elements.get('googleReviewAiModal').querySelector(selector) };
+  return { api, window, shared, toasts, storageWrites, syncs, complaintCallbacks, intervals, modal: () => elements.get('googleReviewAiModal'), element: selector => elements.get('googleReviewAiModal').querySelector(selector) };
 }
+
+test('parent ERP automation works without an iframe global and excludes manual, demo and risky drafts',async()=>{
+ const h=ui(),base={branch_id:BRANCH.id,kind:'reply',status:'approval_pending',draft_source:'openai',version:1,review_snapshot:{rating:5,ai_analysis:{generation_id:'fixture',requires_human_review:false}}};
+ h.shared.state.items.push({...base,id:'safe'},{...base,id:'manual',draft_source:'manual'},{...base,id:'demo',branch_id:'branch-google-gebze'},{...base,id:'risky',review_snapshot:{rating:2}});
+ await h.api.refreshWorkflow();h.shared.state.calls.length=0;
+ for(const tick of h.intervals)tick();
+ for(let i=0;i<8;i++)await new Promise(resolve=>setImmediate(resolve));
+ assert.deepEqual(h.shared.state.calls.filter(c=>c.action==='auto_publish_safe').map(c=>c.item_id),['safe']);
+});
 
 test('Google publication is disabled until saved text receives explicit user approval', async () => {
   const h = ui();

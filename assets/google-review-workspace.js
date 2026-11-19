@@ -127,10 +127,17 @@
       '<div class="workspace-branches"><aside class="workspace-branch-list" aria-label="Şube listesi">'+items.map(x=>'<button class="workspace-branch '+(x.id===selected?'selected':'')+'" data-select-branch="'+escape(x.id)+'" aria-pressed="'+(x.id===selected)+'"><strong>'+escape(name(x))+'</strong><span>'+escape(x.region)+' · '+escape(x.city)+'</span><em>'+badge(x)+'</em></button>').join('')+'</aside><div class="workspace-branch-detail"><div class="card"><div class="head"><div><h2>'+escape(name(b))+'</h2><p>'+escape(b.region)+' / '+escape(b.city)+'</p></div><span class="chip '+(liveBranch?'ok':'warn')+'">'+badge(b)+'</span></div>'+
       (b.onboarding?.test?'<div class="alert info">Örnek şube gerçek bir işletme değildir. Canlı raporlara katılmaz; Google yanıtı ve müşteri mesajı gönderemez.</div>':'')+
       '<div class="workspace-metrics"><div><small>Son veri</small><strong>'+escape(date(b.last_sync_at||b.lastSync))+'</strong></div><div><small>Alınan yorum</small><strong>'+(metrics?metrics.count:'—')+'</strong></div><div><small>SLA hedefi</small><strong>'+escape(b.id===NILUFER?state.policy?.default_sla_hours||'—':b.sla_hours||24)+' saat</strong></div><div><small>Kontrol sıklığı</small><strong>'+escape(b.interval_minutes||60)+' dk</strong></div></div>'+
-      '<div class="workspace-checks">'+checklist.map(([label,ok])=>'<div><span class="'+(ok?'done':'pending')+'">'+(ok?'✓':'○')+'</span><span>'+label+'</span><small>'+(ok?'Hazır':loadError||setupError?'Doğrulanamadı':c?'Eksik':busy?'Kontrol ediliyor':'Kontrol bekliyor')+'</small></div>').join('')+'</div>'+
+      '<div class="workspace-checks">'+checklist.map(([label,ok])=>{
+        const testClosed=b.onboarding?.test&&(label.startsWith('Google')||label==='Canlı kapsam');
+        const status=testClosed?'Testte kapalı':label==='AI davranış ayarı'&&ok&&c?.sources?.ai==='erp'?'ERP varsayılanı':label==='Yorum toplama ayarı'&&c?.collection?.enabled===false?'Kapalı · gönderim yok':ok?'Hazır':loadError||setupError?'Doğrulanamadı':c?'Eksik':busy?'Kontrol ediliyor':'Kontrol bekliyor';
+        return '<div><span class="'+(ok&&!testClosed?'done':'pending')+'">'+(testClosed?'—':ok?'✓':'○')+'</span><span>'+label+'</span><small>'+status+'</small></div>';
+      }).join('')+'</div>'+
       (setupError?'<p role="alert" class="workspace-error">'+escape(setupError)+'</p>':'')+
       '<div class="workspace-actions">'+(liveBranch?'<button class="btn" data-branch-action="reviews">Yorumları izle</button><button class="btn" data-branch-action="performance">Hedef ve performans</button>':'<button class="btn" data-branch-action="edit" '+(busy?'disabled':'')+'>Kurulumu düzenle</button><button class="btn p" data-branch-action="activate" '+(busy||b.onboarding?.test||!b.account_id||!b.store_code||!b.location_id?'disabled':'')+'>Google’da doğrula ve canlıya al</button>')+
-      '<button class="btn" data-branch-action="check" '+(busy?'disabled':'')+'>Kurulumu kontrol et</button></div><p class="v2-chart-note">AI ve bağlantılar mevcut ERP ayarlarından kullanılır. Yeni şubede müşteri mesajı gönderimi başlangıçta kapalıdır.</p></div>'+mapPanel(b)+'</div></div>';
+      '<button class="btn" data-branch-action="check" '+(busy?'disabled':'')+'>Kurulumu kontrol et</button></div><p class="v2-chart-note">AI ve bağlantılar mevcut ERP ayarlarından kullanılır. Yeni şubede müşteri mesajı gönderimi başlangıçta kapalıdır.</p></div>'+
+      (!liveBranch&&c?'<div class="card"><h3>Şubenin çalışma hedefleri</h3><p class="v2-chart-note">Bu şubeye özel sunucu kaydı · '+escape(c.target_month?.slice(0,7)||'')+'</p><div class="workspace-form-grid"><label>Aylık yorum hedefi<input id="setupTarget" type="number" min="1" max="10000" step="1" value="'+escape(c.target?.target||b.target||30)+'"><button class="btn" data-branch-action="save-target" '+(busy?'disabled':'')+'>Hedefi kaydet</button></label><label>Yanıt SLA (saat)<input id="setupSla" type="number" min="1" max="168" step="1" value="'+escape(b.sla_hours||24)+'"><button class="btn" data-branch-action="save-sla" '+(busy?'disabled':'')+'>SLA kaydet</button></label></div><p class="v2-chart-note">Kaydettiğiniz değerler yalnız bu şubeye uygulanır. Canlı Bursa hedefi ve SLA’sı değişmez.</p></div>':'')+
+      (b.onboarding?.test?'<div id="workspaceSandbox"></div>':'')+mapPanel(b)+'</div></div>';
+    if(b.onboarding?.test)root.OTOTRReviewSandbox?.mount(byId('workspaceSandbox'),b);
   }
   async function loadBranches() {
     if(busy)return;
@@ -194,6 +201,19 @@
     }
     if(action==='cancel'){formOpen=false;return renderBranches();}
     if(action==='edit')return openForm(b);
+    if(action==='save-target'||action==='save-sla'){
+      const c=checks.get(b.id), targetAction=action==='save-target', input=byId(targetAction?'setupTarget':'setupSla');
+      if(!input.reportValidity())return;
+      const value=Number(input.value);busy=true;button.disabled=true;setupError='';
+      try{
+        if(targetAction){if(!c?.target_month)throw new Error('Önce kurulum kontrolünü yenileyin.');await api().setupRequest('target_save',b.id,{month:c.target_month,target:value,expected_version:c.target?.version||0});}
+        else await api().setupRequest('management_update',b.id,{entity:'policy',default_sla_hours:value,expected_updated_at:b.updated_at});
+        root.toast(targetAction?'Şube hedefi sunucuya kaydedildi.':'Şube SLA ayarı sunucuya kaydedildi.','ok');
+        busy=false;return loadBranches();
+      }catch(e){setupError=e.message;root.toast(e.message,'warn');}
+      finally{busy=false;button.disabled=false;}
+      return;
+    }
     if(action==='preview'){
       const map={lat:byId('branch-lat').value,lng:byId('branch-lng').value,address:byId('branch-address').value};
       if(!mapUrl(map)){byId('branchFormError').textContent='Harita için geçerli enlem ve boylam girin.';return;}

@@ -86,7 +86,12 @@
     const branchId = branchIdForScope(scope), index = branchIndexForId(branchId), custom = index < 0;
     return rows.filter(r => (r.branch_id === branchId || (!custom && Number(r.branchIdx) === index)) && (branchId === 'branch-google-nilufer' || custom ? !!r.erpItemId : !r.erpItemId));
   }
-  const pure = { timestamp, monthKey, aggregateReviews, monthlySeries, commentTrendSeries, scopeRows, scopeRecords };
+  function registryName(row, known={}) {
+    const original=String(row.name||known.name||row.id).trim(), city=String(row.city||known.city||'').trim();
+    const raw=String(row.id).startsWith('branch-custom-')?original:original.replace(/^OTOTR(?: Oto Ekspertiz)?\s+/i,'').replace(/\s+Şube(?:si)?$/i,'').trim();
+    return String(row.id).startsWith('branch-custom-')?raw:raw.startsWith(city+' ')?raw.slice(city.length+1):raw;
+  }
+  const pure = { timestamp, monthKey, aggregateReviews, monthlySeries, commentTrendSeries, scopeRows, scopeRecords, registryName };
   if (typeof module === 'object' && module.exports) module.exports = pure;
   if (!root || !root.document) return;
 
@@ -139,9 +144,8 @@
   function normalizeRegistryBranch(row) {
     if (!row?.id) return null;
     const known = (typeof BRANCHES !== 'undefined' && Array.isArray(BRANCHES)) ? BRANCHES.find(branch => branch.id === row.id || branch.erpBranchId === row.id) : null;
-    const rawName = String(row.name || known?.name || row.id).replace(/^OTOTR(?: Oto Ekspertiz)?\s+/i, '').replace(/\s+Şube(?:si)?$/i, '').trim();
     const city = String(row.city || known?.city || '').trim();
-    const branchName = rawName.startsWith(city + ' ') ? rawName.slice(city.length + 1) : rawName;
+    const branchName = registryName(row,known||{});
     const branch = { ...(known || {}), ...row, id: row.id, name: branchName, city, region: row.region || known?.region || 'Diğer' };
     const lifecycle = row.lifecycle || row.mode || known?.lifecycle || (row.id === 'branch-google-nilufer' ? 'live' : 'demo');
     branch.lifecycle = lifecycle;

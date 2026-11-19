@@ -36,6 +36,10 @@ html[data-review-variant="2"] .topbar .searchbar{margin-left:auto}
 .workspace-form-card fieldset p{font-size:12px;color:var(--mute);margin:12px 0}
 .workspace-error{color:#b42318;font-size:13px;margin:12px 0}
 #branchMapPreview:empty{display:none}#branchMapPreview{margin-top:16px}
+.workspace-sandbox .head{display:flex;justify-content:space-between;gap:12px}.workspace-sandbox .head p{font-size:12px;color:var(--mute);margin:8px 0}
+.workspace-sandbox select,.workspace-sandbox textarea{font:inherit;max-width:100%;width:100%;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:9px}
+.workspace-sandbox-draft{display:grid;gap:8px;margin-top:14px;font-size:12px}.workspace-sandbox details{margin:16px 0;font-size:12px}.workspace-sandbox hr{border:0;border-top:1px solid var(--line);margin:20px 0}
+.workspace-scenario-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;font-size:12px;margin-top:15px}
 #settingsTabs [data-t="stores"],#settings-stores,#mobNav{display:none!important}
 html[data-review-variant="2"] button:focus-visible,html[data-review-variant="2"] input:focus-visible{outline:2px solid #2563eb;outline-offset:3px}
 @media(max-width:900px){.workspace-branches{grid-template-columns:1fr}.workspace-branch-list{display:flex;overflow:auto;padding:2px}.workspace-branch{min-width:220px}.workspace-metrics{grid-template-columns:repeat(2,1fr)}.workspace-checks{grid-template-columns:repeat(2,1fr)}}

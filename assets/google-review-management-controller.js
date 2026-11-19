@@ -26,6 +26,15 @@
     if (!ai?.requestAI) throw new Error('AI bağlantısı için ERP sayfasını yenileyin.');
     return ai.requestAI(action,{...payload,branch:{id:currentBranch()}});
   }
+  // Setup settings have their own explicit scope; they can never invoke a review
+  // publication, Google connection or customer-message operation.
+  async function setupRequest(action, branchId, payload={}) {
+    const branch = window.OTOTRReviewLiveViews?.getBranchRegistry?.().find(b=>b.id===branchId);
+    if (!branch || !String(branchId).startsWith('branch-custom-') || ['live','active'].includes(branch.lifecycle)) throw new Error('Kurulum şubesi gerekli.');
+    if (!['management_read','target_save'].includes(action) && !(action==='management_update' && payload.entity==='policy')) throw new Error('Bu işlem kurulum ayarı değil.');
+    if (!ai?.googleBusinessRequest) throw new Error('Yetkili ERP oturumu gerekli.');
+    return ai.googleBusinessRequest(action,{...payload,branch_id:branchId});
+  }
   function notifyReady() {
     window.OTOTRReviewBridge?.hydrate?.();
     const target = state.targets.find(row => row.month === month());
@@ -129,7 +138,7 @@
     openModal('erpTaskModal');
   }
 
-  window.OTOTRReviewManagement = {state,refresh,request,aiRequest,savePolicy,saveTarget,updateTask,rejectDraft,openTask};
+  window.OTOTRReviewManagement = {state,refresh,request,setupRequest,aiRequest,savePolicy,saveTarget,updateTask,rejectDraft,openTask};
   for (const [name,collection] of [['openCase',LEGAL_CASES],['advanceComplaint',COMPLAINTS]]) {
     const original=window[name]; window[name]=(id,...args)=>{const row=collection.find(row=>row.id===id);return row?.erpItemId?openTask(row.erpItemId):original?.(id,...args);};
   }

@@ -58,7 +58,7 @@ function fixture(options = {}) {
           const keys=conflict.onConflict.split(',');
           const found=tables[table].find(row=>keys.every(key=>row[key]===values[key]));
           if(found){if(!conflict.ignoreDuplicates)Object.assign(found,clone(values));rows=[found];}
-          else{const added={updated_at:STAMP,...clone(values)};tables[table].push(added);rows=[added];}
+          else{const added={updated_at:STAMP,...(table==='google_review_management_resources'?{archived:false}:{}),...clone(values)};tables[table].push(added);rows=[added];}
         }
         if (operation === 'update') for (const row of rows) Object.assign(row, clone(values));
         if (operation !== 'select') writes.push({ table, values: clone(values), count: rows.length });
@@ -72,10 +72,10 @@ function fixture(options = {}) {
   const env = { SUPABASE_URL: 'https://fixture.invalid', SUPABASE_ANON_KEY: 'public', SUPABASE_SERVICE_ROLE_KEY: 'server-secret', GOOGLE_OAUTH_CLIENT_ID: options.rotated ? 'rotated-client' : 'client', OPENAI_API_KEY: 'private-ai-key', OPENAI_MODEL: 'fixture-model' };
   const context = vm.createContext({ URL, URLSearchParams, Request, Response, TextEncoder, TextDecoder, Uint8Array, AbortSignal, crypto: webcrypto,
     createClient: () => ({ ...db, auth: { getUser: async () => ({ data: { user: { id: options.user || OWNER, user_metadata: { role: 'admin' } } }, error: null }) } }),
-    fetch: async (...args) => { remote.push(args); throw new Error('No remote writes allowed in management test'); },
+    fetch: async (...args) => { remote.push(args); if(options.fetch)return options.fetch(...args);throw new Error('No remote writes allowed in management test'); },
     Deno: { env: { get: key => env[key] }, serve: fn => { handler = fn; } },
   });
-  vm.runInContext(`${javascript}\nglobalThis.api = { publishWork, assertNoLegalHold, activateBranchSettings };`, context);
+  vm.runInContext(`${javascript}\nglobalThis.api = { publishWork, assertNoLegalHold, activateBranchSettings, assertAutomaticReply };`, context);
   return { tables, writes, remote, context, db,
     race(fn) { beforeUpdate = fn; },
     afterWrite(fn) { afterWrite = fn; },
@@ -92,6 +92,96 @@ const task = { action: 'management_update', branch_id: BRANCH, entity: 'task', i
 const reject = { action: 'reject_draft', branch_id: BRANCH, item_id: ITEM, expected_version: 1, reason: 'Düzeltilecek içerik' };
 
 const newBranch={action:'branch_create',id:'branch-custom-test-example1',name:'Örnek Şube',city:'Bursa',region:'Marmara',test_mode:true,target:30,sla_hours:24,interval_minutes:60,map:{lat:40.19,lng:29.06,address:'Örnek konum'}};
+
+test('custom branch SLA has its own revision, survives reread and cannot overwrite a concurrent update',async()=>{
+ const f=fixture(), b=(await f.request(newBranch)).data.item;
+ const read=()=>f.request({action:'management_read',branch_id:b.id});
+ assert.equal((await read()).data.policy.updated_at,b.updated_at);
+ const change={action:'management_update',entity:'policy',branch_id:b.id,expected_updated_at:b.updated_at,default_sla_hours:48};
+ assert.equal((await f.request(change)).status,200);
+ assert.equal((await read()).data.policy.default_sla_hours,48);
+ assert.equal(f.tables.google_review_policies[0].default_sla_hours,24);
+ assert.equal((await f.request(change)).status,409);
+ const stamp=(await read()).data.policy.updated_at;
+ f.race((table,tables)=>{if(table==='google_review_branch_registry')tables[table][0].updated_at='2026-11-19T01:02:03Z';});
+ assert.equal((await f.request({...change,expected_updated_at:stamp})).status,409);
+ assert.equal(f.tables.google_review_branch_registry[0].sla_hours,48);
+});
+
+test('automatic publication requires enabled policy and exact verified safe AI output',async()=>{
+ const f=fixture();f.tables.google_review_policies[0].auto_reply_enabled=true;
+ const reply='Doğrulanmış örnek AI yanıtı';
+ const hash=Array.from(new Uint8Array(await webcrypto.subtle.digest('SHA-256',new TextEncoder().encode(reply))),b=>b.toString(16).padStart(2,'0')).join('');
+ f.tables.google_review_ai_generations.push({id:LEGAL,connection_id:CONNECTION,branch_id:BRANCH,review_id:'review',context:'generate',status:'succeeded',reply_sha256:hash,requires_human_review:false});
+ const item=f.item({draft_source:'openai',reply_text:reply,review_snapshot:{rating:5,comment:'Memnunum.',ai_analysis:{generation_id:LEGAL,requires_human_review:false}}});
+ await f.context.api.assertAutomaticReply(f.db,item);
+ for(const patch of [{draft_source:'manual'},{reply_text:'Sonradan değiştirilen metin'},{review_snapshot:{...item.review_snapshot,rating:3}},{review_snapshot:{...item.review_snapshot,comment:'Avukatım dönüş yapacak.'}},{review_snapshot:{...item.review_snapshot,ai_analysis:{requires_human_review:false}}},{review_snapshot:{...item.review_snapshot,legal_hold:true}}])await assert.rejects(f.context.api.assertAutomaticReply(f.db,{...item,...patch}));
+ f.tables.google_review_policies[0].auto_reply_enabled=false;
+ await assert.rejects(f.context.api.assertAutomaticReply(f.db,item));
+ assert.equal(f.remote.length,0);assert.equal(f.writes.length,0);
+});
+
+test('sample target persists only within its branch and stale saves fail',async()=>{
+ const f=fixture(), b=(await f.request(newBranch)).data.item;
+ const target=f.tables.google_review_targets[0];
+ const save={action:'target_save',branch_id:b.id,month:target.month,target:40,expected_version:1};
+ assert.equal((await f.request(save)).status,200);
+ const list=await f.request({action:'targets_list',branch_id:b.id});
+ assert.equal(list.data.items[0].target,40);assert.equal(list.data.items[0].version,2);
+ assert.equal((await f.request(save)).status,409);
+ assert.equal((await f.request({action:'targets_list',branch_id:BRANCH})).data.items.length,0);
+ assert.equal(f.remote.length,0);
+});
+
+test('branch creation retry recovers partial defaults and never duplicates a branch or target',async()=>{
+ const f=fixture();
+ await f.request(newBranch);
+ f.tables.google_review_management_resources.pop();f.tables.google_review_collection_policies.length=0;
+ const retried=await f.request(newBranch);
+ assert.equal(retried.status,200);assert.equal(retried.data.reused,true);
+ assert.equal(f.tables.google_review_branch_registry.length,1);assert.equal(f.tables.google_review_targets.length,1);
+ assert.equal(f.tables.google_review_management_resources.length,4);assert.equal(f.tables.google_review_collection_policies.length,1);
+ assert.equal((await f.request({...newBranch,name:'Another name'})).status,409);
+});
+
+test('existing ERP defaults are reported honestly without fabricating missing branch settings',async()=>{
+ const f=fixture(), result=await f.request({action:'branch_onboarding',branch_id:BRANCH});
+ assert.equal(result.data.checklist.ai,true);assert.equal(result.data.sources.ai,'erp');
+ assert.equal(result.data.collection.enabled,false);assert.equal(result.data.sources.collection,'default_disabled');
+ assert.equal(result.data.checklist.target,false);
+ assert.equal(f.writes.length,0);
+});
+
+test('Bursa-only access never grants access to a new branch',async()=>{
+ const f=fixture({user:ITEM});grant(f,'admin');
+ f.tables.google_review_branch_registry.push({...newBranch,id:newBranch.id,onboarding:{test:true}});
+ for(const action of ['management_read','target_save','branch_onboarding','resource_save'])assert.equal((await f.request({action,branch_id:newBranch.id})).status,403);
+ assert.equal(f.writes.length,0);
+});
+
+test('new-branch scoped grants do not require or confer Bursa access',async()=>{
+ const f=fixture({user:ITEM});grant(f,'viewer');f.tables.google_review_management_resources[0].branch_id=newBranch.id;
+ f.tables.google_review_branch_registry.push({...newBranch,connection_id:CONNECTION,onboarding:{test:true},updated_at:STAMP});
+ assert.equal((await f.request({action:'management_read',branch_id:newBranch.id})).status,200);
+ assert.equal((await f.request({action:'management_read',branch_id:BRANCH})).status,403);
+});
+
+test('Google activation verifies location AND account before admitting a new branch',async()=>{
+ for(const mismatch of ['none','store','account']){
+  const f=fixture({fetch:async(url,init)=>{
+   assert.equal(init?.method||'GET','GET');
+   if(String(url).includes('businessinformation'))return Response.json({name:'locations/789',storeCode:mismatch==='store'?'999':'456'});
+   if(mismatch==='account')return Response.json({error:{message:'Account mismatch'}},{status:403});
+   return Response.json({reviews:[]});
+  }});
+  vm.runInContext("decrypt=async()=> 'fixture';accessToken=async()=> 'fixture';",f.context);
+  const b=(await f.request({...newBranch,test_mode:false,account_id:'123',store_code:'456',location_id:'789'})).data.item;
+  const result=await f.request({action:'branch_activate',branch_id:b.id});
+  assert.equal(result.status,mismatch==='none'?200:mismatch==='store'?409:403,JSON.stringify(result.data));
+  assert.equal(f.tables.google_review_branch_registry[0].lifecycle,mismatch==='none'?'live':'live_candidate');
+  if(mismatch==='none')assert.ok(f.tables.google_review_branch_registry[0].google_verified_at);
+ }
+});
 test('branch onboarding persists map and all initial resources with no remote sends',async()=>{
  const f=fixture(), result=await f.request(newBranch);
  assert.equal(result.status,201,JSON.stringify(result.data));

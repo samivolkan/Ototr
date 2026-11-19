@@ -48,6 +48,16 @@ test('SLA save validates range and carries expected policy timestamp',async()=>{
   assert.equal(call.body.default_sla_hours,48);
   assert.equal('auto_reply_enabled' in call.body,false);
 });
+
+test('setup settings explicitly scope the new branch and refuse publication or live branch access',async()=>{
+ const s=await ready(setup()),id='branch-custom-example';
+ s.window.OTOTRReviewLiveViews={getBranchRegistry:()=>[{id,lifecycle:'demo',onboarding:{test:true}}]};
+ await s.api.setupRequest('target_save',id,{target:35,expected_version:1,month:'2026-11-01'});
+ assert.equal(s.calls.at(-1).body.branch_id,id);
+ await assert.rejects(s.api.setupRequest('publish_reply',id),/kurulum ayarı/);
+ await assert.rejects(s.api.setupRequest('management_update',id,{entity:'task'}),/kurulum ayarı/);
+ await assert.rejects(s.api.setupRequest('target_save','branch-google-nilufer'),/Kurulum şubesi/);
+});
 test('foreign tasks and stale task edits never reach the server',async()=>{
   const s=await ready(setup());
   await assert.rejects(s.api.updateTask('demo',{status:'done'},1),/bulunamadı/);

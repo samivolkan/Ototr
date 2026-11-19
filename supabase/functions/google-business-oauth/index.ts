@@ -93,11 +93,11 @@ class RequestError extends Error {
   status: number;
   constructor(message: string, status: number) { super(message); this.status = status; }
 }
-async function authorizedConnection(db: ReturnType<typeof admin>, userId: string) {
+async function authorizedConnection(db: ReturnType<typeof admin>, userId: string, branchId?: string) {
   const connection = await loadGoogleConnection(db);
   const allowedUsers = (Deno.env.get('GOOGLE_BUSINESS_ADMIN_USER_IDS') || '').split(',').map(value => value.trim()).filter(Boolean);
   // A browser role or editable user metadata must never grant access to the shared Google account.
-  const access = await loadReviewAccess({db,userId,connection,allowlist:allowedUsers});
+  const access = await loadReviewAccess({db,userId,connection,allowlist:allowedUsers,branchId});
   if (!access) {
     throw new RequestError('Google yorum yönetimi yalnızca yetkilendirilmiş genel merkez hesabına açıktır.', 403);
   }
@@ -110,10 +110,10 @@ async function loadGoogleConnection(db: ReturnType<typeof admin>) {
   if (!connection) throw new RequestError('Google bağlantı kaydı bulunamadı.', 404);
   return connection;
 }
-async function authorizedGoogleRole(db: ReturnType<typeof admin>, userId: string, action: 'publish_reply' | 'verify_reply' | 'bulk_route') {
+async function authorizedGoogleRole(db: ReturnType<typeof admin>, userId: string, action: 'publish_reply' | 'verify_reply' | 'bulk_route', branchId?: string) {
   const connection = await loadGoogleConnection(db);
   const allowlist=(Deno.env.get('GOOGLE_BUSINESS_ADMIN_USER_IDS') || '').split(',').map(value=>value.trim()).filter(Boolean);
-  const access=await loadReviewAccess({db,userId,connection,allowlist});
+  const access=await loadReviewAccess({db,userId,connection,allowlist,branchId});
   if(!access) throw new RequestError('Google yorum yetkisi gerekli.',403);
   if(action==='publish_reply' && !access.can_approve) throw new RequestError('Google yorumu yayınlamak için modül yöneticisi veya geçerli onay delegasyonu gerekir.',403);
   if(access.role==='viewer' && !(action==='verify_reply' && access.can_approve)) throw new RequestError('Bu işlem için görev yetkisi gerekli.',403);
@@ -425,9 +425,9 @@ async function readManagement(db: any, user: any, body: any, connection: any, cl
   ]);
   for (const result of results) databaseFailure(result.error);
   if (!results[0].data) throw new RequestError('Google yorum politikası bulunamadı.', 503);
-  const registry = branchId === managementBranchId ? null : await db.from('google_review_branch_registry').select('sla_hours,lifecycle,active').eq('connection_id', connectionId).eq('id', branchId).maybeSingle();
+  const registry = branchId === managementBranchId ? null : await db.from('google_review_branch_registry').select('sla_hours,lifecycle,active,updated_at').eq('connection_id', connectionId).eq('id', branchId).maybeSingle();
   if (registry) databaseFailure(registry.error);
-  const policy = registry?.data ? { ...results[0].data, default_sla_hours: registry.data.sla_hours, updated_at: results[0].data.updated_at } : results[0].data;
+  const policy = registry?.data ? { ...results[0].data, default_sla_hours: registry.data.sla_hours, updated_at: registry.data.updated_at } : results[0].data;
   const allowedUsers = new Set([connection.connected_by, ...(Deno.env.get('GOOGLE_BUSINESS_ADMIN_USER_IDS') || '').split(',').map(value => value.trim()).filter(Boolean)]);
   return {
     branch_id: branchId,
@@ -489,13 +489,14 @@ async function updateManagement(db: any, user: any, body: any, requestId?: strin
   managementFields(body, ['expected_updated_at', 'default_sla_hours']);
   if (!Number.isSafeInteger(body.default_sla_hours) || body.default_sla_hours < 1 || body.default_sla_hours > 168 || typeof body.expected_updated_at !== 'string' || !Number.isFinite(Date.parse(body.expected_updated_at))) throw new RequestError('SLA 1–168 saat ve güncel kayıt sürümü gerekli.', 400);
   if (branchId !== managementBranchId) {
-    const registry = await db.from('google_review_branch_registry').select('id,sla_hours,active,lifecycle').eq('connection_id', connectionId).eq('id', branchId).maybeSingle();
+    const registry = await db.from('google_review_branch_registry').select('id,sla_hours,active,lifecycle,updated_at').eq('connection_id', connectionId).eq('id', branchId).maybeSingle();
     databaseFailure(registry.error);
     if (!registry.data || registry.data.active === false) throw new RequestError('Şube kaydı bulunamadı veya pasif.', 404);
     if (!branchCanRead(registry.data)) throw new RequestError('Şube pasif.', 409);
-    const saved = await db.from('google_review_branch_registry').update({ sla_hours: body.default_sla_hours, updated_by: user.id, updated_at: new Date().toISOString() }).eq('connection_id', connectionId).eq('id', branchId).select('id,sla_hours,updated_at').maybeSingle();
+    if (registry.data.updated_at !== body.expected_updated_at) throw new RequestError('Şube ayarı başka oturumda değişti. Yenileyin.', 409);
+    const saved = await db.from('google_review_branch_registry').update({ sla_hours: body.default_sla_hours, updated_by: user.id, updated_at: new Date().toISOString() }).eq('connection_id', connectionId).eq('id', branchId).eq('updated_at', body.expected_updated_at).select('id,sla_hours,updated_at').maybeSingle();
     databaseFailure(saved.error);
-    if (!saved.data) throw new RequestError('Şube SLA ayarı kaydedilemedi.', 503);
+    if (!saved.data) throw new RequestError('Şube ayarı başka oturumda değişti. Yenileyin.', 409);
     await writeGoogleAudit(db, { userId: user.id, role: 'OPERATOR', action: 'policy_update', entityType: 'google_review_branch_registry', entityId: branchId, beforeState: { default_sla_hours: registry.data.sla_hours }, afterState: { default_sla_hours: saved.data.sla_hours }, detail: `${branchId} şube SLA süresi güncellendi.`, requestId });
     return { policy: { connection_id: connectionId, branch_id: branchId, default_sla_hours: saved.data.sla_hours, updated_at: saved.data.updated_at } };
   }
@@ -650,7 +651,7 @@ async function saveWork(db: any, user: any, body: any, token: string) {
   const now = new Date().toISOString();
   let aiAnalysis = existing?.review_snapshot?.ai_analysis;
   if (isReply && body.generation_id) {
-    const generation=await verifyAiGeneration(db,body.generation_id,{reviewId:identity.review_id,...(source==='openai'?{replyText:reply}:{})});
+    const generation=await verifyAiGeneration(db,body.generation_id,{reviewId:identity.review_id,branchId:identity.branch_id,...(source==='openai'?{replyText:reply}:{})});
     aiAnalysis={generation_id:generation.id,experiment_id:generation.experiment_id,variant:generation.variant,quality_score:generation.quality_score,requires_human_review:generation.requires_human_review};
   }
   const values = { ...identity, kind, review_snapshot: withReviewReplyUrl({ ...verified.snapshot, ...(existing?.review_snapshot?.legal_hold ? { legal_hold: true } : {}) }, verified.snapshot.review_reply_url || existing?.review_snapshot?.review_reply_url), expected_reply: verified.expected_reply, reply_text: reply, draft_source: source, status: isReply ? 'approval_pending' : 'open', note: String(body.note || '').trim().slice(0, 2000), version: existing ? existing.version + 1 : 1, updated_by: user.id, updated_at: now, last_error: null, attempt_id: null, approved_by: null, approved_at: null, published_at: null };
@@ -682,6 +683,14 @@ function sameGoogleReply(actual: string, expected: string) {
 }
 const sentPendingMessage = 'Yanıt gönderildi, kontrol ediliyor. Google’ın yayın kontrolü bekleniyor.';
 const outcomePendingMessage = 'Gönderim sonucu kontrol ediliyor.';
+async function assertAutomaticReply(db: any, item: any) {
+  const policy=await db.from('google_review_policies').select('auto_reply_enabled').eq('connection_id',connectionId).maybeSingle();databaseFailure(policy.error);
+  const snapshot=item.review_snapshot||{}, analysis=snapshot.ai_analysis||{};
+  const unsafe=/avukat|dava|hukuk|mahkeme|tazminat|dolandır|kişisel veri|ayrımcılık|güvenlik|can güven|ücret iade|ciddi teknik/i.test(String(snapshot.comment||''));
+  if(policy.data?.auto_reply_enabled!==true || item.kind!=='reply' || item.draft_source!=='openai' || ![4,5].includes(Number(snapshot.rating)) || analysis.requires_human_review!==false || !analysis.generation_id || unsafe || snapshot.legal_hold || snapshot.rejection || snapshot.reply_conflict) throw new RequestError('Yorum otomatik yayın koşullarını karşılamıyor; insan onayı gerekli.',409);
+  const generation=await verifyAiGeneration(db,analysis.generation_id,{reviewId:item.review_id,branchId:item.branch_id,replyText:item.reply_text});
+  if(generation.requires_human_review!==false)throw new RequestError('AI değerlendirmesi insan onayı gerektiriyor.',409);
+}
 async function publishWork(db: any, user: any, body: any, token: string) {
   const item = await getWork(db, body), verifyOnly = body.action === 'verify_reply';
   if (item.kind !== 'reply') throw new RequestError('Bu kayıt yanıt taslağı değil.', 400);
@@ -753,6 +762,11 @@ async function publishWork(db: any, user: any, body: any, token: string) {
   let writeStarted = false, writeDefinitelyRejected = false;
   try {
     const live = await readReview();
+    if(body.action==='auto_publish_safe'){
+      const stars=({ONE:1,TWO:2,THREE:3,FOUR:4,FIVE:5} as Record<string,number>)[live.starRating];
+      if(stars!==Number(item.review_snapshot?.rating)||String(live.comment||'')!==String(item.review_snapshot?.comment||''))throw new RequestError('Google yorumu değişti. Yeni değerlendirme ve onay gerekli.',409);
+      await assertAutomaticReply(db,item);
+    }
     const currentReply = String(live.reviewReply?.comment || '');
     if (sameGoogleReply(currentReply, item.reply_text)) return await matchedReply(live.reviewReply, true);
     if (verifyOnly) {
@@ -768,8 +782,8 @@ async function publishWork(db: any, user: any, body: any, token: string) {
     if (!sameGoogleReply(currentReply, item.expected_reply)) throw new RequestError('Google’daki mevcut yanıt değişmiş. Yayın durduruldu; taslağı yeniden inceleyin.', 409);
     if (replySnapshot.google_reply_accepted) return { item: await finishPublication(db, item, attemptId, { status: replySnapshot.google_reply_state === 'REJECTED' ? 'publish_failed' : 'publish_unknown', review_snapshot: replySnapshot, last_error: replySnapshot.google_reply_state === 'REJECTED' ? 'Google yanıtı reddetti. Metni inceleyip yeniden kaydedin; yeni onay gerekir.' : sentPendingMessage }) };
     await assertNoLegalHold(db, item);
-    await assertReviewLifecycle({db,connection:{id:connectionId}});
-    await authorizedGoogleRole(db,user.id,'publish_reply');
+    await assertReviewLifecycle({db,connection:{id:connectionId},branchId:item.branch_id});
+    await authorizedGoogleRole(db,user.id,'publish_reply',item.branch_id);
     writeStarted = true;
     try {
       const receipt = await googleJson(`${reviewUrl(item)}/reply`, token, { method: 'PUT', signal, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ comment: item.reply_text }) }, true);
@@ -810,7 +824,7 @@ Deno.serve(async (req) => {
     const user = await currentUser(req);
     const body = await req.json();
     const db = admin();
-    const connection = await authorizedConnection(db, user.id);
+    const connection = await authorizedConnection(db, user.id, branchIdOf(body));
     const access = connection._reviewAccess;
     const branchRows = await loadBranchRegistry(db);
     const requestedBranch = body.branch_id === undefined ? managementBranchId : String(body.branch_id);
@@ -821,11 +835,11 @@ Deno.serve(async (req) => {
     if (access.role === 'viewer' && !readActions.has(body.action) && body.action !== 'notification_read' && !approvalAction) throw new RequestError('Bu kullanıcı yorumları yalnızca görüntüleyebilir.',403);
     if (access.source==='delegation' && !readActions.has(body.action) && body.action!=='notification_read' && !approvalAction && !(access.delegated_scopes.includes('tasks') && ['create_task','update_task','management_update'].includes(body.action))) throw new RequestError('İşlem süreli delegasyon kapsamının dışında.',403);
     if (['start','accounts','locations'].includes(body.action) && !access.is_owner) throw new RequestError('Google bağlantısı yalnızca hesap sahibi tarafından yönetilebilir.',403);
-    if (!access.is_owner && body.action==='reviews' && String(body.location_id)!==branches[managementBranchId].locationId) throw new RequestError('Bu kullanıcı yalnız Bursa yorumlarına erişebilir.',403);
+    if (!access.is_owner && body.action==='reviews' && String(body.location_id)!==branches[requestedBranch].locationId) throw new RequestError('Yorum konumu yetkili şubeyle eşleşmiyor.',403);
     if (!access.is_owner && body.action==='sync_reviews') {
-      if (body.branch_ids && (!Array.isArray(body.branch_ids) || body.branch_ids.some((id:unknown)=>id!==managementBranchId))) throw new RequestError('Senkronizasyon yetkisi yalnız Bursa kapsamındadır.',403);
-      const config=body.branch_configs?.[managementBranchId];
-      if(config?.location_id && String(config.location_id)!==branches[managementBranchId].locationId || config?.store_code && String(config.store_code)!==branches[managementBranchId].storeCode) throw new RequestError('Kayıtlı Bursa bağlantısı değiştirilemez.',403);
+      if (!Array.isArray(body.branch_ids) || body.branch_ids.length!==1 || body.branch_ids[0]!==requestedBranch) throw new RequestError('Senkronizasyon yetkisi seçili şubeyle sınırlıdır.',403);
+      const config=body.branch_configs?.[requestedBranch];
+      if(config?.location_id && String(config.location_id)!==branches[requestedBranch].locationId || config?.store_code && String(config.store_code)!==branches[requestedBranch].storeCode) throw new RequestError('Kayıtlı şube bağlantısı değiştirilemez.',403);
     }
     if ((body.action === 'management_update' && body.entity === 'policy' || body.action === 'target_save') && access.role !== 'admin') throw new RequestError('Bu ayarı değiştirmek için yönetici yetkisi gerekli.',403);
     if (requestedRegistry && requestedRegistry.active === false && !['branch_list','branch_onboarding','management_read','management_extended_read'].includes(body.action)) throw new RequestError('Pasif şube üzerinde işlem yapılamaz.',409);
@@ -923,10 +937,13 @@ Deno.serve(async (req) => {
       const row = branchId === managementBranchId ? null : registryRow(branchRows, branchId);
       if (branchId !== managementBranchId && !row) throw new RequestError('Şube kaydı bulunamadı.',404);
       const settings = await db.from('google_review_management_resources').select('data').eq('connection_id',connectionId).eq('branch_id',branchId).eq('kind','branch_settings').eq('key','default').eq('archived',false).maybeSingle(); databaseFailure(settings.error);
-      const target = await db.from('google_review_targets').select('target,version,month').eq('connection_id',connectionId).eq('branch_id',branchId).order('month',{ascending:false}).limit(1); databaseFailure(target.error);
+      const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Istanbul',year:'numeric',month:'2-digit'}).formatToParts(new Date());
+      const targetMonth=`${parts.find(p=>p.type==='year')!.value}-${parts.find(p=>p.type==='month')!.value}-01`;
+      const target = await db.from('google_review_targets').select('target,version,month').eq('connection_id',connectionId).eq('branch_id',branchId).eq('month',targetMonth).limit(1); databaseFailure(target.error);
       const policy = await db.from('google_review_collection_policies').select('enabled,updated_at').eq('connection_id',connectionId).eq('branch_id',branchId).maybeSingle(); databaseFailure(policy.error);
-      const checklist = { identity:true, google_account:branchId===managementBranchId || Boolean(row?.account_id), store_code:branchId===managementBranchId || Boolean(row?.store_code), location_id:branchId===managementBranchId || Boolean(row?.location_id), google_verified:branchId===managementBranchId || Boolean(row?.google_verified_at), target:Boolean(target.data?.length), sla:branchId===managementBranchId || Boolean(settings.data?.sla_hours || row?.sla_hours), ai:Boolean(settings.data), collection:Boolean(policy.data), permissions:access.is_owner, active:branchId===managementBranchId || row?.active!==false, live:branchId===managementBranchId || row?.lifecycle==='live' };
-      return json({branch_id:branchId,branch:row,settings:settings.data||null,target:target.data?.[0]||null,collection:policy.data||null,checklist,ready:Object.values(checklist).every(Boolean)});
+      const ai = await db.from('google_review_management_resources').select('data').eq('connection_id',connectionId).eq('branch_id',branchId).eq('kind','ai_config').eq('key','default').eq('archived',false).maybeSingle(); databaseFailure(ai.error);
+      const checklist = { identity:true, google_account:branchId===managementBranchId || Boolean(row?.account_id), store_code:branchId===managementBranchId || Boolean(row?.store_code), location_id:branchId===managementBranchId || Boolean(row?.location_id), google_verified:branchId===managementBranchId || Boolean(row?.google_verified_at), target:Boolean(target.data?.length), sla:branchId===managementBranchId || Boolean(row?.sla_hours || settings.data?.sla_hours), ai:Boolean(ai.data || Deno.env.get('OPENAI_API_KEY')), collection:true, permissions:access.is_owner, active:branchId===managementBranchId || row?.active!==false, live:branchId===managementBranchId || row?.lifecycle==='live' };
+      return json({branch_id:branchId,branch:row,settings:settings.data||null,target_month:targetMonth,target:target.data?.[0]||null,collection:policy.data||{enabled:false,source:'default'},sources:{ai:ai.data?'branch':'erp',collection:policy.data?'branch':'default_disabled'},checklist,ready:Object.values(checklist).every(Boolean)});
     }
     if (body.action === 'branch_activate') {
       if (!access.is_owner) throw new RequestError('Şube aktifleştirme yalnızca bağlantı sahibi tarafından yapılabilir.',403);
@@ -947,12 +964,12 @@ Deno.serve(async (req) => {
       await writeGoogleAudit(db,{userId:user.id,role:'ADMIN',action:'branch_activate',entityType:'branch',entityId:branchId,afterState:{lifecycle:'live',google_verified_at:now},detail:'Google konumu doğrulandı; şube canlı yorum akışına açıldı.'});
       return json({item:updated.data,checklist:{...onboarding,live:true}});
     }
-    if (['prepare_draft','save_draft','publish_reply'].includes(body.action)) await assertReviewLifecycle({db,connection,branchId:branchIdOf(body)});
+    if (['prepare_draft','save_draft','publish_reply','auto_publish_safe'].includes(body.action)) await assertReviewLifecycle({db,connection,branchId:branchIdOf(body)});
     if (body.action === 'auto_publish_safe') {
       if (access.role !== 'admin' || !access.is_owner) throw new RequestError('Otomatik yayın yalnızca bağlantı sahibi yönetici tarafından çalıştırılabilir.',403);
       const item = await getWork(db, body);
-      const rating = Number(item.review_snapshot?.rating);
-      if (item.kind !== 'reply' || ![4,5].includes(rating) || item.review_snapshot?.ai_analysis?.requires_human_review === true || item.review_snapshot?.legal_hold || item.review_snapshot?.rejection || item.status !== 'approval_pending') throw new RequestError('Yorum otomatik yayın koşullarını karşılamıyor.',409);
+      if(item.status!=='approval_pending')throw new RequestError('Yorum otomatik yayın kuyruğunda değil.',409);
+      await assertAutomaticReply(db,item);
     }
     if ((body.action === 'management_update' && body.entity === 'task') || body.action === 'update_task') {
       const task = await getWork(db,body);
@@ -969,8 +986,8 @@ Deno.serve(async (req) => {
     if (body.action === 'status') return json({ connected: clientMatches, connected_at: connection?.connected_at || null, reconnection_required: Boolean(connection && !clientMatches) });
     if (!connection) return json({ error: 'Google Business Profile bağlantısı kurulmamış.' }, 409);
     if (['prepare_draft', 'save_draft', 'create_task'].includes(body.action)) workIdentity(body);
-    if (['publish_reply', 'verify_reply'].includes(body.action)) { await getWork(db, body); await authorizedGoogleRole(db,user.id,body.action); }
-    if (body.action === 'auto_publish_safe') await authorizedGoogleRole(db,user.id,'publish_reply');
+    if (['publish_reply', 'verify_reply'].includes(body.action)) { await getWork(db, body); await authorizedGoogleRole(db,user.id,body.action,requestedBranch); }
+    if (body.action === 'auto_publish_safe') await authorizedGoogleRole(db,user.id,'publish_reply',requestedBranch);
     if (body.action === 'management_read') return json(await readManagement(db, user, body, connection, clientMatches));
     if (body.action === 'management_update') return json(await updateManagement(db, user, body, req.headers.get('x-request-id') || undefined));
     if (body.action === 'reject_draft') {
@@ -1037,7 +1054,7 @@ Deno.serve(async (req) => {
       return json({ rows: result.data || [] });
     }
     if (body.action === 'bulk_route') {
-      const authorization = await authorizedGoogleRole(db, user.id, 'bulk_route');
+      const authorization = await authorizedGoogleRole(db, user.id, 'bulk_route',requestedBranch);
       const bulkBranch = branchIdOf(body);
       const itemIds = Array.isArray(body.item_ids) ? [...new Set(body.item_ids.map((value: unknown) => String(value).trim()).filter(value => /^[0-9a-f-]{36}$/i.test(value)))] : [];
       if (!itemIds.length || itemIds.length > 100) throw new RequestError('Toplu sevk için 1–100 arası geçerli görev seçin.', 400);
@@ -1098,7 +1115,7 @@ Deno.serve(async (req) => {
       return json(result);
     }
     if (['publish_reply', 'verify_reply'].includes(body.action)) {
-      const authorization = await authorizedGoogleRole(db, user.id, body.action);
+      const authorization = await authorizedGoogleRole(db, user.id, body.action,requestedBranch);
       const before = await getWork(db, body);
       const result = await publishWork(db, user, body, token);
       if(result.item?.status==='published') await recordAiOutcome(db,{item:result.item,actorId:user.id,action:'published'});

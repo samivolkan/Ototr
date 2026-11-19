@@ -533,8 +533,11 @@
     setTimeout(() => { automaticPumpScheduled = false; preparePendingDrafts(); }, 0);
   }
   async function autoPublishDue() {
-    if (managementEditing || !autoPreparationAllowed() || window.OTOTRReviewLiveViews?.getScope?.() !== 'live') return;
-    const items = workflow.items.filter(item => item.kind === 'reply' && item.status === 'approval_pending' && [4,5].includes(Number(item.review_snapshot?.rating)) && item.review_snapshot?.ai_analysis?.requires_human_review !== true && !item.review_snapshot?.legal_hold && !item.review_snapshot?.rejection);
+    if (managementEditing || !autoPreparationAllowed()) return;
+    // This module runs in the ERP parent; the scope selector lives in its iframe.
+    // Only the current operational pilot is eligible. The server rechecks policy,
+    // exact AI output, risk, current Google content, branch state and permission.
+    const items = workflow.items.filter(item => item.branch_id === 'branch-google-nilufer' && item.kind === 'reply' && item.draft_source === 'openai' && item.status === 'approval_pending' && [4,5].includes(Number(item.review_snapshot?.rating)) && item.review_snapshot?.ai_analysis?.requires_human_review === false && item.review_snapshot?.ai_analysis?.generation_id && !item.review_snapshot?.legal_hold && !item.review_snapshot?.rejection);
     for (const item of items.slice(0,2)) {
       try { await googleBusinessRequest('auto_publish_safe',{item_id:item.id,expected_version:item.version}); } catch (_) {}
     }
