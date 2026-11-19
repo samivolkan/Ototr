@@ -85,14 +85,15 @@
   const sessions=new Map();
   root.OTOTRReviewSandbox={...exports,mount(host,branch){
     if(!branch?.onboarding?.test){host.textContent='Test alanı yalnız örnek şubede açılır.';return;}
-    let s=sessions.get(branch.id)||create(),results=[],error='';
+    const remembered=sessions.get(branch.id);
+    let s=remembered?.s||create(),results=remembered?.results||[],error='',role=remembered?.role||'admin';
     function render(){
-      sessions.set(branch.id,s);
+      sessions.set(branch.id,{s,results,role});
       host.innerHTML='<div class="card workspace-sandbox"><div class="head"><div><h3>Senaryo laboratuvarı</h3><p>Yerel simülasyon · Google ve müşteriye gönderim yapmaz.</p></div><span class="chip warn">TEST</span></div><p class="v2-chart-note">Örnek yanıtlar OpenAI çıktısı değildir. Buradaki denemeler canlı raporlara veya onay kuyruğuna yazılmaz; sayfa yenilendiğinde sıfırlanır.</p><div class="workspace-form-grid"><label>Örnek puan<select id="sandboxStars">'+[5,4,3,2,1].map(n=>'<option '+(s.stars===n?'selected':'')+'>'+n+'</option>').join('')+'</select></label><label>Yorum metni<textarea id="sandboxText" maxlength="2000">'+esc(s.text)+'</textarea></label><label>Test rolü<select id="sandboxRole"><option value="admin">Yönetici</option><option value="legal">Hukuk</option><option value="viewer">Görüntüleyici</option></select></label></div><div class="workspace-actions"><button class="btn" data-sim="create">Örnek yorumu oluştur</button><button class="btn p" data-sim="all">22 senaryoyu çalıştır</button></div><hr><strong role="status">'+esc(labels[s.status])+(s.approved?' · Onaylı':'')+'</strong><label class="workspace-sandbox-draft">Örnek yanıt<textarea id="sandboxDraft" maxlength="2000" rows="3">'+esc(s.draft)+'</textarea></label><div class="workspace-actions"><button class="btn" data-sim="edit">Örnek taslağı kaydet</button><button class="btn" data-sim="alternative">Örnek alternatif</button><button class="btn" data-sim="approve">Onayla</button><button class="btn" data-sim="release">Hukuk kilidini kaldır</button><button class="btn" data-sim="send">Gönderimi dene</button><button class="btn" data-sim="failure">Gönderim hatasını dene</button></div>'+(error?'<p class="workspace-error" role="alert">'+esc(error)+'</p>':'')+'<details><summary>Deneme işlem geçmişi · '+s.history.length+'</summary><ol>'+s.history.map(h=>'<li>'+esc(new Date(h.at).toLocaleTimeString('tr-TR'))+' · '+esc(h.event)+'</li>').join('')+'</ol></details><div id="sandboxResults">'+(results.length?'<h4>'+results.filter(r=>r.passed).length+' / '+results.length+' senaryo başarılı</h4><div class="workspace-scenario-grid">'+results.map(r=>'<div><span class="chip '+(r.passed?'ok':'err')+'">'+(r.passed?'✓':'!')+'</span> '+esc(r.title)+'</div>').join('')+'</div>':'')+'</div></div>';
     }
-    host.onclick=e=>{const b=e.target.closest('[data-sim]');if(!b)return;error='';const action=b.dataset.sim;
+    host.onclick=e=>{const b=e.target.closest('[data-sim]');if(!b)return;error='';const action=b.dataset.sim;role=host.querySelector('#sandboxRole').value;
       try{if(action==='all')results=runAll();else if(action==='create')s=create({stars:Number(host.querySelector('#sandboxStars').value),text:host.querySelector('#sandboxText').value});else s=step(s,action==='failure'?'send':action,{failure:action==='failure',text:host.querySelector('#sandboxDraft').value,role:host.querySelector('#sandboxRole').value});}catch(e){error=e.message;}
-      render();
-    };render();
+      render();host.querySelector('#sandboxRole').value=role;
+    };render();host.querySelector('#sandboxRole').value=role;
   }};
 })(typeof window==='undefined'?null:window);
