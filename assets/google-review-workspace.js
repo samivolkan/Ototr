@@ -82,7 +82,7 @@
       const value=live()?.getBranchId?.() || NILUFER;
       const signature=options.map(b=>b.id+name(b)).join('|');
       if (select.dataset.workspaceOptions!==signature || select.options.length!==options.length) {
-        select.innerHTML=options.map(b=>'<option value="'+escape(b.id===NILUFER?'live':b.id)+'">'+escape(name(b))+' · Canlı</option>').join('');
+        select.innerHTML=options.map(b=>'<option value="'+escape(b.id===NILUFER?'live':b.id)+'">'+escape(name(b))+'</option>').join('');
         select.dataset.workspaceOptions=signature;
       }
       select.value=value===NILUFER?'live':value;

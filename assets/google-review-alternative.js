@@ -230,11 +230,17 @@
   };
   root.initCharts = function () {
     const scoped = rows(), a = stats(scoped), keys = monthsFor(period);
-    const counts = keys.map(key => scoped.filter(r => monthKey(r.createdAt) === key).length);
     const targets = targetSeries(keys, management().targets || [], branchId(), branch()?.target);
-    const firstTarget = keys.findIndex(key => allRows().some(row => monthKey(row.createdAt) && monthKey(row.createdAt) <= key));
-    const comparisonKeys = keys.slice(Math.max(0, firstTarget));
-    const cumulative = { achieved: comparisonKeys.map(key => allRows().filter(row => monthKey(row.createdAt) && monthKey(row.createdAt) <= key && new Date(row.createdAt).getTime() <= Date.now()).length), planned: targets.slice(Math.max(0, firstTarget)) };
+    const now = Date.now();
+    const reviewMonths = allRows().filter(row => new Date(row.createdAt).getTime() <= now)
+      .map(row => monthKey(row.createdAt)).filter(Boolean);
+    const firstPoint = Math.max(0, keys.findIndex((key, index) =>
+      targets[index] != null || reviewMonths.some(month => month <= key)));
+    const comparisonKeys = keys.slice(firstPoint);
+    const cumulative = {
+      achieved: comparisonKeys.map(key => reviewMonths.filter(month => month <= key).length),
+      planned: targets.slice(firstPoint)
+    };
     const series = [
       { label: 'Mevcut yorum toplamı', data: cumulative.achieved, borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,.08)', fill: true, tension: 0, pointRadius: 5, spanGaps: false },
       { label: 'Kayıtlı hedef', data: cumulative.planned, borderColor: '#e11d48', borderDash: [7, 4], pointRadius: 5, spanGaps: false, fill: false }
