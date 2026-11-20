@@ -3180,6 +3180,9 @@ export default router;
       if (!release) {
         release = document.createElement('div'); release.id='ototr-release-footer'; release.innerHTML='<b>G16</b><span>Yayın: kontrol ediliyor</span>'; document.body.append(release);
         const releaseStyle=document.createElement('style'); releaseStyle.textContent='#ototr-release-footer{position:fixed;left:12px;bottom:10px;z-index:10001;display:flex;gap:7px;align-items:center;padding:6px 9px;border:1px solid #dfe3e8;border-radius:7px;background:rgba(255,255,255,.95);color:#64748b;font:600 10px system-ui;box-shadow:0 4px 12px rgba(15,23,42,.12)}#ototr-release-footer b{color:#171b20;font-size:11px}'; document.head.append(releaseStyle);
+        const updateReleaseVisibility = () => { release.style.display = location.hash === '#google-reviews' ? 'none' : ''; };
+        window.addEventListener('hashchange', updateReleaseVisibility);
+        updateReleaseVisibility();
         (window.OTOTRReviewReleasePromise || fetch('release.json',{cache:'no-store'}).then(r=>r.ok?r.json():null)).then(meta=>{if(meta){release.querySelector('b').textContent=meta.date||'';release.querySelector('span').textContent=`${meta.time||''} · Güncelleme #${meta.run||''}`.trim();}}).catch(()=>{});
       }
       let profile = document.getElementById('ototr-profile-actions');

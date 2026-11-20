@@ -51,7 +51,13 @@ html[data-review-variant="2"] #rvDetail .detail-actions{flex-wrap:wrap}
 html[data-review-variant="2"] #rvDetail textarea{min-height:146px}
 html[data-review-variant="2"] #erpBranchFilter{display:none}
 html[data-review-variant="2"] #releaseFooterBadge{background:var(--surface);max-width:calc(100% - 16px);bottom:8px}
-html[data-review-variant="2"].review-embedded #releaseFooterBadge{display:none!important}
+html[data-review-variant="2"] .v2-nav-actions #releaseFooterBadge{position:static;inset:auto;display:inline-flex;box-shadow:none;background:transparent;border-color:#ffffff28;color:#cbd5e1}
+html[data-review-variant="2"] .v2-nav-actions #releaseFooterBadge b{color:#eef1f5}
+.v2-chart-scope{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px}
+.v2-chart-scope label{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--mute)}
+.v2-chart-scope select{min-height:32px;padding:5px 9px;border:1px solid var(--line);border-radius:6px;background:var(--s2);color:var(--ink)}
+.v2-nav-actions{flex-wrap:wrap;align-items:center}
+@media(max-width:768px){.v2-nav-actions{max-width:100%}.v2-chart-scope label{max-width:100%}.v2-chart-scope select{max-width:100%}}
 html[data-review-variant="2"] #review-profile-actions{display:block;position:relative;color:#cbd5e1}
 html[data-review-variant="2"] #review-profile-actions summary{cursor:pointer;list-style:none;border:1px solid #475569;border-radius:6px;padding:6px 9px;font-size:11px;white-space:nowrap}
 html[data-review-variant="2"] #review-profile-actions summary:focus-visible{outline:2px solid #93c5fd;outline-offset:2px}

@@ -106,12 +106,14 @@
   const oldControls = byId('erpGoogleSync')?.parentElement;
   const scopeBar = node('div', null, 'v2-scope'); scopeBar.setAttribute('aria-label', 'Şube ve dönem filtreleri');
   doc.querySelector('main')?.prepend(scopeBar);
+  const chartScope = node('div', null, 'v2-chart-scope');
+  byId('chartTrend')?.closest('.chart-card')?.prepend(chartScope);
   const branchSelect = byId('erpGlobalScope');
+  const branchLabel = node('label', 'Şube');
   if (branchSelect) {
-    const label = node('label', 'Şube');
-    label.htmlFor = branchSelect.id;
-    label.append(branchSelect);
-    scopeBar.append(label);
+    branchLabel.htmlFor = branchSelect.id;
+    branchLabel.append(branchSelect);
+    scopeBar.append(branchLabel);
   }
   const managementApi = root.OTOTRReviewManagement;
   if (managementApi) {
@@ -141,6 +143,8 @@
   if (nav) {
     nav.before(navRow);
     navRow.append(nav, navActions);
+    const release = byId('releaseFooterBadge');
+    if (release) navActions.prepend(release);
     for (const id of ['erpGoogleSync', 'erpGoogleQueue']) {
       const button = byId(id);
       if (button) navActions.append(button);
@@ -169,9 +173,14 @@
       if (environment.parentElement !== reviewStatus) reviewStatus.append(environment);
       if (connectionButton && connectionButton.parentElement !== reviewStatus) reviewStatus.append(connectionButton);
     } else {
-      const branchLabel = scopeBar.querySelector('label[for="erpGlobalScope"]');
-      if (branchSelect && branchLabel && branchSelect.parentElement !== branchLabel) branchLabel.append(branchSelect);
-      if (environment.parentElement !== scopeBar) refreshButtons.before(environment);
+      if (branchSelect && branchSelect.parentElement !== branchLabel) branchLabel.append(branchSelect);
+      if (STATE.view === 'overview' && chartScope.isConnected) {
+        if (branchLabel.parentElement !== chartScope) chartScope.append(branchLabel, periodLabel, environment);
+      } else if (branchLabel.parentElement !== scopeBar) {
+        refreshButtons.before(branchLabel, periodLabel, environment);
+      } else if (environment.parentElement !== scopeBar) {
+        refreshButtons.before(environment);
+      }
       if (connectionButton && connectionButton.parentElement !== refreshButtons) refreshButtons.prepend(connectionButton);
     }
   }
