@@ -151,6 +151,16 @@
       result.append(image, download);
     } catch (e) { error.textContent = e.message || 'QR kodu oluşturulamadı.'; }
   });
+  function heatmapCard() {
+    const rows = root.OTOTRReviewAlternative?.branchHeatmap?.() || [];
+    const cell = (value,warn,good,format) => value == null ? '<td>—</td>' :
+      '<td><span class="workspace-heat '+(value>=good?'ok':value>=warn?'warn':'bad')+'">'+escape(format(value))+'</span></td>';
+    const pct = number => '%'+Math.round(number);
+    return '<div class="card workspace-heat-card"><h3>Şube ısı haritası</h3><p>Toplam yorumlar · Canlı ve demo ayrı etiketlenir.</p><div class="workspace-heat-scroll"><table><thead><tr><th>Şube</th><th>Yorum</th><th>Puan</th><th>Yanıt</th><th>SLA</th><th>Hedef</th></tr></thead><tbody>'+
+      rows.map(row=>'<tr><th scope="row"><button type="button" class="btn sm ghost" '+(row.demo?'data-demo-branch':'data-select-branch')+'="'+escape(row.id)+'">'+escape(row.name)+'</button> <span class="chip '+(row.demo?'purple':'ok')+'">'+(row.demo?'Demo':'Canlı')+'</span></th><td>'+(row.count??'—')+'</td>'+
+        cell(row.average,4,4.5,n=>n.toLocaleString('tr-TR',{minimumFractionDigits:1,maximumFractionDigits:1}))+cell(row.response,80,95,pct)+cell(row.sla,70,90,pct)+cell(row.progress,60,100,pct)+'</tr>').join('')+
+      '</tbody></table></div><p>Renkler: yeşil hedefte, turuncu dikkat, kırmızı iyileştirme gerekli. Ölçülemeyen değerler —.</p></div>';
+  }
   function renderBranches() {
     if(formOpen) return;
     const items=visibleBranches(), b=items.find(b=>b.id===selected)||items[0]; selected=b.id;
@@ -175,11 +185,7 @@
       '<button class="btn" data-branch-action="check" '+(busy?'disabled':'')+'>Kurulumu kontrol et</button></div><p class="v2-chart-note">AI ve bağlantılar mevcut ERP ayarlarından kullanılır. Yeni şubede müşteri mesajı gönderimi başlangıçta kapalıdır.</p></div>'+
       (!liveBranch&&c?'<div class="card"><h3>Şubenin çalışma hedefleri</h3><p class="v2-chart-note">Bu şubeye özel sunucu kaydı · '+escape(c.target_month?.slice(0,7)||'')+'</p><div class="workspace-form-grid"><label>Toplam yorum hedefi<input id="setupTarget" type="number" min="1" max="10000" step="1" value="'+escape(c.target?.target||b.target||30)+'"><span>Yıldız hedefi</span><input id="setupRatingTarget" type="number" min="1" max="5" step="0.1" value="'+escape(c.target?.rating_target??'')+'"><button class="btn" data-branch-action="save-target" '+(busy?'disabled':'')+'>Hedefi kaydet</button></label><label>Yanıt SLA (saat)<input id="setupSla" type="number" min="1" max="168" step="1" value="'+escape(b.sla_hours||24)+'"><button class="btn" data-branch-action="save-sla" '+(busy?'disabled':'')+'>SLA kaydet</button></label></div><p class="v2-chart-note">Kaydettiğiniz değerler yalnız bu şubeye uygulanır. Canlı Bursa hedefi ve SLA’sı değişmez.</p></div>':'')+
       (liveBranch?collectionTools():'')+(b.onboarding?.test?'<div id="workspaceSandbox"></div>':'')+mapPanel(b)+'</div></div>';
-    const demos = root.OTOTRReviewAlternative?.regionalDemos?.() || [];
-    if (demos.length) section.insertAdjacentHTML('beforeend',
-      '<div class="card"><h3>Bölgesel demo şubeler</h3><div class="workspace-actions">' +
-      demos.map(d=>'<button class="btn sm" data-demo-branch="'+escape(d.id)+'">'+escape(d.region)+' · '+escape(d.name)+'</button>').join('') +
-      '</div></div>');
+    section.querySelector('.workspace-branches')?.insertAdjacentHTML('beforebegin',heatmapCard());
     if(b.onboarding?.test)root.OTOTRReviewSandbox?.mount(byId('workspaceSandbox'),b);
   }
   async function loadBranches() {

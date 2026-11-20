@@ -410,13 +410,15 @@
       .filter(item => item.count > 0)
       .sort((a,b) => b.count-a.count || a.branch.name.localeCompare(b.branch.name,'tr'))
       .slice(0,5);
-    byId('ovTopBranchesNote').textContent = `${analyticsName()} · ${PERIODS[period]} · Seçili kapsamdaki pay`;
+    byId('ovTopBranchesNote').textContent = `${analyticsName()} · ${PERIODS[period]} · ${analyticsDemo()?'Demo':'Canlı'} kapsamındaki pay`;
+    const demoRanking = byId('ovDemoRanking');
+    if (demoRanking) { demoRanking.hidden = analyticsDemo(); demoRanking.onclick = openDemoRanking; }
     host.replaceChildren(...ranked.map(({branch,count}, index) => {
       const share = Math.round(count/scoped.length*100);
       const button = node('button',null,'v2-rank-row');
       button.type = 'button';
       button.setAttribute('aria-label', `${branch.name} · ${count} yorum · %${share} pay. Şubeyi göster`);
-      const name = node('strong',branch.name);
+      const name = node('strong',branch.id===BRANCH_IDS[0]?'Bursa Nilüfer':branch.name);
       const rank = node('span',String(index+1),'v2-rank-number');
       rank.setAttribute('aria-hidden','true');
       name.prepend(rank);
@@ -794,13 +796,33 @@
       [analyticsName(), analyticsLive() ? 'Canlı' : 'Demo', PERIODS[period], a.count, currentReviewTotal(), currentTarget() ?? '', currentRatingTarget() ?? '', a.average ?? '', a.responseRate ?? '', a.slaRate ?? '']
     ]);
   };
+  function branchHeatmap() {
+    const now = Date.now();
+    const month = monthKey(now);
+    return [...liveRegistry().map(branch=>({branch,demo:false})), ...regionalDemos.map(branch=>({branch,demo:true}))]
+      .map(({branch,demo}) => {
+        const source = demo ? regionalDemoRows(branch) : cachedReviews(branch);
+        const reviewRows = source.filter(row => monthKey(row.createdAt) && Date.parse(row.createdAt) <= now);
+        const loaded = demo || reviewRows.length > 0 || Boolean(parentReviews?.getBranchById?.(branch.id)?.lastSyncedAt);
+        const stats = live().aggregateReviews(reviewRows,{now,slaHours:demo?24:branch.id===branchId()?sla():Number(branch.sla_hours)||24});
+        const target = demo ? demoTargets.get(branch.id) || branch.target : targetSeries([month],
+          branch.id===branchId()?management().targets || []:scopedTargetCache.get(branch.id) || [],branch.id)[0];
+        return {id:branch.id,name:branch.id===BRANCH_IDS[0]?'Bursa Nilüfer':branch.name,demo,
+          count:loaded?stats.count:null, average:stats.average, response:stats.responseRate,
+          sla:stats.slaRate, progress:loaded?progress(stats.count,target):null};
+      });
+  }
+  function openDemoRanking() {
+    Object.assign(analyticsScope,{mode:'demo',region:'',city:'',branch:''});
+    root.switchView('overview');
+  }
   function openRegionalDemo(id) {
     const b = regionalDemos.find(item => item.id === id);
     if (!b) return;
     Object.assign(analyticsScope,{mode:'demo',region:b.region,city:b.city,branch:b.id});
     root.switchView('performance');
   }
-  root.OTOTRReviewAlternative = { ...pure, regionalDemos: () => regionalDemos.map(b=>({...b})), openRegionalDemo, getPeriod: () => period, scopedRows: operationalRows, filteredRows: rows };
+  root.OTOTRReviewAlternative = { ...pure, branchHeatmap, openDemoRanking, regionalDemos: () => regionalDemos.map(b=>({...b})), openRegionalDemo, getPeriod: () => period, scopedRows: operationalRows, filteredRows: rows };
   STATE.view = 'overview';
   root.switchView('overview');
 })(typeof window === 'undefined' ? null : window);

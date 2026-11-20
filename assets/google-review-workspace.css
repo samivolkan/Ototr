@@ -55,3 +55,12 @@ html[data-review-variant="2"] button:focus-visible,html[data-review-variant="2"]
 @media(max-width:1000px){#healthMetrics{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:600px){#healthMetrics,.service-timing{grid-template-columns:1fr}}
 
 #erpDataScope.info{display:none!important}
+
+.workspace-heat-card{margin-bottom:16px}
+.workspace-heat-card p{margin:6px 0;color:var(--mute);font-size:12px}
+.workspace-heat-scroll{overflow:auto}
+.workspace-heat-card table{width:100%;min-width:540px;border-collapse:collapse;text-align:left}
+.workspace-heat-card :is(td,th){padding:8px 10px;border-bottom:1px solid var(--line)}
+.workspace-heat-card thead th{color:var(--mute);font-size:12px}
+.workspace-heat{display:inline-block;min-width:54px;text-align:center;border-radius:6px;padding:3px 7px;color:white;font-weight:700;font-size:12px}
+.workspace-heat.ok{background:#0b7e58}.workspace-heat.warn{background:#a75b00}.workspace-heat.bad{background:#b42318}
