@@ -167,7 +167,11 @@
     canvas.setAttribute('role', 'img');
     canvas.setAttribute('aria-label', `${labels.join(', ')}. ${datasets.map(d => `${d.label}: ${d.data.map(v => v == null ? 'kayıt yok' : v).join(', ')}`).join('. ')}`);
     const plugins = { legend: { display: type === 'doughnut', position: 'right', labels: { color, boxWidth: 9, padding: 12 } } };
-    charts[id] = new Chart(canvas, { type, data: { labels, datasets }, options: {
+    charts[id] = new Chart(canvas, { type, plugins: id === 'chartRating' ? [{ id:'reviewTotal', afterDraw(c) {
+      const arc=c.getDatasetMeta(0)?.data?.[0]; if(!arc)return;
+      const total=datasets[0].data.reduce((sum,value)=>sum+Number(value||0),0),ctx=c.ctx;
+      ctx.save();ctx.textAlign='center';ctx.fillStyle=getComputedStyle(doc.documentElement).getPropertyValue('--ink').trim()||'#0f172a';ctx.font='700 28px system-ui';ctx.fillText(String(total),arc.x,arc.y);ctx.fillStyle=color;ctx.font='12px system-ui';ctx.fillText('yorum',arc.x,arc.y+22);ctx.restore();
+    }}] : [], data: { labels, datasets }, options: {
       responsive: true, maintainAspectRatio: false, animation: false,
       plugins, ...(type === 'doughnut' ? { cutout: '68%' } : { scales: { x: { grid: { display: false }, ticks: { color } }, y: { beginAtZero: true, grid: { color: line }, ticks: { color, precision: 0 } } } }), ...extra
     } });
@@ -187,12 +191,18 @@
     const a = stats(rows());
     const connection = management().error ? 'Canlı yönetim bağlantısı alınamadı; Bağlantı durumu ekranını kontrol edin.' : !management().loaded ? 'Canlı kayıtlar için ERP oturumu bekleniyor.' : `${html(branchName())} · Google kayıtları ve ERP onay akışı. Kurulum ve test şubeleri hesaplamaya dahil edilmez.`;
     byId('ovAlerts').innerHTML = `<div class="alert ${isLive() && management().loaded && !management().error ? 'info' : 'warn'}">${isLive() ? connection : `${html(branchName())} · Demo çalışma alanı. Yapılan denemeler Google’a gönderilmez.`}</div>`;
+    const monthly = stats(periodRows(allRows(), 'month')), target = currentTarget();
+    const ratio = progress(monthly.count, target);
+    if (isLive() && management().loaded && !management().error) {
+      const headline = !a.count ? 'Seçili dönemde yorum bulunmuyor' : ratio == null ? 'Hedefinizi tanımlayın' : ratio >= 100 ? 'Bu ayın yorum hedefine ulaşıldı' : 'Bu ayın yorum hedefinde ilerleme sürüyor';
+      byId('ovAlerts').innerHTML = `<div class="v2-insight"><strong>${headline}</strong><p>${target == null ? 'Performans ekranından şube hedefini kaydedebilirsiniz.' : `${monthly.count} / ${target} yorum · ${pct(ratio)} gerçekleşme.`} ${a.count ? `Ortalama puan ${fmt(a.average)}, yanıt oranı ${pct(a.responseRate)}. ${a.timedAnswers ? `${sla()} saatlik SLA içinde yanıtlananların oranı ${pct(a.slaRate)}.` : 'Yanıt süresi için ölçülebilir kayıt bekleniyor.'}` : ''}</p></div>`;
+    }
     const metrics = [
       ['Yorum hacmi', fmt(a.count), PERIODS[period]], ['Ort. puan', fmt(a.average), `${a.count} kayıttan hesaplandı`],
       ['Yanıt oranı', pct(a.responseRate), `${a.answered} yanıtlı yorum`], ['SLA', pct(a.slaRate), `${sla()} sa · ${a.timedAnswers} tarihli yanıt`],
       ['Yanıtsız', fmt(a.pending), 'Seçili dönem'], ['SLA aşımı', fmt(a.overdue), 'Yanıtsız ve geciken']
     ];
-    byId('ovKpis').innerHTML = metrics.map(([label, value, note], i) => `<div class="kpi"><div class="kl">${html(label)}</div><div class="kv">${html(value)}</div><div class="kd">${html(note)}</div><div class="v2-mini"><canvas id="v2Mini${i}" aria-hidden="true"></canvas></div></div>`).join('');
+    byId('ovKpis').innerHTML = metrics.map(([label, value, note], i) => `<div class="kpi v2-metric-${i}"><div class="kl">${html(label)}</div><div class="kv">${html(value)}</div><div class="kd">${html(note)}</div><div class="v2-mini"><canvas id="v2Mini${i}" aria-hidden="true"></canvas></div></div>`).join('');
     const critical = rows().filter(r => r.status !== 'gonderildi' && (r.stars <= 2 || r.escalated));
     byId('ovWatchlist').innerHTML = critical.slice(0, 5).map(r => `<div class="watch-row"><div class="info"><b>${html(root.OTOTRReviewEnhancements?.displayText(r.author) ?? r.author)}</b><small>${Number(r.stars)}★ · ${html(branchName())}</small></div><button class="btn sm" onclick="openReviewFromStore(${Number(r.id)})">İncele →</button></div>`).join('') || '<div class="empty">Seçili dönemde acil inceleme bekleyen yorum yok.</div>';
     byId('ovSla').innerHTML = `<div class="watch-row"><div class="info"><b>${html(branchName())}</b><small>Yorum tarihi → Google yanıt tarihi</small></div><span class="chip">${pct(a.slaRate)}</span></div><p class="v2-chart-note">${a.timedAnswers} kayıt ölçülebildi. Eksik veya geçersiz tarihler ortalamaya dahil edilmez.</p>`;
@@ -219,14 +229,19 @@
     emptyChart('chartRating', a.count > 0, 'Seçili dönemde yorum bulunmuyor.');
     const monthly = stats(periodRows(allRows(), 'month')), target = currentTarget();
     const regionTitle = byId('chartRegion')?.closest('.chart-card')?.querySelector('h3'); if (regionTitle) regionTitle.textContent = 'Bu ay · hedef ve gerçekleşen';
-    chart('chartRegion', 'bar', [branchName()], [
-      { label: 'Kayıtlı hedef', data: [target], backgroundColor: '#cbd5e1', borderRadius: 5 },
-      { label: 'Alınan yorumlar', data: [monthly.count], backgroundColor: '#e8281a', borderRadius: 5 }
-    ], { indexAxis: 'y', plugins: { legend: { display: true, position: 'bottom', labels: { boxWidth: 9 } } } });
-    chartNote('chartRegion', `Bölge: ${branch()?.region || '—'} · ${branchName()} · ${isLive() ? 'canlı' : 'demo'} kapsamı.`);
-    chart('chartResponse', 'bar', ['<2 sa', '2–6 sa', '6–24 sa', '24–48 sa', '48+ sa'], [{ label: 'Yanıt süresi', data: a.durationBuckets, backgroundColor: ['#12805c', '#6bbf9b', '#fbbf24', '#fb923c', '#b42318'], borderRadius: 4 }]);
+    function summaryCard(canvasId, content) {
+      const canvas = byId(canvasId), host = canvas?.closest('.chart-card'); if (!host) return;
+      root.destroyChart(canvasId); canvas.parentElement.hidden = true;
+      let block = host.querySelector('.v2-summary-card');
+      if (!block) { block = node('div', null, 'v2-summary-card'); host.append(block); }
+      block.innerHTML = content;
+      host.querySelector('.v2-chart-note')?.remove();
+    }
+    const ratio = progress(monthly.count, target);
+    summaryCard('chartRegion', `<div class="v2-summary-line"><strong>${html(branchName())}</strong><span>${monthly.count} / ${target ?? '—'}</span></div><progress class="v2-goal-meter" aria-label="Bu ay hedef gerçekleşmesi" max="100" value="${Math.min(100,ratio || 0)}"></progress><div class="v2-summary-line"><span>${ratio == null ? 'Hedef girilmedi' : `${pct(ratio)} gerçekleşti`}</span><span>${target == null ? '—' : `Kalan ${Math.max(0,target-monthly.count)} yorum`}</span></div><p>Şube hedefi · ${html(branch()?.region || '—')} / ${html(branchName())}</p><button class="btn sm" onclick="switchView('performance')">Hedefi düzenle →</button>`);
     const responseTitle = byId('chartResponse')?.closest('.chart-card')?.querySelector('h3'); if (responseTitle) responseTitle.textContent = `Yanıt süresi · SLA ${sla()} sa`;
-    emptyChart('chartResponse', a.timedAnswers > 0, 'Yanıt süresi ölçülebilen kayıt bulunmuyor.');
+    const within = a.slaRate == null ? null : Math.round(a.slaRate*a.timedAnswers/100);
+    summaryCard('chartResponse', within == null ? '<p>Yanıt süresi ölçülebilen kayıt bulunmuyor.</p>' : `<div class="v2-sla-meter" role="img" aria-label="${within} yanıt SLA içinde, ${a.timedAnswers-within} yanıt SLA dışında"><span style="flex:${within};background:#0f9d75">${within} içinde</span><span style="flex:${a.timedAnswers-within};background:#d92d20">${a.timedAnswers-within} dışında</span></div><div class="v2-summary-line"><span>${a.timedAnswers} tarihli yanıt üzerinden</span><strong>${pct(a.slaRate)} SLA içinde</strong></div><p>Süre: yorum tarihi → Google yanıt tarihi. Tarihi eksik kayıtlar dahil edilmez.</p><button class="btn sm" onclick="switchView('reviews')">Yorumları incele →</button>`);
     const bins = keys.map(key => stats(scoped.filter(r => monthKey(r.createdAt) === key)));
     ['count', 'average', 'responseRate', 'slaRate', 'pending', 'overdue'].forEach((field, i) => {
       chart(`v2Mini${i}`, 'line', keys, [{ label: metricsLabel(i), data: bins.map(s => s[field]), borderColor: ['#2563eb', '#b45309', '#12805c', '#12805c', '#b45309', '#b42318'][i], pointRadius: 0, borderWidth: 1.5, tension: .3 }], { scales: { x: { display: false }, y: { display: false } }, plugins: { legend: { display: false }, tooltip: { enabled: false } }, events: [] });
