@@ -304,6 +304,48 @@
         ctx.restore();
       }
     };
+    const endpointLabels = {
+      id: 'reviewTargetGap',
+      afterDatasetsDraw(chart) {
+        const lastIndex = comparisonKeys.length - 1;
+        const endpoints = ['Ulaşılan', 'Hedef'].map((label, index) => {
+          const value = series[index].data[lastIndex];
+          const point = chart.getDatasetMeta(index).data[lastIndex];
+          return chart.isDatasetVisible(index) && value != null && point && !point.skip
+            ? { label, value, point, color: series[index].borderColor } : null;
+        });
+        const [actual, target] = endpoints;
+        const ctx = chart.ctx;
+        ctx.save();
+        ctx.font = '600 11px system-ui';
+        if (actual && target) {
+          const { x, y } = actual.point;
+          const difference = actual.value - target.value;
+          ctx.strokeStyle = '#94a3b8';
+          if (difference !== 0) {
+            ctx.setLineDash([3, 3]);
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(x, target.point.y);
+            ctx.stroke();
+            ctx.setLineDash([]);
+          }
+          ctx.textAlign = 'left';
+          ctx.fillStyle = difference < 0 ? target.color : '#12805c';
+          ctx.fillText(difference > 0 ? '+' + fmt(difference) : fmt(difference), x + 8, (y + target.point.y) / 2 + 4);
+        }
+        endpoints.forEach((endpoint, index) => {
+          if (!endpoint) return;
+          const { x, y } = endpoint.point;
+          ctx.fillStyle = endpoint.color;
+          ctx.textAlign = 'right';
+          const close = actual && target && Math.abs(actual.point.y - target.point.y) < 24;
+          const labelY = close && index === 1 ? Math.min(chart.height - 8, y + 15) : y - 9;
+          ctx.fillText(endpoint.label + ' ' + fmt(endpoint.value), x - 9, labelY);
+        });
+        ctx.restore();
+      }
+    };
     const title = byId('chartTrend')?.closest('.chart-card')?.querySelector('h3');
     if (title) title.textContent = 'Toplam yorum sayısının değişimi ve hedef';
     const legend = byId('chartTrend')?.closest('.chart-card')?.querySelector('.chart-legend');
@@ -332,7 +374,12 @@
         return button;
       }));
     }
-    chart('chartTrend', 'line', comparisonKeys.map(key => new Date(`${daily ? key : key + '-01'}T12:00:00Z`).toLocaleDateString('tr-TR', daily ? { day: 'numeric', month: 'short' } : { month: 'short', year: '2-digit' })), series, daily ? { layout: { padding: { top: 14, right: 8 } }, plugins: { legend: { display: false }, tooltip: { callbacks: { afterBody: items => items.length ? `O gün eklenen: ${dailyCounts[items[0].dataIndex]}` : '' } } } } : {}, daily ? [dailyLabels] : []);
+    chart('chartTrend', 'line', comparisonKeys.map(key => new Date(`${daily ? key : key + '-01'}T12:00:00Z`).toLocaleDateString('tr-TR', daily ? { day: 'numeric', month: 'short' } : { month: 'short', year: '2-digit' })), series, {
+      layout: { padding: { top: 20, right: 54 } },
+      ...(daily ? { plugins: { legend: { display: false }, tooltip: { callbacks: {
+        afterBody: items => items.length ? `O gün eklenen: ${dailyCounts[items[0].dataIndex]}` : ''
+      } } } } : {})
+    }, daily ? [dailyLabels, endpointLabels] : [endpointLabels]);
     chartNote('chartTrend', management().error || !management().loaded ? 'Hedef kayıtları doğrulanamadı.' : targets.some(v => v != null) ? (daily ? 'Son 30 gün · Noktaların üstündeki rakamlar o gün eklenen yorum adedini gösterir.' : 'Ay sonu yorum toplamı, kayıtlı aylık hedef ve doğrusal trend.') : 'Kayıtlı hedef yok. Performans ekranından hedef girin.');
     chart('chartRating', 'doughnut', ['5★', '4★', '3★', '2★', '1★'], [{ label: 'Yıldız dağılımı', data: a.ratingCounts, backgroundColor: ['#12805c', '#6bbf9b', '#fbbf24', '#fb923c', '#b42318'], borderWidth: 2 }]);
     emptyChart('chartRating', a.count > 0, 'Seçili dönemde yorum bulunmuyor.');
