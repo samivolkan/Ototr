@@ -44,3 +44,9 @@ test('progress is honest for missing targets, zero actual and overachievement', 
   assert.equal(progress(15, null), null);
   assert.equal(progress(250, 200), 125);
 });
+
+ test('cumulative achievement compares only months with recorded targets', () => {
+ const { cumulativeProgress } = require('../assets/google-review-alternative.js');
+ assert.deepEqual(cumulativeProgress([76,42,27],[null,50,205]), {achieved:[null,42,69],planned:[null,50,255]});
+ assert.deepEqual(cumulativeProgress([3,9,4],[0,null,2]), {achieved:[3,null,7],planned:[0,null,2]});
+ });

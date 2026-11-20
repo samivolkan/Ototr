@@ -41,7 +41,17 @@
     });
   }
   function progress(actual, target) { return target > 0 ? Math.round(actual / target * 100) : null; }
-  const pure = { BRANCH_IDS, monthsFor, monthKey, periodRows, scopedRows, targetSeries, progress };
+  function cumulativeProgress(counts, targets) {
+    let actual = 0, target = 0;
+    const achieved = [], planned = [];
+    targets.forEach((value, index) => {
+      if (value == null || !Number.isFinite(Number(value))) { achieved.push(null); planned.push(null); return; }
+      actual += Number(counts[index]) || 0; target += Number(value);
+      achieved.push(actual); planned.push(target);
+    });
+    return { achieved, planned };
+  }
+  const pure = { cumulativeProgress, BRANCH_IDS, monthsFor, monthKey, periodRows, scopedRows, targetSeries, progress };
   if (typeof module === 'object' && module.exports) module.exports = pure;
   if (!root?.document) return;
 
@@ -192,17 +202,17 @@
     const scoped = rows(), a = stats(scoped), keys = monthsFor(period);
     const counts = keys.map(key => scoped.filter(r => monthKey(r.createdAt) === key).length);
     const targets = targetSeries(keys, management().targets || [], branchId(), branch()?.target);
+    const cumulative = cumulativeProgress(counts, targets);
     const series = [
-      { label: 'Alınan yorumlar', data: counts, borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,.08)', fill: true, tension: .3, pointRadius: 3 },
-      { label: 'Yorum trendi', data: live().commentTrendSeries(counts), borderColor: '#7c3aed', borderDash: [4, 4], pointRadius: 0, fill: false },
-      { label: 'Kayıtlı aylık hedef', data: targets, borderColor: '#e11d48', borderDash: [7, 4], pointRadius: 5, pointHoverRadius: 7, spanGaps: false, fill: false }
+      { label: 'Ulaşılan yorum toplamı', data: cumulative.achieved, borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,.08)', fill: true, tension: 0, pointRadius: 5, spanGaps: false },
+      { label: 'Birikimli hedef', data: cumulative.planned, borderColor: '#e11d48', borderDash: [7, 4], pointRadius: 5, spanGaps: false, fill: false }
     ];
     const title = byId('chartTrend')?.closest('.chart-card')?.querySelector('h3');
-    if (title) title.textContent = 'Yorum hacmi, trend ve hedef';
+    if (title) title.textContent = 'Hedef ve ulaşılan yorum toplamı';
     const legend = byId('chartTrend')?.closest('.chart-card')?.querySelector('.chart-legend');
-    if (legend) legend.innerHTML = '<span><i style="background:#2563eb"></i>Yorum</span><span><i style="background:#7c3aed"></i>Trend</span><span><i style="background:#e11d48"></i>Hedef</span>';
+    if (legend) legend.innerHTML = '<span><i style="background:#2563eb"></i>Ulaşılan</span><span><i style="background:#e11d48"></i>Hedef</span>';
     chart('chartTrend', 'line', keys.map(key => new Date(`${key}-01T12:00:00Z`).toLocaleDateString('tr-TR', { month: 'short', year: '2-digit' })), series);
-    chartNote('chartTrend', !isLive() ? 'Demo hedef çizgisi örnek aylık hedeftir. Mor çizgi örnek yorumlardan hesaplanan eğilimdir.' : management().error || !management().loaded ? 'Hedef kayıtları henüz doğrulanamadı. Bağlantı durumu ekranından ERP oturumunu kontrol edin.' : targets.some(v => v != null) ? 'Hedef yalnız kayıtlı aylarda gösterilir. Kesikli mor çizgi alınan yorumlardan hesaplanan eğilimdir; tahmin değildir.' : 'Bu dönem için kayıtlı hedef yok. Performans ekranından bu ayın hedefini kaydedebilirsiniz.');
+    chartNote('chartTrend', management().error || !management().loaded ? 'Hedef kayıtları doğrulanamadı.' : targets.some(v => v != null) ? 'Seçili dönemin hedef kayıtlı ayları birikimli toplanır. Hedefi olmayan ayların yorumları bu karşılaştırmaya dahil edilmez.' : 'Kayıtlı hedef yok. Performans ekranından hedef girin.');
     chart('chartRating', 'doughnut', ['5★', '4★', '3★', '2★', '1★'], [{ label: 'Yıldız dağılımı', data: a.ratingCounts, backgroundColor: ['#12805c', '#6bbf9b', '#fbbf24', '#fb923c', '#b42318'], borderWidth: 2 }]);
     emptyChart('chartRating', a.count > 0, 'Seçili dönemde yorum bulunmuyor.');
     const monthly = stats(periodRows(allRows(), 'month')), target = currentTarget();
