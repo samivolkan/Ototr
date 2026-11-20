@@ -275,13 +275,23 @@
       const headline = ratio == null ? 'Toplam yorum hedefi' : ratio >= 100 ? 'Toplam yorum hedefine ulaşıldı' : 'Toplam yorum hedefinde ilerleme';
       byId('ovAlerts').innerHTML = `<div class="v2-insight"><strong>${headline}</strong><p>${`Mevcut toplam: ${fmt(total)} yorum · Hedef: ${target == null ? 'Girilmedi' : fmt(target)}`} ${target == null ? '' : `· ${pct(ratio)} gerçekleşme · Kalan ${fmt(Math.max(0, target - total))} yorum.`} ${a.count ? `Ortalama puan ${fmt(a.average)}, yanıt oranı ${pct(a.responseRate)}. ${a.timedAnswers ? `${sla()} saatlik SLA içinde yanıtlananların oranı ${pct(a.slaRate)}.` : 'Yanıt süresi için ölçülebilir kayıt bekleniyor.'}` : ''}</p></div>`;
     }
+    const responseGoal = 95;
+    const slaGoal = 90;
+    const ratingCount = a.ratingCounts.reduce((sum, count) => sum + count, 0);
     const metrics = [
-      ['Yorum hacmi', fmt(a.count), PERIODS[period]], ['Ort. puan', fmt(a.average), `${a.count} kayıttan hesaplandı`],
-      ['Yanıt oranı', pct(a.responseRate), `${a.answered} yanıtlı yorum`], ['SLA', pct(a.slaRate), `${sla()} sa · ${a.timedAnswers} tarihli yanıt`],
-      ['Yanıtsız', fmt(a.pending), 'Seçili dönem'], ['Hedef gerçekleşme', pct(ratio), target == null ? 'Hedef girilmedi' : `${fmt(total)} / ${fmt(target)} toplam yorum`]
+      ['Yorum hacmi', fmt(a.count), PERIODS[period]],
+      ['Ortalama puan', a.average == null ? '—' : `${a.average.toLocaleString('tr-TR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} ★`, `${fmt(ratingCount)} puanlı yorum`, a.average == null ? '' : 'ok'],
+      ['Yanıt oranı', a.responseRate == null ? '—' : `%${Math.round(a.responseRate)}`, `Hedef %${responseGoal} · ${fmt(a.answered)}/${fmt(a.count)}`,
+        a.responseRate == null ? '' : a.responseRate >= responseGoal ? 'ok' : 'warn', a.responseRate == null ? '' : a.responseRate >= responseGoal ? 'Hedefte' : 'Altında'],
+      [`SLA (${sla()} sa)`, a.slaRate == null ? '—' : `%${Math.round(a.slaRate)}`, `Hedef %${slaGoal} · ${fmt(a.timedAnswers)} ölçüm`,
+        a.slaRate == null ? '' : a.slaRate >= slaGoal ? 'ok' : 'bad', a.slaRate == null ? '' : a.slaRate >= slaGoal ? 'Hedefte' : 'Riskli'],
+      ['Yanıtsız', fmt(a.pending), 'Açık yorum', a.pending > 0 ? 'warn' : ''],
+      ['Hedef gerçekleşme', ratio == null ? '—' : `%${ratio}`, target == null ? 'Hedef girilmedi' : `${fmt(total)} / ${fmt(target)} toplam yorum`, ratio == null ? '' : ratio >= 100 ? 'ok' : 'warn']
     ];
-    byId('ovKpis').innerHTML = metrics.map(([label, value, note], i) => `<div class="kpi v2-metric-${i}"><div class="kl">${html(label)}</div><div class="kv">${html(value)}</div><div class="kd">${html(note)}</div><div class="v2-mini"><canvas id="v2Mini${i}" aria-hidden="true"></canvas></div></div>`).join('');
-    const needsAttention = a.pending > 0 || (a.slaRate != null && a.slaRate < 90);
+    byId('ovKpis').innerHTML = metrics.map(([label, value, note, tone = '', badge = '']) =>
+      `<div class="kpi v2-reference-kpi" data-tone="${tone}"><div class="kl">${html(label)}</div><div class="kv">${html(value)}</div><div class="kd"><span>${html(note)}</span>${badge ? `<span class="chip ${tone}">${html(badge)}</span>` : ''}</div></div>`
+    ).join('');
+    const needsAttention = a.pending > 0 || (a.slaRate != null && a.slaRate < slaGoal);
     byId('ovWatchlist').innerHTML = needsAttention
       ? `<div class="watch-row"><div class="info"><b>${html(branchName())}</b><small>SLA ${pct(a.slaRate)} · ${fmt(a.pending)} yanıtsız</small></div><button class="btn sm" onclick="switchView('reviews')">İncele →</button></div>`
       : '<div class="empty">Seçili şube ve dönemde inceleme gerektiren durum yok.</div>';
@@ -453,12 +463,7 @@
     const responseTitle = byId('chartResponse')?.closest('.chart-card')?.querySelector('h3'); if (responseTitle) responseTitle.textContent = `Yanıt süresi · SLA ${sla()} sa`;
     const within = a.slaRate == null ? null : Math.round(a.slaRate*a.timedAnswers/100);
     summaryCard('chartResponse', within == null ? '<p>Yanıt süresi ölçülebilen kayıt bulunmuyor.</p>' : `<div class="v2-sla-meter" role="img" aria-label="${within} yanıt SLA içinde, ${a.timedAnswers-within} yanıt SLA dışında"><span style="flex:${within};background:#0f9d75">${within} içinde</span><span style="flex:${a.timedAnswers-within};background:#d92d20">${a.timedAnswers-within} dışında</span></div><div class="v2-summary-line"><span>${a.timedAnswers} tarihli yanıt üzerinden</span><strong>${pct(a.slaRate)} SLA içinde</strong></div><p>Süre: yorum tarihi → Google yanıt tarihi. Tarihi eksik kayıtlar dahil edilmez.</p><button class="btn sm" onclick="switchView('reviews')">Yorumları incele →</button>`);
-    const bins = keys.map(key => stats(scoped.filter(r => monthKey(r.createdAt) === key)));
-    ['count', 'average', 'responseRate', 'slaRate', 'pending', 'overdue'].forEach((field, i) => {
-      chart(`v2Mini${i}`, 'line', keys, [{ label: metricsLabel(i), data: bins.map(s => s[field]), borderColor: ['#2563eb', '#b45309', '#12805c', '#12805c', '#b45309', '#b42318'][i], pointRadius: 0, borderWidth: 1.5, tension: .3 }], { scales: { x: { display: false }, y: { display: false } }, plugins: { legend: { display: false }, tooltip: { enabled: false } }, events: [] });
-    });
   };
-  function metricsLabel(i) { return ['Yorum hacmi', 'Puan', 'Yanıt oranı', 'SLA', 'Yanıtsız', 'SLA aşımı'][i]; }
 
   root.renderPerformance = function () {
     const a = stats(rows()), total = currentReviewTotal(), target = currentTarget();
