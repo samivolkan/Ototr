@@ -96,6 +96,9 @@
   const stats = list => live().aggregateReviews(list, { slaHours: sla() });
   const fmt = value => value == null || !Number.isFinite(value) ? '—' : value.toLocaleString('tr-TR', { maximumFractionDigits: 1 });
   const pct = value => value == null ? '—' : `${Math.round(value)}%`;
+  const recordedReviews = (now = Date.now()) => allRows().filter(row =>
+    monthKey(row.createdAt) && new Date(row.createdAt).getTime() <= now);
+  const currentReviewTotal = () => recordedReviews().length;
   const currentTarget = () => targetSeries([monthKey(Date.now())], management().targets || [], branchId(), branch()?.target)[0];
   const demoKey = 'ototr.review-page2.demo-targets.v1';
   try {
@@ -248,11 +251,11 @@
     const a = stats(rows());
     const connection = management().error ? 'Canlı yönetim bağlantısı alınamadı; Bağlantı durumu ekranını kontrol edin.' : !management().loaded ? 'Canlı kayıtlar için ERP oturumu bekleniyor.' : `${html(branchName())} · Google kayıtları ve ERP onay akışı. Kurulum ve test şubeleri hesaplamaya dahil edilmez.`;
     byId('ovAlerts').innerHTML = `<div class="alert ${isLive() && management().loaded && !management().error ? 'info' : 'warn'}">${isLive() ? connection : `${html(branchName())} · Demo çalışma alanı. Yapılan denemeler Google’a gönderilmez.`}</div>`;
-    const monthly = stats(periodRows(allRows(), 'month')), target = currentTarget();
-    const ratio = progress(monthly.count, target);
+    const total = currentReviewTotal(), target = currentTarget();
+    const ratio = progress(total, target);
     if (isLive() && management().loaded && !management().error) {
-      const headline = !a.count ? 'Seçili dönemde yorum bulunmuyor' : ratio == null ? 'Hedefinizi tanımlayın' : ratio >= 100 ? 'Bu ayın yorum hedefine ulaşıldı' : 'Bu ayın yorum hedefinde ilerleme sürüyor';
-      byId('ovAlerts').innerHTML = `<div class="v2-insight"><strong>${headline}</strong><p>${target == null ? 'Performans ekranından şube hedefini kaydedebilirsiniz.' : `${monthly.count} / ${target} yorum · ${pct(ratio)} gerçekleşme.`} ${a.count ? `Ortalama puan ${fmt(a.average)}, yanıt oranı ${pct(a.responseRate)}. ${a.timedAnswers ? `${sla()} saatlik SLA içinde yanıtlananların oranı ${pct(a.slaRate)}.` : 'Yanıt süresi için ölçülebilir kayıt bekleniyor.'}` : ''}</p></div>`;
+      const headline = ratio == null ? 'Toplam yorum hedefi' : ratio >= 100 ? 'Toplam yorum hedefine ulaşıldı' : 'Toplam yorum hedefinde ilerleme';
+      byId('ovAlerts').innerHTML = `<div class="v2-insight"><strong>${headline}</strong><p>${`Mevcut toplam: ${fmt(total)} yorum · Hedef: ${target == null ? 'Girilmedi' : fmt(target)}`} ${target == null ? '' : `· ${pct(ratio)} gerçekleşme · Kalan ${fmt(Math.max(0, target - total))} yorum.`} ${a.count ? `Ortalama puan ${fmt(a.average)}, yanıt oranı ${pct(a.responseRate)}. ${a.timedAnswers ? `${sla()} saatlik SLA içinde yanıtlananların oranı ${pct(a.slaRate)}.` : 'Yanıt süresi için ölçülebilir kayıt bekleniyor.'}` : ''}</p></div>`;
     }
     const metrics = [
       ['Yorum hacmi', fmt(a.count), PERIODS[period]], ['Ort. puan', fmt(a.average), `${a.count} kayıttan hesaplandı`],
@@ -271,7 +274,7 @@
     const now = Date.now();
     const points = daily ? recentDays(now) : keys;
     const targets = targetSeries(points.map(key => key.slice(0, 7)), management().targets || [], branchId(), branch()?.target);
-    const reviewDates = allRows().filter(row => monthKey(row.createdAt) && new Date(row.createdAt).getTime() <= now)
+    const reviewDates = recordedReviews(now)
       .map(row => daily ? dayKey(row.createdAt) : monthKey(row.createdAt));
     const firstPoint = daily ? 0 : Math.max(0, points.findIndex((key, index) =>
       targets[index] != null || reviewDates.some(date => date <= key)));
@@ -333,8 +336,8 @@
     chartNote('chartTrend', management().error || !management().loaded ? 'Hedef kayıtları doğrulanamadı.' : targets.some(v => v != null) ? (daily ? 'Son 30 gün · Noktaların üstündeki rakamlar o gün eklenen yorum adedini gösterir.' : 'Ay sonu yorum toplamı, kayıtlı aylık hedef ve doğrusal trend.') : 'Kayıtlı hedef yok. Performans ekranından hedef girin.');
     chart('chartRating', 'doughnut', ['5★', '4★', '3★', '2★', '1★'], [{ label: 'Yıldız dağılımı', data: a.ratingCounts, backgroundColor: ['#12805c', '#6bbf9b', '#fbbf24', '#fb923c', '#b42318'], borderWidth: 2 }]);
     emptyChart('chartRating', a.count > 0, 'Seçili dönemde yorum bulunmuyor.');
-    const monthly = stats(periodRows(allRows(), 'month')), target = currentTarget();
-    const regionTitle = byId('chartRegion')?.closest('.chart-card')?.querySelector('h3'); if (regionTitle) regionTitle.textContent = 'Bu ay · hedef ve gerçekleşen';
+    const total = currentReviewTotal(), target = currentTarget();
+    const regionTitle = byId('chartRegion')?.closest('.chart-card')?.querySelector('h3'); if (regionTitle) regionTitle.textContent = 'Toplam yorum · hedef ve gerçekleşen';
     function summaryCard(canvasId, content) {
       const canvas = byId(canvasId), host = canvas?.closest('.chart-card'); if (!host) return;
       root.destroyChart(canvasId); canvas.parentElement.hidden = true;
@@ -343,8 +346,8 @@
       block.innerHTML = content;
       host.querySelector('.v2-chart-note')?.remove();
     }
-    const ratio = progress(monthly.count, target);
-    summaryCard('chartRegion', `<div class="v2-summary-line"><strong>${html(branchName())}</strong><span>${monthly.count} / ${target ?? '—'}</span></div><progress class="v2-goal-meter" aria-label="Bu ay hedef gerçekleşmesi" max="100" value="${Math.min(100,ratio || 0)}"></progress><div class="v2-summary-line"><span>${ratio == null ? 'Hedef girilmedi' : `${pct(ratio)} gerçekleşti`}</span><span>${target == null ? '—' : `Kalan ${Math.max(0,target-monthly.count)} yorum`}</span></div><p>Şube hedefi · ${html(branch()?.region || '—')} / ${html(branchName())}</p><button class="btn sm" onclick="switchView('performance')">Hedefi düzenle →</button>`);
+    const ratio = progress(total, target);
+    summaryCard('chartRegion', `<div class="v2-summary-line"><strong>${html(branchName())}</strong><span>${total} / ${target ?? '—'}</span></div><progress class="v2-goal-meter" aria-label="Toplam yorum hedefi gerçekleşmesi" max="100" value="${Math.min(100,ratio || 0)}"></progress><div class="v2-summary-line"><span>${ratio == null ? 'Hedef girilmedi' : `${pct(ratio)} gerçekleşti`}</span><span>${target == null ? '—' : `Kalan ${Math.max(0,target-total)} yorum`}</span></div><p>Şube hedefi · ${html(branch()?.region || '—')} / ${html(branchName())}</p><button class="btn sm" onclick="switchView('performance')">Hedefi düzenle →</button>`);
     const responseTitle = byId('chartResponse')?.closest('.chart-card')?.querySelector('h3'); if (responseTitle) responseTitle.textContent = `Yanıt süresi · SLA ${sla()} sa`;
     const within = a.slaRate == null ? null : Math.round(a.slaRate*a.timedAnswers/100);
     summaryCard('chartResponse', within == null ? '<p>Yanıt süresi ölçülebilen kayıt bulunmuyor.</p>' : `<div class="v2-sla-meter" role="img" aria-label="${within} yanıt SLA içinde, ${a.timedAnswers-within} yanıt SLA dışında"><span style="flex:${within};background:#0f9d75">${within} içinde</span><span style="flex:${a.timedAnswers-within};background:#d92d20">${a.timedAnswers-within} dışında</span></div><div class="v2-summary-line"><span>${a.timedAnswers} tarihli yanıt üzerinden</span><strong>${pct(a.slaRate)} SLA içinde</strong></div><p>Süre: yorum tarihi → Google yanıt tarihi. Tarihi eksik kayıtlar dahil edilmez.</p><button class="btn sm" onclick="switchView('reviews')">Yorumları incele →</button>`);
@@ -356,10 +359,10 @@
   function metricsLabel(i) { return ['Yorum hacmi', 'Puan', 'Yanıt oranı', 'SLA', 'Yanıtsız', 'SLA aşımı'][i]; }
 
   root.renderPerformance = function () {
-    const a = stats(rows()), monthly = stats(periodRows(allRows(), 'month')), target = currentTarget();
-    const ratio = progress(monthly.count, target), canSave = !isLive() || (management().loaded && !management().loading && !management().error && !management().targetError);
+    const a = stats(rows()), total = currentReviewTotal(), target = currentTarget();
+    const ratio = progress(total, target), canSave = !isLive() || (management().loaded && !management().loading && !management().error && !management().targetError);
     const head = byId('perfTable')?.closest('.card2')?.querySelector('.head'); if (head) head.classList.add('v2-performance-head');
-    byId('perfTable').innerHTML = `<thead><tr><th>Şube</th><th class="n">Bu ayın hedefi</th><th class="n">Bu ay alınan</th><th>Hedef ilerlemesi</th><th class="n">Dönem yorumları</th><th class="n">Puan</th><th class="n">Yanıt</th><th>Ortam</th></tr></thead><tbody><tr><td>${html(branchName())}</td><td><div class="v2-target-editor"><input id="v2Target" aria-label="${html(branchName())} aylık hedef" type="number" min="1" max="10000" step="1" value="${target ?? ''}" placeholder="Hedef" ${canSave ? '' : 'disabled'}><button id="v2SaveTarget" class="btn sm p" ${canSave ? '' : 'disabled'}>Kaydet</button></div></td><td class="n">${monthly.count}</td><td>${ratio == null ? 'Hedef girilmedi' : `<div class="v2-progress"><progress aria-label="Hedef ilerlemesi" max="100" value="${Math.min(100, ratio)}"></progress><b>${ratio}%</b></div>`}</td><td class="n">${a.count}</td><td class="n">${fmt(a.average)}</td><td class="n">${pct(a.responseRate)}</td><td><span class="chip ${isLive() ? 'ok' : 'warn'}">${isLive() ? 'Canlı' : 'Demo'}</span></td></tr></tbody>`;
+    byId('perfTable').innerHTML = `<thead><tr><th>Şube</th><th class="n">Varılacak toplam</th><th class="n">Mevcut toplam</th><th>Hedef ilerlemesi</th><th class="n">Dönem yorumları</th><th class="n">Puan</th><th class="n">Yanıt</th><th>Ortam</th></tr></thead><tbody><tr><td>${html(branchName())}</td><td><div class="v2-target-editor"><input id="v2Target" aria-label="${html(branchName())} toplam yorum hedefi" type="number" min="1" max="10000" step="1" value="${target ?? ''}" placeholder="Hedef" ${canSave ? '' : 'disabled'}><button id="v2SaveTarget" class="btn sm p" ${canSave ? '' : 'disabled'}>Kaydet</button></div></td><td class="n">${total}</td><td>${ratio == null ? 'Hedef girilmedi' : `<div class="v2-progress"><progress aria-label="Hedef ilerlemesi" max="100" value="${Math.min(100, ratio)}"></progress><b>${ratio}%</b></div>`}</td><td class="n">${a.count}</td><td class="n">${fmt(a.average)}</td><td class="n">${pct(a.responseRate)}</td><td><span class="chip ${isLive() ? 'ok' : 'warn'}">${isLive() ? 'Canlı' : 'Demo'}</span></td></tr></tbody>`;
     byId('v2SaveTarget').onclick = saveTarget;
     if (ratio == null && isLive() && (management().error || !management().loaded)) {
       byId('perfTable').querySelector('tbody tr td:nth-child(4)').textContent = 'Hedef doğrulanamadı';
@@ -368,8 +371,8 @@
   };
   root.renderTargetBreakdown = function () {
     const host = byId('targetBreakdown'); if (!host) return;
-    const target = currentTarget(), actual = stats(periodRows(allRows(), 'month')).count, ratio = progress(actual, target);
-    host.innerHTML = `<div class="v2-period-note">Bu ayın hedef kırılımı · ${isLive() ? 'Seçili şubenin canlı verisi' : 'Yalnız seçili demo şube'} · ${monthKey(Date.now())}</div><div class="v2-breakdown">${[['Bölge', branch()?.region || '—'], ['İl', branch()?.city || '—'], ['Şube', branchName()]].map(([label, value]) => `<div class="card"><h4>${label}</h4><b>${html(value)}</b><span class="v2-big">${ratio == null ? '—' : `${ratio}%`}</span><progress aria-label="${label} hedef ilerlemesi" max="100" value="${Math.min(100, ratio || 0)}"></progress><p>${actual} yorum / ${target ?? '—'} hedef · ${isLive() ? 'Canlı' : 'Demo'}</p></div>`).join('')}</div>`;
+    const target = currentTarget(), actual = currentReviewTotal(), ratio = progress(actual, target);
+    host.innerHTML = `<div class="v2-period-note">Toplam yorum hedefi · ${isLive() ? 'Seçili şubenin canlı verisi' : 'Yalnız seçili demo şube'} · ${monthKey(Date.now())}</div><div class="v2-breakdown">${[['Bölge', branch()?.region || '—'], ['İl', branch()?.city || '—'], ['Şube', branchName()]].map(([label, value]) => `<div class="card"><h4>${label}</h4><b>${html(value)}</b><span class="v2-big">${ratio == null ? '—' : `${ratio}%`}</span><progress aria-label="${label} hedef ilerlemesi" max="100" value="${Math.min(100, ratio || 0)}"></progress><p>${actual} yorum / ${target ?? '—'} hedef · ${isLive() ? 'Canlı' : 'Demo'}</p></div>`).join('')}</div>`;
   };
   async function saveTarget() {
     const value = Number(byId('v2Target')?.value), button = byId('v2SaveTarget');
@@ -396,10 +399,10 @@
     }
   }
   root.exportPerformance = function () {
-    const a = stats(rows()), monthly = stats(periodRows(allRows(), 'month'));
+    const a = stats(rows());
     root.downloadCSV('ototr-yorum-sayfasi-2-performans.csv', [
-      ['Şube', 'Ortam', 'Dönem', 'Dönem yorumları', 'Bu ay alınan', 'Bu ay hedef', 'Puan', 'Yanıt %', 'SLA %'],
-      [branchName(), isLive() ? 'Canlı' : 'Demo', PERIODS[period], a.count, monthly.count, currentTarget() ?? '', a.average ?? '', a.responseRate ?? '', a.slaRate ?? '']
+      ['Şube', 'Ortam', 'Dönem', 'Dönem yorumları', 'Mevcut toplam', 'Varılacak toplam', 'Puan', 'Yanıt %', 'SLA %'],
+      [branchName(), isLive() ? 'Canlı' : 'Demo', PERIODS[period], a.count, currentReviewTotal(), currentTarget() ?? '', a.average ?? '', a.responseRate ?? '', a.slaRate ?? '']
     ]);
   };
   root.OTOTRReviewAlternative = { ...pure, getPeriod: () => period, scopedRows: allRows, filteredRows: rows };
