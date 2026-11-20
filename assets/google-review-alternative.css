@@ -193,3 +193,5 @@ html[data-review-variant="2"] #ovKpis .v2-reference-kpi .kv{font-size:clamp(22px
 .v2-hierarchy{margin:0;gap:8px}
 .v2-chart-scope:has(.v2-hierarchy){margin-bottom:12px}
 .v2-hierarchy select{max-width:185px}
+
+.v2-rating-goal{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:6px;color:var(--mute)}

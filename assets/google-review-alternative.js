@@ -137,6 +137,21 @@
     }));
   }
   const scopedTargetCache = new Map();
+  const demoRatingTargets = new Map();
+  function currentRatingTarget() {
+    const month = monthKey(Date.now());
+    const values = matchingBranches().map(b => {
+      if (analyticsDemo()) {
+        if (demoRatingTargets.has(b.id)) return demoRatingTargets.get(b.id);
+        const saved = localStorage.getItem('ototr.regional-demo.rating.' + b.id);
+        return saved === 'null' ? null : saved == null ? 4.7 : Number(saved);
+      }
+      const targets = b.id === branchId() ? management().targets || [] : scopedTargetCache.get(b.id) || [];
+      return targets.find(row => row.branch_id === b.id && String(row.month).slice(0,7) === month)?.rating_target;
+    });
+    return values.length && values.every(value => value != null && Number(value) >= 1 && Number(value) <= 5)
+      ? Math.round(values.reduce((sum,value)=>sum+Number(value),0)/values.length*100)/100 : null;
+  }
   function analyticsTargets(months) {
     if (!analyticsActive()) return targetSeries(months,management().targets || [],branchId(),branch()?.target);
     const branches = matchingBranches();
@@ -401,10 +416,11 @@
       '<div class="alert warn">Bu kapsamda henüz senkronize edilmemiş canlı şubeler var. Yorum göstergeleri alınmış kayıtları kapsar.</div>');
     const responseGoal = 95;
     const slaGoal = 90;
+    const ratingTarget = currentRatingTarget();
     const ratingCount = a.ratingCounts.reduce((sum, count) => sum + count, 0);
     const metrics = [
       ['Yorum hacmi', fmt(a.count), PERIODS[period]],
-      ['Ortalama puan', a.average == null ? '—' : `${a.average.toLocaleString('tr-TR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} ★`, `${fmt(ratingCount)} puanlı yorum`, a.average == null ? '' : 'ok'],
+      ['Ortalama puan', a.average == null ? '—' : `${a.average.toLocaleString('tr-TR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} ★`, ratingTarget == null ? `${fmt(ratingCount)} puanlı yorum` : `Hedef ${fmt(ratingTarget)} ★`, a.average == null ? '' : 'ok'],
       ['Yanıt oranı', a.responseRate == null ? '—' : `%${Math.round(a.responseRate)}`, `Hedef %${responseGoal} · ${fmt(a.answered)}/${fmt(a.count)}`,
         a.responseRate == null ? '' : a.responseRate >= responseGoal ? 'ok' : 'warn', a.responseRate == null ? '' : a.responseRate >= responseGoal ? 'Hedefte' : 'Altında'],
       [matchingBranches().length > 1 ? 'SLA (şube bazlı)' : `SLA (${sla()} sa)`, a.slaRate == null ? '—' : `%${Math.round(a.slaRate)}`, `Hedef %${slaGoal} · ${fmt(a.timedAnswers)} ölçüm`,
@@ -594,6 +610,14 @@
     const ratio = missingScopeData() ? null : progress(total, target), canSave = Boolean(analyticsScope.branch) && (!analyticsLive() || (analyticsScope.branch === branchId() && management().loaded && !management().loading && !management().error && !management().targetError));
     const head = byId('perfTable')?.closest('.card2')?.querySelector('.head'); if (head) head.classList.add('v2-performance-head');
     byId('perfTable').innerHTML = `<thead><tr><th>Şube</th><th class="n">Varılacak toplam</th><th class="n">Mevcut toplam</th><th>Hedef ilerlemesi</th><th class="n">Dönem yorumları</th><th class="n">Puan</th><th class="n">Yanıt</th><th>Ortam</th></tr></thead><tbody><tr><td>${html(analyticsName())}</td><td><div class="v2-target-editor"><input id="v2Target" aria-label="${html(analyticsName())} toplam yorum hedefi" type="number" min="1" max="10000" step="1" value="${target ?? ''}" placeholder="Şube seçin" ${canSave ? '' : 'disabled'}><button id="v2SaveTarget" class="btn sm p" ${canSave ? '' : 'disabled'}>Kaydet</button></div></td><td class="n">${total}</td><td>${ratio == null ? (missingScopeData() ? 'Şube verisi eksik' : 'Hedef girilmedi') : `<div class="v2-progress"><progress aria-label="Hedef ilerlemesi" max="100" value="${Math.min(100, ratio)}"></progress><b>${ratio}%</b></div>`}</td><td class="n">${a.count}</td><td class="n">${fmt(a.average)}</td><td class="n">${pct(a.responseRate)}</td><td><span class="chip ${analyticsLive() ? 'ok' : 'warn'}">${analyticsLive() ? 'Canlı' : 'Demo'}</span></td></tr></tbody>`;
+    const ratingTarget = currentRatingTarget();
+    const ratingCell = byId('perfTable').querySelector('tbody tr td:nth-child(2)');
+    if (canSave) {
+      ratingCell.insertAdjacentHTML('beforeend', `<label class="v2-rating-goal">Yıldız hedefi <input id="v2RatingTarget" type="number" min="1" max="5" step="0.1" value="${ratingTarget ?? ''}" placeholder="4,7"></label>`);
+    } else {
+      ratingCell.querySelector('.v2-target-editor').hidden = true;
+      ratingCell.insertAdjacentHTML('beforeend', `<span>${target == null ? '—' : fmt(target)}</span><div class="v2-rating-goal">${ratingTarget == null ? 'Yıldız hedefi eksik' : `Yıldız hedefi ${fmt(ratingTarget)} ★${matchingBranches().length > 1 ? ' · şube hedeflerinin ortalaması' : ''}`}</div>`);
+    }
     byId('v2SaveTarget').onclick = saveTarget;
     if (ratio == null && analyticsLive() && (management().error || !management().loaded)) {
       byId('perfTable').querySelector('tbody tr td:nth-child(4)').textContent = 'Hedef doğrulanamadı';
@@ -608,6 +632,9 @@
   async function saveTarget() {
     const value = Number(byId('v2Target')?.value), button = byId('v2SaveTarget');
     if (!Number.isInteger(value) || value < 1 || value > 10000) return root.toast('Hedef 1–10000 arasında tam sayı olmalı.', 'warn');
+    const ratingField = byId('v2RatingTarget');
+    if (ratingField && !ratingField.reportValidity()) return;
+    const ratingTarget = ratingField?.value ? Number(ratingField.value) : null;
     button.disabled = true;
     if (branchSelect) branchSelect.disabled = true;
     periodSelect.disabled = true;
@@ -615,10 +642,12 @@
       if (!analyticsScope.branch) throw new Error('Hedef kaydetmek için şube seçin.');
       if (analyticsLive()) {
         if (analyticsScope.branch !== branchId()) throw new Error('Şube verisi henüz yüklenmedi.');
-        await root.OTOTRReviewManagement.saveTarget(value);
-        if (currentTarget() !== value) throw new Error('Hedef kaydı doğrulanamadı; bağlantıyı yenileyin.');
+        await root.OTOTRReviewManagement.saveTarget(value, ratingTarget);
+        if (currentTarget() !== value || currentRatingTarget() !== ratingTarget) throw new Error('Hedef kaydı doğrulanamadı; bağlantıyı yenileyin.');
       } else {
         demoTargets.set(analyticsScope.branch,value);
+        demoRatingTargets.set(analyticsScope.branch,ratingTarget);
+        localStorage.setItem('ototr.regional-demo.rating.'+analyticsScope.branch,String(ratingTarget));
         localStorage.setItem('ototr.regional-demo.target.'+analyticsScope.branch,String(value));
       }
       root.renderPerformance(); root.toast(`${analyticsName()} ${analyticsLive() ? 'ERP' : 'demo'} hedefi kaydedildi.`, 'ok');
@@ -632,8 +661,8 @@
   root.exportPerformance = function () {
     const a = stats(rows());
     root.downloadCSV('ototr-yorum-sayfasi-2-performans.csv', [
-      ['Şube', 'Ortam', 'Dönem', 'Dönem yorumları', 'Mevcut toplam', 'Varılacak toplam', 'Puan', 'Yanıt %', 'SLA %'],
-      [analyticsName(), analyticsLive() ? 'Canlı' : 'Demo', PERIODS[period], a.count, currentReviewTotal(), currentTarget() ?? '', a.average ?? '', a.responseRate ?? '', a.slaRate ?? '']
+      ['Şube', 'Ortam', 'Dönem', 'Dönem yorumları', 'Mevcut toplam', 'Varılacak toplam', 'Yıldız hedefi', 'Puan', 'Yanıt %', 'SLA %'],
+      [analyticsName(), analyticsLive() ? 'Canlı' : 'Demo', PERIODS[period], a.count, currentReviewTotal(), currentTarget() ?? '', currentRatingTarget() ?? '', a.average ?? '', a.responseRate ?? '', a.slaRate ?? '']
     ]);
   };
   function openRegionalDemo(id) {

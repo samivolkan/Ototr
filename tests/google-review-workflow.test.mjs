@@ -1018,6 +1018,18 @@ test('HQ targets save, reload and reject stale concurrent changes without Google
  assert.equal((await f.request({...input,target:60,expected_version:1})).status,409);
  assert.equal(f.calls.length,0);
 });
+test('star target persists alongside the count and survives a count-only update', async () => {
+ const f=workflowFixture();
+ const input={action:'target_save',branch_id:'branch-google-nilufer',month:'2026-10-01',target:205,expected_version:0};
+ const saved=await f.request({...input,rating_target:4.7});
+ assert.equal(saved.status,200);
+ assert.equal(saved.data.item.rating_target,4.7);
+ assert.equal((await f.request({...input,expected_version:1,target:220})).status,200);
+ const listed=await f.request({action:'targets_list'});
+ assert.equal(listed.data.items[0].rating_target,4.7);
+ assert.equal((await f.request({...input,expected_version:2,rating_target:4.77})).status,400);
+ assert.equal((await f.request({...input,expected_version:2,rating_target:5.1})).status,400);
+});
 test('targets reject unauthorized access, inactive branch and invalid input',async()=>{
  const input={action:'target_save',branch_id:'branch-google-nilufer',month:'2026-10-01',target:40,expected_version:0};
  for(const override of [{branch_id:'branch-google-inegol'},{month:'2026-13-01'},{month:'2026-10-02'},{target:0},{target:1.5},{target:10001},{expected_version:-1}]){

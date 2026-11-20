@@ -173,7 +173,7 @@
       (setupError?'<p role="alert" class="workspace-error">'+escape(setupError)+'</p>':'')+
       '<div class="workspace-actions">'+(liveBranch?'<button class="btn" data-branch-action="reviews">Yorumları izle</button><button class="btn" data-branch-action="performance">Hedef ve performans</button>':'<button class="btn" data-branch-action="edit" '+(busy?'disabled':'')+'>Kurulumu düzenle</button><button class="btn p" data-branch-action="activate" '+(busy||b.onboarding?.test||!b.account_id||!b.store_code||!b.location_id?'disabled':'')+'>Google’da doğrula ve canlıya al</button>')+
       '<button class="btn" data-branch-action="check" '+(busy?'disabled':'')+'>Kurulumu kontrol et</button></div><p class="v2-chart-note">AI ve bağlantılar mevcut ERP ayarlarından kullanılır. Yeni şubede müşteri mesajı gönderimi başlangıçta kapalıdır.</p></div>'+
-      (!liveBranch&&c?'<div class="card"><h3>Şubenin çalışma hedefleri</h3><p class="v2-chart-note">Bu şubeye özel sunucu kaydı · '+escape(c.target_month?.slice(0,7)||'')+'</p><div class="workspace-form-grid"><label>Toplam yorum hedefi<input id="setupTarget" type="number" min="1" max="10000" step="1" value="'+escape(c.target?.target||b.target||30)+'"><button class="btn" data-branch-action="save-target" '+(busy?'disabled':'')+'>Hedefi kaydet</button></label><label>Yanıt SLA (saat)<input id="setupSla" type="number" min="1" max="168" step="1" value="'+escape(b.sla_hours||24)+'"><button class="btn" data-branch-action="save-sla" '+(busy?'disabled':'')+'>SLA kaydet</button></label></div><p class="v2-chart-note">Kaydettiğiniz değerler yalnız bu şubeye uygulanır. Canlı Bursa hedefi ve SLA’sı değişmez.</p></div>':'')+
+      (!liveBranch&&c?'<div class="card"><h3>Şubenin çalışma hedefleri</h3><p class="v2-chart-note">Bu şubeye özel sunucu kaydı · '+escape(c.target_month?.slice(0,7)||'')+'</p><div class="workspace-form-grid"><label>Toplam yorum hedefi<input id="setupTarget" type="number" min="1" max="10000" step="1" value="'+escape(c.target?.target||b.target||30)+'"><span>Yıldız hedefi</span><input id="setupRatingTarget" type="number" min="1" max="5" step="0.1" value="'+escape(c.target?.rating_target??'')+'"><button class="btn" data-branch-action="save-target" '+(busy?'disabled':'')+'>Hedefi kaydet</button></label><label>Yanıt SLA (saat)<input id="setupSla" type="number" min="1" max="168" step="1" value="'+escape(b.sla_hours||24)+'"><button class="btn" data-branch-action="save-sla" '+(busy?'disabled':'')+'>SLA kaydet</button></label></div><p class="v2-chart-note">Kaydettiğiniz değerler yalnız bu şubeye uygulanır. Canlı Bursa hedefi ve SLA’sı değişmez.</p></div>':'')+
       (liveBranch?collectionTools():'')+(b.onboarding?.test?'<div id="workspaceSandbox"></div>':'')+mapPanel(b)+'</div></div>';
     const demos = root.OTOTRReviewAlternative?.regionalDemos?.() || [];
     if (demos.length) section.insertAdjacentHTML('beforeend',
@@ -262,10 +262,11 @@
     if(action==='edit')return openForm(b);
     if(action==='save-target'||action==='save-sla'){
       const c=checks.get(b.id), targetAction=action==='save-target', input=byId(targetAction?'setupTarget':'setupSla');
-      if(!input.reportValidity())return;
+      const ratingInput=targetAction?byId('setupRatingTarget'):null;
+      if(!input.reportValidity() || (ratingInput && !ratingInput.reportValidity()))return;
       const value=Number(input.value);busy=true;button.disabled=true;setupError='';
       try{
-        if(targetAction){if(!c?.target_month)throw new Error('Önce kurulum kontrolünü yenileyin.');await api().setupRequest('target_save',b.id,{month:c.target_month,target:value,expected_version:c.target?.version||0});}
+        if(targetAction){if(!c?.target_month)throw new Error('Önce kurulum kontrolünü yenileyin.');await api().setupRequest('target_save',b.id,{month:c.target_month,target:value,rating_target:ratingInput?.value?Number(ratingInput.value):null,expected_version:c.target?.version||0});}
         else await api().setupRequest('management_update',b.id,{entity:'policy',default_sla_hours:value,expected_updated_at:b.updated_at});
         root.toast(targetAction?'Şube hedefi sunucuya kaydedildi.':'Şube SLA ayarı sunucuya kaydedildi.','ok');
         busy=false;return loadBranches();

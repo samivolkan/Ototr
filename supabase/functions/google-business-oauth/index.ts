@@ -950,7 +950,7 @@ Deno.serve(async (req) => {
       const settings = await db.from('google_review_management_resources').select('data').eq('connection_id',connectionId).eq('branch_id',branchId).eq('kind','branch_settings').eq('key','default').eq('archived',false).maybeSingle(); databaseFailure(settings.error);
       const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Istanbul',year:'numeric',month:'2-digit'}).formatToParts(new Date());
       const targetMonth=`${parts.find(p=>p.type==='year')!.value}-${parts.find(p=>p.type==='month')!.value}-01`;
-      const target = await db.from('google_review_targets').select('target,version,month').eq('connection_id',connectionId).eq('branch_id',branchId).eq('month',targetMonth).limit(1); databaseFailure(target.error);
+      const target = await db.from('google_review_targets').select('target,rating_target,version,month').eq('connection_id',connectionId).eq('branch_id',branchId).eq('month',targetMonth).limit(1); databaseFailure(target.error);
       const policy = await db.from('google_review_collection_policies').select('enabled,updated_at').eq('connection_id',connectionId).eq('branch_id',branchId).maybeSingle(); databaseFailure(policy.error);
       const ai = await db.from('google_review_management_resources').select('data').eq('connection_id',connectionId).eq('branch_id',branchId).eq('kind','ai_config').eq('key','default').eq('archived',false).maybeSingle(); databaseFailure(ai.error);
       const checklist = { identity:true, google_account:branchId===managementBranchId || Boolean(row?.account_id), store_code:branchId===managementBranchId || Boolean(row?.store_code), location_id:branchId===managementBranchId || Boolean(row?.location_id), google_verified:branchId===managementBranchId || Boolean(row?.google_verified_at), target:Boolean(target.data?.length), sla:branchId===managementBranchId || Boolean(row?.sla_hours || settings.data?.sla_hours), ai:Boolean(ai.data || Deno.env.get('OPENAI_API_KEY')), collection:true, permissions:access.is_owner, active:branchId===managementBranchId || row?.active!==false, live:branchId===managementBranchId || row?.lifecycle==='live' };
@@ -1022,16 +1022,21 @@ Deno.serve(async (req) => {
       databaseFailure(result.error); return json({ item: result.data });
     }
     if (body.action === 'targets_list') {
-      const { data, error } = await db.from('google_review_targets').select('branch_id,month,target,version,updated_at').eq('connection_id', connectionId).eq('branch_id',branchIdOf(body)).order('month', { ascending: false }).limit(1000);
+      const { data, error } = await db.from('google_review_targets').select('branch_id,month,target,rating_target,version,updated_at').eq('connection_id', connectionId).eq('branch_id',branchIdOf(body)).order('month', { ascending: false }).limit(1000);
       databaseFailure(error); return json({ items: data || [] });
     }
     if (body.action === 'target_save') {
       const { branch_id, month, target, expected_version } = body;
       if (branch_id !== branchIdOf(body) || !managedBranchId(branch_id) || typeof month !== 'string' || !/^20\d{2}-(0[1-9]|1[0-2])-01$/.test(month) || !Number.isSafeInteger(target) || target < 1 || target > 10000 || !Number.isSafeInteger(expected_version) || expected_version < 0) throw new RequestError('Şube, ay ve 1–10000 arası tam sayı hedef gerekli.', 400);
-      const row = { connection_id: connectionId, branch_id, month, target, version: expected_version + 1, updated_by: user.id, updated_at: new Date().toISOString() };
+      const ratingTarget = body.rating_target;
+      if (ratingTarget != null && (typeof ratingTarget !== 'number' || !Number.isFinite(ratingTarget) ||
+        ratingTarget < 1 || ratingTarget > 5 || Math.abs(ratingTarget * 10 - Math.round(ratingTarget * 10)) > 1e-8)) {
+        throw new RequestError('Yıldız hedefi 1,0–5,0 arasında, bir ondalık basamak olmalı.', 400);
+      }
+      const row = { connection_id: connectionId, branch_id, month, target, ...(ratingTarget !== undefined ? { rating_target: ratingTarget } : {}), version: expected_version + 1, updated_by: user.id, updated_at: new Date().toISOString() };
       const result = expected_version === 0
-        ? await db.from('google_review_targets').insert(row).select('branch_id,month,target,version,updated_at').maybeSingle()
-        : await db.from('google_review_targets').update(row).eq('connection_id', connectionId).eq('branch_id', branch_id).eq('month', month).eq('version', expected_version).select('branch_id,month,target,version,updated_at').maybeSingle();
+        ? await db.from('google_review_targets').insert(row).select('branch_id,month,target,rating_target,version,updated_at').maybeSingle()
+        : await db.from('google_review_targets').update(row).eq('connection_id', connectionId).eq('branch_id', branch_id).eq('month', month).eq('version', expected_version).select('branch_id,month,target,rating_target,version,updated_at').maybeSingle();
       if (result.error?.code === '23505' || (!result.error && !result.data)) throw new RequestError('Hedef başka oturumda değişti. Hedefleri yenileyip tekrar kaydedin.', 409);
       databaseFailure(result.error); return json({ item: result.data });
     }

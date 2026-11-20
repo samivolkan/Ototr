@@ -85,12 +85,12 @@
     if (!Number.isInteger(value) || value < 1 || value > 168) throw new Error('SLA 1–168 saat arasında tam sayı olmalı.');
     return mutate('policy', () => request('management_update',{entity:'policy',expected_updated_at:state.policy.updated_at,default_sla_hours:value}));
   }
-  async function saveTarget(value) {
+  async function saveTarget(value, ratingTarget) {
     const target = Number(value);
     if (!state.loaded || state.error || state.targetError) throw new Error('Önce canlı hedef kaydını yenileyin.');
     if (!Number.isInteger(target) || target < 1 || target > 10000) throw new Error('Aylık hedef 1–10000 arasında tam sayı olmalı.');
     const current = state.targets.find(row => row.month === month());
-    return mutate('target', () => request('target_save',{month:month(),target,expected_version:current?.version || 0}));
+    return mutate('target', () => request('target_save',{month:month(),target,...(ratingTarget !== undefined ? {rating_target:ratingTarget} : {}),expected_version:current?.version || 0}));
   }
   async function updateTask(id, patch, expectedVersion) {
     const item = itemById(id);
