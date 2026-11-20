@@ -127,3 +127,26 @@ html[data-review-variant="2"] .v2-refresh { align-items:center; gap:12px; }
   html[data-review-variant="2"] .v2-nav-row .topnav a { padding-inline:10px; }
   html[data-review-variant="2"] .v2-scope { gap:9px; }
 }
+
+
+html[data-review-variant="2"] main{max-width:1720px}
+.v2-review-status{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+html[data-review-variant="2"] .ph:has(.v2-review-status:not([hidden])){display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+html[data-review-variant="2"] .ph:has(.v2-review-status:not([hidden])) h1{font-size:clamp(23px,2vw,30px)}
+#view-reviews .review-toolbar{gap:10px;padding:11px 14px;border-radius:10px}
+#view-reviews .review-toolbar :is(select,input,button){min-height:35px}
+#view-reviews #erpGlobalScope{min-width:165px}
+#view-reviews .review-toolbar .count{background:transparent!important;white-space:nowrap}
+html[data-review-variant="2"] #view-reviews .split{grid-template-columns:minmax(245px,30.5%) minmax(0,1fr)}
+#view-reviews :is(#rvListPane,#rvDetail){border-radius:10px}
+#view-reviews .li{padding:11px 14px}
+#view-reviews .li.on{border-left:4px solid #e8281a;background:color-mix(in srgb,var(--surface),#e8281a 7%)}
+#view-reviews .li .stars{color:#e78100;white-space:nowrap}
+#view-reviews .li p{line-height:1.4}
+#view-reviews .detail{padding:16px 21px}
+#view-reviews .review-quote{padding:0;border:0;font-size:14px}
+#view-reviews :is(.review-quote,.draft-label) h4{margin:0 0 5px;font-size:15px;color:var(--ink);text-transform:none;letter-spacing:normal;font-weight:700}
+html[data-review-variant="2"] #rvDetail textarea{min-height:84px}
+#view-reviews .review-action-group:first-child{grid-template-columns:1fr}
+#view-reviews .review-action-group:first-child:has(button[onclick^="editSentReply"]) h4{display:none}
+@media(max-width:850px){html[data-review-variant="2"] #view-reviews .split{grid-template-columns:1fr}#view-reviews .detail{padding:14px}}

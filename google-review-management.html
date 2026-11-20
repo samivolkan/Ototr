@@ -672,7 +672,7 @@ main{margin:0 auto;width:auto;max-width:1440px;padding:20px}
     <div class="review-toolbar">
       <div class="search-input">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-        <input placeholder="Yorum, yazar, şube ara..." id="rvSearch">
+        <input placeholder="Yorum veya yazar ara..." aria-label="Yorum veya yazar ara" id="rvSearch">
       </div>
       <select id="rvFilter">
         <option value="hepsi">Tüm durumlar</option>
@@ -1733,7 +1733,7 @@ function renderReviews(){
       return `<div class="li ${r.id===SEL?"on":""} ${SELECTED.has(r.id)?"selected":""}" onclick="if(!event.target.closest('.cb'))selectReview(${r.id})">
         <div class="cb" onclick="event.stopPropagation();toggleSelect(${r.id})"></div>
         <div class="content">
-          <div class="row1"><span>${r.author} ${"★".repeat(r.stars)}</span><span class="chip ${cls}">${label}</span></div>
+          <div class="row1"><span>${r.author} <span class="stars">${"★".repeat(r.stars)}</span></span><span class="chip ${cls}">${label}</span></div>
           <div class="row2">${r.store} · ${r.time}${r.escalated?' · ⚠':''}</div>
           <p>${r.text}</p>
         </div>
@@ -1768,8 +1768,8 @@ function renderReviews(){
     </div>
     <div class="stabs" style="margin:12px 0"><button class="on" data-rtab="detail">Detay</button><button data-rtab="history">📋 Geçmiş</button></div>
     <div id="rvTab-detail">
-      <div class="review-quote">"${r.text}"</div>
-      <div class="draft-label"><h4>${isFinal ? "Gönderilen" : "AI taslağı"}</h4>${isFinal ? `<span class="chip ok">Gönderildi</span>` : `<span class="chip">${idx+1}/${r.drafts.length}</span>`}</div>
+      <div class="review-quote"><h4>Müşteri yorumu</h4><div>${r.text}</div></div>
+      <div class="draft-label"><h4>${isFinal ? "Gönderilen yanıt" : "AI taslağı"}</h4>${isFinal ? `<span class="chip ok">Gönderildi</span>` : `<span class="chip">${idx+1}/${r.drafts.length}</span>`}</div>
       <textarea id="draftBox" ${isFinal||isRouted?"readonly":""}>${draft}</textarea>
       <div class="actions">
         ${isFinal ? `<div class="review-action-group"><h4>Yanıt</h4><div><button class="btn" onclick="editSentReply(${r.id})">Yanıtı düzenle</button><button class="btn" onclick="regenDraft(${r.id})">Alternatif AI</button><button class="btn p" onclick="sendUpdatedReply(${r.id})">Güncel yanıtı gönder</button></div></div><div class="review-action-group"><h4>Takip</h4><div><button class="btn" onclick="addInternalNote(${r.id})">Not ekle</button><button class="btn" onclick="requestHumanApproval(${r.id})">İnsan onayı iste</button><button class="btn" onclick="routeReview(${r.id},'complaint')">Müşteri Şikayeti</button><button class="btn" onclick="verifyLiveReply(${r.id})">Google’da kontrol et</button></div></div><div class="review-action-group"><h4>Yönlendir</h4><div><button class="btn" onclick="escalateRegion(${r.id})">Bölge</button><button class="btn" onclick="routeReview(${r.id},'store')">Şube</button><button class="btn" onclick="routeReview(${r.id},'legal')">Hukuk</button></div></div>`

@@ -148,7 +148,28 @@
   if (oldControls) oldControls.hidden = true;
   const meta = node('div', null, 'v2-period-note'); meta.id = 'v2PeriodNote'; meta.setAttribute('aria-live', 'polite');
   doc.querySelector('.ph')?.after(meta);
+  const reviewToolbar = doc.querySelector('#view-reviews .review-toolbar');
+  const reviewStatus = node('div', null, 'v2-review-status');
+  doc.querySelector('.ph')?.append(reviewStatus);
+
+  function placeReviewControls() {
+    const reviewView = STATE.view === 'reviews' && Boolean(reviewToolbar);
+    scopeBar.hidden = reviewView;
+    reviewStatus.hidden = !reviewView;
+    if (reviewView) {
+      if (branchSelect && branchSelect.parentElement !== reviewToolbar) reviewToolbar.prepend(branchSelect);
+      if (environment.parentElement !== reviewStatus) reviewStatus.append(environment);
+      if (connectionButton && connectionButton.parentElement !== reviewStatus) reviewStatus.append(connectionButton);
+    } else {
+      const branchLabel = scopeBar.querySelector('label[for="erpGlobalScope"]');
+      if (branchSelect && branchLabel && branchSelect.parentElement !== branchLabel) branchLabel.append(branchSelect);
+      if (environment.parentElement !== scopeBar) refreshButtons.before(environment);
+      if (connectionButton && connectionButton.parentElement !== refreshButtons) refreshButtons.prepend(connectionButton);
+    }
+  }
+
   function normalizeScope() {
+    placeReviewControls();
     if (branchSelect) {
       const labels = { live: 'Bursa Nilüfer' };
       for (const row of live()?.getBranchRegistry?.() || []) {
