@@ -22,6 +22,7 @@
     { id:'tasks', label:'İş Takibi', views:['problems','approval','complaint','legal','risk'] },
     { id:'performance', label:'Performans', views:['performance','compare'] },
     { id:'branches', label:'Şubeler', views:['branches','store'] },
+    { id:'collection', label:'Yorum Toplama', views:['collection'] },
     { id:'settings', label:'Ayarlar', views:['ai','settings','system','golive'] }
   ];
   if (typeof module === 'object' && module.exports) module.exports = {operationalBranches,mapUrl,GROUPS};
@@ -37,12 +38,17 @@
   const checks = new Map();
   const niluferMap = {lat:40.204965,lng:28.9461524,address:'OTOTR Oto Ekspertiz Bursa Nilüfer · Google Haritalar konumu'};
   const sample = {id:SAMPLE_ID,name:'Örnek Kurulum Şubesi',city:'Bursa',region:'Marmara',target:30,sla_hours:24,interval_minutes:60,test_mode:true,map:{lat:40.19,lng:29.06,address:'Örnek konum · Bursa merkez. Gerçek bir işletme değildir.'}};
-  const allowed = id => id === 'branches' ? ROLES[STATE.role].tabs.includes('settings') : ROLES[STATE.role].tabs.includes(id);
+  const allowed = id => ['branches','collection'].includes(id) ? ROLES[STATE.role].tabs.includes('settings') : ROLES[STATE.role].tabs.includes(id);
   const currentGroup = () => GROUPS.find(g => g.views.includes(STATE.view)) || GROUPS[0];
   const nav = doc.createElement('nav'); nav.className = 'workspace-subnav'; nav.setAttribute('aria-label','Bölüm menüsü');
   doc.querySelector('.ph')?.before(nav);
   const section = doc.createElement('section'); section.className = 'view'; section.id = 'view-branches';
   doc.querySelector('main')?.append(section);
+  const collectionSection = doc.createElement('section');
+  collectionSection.className = 'view';
+  collectionSection.id = 'view-collection';
+  doc.querySelector('main')?.append(collectionSection);
+
   const titles = {problems:'Problemler',approval:'Onaylar',complaint:'Şikâyetler',legal:'Hukuk',risk:'Risk ve SLA',performance:'Hedefler',compare:'Karşılaştırma',ai:'Yapay zekâ',settings:'Kurallar ve bağlantılar',system:'Sistem ve denetim',golive:'Devreye alma'};
   root.renderNav = function () {
     const group = currentGroup();
@@ -64,6 +70,15 @@
       byId('pageSub').textContent = 'Canlı şubeyi izleyin; yeni şubeyi adım adım hazırlayın.';
       byId('crumb').textContent = 'Yorum Yönetimi / Şubeler';
       root.renderNav(); renderBranches(); if (!busy) loadBranches();
+    } else if (id === 'collection') {
+      if (!allowed(id)) return root.toast('Yorum toplama ayarları için yönetici yetkisi gerekli.', 'warn');
+      STATE.view = 'collection';
+      STATE.currentStore = null;
+      doc.querySelectorAll('.view').forEach(n => n.classList.toggle('on',n===collectionSection));
+      byId('pageTitle').textContent = 'Yorum Toplama';
+      byId('pageSub').textContent = '';
+      root.renderNav();
+      renderCollectionPage();
     } else {
       previousSwitch.call(this,id);
       root.renderNav();
@@ -116,14 +131,17 @@
     const map=b.onboarding?.map || (b.id===NILUFER?niluferMap:null), url=mapUrl(map);
     return '<div class="workspace-map"><div class="head"><div><h3>Şube konumu</h3><p>'+escape(map?.address||'Kurulum formundan enlem ve boylam ekleyin.')+'</p></div>'+(url?'<a class="btn sm" target="_blank" rel="noopener noreferrer" href="'+escape(mapUrl(map,false))+'">Haritada aç ↗</a>':'')+'</div>'+(url?'<iframe title="'+escape(name(b))+' konum haritası" src="'+escape(url)+'" loading="lazy" referrerpolicy="no-referrer" allowfullscreen></iframe>':'<div class="empty">Henüz konum eklenmedi.</div>')+'</div>';
   }
-  function collectionTools() {
-    return '<div class="card workspace-collection"><h3>Yorum toplama araçları</h3>' +
-      '<div class="watch-row"><div class="info"><b>QR kod</b><small>Ekspertiz teslimatında müşteriye gösterilir.</small></div><button class="btn" data-branch-action="qr-open">Oluştur</button></div>' +
-      '<div class="watch-row"><div class="info"><b>WhatsApp / SMS isteği</b><small>Rapor tesliminden sonra önerilen bekleme 2 saat.</small></div><button class="btn" data-branch-action="collection">Etkinleştir</button></div>' +
-      '<form id="workspaceQrForm" hidden><label>Google yorum bağlantısı<input id="workspaceReviewLink" type="url" required placeholder="https://g.page/r/…/review"></label>' +
-      '<button class="btn" type="submit">QR kodu üret</button><p id="workspaceQrError" role="alert"></p><div id="workspaceQrResult"></div></form></div>';
+  function renderCollectionPage() {
+    const id = live()?.getBranchId?.() || NILUFER;
+    collectionSection.innerHTML =
+      '<div class="card workspace-collection"><h3>Google yorum QR kodu</h3><p>Ekspertiz teslimatında müşteriye gösterin. Bağlantı bu tarayıcıda şubeye özel saklanır.</p>' +
+      '<form id="workspaceQrForm"><label>Google yorum bağlantısı<input id="workspaceReviewLink" type="url" required placeholder="https://g.page/r/…/review"></label>' +
+      '<button class="btn" type="submit">Bağlantıyı kaydet ve QR oluştur</button><p id="workspaceQrError" role="status"></p><div id="workspaceQrResult"></div></form></div>' +
+      '<div id="workspaceCollectionSettings"></div>';
+    try { byId('workspaceReviewLink').value = root.localStorage.getItem('ototr.review.qr.'+id) || ''; } catch (_) {}
+    root.renderReviewCollectionSettings?.();
   }
-  section.addEventListener('submit', event => {
+  collectionSection.addEventListener('submit', event => {
     if (event.target.id !== 'workspaceQrForm') return;
     event.preventDefault();
     const error = byId('workspaceQrError'), result = byId('workspaceQrResult');
@@ -149,6 +167,11 @@
       download.href = image.src;
       download.textContent = 'QR kodu indir';
       result.append(image, download);
+      const id = live()?.getBranchId?.() || NILUFER;
+      try {
+        root.localStorage.setItem('ototr.review.qr.'+id,url.href);
+        error.textContent = 'Bağlantı bu şube için bu tarayıcıda kaydedildi.';
+      } catch (_) { error.textContent = 'QR oluşturuldu. Tarayıcı bağlantıyı saklamaya izin vermedi.'; }
     } catch (e) { error.textContent = e.message || 'QR kodu oluşturulamadı.'; }
   });
   function heatmapCard() {
@@ -184,7 +207,7 @@
       '<div class="workspace-actions">'+(liveBranch?'<button class="btn" data-branch-action="reviews">Yorumları izle</button><button class="btn" data-branch-action="performance">Hedef ve performans</button>':'<button class="btn" data-branch-action="edit" '+(busy?'disabled':'')+'>Kurulumu düzenle</button><button class="btn p" data-branch-action="activate" '+(busy||b.onboarding?.test||!b.account_id||!b.store_code||!b.location_id?'disabled':'')+'>Google’da doğrula ve canlıya al</button>')+
       '<button class="btn" data-branch-action="check" '+(busy?'disabled':'')+'>Kurulumu kontrol et</button></div><p class="v2-chart-note">AI ve bağlantılar mevcut ERP ayarlarından kullanılır. Yeni şubede müşteri mesajı gönderimi başlangıçta kapalıdır.</p></div>'+
       (!liveBranch&&c?'<div class="card"><h3>Şubenin çalışma hedefleri</h3><p class="v2-chart-note">Bu şubeye özel sunucu kaydı · '+escape(c.target_month?.slice(0,7)||'')+'</p><div class="workspace-form-grid"><label>Toplam yorum hedefi<input id="setupTarget" type="number" min="1" max="10000" step="1" value="'+escape(c.target?.target||b.target||30)+'"><span>Yıldız hedefi</span><input id="setupRatingTarget" type="number" min="1" max="5" step="0.1" value="'+escape(c.target?.rating_target??'')+'"><button class="btn" data-branch-action="save-target" '+(busy?'disabled':'')+'>Hedefi kaydet</button></label><label>Yanıt SLA (saat)<input id="setupSla" type="number" min="1" max="168" step="1" value="'+escape(b.sla_hours||24)+'"><button class="btn" data-branch-action="save-sla" '+(busy?'disabled':'')+'>SLA kaydet</button></label></div><p class="v2-chart-note">Kaydettiğiniz değerler yalnız bu şubeye uygulanır. Canlı Bursa hedefi ve SLA’sı değişmez.</p></div>':'')+
-      (liveBranch?collectionTools():'')+(b.onboarding?.test?'<div id="workspaceSandbox"></div>':'')+mapPanel(b)+'</div></div>';
+      (b.onboarding?.test?'<div id="workspaceSandbox"></div>':'')+mapPanel(b)+'</div></div>';
     section.querySelector('.workspace-branches')?.insertAdjacentHTML('beforebegin',heatmapCard());
     if(b.onboarding?.test)root.OTOTRReviewSandbox?.mount(byId('workspaceSandbox'),b);
   }
@@ -244,20 +267,6 @@
     if(select&&!busy){selected=select.dataset.selectBranch;setupError='';renderBranches();await loadCheck(selected);renderBranches();return;}
     if(!button||busy)return;
     const action=button.dataset.branchAction, b=visibleBranches().find(b=>b.id===selected);
-    if(action==='qr-open'){
-      const form=byId('workspaceQrForm');
-      form.hidden=false;
-      byId('workspaceReviewLink')?.focus();
-      return;
-    }
-    if(action==='collection'){
-      live().setScope(b.id===NILUFER?'live':b.id);
-      root.switchView('settings');
-      doc.querySelector('#settingsTabs [data-t="integrations"]')?.click();
-      byId('reviewCollectionCard')?.scrollIntoView({block:'start'});
-      byId('collectionEnabled')?.focus({preventScroll:true});
-      return;
-    }
     if(action==='new')return openForm(null);
     if(action==='sample'){
       const existing=registry().find(b=>b.id===SAMPLE_ID);

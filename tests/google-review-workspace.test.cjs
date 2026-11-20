@@ -18,9 +18,9 @@ test('map URL accepts only finite in-range coordinates and never injects an arbi
  assert.equal(mapUrl({lat:40.19,lng:29.06}),'https://maps.google.com/maps?q=40.19%2C29.06&z=14&output=embed');
  for(const map of [null,{lat:91,lng:29},{lat:'',lng:29},{lat:40,lng:Infinity},{lat:'javascript:alert(1)',lng:0}])assert.equal(mapUrl(map),null);
 });
-test('six primary workspaces retain access to all operational modules',()=>{
- assert.equal(GROUPS.length,6);
- assert.equal(new Set(GROUPS.flatMap(g=>g.views)).size,15);
+test('seven primary workspaces retain access to all operational modules',()=>{
+ assert.equal(GROUPS.length,7);
+ assert.equal(new Set(GROUPS.flatMap(g=>g.views)).size,16);
 });
 test('future live branches use their own real reviews and dated targets only',()=>{
  const id='branch-custom-example4';
