@@ -18,7 +18,7 @@
     if (!liveScope() && !['management_read','management_extended_read','targets_list','workflow_list','audit_list','operations_list','status','branch_list','branch_onboarding','branch_activate'].includes(action)) throw new Error('Demo şube kapsamından canlı kayıt değiştirilemez. Önce canlı bir şube seçin.');
     // Branch administration addresses the row being set up. Review operations
     // must remain bound to the selected operational branch.
-    const branchAdmin = ['branch_onboarding','branch_update','branch_activate'].includes(action);
+    const branchAdmin = ['branch_onboarding','branch_update','branch_activate','targets_list'].includes(action);
     return ai.googleBusinessRequest(action, {...payload,branch_id:branchAdmin && payload.branch_id ? payload.branch_id : currentBranch()});
   }
   async function aiRequest(action, payload={}) {

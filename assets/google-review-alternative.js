@@ -89,17 +89,82 @@
   const branchName = () => BRANCH_NAMES[BRANCH_IDS.indexOf(branchId())] || branch()?.name || 'Şube seçin';
   const branch = () => BRANCHES.find(b => (b.erpBranchId || b.id) === branchId()) || BRANCHES[BRANCH_IDS.indexOf(branchId())];
   const management = () => root.OTOTRReviewManagement?.state || {};
-  const allRows = () => scopedRows(typeof REVIEWS === 'undefined' ? [] : REVIEWS, branchId());
+  const regionalDemos = [
+    ['Marmara','Kocaeli','Gebze'], ['Ege','İzmir','Bornova'], ['Akdeniz','Antalya','Muratpaşa'],
+    ['İç Anadolu','Ankara','Çankaya'], ['Karadeniz','Samsun','Atakum'],
+    ['Doğu Anadolu','Erzurum','Yakutiye'], ['Güneydoğu Anadolu','Gaziantep','Şahinbey']
+  ].map(([region,city,name], index) => ({id:'regional-demo-'+index, region, city, name:city+' '+name, target:100+index*15}));
+  const analyticsScope = {mode:'live', region:'', city:'', branch:''};
+  const analyticsActive = () => ['overview','performance'].includes(STATE.view);
+  const liveRegistry = () => {
+    const items = (live()?.getBranchRegistry?.() || []).filter(b => b.active !== false && !b.onboarding?.test &&
+      (b.id === BRANCH_IDS[0] || (['live','active'].includes(b.lifecycle) && b.google_verified_at)));
+    return items.length ? items : [{id:BRANCH_IDS[0],region:'Marmara',city:'Bursa',name:'Bursa Nilüfer'}];
+  };
+  const matchingBranches = () => (analyticsScope.mode === 'demo' ? regionalDemos : liveRegistry()).filter(b =>
+    (!analyticsScope.region || b.region === analyticsScope.region) &&
+    (!analyticsScope.city || b.city === analyticsScope.city) &&
+    (!analyticsScope.branch || b.id === analyticsScope.branch));
+  const analyticsName = () => analyticsActive() ? matchingBranches().find(b => b.id === analyticsScope.branch)?.name ||
+    analyticsScope.city || analyticsScope.region || 'Genel Merkez' : branchName();
+  const analyticsDemo = () => analyticsActive() && analyticsScope.mode === 'demo';
+  const analyticsLive = () => analyticsActive() ? !analyticsDemo() : isLive();
+  const missingScopeData = () => analyticsActive() && !analyticsDemo() && matchingBranches().some(b =>
+    b.id !== branchId() && !parentReviews?.getBranchById?.(b.id)?.lastSyncedAt);
+  const demoTargets = new Map();
+  try {
+    for (const b of regionalDemos) {
+      const value = Number(localStorage.getItem('ototr.regional-demo.target.'+b.id));
+      if (Number.isInteger(value) && value > 0 && value <= 10000) demoTargets.set(b.id,value);
+    }
+  } catch (_) {}
+  function regionalDemoRows(b) {
+    const index = regionalDemos.indexOf(b);
+    const days = recentDays(Date.now());
+    return Array.from({length:44+index*5}, (_, n) => {
+      const createdAt = days[n % 29]+'T08:00:00Z';
+      const answered = n % 9 !== 0;
+      return {branchId:b.id,demo:true,createdAt,stars:n%8===0?3:5,status:answered?'gonderildi':'bekliyor',
+        replyDate:answered?new Date(Date.parse(createdAt)+(n%16+1)*3600000).toISOString():null};
+    });
+  }
+  let parentReviews;
+  try { if (root.parent !== root && root.parent.location.origin === root.location.origin) parentReviews = root.parent.OTOTRGoogleReputation; } catch (_) {}
+  function cachedReviews(b) {
+    if (b.id === branchId() && isLive()) return scopedRows(REVIEWS,b.id);
+    return (parentReviews?.fetchGoogleReviews?.(b.id) || []).map(r => ({
+      branchId:b.id,createdAt:r.reviewDate,stars:r.rating,isReplied:r.isReplied,replyDate:r.replyDate || r.replyUpdatedAt
+    }));
+  }
+  const scopedTargetCache = new Map();
+  function analyticsTargets(months) {
+    if (!analyticsActive()) return targetSeries(months,management().targets || [],branchId(),branch()?.target);
+    const branches = matchingBranches();
+    return months.map(month => {
+      const values = branches.map(b => analyticsDemo() ? (demoTargets.get(b.id) || b.target) :
+        targetSeries([month], b.id === branchId() ? management().targets || [] : scopedTargetCache.get(b.id) || [],b.id)[0]);
+      return values.length && values.every(value => value != null) ? values.reduce((sum,value) => sum+value,0) : null;
+    });
+  }
+  const operationalRows = () => scopedRows(typeof REVIEWS === 'undefined' ? [] : REVIEWS, branchId());
+  const allRows = () => analyticsActive() ? matchingBranches().flatMap(analyticsDemo() ? regionalDemoRows : cachedReviews) : operationalRows();
   let period = 'month';
   const rows = () => periodRows(allRows(), period);
-  const sla = () => Number(isLive() ? management().policy?.default_sla_hours : branch()?.slaH) || 24;
-  const stats = list => live().aggregateReviews(list, { slaHours: sla() });
+  const sla = () => analyticsDemo() ? 24 : Number(isLive() ? management().policy?.default_sla_hours : branch()?.slaH) || 24;
+  const stats = list => {
+    const summary = live().aggregateReviews(list, { slaHours: sla() });
+    if (!analyticsActive() || matchingBranches().length < 2) return summary;
+    const buckets = matchingBranches().map(b => live().aggregateReviews(list.filter(r => (r.branchId || r.branch_id) === b.id),
+      { slaHours: b.id === branchId() ? sla() : Number(b.sla_hours) || 24 }));
+    const totalTimed = buckets.reduce((n,b) => n+b.timedAnswers,0);
+    return {...summary,slaRate:totalTimed ? buckets.reduce((n,b)=>n+(b.slaRate||0)*b.timedAnswers,0)/totalTimed : null};
+  };
   const fmt = value => value == null || !Number.isFinite(value) ? '—' : value.toLocaleString('tr-TR', { maximumFractionDigits: 1 });
   const pct = value => value == null ? '—' : `${Math.round(value)}%`;
   const recordedReviews = (now = Date.now()) => allRows().filter(row =>
     monthKey(row.createdAt) && new Date(row.createdAt).getTime() <= now);
   const currentReviewTotal = () => recordedReviews().length;
-  const currentTarget = () => targetSeries([monthKey(Date.now())], management().targets || [], branchId(), branch()?.target)[0];
+  const currentTarget = () => analyticsTargets([monthKey(Date.now())])[0];
   const demoKey = 'ototr.review-page2.demo-targets.v1';
   try {
     const saved = JSON.parse(localStorage.getItem(demoKey) || '{}');
@@ -167,9 +232,68 @@
   const reviewStatus = node('div', null, 'v2-review-status');
   doc.querySelector('.ph')?.append(reviewStatus);
 
+  const hierarchy = node('div', null, 'v2-chart-scope v2-hierarchy');
+  const levelSelects = {};
+  for (const [key,label] of [['mode','Veri'],['region','Bölge'],['city','İl'],['branch','Şube']]) {
+    const field = node('label', label);
+    const select = node('select');
+    select.setAttribute('aria-label',label);
+    levelSelects[key] = select;
+    field.append(select);
+    hierarchy.append(field);
+    select.onchange = () => {
+      analyticsScope[key] = select.value;
+      if (key === 'mode' || key === 'region') analyticsScope.city = '';
+      if (key !== 'branch') analyticsScope.branch = '';
+      if (key === 'mode') analyticsScope.region = '';
+      if (key === 'branch' && select.value && !analyticsDemo()) {
+        live().setScope(select.value === BRANCH_IDS[0] ? 'live' : select.value);
+        managementApi?.refresh().catch(() => {});
+      }
+      root.switchView(STATE.view);
+    };
+  }
+  const targetReads = new Set();
+  function loadScopeTargets() {
+    if (analyticsDemo() || !managementApi) return;
+    for (const b of matchingBranches()) {
+      if (b.id === branchId() || targetReads.has(b.id) || scopedTargetCache.has(b.id)) continue;
+      targetReads.add(b.id);
+      managementApi.request('targets_list',{branch_id:b.id}).then(data => {
+        scopedTargetCache.set(b.id,(data.items || []).filter(row=>row.branch_id===b.id));
+        if (analyticsActive()) root.switchView(STATE.view);
+      }).catch(() => {}).finally(() => targetReads.delete(b.id));
+    }
+  }
+  function updateHierarchy() {
+    const candidates = analyticsDemo() ? regionalDemos : liveRegistry();
+    const regions = [...new Set(candidates.map(b=>b.region))].sort();
+    const inRegion = candidates.filter(b=>!analyticsScope.region || b.region===analyticsScope.region);
+    const cities = [...new Set(inRegion.map(b=>b.city))].sort();
+    const branches = inRegion.filter(b=>!analyticsScope.city || b.city===analyticsScope.city);
+    const choices = {
+      mode:[['live','Canlı'],['demo','Demo']],
+      region:[['','Genel Merkez'],...regions.map(x=>[x,x])],
+      city:[['','Tüm iller'],...cities.map(x=>[x,x])],
+      branch:[['','Tüm şubeler'],...branches.map(b=>[b.id,b.name])]
+    };
+    for (const [key,select] of Object.entries(levelSelects)) {
+      select.replaceChildren(...choices[key].map(([id,label])=>{const option=node('option',label);option.value=id;return option;}));
+      select.value=analyticsScope[key];
+    }
+  }
+
   function placeReviewControls() {
     const reviewView = STATE.view === 'reviews' && Boolean(reviewToolbar);
     scopeBar.hidden = reviewView || STATE.view === 'overview';
+    hierarchy.hidden = !analyticsActive();
+    branchLabel.hidden = analyticsActive();
+    if (analyticsActive()) {
+      const destination = STATE.view === 'overview' ? chartScope : scopeBar;
+      if (hierarchy.parentElement !== destination) destination.prepend(hierarchy);
+      updateHierarchy();
+      loadScopeTargets();
+    }
     reviewStatus.hidden = !reviewView;
     if (reviewView) {
       if (branchSelect && branchSelect.parentElement !== reviewToolbar) reviewToolbar.prepend(branchSelect);
@@ -259,11 +383,11 @@
   const dismissedTargets = new Set();
   root.renderOverview = function () {
     const a = stats(rows());
-    const connection = management().error ? 'Canlı yönetim bağlantısı alınamadı; Bağlantı durumu ekranını kontrol edin.' : !management().loaded ? 'Canlı kayıtlar için ERP oturumu bekleniyor.' : `${html(branchName())} · Google kayıtları ve ERP onay akışı. Kurulum ve test şubeleri hesaplamaya dahil edilmez.`;
-    byId('ovAlerts').innerHTML = `<div class="alert ${isLive() && management().loaded && !management().error ? 'info' : 'warn'}">${isLive() ? connection : `${html(branchName())} · Demo çalışma alanı. Yapılan denemeler Google’a gönderilmez.`}</div>`;
+    const connection = management().error ? 'Canlı yönetim bağlantısı alınamadı; Bağlantı durumu ekranını kontrol edin.' : !management().loaded ? 'Canlı kayıtlar için ERP oturumu bekleniyor.' : `${html(analyticsName())} · Google kayıtları ve ERP onay akışı. Kurulum ve test şubeleri hesaplamaya dahil edilmez.`;
+    byId('ovAlerts').innerHTML = `<div class="alert ${analyticsLive() && management().loaded && !management().error ? 'info' : 'warn'}">${analyticsLive() ? connection : `${html(analyticsName())} · Demo çalışma alanı. Yapılan denemeler Google’a gönderilmez.`}</div>`;
     const total = currentReviewTotal(), target = currentTarget();
-    const ratio = progress(total, target);
-    if (isLive() && management().loaded && !management().error) {
+    const ratio = missingScopeData() ? null : progress(total, target);
+    if (analyticsLive() && management().loaded && !management().error) {
       const headline = ratio == null ? 'Toplam yorum hedefi' : ratio >= 100 ? 'Toplam yorum hedefine ulaşıldı' : 'Toplam yorum hedefinde ilerleme';
       const insightKey = branchId() + ':' + monthKey(Date.now()) + ':' + target;
       byId('ovAlerts').innerHTML = dismissedTargets.has(insightKey) ? '' : `<div class="v2-insight"><button class="v2-insight-close" type="button" aria-label="Hedef özetini kapat">×</button><strong>${headline}</strong><p>${`Mevcut toplam: ${fmt(total)} yorum · Hedef: ${target == null ? 'Girilmedi' : fmt(target)}`} ${target == null ? '' : `· ${pct(ratio)} gerçekleşme · Kalan ${fmt(Math.max(0, target - total))} yorum.`} ${a.count ? `Ortalama puan ${fmt(a.average)}, yanıt oranı ${pct(a.responseRate)}. ${a.timedAnswers ? `${sla()} saatlik SLA içinde yanıtlananların oranı ${pct(a.slaRate)}.` : 'Yanıt süresi için ölçülebilir kayıt bekleniyor.'}` : ''}</p></div>`;
@@ -273,6 +397,8 @@
         dismissedTargets.add(branchId() + ':' + monthKey(Date.now()) + ':' + target);
         byId('ovAlerts').replaceChildren();
       };
+    if (missingScopeData()) byId('ovAlerts').insertAdjacentHTML('beforeend',
+      '<div class="alert warn">Bu kapsamda henüz senkronize edilmemiş canlı şubeler var. Yorum göstergeleri alınmış kayıtları kapsar.</div>');
     const responseGoal = 95;
     const slaGoal = 90;
     const ratingCount = a.ratingCounts.reduce((sum, count) => sum + count, 0);
@@ -281,19 +407,19 @@
       ['Ortalama puan', a.average == null ? '—' : `${a.average.toLocaleString('tr-TR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} ★`, `${fmt(ratingCount)} puanlı yorum`, a.average == null ? '' : 'ok'],
       ['Yanıt oranı', a.responseRate == null ? '—' : `%${Math.round(a.responseRate)}`, `Hedef %${responseGoal} · ${fmt(a.answered)}/${fmt(a.count)}`,
         a.responseRate == null ? '' : a.responseRate >= responseGoal ? 'ok' : 'warn', a.responseRate == null ? '' : a.responseRate >= responseGoal ? 'Hedefte' : 'Altında'],
-      [`SLA (${sla()} sa)`, a.slaRate == null ? '—' : `%${Math.round(a.slaRate)}`, `Hedef %${slaGoal} · ${fmt(a.timedAnswers)} ölçüm`,
+      [matchingBranches().length > 1 ? 'SLA (şube bazlı)' : `SLA (${sla()} sa)`, a.slaRate == null ? '—' : `%${Math.round(a.slaRate)}`, `Hedef %${slaGoal} · ${fmt(a.timedAnswers)} ölçüm`,
         a.slaRate == null ? '' : a.slaRate >= slaGoal ? 'ok' : 'bad', a.slaRate == null ? '' : a.slaRate >= slaGoal ? 'Hedefte' : 'Riskli'],
       ['Yanıtsız', fmt(a.pending), 'Açık yorum', a.pending > 0 ? 'warn' : ''],
-      ['Hedef gerçekleşme', ratio == null ? '—' : `%${ratio}`, target == null ? 'Hedef girilmedi' : `${fmt(total)} / ${fmt(target)} toplam yorum`, ratio == null ? '' : ratio >= 100 ? 'ok' : 'warn']
+      ['Hedef gerçekleşme', ratio == null ? '—' : `%${ratio}`, missingScopeData() ? 'Şube verisi eksik' : target == null ? 'Hedef girilmedi' : `${fmt(total)} / ${fmt(target)} toplam yorum`, ratio == null ? '' : ratio >= 100 ? 'ok' : 'warn']
     ];
     byId('ovKpis').innerHTML = metrics.map(([label, value, note, tone = '', badge = '']) =>
       `<div class="kpi v2-reference-kpi" data-tone="${tone}"><div class="kl">${html(label)}</div><div class="kv">${html(value)}</div><div class="kd"><span>${html(note)}</span>${badge ? `<span class="chip ${tone}">${html(badge)}</span>` : ''}</div></div>`
     ).join('');
     const needsAttention = a.pending > 0 || (a.slaRate != null && a.slaRate < slaGoal);
     byId('ovWatchlist').innerHTML = needsAttention
-      ? `<div class="watch-row"><div class="info"><b>${html(branchName())}</b><small>SLA ${pct(a.slaRate)} · ${fmt(a.pending)} yanıtsız</small></div><button class="btn sm" onclick="switchView('reviews')">İncele →</button></div>`
+      ? `<div class="watch-row"><div class="info"><b>${html(analyticsName())}</b><small>SLA ${pct(a.slaRate)} · ${fmt(a.pending)} yanıtsız</small></div><button class="btn sm" onclick="switchView('reviews')">İncele →</button></div>`
       : '<div class="empty">Seçili şube ve dönemde inceleme gerektiren durum yok.</div>';
-    byId('ovSla').innerHTML = `<div class="watch-row"><div class="info"><b>${html(branchName())}</b><small>Yorum tarihi → Google yanıt tarihi</small></div><span class="chip">${pct(a.slaRate)}</span></div><p class="v2-chart-note">${a.timedAnswers} kayıt ölçülebildi. Eksik veya geçersiz tarihler ortalamaya dahil edilmez.</p>`;
+    byId('ovSla').innerHTML = `<div class="watch-row"><div class="info"><b>${html(analyticsName())}</b><small>Yorum tarihi → Google yanıt tarihi</small></div><span class="chip">${pct(a.slaRate)}</span></div><p class="v2-chart-note">${a.timedAnswers} kayıt ölçülebildi. Eksik veya geçersiz tarihler ortalamaya dahil edilmez.</p>`;
     normalizeScope();
   };
   root.initCharts = function () {
@@ -301,7 +427,7 @@
     const daily = period === 'month';
     const now = Date.now();
     const points = daily ? recentDays(now) : keys;
-    const targets = targetSeries(points.map(key => key.slice(0, 7)), management().targets || [], branchId(), branch()?.target);
+    const targets = analyticsTargets(points.map(key => key.slice(0, 7)));
     const reviewDates = recordedReviews(now)
       .map(row => daily ? dayKey(row.createdAt) : monthKey(row.createdAt));
     const firstPoint = daily ? 0 : Math.max(0, points.findIndex((key, index) =>
@@ -322,7 +448,7 @@
     const lastDay = new Date(Date.UTC(year, month, 0)).getUTCDate();
     const currentMonthCount = recordedReviews(now).filter(row => monthKey(row.createdAt) === today.slice(0, 7)).length;
     const actualTotal = cumulative.achieved[observedEnd];
-    const forecast = day >= 2 && day < lastDay && actualTotal > 0
+    const forecast = !missingScopeData() && day >= 2 && day < lastDay && actualTotal > 0
       ? actualTotal + Math.round(currentMonthCount / day * (lastDay - day)) : null;
     const forecastEnd = today.slice(0, 8) + lastDay;
     const futureDates = forecast == null ? [] : daily
@@ -439,7 +565,7 @@
         afterBody: items => items.length ? `O gün eklenen: ${dailyCounts[items[0].dataIndex]}` : ''
       } } } } : {})
     }, daily ? [dailyLabels, endpointLabels] : [endpointLabels]);
-    chartNote('chartTrend', management().error || !management().loaded ? 'Hedef kayıtları doğrulanamadı.' : targets.some(v => v != null) ? (daily ? 'Son 30 gün · Noktaların üstündeki rakamlar o gün eklenen yorum adedini gösterir.' : 'Ay sonu yorum toplamı, kayıtlı aylık hedef ve doğrusal trend.') : 'Kayıtlı hedef yok. Performans ekranından hedef girin.');
+    chartNote('chartTrend', !analyticsDemo() && (management().error || !management().loaded) ? 'Hedef kayıtları doğrulanamadı.' : targets.some(v => v != null) ? (daily ? 'Son 30 gün · Noktaların üstündeki rakamlar o gün eklenen yorum adedini gösterir.' : 'Ay sonu yorum toplamı, kayıtlı aylık hedef ve doğrusal trend.') : 'Kayıtlı hedef yok. Performans ekranından hedef girin.');
     if (forecast != null) {
       const note = byId('chartTrend')?.closest('.chart-card')?.querySelector('.v2-chart-note');
       if (note) note.textContent += ' Noktalı tahmin, bu ayın günlük ortalama yorum hızını ay sonuna taşır.';
@@ -456,28 +582,28 @@
       block.innerHTML = content;
       host.querySelector('.v2-chart-note')?.remove();
     }
-    const ratio = progress(total, target);
-    summaryCard('chartRegion', `<div class="v2-summary-line"><strong>${html(branchName())}</strong><span>${total} / ${target ?? '—'}</span></div><progress class="v2-goal-meter" aria-label="Toplam yorum hedefi gerçekleşmesi" max="100" value="${Math.min(100,ratio || 0)}"></progress><div class="v2-summary-line"><span>${ratio == null ? 'Hedef girilmedi' : `${pct(ratio)} gerçekleşti`}</span><span>${target == null ? '—' : `Kalan ${Math.max(0,target-total)} yorum`}</span></div><p>Şube hedefi · ${html(branch()?.region || '—')} / ${html(branchName())}</p><button class="btn sm" onclick="switchView('performance')">Hedefi düzenle →</button>`);
-    const responseTitle = byId('chartResponse')?.closest('.chart-card')?.querySelector('h3'); if (responseTitle) responseTitle.textContent = `Yanıt süresi · SLA ${sla()} sa`;
+    const ratio = missingScopeData() ? null : progress(total, target);
+    summaryCard('chartRegion', `<div class="v2-summary-line"><strong>${html(analyticsName())}</strong><span>${total} / ${target ?? '—'}</span></div><progress class="v2-goal-meter" aria-label="Toplam yorum hedefi gerçekleşmesi" max="100" value="${Math.min(100,ratio || 0)}"></progress><div class="v2-summary-line"><span>${ratio == null ? (missingScopeData() ? 'Şube verisi eksik' : 'Hedef girilmedi') : `${pct(ratio)} gerçekleşti`}</span><span>${target == null ? '—' : `Kalan ${Math.max(0,target-total)} yorum`}</span></div><p>Şube hedefi · ${html(branch()?.region || '—')} / ${html(analyticsName())}</p><button class="btn sm" onclick="switchView('performance')">Hedefi düzenle →</button>`);
+    const responseTitle = byId('chartResponse')?.closest('.chart-card')?.querySelector('h3'); if (responseTitle) responseTitle.textContent = matchingBranches().length > 1 ? 'Yanıt süresi · Şube SLA’ları' : `Yanıt süresi · SLA ${sla()} sa`;
     const within = a.slaRate == null ? null : Math.round(a.slaRate*a.timedAnswers/100);
     summaryCard('chartResponse', within == null ? '<p>Yanıt süresi ölçülebilen kayıt bulunmuyor.</p>' : `<div class="v2-sla-meter" role="img" aria-label="${within} yanıt SLA içinde, ${a.timedAnswers-within} yanıt SLA dışında"><span style="flex:${within};background:#0f9d75">${within} içinde</span><span style="flex:${a.timedAnswers-within};background:#d92d20">${a.timedAnswers-within} dışında</span></div><div class="v2-summary-line"><span>${a.timedAnswers} tarihli yanıt üzerinden</span><strong>${pct(a.slaRate)} SLA içinde</strong></div><p>Süre: yorum tarihi → Google yanıt tarihi. Tarihi eksik kayıtlar dahil edilmez.</p><button class="btn sm" onclick="switchView('reviews')">Yorumları incele →</button>`);
   };
 
   root.renderPerformance = function () {
     const a = stats(rows()), total = currentReviewTotal(), target = currentTarget();
-    const ratio = progress(total, target), canSave = !isLive() || (management().loaded && !management().loading && !management().error && !management().targetError);
+    const ratio = missingScopeData() ? null : progress(total, target), canSave = Boolean(analyticsScope.branch) && (!analyticsLive() || (analyticsScope.branch === branchId() && management().loaded && !management().loading && !management().error && !management().targetError));
     const head = byId('perfTable')?.closest('.card2')?.querySelector('.head'); if (head) head.classList.add('v2-performance-head');
-    byId('perfTable').innerHTML = `<thead><tr><th>Şube</th><th class="n">Varılacak toplam</th><th class="n">Mevcut toplam</th><th>Hedef ilerlemesi</th><th class="n">Dönem yorumları</th><th class="n">Puan</th><th class="n">Yanıt</th><th>Ortam</th></tr></thead><tbody><tr><td>${html(branchName())}</td><td><div class="v2-target-editor"><input id="v2Target" aria-label="${html(branchName())} toplam yorum hedefi" type="number" min="1" max="10000" step="1" value="${target ?? ''}" placeholder="Hedef" ${canSave ? '' : 'disabled'}><button id="v2SaveTarget" class="btn sm p" ${canSave ? '' : 'disabled'}>Kaydet</button></div></td><td class="n">${total}</td><td>${ratio == null ? 'Hedef girilmedi' : `<div class="v2-progress"><progress aria-label="Hedef ilerlemesi" max="100" value="${Math.min(100, ratio)}"></progress><b>${ratio}%</b></div>`}</td><td class="n">${a.count}</td><td class="n">${fmt(a.average)}</td><td class="n">${pct(a.responseRate)}</td><td><span class="chip ${isLive() ? 'ok' : 'warn'}">${isLive() ? 'Canlı' : 'Demo'}</span></td></tr></tbody>`;
+    byId('perfTable').innerHTML = `<thead><tr><th>Şube</th><th class="n">Varılacak toplam</th><th class="n">Mevcut toplam</th><th>Hedef ilerlemesi</th><th class="n">Dönem yorumları</th><th class="n">Puan</th><th class="n">Yanıt</th><th>Ortam</th></tr></thead><tbody><tr><td>${html(analyticsName())}</td><td><div class="v2-target-editor"><input id="v2Target" aria-label="${html(analyticsName())} toplam yorum hedefi" type="number" min="1" max="10000" step="1" value="${target ?? ''}" placeholder="Şube seçin" ${canSave ? '' : 'disabled'}><button id="v2SaveTarget" class="btn sm p" ${canSave ? '' : 'disabled'}>Kaydet</button></div></td><td class="n">${total}</td><td>${ratio == null ? (missingScopeData() ? 'Şube verisi eksik' : 'Hedef girilmedi') : `<div class="v2-progress"><progress aria-label="Hedef ilerlemesi" max="100" value="${Math.min(100, ratio)}"></progress><b>${ratio}%</b></div>`}</td><td class="n">${a.count}</td><td class="n">${fmt(a.average)}</td><td class="n">${pct(a.responseRate)}</td><td><span class="chip ${analyticsLive() ? 'ok' : 'warn'}">${analyticsLive() ? 'Canlı' : 'Demo'}</span></td></tr></tbody>`;
     byId('v2SaveTarget').onclick = saveTarget;
-    if (ratio == null && isLive() && (management().error || !management().loaded)) {
+    if (ratio == null && analyticsLive() && (management().error || !management().loaded)) {
       byId('perfTable').querySelector('tbody tr td:nth-child(4)').textContent = 'Hedef doğrulanamadı';
     }
     root.renderTargetBreakdown(); normalizeScope();
   };
   root.renderTargetBreakdown = function () {
     const host = byId('targetBreakdown'); if (!host) return;
-    const target = currentTarget(), actual = currentReviewTotal(), ratio = progress(actual, target);
-    host.innerHTML = `<div class="v2-period-note">Toplam yorum hedefi · ${isLive() ? 'Seçili şubenin canlı verisi' : 'Yalnız seçili demo şube'} · ${monthKey(Date.now())}</div><div class="v2-breakdown">${[['Bölge', branch()?.region || '—'], ['İl', branch()?.city || '—'], ['Şube', branchName()]].map(([label, value]) => `<div class="card"><h4>${label}</h4><b>${html(value)}</b><span class="v2-big">${ratio == null ? '—' : `${ratio}%`}</span><progress aria-label="${label} hedef ilerlemesi" max="100" value="${Math.min(100, ratio || 0)}"></progress><p>${actual} yorum / ${target ?? '—'} hedef · ${isLive() ? 'Canlı' : 'Demo'}</p></div>`).join('')}</div>`;
+    const target = currentTarget(), actual = currentReviewTotal(), ratio = missingScopeData() ? null : progress(actual, target);
+    host.innerHTML = `<div class="v2-period-note">Toplam yorum hedefi · ${analyticsLive() ? 'Seçili şubenin canlı verisi' : 'Yalnız seçili demo şube'} · ${monthKey(Date.now())}</div><div class="v2-breakdown">${[['Bölge', branch()?.region || '—'], ['İl', branch()?.city || '—'], ['Şube', analyticsName()]].map(([label, value]) => `<div class="card"><h4>${label}</h4><b>${html(value)}</b><span class="v2-big">${ratio == null ? '—' : `${ratio}%`}</span><progress aria-label="${label} hedef ilerlemesi" max="100" value="${Math.min(100, ratio || 0)}"></progress><p>${actual} yorum / ${target ?? '—'} hedef · ${analyticsLive() ? 'Canlı' : 'Demo'}</p></div>`).join('')}</div>`;
   };
   async function saveTarget() {
     const value = Number(byId('v2Target')?.value), button = byId('v2SaveTarget');
@@ -486,16 +612,16 @@
     if (branchSelect) branchSelect.disabled = true;
     periodSelect.disabled = true;
     try {
-      if (isLive()) {
+      if (!analyticsScope.branch) throw new Error('Hedef kaydetmek için şube seçin.');
+      if (analyticsLive()) {
+        if (analyticsScope.branch !== branchId()) throw new Error('Şube verisi henüz yüklenmedi.');
         await root.OTOTRReviewManagement.saveTarget(value);
         if (currentTarget() !== value) throw new Error('Hedef kaydı doğrulanamadı; bağlantıyı yenileyin.');
       } else {
-        branch().target = value;
-        const saved = {};
-        BRANCHES.forEach((b, i) => { if (i > 0 && i < 3) saved[BRANCH_IDS[i]] = b.target; });
-        localStorage.setItem(demoKey, JSON.stringify(saved));
+        demoTargets.set(analyticsScope.branch,value);
+        localStorage.setItem('ototr.regional-demo.target.'+analyticsScope.branch,String(value));
       }
-      root.renderPerformance(); root.toast(`${branchName()} ${isLive() ? 'ERP' : 'demo'} hedefi kaydedildi.`, 'ok');
+      root.renderPerformance(); root.toast(`${analyticsName()} ${analyticsLive() ? 'ERP' : 'demo'} hedefi kaydedildi.`, 'ok');
     } catch (error) { root.toast(error.message || 'Hedef kaydedilemedi.', 'warn'); }
     finally {
       if (button.isConnected) button.disabled = false;
@@ -507,10 +633,16 @@
     const a = stats(rows());
     root.downloadCSV('ototr-yorum-sayfasi-2-performans.csv', [
       ['Şube', 'Ortam', 'Dönem', 'Dönem yorumları', 'Mevcut toplam', 'Varılacak toplam', 'Puan', 'Yanıt %', 'SLA %'],
-      [branchName(), isLive() ? 'Canlı' : 'Demo', PERIODS[period], a.count, currentReviewTotal(), currentTarget() ?? '', a.average ?? '', a.responseRate ?? '', a.slaRate ?? '']
+      [analyticsName(), analyticsLive() ? 'Canlı' : 'Demo', PERIODS[period], a.count, currentReviewTotal(), currentTarget() ?? '', a.average ?? '', a.responseRate ?? '', a.slaRate ?? '']
     ]);
   };
-  root.OTOTRReviewAlternative = { ...pure, getPeriod: () => period, scopedRows: allRows, filteredRows: rows };
+  function openRegionalDemo(id) {
+    const b = regionalDemos.find(item => item.id === id);
+    if (!b) return;
+    Object.assign(analyticsScope,{mode:'demo',region:b.region,city:b.city,branch:b.id});
+    root.switchView('performance');
+  }
+  root.OTOTRReviewAlternative = { ...pure, regionalDemos: () => regionalDemos.map(b=>({...b})), openRegionalDemo, getPeriod: () => period, scopedRows: operationalRows, filteredRows: rows };
   STATE.view = 'overview';
   root.switchView('overview');
 })(typeof window === 'undefined' ? null : window);
