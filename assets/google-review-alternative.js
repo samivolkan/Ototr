@@ -99,7 +99,12 @@
   const scopeBar = node('div', null, 'v2-scope'); scopeBar.setAttribute('aria-label', 'Şube ve dönem filtreleri');
   doc.querySelector('main')?.prepend(scopeBar);
   const branchSelect = byId('erpGlobalScope');
-  if (branchSelect) scopeBar.append(branchSelect.parentElement);
+  if (branchSelect) {
+    const label = node('label', 'Şube');
+    label.htmlFor = branchSelect.id;
+    label.append(branchSelect);
+    scopeBar.append(label);
+  }
   const managementApi = root.OTOTRReviewManagement;
   if (managementApi) {
     const sharedRefresh = managementApi.refresh;
@@ -122,17 +127,32 @@
   for (const [value, label] of Object.entries(PERIODS)) { const option = node('option', label); option.value = value; periodSelect.append(option); }
   periodSelect.value = period; periodLabel.append(periodSelect); scopeBar.append(periodLabel);
   const environment = node('span', 'Canlı çalışma alanı', 'chip ok'); scopeBar.append(environment);
+  const nav = byId('topnav');
+  const navRow = node('div', null, 'v2-nav-row');
+  const navActions = node('div', null, 'v2-nav-actions');
+  if (nav) {
+    nav.before(navRow);
+    navRow.append(nav, navActions);
+    for (const id of ['erpGoogleSync', 'erpGoogleQueue']) {
+      const button = byId(id);
+      if (button) navActions.append(button);
+    }
+  }
   const refreshButtons = node('div', null, 'v2-refresh');
-  ['erpGoogleSync', 'erpGoogleQueue', 'erpGoogleConnect'].forEach(id => { if (byId(id)) refreshButtons.append(byId(id)); });
+  const connectionButton = byId('erpGoogleConnect');
+  if (connectionButton) refreshButtons.append(connectionButton);
+  const freshness = node('span', '', 'v2-freshness');
+  freshness.setAttribute('aria-live', 'polite');
+  refreshButtons.append(freshness);
   scopeBar.append(refreshButtons);
   if (oldControls) oldControls.hidden = true;
   const meta = node('div', null, 'v2-period-note'); meta.id = 'v2PeriodNote'; meta.setAttribute('aria-live', 'polite');
   doc.querySelector('.ph')?.after(meta);
   function normalizeScope() {
     if (branchSelect) {
-      const labels = { live: 'Bursa Nilüfer · Canlı' };
+      const labels = { live: 'Bursa Nilüfer' };
       for (const row of live()?.getBranchRegistry?.() || []) {
-        if (row.id.startsWith('branch-custom-') && row.live && row.active !== false && row.google_verified_at && !row.onboarding?.test) labels[row.id] = `${row.name} · Canlı`;
+        if (row.id.startsWith('branch-custom-') && row.live && row.active !== false && row.google_verified_at && !row.onboarding?.test) labels[row.id] = row.name;
       }
       for (const option of [...branchSelect.options]) { if (labels[option.value]) option.textContent = labels[option.value]; else option.remove(); }
       branchSelect.setAttribute('aria-label', 'Şube seçimi');
@@ -144,7 +164,7 @@
     const currentMonth = monthKey(Date.now());
     meta.innerHTML = `<strong>${html(PERIODS[period])}</strong><span>${monthsFor(period)[0]} — ${currentMonth}</span><span>· ${isLive() ? 'Alınan canlı kayıtlar' : 'Örnek kayıtlar'}</span>`;
     const source = branch();
-    if (isLive() && source?.lastSync) meta.append(node('span', `· Veri: ${source.lastSync}`));
+    freshness.textContent = isLive() && source?.lastSync ? `Son veri: ${source.lastSync}` : 'Son veri: —';
     doc.querySelectorAll('#topnav a').forEach(link => { link.setAttribute('role', 'button'); link.tabIndex = 0; });
   }
   doc.addEventListener('keydown', event => {

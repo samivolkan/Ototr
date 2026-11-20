@@ -102,3 +102,28 @@ html[data-review-variant="2"] #ovKpis .v2-metric-3{border-top-color:#e48a00}
 @media(max-width:700px){html[data-review-variant="2"] #ovKpis .kpi{min-height:125px;padding:14px}html[data-review-variant="2"] #ovKpis .kv{font-size:26px}.v2-insight{padding:14px}.v2-sla-meter{flex-wrap:wrap}}
 
 .review-action-group{width:100%;display:grid;grid-template-columns:75px 1fr;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}.review-action-group h4{margin:6px 0;font-size:12px;color:var(--mute)}.review-action-group>div{display:flex;gap:8px;flex-wrap:wrap}@media(max-width:600px){.review-action-group{grid-template-columns:1fr;gap:4px}}
+
+
+/* Shared navigation and scope controls for every review workspace view. */
+html[data-review-variant="2"] .topbar { background:#151a21; padding-top:10px; }
+html[data-review-variant="2"] .v2-nav-row { order:20; display:flex; align-items:center; flex:1 1 100%; min-width:0; gap:16px; margin:0 -16px; padding:0 16px; border-top:1px solid #ffffff18; }
+html[data-review-variant="2"] .v2-nav-row .topnav { flex:1 1 auto; order:0; height:auto; margin:0; padding:4px 0 0; border:0; }
+html[data-review-variant="2"] .v2-nav-row .topnav a { padding:13px 16px; font-size:13px; font-weight:650; color:#eef1f5; border-bottom-width:3px; }
+html[data-review-variant="2"] .v2-nav-row .topnav a.on { background:#ffffff0d; border-radius:7px 7px 0 0; }
+.v2-nav-actions { display:flex; gap:8px; flex-shrink:0; }
+html[data-review-variant="2"] .v2-nav-actions .btn { min-height:34px; background:#303744; color:#fff; border-color:#ffffff28; white-space:nowrap; }
+html[data-review-variant="2"] .v2-nav-actions #erpGoogleSync { background:transparent; border-color:#cbd5e1; }
+html[data-review-variant="2"] .v2-scope { gap:16px; border-radius:12px; }
+html[data-review-variant="2"] .v2-scope select { min-width:135px; font-weight:650; }
+html[data-review-variant="2"] .v2-refresh { align-items:center; gap:12px; }
+.v2-freshness { padding-left:12px; border-left:1px solid var(--line); font-size:12px; color:var(--mute); }
+@media(max-width:950px) {
+  html[data-review-variant="2"] .v2-nav-row { flex-wrap:wrap; gap:0; }
+  html[data-review-variant="2"] .v2-nav-row .topnav { flex-basis:100%; }
+  .v2-nav-actions { margin:6px 0 8px auto; }
+}
+@media(max-width:768px) {
+  html[data-review-variant="2"] .v2-nav-row { margin-inline:-12px; padding-inline:12px; }
+  html[data-review-variant="2"] .v2-nav-row .topnav a { padding-inline:10px; }
+  html[data-review-variant="2"] .v2-scope { gap:9px; }
+}
