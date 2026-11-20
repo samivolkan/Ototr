@@ -202,3 +202,14 @@ html[data-review-variant="2"] #ovKpis .v2-reference-kpi .kv{font-size:clamp(22px
 #view-overview .v2-overview-main-chart .chart-wrap{height:340px}
 #view-overview .v2-overview-sla{grid-column:1/-1}
 @media(max-width:768px){#view-overview .v2-overview-main-chart .chart-wrap{height:275px}}
+
+.v2-branch-ranking .v2-chart-note{padding-top:0;margin-bottom:8px}
+.v2-rank-row{display:grid;grid-template-columns:minmax(110px,1.2fr) minmax(44px,1fr) minmax(30px,auto) minmax(28px,auto);align-items:center;gap:9px;width:100%;padding:10px 0;border:0;border-bottom:1px solid var(--line);text-align:left;color:var(--ink);background:transparent;cursor:pointer}
+.v2-rank-row:last-child{border-bottom:0}
+.v2-rank-row:hover strong,.v2-rank-row:focus-visible strong{color:var(--blue)}
+.v2-rank-row strong{font-size:12px;overflow-wrap:anywhere}
+.v2-rank-row small{color:var(--mute);text-align:right}
+.v2-rank-row b{text-align:right;font-size:12px}
+.v2-rank-number{display:inline-grid;place-items:center;min-width:20px;height:20px;margin-right:6px;border:1px solid var(--line);border-radius:5px;color:var(--mute);font-size:10px}
+.v2-rank-track{height:9px;background:repeating-linear-gradient(to right,var(--line) 0 2px,transparent 2px 5px);border-radius:2px;overflow:hidden}
+.v2-rank-track>span{display:block;height:100%;background:repeating-linear-gradient(to right,#ee4934 0 2px,transparent 2px 5px)}

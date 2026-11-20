@@ -398,8 +398,81 @@
   const watchTitle = byId('ovWatchlist')?.closest('.chart-card')?.querySelector('h3');
   if (watchTitle) watchTitle.textContent = 'Dikkat gerektiren şubeler';
   const dismissedTargets = new Set();
+  function renderBranchRanking(scoped) {
+    const host = byId('ovTopBranches');
+    if (!host) return;
+    const counts = new Map();
+    for (const row of scoped) {
+      const id = row.branchId || row.branch_id;
+      counts.set(id,(counts.get(id) || 0)+1);
+    }
+    const ranked = matchingBranches().map(branch => ({branch,count:counts.get(branch.id) || 0}))
+      .filter(item => item.count > 0)
+      .sort((a,b) => b.count-a.count || a.branch.name.localeCompare(b.branch.name,'tr'))
+      .slice(0,5);
+    byId('ovTopBranchesNote').textContent = `${analyticsName()} · ${PERIODS[period]} · Seçili kapsamdaki pay`;
+    host.replaceChildren(...ranked.map(({branch,count}, index) => {
+      const share = Math.round(count/scoped.length*100);
+      const button = node('button',null,'v2-rank-row');
+      button.type = 'button';
+      button.setAttribute('aria-label', `${branch.name} · ${count} yorum · %${share} pay. Şubeyi göster`);
+      const name = node('strong',branch.name);
+      const rank = node('span',String(index+1),'v2-rank-number');
+      rank.setAttribute('aria-hidden','true');
+      name.prepend(rank);
+      const track = node('span',null,'v2-rank-track');
+      const fill = node('span');
+      fill.style.width = (count/ranked[0].count*100)+'%';
+      track.append(fill);
+      track.setAttribute('aria-hidden','true');
+      button.append(name,track,node('b',fmt(count)),node('small','%'+share));
+      button.onclick = () => {
+        analyticsScope.region = branch.region;
+        analyticsScope.city = branch.city;
+        analyticsScope.branch = branch.id;
+        if (!analyticsDemo()) {
+          live().setScope(branch.id === BRANCH_IDS[0] ? 'live' : branch.id);
+          managementApi?.refresh().catch(() => {});
+        }
+        root.switchView('overview');
+      };
+      return button;
+    }));
+    if (!ranked.length) host.append(node('p','Seçili dönemde sıralamaya girecek yorum yok.','empty'));
+  }
+
+  function renderWeeklyReviews(scoped) {
+    const toUtcDay = key => Date.parse(key+'T00:00:00Z');
+    const dayMs = 86400000;
+    const mondayOf = key => {
+      const day = toUtcDay(key);
+      return day - ((new Date(day).getUTCDay()+6)%7)*dayMs;
+    };
+    const thisMonday = mondayOf(dayKey(Date.now()));
+    const weeks = Array.from({length:period==='month'?5:12},(_,i) => ({
+      start:thisMonday-((period==='month'?4:11)-i)*7*dayMs, answered:0, pending:0
+    }));
+    const byWeek = new Map(weeks.map(week=>[week.start,week]));
+    for (const row of scoped) {
+      if (!monthKey(row.createdAt)) continue;
+      const week = byWeek.get(mondayOf(dayKey(row.createdAt)));
+      if (week) week[row.isReplied === true || row.status === 'gonderildi' ? 'answered' : 'pending']++;
+    }
+    const color = getComputedStyle(doc.documentElement).getPropertyValue('--mute').trim();
+    chart('chartWeeklyReviews','bar',weeks.map(week=>new Date(week.start).toLocaleDateString('tr-TR',{day:'numeric',month:'short',timeZone:'UTC'})),[
+      {label:'Yanıtlı',data:weeks.map(week=>week.answered),backgroundColor:'#ee4934',borderRadius:4,maxBarThickness:27},
+      {label:'Yanıtsız',data:weeks.map(week=>week.pending),backgroundColor:'#f9a87e',borderRadius:4,maxBarThickness:27}
+    ],{interaction:{mode:'index',intersect:false},scales:{
+      x:{stacked:true,grid:{display:false},ticks:{color,maxTicksLimit:8}},
+      y:{stacked:true,beginAtZero:true,ticks:{color,precision:0}}
+    },plugins:{legend:{display:true,align:'start',labels:{color,boxWidth:9}}}});
+    emptyChart('chartWeeklyReviews',weeks.some(w=>w.answered || w.pending),'Bu haftalarda yorum bulunmuyor.');
+    chartNote('chartWeeklyReviews',`Son ${weeks.length} hafta · Yalnız seçili dönemde alınan yorumlar.`);
+  }
   root.renderOverview = function () {
-    const a = stats(rows());
+    const scoped = rows();
+    const a = stats(scoped);
+    renderBranchRanking(scoped);
     const connection = management().error ? 'Canlı yönetim bağlantısı alınamadı; Bağlantı durumu ekranını kontrol edin.' : !management().loaded ? 'Canlı kayıtlar için ERP oturumu bekleniyor.' : `${html(analyticsName())} · Google kayıtları ve ERP onay akışı. Kurulum ve test şubeleri hesaplamaya dahil edilmez.`;
     byId('ovAlerts').innerHTML = `<div class="alert ${analyticsLive() && management().loaded && !management().error ? 'info' : 'warn'}">${analyticsLive() ? connection : `${html(analyticsName())} · Demo çalışma alanı. Yapılan denemeler Google’a gönderilmez.`}</div>`;
     const total = currentReviewTotal(), target = currentTarget();
@@ -434,7 +507,7 @@
       `<div class="kpi v2-reference-kpi" data-tone="${tone}"><div class="kl">${html(label)}</div><div class="kv">${html(value)}</div><div class="kd"><span>${html(note)}</span>${badge ? `<span class="chip ${tone}">${html(badge)}</span>` : ''}</div></div>`
     ).join('');
     const attention = matchingBranches().map(b => {
-      const branchRows = rows().filter(r => (r.branchId || r.branch_id) === b.id);
+      const branchRows = scoped.filter(r => (r.branchId || r.branch_id) === b.id);
       const summary = live().aggregateReviews(branchRows,{slaHours:analyticsDemo()?24:b.id===branchId()?sla():Number(b.sla_hours)||24});
       return {branch:b,...summary};
     }).filter(b=>b.pending>0 || (b.slaRate!=null && b.slaRate<slaGoal))
@@ -447,6 +520,7 @@
   };
   root.initCharts = function () {
     const scoped = rows(), a = stats(scoped), keys = monthsFor(period);
+    renderWeeklyReviews(scoped);
     const daily = period === 'month';
     const now = Date.now();
     const points = daily ? recentDays(now) : keys;
