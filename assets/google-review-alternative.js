@@ -150,13 +150,13 @@
       if (button) navActions.append(button);
     }
   }
-  const refreshButtons = node('div', null, 'v2-refresh');
+  const refreshButtons = node('div', null, 'v2-nav-status');
   const connectionButton = byId('erpGoogleConnect');
   if (connectionButton) refreshButtons.append(connectionButton);
   const freshness = node('span', '', 'v2-freshness');
   freshness.setAttribute('aria-live', 'polite');
   refreshButtons.append(freshness);
-  scopeBar.append(refreshButtons);
+  navActions.prepend(refreshButtons);
   if (oldControls) oldControls.hidden = true;
   const meta = node('div', null, 'v2-period-note'); meta.id = 'v2PeriodNote'; meta.setAttribute('aria-live', 'polite');
   doc.querySelector('.ph')?.after(meta);
@@ -166,22 +166,20 @@
 
   function placeReviewControls() {
     const reviewView = STATE.view === 'reviews' && Boolean(reviewToolbar);
-    scopeBar.hidden = reviewView;
+    scopeBar.hidden = reviewView || STATE.view === 'overview';
     reviewStatus.hidden = !reviewView;
     if (reviewView) {
       if (branchSelect && branchSelect.parentElement !== reviewToolbar) reviewToolbar.prepend(branchSelect);
       if (environment.parentElement !== reviewStatus) reviewStatus.append(environment);
-      if (connectionButton && connectionButton.parentElement !== reviewStatus) reviewStatus.append(connectionButton);
     } else {
       if (branchSelect && branchSelect.parentElement !== branchLabel) branchLabel.append(branchSelect);
       if (STATE.view === 'overview' && chartScope.isConnected) {
         if (branchLabel.parentElement !== chartScope) chartScope.append(branchLabel, periodLabel, environment);
       } else if (branchLabel.parentElement !== scopeBar) {
-        refreshButtons.before(branchLabel, periodLabel, environment);
+        scopeBar.append(branchLabel, periodLabel, environment);
       } else if (environment.parentElement !== scopeBar) {
-        refreshButtons.before(environment);
+        scopeBar.append(environment);
       }
-      if (connectionButton && connectionButton.parentElement !== refreshButtons) refreshButtons.prepend(connectionButton);
     }
   }
 
@@ -216,6 +214,7 @@
   const originalSwitch = root.switchView;
   root.switchView = function (...args) { const result = originalSwitch.apply(this, args); normalizeScope(); return result; };
 
+  const hiddenTrendSeries = new Set();
   function chart(id, type, labels, datasets, extra = {}, chartPlugins = []) {
     const canvas = byId(id);
     if (!canvas || typeof Chart === 'undefined') return;
@@ -305,7 +304,31 @@
     const title = byId('chartTrend')?.closest('.chart-card')?.querySelector('h3');
     if (title) title.textContent = 'Toplam yorum sayısının değişimi ve hedef';
     const legend = byId('chartTrend')?.closest('.chart-card')?.querySelector('.chart-legend');
-    if (legend) legend.innerHTML = '<span><i style="background:#2563eb"></i>Ulaşılan</span><span><i style="background:#e11d48"></i>Hedef</span><span><i style="background:#7c3aed"></i>Trend</span>';
+    const seriesKeys = ['Ulaşılan', 'Hedef', 'Trend'];
+    if (legend) {
+      legend.replaceChildren(...seriesKeys.map((label, index) => {
+        const button = node('button', null, 'v2-series-toggle');
+        button.type = 'button';
+        const swatch = node('i');
+        swatch.style.backgroundColor = series[index].borderColor;
+        swatch.setAttribute('aria-hidden', 'true');
+        button.append(swatch, doc.createTextNode(label));
+        button.setAttribute('aria-controls', 'chartTrend');
+        button.setAttribute('aria-pressed', String(!hiddenTrendSeries.has(label)));
+        button.onclick = () => {
+          const trendChart = charts.chartTrend;
+          if (!trendChart) return;
+          const visible = !trendChart.isDatasetVisible(index);
+          if (visible) hiddenTrendSeries.delete(label);
+          else hiddenTrendSeries.add(label);
+          button.setAttribute('aria-pressed', String(visible));
+          trendChart.setDatasetVisibility(index, visible);
+          trendChart.update();
+        };
+        series[index].hidden = hiddenTrendSeries.has(label);
+        return button;
+      }));
+    }
     chart('chartTrend', 'line', comparisonKeys.map(key => new Date(`${daily ? key : key + '-01'}T12:00:00Z`).toLocaleDateString('tr-TR', daily ? { day: 'numeric', month: 'short' } : { month: 'short', year: '2-digit' })), series, daily ? { layout: { padding: { top: 14, right: 8 } }, plugins: { legend: { display: false }, tooltip: { callbacks: { afterBody: items => items.length ? `O gün eklenen: ${dailyCounts[items[0].dataIndex]}` : '' } } } } : {}, daily ? [dailyLabels] : []);
     chartNote('chartTrend', management().error || !management().loaded ? 'Hedef kayıtları doğrulanamadı.' : targets.some(v => v != null) ? (daily ? 'Son 30 gün · Noktaların üstündeki rakamlar o gün eklenen yorum adedini gösterir.' : 'Ay sonu yorum toplamı, kayıtlı aylık hedef ve doğrusal trend.') : 'Kayıtlı hedef yok. Performans ekranından hedef girin.');
     chart('chartRating', 'doughnut', ['5★', '4★', '3★', '2★', '1★'], [{ label: 'Yıldız dağılımı', data: a.ratingCounts, backgroundColor: ['#12805c', '#6bbf9b', '#fbbf24', '#fb923c', '#b42318'], borderWidth: 2 }]);
