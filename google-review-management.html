@@ -208,6 +208,10 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
 
 /* REVIEWS */
 .review-toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:9px 12px;margin-bottom:12px;box-shadow:var(--sh1)}
+.review-status-filters{display:flex;gap:4px;max-width:100%;overflow-x:auto;padding:2px}
+.review-status-filters button{display:grid;gap:2px;justify-items:center;align-content:center;min-height:38px;padding:3px 7px;background:var(--s2);color:var(--ink);border:1px solid var(--line);border-radius:7px;white-space:nowrap;cursor:pointer;font:inherit;font-size:10.5px}
+.review-status-filters b{font-size:14px;line-height:1}
+.review-status-filters button[aria-pressed="true"]{border-color:var(--blue);color:var(--blue);background:var(--bbg)}
 .review-toolbar .search-input{position:relative;flex:1;max-width:320px;min-width:160px}
 .review-toolbar .search-input input{width:100%;border:1px solid var(--line);background:var(--s2);padding:7px 10px 7px 30px;border-radius:var(--rs);font-size:12px}
 .review-toolbar .search-input svg{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--m2);width:14px;height:14px;pointer-events:none}
@@ -675,8 +679,10 @@ main{margin:0 auto;width:auto;max-width:1440px;padding:20px}
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
         <input placeholder="Yorum veya yazar ara..." aria-label="Yorum veya yazar ara" id="rvSearch">
       </div>
-      <select id="rvFilter">
+      <div class="review-status-filters" id="rvStatusFilters" role="group" aria-label="Yorum durumu"></div>
+      <select id="rvFilter" hidden>
         <option value="hepsi">Tüm durumlar</option>
+        <option value="cevap-bekleyen">Cevap bekleyen</option>
         <option value="bekliyor">Onay bekleyen</option>
         <option value="kritik">Kritik (risk 50+)</option>
         <option value="gonderildi">Gönderilen</option>
@@ -1699,20 +1705,50 @@ function renderHistory(r){
   return items.map(a => `<div style="padding:10px 0;border-bottom:1px solid var(--l2)"><b style="font-size:12.5px">${a.detail}</b><div style="font-size:11px;color:var(--mute)">${a.user} · ${a.ts}</div></div>`).join("");
 }
 
-function getFilteredReviews(){
-  let list = roleReviews().filter(r => {
-    if (r.duplicate && RV_FILTER !== "duplicate") return false;
-    if (RV_FILTER === "duplicate") return Boolean(r.duplicate);
-    if (RV_FILTER === "hepsi") return true;
-    if (RV_FILTER === "kritik") return r.risk >= 50;
-    if (RV_FILTER === "escalated") return r.escalated;
-    if (RV_FILTER === "routed") return r.status === "routed";
-    return r.status === RV_FILTER;
+function matchesReviewStatus(review, status){
+  if (status === "duplicate") return Boolean(review.duplicate);
+  if (review.duplicate) return false;
+  if (status === "hepsi") return true;
+  if (status === "cevap-bekleyen") return review.status !== "gonderildi";
+  if (status === "kritik") return review.risk >= 50;
+  if (status === "escalated") return Boolean(review.escalated);
+  return review.status === status;
+}
+
+function searchedReviews(){
+  const query = RV_SEARCH.trim().toLowerCase();
+  return roleReviews().filter(review => !query || [review.text, review.author, review.store]
+    .some(value => String(value ?? "").toLowerCase().includes(query)));
+}
+
+function renderReviewStatusFilters(reviews){
+  const host = $("#rvStatusFilters");
+  const select = $("#rvFilter");
+  const focused = host.contains(document.activeElement);
+  const focusValue = focused ? document.activeElement.dataset.status : null;
+  const buttons = [...select.options].map(option => {
+    const button = document.createElement("button");
+    const status = option.value;
+    button.type = "button";
+    button.dataset.status = status;
+    button.setAttribute("aria-pressed", String(status === RV_FILTER));
+    const count = document.createElement("b");
+    count.textContent = reviews.filter(review => matchesReviewStatus(review, status)).length;
+    const label = document.createElement("span");
+    label.textContent = status === "kritik" ? "Kritik" : option.textContent;
+    button.append(count, label);
+    button.onclick = () => {
+      select.value = status;
+      select.dispatchEvent(new Event("change", {bubbles:true}));
+    };
+    return button;
   });
-  if (RV_SEARCH.trim()){
-    const q = RV_SEARCH.toLowerCase();
-    list = list.filter(r => r.text.toLowerCase().includes(q) || r.author.toLowerCase().includes(q) || r.store.toLowerCase().includes(q));
-  }
+  host.replaceChildren(...buttons);
+  if (focusValue) buttons.find(button => button.dataset.status === focusValue)?.focus();
+}
+
+function getFilteredReviews(reviews = searchedReviews()){
+  const list = reviews.filter(review => matchesReviewStatus(review, RV_FILTER));
   if (RV_SORT === "risk") list.sort((a,b) => b.risk - a.risk);
   else if (RV_SORT === "rating") list.sort((a,b) => a.stars - b.stars);
   else list.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
@@ -1720,7 +1756,9 @@ function getFilteredReviews(){
 }
 
 function renderReviews(){
-  const filtered = getFilteredReviews();
+  const searched = searchedReviews();
+  const filtered = getFilteredReviews(searched);
+  renderReviewStatusFilters(searched);
   if (!filtered.some(row => row.id === SEL)) SEL = filtered[0]?.id ?? null;
   const fresh=$('#dataFreshness'); if(fresh) fresh.textContent=`Veri: ${new Date().toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})}`;
   $("#rvCount").textContent = filtered.length;
