@@ -218,12 +218,17 @@
   root.switchView = function (...args) { const result = originalSwitch.apply(this, args); normalizeScope(); return result; };
 
   const hiddenTrendSeries = new Set();
+  const chartSnapshots = new WeakMap();
   function chart(id, type, labels, datasets, extra = {}, chartPlugins = []) {
     const canvas = byId(id);
     if (!canvas || typeof Chart === 'undefined') return;
-    root.destroyChart(id);
     const color = getComputedStyle(doc.documentElement).getPropertyValue('--mute').trim();
     const line = getComputedStyle(doc.documentElement).getPropertyValue('--line').trim();
+    const snapshot = JSON.stringify({ type, labels, datasets, color, line });
+    const existing = charts[id];
+    if (existing?.canvas === canvas && chartSnapshots.get(existing) === snapshot) return;
+    root.destroyChart(id);
+    const reducedMotion = root.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     canvas.setAttribute('role', 'img');
     canvas.setAttribute('aria-label', `${labels.join(', ')}. ${datasets.map(d => `${d.label}: ${d.data.map(v => v == null ? 'kayıt yok' : v).join(', ')}`).join('. ')}`);
     const plugins = { legend: { display: type === 'doughnut', position: 'right', labels: { color, boxWidth: 9, padding: 12 } } };
@@ -232,9 +237,11 @@
       const total=datasets[0].data.reduce((sum,value)=>sum+Number(value||0),0),ctx=c.ctx;
       ctx.save();ctx.textAlign='center';ctx.fillStyle=getComputedStyle(doc.documentElement).getPropertyValue('--ink').trim()||'#0f172a';ctx.font='700 28px system-ui';ctx.fillText(String(total),arc.x,arc.y);ctx.fillStyle=color;ctx.font='12px system-ui';ctx.fillText('yorum',arc.x,arc.y+22);ctx.restore();
     }}] : chartPlugins, data: { labels, datasets }, options: {
-      responsive: true, maintainAspectRatio: false, animation: false,
+      responsive: true, maintainAspectRatio: false,
+      animation: reducedMotion || id.startsWith('v2Mini') ? false : { duration: 550, easing: 'easeOutQuart' },
       plugins, ...(type === 'doughnut' ? { cutout: '68%' } : { scales: { x: { grid: { display: false }, ticks: { color } }, y: { beginAtZero: true, grid: { color: line }, ticks: { color, precision: 0 } } } }), ...extra
     } });
+    chartSnapshots.set(charts[id], snapshot);
   }
   function emptyChart(id, hasData, message) {
     const host = byId(id)?.parentElement; if (!host) return;
