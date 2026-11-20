@@ -143,7 +143,8 @@
     const values = matchingBranches().map(b => {
       if (analyticsDemo()) {
         if (demoRatingTargets.has(b.id)) return demoRatingTargets.get(b.id);
-        const saved = localStorage.getItem('ototr.regional-demo.rating.' + b.id);
+        let saved;
+        try { saved = localStorage.getItem('ototr.regional-demo.rating.' + b.id); } catch (_) {}
         return saved === 'null' ? null : saved == null ? 4.7 : Number(saved);
       }
       const targets = b.id === branchId() ? management().targets || [] : scopedTargetCache.get(b.id) || [];
@@ -589,6 +590,22 @@
     }
     chart('chartRating', 'doughnut', ['5★', '4★', '3★', '2★', '1★'], [{ label: 'Yıldız dağılımı', data: a.ratingCounts, backgroundColor: ['#12805c', '#6bbf9b', '#fbbf24', '#fb923c', '#b42318'], borderWidth: 2 }]);
     emptyChart('chartRating', a.count > 0, 'Seçili dönemde yorum bulunmuyor.');
+    const ratingGoal = currentRatingTarget();
+    const ratingLabel = value => value == null ? '—' : value.toLocaleString('tr-TR', {minimumFractionDigits:1,maximumFractionDigits:2}) + ' ★';
+    const actualRating = a.average == null ? null : Math.round(a.average * 10) / 10;
+    const ratingSummary = byId('ratingGoalSummary');
+    if (ratingSummary) ratingSummary.innerHTML = `<span>${html(analyticsName())} · ${html(PERIODS[period])}</span><strong>Mevcut ${html(ratingLabel(actualRating))} · Hedef ${html(ratingLabel(ratingGoal))}</strong>`;
+    chart('chartRatingGoal', 'bar', ['Mevcut puan', 'Yıldız hedefi'], [{
+      label:'Yıldız puanı', data:[actualRating,ratingGoal],
+      backgroundColor:['#12805c','#7c3aed'], borderRadius:6, maxBarThickness:28
+    }], {indexAxis:'y',scales:{
+      x:{min:0,max:5,ticks:{stepSize:1}},
+      y:{grid:{display:false}}
+    }});
+    emptyChart('chartRatingGoal', actualRating != null || ratingGoal != null, 'Bu kapsamda puan veya hedef kaydı yok.');
+    chartNote('chartRatingGoal', (ratingGoal == null ? 'Bu kapsamda yıldız hedefi eksik. ' : '') +
+      'Mevcut puan seçili dönemdeki yorumların ortalamasıdır.' +
+      (matchingBranches().length > 1 ? ' Hedef, şubelerin yıldız hedeflerinin ortalamasıdır.' : ''));
     const total = currentReviewTotal(), target = currentTarget();
     const regionTitle = byId('chartRegion')?.closest('.chart-card')?.querySelector('h3'); if (regionTitle) regionTitle.textContent = 'Toplam yorum · hedef ve gerçekleşen';
     function summaryCard(canvasId, content) {
