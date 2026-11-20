@@ -90,7 +90,7 @@
   const branch = () => BRANCHES.find(b => (b.erpBranchId || b.id) === branchId()) || BRANCHES[BRANCH_IDS.indexOf(branchId())];
   const management = () => root.OTOTRReviewManagement?.state || {};
   const allRows = () => scopedRows(typeof REVIEWS === 'undefined' ? [] : REVIEWS, branchId());
-  let period = 'year';
+  let period = 'month';
   const rows = () => periodRows(allRows(), period);
   const sla = () => Number(isLive() ? management().policy?.default_sla_hours : branch()?.slaH) || 24;
   const stats = list => live().aggregateReviews(list, { slaHours: sla() });
@@ -207,7 +207,7 @@
   const originalSwitch = root.switchView;
   root.switchView = function (...args) { const result = originalSwitch.apply(this, args); normalizeScope(); return result; };
 
-  function chart(id, type, labels, datasets, extra = {}) {
+  function chart(id, type, labels, datasets, extra = {}, chartPlugins = []) {
     const canvas = byId(id);
     if (!canvas || typeof Chart === 'undefined') return;
     root.destroyChart(id);
@@ -220,7 +220,7 @@
       const arc=c.getDatasetMeta(0)?.data?.[0]; if(!arc)return;
       const total=datasets[0].data.reduce((sum,value)=>sum+Number(value||0),0),ctx=c.ctx;
       ctx.save();ctx.textAlign='center';ctx.fillStyle=getComputedStyle(doc.documentElement).getPropertyValue('--ink').trim()||'#0f172a';ctx.font='700 28px system-ui';ctx.fillText(String(total),arc.x,arc.y);ctx.fillStyle=color;ctx.font='12px system-ui';ctx.fillText('yorum',arc.x,arc.y+22);ctx.restore();
-    }}] : [], data: { labels, datasets }, options: {
+    }}] : chartPlugins, data: { labels, datasets }, options: {
       responsive: true, maintainAspectRatio: false, animation: false,
       plugins, ...(type === 'doughnut' ? { cutout: '68%' } : { scales: { x: { grid: { display: false }, ticks: { color } }, y: { beginAtZero: true, grid: { color: line }, ticks: { color, precision: 0 } } } }), ...extra
     } });
@@ -277,12 +277,28 @@
       { label: 'Kayıtlı hedef', data: cumulative.planned, borderColor: '#e11d48', borderDash: [7, 4], pointRadius: daily ? 0 : 5, spanGaps: false, fill: false, stepped: daily },
       { label: 'Yorum trendi', data: live().commentTrendSeries(cumulative.achieved), borderColor: '#7c3aed', borderDash: [3, 4], pointRadius: 0, fill: false }
     ];
+    const dailyCounts = daily ? comparisonKeys.map(key => reviewDates.filter(date => date === key).length) : [];
+    const dailyLabels = {
+      id: 'reviewDailyCounts',
+      afterDatasetsDraw(chart) {
+        if (!chart.isDatasetVisible(0)) return;
+        const ctx = chart.ctx;
+        ctx.save();
+        ctx.font = '10px system-ui';
+        ctx.fillStyle = getComputedStyle(doc.documentElement).getPropertyValue('--ink').trim() || '#0f172a';
+        ctx.textAlign = 'center';
+        chart.getDatasetMeta(0).data.forEach((point, index) => {
+          ctx.fillText(String(dailyCounts[index]), point.x, point.y - 8);
+        });
+        ctx.restore();
+      }
+    };
     const title = byId('chartTrend')?.closest('.chart-card')?.querySelector('h3');
     if (title) title.textContent = 'Toplam yorum sayısının değişimi ve hedef';
     const legend = byId('chartTrend')?.closest('.chart-card')?.querySelector('.chart-legend');
     if (legend) legend.innerHTML = '<span><i style="background:#2563eb"></i>Ulaşılan</span><span><i style="background:#e11d48"></i>Hedef</span><span><i style="background:#7c3aed"></i>Trend</span>';
-    chart('chartTrend', 'line', comparisonKeys.map(key => new Date(`${daily ? key : key + '-01'}T12:00:00Z`).toLocaleDateString('tr-TR', daily ? { day: 'numeric', month: 'short' } : { month: 'short', year: '2-digit' })), series);
-    chartNote('chartTrend', management().error || !management().loaded ? 'Hedef kayıtları doğrulanamadı.' : targets.some(v => v != null) ? (daily ? 'Son 30 gün · Günlük yorum toplamı, kayıtlı aylık hedef ve doğrusal trend.' : 'Ay sonu yorum toplamı, kayıtlı aylık hedef ve doğrusal trend.') : 'Kayıtlı hedef yok. Performans ekranından hedef girin.');
+    chart('chartTrend', 'line', comparisonKeys.map(key => new Date(`${daily ? key : key + '-01'}T12:00:00Z`).toLocaleDateString('tr-TR', daily ? { day: 'numeric', month: 'short' } : { month: 'short', year: '2-digit' })), series, daily ? { layout: { padding: { top: 14, right: 8 } }, plugins: { legend: { display: false }, tooltip: { callbacks: { afterBody: items => items.length ? `O gün eklenen: ${dailyCounts[items[0].dataIndex]}` : '' } } } } : {}, daily ? [dailyLabels] : []);
+    chartNote('chartTrend', management().error || !management().loaded ? 'Hedef kayıtları doğrulanamadı.' : targets.some(v => v != null) ? (daily ? 'Son 30 gün · Noktaların üstündeki rakamlar o gün eklenen yorum adedini gösterir.' : 'Ay sonu yorum toplamı, kayıtlı aylık hedef ve doğrusal trend.') : 'Kayıtlı hedef yok. Performans ekranından hedef girin.');
     chart('chartRating', 'doughnut', ['5★', '4★', '3★', '2★', '1★'], [{ label: 'Yıldız dağılımı', data: a.ratingCounts, backgroundColor: ['#12805c', '#6bbf9b', '#fbbf24', '#fb923c', '#b42318'], borderWidth: 2 }]);
     emptyChart('chartRating', a.count > 0, 'Seçili dönemde yorum bulunmuyor.');
     const monthly = stats(periodRows(allRows(), 'month')), target = currentTarget();
