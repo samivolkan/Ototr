@@ -1,7 +1,12 @@
 <!DOCTYPE html>
-<html lang="tr"><head><meta charset="utf-8">
+<html lang="tr" data-review-loading><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>OTOTR · Google Yorum Yönetim Sistemi</title>
+<style>
+  html[data-review-loading] body > :not(#review-loading-message){visibility:hidden}
+  #review-loading-message{display:none}
+  html[data-review-loading] #review-loading-message{display:block;padding:24px;color:#64748b;font:14px system-ui}
+</style>
 <script>document.documentElement.dataset.reviewVariant = '2';</script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
@@ -590,6 +595,7 @@ main{margin:0 auto;width:auto;max-width:1440px;padding:20px}
 @media(max-width:768px){body{padding-bottom:0}main{width:100%;padding:12px}.topbar .role-sel,.topbar .uchip{display:none}.bulk-bar{bottom:auto}.tc{bottom:12px}}
 @media print{main{margin:0;width:100%}}
 </style><link rel="stylesheet" href="assets/google-review-alternative.css?v=20261119-1"><link rel="stylesheet" href="assets/google-review-workspace.css?v=20261119-1"></head><body>
+<div id="review-loading-message" role="status">Yorum Yönetimi hazırlanıyor…</div>
 
 <header class="topbar">
   <div class="brand"><span class="bm">OTO</span><span style="color:var(--red)">TR</span><span class="bsub">Google Yorum Yönetim</span></div>
@@ -3167,4 +3173,7 @@ if (!STATE.onboarded) setTimeout(startTour, 500);
 <script src="assets/google-review-alternative.js?v=20261119-2"></script>
 <script src="assets/google-review-sandbox.js?v=20261119-3"></script>
 <script src="assets/google-review-workspace.js?v=20261119-3"></script>
+<script>
+  document.documentElement.removeAttribute('data-review-loading');
+</script>
 </body></html>
