@@ -254,17 +254,8 @@
     if (!note) { note = node('p', null, 'v2-chart-note'); host.append(note); }
     note.textContent = message;
   }
-  const ratingsCard = byId('chartRating')?.closest('.chart-card');
-  const watchCard = byId('ovWatchlist')?.closest('.chart-card');
-  if (ratingsCard && watchCard) {
-    const slot = doc.createComment('rating-card');
-    ratingsCard.before(slot);
-    watchCard.replaceWith(ratingsCard);
-    slot.replaceWith(watchCard);
-    ratingsCard.classList.replace('span-4', 'span-8');
-    watchCard.classList.replace('span-8', 'span-4');
-    watchCard.querySelector('h3').textContent = 'Dikkat gerektiren şubeler';
-  }
+  const watchTitle = byId('ovWatchlist')?.closest('.chart-card')?.querySelector('h3');
+  if (watchTitle) watchTitle.textContent = 'Dikkat gerektiren şubeler';
   root.renderOverview = function () {
     const a = stats(rows());
     const connection = management().error ? 'Canlı yönetim bağlantısı alınamadı; Bağlantı durumu ekranını kontrol edin.' : !management().loaded ? 'Canlı kayıtlar için ERP oturumu bekleniyor.' : `${html(branchName())} · Google kayıtları ve ERP onay akışı. Kurulum ve test şubeleri hesaplamaya dahil edilmez.`;
