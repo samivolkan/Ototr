@@ -196,7 +196,7 @@ html[data-review-variant="2"] #ovKpis .v2-reference-kpi .kv{font-size:clamp(22px
 
 .v2-rating-goal{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:6px;color:var(--mute)}
 
-#view-overview .v2-overview-side{display:grid;gap:14px;min-width:0;align-content:start}
+#view-overview .v2-overview-side{grid-column:span 4;display:grid;gap:14px;min-width:0;align-content:start}
 #view-overview .v2-overview-side #chartRating{max-height:190px}
 #view-overview .v2-overview-side .chart-wrap{height:190px}
 #view-overview .v2-overview-main-chart .chart-wrap{height:340px}
@@ -213,3 +213,6 @@ html[data-review-variant="2"] #ovKpis .v2-reference-kpi .kv{font-size:clamp(22px
 .v2-rank-number{display:inline-grid;place-items:center;min-width:20px;height:20px;margin-right:6px;border:1px solid var(--line);border-radius:5px;color:var(--mute);font-size:10px}
 .v2-rank-track{height:9px;background:repeating-linear-gradient(to right,var(--line) 0 2px,transparent 2px 5px);border-radius:2px;overflow:hidden}
 .v2-rank-track>span{display:block;height:100%;background:repeating-linear-gradient(to right,#ee4934 0 2px,transparent 2px 5px)}
+
+@media(max-width:1100px){#view-overview .v2-overview-side{grid-column:1/-1;grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){#view-overview .v2-overview-side{grid-template-columns:minmax(0,1fr)}}
