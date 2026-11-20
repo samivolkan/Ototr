@@ -100,3 +100,5 @@ html[data-review-variant="2"] #ovKpis .v2-metric-3{border-top-color:#e48a00}
 .v2-goal-meter::-webkit-progress-bar{background:var(--line);border-radius:9px}.v2-goal-meter::-webkit-progress-value{background:#ff6659;border-radius:9px}.v2-goal-meter::-moz-progress-bar{background:#ff6659;border-radius:9px}
 .v2-sla-meter{display:flex;min-height:36px;border-radius:8px;overflow:hidden;margin:8px 0 12px}.v2-sla-meter span{min-width:65px;display:grid;place-items:center;color:white;font-weight:700;font-size:12px;padding:8px}
 @media(max-width:700px){html[data-review-variant="2"] #ovKpis .kpi{min-height:125px;padding:14px}html[data-review-variant="2"] #ovKpis .kv{font-size:26px}.v2-insight{padding:14px}.v2-sla-meter{flex-wrap:wrap}}
+
+.review-action-group{width:100%;display:grid;grid-template-columns:75px 1fr;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}.review-action-group h4{margin:6px 0;font-size:12px;color:var(--mute)}.review-action-group>div{display:flex;gap:8px;flex-wrap:wrap}@media(max-width:600px){.review-action-group{grid-template-columns:1fr;gap:4px}}

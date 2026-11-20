@@ -212,19 +212,19 @@
     const scoped = rows(), a = stats(scoped), keys = monthsFor(period);
     const counts = keys.map(key => scoped.filter(r => monthKey(r.createdAt) === key).length);
     const targets = targetSeries(keys, management().targets || [], branchId(), branch()?.target);
-    const firstTarget = targets.findIndex(value => value != null);
+    const firstTarget = keys.findIndex(key => allRows().some(row => monthKey(row.createdAt) && monthKey(row.createdAt) <= key));
     const comparisonKeys = keys.slice(Math.max(0, firstTarget));
-    const cumulative = cumulativeProgress(counts.slice(Math.max(0, firstTarget)), targets.slice(Math.max(0, firstTarget)));
+    const cumulative = { achieved: comparisonKeys.map(key => allRows().filter(row => monthKey(row.createdAt) && monthKey(row.createdAt) <= key && new Date(row.createdAt).getTime() <= Date.now()).length), planned: targets.slice(Math.max(0, firstTarget)) };
     const series = [
-      { label: 'Ulaşılan yorum toplamı', data: cumulative.achieved, borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,.08)', fill: true, tension: 0, pointRadius: 5, spanGaps: false },
-      { label: 'Birikimli hedef', data: cumulative.planned, borderColor: '#e11d48', borderDash: [7, 4], pointRadius: 5, spanGaps: false, fill: false }
+      { label: 'Mevcut yorum toplamı', data: cumulative.achieved, borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,.08)', fill: true, tension: 0, pointRadius: 5, spanGaps: false },
+      { label: 'Kayıtlı hedef', data: cumulative.planned, borderColor: '#e11d48', borderDash: [7, 4], pointRadius: 5, spanGaps: false, fill: false }
     ];
     const title = byId('chartTrend')?.closest('.chart-card')?.querySelector('h3');
-    if (title) title.textContent = 'Hedef ve ulaşılan yorum toplamı';
+    if (title) title.textContent = 'Toplam yorum sayısının değişimi ve hedef';
     const legend = byId('chartTrend')?.closest('.chart-card')?.querySelector('.chart-legend');
     if (legend) legend.innerHTML = '<span><i style="background:#2563eb"></i>Ulaşılan</span><span><i style="background:#e11d48"></i>Hedef</span>';
     chart('chartTrend', 'line', comparisonKeys.map(key => new Date(`${key}-01T12:00:00Z`).toLocaleDateString('tr-TR', { month: 'short', year: '2-digit' })), series);
-    chartNote('chartTrend', management().error || !management().loaded ? 'Hedef kayıtları doğrulanamadı.' : targets.some(v => v != null) ? 'Seçili dönemin hedef kayıtlı ayları birikimli toplanır. Hedefi olmayan ayların yorumları bu karşılaştırmaya dahil edilmez.' : 'Kayıtlı hedef yok. Performans ekranından hedef girin.');
+    chartNote('chartTrend', management().error || !management().loaded ? 'Hedef kayıtları doğrulanamadı.' : targets.some(v => v != null) ? 'Mavi çizgi, ERP’deki kayıtların yorum tarihlerinden hesaplanan ay sonu toplamıdır; geçmiş Google anlık görüntüsü değildir. Kırmızı çizgi kayıtlı hedefi gösterir.' : 'Kayıtlı hedef yok. Performans ekranından hedef girin.');
     chart('chartRating', 'doughnut', ['5★', '4★', '3★', '2★', '1★'], [{ label: 'Yıldız dağılımı', data: a.ratingCounts, backgroundColor: ['#12805c', '#6bbf9b', '#fbbf24', '#fb923c', '#b42318'], borderWidth: 2 }]);
     emptyChart('chartRating', a.count > 0, 'Seçili dönemde yorum bulunmuyor.');
     const monthly = stats(periodRows(allRows(), 'month')), target = currentTarget();
