@@ -88,7 +88,7 @@
       select.value=value===NILUFER?'live':value;
       if (!options.some(b=>b.id===value) && !root.OTOTRReviewBridge?.isEditing?.()) live()?.setScope?.('live');
     }
-    const badge=doc.querySelector('.v2-scope > .chip, .v2-review-status > .chip, .v2-chart-scope > .chip'); if(badge) badge.textContent=options.length+' canlı şube';
+    const badge=doc.querySelector('.v2-scope > .chip, .v2-review-status > .chip'); if(badge && STATE.view !== 'performance') badge.textContent=options.length+' canlı şube';
     const isBranch=STATE.view==='branches';
     const analyticsView=['overview','performance','compare','store'].includes(STATE.view);
     if(byId('crumb')) byId('crumb').hidden=true;

@@ -123,7 +123,7 @@ html[data-review-variant="2"] .v2-scope { gap:16px; border-radius:12px; }
 html[data-review-variant="2"] .v2-scope select { min-width:135px; font-weight:650; }
 html[data-review-variant="2"] .v2-refresh { align-items:center; gap:12px; }
 .v2-freshness { padding-left:12px; border-left:1px solid var(--line); font-size:12px; color:var(--mute); }
-@media(max-width:950px) {
+@media(max-width:1100px) {
   html[data-review-variant="2"] .v2-nav-row { flex-wrap:wrap; gap:0; }
   html[data-review-variant="2"] .v2-nav-row .topnav { flex-basis:100%; }
   .v2-nav-actions { margin:6px 0 8px auto; }

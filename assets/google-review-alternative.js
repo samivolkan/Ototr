@@ -307,6 +307,7 @@
       const destination = STATE.view === 'overview' ? chartScope : scopeBar;
       if (hierarchy.parentElement !== destination) destination.prepend(hierarchy);
       updateHierarchy();
+      environment.textContent = matchingBranches().length + (analyticsDemo() ? ' demo şube' : ' canlı şube');
       loadScopeTargets();
     }
     reviewStatus.hidden = !reviewView;
