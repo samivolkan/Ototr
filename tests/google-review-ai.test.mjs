@@ -5,14 +5,15 @@ import vm from 'node:vm';
 import { webcrypto } from 'node:crypto';
 import test from 'node:test';
 
-const source = stripTypeScriptTypes((await readFile(new URL('../supabase/functions/google-review-ai/index.ts', import.meta.url), 'utf8')).replace(/^import .*?;\r?\n/, ''));
+import { edgeSource } from './helpers/edge-source.mjs';
+const source = await edgeSource(new URL('../supabase/functions/google-review-ai/index.ts', import.meta.url));
 const goodDraft = { reply: 'Değerlendirmeniz için teşekkür ederiz.\n\nOTOTR Bursa Nilüfer Otoekspertiz Ekibi', tone: 'samimi', requires_human_review: false, risk_reason: '', suggested_route: 'standard', quality_score: 90 };
 function responsePayload(draft = goodDraft) { return { status: 'completed', output: [{ type: 'reasoning', summary: [] }, { type: 'message', content: [{ type: 'output_text', text: JSON.stringify(draft) }] }], moderation: { input: { type: 'moderation_result', flagged: false }, output: { type: 'moderation_result', flagged: false } } }; }
 const baseBody = { action: 'generate', review: { id: 'fixture-review', rating: 5, comment: 'Özenli hizmet.' }, branch: { id: 'branch-google-nilufer', name: 'Untrusted branch', city: 'Untrusted city', replySignatureName: 'OTORAPOR' } };
 
 function harness(options = {}) {
   const calls = [], authTokens = [], writes = [];
-  const tables = { google_business_connections: options.noConnection ? [] : [{ id: 'ototr-primary', connected_by: 'owner' }], google_review_management_resources: options.resources || [], app_users: options.profiles || [], google_review_ai_generations: options.generations || [], google_review_ai_outcomes: options.outcomes || [] };
+  const tables = { google_review_automation: options.automation || [], google_review_work_items: options.workItems || [], google_business_connections: options.noConnection ? [] : [{ id: 'ototr-primary', connected_by: 'owner' }], google_review_management_resources: options.resources || [], app_users: options.profiles || [], google_review_ai_generations: options.generations || [], google_review_ai_outcomes: options.outcomes || [] };
   let handler;
   const env = { SUPABASE_URL: 'https://fixture.invalid', SUPABASE_ANON_KEY: 'fixture-public', SUPABASE_SERVICE_ROLE_KEY: 'fixture-secret', OPENAI_API_KEY: options.missingKey ? '' : 'fixture-openai-key', OPENAI_MODEL: options.model || '', GOOGLE_BUSINESS_ADMIN_USER_IDS: options.allowlist || '', OPENAI_PRICING_JSON: options.pricing ? JSON.stringify(options.pricing) : '' };
   const sandbox = vm.createContext({
@@ -45,8 +46,8 @@ function harness(options = {}) {
   vm.runInContext(source, sandbox);
   return {
     calls, authTokens, tables, writes,
-    async request(body = baseBody, authorization = 'Bearer fixture-user-session') {
-      const response = await handler(new Request('https://fixture.invalid/ai', { method: 'POST', headers: { ...(authorization ? { authorization } : {}), 'content-type': 'application/json' }, body: JSON.stringify(body) }));
+    async request(body = baseBody, authorization = 'Bearer fixture-user-session', workerToken = '') {
+      const response = await handler(new Request('https://fixture.invalid/ai', { method: 'POST', headers: { ...(workerToken ? {'x-ototr-worker-token':workerToken}:{}), ...(authorization ? { authorization } : {}), 'content-type': 'application/json' }, body: JSON.stringify(body) }));
       return { status: response.status, data: await response.json() };
     },
   };
@@ -500,4 +501,21 @@ test('a meaningfully different reply is accepted and previous reply is sent only
     assert.equal((await blocked.request({ ...baseBody, previous_reply: invalid })).status, 400);
     assert.equal(blocked.calls.length, 0);
   }
+});
+
+const workerToken='a'.repeat(64);
+const workerDigest=Buffer.from(await webcrypto.subtle.digest('SHA-256',new TextEncoder().encode(workerToken))).toString('hex');
+const workerState={branch_id:'branch-google-nilufer',enabled:true,token_digest:workerDigest,lease_id:'lease',lease_until:new Date(Date.now()+60000).toISOString()};
+const preparingItem={id:'work',connection_id:'ototr-primary',branch_id:'branch-google-nilufer',review_id:'fixture-review',status:'preparing'};
+test('server worker delegates AI only with a valid live lease and existing preparing review',async()=>{
+ const h=harness({automation:[workerState],workItems:[preparingItem]});
+ const r=await h.request(baseBody,'',workerToken);assert.equal(r.status,200);assert.equal(h.calls.length,1);assert.equal(h.authTokens.length,0);
+});
+test('worker cannot generate for arbitrary records, other branches, expired leases or playground',async()=>{
+ for(const [options,body] of [
+ [{automation:[workerState]},baseBody],
+ [{automation:[{...workerState,lease_until:'2000-01-01'}],workItems:[preparingItem]},baseBody],
+ [{automation:[workerState],workItems:[preparingItem]},{...baseBody,action:'playground'}],
+ [{automation:[workerState],workItems:[preparingItem]},{...baseBody,branch:{id:'branch-custom-example1'}}]
+ ]){const h=harness(options);const r=await h.request(body,'',workerToken);assert.ok([401,403].includes(r.status));assert.equal(h.calls.length,0);}
 });

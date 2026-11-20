@@ -44,3 +44,14 @@ html[data-review-variant="2"] .topbar .searchbar{margin-left:auto}
 html[data-review-variant="2"] button:focus-visible,html[data-review-variant="2"] input:focus-visible{outline:2px solid #2563eb;outline-offset:3px}
 @media(max-width:900px){.workspace-branches{grid-template-columns:1fr}.workspace-branch-list{display:flex;overflow:auto;padding:2px}.workspace-branch{min-width:220px}.workspace-metrics{grid-template-columns:repeat(2,1fr)}.workspace-checks{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:600px){html[data-review-variant="2"] #topnav button{padding:13px 10px;font-size:12px}.workspace-branch-head{align-items:flex-start;flex-direction:column}.workspace-form-grid{grid-template-columns:1fr}.workspace-branch-detail .card,.workspace-form-card{padding:16px!important}.workspace-checks{grid-template-columns:1fr 1fr;gap:14px 10px}.workspace-map .head{flex-wrap:wrap}.workspace-map iframe{height:240px}}
+
+/* One scope bar and one title, with evidence-based service states. */
+#crumb,#pageSub,.erp-live-source-note{display:none!important}
+#healthMetrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.service-status-card{background:var(--card,#fff);border:1px solid var(--line,#dde3ed);border-radius:12px;padding:18px}
+.service-status-title{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.service-status-card p{color:var(--mute);font-size:12px;line-height:1.7;margin:12px 0 0}
+.service-runtime{padding:8px}.service-runtime h3{margin:0 0 12px}.service-timing{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin:22px 0}.service-timing dt{color:var(--mute);font-size:12px}.service-timing dd{margin:5px 0;font-weight:600}.service-error{padding:12px;border-radius:8px;background:#fff1ef;color:#a72416}.service-runs{max-height:340px;overflow:auto}
+@media(max-width:1000px){#healthMetrics{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:600px){#healthMetrics,.service-timing{grid-template-columns:1fr}}
+
+#erpDataScope.info{display:none!important}

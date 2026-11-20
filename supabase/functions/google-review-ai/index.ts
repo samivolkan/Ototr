@@ -1,5 +1,7 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.57.4';
 
+import { verifyWorker, AUTOMATION_BRANCH } from '../_shared/review-automation.ts';
+
 const cors = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -27,7 +29,19 @@ function injectedSupabaseKey(legacyName: string, dictionaryName: string) {
   if (typeof name !== 'string' || !name) throw new RequestError('AI kimlik doğrulama yapılandırması eksik.', 503);
   return env(name);
 }
-async function authorize(req: Request, branchId = 'branch-google-nilufer') {
+async function authorize(req: Request, branchId = 'branch-google-nilufer', body?: any) {
+  const workerToken=req.headers.get('x-ototr-worker-token');
+  if(workerToken){
+    if(branchId!==AUTOMATION_BRANCH)throw new RequestError('Sunucu şube kapsamı geçersiz.',403);
+    const db=createClient(env('SUPABASE_URL'),injectedSupabaseKey('SUPABASE_SERVICE_ROLE_KEY','SUPABASE_SECRET_KEYS'),{auth:{persistSession:false,autoRefreshToken:false}});
+    await verifyWorker(db,workerToken,true);
+    if(body.action!=='generate' || !body.review?.id)throw new RequestError('Sunucu AI işlemi geçersiz.',403);
+    const item=await db.from('google_review_work_items').select('id').eq('connection_id','ototr-primary').eq('branch_id',AUTOMATION_BRANCH).eq('review_id',body.review.id).eq('status','preparing').maybeSingle();
+    if(item.error || !item.data)throw new RequestError('Aktif hazırlık kaydı gerekli.',403);
+    const owner=await db.from('google_business_connections').select('connected_by').eq('id','ototr-primary').maybeSingle();
+    if(owner.error||!owner.data)throw new RequestError('Bağlantı sahibi bulunamadı.',503);
+    return {db,userId:owner.data.connected_by,role:'admin'};
+  }
   const authorization = req.headers.get('authorization') || '';
   if (!/^Bearer\s+\S+$/i.test(authorization)) throw new RequestError('ERP oturumu gerekli.', 401);
   const client = createClient(env('SUPABASE_URL'), injectedSupabaseKey('SUPABASE_ANON_KEY', 'SUPABASE_PUBLISHABLE_KEYS'), { auth: { persistSession: false, autoRefreshToken: false } });
@@ -331,7 +345,7 @@ Deno.serve(async (req: Request) => {
     try { body = await req.json(); } catch (_) { throw new RequestError('Geçersiz JSON isteği.', 400); }
     const review = body?.review;
     const branchId = String(body?.branch?.id || '');
-    const preAuth = await authorize(req, branchId === aiBranchId || /^branch-custom-[A-Za-z0-9-]{8,80}$/.test(branchId) ? branchId : aiBranchId);
+    const preAuth = await authorize(req, branchId === aiBranchId || /^branch-custom-[A-Za-z0-9-]{8,80}$/.test(branchId) ? branchId : aiBranchId, body);
     const registry = /^branch-custom-/.test(branchId) ? await preAuth.db.from('google_review_branch_registry').select('id,name,city,region,mode,lifecycle,active').eq('connection_id', aiConnectionId).eq('id', branchId).maybeSingle() : { data: null, error: null };
     if (registry.error) throw new RequestError('Şube AI ayarı okunamadı.', 503);
     const branch = branches[branchId] || (registry.data ? { name: registry.data.name, city: registry.data.city, district: registry.data.region } : null);
@@ -423,7 +437,7 @@ Deney üslup tercihi: ${JSON.stringify(experiment?.instruction || '')}`,
         await recordGeneration(db, { ...info, ...usageMetrics(payload, model, Date.now() - startedAt), status: 'failed', failure_code: info.failure_code || (error instanceof RequestError ? `validation_${error.status}` : aiTimeout(error) ? 'timeout' : 'provider_error'), quality_score: null, requires_human_review: null, reply_sha256: null }, branch_id);
       } catch (_) { return json({ error: 'AI üretimi veya ölçüm kaydı tamamlanamadı. Mevcut taslak korundu; sunucu kayıtlarını kontrol edin.' }, 503); }
     }
-    if (error instanceof RequestError) return json({ error: error.message }, error.status);
+    if (error instanceof RequestError || (error instanceof Error && [401,403,503].includes((error as any).status))) return json({ error: error.message }, (error as any).status);
     if (aiTimeout(error)) return json({ error: 'OpenAI yanıtı zaman aşımına uğradı. Yeniden deneyin.' }, 504);
     return json({ error: 'AI yanıt servisi tamamlanamadı. Yeniden deneyin.' }, 502);
   }

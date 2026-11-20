@@ -90,8 +90,11 @@
     }
     const badge=doc.querySelector('.v2-scope > .chip'); if(badge) badge.textContent=options.length+' canlı şube';
     const isBranch=STATE.view==='branches';
-    const period=byId('v2Period')?.parentElement; if(period) period.hidden=isBranch;
-    if(byId('v2PeriodNote')) byId('v2PeriodNote').hidden=isBranch;
+    const analyticsView=['overview','performance','compare','store'].includes(STATE.view);
+    if(byId('crumb')) byId('crumb').hidden=true;
+    if(byId('pageSub')) byId('pageSub').hidden=true;
+    const period=byId('v2Period')?.parentElement; if(period) period.hidden=!analyticsView;
+    if(byId('v2PeriodNote')) byId('v2PeriodNote').hidden=!analyticsView;
     doc.querySelectorAll('#settingsTabs [data-t="stores"]').forEach(n=>n.hidden=true);
     doc.querySelectorAll('.review-page-switch').forEach(n=>n.remove());
     doc.querySelectorAll('button[onclick="openSimReview()"]').forEach(n=>n.hidden=true);

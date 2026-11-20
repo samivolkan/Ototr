@@ -2,6 +2,8 @@ import { createClient } from 'npm:@supabase/supabase-js@2.57.4';
 import { handleReviewManagement, loadReviewAccess, assertReviewLifecycle } from '../_shared/review-management.ts';
 import { verifyAiGeneration, recordAiOutcome, AiTelemetryError } from '../_shared/google-review-ai-telemetry.ts';
 
+import { runAutomation, automationStatus } from '../_shared/review-automation.ts';
+
 const cors = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, apikey, content-type',
@@ -608,7 +610,7 @@ async function prepareDraft(db: any, user: any, body: any, connection: any, auth
     if (verified.expected_reply) { skipped = true; throw new RequestError('Bu yorum Google’da zaten yanıtlanmış. Mevcut yanıt korundu.', 409); }
     // Forward the same ERP identity to the existing AI service. Its authorization,
     // canonical prompt, moderation and signature validation remain the only path.
-    const response = await fetch(`${env('SUPABASE_URL')}/functions/v1/google-review-ai`, { method: 'POST', signal, headers: { Authorization: authorization, apikey: injectedSupabaseKey('SUPABASE_ANON_KEY', 'SUPABASE_PUBLISHABLE_KEYS'), 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'generate', branch: { id: identity.branch_id }, review: { id: identity.review_id, rating: snapshot.rating, comment: snapshot.comment, reviewerName: snapshot.reviewer_name } }) });
+    const response = await fetch(`${env('SUPABASE_URL')}/functions/v1/google-review-ai`, { method: 'POST', signal, headers: { ...(authorization.startsWith('Worker ') ? {'x-ototr-worker-token':authorization.slice(7)} : {Authorization: authorization}), apikey: injectedSupabaseKey('SUPABASE_ANON_KEY', 'SUPABASE_PUBLISHABLE_KEYS'), 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'generate', branch: { id: identity.branch_id }, review: { id: identity.review_id, rating: snapshot.rating, comment: snapshot.comment, reviewerName: snapshot.reviewer_name } }) });
     const draft = await response.json().catch(() => null);
     if (!response.ok) throw new RequestError(typeof draft?.error === 'string' ? draft.error.slice(0, 800) : 'AI taslağı hazırlanamadı. Yeniden deneyin.', response.status);
     const expectedSignature = identity.branch_id === 'branch-google-nilufer' ? 'OTOTR Bursa Nilüfer Otoekspertiz Ekibi' : `${identity.branch_name} ekibi`;
@@ -821,16 +823,25 @@ Deno.serve(async (req) => {
       return Response.redirect(erpUrl, 302);
     }
     if (req.method !== 'POST') return json({ error: 'Desteklenmeyen yöntem.' }, 405);
-    const user = await currentUser(req);
     const body = await req.json();
     const db = admin();
+    if(body.action==='automation_tick') return json(await runAutomation(db,req.headers.get('x-ototr-worker-token')||'',{
+      connection:async()=>{const r=await db.from('google_business_connections').select('*').eq('id',connectionId).maybeSingle();databaseFailure(r.error);if(!r.data || r.data.oauth_client_id!==env('GOOGLE_OAUTH_CLIENT_ID'))throw new RequestError('Google bağlantısı yenilenmeli.',409);return {connection:r.data,user:{id:r.data.connected_by}};},
+      lifecycle:async(connection:any)=>assertReviewLifecycle({db,connection,branchId:managementBranchId}),
+      sync:async(connection:any)=>syncReviews([managementBranchId],await accessToken(await decrypt(connection.refresh_token_encrypted)),AbortSignal.timeout(25000)),
+      find:async(review:any,branch:any)=>preparationItem(db,workIdentity({branch_id:managementBranchId,account_id:branch.account_id,location_id:branch.location_id,review_id:review.reviewId})),
+      prepare:async(user:any,connection:any,review:any,branch:any,token:string)=>{const r=await prepareDraft(db,user,{branch_id:managementBranchId,account_id:branch.account_id,location_id:branch.location_id,review_id:review.reviewId},connection,'Worker '+token);if(r.item?.status==='approval_pending')await recordAiOutcome(db,{item:r.item,actorId:user.id,action:'saved'});return r;},
+      safe:async(item:any)=>assertAutomaticReply(db,item),
+      publish:async(user:any,item:any,connection:any)=>{await assertReviewLifecycle({db,connection,branchId:managementBranchId});const r=await publishWork(db,user,{action:'auto_publish_safe',branch_id:managementBranchId,item_id:item.id,expected_version:item.version,approved:true},await accessToken(await decrypt(connection.refresh_token_encrypted)));await writeGoogleAudit(db,{userId:user.id,role:'ADMIN',action:'auto_publish_safe',entityType:'review_work_item',entityId:item.id,afterState:{status:r.item?.status},detail:'Sunucu otomasyonu: risksiz 4–5 yıldız.'});if(r.item?.status==='published')await recordAiOutcome(db,{item:r.item,actorId:user.id,action:'published'});return r;}
+    }));
+    const user = await currentUser(req);
     const connection = await authorizedConnection(db, user.id, branchIdOf(body));
     const access = connection._reviewAccess;
     const branchRows = await loadBranchRegistry(db);
     const requestedBranch = body.branch_id === undefined ? managementBranchId : String(body.branch_id);
     if (body.branch_id !== undefined && (!managedBranchId(requestedBranch) || (requestedBranch.startsWith('branch-custom-') && !registryRow(branchRows, requestedBranch)))) throw new RequestError('Şube kaydı bulunamadı veya bu kapsam canlı yönetim için açılmadı.',400);
     const requestedRegistry = registryRow(branchRows, requestedBranch);
-    const readActions = new Set(['status','management_read','management_extended_read','operations_list','targets_list','workflow_list','audit_list','reviews','branch_list','branch_onboarding']);
+    const readActions = new Set(['automation_status','status','management_read','management_extended_read','operations_list','targets_list','workflow_list','audit_list','reviews','branch_list','branch_onboarding']);
     const approvalAction = ['publish_reply','verify_reply','reject_draft'].includes(body.action) && access.can_approve;
     if (access.role === 'viewer' && !readActions.has(body.action) && body.action !== 'notification_read' && !approvalAction) throw new RequestError('Bu kullanıcı yorumları yalnızca görüntüleyebilir.',403);
     if (access.source==='delegation' && !readActions.has(body.action) && body.action!=='notification_read' && !approvalAction && !(access.delegated_scopes.includes('tasks') && ['create_task','update_task','management_update'].includes(body.action))) throw new RequestError('İşlem süreli delegasyon kapsamının dışında.',403);
@@ -988,6 +999,7 @@ Deno.serve(async (req) => {
     if (['prepare_draft', 'save_draft', 'create_task'].includes(body.action)) workIdentity(body);
     if (['publish_reply', 'verify_reply'].includes(body.action)) { await getWork(db, body); await authorizedGoogleRole(db,user.id,body.action,requestedBranch); }
     if (body.action === 'auto_publish_safe') await authorizedGoogleRole(db,user.id,'publish_reply',requestedBranch);
+    if (body.action === 'automation_status') return json(await automationStatus(db));
     if (body.action === 'management_read') return json(await readManagement(db, user, body, connection, clientMatches));
     if (body.action === 'management_update') return json(await updateManagement(db, user, body, req.headers.get('x-request-id') || undefined));
     if (body.action === 'reject_draft') {
