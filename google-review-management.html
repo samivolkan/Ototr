@@ -2136,7 +2136,7 @@ function renderComplaint(){
       <td class="mono" style="font-size:11px">${c.id}</td>
       <td>${b?.name || "—"}</td><td>${c.customer}</td><td>${c.category}</td>
       <td><span class="chip ${sCls}" style="font-size:10px">${sLbl}</span></td>
-      <td><span class="chip ${slaCls}" style="font-size:10px">${left<0?"⚠ Aşıldı":left.toFixed(1)+" sa"}</span></td>
+      <td><span class="chip ${slaCls}" style="font-size:10px">${!Number.isFinite(left)?"Süre ölçülemedi":left<0?"⚠ SLA aşıldı":left.toFixed(1)+" sa kaldı"}</span></td>
       <td><span class="chip ${stCls} dot">${stLbl}</span></td>
       <td>${c.assignee}</td>
       <td><button class="btn sm" onclick="advanceComplaint('${c.id}')" ${c.status==="resolved"?"disabled":""}>İlerlet</button></td>
@@ -2194,7 +2194,9 @@ function renderApproval(){
   `;
 
   if (APPROVALS.length){
-    $("#approvalQueue").innerHTML = APPROVALS.map(a => {
+    const deadline = item => Number.isFinite(item.openedAt) && Number(item.slaH) > 0
+      ? item.openedAt + Number(item.slaH) * 3600000 : Infinity;
+    $("#approvalQueue").innerHTML = [...APPROVALS].sort((a,b) => deadline(a) - deadline(b)).map(a => {
       const b = BRANCHES[a.branchIdx];
       const pct = (a.level/a.total)*100;
       const elapsed = (Date.now()-a.openedAt)/3600000;
@@ -2204,16 +2206,17 @@ function renderApproval(){
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px">
           <div><div style="font-weight:600;font-size:13px">${a.id} — ${a.customer} · ${b?.name || "—"}</div>
           <div style="font-size:11.5px;color:var(--mute)">${a.type} · ${a.assignedTo}</div></div>
-          <span class="chip ${slaCls}" style="font-size:10.5px">${left<0?"⚠ Aşıldı":left.toFixed(1)+" sa"}</span>
+          <span class="chip ${slaCls}" style="font-size:10.5px">${!Number.isFinite(left)?"Süre ölçülemedi":left<0?"⚠ SLA aşıldı":left.toFixed(1)+" sa kaldı"}</span>
         </div>
-        <div style="font-size:12px;color:var(--i2);margin-bottom:8px;padding:8px;background:var(--s2);border-radius:6px">${a.text}</div>
+        ${a.review ? `<p class="v2-action-review"><strong>Müşteri yorumu</strong><br>${a.review}</p>` : ''}
+        <div class="v2-action-draft"><strong>Yanıt taslağı</strong><br>${a.text || 'Taslak bekleniyor.'}</div>
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
           <div style="flex:1;height:5px;background:var(--l2);border-radius:99px;overflow:hidden"><div style="height:100%;width:${pct}%;background:${a.level===a.total?'var(--ok)':'var(--blue)'};border-radius:99px"></div></div>
           <span style="font-size:10.5px;color:var(--mute);font-weight:600">Seviye ${a.level}/${a.total}</span>
         </div>
         <div style="display:flex;gap:6px;justify-content:flex-end">
           <button class="btn sm" onclick="rejectApp('${a.id}')">✕ Reddet</button>
-          <button class="btn sm p" onclick="approveApp('${a.id}')">✓ Onayla</button>
+          <button class="btn sm p" onclick="approveApp('${a.id}')">${a.erpItemId ? "Yanıtı incele" : "✓ Onayla"}</button>
         </div>
       </div>`;
     }).join("");
@@ -3172,6 +3175,7 @@ if (!STATE.onboarded) setTimeout(startTour, 500);
 </script>
 <script src="assets/google-review-alternative.js?v=20261119-2"></script>
 <script src="assets/google-review-sandbox.js?v=20261119-3"></script>
+<script src="assets/vendor-review-qrcode.js"></script>
 <script src="assets/google-review-workspace.js?v=20261119-3"></script>
 <script>
   document.documentElement.removeAttribute('data-review-loading');

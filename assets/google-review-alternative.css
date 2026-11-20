@@ -178,3 +178,14 @@ html[data-review-variant="2"] #ovKpis .v2-reference-kpi .kv{font-size:clamp(22px
 #ovKpis [data-tone="ok"] .kv{color:var(--ok)}
 #ovKpis [data-tone="warn"] .kv{color:#b86b00}
 #ovKpis [data-tone="bad"] .kv{color:var(--bad)}
+
+.v2-insight{position:relative;padding-right:48px}
+.v2-insight-close{position:absolute;top:9px;right:10px;width:30px;height:30px;border:1px solid var(--line);border-radius:7px;background:var(--surface);cursor:pointer;font-size:20px;line-height:1}
+.workspace-collection .watch-row{padding:10px 0}
+.workspace-collection form{margin-top:12px;scroll-margin-top:130px}
+.workspace-collection input{display:block;width:100%;padding:8px;margin:5px 0 8px;border:1px solid var(--line);border-radius:6px;background:var(--s2)}
+#workspaceQrResult{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+#workspaceQrResult img{width:min(190px,100%);height:auto}
+
+.v2-action-review,.v2-action-draft{font-size:12px;line-height:1.6;margin-bottom:8px;overflow-wrap:anywhere}
+.v2-action-draft{padding:9px 11px;background:var(--s2);border-radius:7px}

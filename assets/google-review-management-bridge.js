@@ -159,7 +159,7 @@
     };
     replace(LEGAL_CASES, 'legal', item => ({category:'Google yorum incelemesi',assignee:'ERP hukuk kuyruğu',status:item.status === 'done' ? 'closed' : 'open',hold:item.review_snapshot?.legal_hold === true,opened:String(item.created_at || '').slice(0,10),sla:slaHours/24,review:escape(item.review_snapshot?.comment || '')}));
     replace(COMPLAINTS, 'complaint', item => ({category:'Google müşteri deneyimi',assignee:'ERP şikayet kuyruğu',status:item.status === 'done' ? 'resolved' : 'received',severity:Number(item.review_snapshot?.rating) <= 2 ? 'high' : 'normal',openedAt:Date.parse(item.created_at),slaH:slaHours,review:escape(item.review_snapshot?.comment || '')}));
-    replace(APPROVALS, 'reply', item => ({type:'ERP yanıtı · '+escape(item.review_snapshot?.rejection ? 'Reddedildi' : item.status),level:1,total:1,assignedTo:'ERP yetkili onayı',slaH:slaHours,openedAt:Date.parse(item.created_at)}));
+    replace(APPROVALS, 'reply', item => ({type:'ERP yanıtı · '+escape(item.review_snapshot?.rejection ? 'Reddedildi' : item.status),level:1,total:1,assignedTo:'ERP yetkili onayı',slaH:slaHours,openedAt:Date.parse(item.created_at),review:escape(item.review_snapshot?.comment || '')}));
     for (let i=APPROVALS.length-1;i>=0;i--) {
       const item=items.find(item=>item.id===APPROVALS[i].erpItemId);
       if(item && (['published','done','closed','rejected'].includes(item.status) || item.review_snapshot?.rejection)) APPROVALS.splice(i,1);

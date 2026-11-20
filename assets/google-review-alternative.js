@@ -256,6 +256,7 @@
   }
   const watchTitle = byId('ovWatchlist')?.closest('.chart-card')?.querySelector('h3');
   if (watchTitle) watchTitle.textContent = 'Dikkat gerektiren şubeler';
+  const dismissedTargets = new Set();
   root.renderOverview = function () {
     const a = stats(rows());
     const connection = management().error ? 'Canlı yönetim bağlantısı alınamadı; Bağlantı durumu ekranını kontrol edin.' : !management().loaded ? 'Canlı kayıtlar için ERP oturumu bekleniyor.' : `${html(branchName())} · Google kayıtları ve ERP onay akışı. Kurulum ve test şubeleri hesaplamaya dahil edilmez.`;
@@ -264,8 +265,14 @@
     const ratio = progress(total, target);
     if (isLive() && management().loaded && !management().error) {
       const headline = ratio == null ? 'Toplam yorum hedefi' : ratio >= 100 ? 'Toplam yorum hedefine ulaşıldı' : 'Toplam yorum hedefinde ilerleme';
-      byId('ovAlerts').innerHTML = `<div class="v2-insight"><strong>${headline}</strong><p>${`Mevcut toplam: ${fmt(total)} yorum · Hedef: ${target == null ? 'Girilmedi' : fmt(target)}`} ${target == null ? '' : `· ${pct(ratio)} gerçekleşme · Kalan ${fmt(Math.max(0, target - total))} yorum.`} ${a.count ? `Ortalama puan ${fmt(a.average)}, yanıt oranı ${pct(a.responseRate)}. ${a.timedAnswers ? `${sla()} saatlik SLA içinde yanıtlananların oranı ${pct(a.slaRate)}.` : 'Yanıt süresi için ölçülebilir kayıt bekleniyor.'}` : ''}</p></div>`;
+      const insightKey = branchId() + ':' + monthKey(Date.now()) + ':' + target;
+      byId('ovAlerts').innerHTML = dismissedTargets.has(insightKey) ? '' : `<div class="v2-insight"><button class="v2-insight-close" type="button" aria-label="Hedef özetini kapat">×</button><strong>${headline}</strong><p>${`Mevcut toplam: ${fmt(total)} yorum · Hedef: ${target == null ? 'Girilmedi' : fmt(target)}`} ${target == null ? '' : `· ${pct(ratio)} gerçekleşme · Kalan ${fmt(Math.max(0, target - total))} yorum.`} ${a.count ? `Ortalama puan ${fmt(a.average)}, yanıt oranı ${pct(a.responseRate)}. ${a.timedAnswers ? `${sla()} saatlik SLA içinde yanıtlananların oranı ${pct(a.slaRate)}.` : 'Yanıt süresi için ölçülebilir kayıt bekleniyor.'}` : ''}</p></div>`;
     }
+      const dismiss = byId('ovAlerts').querySelector('.v2-insight-close');
+      if (dismiss) dismiss.onclick = () => {
+        dismissedTargets.add(branchId() + ':' + monthKey(Date.now()) + ':' + target);
+        byId('ovAlerts').replaceChildren();
+      };
     const responseGoal = 95;
     const slaGoal = 90;
     const ratingCount = a.ratingCounts.reduce((sum, count) => sum + count, 0);

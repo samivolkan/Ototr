@@ -116,6 +116,41 @@
     const map=b.onboarding?.map || (b.id===NILUFER?niluferMap:null), url=mapUrl(map);
     return '<div class="workspace-map"><div class="head"><div><h3>Şube konumu</h3><p>'+escape(map?.address||'Kurulum formundan enlem ve boylam ekleyin.')+'</p></div>'+(url?'<a class="btn sm" target="_blank" rel="noopener noreferrer" href="'+escape(mapUrl(map,false))+'">Haritada aç ↗</a>':'')+'</div>'+(url?'<iframe title="'+escape(name(b))+' konum haritası" src="'+escape(url)+'" loading="lazy" referrerpolicy="no-referrer" allowfullscreen></iframe>':'<div class="empty">Henüz konum eklenmedi.</div>')+'</div>';
   }
+  function collectionTools() {
+    return '<div class="card workspace-collection"><h3>Yorum toplama araçları</h3>' +
+      '<div class="watch-row"><div class="info"><b>QR kod</b><small>Ekspertiz teslimatında müşteriye gösterilir.</small></div><button class="btn" data-branch-action="qr-open">Oluştur</button></div>' +
+      '<div class="watch-row"><div class="info"><b>WhatsApp / SMS isteği</b><small>Rapor tesliminden sonra önerilen bekleme 2 saat.</small></div><button class="btn" data-branch-action="collection">Etkinleştir</button></div>' +
+      '<form id="workspaceQrForm" hidden><label>Google yorum bağlantısı<input id="workspaceReviewLink" type="url" required placeholder="https://g.page/r/…/review"></label>' +
+      '<button class="btn" type="submit">QR kodu üret</button><p id="workspaceQrError" role="alert"></p><div id="workspaceQrResult"></div></form></div>';
+  }
+  section.addEventListener('submit', event => {
+    if (event.target.id !== 'workspaceQrForm') return;
+    event.preventDefault();
+    const error = byId('workspaceQrError'), result = byId('workspaceQrResult');
+    result.replaceChildren();
+    error.textContent = '';
+    try {
+      const url = new URL(byId('workspaceReviewLink').value.trim());
+      const validPath = (url.hostname === 'g.page' && /^\/r\/[A-Za-z0-9_-]+\/review\/?$/.test(url.pathname)) ||
+        (['search.google.com','www.google.com'].includes(url.hostname) &&
+          ['/local/writereview','/maps'].some(path => url.pathname === path) && url.searchParams.has('placeid'));
+      if (url.protocol !== 'https:' || url.username || url.password || !validPath || url.href.length > 600) {
+        throw new Error('Google İşletme Profili’ndeki “Yorum iste” bağlantısını girin.');
+      }
+      const qr = root.qrcode(0, 'M');
+      qr.addData(url.href);
+      qr.make();
+      const image = doc.createElement('img');
+      image.src = qr.createDataURL(5);
+      image.alt = 'Google yorum bağlantısının QR kodu';
+      const download = doc.createElement('a');
+      download.className = 'btn';
+      download.download = 'ototr-yorum-qr.gif';
+      download.href = image.src;
+      download.textContent = 'QR kodu indir';
+      result.append(image, download);
+    } catch (e) { error.textContent = e.message || 'QR kodu oluşturulamadı.'; }
+  });
   function renderBranches() {
     if(formOpen) return;
     const items=visibleBranches(), b=items.find(b=>b.id===selected)||items[0]; selected=b.id;
@@ -125,11 +160,11 @@
     const state=api().state;
     const rows=root.OTOTRReviewAlternative?.scopedRows?.()||[];
     const metrics=b.id===live()?.getBranchId?.()?live()?.aggregateReviews?.(rows,{slaHours:state.policy?.default_sla_hours||24}):null;
-    section.innerHTML='<div class="workspace-branch-head"><div><h2>Şube ağı</h2><p>'+operationalBranches(items).length+' canlı · '+items.filter(x=>!operationalBranches([x]).length).length+' kurulum / test</p></div><div><button class="btn" data-branch-action="sample" '+(busy?'disabled':'')+'>Örnek şubeyi dene</button> <button class="btn p" data-branch-action="new" '+(busy?'disabled':'')+'>＋ Şube ekle</button></div></div>'+
+    section.innerHTML='<div class="workspace-branch-head"><div><h2>Şube ağı</h2><p>Genel Merkez → Bölge → İl → Şube</p><p>'+operationalBranches(items).length+' canlı · '+items.filter(x=>!operationalBranches([x]).length).length+' kurulum / test</p></div><div><button class="btn" data-branch-action="sample" '+(busy?'disabled':'')+'>Örnek şubeyi dene</button> <button class="btn p" data-branch-action="new" '+(busy?'disabled':'')+'>＋ Şube ekle</button></div></div>'+
       (loadError?'<div class="alert warn" role="alert">'+escape(loadError)+' <button class="btn sm" data-branch-action="reload">Tekrar dene</button></div>':'')+
       '<div class="workspace-branches"><aside class="workspace-branch-list" aria-label="Şube listesi">'+items.map(x=>'<button class="workspace-branch '+(x.id===selected?'selected':'')+'" data-select-branch="'+escape(x.id)+'" aria-pressed="'+(x.id===selected)+'"><strong>'+escape(name(x))+'</strong><span>'+escape(x.region)+' · '+escape(x.city)+'</span><em>'+badge(x)+'</em></button>').join('')+'</aside><div class="workspace-branch-detail"><div class="card"><div class="head"><div><h2>'+escape(name(b))+'</h2><p>'+escape(b.region)+' / '+escape(b.city)+'</p></div><span class="chip '+(liveBranch?'ok':'warn')+'">'+badge(b)+'</span></div>'+
       (b.onboarding?.test?'<div class="alert info">Örnek şube gerçek bir işletme değildir. Canlı raporlara katılmaz; Google yanıtı ve müşteri mesajı gönderemez.</div>':'')+
-      '<div class="workspace-metrics"><div><small>Son veri</small><strong>'+escape(date(b.last_sync_at||b.lastSync))+'</strong></div><div><small>Alınan yorum</small><strong>'+(metrics?metrics.count:'—')+'</strong></div><div><small>SLA hedefi</small><strong>'+escape(b.id===NILUFER?state.policy?.default_sla_hours||'—':b.sla_hours||24)+' saat</strong></div><div><small>Kontrol sıklığı</small><strong>'+escape(b.interval_minutes||60)+' dk</strong></div></div>'+
+      '<div class="workspace-metrics"><div><small>Ortalama puan</small><strong>'+(metrics?.average?.toFixed(1)??'—')+'</strong></div><div><small>Yanıt oranı</small><strong>'+(metrics?.responseRate==null?'—':Math.round(metrics.responseRate)+'%')+'</strong></div><div><small>SLA gerçekleşme</small><strong>'+(metrics?.slaRate==null?'—':Math.round(metrics.slaRate)+'%')+'</strong></div><div><small>Son veri</small><strong>'+escape(date(b.last_sync_at||b.lastSync))+'</strong></div><div><small>Alınan yorum</small><strong>'+(metrics?metrics.count:'—')+'</strong></div><div><small>SLA hedefi</small><strong>'+escape(b.id===NILUFER?state.policy?.default_sla_hours||'—':b.sla_hours||24)+' saat</strong></div><div><small>Kontrol sıklığı</small><strong>'+escape(b.interval_minutes||60)+' dk</strong></div></div>'+
       '<div class="workspace-checks">'+checklist.map(([label,ok])=>{
         const testClosed=b.onboarding?.test&&(label.startsWith('Google')||label==='Canlı kapsam');
         const status=testClosed?'Testte kapalı':label==='AI davranış ayarı'&&ok&&c?.sources?.ai==='erp'?'ERP varsayılanı':label==='Yorum toplama ayarı'&&c?.collection?.enabled===false?'Kapalı · gönderim yok':ok?'Hazır':loadError||setupError?'Doğrulanamadı':c?'Eksik':busy?'Kontrol ediliyor':'Kontrol bekliyor';
@@ -139,7 +174,7 @@
       '<div class="workspace-actions">'+(liveBranch?'<button class="btn" data-branch-action="reviews">Yorumları izle</button><button class="btn" data-branch-action="performance">Hedef ve performans</button>':'<button class="btn" data-branch-action="edit" '+(busy?'disabled':'')+'>Kurulumu düzenle</button><button class="btn p" data-branch-action="activate" '+(busy||b.onboarding?.test||!b.account_id||!b.store_code||!b.location_id?'disabled':'')+'>Google’da doğrula ve canlıya al</button>')+
       '<button class="btn" data-branch-action="check" '+(busy?'disabled':'')+'>Kurulumu kontrol et</button></div><p class="v2-chart-note">AI ve bağlantılar mevcut ERP ayarlarından kullanılır. Yeni şubede müşteri mesajı gönderimi başlangıçta kapalıdır.</p></div>'+
       (!liveBranch&&c?'<div class="card"><h3>Şubenin çalışma hedefleri</h3><p class="v2-chart-note">Bu şubeye özel sunucu kaydı · '+escape(c.target_month?.slice(0,7)||'')+'</p><div class="workspace-form-grid"><label>Aylık yorum hedefi<input id="setupTarget" type="number" min="1" max="10000" step="1" value="'+escape(c.target?.target||b.target||30)+'"><button class="btn" data-branch-action="save-target" '+(busy?'disabled':'')+'>Hedefi kaydet</button></label><label>Yanıt SLA (saat)<input id="setupSla" type="number" min="1" max="168" step="1" value="'+escape(b.sla_hours||24)+'"><button class="btn" data-branch-action="save-sla" '+(busy?'disabled':'')+'>SLA kaydet</button></label></div><p class="v2-chart-note">Kaydettiğiniz değerler yalnız bu şubeye uygulanır. Canlı Bursa hedefi ve SLA’sı değişmez.</p></div>':'')+
-      (b.onboarding?.test?'<div id="workspaceSandbox"></div>':'')+mapPanel(b)+'</div></div>';
+      (liveBranch?collectionTools():'')+(b.onboarding?.test?'<div id="workspaceSandbox"></div>':'')+mapPanel(b)+'</div></div>';
     if(b.onboarding?.test)root.OTOTRReviewSandbox?.mount(byId('workspaceSandbox'),b);
   }
   async function loadBranches() {
@@ -196,6 +231,20 @@
     if(select&&!busy){selected=select.dataset.selectBranch;setupError='';renderBranches();await loadCheck(selected);renderBranches();return;}
     if(!button||busy)return;
     const action=button.dataset.branchAction, b=visibleBranches().find(b=>b.id===selected);
+    if(action==='qr-open'){
+      const form=byId('workspaceQrForm');
+      form.hidden=false;
+      byId('workspaceReviewLink')?.focus();
+      return;
+    }
+    if(action==='collection'){
+      live().setScope(b.id===NILUFER?'live':b.id);
+      root.switchView('settings');
+      doc.querySelector('#settingsTabs [data-t="integrations"]')?.click();
+      byId('reviewCollectionCard')?.scrollIntoView({block:'start'});
+      byId('collectionEnabled')?.focus({preventScroll:true});
+      return;
+    }
     if(action==='new')return openForm(null);
     if(action==='sample'){
       const existing=registry().find(b=>b.id===SAMPLE_ID);

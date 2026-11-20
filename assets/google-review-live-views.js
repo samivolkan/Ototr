@@ -387,7 +387,6 @@
   wrap('renderApproval', () => {
     const list = records('approvals');
     set('appMetrics', metric('Bekleyen yanıt görevi', list.length, 'ERP yayın kuyruğu') + metric('Delegasyon', '—', 'Sunucu desteği yok') + metric('Bugün onaylanan', '—', 'Onay metriği sağlanmıyor') + metric('Ort. süre', '—', 'Ölçüm sağlanmıyor'));
-    document.querySelectorAll('#approvalQueue .card').forEach(card => { card.querySelectorAll('.chip').forEach(chip => { if (/sa|Aşıldı/.test(chip.textContent)) chip.textContent = 'ERP görevi'; }); });
     document.querySelectorAll('#approvalQueue span').forEach(span => { if (/^Seviye \d/.test(span.textContent)) span.parentElement.innerHTML = '<span style="font-size:11px;color:var(--mute)">Yetkili insan onayı gerekiyor.</span>'; });
     preserve('approval-matrix');
     set('approval-matrix', `<div class="card"><div class="head"><h3>Canlı onay politikası</h3></div><p>Tüm canlı Google yanıtları yetkili insan onayıyla yayınlanır.</p><p>Yetkili roller: ${esc((policy().approver_roles || []).join(', ') || 'ERP ayarı bekleniyor')}</p><p>SLA: ${policy().default_sla_hours ? `${Number(policy().default_sla_hours)} saat` : 'ERP ayarı bekleniyor'}</p></div>`);
