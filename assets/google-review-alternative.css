@@ -195,3 +195,10 @@ html[data-review-variant="2"] #ovKpis .v2-reference-kpi .kv{font-size:clamp(22px
 .v2-hierarchy select{max-width:185px}
 
 .v2-rating-goal{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:6px;color:var(--mute)}
+
+#view-overview .v2-overview-side{display:grid;gap:14px;min-width:0;align-content:start}
+#view-overview .v2-overview-side #chartRating{max-height:190px}
+#view-overview .v2-overview-side .chart-wrap{height:190px}
+#view-overview .v2-overview-main-chart .chart-wrap{height:340px}
+#view-overview .v2-overview-sla{grid-column:1/-1}
+@media(max-width:768px){#view-overview .v2-overview-main-chart .chart-wrap{height:275px}}

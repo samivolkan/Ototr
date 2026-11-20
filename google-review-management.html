@@ -644,16 +644,18 @@ main{margin:0 auto;width:auto;max-width:1440px;padding:20px}
     <div id="ovAlerts"></div>
     <div class="metrics" id="ovKpis"></div>
     <div class="chart-grid">
-      <div class="chart-card span-8">
+      <div class="chart-card span-8 v2-overview-main-chart">
         <div class="chart-head">
           <h3>Yorum hacmi — hedefe karşı <span class="sub">son 12 ay</span></h3>
           <div class="chart-legend"><span><i style="background:#2563eb"></i>Gerçek</span><span><i style="background:#7c3aed"></i>Yorum trendi</span><span><i style="background:#e11d48"></i>Hedef</span></div>
         </div>
         <div class="chart-wrap h-260"><canvas id="chartTrend"></canvas></div>
       </div>
-      <div class="chart-card span-4">
+      <div class="span-4 v2-overview-side"><div class="chart-card">
         <div class="chart-head"><h3>Yıldız dağılımı</h3></div>
         <div class="chart-wrap h-260"><canvas id="chartRating"></canvas></div>
+      </div>
+      <div class="chart-card"><div class="chart-head"><h3>Dikkat gerektiren şubeler</h3></div><div id="ovWatchlist"></div></div>
       </div>
     </div>
     <div class="chart-grid">
@@ -672,11 +674,7 @@ main{margin:0 auto;width:auto;max-width:1440px;padding:20px}
       </div>
     </div>
     <div class="chart-grid">
-      <div class="chart-card span-8">
-        <div class="chart-head"><h3>Dikkat gerektiren</h3><button class="btn sm ghost" onclick="switchView('performance')">Tümü →</button></div>
-        <div id="ovWatchlist"></div>
-      </div>
-      <div class="chart-card span-4">
+      <div class="chart-card span-12 v2-overview-sla">
         <div class="chart-head"><h3>SLA görünümü</h3></div>
         <div id="ovSla"></div>
       </div>
