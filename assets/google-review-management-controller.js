@@ -36,7 +36,7 @@
     return ai.googleBusinessRequest(action,{...payload,branch_id:branchId});
   }
   function notifyReady() {
-    window.OTOTRReviewBridge?.hydrate?.();
+    if (!window.OTOTRReviewBridge?.isEditing?.()) window.OTOTRReviewBridge?.hydrate?.();
     const target = state.targets.find(row => row.month === month());
       if (typeof BRANCHES !== 'undefined' && target) { const branch = BRANCHES.find(b => b.id === currentBranch()); if (branch) branch.target = target.target; }
     window.dispatchEvent(new CustomEvent('ototr-management-ready'));
@@ -63,11 +63,11 @@
   }
   async function mutate(key, operation) {
     if (locks.has(key)) throw new Error('Bu kayıt için işlem sürüyor.');
-    if (window.OTOTRReviewBridge?.isEditing?.()) throw new Error('Önce açık yanıt taslağını kaydedin veya kapatın.');
+    if (key !== 'target' && window.OTOTRReviewBridge?.isEditing?.()) throw new Error('Önce açık yanıt taslağını kaydedin veya kapatın.');
     locks.add(key);
     try {
       const result = await operation();
-      if (result.item) {
+      if (result.item && key !== 'target') {
         let refreshed = await ai.refreshWorkflow();
         for (let attempt=0; refreshed?.skipped && attempt<100; attempt++) {
           await new Promise(resolve=>setTimeout(resolve,100));

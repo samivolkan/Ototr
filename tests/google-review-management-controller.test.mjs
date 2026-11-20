@@ -107,3 +107,13 @@ test('same-month demo target cannot supply Bursa target or optimistic version',a
   assert.equal(s.calls[0].body.expected_version,4);
   assert.equal(s.calls[0].body.branch_id,'branch-google-nilufer');
 });
+
+test('target save is independent of open reply draft and does not hydrate or refresh workflow',async()=>{
+ const s=await ready(setup());
+ s.window.OTOTRReviewBridge.isEditing=()=>true;
+ s.window.OTOTRReviewBridge.hydrate=()=>{throw new Error('draft must remain intact');};
+ s.window.parent.OTOTRGoogleReviewAI.refreshWorkflow=async()=>{throw new Error('draft workflow must remain intact');};
+ await s.api.saveTarget(59);
+ assert.equal(s.calls.find(c=>c.action==='target_save').body.target,59);
+ await assert.rejects(s.api.rejectDraft('draft','test reason',7),/taslağını/);
+});

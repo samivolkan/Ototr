@@ -1,6 +1,6 @@
 # Bursa sunucu otomasyonu
 
-Bursa Nilüfer için pg_cron her 5 dakikada bir Vault kimliğiyle sunucu fonksiyonunu çağırır. Diğer şubeler kapsama alınmaz. Tarayıcı oturumu gerekmez.
+Bursa Nilüfer için pg_cron her 2 saatte bir Vault kimliğiyle sunucu fonksiyonunu çağırır. Diğer şubeler kapsama alınmaz. Tarayıcı oturumu gerekmez.
 
 ## Güvenlik ve yayın
 - İstek gövdesi bir kullanıcı kimliği veya şube seçemez. İş kapsamı sunucuda Nilüfer olarak sabittir.
