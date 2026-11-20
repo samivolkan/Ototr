@@ -150,3 +150,8 @@ html[data-review-variant="2"] #rvDetail textarea{min-height:84px}
 #view-reviews .review-action-group:first-child{grid-template-columns:1fr}
 #view-reviews .review-action-group:first-child:has(button[onclick^="editSentReply"]) h4{display:none}
 @media(max-width:850px){html[data-review-variant="2"] #view-reviews .split{grid-template-columns:1fr}#view-reviews .detail{padding:14px}}
+
+html[data-review-variant="2"] #ovKpis{gap:10px}
+html[data-review-variant="2"] #ovKpis .kpi{min-height:88px;padding:10px 14px;border-radius:11px}
+html[data-review-variant="2"] #ovKpis .kv{font-size:24px;margin:4px 0;line-height:1.2}
+html[data-review-variant="2"] #ovKpis .kl{margin-bottom:3px}

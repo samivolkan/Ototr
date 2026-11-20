@@ -22,6 +22,14 @@
     const keys = new Set(monthsFor(period, now));
     return rows.filter(row => keys.has(monthKey(row.createdAt)) && new Date(row.createdAt).getTime() <= now);
   }
+  const dayFormat = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Istanbul', year: 'numeric', month: '2-digit', day: '2-digit' });
+  function dayKey(value) {
+    return dayFormat.format(new Date(value));
+  }
+  function recentDays(now) {
+    const today = Date.parse(dayKey(now) + 'T12:00:00Z');
+    return Array.from({ length: 30 }, (_, index) => new Date(today - (29 - index) * 86400000).toISOString().slice(0, 10));
+  }
   function scopedRows(rows, branchId) {
     if (!BRANCH_IDS.includes(branchId) && !/^branch-custom-[A-Za-z0-9-]{8,80}$/.test(branchId)) return [];
     const demo = BRANCH_IDS.slice(1).includes(branchId);
@@ -51,7 +59,7 @@
     });
     return { achieved, planned };
   }
-  const pure = { cumulativeProgress, BRANCH_IDS, monthsFor, monthKey, periodRows, scopedRows, targetSeries, progress };
+  const pure = { recentDays, cumulativeProgress, BRANCH_IDS, monthsFor, monthKey, periodRows, scopedRows, targetSeries, progress };
   if (typeof module === 'object' && module.exports) module.exports = pure;
   if (!root?.document) return;
 
@@ -251,27 +259,30 @@
   };
   root.initCharts = function () {
     const scoped = rows(), a = stats(scoped), keys = monthsFor(period);
-    const targets = targetSeries(keys, management().targets || [], branchId(), branch()?.target);
+    const daily = period === 'month';
     const now = Date.now();
-    const reviewMonths = allRows().filter(row => new Date(row.createdAt).getTime() <= now)
-      .map(row => monthKey(row.createdAt)).filter(Boolean);
-    const firstPoint = Math.max(0, keys.findIndex((key, index) =>
-      targets[index] != null || reviewMonths.some(month => month <= key)));
-    const comparisonKeys = keys.slice(firstPoint);
+    const points = daily ? recentDays(now) : keys;
+    const targets = targetSeries(points.map(key => key.slice(0, 7)), management().targets || [], branchId(), branch()?.target);
+    const reviewDates = allRows().filter(row => monthKey(row.createdAt) && new Date(row.createdAt).getTime() <= now)
+      .map(row => daily ? dayKey(row.createdAt) : monthKey(row.createdAt));
+    const firstPoint = daily ? 0 : Math.max(0, points.findIndex((key, index) =>
+      targets[index] != null || reviewDates.some(date => date <= key)));
+    const comparisonKeys = points.slice(firstPoint);
     const cumulative = {
-      achieved: comparisonKeys.map(key => reviewMonths.filter(month => month <= key).length),
+      achieved: comparisonKeys.map(key => reviewDates.filter(date => date <= key).length),
       planned: targets.slice(firstPoint)
     };
     const series = [
       { label: 'Mevcut yorum toplamı', data: cumulative.achieved, borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,.08)', fill: true, tension: 0, pointRadius: 5, spanGaps: false },
-      { label: 'Kayıtlı hedef', data: cumulative.planned, borderColor: '#e11d48', borderDash: [7, 4], pointRadius: 5, spanGaps: false, fill: false }
+      { label: 'Kayıtlı hedef', data: cumulative.planned, borderColor: '#e11d48', borderDash: [7, 4], pointRadius: daily ? 0 : 5, spanGaps: false, fill: false, stepped: daily },
+      { label: 'Yorum trendi', data: live().commentTrendSeries(cumulative.achieved), borderColor: '#7c3aed', borderDash: [3, 4], pointRadius: 0, fill: false }
     ];
     const title = byId('chartTrend')?.closest('.chart-card')?.querySelector('h3');
     if (title) title.textContent = 'Toplam yorum sayısının değişimi ve hedef';
     const legend = byId('chartTrend')?.closest('.chart-card')?.querySelector('.chart-legend');
-    if (legend) legend.innerHTML = '<span><i style="background:#2563eb"></i>Ulaşılan</span><span><i style="background:#e11d48"></i>Hedef</span>';
-    chart('chartTrend', 'line', comparisonKeys.map(key => new Date(`${key}-01T12:00:00Z`).toLocaleDateString('tr-TR', { month: 'short', year: '2-digit' })), series);
-    chartNote('chartTrend', management().error || !management().loaded ? 'Hedef kayıtları doğrulanamadı.' : targets.some(v => v != null) ? 'Mavi çizgi, ERP’deki kayıtların yorum tarihlerinden hesaplanan ay sonu toplamıdır; geçmiş Google anlık görüntüsü değildir. Kırmızı çizgi kayıtlı hedefi gösterir.' : 'Kayıtlı hedef yok. Performans ekranından hedef girin.');
+    if (legend) legend.innerHTML = '<span><i style="background:#2563eb"></i>Ulaşılan</span><span><i style="background:#e11d48"></i>Hedef</span><span><i style="background:#7c3aed"></i>Trend</span>';
+    chart('chartTrend', 'line', comparisonKeys.map(key => new Date(`${daily ? key : key + '-01'}T12:00:00Z`).toLocaleDateString('tr-TR', daily ? { day: 'numeric', month: 'short' } : { month: 'short', year: '2-digit' })), series);
+    chartNote('chartTrend', management().error || !management().loaded ? 'Hedef kayıtları doğrulanamadı.' : targets.some(v => v != null) ? (daily ? 'Son 30 gün · Günlük yorum toplamı, kayıtlı aylık hedef ve doğrusal trend.' : 'Ay sonu yorum toplamı, kayıtlı aylık hedef ve doğrusal trend.') : 'Kayıtlı hedef yok. Performans ekranından hedef girin.');
     chart('chartRating', 'doughnut', ['5★', '4★', '3★', '2★', '1★'], [{ label: 'Yıldız dağılımı', data: a.ratingCounts, backgroundColor: ['#12805c', '#6bbf9b', '#fbbf24', '#fb923c', '#b42318'], borderWidth: 2 }]);
     emptyChart('chartRating', a.count > 0, 'Seçili dönemde yorum bulunmuyor.');
     const monthly = stats(periodRows(allRows(), 'month')), target = currentTarget();

@@ -567,6 +567,7 @@ textarea[readonly]{opacity:.75;cursor:default}
 </style><style id="erp-fit">
 /* Integration notices and narrow-screen overflow only; original design rules above are unchanged. */
 #erpDataScope{white-space:normal;max-width:100%;line-height:1.5}
+main:has(#view-overview.on) > .ph{display:none!important}
 .ph>div,.split>*,.chart-grid>*,.grid2>*{min-width:0}
 @media(max-width:768px){.split{grid-template-columns:minmax(0,1fr)}.detail .actions,.route-row{flex-wrap:wrap}.review-quote{overflow-wrap:anywhere}}
 </style><style id="review-shell-layout">
@@ -622,7 +623,7 @@ main{margin:0 auto;width:auto;max-width:1440px;padding:20px}
   <div class="ph">
     <div>
       <div class="crumb" id="crumb">Yönetim <b>/</b> <span>Genel Bakış</span></div>
-      <h1 id="pageTitle">Yönetim Paneli</h1>
+      <h1 id="pageTitle"></h1>
       <p class="psub" id="pageSub">Kasım 2026 · Bölge, il ve şube performansı.</p>
     </div>
     <div class="pacts" id="pageActions"></div>
@@ -1479,7 +1480,7 @@ function exportAudit(){
 }
 
 const VIEWS = [
-  { id:"overview", label:"📊 Genel", title:"Yönetim Paneli", sub:"Bölge, il ve şube performansı." },
+  { id:"overview", label:"📊 Genel", title:"Genel Bakış", sub:"Bölge, il ve şube performansı." },
   { id:"reviews", label:"💬 Yorumlar", title:"Yanıt Merkezi", sub:"Yorumları incele, onayla veya sevk et." },
   { id:"performance", label:"📈 Performans", title:"Hedef ve Performans", sub:"Bölge › il › şube hedefleri." },
   { id:"risk", label:"⚠️ Risk", title:"Risk ve SLA", sub:"Kritik yorumlar, hukuki süreçler." },
