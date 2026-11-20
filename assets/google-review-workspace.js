@@ -131,16 +131,28 @@
     const map=b.onboarding?.map || (b.id===NILUFER?niluferMap:null), url=mapUrl(map);
     return '<div class="workspace-map"><div class="head"><div><h3>Şube konumu</h3><p>'+escape(map?.address||'Kurulum formundan enlem ve boylam ekleyin.')+'</p></div>'+(url?'<a class="btn sm" target="_blank" rel="noopener noreferrer" href="'+escape(mapUrl(map,false))+'">Haritada aç ↗</a>':'')+'</div>'+(url?'<iframe title="'+escape(name(b))+' konum haritası" src="'+escape(url)+'" loading="lazy" referrerpolicy="no-referrer" allowfullscreen></iframe>':'<div class="empty">Henüz konum eklenmedi.</div>')+'</div>';
   }
+  let collectionDemo = null;
+  const collectionBranchId = () => collectionDemo?.id || live()?.getBranchId?.() || NILUFER;
   function renderCollectionPage() {
-    const id = live()?.getBranchId?.() || NILUFER;
+    const id = collectionBranchId();
+    const demos = root.OTOTRReviewAlternative?.regionalDemos?.() || [];
+    const active = operationalBranches(registry()).find(branch => branch.id === (live()?.getBranchId?.() || NILUFER)) || baseline;
     collectionSection.innerHTML =
+      '<div class="card workspace-collection"><label>Yorum toplama şubesi <select id="workspaceCollectionBranch"><option value="">'+escape(name(active))+' · Canlı</option>'+
+      demos.map(branch => '<option value="'+escape(branch.id)+'">'+escape(branch.name)+' · Demo</option>').join('')+'</select></label></div>'+
       '<div class="card workspace-collection"><h3>Google yorum QR kodu</h3><p>Ekspertiz teslimatında müşteriye gösterin. Bağlantı bu tarayıcıda şubeye özel saklanır.</p>' +
       '<form id="workspaceQrForm"><label>Google yorum bağlantısı<input id="workspaceReviewLink" type="url" required placeholder="https://g.page/r/…/review"></label>' +
       '<button class="btn" type="submit">Bağlantıyı kaydet ve QR oluştur</button><p id="workspaceQrError" role="status"></p><div id="workspaceQrResult"></div></form></div>' +
       '<div id="workspaceCollectionSettings"></div>';
     try { byId('workspaceReviewLink').value = root.localStorage.getItem('ototr.review.qr.'+id) || ''; } catch (_) {}
-    root.renderReviewCollectionSettings?.();
+    byId('workspaceCollectionBranch').value = collectionDemo?.id || '';
+    root.renderReviewCollectionSettings?.(collectionDemo);
   }
+  collectionSection.addEventListener('change', event => {
+    if (event.target.id !== 'workspaceCollectionBranch') return;
+    collectionDemo = root.OTOTRReviewAlternative?.regionalDemos?.().find(branch => branch.id === event.target.value) || null;
+    renderCollectionPage();
+  });
   collectionSection.addEventListener('submit', event => {
     if (event.target.id !== 'workspaceQrForm') return;
     event.preventDefault();
@@ -167,7 +179,7 @@
       download.href = image.src;
       download.textContent = 'QR kodu indir';
       result.append(image, download);
-      const id = live()?.getBranchId?.() || NILUFER;
+      const id = collectionBranchId();
       try {
         root.localStorage.setItem('ototr.review.qr.'+id,url.href);
         error.textContent = 'Bağlantı bu şube için bu tarayıcıda kaydedildi.';

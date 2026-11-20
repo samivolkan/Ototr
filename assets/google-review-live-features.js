@@ -276,7 +276,10 @@
     const branchName = `${root.OTOTRReviewLiveViews?.getBranchRegistry?.().find(item => item.id === currentBranch())?.city || ''} ${root.OTOTRReviewLiveViews?.getBranchRegistry?.().find(item => item.id === currentBranch())?.name || 'Şube'}`.trim();
     set('intGrid', `<div class="card"><h3>Google Business Profile</h3><p>${state().settings?.google_connected === true ? 'Mevcut ERP Google bağlantısı kayıtlı.' : 'Google bağlantısı doğrulanmadı.'}</p><div class="pacts">${button('Bağlantıyı kontrol et', 'google-status')}${button('Google yetkilendirmesi', 'google-connect')}${button(`${branchName} yorumlarını yenile`, 'google-sync')}</div></div><div class="card"><h3>OpenAI</h3><p>${state().settings?.openai_configured === true ? `Model · ${esc(state().settings.openai_model || 'model sunucuda')}` : 'Yapılandırma durumu alınamadı.'}</p><div class="pacts">${button('Gerçek test alanını aç', 'open-playground')}${button('Kullanım kayıtları', 'open-ai-quality')}</div></div><div class="card"><h3>ERP içi bildirimler</h3><p>Kişisel kurallar ve okundu bilgisi sunucuda saklanır.</p><div class="pacts">${button('Bildirim tercihleri', 'open-notification-rules')}${button('Bildirimleri aç', 'notifications')}</div></div>`);
   }
+  let collectionDemo = null;
+  const collectionBranch = () => collectionDemo?.id || currentBranch();
   function collectionIsLive() {
+    if (collectionDemo) return false;
     const id = currentBranch();
     if (id === BRANCH) return true;
     const branch = root.OTOTRReviewLiveViews?.getBranchRegistry?.().find(item => item.id === id);
@@ -286,15 +289,16 @@
   const collectionDemoKey = branch => 'ototr.review.collection.demo.' + branch;
   const collectionFields = { Hour: 'send_hour', Delay: 'delay_minutes', Channel: 'channel', Template: 'template' };
 
-  root.renderReviewCollectionSettings = () => {
+  root.renderReviewCollectionSettings = (demo = null) => {
+    collectionDemo = demo;
     const branch = root.OTOTRReviewLiveViews?.getBranchRegistry?.().find(item => item.id === currentBranch());
-    const branchName = branch?.name || 'Bursa Nilüfer';
+    const branchName = collectionDemo?.name || branch?.name || 'Bursa Nilüfer';
     set('workspaceCollectionSettings', `<div class="card" id="reviewCollectionCard" style="grid-column:1/-1"><h3>Ekspertiz sonrası yorum toplama · ${esc(branchName)}</h3><p>${collectionIsLive() ? 'Hizmet sonrası yorum isteği için gönderim koşullarını ayarlayın.' : 'Demo ayarları bu tarayıcıda şubeye özel saklanır. Müşteriye mesaj gönderilmez.'}</p><div class="grid2"><label>Aktif <input id="collectionEnabled" type="checkbox"></label><label>Gönderim saati <input id="collectionHour" type="number" min="0" max="23" value="18"></label><label>Hizmet sonrası bekleme (dk) <input id="collectionDelay" type="number" min="0" max="10080" value="120"></label><label>Kanal <select id="collectionChannel"><option value="sms">SMS</option><option value="whatsapp">WhatsApp</option><option value="email">E-posta</option></select></label></div><label>Mesaj şablonu <textarea id="collectionTemplate" rows="3">Merhaba {{musteri_adi}}, hizmet deneyiminizi değerlendirmek ister misiniz? {{yorum_linki}}</textarea></label><div class="pacts"><button class="micro-btn primary" data-feature="collection-save">Ayarları kaydet</button>${collectionIsLive() ? '<button class="micro-btn" data-feature="collection-refresh">Kuyruğu yenile</button><button class="micro-btn" data-feature="collection-run">Vadesi gelenleri çalıştır</button>' : ''}</div><p id="collectionStatus" role="status"></p><div id="collectionQueue"></div></div>`);
     loadCollection();
   };
   async function loadCollection() {
     const card = byId('reviewCollectionCard');
-    const branch = currentBranch();
+    const branch = collectionBranch();
     if (!card) return;
     const save = card.querySelector('[data-feature=collection-save]');
     const isLive = collectionIsLive();
@@ -303,7 +307,7 @@
       const data = isLive
         ? await request('collection_read')
         : { policy: JSON.parse(root.localStorage.getItem(collectionDemoKey(branch)) || '{}') };
-      if (card !== byId('reviewCollectionCard') || branch !== currentBranch()) return;
+      if (card !== byId('reviewCollectionCard') || branch !== collectionBranch()) return;
       const policy = data.policy || {};
       byId('collectionEnabled').checked = Boolean(policy.enabled);
       for (const [suffix, key] of Object.entries(collectionFields)) {
@@ -313,13 +317,13 @@
       if (isLive) byId('collectionQueue').innerHTML = (data.queue || []).map(x => `<div class="watch-row"><div class="info"><b>${esc(x.customer_name || 'Müşteri')}</b><small>${esc(x.channel)} · ${esc(x.status)} · ${esc(when(x.scheduled_at))}</small></div></div>`).join('') || '<p>Bekleyen yorum isteği yok.</p>';
       save.disabled = false;
     } catch (error) {
-      if (card === byId('reviewCollectionCard') && branch === currentBranch()) byId('collectionStatus').textContent = error.message;
+      if (card === byId('reviewCollectionCard') && branch === collectionBranch()) byId('collectionStatus').textContent = error.message;
     }
   }
 
   async function saveCollection() {
     const card = byId('reviewCollectionCard');
-    const branch = currentBranch();
+    const branch = collectionBranch();
     if (!card) return;
     const inputs = ['Hour', 'Delay'].map(suffix => byId('collection' + suffix));
     if (inputs.some(input => !input.reportValidity() || input.value === '')) throw new Error('Gönderim saati ve bekleme süresi gerekli.');
@@ -333,7 +337,7 @@
     const isLive = collectionIsLive();
     if (isLive) await request('collection_save_policy', payload);
     else root.localStorage.setItem(collectionDemoKey(branch), JSON.stringify(payload));
-    if (card === byId('reviewCollectionCard') && branch === currentBranch()) {
+    if (card === byId('reviewCollectionCard') && branch === collectionBranch()) {
       byId('collectionStatus').textContent = isLive ? 'Şube ayarları ERP’ye kaydedildi.' : 'Şube ayarları bu tarayıcıya kaydedildi.';
     }
   }
