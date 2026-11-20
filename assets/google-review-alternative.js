@@ -254,6 +254,17 @@
     if (!note) { note = node('p', null, 'v2-chart-note'); host.append(note); }
     note.textContent = message;
   }
+  const ratingsCard = byId('chartRating')?.closest('.chart-card');
+  const watchCard = byId('ovWatchlist')?.closest('.chart-card');
+  if (ratingsCard && watchCard) {
+    const slot = doc.createComment('rating-card');
+    ratingsCard.before(slot);
+    watchCard.replaceWith(ratingsCard);
+    slot.replaceWith(watchCard);
+    ratingsCard.classList.replace('span-4', 'span-8');
+    watchCard.classList.replace('span-8', 'span-4');
+    watchCard.querySelector('h3').textContent = 'Dikkat gerektiren şubeler';
+  }
   root.renderOverview = function () {
     const a = stats(rows());
     const connection = management().error ? 'Canlı yönetim bağlantısı alınamadı; Bağlantı durumu ekranını kontrol edin.' : !management().loaded ? 'Canlı kayıtlar için ERP oturumu bekleniyor.' : `${html(branchName())} · Google kayıtları ve ERP onay akışı. Kurulum ve test şubeleri hesaplamaya dahil edilmez.`;
@@ -267,11 +278,13 @@
     const metrics = [
       ['Yorum hacmi', fmt(a.count), PERIODS[period]], ['Ort. puan', fmt(a.average), `${a.count} kayıttan hesaplandı`],
       ['Yanıt oranı', pct(a.responseRate), `${a.answered} yanıtlı yorum`], ['SLA', pct(a.slaRate), `${sla()} sa · ${a.timedAnswers} tarihli yanıt`],
-      ['Yanıtsız', fmt(a.pending), 'Seçili dönem'], ['SLA aşımı', fmt(a.overdue), 'Yanıtsız ve geciken']
+      ['Yanıtsız', fmt(a.pending), 'Seçili dönem'], ['Hedef gerçekleşme', pct(ratio), target == null ? 'Hedef girilmedi' : `${fmt(total)} / ${fmt(target)} toplam yorum`]
     ];
     byId('ovKpis').innerHTML = metrics.map(([label, value, note], i) => `<div class="kpi v2-metric-${i}"><div class="kl">${html(label)}</div><div class="kv">${html(value)}</div><div class="kd">${html(note)}</div><div class="v2-mini"><canvas id="v2Mini${i}" aria-hidden="true"></canvas></div></div>`).join('');
-    const critical = rows().filter(r => r.status !== 'gonderildi' && (r.stars <= 2 || r.escalated));
-    byId('ovWatchlist').innerHTML = critical.slice(0, 5).map(r => `<div class="watch-row"><div class="info"><b>${html(root.OTOTRReviewEnhancements?.displayText(r.author) ?? r.author)}</b><small>${Number(r.stars)}★ · ${html(branchName())}</small></div><button class="btn sm" onclick="openReviewFromStore(${Number(r.id)})">İncele →</button></div>`).join('') || '<div class="empty">Seçili dönemde acil inceleme bekleyen yorum yok.</div>';
+    const needsAttention = a.pending > 0 || (a.slaRate != null && a.slaRate < 90);
+    byId('ovWatchlist').innerHTML = needsAttention
+      ? `<div class="watch-row"><div class="info"><b>${html(branchName())}</b><small>SLA ${pct(a.slaRate)} · ${fmt(a.pending)} yanıtsız</small></div><button class="btn sm" onclick="switchView('reviews')">İncele →</button></div>`
+      : '<div class="empty">Seçili şube ve dönemde inceleme gerektiren durum yok.</div>';
     byId('ovSla').innerHTML = `<div class="watch-row"><div class="info"><b>${html(branchName())}</b><small>Yorum tarihi → Google yanıt tarihi</small></div><span class="chip">${pct(a.slaRate)}</span></div><p class="v2-chart-note">${a.timedAnswers} kayıt ölçülebildi. Eksik veya geçersiz tarihler ortalamaya dahil edilmez.</p>`;
     normalizeScope();
   };
@@ -295,6 +308,26 @@
       { label: 'Kayıtlı hedef', data: cumulative.planned, borderColor: '#e11d48', borderDash: [7, 4], pointRadius: daily ? 0 : 5, spanGaps: false, fill: false, stepped: daily },
       { label: 'Yorum trendi', data: live().commentTrendSeries(cumulative.achieved), borderColor: '#7c3aed', borderDash: [3, 4], pointRadius: 0, fill: false }
     ];
+    const observedEnd = comparisonKeys.length - 1;
+    const today = dayKey(now);
+    const [year, month, day] = today.split('-').map(Number);
+    const lastDay = new Date(Date.UTC(year, month, 0)).getUTCDate();
+    const currentMonthCount = recordedReviews(now).filter(row => monthKey(row.createdAt) === today.slice(0, 7)).length;
+    const actualTotal = cumulative.achieved[observedEnd];
+    const forecast = day >= 2 && day < lastDay && actualTotal > 0
+      ? actualTotal + Math.round(currentMonthCount / day * (lastDay - day)) : null;
+    const forecastEnd = today.slice(0, 8) + lastDay;
+    const futureDates = forecast == null ? [] : daily
+      ? Array.from({ length: lastDay - day }, (_, i) => today.slice(0, 8) + String(day + i + 1).padStart(2, '0'))
+      : [forecastEnd];
+    const anchor = Array(observedEnd).fill(null).concat(actualTotal);
+    const projected = futureDates.map((_, i) =>
+      Math.round(actualTotal + (forecast - actualTotal) * (i + 1) / futureDates.length));
+    if (futureDates.length) {
+      series[1].data = series[1].data.concat(futureDates.map(() => currentTarget()));
+    }
+    series.push({ label: 'Tahmin', data: forecast == null ? [] : anchor.concat(projected),
+      borderColor: '#0284c7', borderDash: [2, 4], pointRadius: 0, fill: false });
     const dailyCounts = daily ? comparisonKeys.map(key => reviewDates.filter(date => date === key).length) : [];
     const dailyLabels = {
       id: 'reviewDailyCounts',
@@ -306,7 +339,7 @@
         ctx.fillStyle = getComputedStyle(doc.documentElement).getPropertyValue('--ink').trim() || '#0f172a';
         ctx.textAlign = 'center';
         chart.getDatasetMeta(0).data.forEach((point, index) => {
-          ctx.fillText(String(dailyCounts[index]), point.x, point.y - 8);
+          if (!point.skip && dailyCounts[index] != null) ctx.fillText(String(dailyCounts[index]), point.x, point.y - 8);
         });
         ctx.restore();
       }
@@ -314,7 +347,7 @@
     const endpointLabels = {
       id: 'reviewTargetGap',
       afterDatasetsDraw(chart) {
-        const lastIndex = comparisonKeys.length - 1;
+        const lastIndex = observedEnd;
         const endpoints = ['Ulaşılan', 'Hedef'].map((label, index) => {
           const value = series[index].data[lastIndex];
           const point = chart.getDatasetMeta(index).data[lastIndex];
@@ -356,8 +389,14 @@
     const title = byId('chartTrend')?.closest('.chart-card')?.querySelector('h3');
     if (title) title.textContent = 'Toplam yorum sayısının değişimi ve hedef';
     const legend = byId('chartTrend')?.closest('.chart-card')?.querySelector('.chart-legend');
-    const seriesKeys = ['Ulaşılan', 'Hedef', 'Trend'];
+    const seriesKeys = ['Ulaşılan', 'Hedef', 'Trend', 'Tahmin'];
     if (legend) {
+      const forecastLabel = node('span', '', 'chip');
+      const updateForecastLabel = () => {
+        forecastLabel.textContent = forecast == null ? 'Tahmin için veri bekleniyor' : `Ay sonu tahmini ≈ ${fmt(forecast)} yorum`;
+        forecastLabel.hidden = hiddenTrendSeries.has('Tahmin');
+      };
+      updateForecastLabel();
       legend.replaceChildren(...seriesKeys.map((label, index) => {
         const button = node('button', null, 'v2-series-toggle');
         button.type = 'button';
@@ -376,18 +415,27 @@
           button.setAttribute('aria-pressed', String(visible));
           trendChart.setDatasetVisibility(index, visible);
           trendChart.update();
+          updateForecastLabel();
         };
         series[index].hidden = hiddenTrendSeries.has(label);
         return button;
-      }));
+      }), forecastLabel);
     }
-    chart('chartTrend', 'line', comparisonKeys.map(key => new Date(`${daily ? key : key + '-01'}T12:00:00Z`).toLocaleDateString('tr-TR', daily ? { day: 'numeric', month: 'short' } : { month: 'short', year: '2-digit' })), series, {
+    const chartLabels = comparisonKeys.map(key => new Date(`${daily ? key : key + '-01'}T12:00:00Z`)
+      .toLocaleDateString('tr-TR', daily ? { day: 'numeric', month: 'short' } : { month: 'short', year: '2-digit' }));
+    chartLabels.push(...futureDates.map(key => new Date(key + 'T12:00:00Z')
+      .toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })));
+    chart('chartTrend', 'line', chartLabels, series, {
       layout: { padding: { top: 20, right: 54 } },
       ...(daily ? { plugins: { legend: { display: false }, tooltip: { callbacks: {
         afterBody: items => items.length ? `O gün eklenen: ${dailyCounts[items[0].dataIndex]}` : ''
       } } } } : {})
     }, daily ? [dailyLabels, endpointLabels] : [endpointLabels]);
     chartNote('chartTrend', management().error || !management().loaded ? 'Hedef kayıtları doğrulanamadı.' : targets.some(v => v != null) ? (daily ? 'Son 30 gün · Noktaların üstündeki rakamlar o gün eklenen yorum adedini gösterir.' : 'Ay sonu yorum toplamı, kayıtlı aylık hedef ve doğrusal trend.') : 'Kayıtlı hedef yok. Performans ekranından hedef girin.');
+    if (forecast != null) {
+      const note = byId('chartTrend')?.closest('.chart-card')?.querySelector('.v2-chart-note');
+      if (note) note.textContent += ' Noktalı tahmin, bu ayın günlük ortalama yorum hızını ay sonuna taşır.';
+    }
     chart('chartRating', 'doughnut', ['5★', '4★', '3★', '2★', '1★'], [{ label: 'Yıldız dağılımı', data: a.ratingCounts, backgroundColor: ['#12805c', '#6bbf9b', '#fbbf24', '#fb923c', '#b42318'], borderWidth: 2 }]);
     emptyChart('chartRating', a.count > 0, 'Seçili dönemde yorum bulunmuyor.');
     const total = currentReviewTotal(), target = currentTarget();

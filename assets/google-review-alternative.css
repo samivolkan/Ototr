@@ -167,3 +167,7 @@ html[data-review-variant="2"] #ovKpis .kl{margin-bottom:3px}
 .v2-series-toggle{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--line);border-radius:6px;padding:4px 7px;background:var(--surface);color:var(--ink);font:inherit;cursor:pointer}
 .v2-series-toggle[aria-pressed="false"]{opacity:.6;text-decoration:line-through}
 .v2-series-toggle:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+
+#ovKpis .v2-metric-1 .kv{color:var(--ok)}
+#ovKpis .v2-metric-3 .kv,#ovKpis .v2-metric-5 .kv{color:var(--warn)}
+#ovWatchlist .watch-row{padding-block:12px}
