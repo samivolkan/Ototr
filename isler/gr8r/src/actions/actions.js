@@ -424,6 +424,11 @@ A.toggleDrawerFull = () => {
   S.ui.drawerFull = !S.ui.drawerFull;
   render();
 };
+A.toggleDrawerAdvanced = el => {
+  const id = el.dataset.id;
+  S.ui.drawerAdvanced[id] = !S.ui.drawerAdvanced[id];
+  render();
+};
 A.toggleDone = el => {
   const t = task(el.dataset.id);
   if (!t) return;

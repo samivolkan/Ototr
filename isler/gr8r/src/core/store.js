@@ -51,6 +51,7 @@ export const S = {
     expanded: { p1: true },
     drawer: null,
     drawerFull: false,
+    drawerAdvanced: {},
     drawerTab: 'comments',
     modals: [],
     pop: null,

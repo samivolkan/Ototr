@@ -12,6 +12,9 @@ try {
   await demo.getByRole('button',{name:'Ana Sayfa'}).first().waitFor();
   assert.match(await demo.locator('body').innerText(),/Ana Sayfa/);
   assert.match(await demo.locator('body').innerText(),/Projeler/);
+  assert.equal(await demo.locator('.home-stats .stat').count(),2,'Ana sayfada yalnızca temel görev özetleri kalmalı');
+  assert.equal(await demo.locator('.panel-h h2', {hasText:'Proje ilerlemesi'}).count(),0,'Proje özeti ana sayfada yinelenmemeli');
+  assert.equal(await demo.locator('.panel-h h2', {hasText:'Son etkinlikler'}).count(),0,'Etkinlik özeti ana sayfada yinelenmemeli');
   for(const label of ['Görevler','Takvim','Zaman Çizelgesi']){
     await demo.getByRole('button',{name:label,exact:true}).first().click();
     await demo.waitForTimeout(120);
@@ -60,8 +63,14 @@ try {
     const drawer=await mobile.evaluate(()=>{const r=document.querySelector('.drawer').getBoundingClientRect();return{left:r.left,right:r.right,width:r.width,viewport:innerWidth}});
     assert.equal(drawer.left,0,'mobil görev paneli ekranın soluna yaslanmalı');
     assert.equal(drawer.right,width,'mobil görev paneli ekrana sığmalı');
-    const drawerText=await mobile.locator('.drawer').innerText();
-    assert.match(drawerText,/Engelleyen|Tahmin|Dosyaları buraya bırakın/,'mobil görev ayrıntıları Türkçe görünmeli');
+    let drawerText=await mobile.locator('.drawer').innerText();
+    assert.match(drawerText,/Diğer alanlar/,'seyrek kullanılan alanlar açılır bölümde olmalı');
+    assert.doesNotMatch(drawerText,/Engelleyen|Tahmin/,'gelişmiş alanlar ilk görünümde kapalı olmalı');
+    assert.equal(await mobile.locator('.drawer .dropzone').count(),0,'boş ek yükleme kutusu gösterilmemeli');
+    assert.ok(await mobile.locator('.drawer input[data-in=uploadFiles]').count(),'dosya ekleme işlevi korunmalı');
+    await mobile.locator('.drawer-extra-toggle').click();
+    drawerText=await mobile.locator('.drawer').innerText();
+    assert.match(drawerText,/Engelleyen|Tahmin/,'gelişmiş alanlar açılabilmeli');
     assert.doesNotMatch(drawerText,/Blocked by|Drop Files|Start the conversation|Add a description\.\.\./,'mobil görev panelinde İngilizce sabit metin kalmamalı');
     await mobile.close();
   }

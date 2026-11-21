@@ -33,6 +33,9 @@
   border-radius: var(--r-lg);
   overflow: hidden;
 }
+.home-stats {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
 .stat {
   padding: 14px 16px;
   display: flex;

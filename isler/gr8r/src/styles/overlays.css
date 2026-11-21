@@ -167,6 +167,26 @@
 .drawer.full .drawer-b {
   padding: 28px 48px 40px;
 }
+.drawer-extra {
+  margin-top: 8px;
+}
+.drawer-extra-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 8px;
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+  border-radius: var(--r-sm);
+}
+.drawer-extra-toggle:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+.drawer-extra-fields {
+  margin-top: 6px;
+}
 .ttl-edit {
   width: 100%;
   border: 0;
