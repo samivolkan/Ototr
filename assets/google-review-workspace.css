@@ -293,3 +293,30 @@ html[data-review-design="new"] #view-overview .watch-row {
   color:var(--i2); font-size:12px; overflow-wrap:anywhere; display:-webkit-box;
   -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden;
 }
+
+.branch-segments {
+  background:#161b22; color:#f5f7fa; border:1px solid #333c48;
+  border-radius:20px; padding:clamp(14px,2.3vw,26px); margin-bottom:16px;
+}
+.branch-segments-header { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:12px; margin-bottom:16px; }
+.branch-segments-header h3 { font-size:17px; }
+.branch-segments-header p, .branch-segments-header label { font-size:12px; color:#b9c3cf; }
+.branch-segments-header p { margin-top:5px; }
+.branch-segments-header select { margin-inline-start:6px; padding:6px; border-radius:7px; border:1px solid #677481; color:inherit; background:#222b35; }
+.branch-segments-grid { display:grid; grid-template-columns:minmax(105px,1fr) minmax(0,5fr) minmax(32px,auto); gap:9px 12px; align-items:center; }
+.branch-segments-axis { display:flex; justify-content:space-between; }
+.branch-segments-axis, .branch-segments-unit { color:#b9c3cf; font-size:11px; font-variant-numeric:tabular-nums; }
+.branch-segments-label { background:transparent; border:0; text-align:start; color:inherit; cursor:pointer; min-width:0; font:inherit; }
+.branch-segments-label b, .branch-segments-label small { display:block; overflow-wrap:anywhere; }
+.branch-segments-label b { font-size:12px; }
+.branch-segments-label small { font-size:10px; color:#b9c3cf; }
+.branch-segments-label:hover b { text-decoration:underline; }
+.branch-segments-track { display:grid; grid-template-columns:repeat(40,minmax(0,1fr)); gap:clamp(1px,.37vw,5px); height:25px; }
+.branch-segments-track i { position:relative; overflow:hidden; border-radius:5px; background:#343e49; }
+.branch-segments-track i::before { content:""; position:absolute; inset:0 auto 0 0; width:var(--fill); background:var(--series); }
+.branch-segments-value { text-align:end; font-size:12px; font-variant-numeric:tabular-nums; }
+@media(max-width:600px) {
+  .branch-segments-grid { grid-template-columns:minmax(82px,1fr) minmax(0,2fr) minmax(26px,auto); gap:8px 5px; }
+  .branch-segments-track { height:20px; }
+  .branch-segments-axis span:nth-child(even) { display:none; }
+}

@@ -188,16 +188,50 @@
       } catch (_) { error.textContent = 'QR oluşturuldu. Tarayıcı bağlantıyı saklamaya izin vermedi.'; }
     } catch (e) { error.textContent = e.message || 'QR kodu oluşturulamadı.'; }
   });
+  const branchChartMetrics = {
+    count: ['Yorum', null], average: ['Puan', 5], response: ['Yanıt', 100],
+    sla: ['SLA', 100], progress: ['Hedef', 100]
+  };
+  let branchChartMetric = 'count';
+  function branchChart(rows) {
+    const [label, fixedMax] = branchChartMetrics[branchChartMetric];
+    const valueOf = row => row[branchChartMetric];
+    const values = rows.map(valueOf).filter(Number.isFinite);
+    const peak = Math.max(0, ...values);
+    const scale = fixedMax === 5 ? 5 : Math.max(fixedMax || 20, Math.ceil(peak / 20) * 20);
+    const format = value => value == null ? '—' : branchChartMetric === 'average'
+      ? value.toLocaleString('tr-TR', {minimumFractionDigits:1, maximumFractionDigits:1})
+      : (fixedMax === 100 ? '%' : '') + Math.round(value).toLocaleString('tr-TR');
+    const colors = ['#ff974e','#4ebce9','#f192bc','#bca7fe','#73dbc2','#f1ce64','#73a5ff'];
+    const ticks = Array.from({length:5}, (_,i) => '<span>'+escape(format(scale*i/4))+'</span>').join('');
+    return '<div class="branch-segments" aria-label="Şube performans grafiği"><div class="branch-segments-header"><div><h3>Şube performansı</h3><p>Canlı ve demo şube karşılaştırması</p></div><label>Gösterge <select id="branchChartMetric">'+
+      Object.entries(branchChartMetrics).map(([key,[title]])=>'<option value="'+key+'" '+(key===branchChartMetric?'selected':'')+'>'+title+'</option>').join('')+
+      '</select></label></div><div class="branch-segments-grid"><span class="branch-segments-unit">'+label+'</span><div class="branch-segments-axis">'+ticks+'</div><span></span>'+
+      rows.map((row,index)=>{
+        const value = valueOf(row);
+        const ratio = Number.isFinite(value) ? Math.max(0, Math.min(1,value/scale)) : 0;
+        const segments = Array.from({length:40},(_,segment)=>'<i style="--fill:'+Math.max(0,Math.min(100,(ratio*40-segment)*100))+'%"></i>').join('');
+        return '<button type="button" class="branch-segments-label" '+(row.demo?'data-demo-branch':'data-select-branch')+'="'+escape(row.id)+'"><b>'+escape(row.name)+'</b><small>'+(row.demo?'Demo':'Canlı')+'</small></button>'+
+          '<div class="branch-segments-track" aria-hidden="true" style="--series:'+(row.demo?colors[index%colors.length]:'#54e0a6')+'">'+segments+'</div>'+
+          '<b class="branch-segments-value" aria-label="'+escape(row.name+' '+label+' '+format(value))+'">'+escape(format(value))+'</b>';
+      }).join('')+'</div></div>';
+  }
   function heatmapCard() {
     const rows = root.OTOTRReviewAlternative?.branchHeatmap?.() || [];
     const cell = (value,warn,good,format) => value == null ? '<td>—</td>' :
       '<td><span class="workspace-heat '+(value>=good?'ok':value>=warn?'warn':'bad')+'">'+escape(format(value))+'</span></td>';
     const pct = number => '%'+Math.round(number);
-    return '<div class="card workspace-heat-card"><h3>Şube ısı haritası</h3><p>Toplam yorumlar · Canlı ve demo ayrı etiketlenir.</p><div class="workspace-heat-scroll"><table><thead><tr><th>Şube</th><th>Yorum</th><th>Puan</th><th>Yanıt</th><th>SLA</th><th>Hedef</th></tr></thead><tbody>'+
+    return '<div id="workspaceBranchChart">'+branchChart(rows)+'</div><div class="card workspace-heat-card"><h3>Şube ısı haritası</h3><p>Toplam yorumlar · Canlı ve demo ayrı etiketlenir.</p><div class="workspace-heat-scroll"><table><thead><tr><th>Şube</th><th>Yorum</th><th>Puan</th><th>Yanıt</th><th>SLA</th><th>Hedef</th></tr></thead><tbody>'+
       rows.map(row=>'<tr><th scope="row"><button type="button" class="btn sm ghost" '+(row.demo?'data-demo-branch':'data-select-branch')+'="'+escape(row.id)+'">'+escape(row.name)+'</button> <span class="chip '+(row.demo?'purple':'ok')+'">'+(row.demo?'Demo':'Canlı')+'</span></th><td>'+(row.count??'—')+'</td>'+
         cell(row.average,4,4.5,n=>n.toLocaleString('tr-TR',{minimumFractionDigits:1,maximumFractionDigits:1}))+cell(row.response,80,95,pct)+cell(row.sla,70,90,pct)+cell(row.progress,60,100,pct)+'</tr>').join('')+
       '</tbody></table></div><p>Renkler: yeşil hedefte, turuncu dikkat, kırmızı iyileştirme gerekli. Ölçülemeyen değerler —.</p></div>';
   }
+  section.addEventListener('change', event => {
+    if (event.target.id !== 'branchChartMetric' || !Object.hasOwn(branchChartMetrics,event.target.value)) return;
+    branchChartMetric = event.target.value;
+    byId('workspaceBranchChart').innerHTML = branchChart(root.OTOTRReviewAlternative?.branchHeatmap?.() || []);
+    byId('branchChartMetric')?.focus();
+  });
   function renderBranches() {
     if(formOpen) return;
     const items=visibleBranches(), b=items.find(b=>b.id===selected)||items[0]; selected=b.id;
