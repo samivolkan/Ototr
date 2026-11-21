@@ -365,14 +365,15 @@
     if (!canvas || typeof Chart === 'undefined') return;
     const color = getComputedStyle(doc.documentElement).getPropertyValue('--mute').trim();
     const line = getComputedStyle(doc.documentElement).getPropertyValue('--line').trim();
-    const snapshot = JSON.stringify({ type, labels, datasets, color, line });
+    const newDesign = doc.documentElement.dataset.reviewDesign !== 'classic';
+    const snapshot = JSON.stringify({ type, labels, datasets, color, line, newDesign });
     const existing = charts[id];
     if (existing?.canvas === canvas && chartSnapshots.get(existing) === snapshot) return;
     root.destroyChart(id);
     const reducedMotion = root.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     canvas.setAttribute('role', 'img');
     canvas.setAttribute('aria-label', `${labels.join(', ')}. ${datasets.map(d => `${d.label}: ${d.data.map(v => v == null ? 'kayıt yok' : v).join(', ')}`).join('. ')}`);
-    const plugins = { legend: { display: type === 'doughnut', position: 'right', labels: { color, boxWidth: 9, padding: 12 } } };
+    const plugins = { legend: { display: type === 'doughnut' && (id !== 'chartRating' || !newDesign), position: 'right', labels: { color, boxWidth: 9, padding: 12 } } };
     charts[id] = new Chart(canvas, { type, plugins: id === 'chartRating' ? [{ id:'reviewTotal', afterDraw(c) {
       const arc=c.getDatasetMeta(0)?.data?.[0]; if(!arc)return;
       const total=datasets[0].data.reduce((sum,value)=>sum+Number(value||0),0),ctx=c.ctx;
@@ -691,6 +692,7 @@
         }
       }}}
     }, daily ? [dailyLabels, endpointLabels] : [endpointLabels]);
+    emptyChart('chartTrend', doc.documentElement.dataset.reviewDesign === 'classic' || analyticsDemo() || management().loaded || scoped.length > 0, 'Grafik için ERP verisi bekleniyor.');
     chartNote('chartTrend', !analyticsDemo() && (management().error || !management().loaded) ? 'Hedef kayıtları doğrulanamadı.' : targets.some(v => v != null) ? (daily ? 'Son 30 gün · Sütunlar günlük yeni yorumları, mavi çizgi toplam yorum sayısını gösterir.' : 'Ay sonu yorum toplamı, kayıtlı aylık hedef ve doğrusal trend.') : 'Kayıtlı hedef yok. Performans ekranından hedef girin.');
     if (forecast != null) {
       const note = byId('chartTrend')?.closest('.chart-card')?.querySelector('.v2-chart-note');
@@ -698,6 +700,18 @@
     }
     chart('chartRating', 'doughnut', ['5★', '4★', '3★', '2★', '1★'], [{ label: 'Yıldız dağılımı', data: a.ratingCounts, backgroundColor: ['#12805c', '#6bbf9b', '#fbbf24', '#fb923c', '#b42318'], borderWidth: 2 }]);
     emptyChart('chartRating', a.count > 0, 'Seçili dönemde yorum bulunmuyor.');
+    const breakdown = byId('reviewRatingBreakdown');
+    if (breakdown) {
+      const total = a.ratingCounts.reduce((sum, count) => sum + count, 0);
+      breakdown.replaceChildren(...a.ratingCounts.map((count, index) => {
+        const row = node('div', null, 'review-rating-row');
+        const label = node('dt', (5 - index) + ' ★');
+        const value = node('dd', total ? count.toLocaleString('tr-TR') + ' · %' + Math.round(100 * count / total) : '—');
+        row.append(label, value);
+        return row;
+      }));
+    }
+
     const ratingGoal = currentRatingTarget();
     const ratingLabel = value => value == null ? '—' : value.toLocaleString('tr-TR', {minimumFractionDigits:1,maximumFractionDigits:2}) + ' ★';
     const actualRating = a.average == null ? null : Math.round(a.average * 10) / 10;

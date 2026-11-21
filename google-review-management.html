@@ -594,7 +594,12 @@ main{margin:0 auto;width:auto;max-width:1440px;padding:20px}
 @media(max-width:1100px){.topbar .topnav{order:10;flex-basis:100%;height:36px}.topbar{height:auto;min-height:54px;padding-bottom:4px}.topbar .topnav a{padding:9px 8px 8px;font-size:11px}}
 @media(max-width:768px){body{padding-bottom:0}main{width:100%;padding:12px}.topbar .role-sel,.topbar .uchip{display:none}.bulk-bar{bottom:auto}.tc{bottom:12px}}
 @media print{main{margin:0;width:100%}}
-</style><link rel="stylesheet" href="assets/google-review-alternative.css?v=20261119-1"><link rel="stylesheet" href="assets/google-review-workspace.css?v=20261119-1"></head><body>
+</style><script>
+  document.documentElement.dataset.reviewDesign = 'new';
+  try {
+    if (localStorage.getItem('ototr.review.design') === 'classic') document.documentElement.dataset.reviewDesign = 'classic';
+  } catch (_) {}
+</script><link rel="stylesheet" href="assets/google-review-alternative.css?v=20261119-1"><link rel="stylesheet" href="assets/google-review-workspace.css?v=20261119-1"></head><body>
 <div id="review-loading-message" role="status">Yorum Yönetimi hazırlanıyor…</div>
 
 <header class="topbar">
@@ -653,7 +658,7 @@ main{margin:0 auto;width:auto;max-width:1440px;padding:20px}
       </div>
       <div class="span-4 v2-overview-side"><div class="chart-card">
         <div class="chart-head"><h3>Yıldız dağılımı</h3></div>
-        <div class="chart-wrap h-260"><canvas id="chartRating"></canvas></div>
+        <div class="review-rating-layout"><div class="chart-wrap h-260"><canvas id="chartRating"></canvas></div><dl id="reviewRatingBreakdown" class="review-rating-breakdown" aria-label="Yıldızlara göre yorum sayısı ve oranı"></dl></div>
       </div>
       <div class="chart-card"><div class="chart-head"><h3>Dikkat gerektiren şubeler</h3></div><div id="ovWatchlist"></div></div>
       </div>
@@ -3172,12 +3177,30 @@ if (!STATE.onboarded) setTimeout(startTour, 500);
       feedback?.remove();
       document.querySelectorAll('button').forEach(button => { if (/Geri\s*bildirim/i.test(button.textContent || '') && !/Geri$/.test(button.textContent.trim())) button.remove(); });
       const anchor = document.querySelector('.uchip') || document.querySelector('.topbar');
-      if (!anchor || (!exit && !feedback)) return;
+      if (!anchor) return;
       let menu = document.getElementById('review-profile-actions');
       if (!menu) {
         const second = document.documentElement.dataset.reviewVariant === '2';
         menu = document.createElement(second ? 'details' : 'div'); menu.id='review-profile-actions'; menu.setAttribute('aria-label','Profil işlemleri');
-        if (second) { const summary = document.createElement('summary'); summary.textContent = 'Profil ▾'; menu.append(summary); }
+        if (second) {
+          const summary = document.createElement('summary');
+          summary.textContent = 'Profil ▾';
+          const toggle = document.createElement('button');
+          toggle.type = 'button';
+          toggle.id = 'reviewDesignToggle';
+          const classic = document.documentElement.dataset.reviewDesign === 'classic';
+          toggle.textContent = classic ? 'Yeni tasarıma geç' : 'Önceki tasarıma dön';
+          toggle.addEventListener('click', () => {
+            const design = document.documentElement.dataset.reviewDesign === 'classic' ? 'new' : 'classic';
+            document.documentElement.dataset.reviewDesign = design;
+            try { localStorage.setItem('ototr.review.design', design); } catch (_) {}
+            toggle.textContent = design === 'classic' ? 'Yeni tasarıma geç' : 'Önceki tasarıma dön';
+            menu.open = false;
+            summary.focus();
+            if (STATE.view === 'overview') window.renderOverview();
+          });
+          menu.append(summary, toggle);
+        }
         anchor.parentElement?.append(menu);
       }
       if (exit && exit.parentElement !== menu) menu.append(exit);

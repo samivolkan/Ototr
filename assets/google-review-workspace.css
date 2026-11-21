@@ -64,3 +64,83 @@ html[data-review-variant="2"] button:focus-visible,html[data-review-variant="2"]
 .workspace-heat-card thead th{color:var(--mute);font-size:12px}
 .workspace-heat{display:inline-block;min-width:54px;text-align:center;border-radius:6px;padding:3px 7px;color:white;font-weight:700;font-size:12px}
 .workspace-heat.ok{background:#0b7e58}.workspace-heat.warn{background:#a75b00}.workspace-heat.bad{background:#b42318}
+
+html[data-review-design="classic"] .review-rating-layout { display: contents; }
+html[data-review-design="classic"] .review-rating-breakdown { display: none; }
+#review-profile-actions { position: relative; }
+#review-profile-actions[open] #reviewDesignToggle {
+  display: block !important;
+  position: absolute !important;
+  top: 100%;
+  right: 0;
+  z-index: 2;
+  white-space: nowrap;
+}
+
+/* Shared review workspace surfaces and dashboard rhythm. */
+html[data-review-design="new"][data-review-variant="2"] main {
+  width: 100%;
+  max-width: 1560px;
+  padding-inline: clamp(14px, 2.5vw, 38px);
+}
+html[data-review-design="new"][data-review-variant="2"] :is(.v2-scope, .card, .chart-card, .kpi, #rvListPane, #rvDetail) {
+  box-shadow: 0 1px 2px rgb(15 23 42 / 4%);
+}
+html[data-review-design="new"][data-review-variant="2"] #topnav button {
+  padding-block: 13px;
+}
+html[data-review-design="new"][data-review-variant="2"] :is(button, a, select, textarea, input):focus-visible {
+  outline: 2px solid var(--blue, #2563eb);
+  outline-offset: 2px;
+}
+html[data-review-design="new"] #view-overview :is(.kv, .review-rating-breakdown, #ovTopBranches) {
+  font-variant-numeric: tabular-nums;
+}
+html[data-review-design="new"] #view-overview .v2-overview-side {
+  align-content: start;
+  grid-template-columns: minmax(0, 1fr);
+}
+html[data-review-design="new"] .review-rating-layout {
+  display: grid;
+  grid-template-columns: minmax(112px, 1fr) minmax(95px, .8fr);
+  align-items: center;
+  gap: 14px;
+}
+html[data-review-design="new"] .review-rating-breakdown {
+  margin: 0;
+  font-size: 12px;
+}
+html[data-review-design="new"] .review-rating-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 6px;
+  padding-block: 6px;
+  border-bottom: 1px solid var(--line);
+}
+html[data-review-design="new"] .review-rating-row:last-child { border-bottom: 0; }
+html[data-review-design="new"] .review-rating-row dt { color: var(--mute); white-space: nowrap; }
+html[data-review-design="new"] .review-rating-row dd { margin: 0; text-align: end; font-weight: 650; }
+html[data-review-design="new"][data-review-variant="2"] #rvDetail {
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+html[data-review-design="new"] #view-reviews .review-toolbar { align-items: center; }
+html[data-review-design="new"] #view-reviews #rvListPane .li p { line-height: 1.5; }
+html[data-review-design="new"] #view-collection .workspace-collection { margin-bottom: 14px; }
+html[data-review-design="new"] #workspaceCollectionBranch { min-height: 34px; max-width: 100%; margin-inline-start: 8px; }
+@media (min-width: 641px) and (max-width: 1100px) {
+  html[data-review-design="new"] #view-overview .v2-overview-side { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 1101px) and (max-width: 1250px), (max-width: 370px) {
+  html[data-review-design="new"] .review-rating-layout { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+}
+
+@media (max-width: 1480px) {
+  html[data-review-design="new"][data-review-variant="2"] .v2-nav-row { flex-wrap: wrap; gap: 4px; }
+  html[data-review-design="new"][data-review-variant="2"] .v2-nav-row .topnav { flex-basis: 100%; }
+  html[data-review-design="new"][data-review-variant="2"] .v2-nav-actions { flex-wrap: wrap; min-width: 0; margin-block: 0 8px; }
+}
+html[data-review-variant="2"] #review-profile-actions[open] > #ototr-account-exit {
+  top: calc(100% + 38px) !important;
+}
