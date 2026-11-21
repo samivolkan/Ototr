@@ -446,11 +446,20 @@
       }
     };
     list.replaceChildren(...filtered.map(review => {
-      const row = node('button', null, 'li review-day-row');
+      const row = node('button', null, 'review-day-row');
       row.type = 'button';
-      row.append(node('strong', (review.author || 'Google kullanıcısı') + ' · ' + review.stars + ' ★'),
-        node('span', review.store), node('span',review.text || (review.demo ? 'Demo kaydı' : '')));
-      row.onclick = () => showDetail(review);
+      row.setAttribute('aria-pressed','false');
+      const heading = node('span', null, 'review-day-heading');
+      heading.append(node('strong', review.author || 'Google kullanıcısı'),
+        node('span', review.stars == null ? '—' : review.stars + ' ★', 'review-day-rating'));
+      row.append(heading, node('span', review.store, 'review-day-branch'));
+      const preview = review.text || (review.demo ? 'Demo kaydı' : '');
+      if (preview) row.append(node('span', preview, 'review-day-preview'));
+      row.onclick = () => {
+        list.querySelector('[aria-pressed="true"]')?.setAttribute('aria-pressed','false');
+        row.setAttribute('aria-pressed','true');
+        showDetail(review);
+      };
       return row;
     }));
     if (!filtered.length) list.append(node('p','Bu gün ve kapsam için yorum bulunamadı.','empty'));

@@ -276,4 +276,20 @@ html[data-review-design="new"] #view-overview .watch-row {
 .review-activity-layout { display:grid; grid-template-columns:minmax(0, 5fr) minmax(0, 7fr); align-items:start; gap:24px; }
 .review-daily-column.is-selected { background:var(--s2); box-shadow:inset 0 -2px var(--blue); }
 @media (max-width:760px) { .review-activity-layout { grid-template-columns:minmax(0,1fr); gap:12px; } }
-.review-day-row { width:100%; display:grid; gap:4px; text-align:start; background:var(--surface); color:var(--ink); border:0; border-bottom:1px solid var(--line); font:inherit; }
+.review-day-row {
+  width:100%; display:grid; grid-template-columns:minmax(0,1fr); gap:4px;
+  padding:11px 13px; text-align:start; background:var(--surface); color:var(--ink);
+  border:0; border-inline-start:3px solid transparent; border-bottom:1px solid var(--line);
+  font:inherit; cursor:pointer;
+}
+.review-day-row:last-child { border-bottom:0; }
+.review-day-row:hover, .review-day-row[aria-pressed="true"] { background:var(--s2); }
+.review-day-row[aria-pressed="true"] { border-inline-start-color:var(--blue); }
+.review-day-heading { display:flex; justify-content:space-between; gap:8px; align-items:baseline; }
+.review-day-heading strong { min-width:0; overflow-wrap:anywhere; font-size:13px; }
+.review-day-rating { flex:none; white-space:nowrap; font-weight:650; font-variant-numeric:tabular-nums; }
+.review-day-branch { color:var(--mute); font-size:11.5px; overflow-wrap:anywhere; }
+.review-day-preview {
+  color:var(--i2); font-size:12px; overflow-wrap:anywhere; display:-webkit-box;
+  -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden;
+}
