@@ -56,7 +56,7 @@ Build çıktısı `isler/app/` konumuna yazılır. Mevcut dağıtımda Vite, dı
 
 GitHub Pages statik içeriği barındırır; çalışma alanı verisi mevcut Supabase altyapısında kalır. `TASK2` dalına push tek başına yayını değiştirmez: `.github/workflows/deploy-pages.yml` yalnızca `main` dalında dağıtım yapar. Canlıya almadan önce aşağıdaki adımlar release/merge aşamasında yürütülmelidir:
 
-1. Supabase projesinden şifreli, doğrulanmış bir veritabanı yedeği alın. Görev tablosu özel RLS altında olduğundan yedeğin kapsamına `app_private` şemasını ve ilgili kayıtları dahil edin.
+1. Önce Supabase Dashboard > Database > Backups üzerinden mevcut fiziksel yedeğin tarihini doğrulayın veya Supabase CLI ile dışarı alın. Ek olarak `supabase/ops/task2-predeploy-backup.sql` dosyasını SQL Editor'de bir kez çalıştırın; bu `public` ve `app_private` tablolarının RLS ile korunan proje içi rollback kopyasını oluşturur. Bu kopya tek başına off-site/PITR yedeği değildir.
 2. `20261121090000_task2_workspace.sql` migration'ını Supabase veritabanına uygulayın. Aynı dağıtımda `isler-api` Edge Function değişikliklerini deploy edin.
 3. `ISLER_ALLOWED_ORIGINS` değerinin yalnızca ERP'nin gerçek HTTPS origin'ini içerdiğini doğrulayın. Gizli anahtarları Git'e veya statik dosyalara koymayın.
 4. Yerel testleri ve migration sonrası canlı API smoke testlerini çalıştırın. Sonra TASK2 değişikliklerini `main`e alın; GitHub Pages workflow'u statik uygulamayı HTTPS ile yayımlar.
@@ -66,7 +66,7 @@ GitHub Pages'de mevcut proje HTTPS kullanır. VPS, SSH, pm2, systemd veya Let's 
 
 ## Yedek ve geri alma
 
-- Migration öncesi Supabase yedeğinin dosyasını, zamanını ve tablo kapsamını kaydedin; geri yüklemeyi yeni bir yedek almadan başlatmayın.
+- Migration öncesi Supabase fiziksel/off-site yedeğinin dosyasını veya kimliğini, zamanını ve tablo kapsamını kaydedin. `task2_backup_20261121.manifest` satır sayılarının kaynak tablolarla eşleştiğini doğrulayın; geri yüklemeyi yeni bir yedek almadan başlatmayın.
 - Arayüzü geri almak için release commit'ini revert edip normal Pages dağıtımını çalıştırın. Yeni TASK2 tablosunu otomatik silmeyin; veriyi koruyun.
 - Eski statik sayfaya geçiş gerekiyorsa yalnızca uygulama yönlendirmesini/menüsünü geri alın. `kokpit.ototr.com` veya diğer ERP sayfalarını değiştirmeyin.
 - Veritabanı fonksiyonlarını geri almak gerekiyorsa eski Edge Function sürümünü yeniden deploy edin. TASK2 tablosunu silmek yerine erişimi kapalı bırakın; kayıtlar yedekte tutulur.
