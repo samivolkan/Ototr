@@ -189,31 +189,41 @@
     } catch (e) { error.textContent = e.message || 'QR kodu oluşturulamadı.'; }
   });
   const branchChartMetrics = {
-    count: ['Yorum', null], average: ['Puan', 5], response: ['Yanıt', 100],
-    sla: ['SLA', 100], progress: ['Hedef', 100]
+    count: ['Yorum', null, 0], average: ['Puan', 5, 1], response: ['Yanıt', 100, 2],
+    sla: ['SLA', 100, 3], progress: ['Hedef', 100, 4]
   };
+  const branchChartColors = ['#ff974e','#4ebce9','#f192bc','#bca7fe','#73dbc2','#f1ce64','#73a5ff'];
   let branchChartMetric = 'count';
-  function branchChart(rows) {
-    const [label, fixedMax] = branchChartMetrics[branchChartMetric];
-    const valueOf = row => row[branchChartMetric];
-    const values = rows.map(valueOf).filter(Number.isFinite);
-    const peak = Math.max(0, ...values);
+  let branchChartRows = [];
+  function branchChartData(rows) {
+    const [label, fixedMax, colorOffset] = branchChartMetrics[branchChartMetric];
+    const peak = Math.max(0, ...rows.map(row=>row[branchChartMetric]).filter(Number.isFinite));
     const scale = fixedMax === 5 ? 5 : Math.max(fixedMax || 20, Math.ceil(peak / 20) * 20);
-    const format = value => value == null ? '—' : branchChartMetric === 'average'
+    const format = value => !Number.isFinite(value) ? '—' : branchChartMetric === 'average'
       ? value.toLocaleString('tr-TR', {minimumFractionDigits:1, maximumFractionDigits:1})
       : (fixedMax === 100 ? '%' : '') + Math.round(value).toLocaleString('tr-TR');
-    const colors = ['#ff974e','#4ebce9','#f192bc','#bca7fe','#73dbc2','#f1ce64','#73a5ff'];
-    const ticks = Array.from({length:5}, (_,i) => '<span>'+escape(format(scale*i/4))+'</span>').join('');
-    return '<div class="branch-segments" aria-label="Şube performans grafiği"><div class="branch-segments-header"><div><h3>Şube performansı</h3><p>Canlı ve demo şube karşılaştırması</p></div><label>Gösterge <select id="branchChartMetric">'+
-      Object.entries(branchChartMetrics).map(([key,[title]])=>'<option value="'+key+'" '+(key===branchChartMetric?'selected':'')+'>'+title+'</option>').join('')+
-      '</select></label></div><div class="branch-segments-grid"><span class="branch-segments-unit">'+label+'</span><div class="branch-segments-axis">'+ticks+'</div><span></span>'+
-      rows.map((row,index)=>{
-        const value = valueOf(row);
+    return {
+      label, ticks: Array.from({length:5}, (_,i)=>format(scale*i/4)),
+      series: rows.map((row,index)=>{
+        const value = row[branchChartMetric];
         const ratio = Number.isFinite(value) ? Math.max(0, Math.min(1,value/scale)) : 0;
-        const segments = Array.from({length:40},(_,segment)=>'<i style="--fill:'+Math.max(0,Math.min(100,(ratio*40-segment)*100))+'%"></i>').join('');
+        return {value:format(value), color:branchChartColors[(index+colorOffset)%branchChartColors.length],
+          fills:Array.from({length:40},(_,segment)=>Math.max(0,Math.min(1,ratio*40-segment)))};
+      })
+    };
+  }
+  function branchChart(rows) {
+    branchChartRows = rows;
+    const {label,ticks,series} = branchChartData(rows);
+    return '<div class="branch-segments" aria-label="Şube performans grafiği"><div class="branch-segments-header"><div><h3>Şube performansı</h3><p>Canlı ve demo şube karşılaştırması</p></div><div class="branch-segments-metrics" role="group" aria-label="Performans göstergesi">'+
+      Object.entries(branchChartMetrics).map(([key,[title]])=>'<button type="button" data-branch-metric="'+key+'" aria-pressed="'+(key===branchChartMetric)+'">'+title+'</button>').join('')+
+      '</div></div><div class="branch-segments-grid"><span class="branch-segments-unit">'+label+'</span><div class="branch-segments-axis">'+ticks.map(tick=>'<span>'+escape(tick)+'</span>').join('')+'</div><span></span>'+
+      rows.map((row,index)=>{
+        const {value,color,fills} = series[index];
+        const segments = fills.map((fill,segment)=>'<i style="--fill:'+fill+';--delay:'+segment*5+'ms"></i>').join('');
         return '<button type="button" class="branch-segments-label" '+(row.demo?'data-demo-branch':'data-select-branch')+'="'+escape(row.id)+'"><b>'+escape(row.name)+'</b><small>'+(row.demo?'Demo':'Canlı')+'</small></button>'+
-          '<div class="branch-segments-track" aria-hidden="true" style="--series:'+(row.demo?colors[index%colors.length]:'#54e0a6')+'">'+segments+'</div>'+
-          '<b class="branch-segments-value" aria-label="'+escape(row.name+' '+label+' '+format(value))+'">'+escape(format(value))+'</b>';
+          '<div class="branch-segments-track" aria-hidden="true" style="--series:'+color+'">'+segments+'</div>'+
+          '<b class="branch-segments-value" aria-label="'+escape(row.name+' '+label+' '+value)+'">'+escape(value)+'</b>';
       }).join('')+'</div></div>';
   }
   function heatmapCard() {
@@ -226,11 +236,23 @@
         cell(row.average,4,4.5,n=>n.toLocaleString('tr-TR',{minimumFractionDigits:1,maximumFractionDigits:1}))+cell(row.response,80,95,pct)+cell(row.sla,70,90,pct)+cell(row.progress,60,100,pct)+'</tr>').join('')+
       '</tbody></table></div><p>Renkler: yeşil hedefte, turuncu dikkat, kırmızı iyileştirme gerekli. Ölçülemeyen değerler —.</p></div>';
   }
-  section.addEventListener('change', event => {
-    if (event.target.id !== 'branchChartMetric' || !Object.hasOwn(branchChartMetrics,event.target.value)) return;
-    branchChartMetric = event.target.value;
-    byId('workspaceBranchChart').innerHTML = branchChart(root.OTOTRReviewAlternative?.branchHeatmap?.() || []);
-    byId('branchChartMetric')?.focus();
+  section.addEventListener('click', event => {
+    const button = event.target.closest('[data-branch-metric]');
+    if (!button || !Object.hasOwn(branchChartMetrics,button.dataset.branchMetric) || button.dataset.branchMetric === branchChartMetric) return;
+    branchChartMetric = button.dataset.branchMetric;
+    const card = button.closest('.branch-segments');
+    const {label,ticks,series} = branchChartData(branchChartRows);
+    card.querySelectorAll('[data-branch-metric]').forEach(control=>control.setAttribute('aria-pressed',String(control===button)));
+    card.querySelector('.branch-segments-unit').textContent = label;
+    card.querySelectorAll('.branch-segments-axis span').forEach((tick,index)=>{tick.textContent=ticks[index];});
+    const values = card.querySelectorAll('.branch-segments-value');
+    card.querySelectorAll('.branch-segments-track').forEach((track,index)=>{
+      const {value,color,fills} = series[index];
+      track.style.setProperty('--series',color);
+      Array.from(track.children).forEach((segment,i)=>segment.style.setProperty('--fill',fills[i]));
+      values[index].textContent = value;
+      values[index].setAttribute('aria-label',branchChartRows[index].name+' '+label+' '+value);
+    });
   });
   function renderBranches() {
     if(formOpen) return;
