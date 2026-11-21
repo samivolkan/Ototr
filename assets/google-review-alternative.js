@@ -306,7 +306,7 @@
     root.switchView(STATE.view);
   };
   searchField.oninput = () => updateHierarchy();
-  hierarchy.append(searchField, rangeForm, filterChips);
+  hierarchy.append(searchField, filterChips);
   function renderFilterChips() {
     filterChips.replaceChildren();
     for (const key of ['region','city','branch','date']) {
