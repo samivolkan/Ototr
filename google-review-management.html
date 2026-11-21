@@ -595,9 +595,9 @@ main{margin:0 auto;width:auto;max-width:1440px;padding:20px}
 @media(max-width:768px){body{padding-bottom:0}main{width:100%;padding:12px}.topbar .role-sel,.topbar .uchip{display:none}.bulk-bar{bottom:auto}.tc{bottom:12px}}
 @media print{main{margin:0;width:100%}}
 </style><script>
-  document.documentElement.dataset.reviewDesign = 'new';
+  document.documentElement.dataset.reviewDesign = 'classic';
   try {
-    if (localStorage.getItem('ototr.review.design') === 'classic') document.documentElement.dataset.reviewDesign = 'classic';
+    if (localStorage.getItem('ototr.review.design.v2') === 'new') document.documentElement.dataset.reviewDesign = 'new';
   } catch (_) {}
 </script><link rel="stylesheet" href="assets/google-review-alternative.css?v=20261119-1"><link rel="stylesheet" href="assets/google-review-workspace.css?v=20261119-1"></head><body>
 <div id="review-loading-message" role="status">Yorum Yönetimi hazırlanıyor…</div>
@@ -3193,7 +3193,7 @@ if (!STATE.onboarded) setTimeout(startTour, 500);
           toggle.addEventListener('click', () => {
             const design = document.documentElement.dataset.reviewDesign === 'classic' ? 'new' : 'classic';
             document.documentElement.dataset.reviewDesign = design;
-            try { localStorage.setItem('ototr.review.design', design); } catch (_) {}
+            try { localStorage.setItem('ototr.review.design.v2', design); } catch (_) {}
             toggle.textContent = design === 'classic' ? 'Yeni tasarıma geç' : 'Önceki tasarıma dön';
             menu.open = false;
             summary.focus();
