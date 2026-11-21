@@ -1,7 +1,7 @@
 import {PGlite} from '@electric-sql/pglite';
 import fs from 'node:fs/promises';
 export const actors={admin:'10000000-0000-0000-0000-000000000001',worker:'10000000-0000-0000-0000-000000000002',viewer:'10000000-0000-0000-0000-000000000003',other:'10000000-0000-0000-0000-000000000004',inactive:'10000000-0000-0000-0000-000000000005'};
-export const sample=()=>({title:'Deneme işi',desc:'Açıklama',who:actors.worker,helpers:[actors.admin],start:'2026-01-01',due:'2026-01-31',pri:'orta',status:'yapilacak',proj:'Satış',tags:['test'],subs:[{t:'Kontrol et',d:false}],rec:'',time:0,ts:0});
+export const sample=()=>({title:'Deneme işi',desc:'<p>Eski görev açıklaması</p><img src=x onerror="window.__task2_xss=1"><script>window.__task2_xss=1</script>',who:actors.worker,helpers:[actors.admin],start:'2026-01-01',due:'2026-01-31',pri:'orta',status:'yapilacak',proj:'Satış',tags:['test'],subs:[{t:'Kontrol et',d:false}],rec:'',time:0,ts:0});
 export async function fixture(){
   const db=new PGlite();
   await db.exec(`create role anon;create role authenticated;create role service_role;
@@ -16,6 +16,7 @@ export async function fixture(){
   }
   await db.exec(await fs.readFile(new URL('../../supabase/migrations/20261018204541_kokpit_isler.sql',import.meta.url),'utf8'));
   await db.exec(await fs.readFile(new URL('../../supabase/migrations/20261018212919_isler24_multiuser.sql',import.meta.url),'utf8'));
+  await db.exec(await fs.readFile(new URL('../../supabase/migrations/20261121090000_task2_workspace.sql',import.meta.url),'utf8'));
   await db.exec(await fs.readFile(new URL('../../supabase/migrations/20261018214909_isler24_user_selection.sql',import.meta.url),'utf8'));
   await db.query("insert into app_private.isler24_selection_links(token_hash,scope,expires_at) values(encode(sha256(convert_to($1,'UTF8')),'hex'),'20000000-0000-0000-0000-000000000001',now()+interval '1 hour')",['a'.repeat(64)]);
   async function call(actor,method,resource='isler',id=null,payload={}){
@@ -33,5 +34,13 @@ export async function fixture(){
       return rows[0].data;
     });
   }
-  return {db,call,pick};
+  async function workspace(actor,method,payload={}){
+    return db.transaction(async tx=>{
+      await tx.query("select set_config('request.jwt.claim.sub',$1,true)",[actors[actor]||'']);
+      await tx.exec('set local role authenticated');
+      const {rows}=await tx.query('select public.task2_workspace_api($1,$2) as data',[method,JSON.stringify(payload)]);
+      return rows[0].data;
+    });
+  }
+  return {db,call,pick,workspace};
 }

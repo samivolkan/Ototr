@@ -74,5 +74,33 @@ test('HTTP routes, CORS, CSRF, invalid input, safe server failures',async()=>{
  assert.equal((await handler(req('/isler/1/gecmis'))).status,200);
  assert.equal((await handler(req('/isler/1/gecmis','POST',{}))).status,405);
  assert.equal((await handler(req('/isler','POST',{x:'a'.repeat(66000)}))).status,413);
+ assert.equal((await handler(req('/workspace'))).status,200);assert.equal(seen.at(-1).resource,'workspace');
+ assert.equal((await handler(req('/workspace','POST',{}))).status,405);
+ assert.equal((await handler(req('/workspace','PUT',{data:{tasks:[]},version:0}))).status,200);
+ assert.equal((await handler(req('/workspace','PUT',{data:{tasks:[]},version:0},{'X-Kokpit-Request':''}))).status,403);
  assert.equal((await handler(req())).headers.get('cache-control'),'no-store');
+});
+test('TASK2 workspace storage is scoped, versioned, persistent and role guarded',async()=>{
+ const {db,workspace}=await fixture();
+ const initial=await workspace('admin','GET');
+ const data={ws:{name:'OTOTR'},projects:[{id:'p1',name:'OTOTR',members:[actors.admin,actors.worker]}],members:[{id:actors.admin,name:'Yönetici'},{id:actors.worker,name:'Çalışan'}],tasks:[
+   {id:'admin-task',creator:actors.admin,assignee:actors.admin,helpers:[],project:'p1',title:'Yönetici işi',desc:'',status:'todo',priority:'none',labels:[],subtasks:[]},
+   {id:'worker-task',creator:actors.admin,assignee:actors.worker,helpers:[],project:'p1',title:'Çalışan işi',desc:'',status:'todo',priority:'none',labels:[],subtasks:[]},
+ ],comments:[],activity:[],files:[],events:[]};
+ const saved=await workspace('admin','PUT',{data,version:initial.version});assert.equal(saved.version,1);assert.deepEqual((await workspace('worker','GET')).data.tasks,data.tasks);
+ const forged=structuredClone(saved.data);forged.tasks[0].title='Yetkisiz değişiklik';
+ await assert.rejects(workspace('worker','PUT',{data:forged,version:saved.version}),{code:'42501'});
+ const owned=structuredClone(saved.data);owned.tasks[1].title='Düzenlendi';owned.tasks[1].creator=actors.worker;
+ owned.comments=[{id:'new-comment',task:'worker-task',by:actors.admin,text:'Yorum',at:1,re:{}}];
+ owned.activity=[{id:'new-history',by:actors.admin,verb:'updated',task:'worker-task',project:'p1',at:1,extra:''}];
+ const ownSave=await workspace('worker','PUT',{data:owned,version:saved.version});assert.equal(ownSave.data.tasks.find(x=>x.id==='worker-task').creator,actors.admin);
+ assert.equal(ownSave.data.comments[0].by,actors.worker,'Yorum yazarı sunucuda oturum sahibinden atanmalı');assert.ok(ownSave.data.comments[0].at>1,'Yorum zamanı sunucudan atanmalı');
+ assert.equal(ownSave.data.activity[0].by,actors.worker,'Geçmiş yazarı sunucuda oturum sahibinden atanmalı');assert.ok(ownSave.data.activity[0].at>1,'Geçmiş zamanı sunucudan atanmalı');
+ await assert.rejects(workspace('viewer','PUT',{data:ownSave.data,version:ownSave.version}),{code:'42501'});
+ const forgedProject=structuredClone(ownSave.data);forgedProject.projects[0].name='yetkisiz';
+ await assert.rejects(workspace('worker','PUT',{data:forgedProject,version:ownSave.version}),{code:'42501'});
+ assert.deepEqual((await workspace('other','GET')).data,{});
+ await assert.rejects(workspace('worker','PUT',{data:ownSave.data,version:0}),{code:'40001'});
+ await assert.rejects(workspace('admin','PUT',{data:{...data,tasks:Array(10001).fill({})},version:ownSave.version}),{code:'22023'});
+ assert.equal((await db.query('select count(*)::int n from app_private.task2_workspace')).rows[0].n,1);
 });
