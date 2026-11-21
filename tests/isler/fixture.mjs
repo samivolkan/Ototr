@@ -16,7 +16,7 @@ export async function fixture(){
   }
   await db.exec(await fs.readFile(new URL('../../supabase/migrations/20261018204541_kokpit_isler.sql',import.meta.url),'utf8'));
   await db.exec(await fs.readFile(new URL('../../supabase/migrations/20261018212919_isler24_multiuser.sql',import.meta.url),'utf8'));
-  await db.exec(await fs.readFile(new URL('../../supabase/migrations/20261121090000_task2_workspace.sql',import.meta.url),'utf8'));
+  await db.exec(await fs.readFile(new URL('../../supabase/migrations/20261121174104_task2_workspace.sql',import.meta.url),'utf8'));
   await db.exec(await fs.readFile(new URL('../../supabase/migrations/20261018214909_isler24_user_selection.sql',import.meta.url),'utf8'));
   await db.query("insert into app_private.isler24_selection_links(token_hash,scope,expires_at) values(encode(sha256(convert_to($1,'UTF8')),'hex'),'20000000-0000-0000-0000-000000000001',now()+interval '1 hour')",['a'.repeat(64)]);
   async function call(actor,method,resource='isler',id=null,payload={}){
