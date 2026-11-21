@@ -264,16 +264,20 @@ html[data-review-design="new"] #view-overview .watch-row {
 #view-overview .chart-card:has(#reviewActivity) { grid-column: 1 / -1; min-width:0; }
 #reviewActivity .review-heat-grid { margin-top:10px; }
 
-.review-hourly { margin:12px 0; max-width:780px; }
-.review-hourly h4 { font-size:14px; }
-.review-hourly-legend { display:flex; flex-wrap:wrap; gap:8px 16px; margin:8px 0 12px; font-size:12px; }
-.review-hourly-legend span::before { content:""; display:inline-block; width:8px; height:8px; border-radius:3px; background:var(--rating-color); margin-inline-end:5px; }
-.review-hourly-plot { display:grid; grid-template-columns:repeat(24,minmax(0,1fr)); gap:3px; height:116px; border-bottom:1px solid var(--line); }
-.review-hourly-column { display:flex; align-items:end; }
-.review-hourly-bar { display:flex; flex-direction:column-reverse; width:100%; border-radius:5px 5px 0 0; overflow:hidden; }
-.review-hourly-bar span { flex-basis:0; background:var(--rating-color); }
-.review-hourly [data-rating-group="0"] { --rating-color:#16917d; }
-.review-hourly [data-rating-group="1"] { --rating-color:#7964c8; }
-.review-hourly [data-rating-group="2"] { --rating-color:#c75230; }
-.review-hourly [data-rating-group="3"] { --rating-color:#738093; }
-.review-hourly-axis { display:flex; justify-content:space-between; font-size:11px; color:var(--mute); margin-top:5px; }
+.review-daily { margin:12px 0; min-width:0; }
+.review-daily h4 { font-size:14px; }
+.review-daily-legend { display:flex; flex-wrap:wrap; gap:8px 16px; margin:8px 0 12px; font-size:12px; }
+.review-daily-legend span::before { content:""; display:inline-block; width:8px; height:8px; border-radius:3px; background:var(--rating-color); margin-inline-end:5px; }
+.review-daily-plot { display:grid; grid-template-columns:repeat(var(--days),minmax(0,1fr)); gap:clamp(1px,.25vw,3px); height:116px; border-bottom:1px solid var(--line); }
+.review-daily-column { display:flex; align-items:end; }
+.review-daily-bar { display:flex; flex-direction:column-reverse; width:100%; border-radius:5px 5px 0 0; overflow:hidden; }
+.review-daily-bar span { flex-basis:0; background:var(--rating-color); }
+.review-daily [data-rating-group="0"] { --rating-color:#16917d; }
+.review-daily [data-rating-group="1"] { --rating-color:#7964c8; }
+.review-daily [data-rating-group="2"] { --rating-color:#c75230; }
+.review-daily [data-rating-group="3"] { --rating-color:#738093; }
+.review-daily-axis { display:flex; justify-content:space-between; font-size:11px; color:var(--mute); margin-top:5px; }
+
+.review-activity-layout { display:grid; grid-template-columns:minmax(0, 5fr) minmax(0, 7fr); align-items:start; gap:24px; }
+.review-daily-column.is-selected { background:var(--s2); box-shadow:inset 0 -2px var(--blue); }
+@media (max-width:760px) { .review-activity-layout { grid-template-columns:minmax(0,1fr); gap:12px; } }

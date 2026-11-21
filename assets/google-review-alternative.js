@@ -491,37 +491,41 @@
     if (!ranked.length) host.append(node('p','Seçili dönemde sıralamaya girecek yorum yok.','empty'));
   }
 
-  function hourlyActivity(records) {
-    const hourFormat = new Intl.DateTimeFormat('en-GB', {timeZone:'Europe/Istanbul', hour:'2-digit', hourCycle:'h23'});
-    const hours = Array.from({length:24}, () => [0,0,0,0]);
-    for (const review of records) {
-      const hour = Number(hourFormat.format(new Date(review.createdAt)));
-      const rating = Number(review.stars);
-      const group = rating === 4 || rating === 5 ? 0 : rating === 3 ? 1 : rating === 1 || rating === 2 ? 2 : 3;
-      hours[hour][group]++;
-    }
-    const chart = node('div', null, 'review-hourly');
-    chart.append(node('h4', 'Saatlik yorum dağılımı'));
+  function dailyActivity(days, groups) {
+    const daily = days.map(day => {
+      const counts = [0,0,0,0];
+      for (const review of groups.get(day) || []) {
+        const rating = Number(review.stars);
+        const group = rating === 4 || rating === 5 ? 0 : rating === 3 ? 1 : rating === 1 || rating === 2 ? 2 : 3;
+        counts[group]++;
+      }
+      return counts;
+    });
+    const dateLabel = day => new Date(day + 'T12:00:00Z').toLocaleDateString('tr-TR', {day:'numeric',month:'short',timeZone:'UTC'});
+    const chart = node('div', null, 'review-daily');
+    chart.append(node('h4', 'Günlük yorum dağılımı'));
     const labels = ['4–5 yıldız','3 yıldız','1–2 yıldız','Puan yok'];
-    const legend = node('div', null, 'review-hourly-legend');
+    const legend = node('div', null, 'review-daily-legend');
     labels.forEach((label, index) => {
-      if (index === 3 && !hours.some(hour => hour[index])) return;
+      if (index === 3 && !daily.some(counts => counts[index])) return;
       const item = node('span', label);
       item.dataset.ratingGroup = index;
       legend.append(item);
     });
-    const plot = node('div', null, 'review-hourly-plot');
-    const peak = Math.max(1, ...hours.map(counts => counts.reduce((a,b) => a+b,0)));
-    hours.forEach((counts, hour) => {
-      const time = String(hour).padStart(2,'0') + ':00';
-      const column = node('div', null, 'review-hourly-column');
+    const plot = node('div', null, 'review-daily-plot');
+    const peak = Math.max(1, ...daily.map(counts => counts.reduce((a,b) => a+b,0)));
+    plot.style.setProperty('--days', days.length);
+    daily.forEach((counts, index) => {
+      const day = days[index];
+      const column = node('div', null, 'review-daily-column');
       const total = counts.reduce((a,b) => a+b,0);
-      const description = time + ' · ' + total + ' yorum' + counts.map((count,index) =>
+      column.dataset.date = day;
+      const description = dateLabel(day) + ' · ' + total + ' yorum' + counts.map((count,index) =>
         count ? ' · ' + labels[index] + ': ' + count : '').join('');
       column.title = description;
       column.setAttribute('role','img');
       column.setAttribute('aria-label',description);
-      const bar = node('div', null, 'review-hourly-bar');
+      const bar = node('div', null, 'review-daily-bar');
       bar.style.height = (100 * total / peak) + '%';
       counts.forEach((count,index) => {
         if (!count) return;
@@ -533,9 +537,9 @@
       column.append(bar);
       plot.append(column);
     });
-    const axis = node('div', null, 'review-hourly-axis');
-    for (const tick of ['00:00','06:00','12:00','18:00','23:00']) axis.append(node('span',tick));
-    chart.append(legend,plot,axis,node('p','Türkiye saati · En yoğun saatte ' + (records.length ? peak : 0) + ' yorum','v2-chart-note'));
+    const axis = node('div', null, 'review-daily-axis');
+    for (const index of new Set([0, Math.floor(days.length / 2), days.length - 1])) axis.append(node('span',dateLabel(days[index])));
+    chart.append(legend,plot,axis,node('p','Türkiye saati · En yoğun günde ' + Math.max(0, ...daily.map(counts => counts.reduce((a,b) => a+b,0))) + ' yorum','v2-chart-note'));
     return chart;
   }
   function renderActivity(scoped) {
@@ -553,6 +557,7 @@
     }
     const summary = node('p', days[0] + ' – ' + days.at(-1) + ' · ' + [...groups.entries()].filter(([day]) => day >= days[0] && day <= days.at(-1)).length + ' etkin gün', 'v2-chart-note');
     const grid = node('div', null, 'review-heat-grid');
+    const dailyChart = dailyActivity(days, groups);
     const detail = node('div', 'Bir gün seçerek yorumları inceleyin.', 'review-heat-detail');
     detail.setAttribute('aria-live', 'polite');
     const weekdays = ['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'];
@@ -572,7 +577,9 @@
       cell.onclick = () => {
         grid.querySelector('[aria-pressed="true"]')?.setAttribute('aria-pressed','false');
         cell.setAttribute('aria-pressed','true');
-        detail.replaceChildren(node('strong', cell.title), hourlyActivity(records));
+        dailyChart.querySelector('.review-daily-column.is-selected')?.classList.remove('is-selected');
+        dailyChart.querySelector(`[data-date="${day}"]`)?.classList.add('is-selected');
+        detail.replaceChildren(node('strong', cell.title));
         if (records.length) {
           const list = node('ul');
           for (const review of records) {
@@ -585,7 +592,11 @@
       grid.append(cell);
       if (records.length) latestActive = cell;
     }
-    host.replaceChildren(summary, grid, detail);
+    const layout = node('div', null, 'review-activity-layout');
+    const calendar = node('div');
+    calendar.append(summary, grid);
+    layout.append(calendar, dailyChart);
+    host.replaceChildren(layout, detail);
     latestActive?.click();
   }
   function renderWeeklyReviews(scoped) {
