@@ -333,3 +333,40 @@ html[data-review-design="new"] #view-overview .watch-row {
 @media(prefers-reduced-motion:reduce) {
   .branch-segments-track i::before, .branch-segments-metrics button { transition:none; }
 }
+
+@media (max-width: 700px) {
+  .workspace-subnav, .view .stabs {
+    flex-wrap: wrap;
+    overflow: visible;
+    margin-bottom: 12px;
+  }
+  .workspace-subnav button, .view .stabs button {
+    min-height: 44px;
+    padding: 8px 10px;
+  }
+  .view .metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .view .tbl-wrap {
+    max-width: 100%;
+    overscroll-behavior-x: contain;
+  }
+  .view .tbl-wrap th, .view .tbl-wrap td { padding: 8px 10px; }
+  .view .tbl-wrap td .btn, .view .pacts .btn {
+    min-height: 44px;
+    white-space: normal;
+  }
+  #view-reviews .review-toolbar { flex-wrap: wrap; gap: 8px; }
+  #view-reviews .review-toolbar .search-input,
+  #view-reviews .review-status-filters {
+    flex: 0 0 100%;
+    min-width: 0;
+  }
+  #view-reviews .review-status-filters button,
+  #view-reviews .review-toolbar select,
+  #view-reviews .review-toolbar .btn,
+  #reviewMobileDialog button { min-height: 44px; }
+  #view-reviews .review-toolbar .count { margin-inline-start: auto; }
+  #reviewMobileDialog { box-sizing: border-box; padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+}
