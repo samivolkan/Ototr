@@ -491,6 +491,53 @@
     if (!ranked.length) host.append(node('p','Seçili dönemde sıralamaya girecek yorum yok.','empty'));
   }
 
+  function hourlyActivity(records) {
+    const hourFormat = new Intl.DateTimeFormat('en-GB', {timeZone:'Europe/Istanbul', hour:'2-digit', hourCycle:'h23'});
+    const hours = Array.from({length:24}, () => [0,0,0,0]);
+    for (const review of records) {
+      const hour = Number(hourFormat.format(new Date(review.createdAt)));
+      const rating = Number(review.stars);
+      const group = rating === 4 || rating === 5 ? 0 : rating === 3 ? 1 : rating === 1 || rating === 2 ? 2 : 3;
+      hours[hour][group]++;
+    }
+    const chart = node('div', null, 'review-hourly');
+    chart.append(node('h4', 'Saatlik yorum dağılımı'));
+    const labels = ['4–5 yıldız','3 yıldız','1–2 yıldız','Puan yok'];
+    const legend = node('div', null, 'review-hourly-legend');
+    labels.forEach((label, index) => {
+      if (index === 3 && !hours.some(hour => hour[index])) return;
+      const item = node('span', label);
+      item.dataset.ratingGroup = index;
+      legend.append(item);
+    });
+    const plot = node('div', null, 'review-hourly-plot');
+    const peak = Math.max(1, ...hours.map(counts => counts.reduce((a,b) => a+b,0)));
+    hours.forEach((counts, hour) => {
+      const time = String(hour).padStart(2,'0') + ':00';
+      const column = node('div', null, 'review-hourly-column');
+      const total = counts.reduce((a,b) => a+b,0);
+      const description = time + ' · ' + total + ' yorum' + counts.map((count,index) =>
+        count ? ' · ' + labels[index] + ': ' + count : '').join('');
+      column.title = description;
+      column.setAttribute('role','img');
+      column.setAttribute('aria-label',description);
+      const bar = node('div', null, 'review-hourly-bar');
+      bar.style.height = (100 * total / peak) + '%';
+      counts.forEach((count,index) => {
+        if (!count) return;
+        const segment = node('span');
+        segment.dataset.ratingGroup = index;
+        segment.style.flexGrow = count;
+        bar.append(segment);
+      });
+      column.append(bar);
+      plot.append(column);
+    });
+    const axis = node('div', null, 'review-hourly-axis');
+    for (const tick of ['00:00','06:00','12:00','18:00','23:00']) axis.append(node('span',tick));
+    chart.append(legend,plot,axis,node('p','Türkiye saati · En yoğun saatte ' + (records.length ? peak : 0) + ' yorum','v2-chart-note'));
+    return chart;
+  }
   function renderActivity(scoped) {
     const host = byId('reviewActivity');
     if (!host) return;
@@ -512,6 +559,7 @@
     for (const day of weekdays) grid.append(node('span', day, 'review-heat-weekday'));
     const firstWeekday = (new Date(days[0] + 'T12:00:00Z').getUTCDay() + 6) % 7;
     for (let i = 0; i < firstWeekday; i++) grid.append(node('span'));
+    let latestActive;
     for (const day of days) {
       const records = groups.get(day) || [];
       const label = new Date(day + 'T12:00:00Z').toLocaleDateString('tr-TR', {day:'numeric',month:'long',year:'numeric',timeZone:'UTC'});
@@ -524,7 +572,7 @@
       cell.onclick = () => {
         grid.querySelector('[aria-pressed="true"]')?.setAttribute('aria-pressed','false');
         cell.setAttribute('aria-pressed','true');
-        detail.replaceChildren(node('strong', cell.title));
+        detail.replaceChildren(node('strong', cell.title), hourlyActivity(records));
         if (records.length) {
           const list = node('ul');
           for (const review of records) {
@@ -535,8 +583,10 @@
         }
       };
       grid.append(cell);
+      if (records.length) latestActive = cell;
     }
     host.replaceChildren(summary, grid, detail);
+    latestActive?.click();
   }
   function renderWeeklyReviews(scoped) {
     const toUtcDay = key => Date.parse(key+'T00:00:00Z');
