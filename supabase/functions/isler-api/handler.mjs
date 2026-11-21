@@ -5,14 +5,14 @@ export function createHandler({authenticate, rpc, origins, smtpConfigured=false}
     const reply=(body,status=200)=>new Response(JSON.stringify(body),{status,headers});
     if(origin && !origins.includes(origin)) return reply({error:'Bu alan adına izin verilmiyor'},403);
     if(origin) headers['Access-Control-Allow-Origin']=origin;
-    headers['Access-Control-Allow-Headers']='authorization, apikey, content-type, x-client-info, x-kokpit-request, x-kokpit-user';
+    headers['Access-Control-Allow-Headers']='authorization, apikey, content-type, x-client-info, x-kokpit-request';
     headers['Access-Control-Allow-Methods']='GET, POST, PUT, DELETE, OPTIONS';
     if(req.method==='OPTIONS') return new Response(null,{status:204,headers});
     const token=req.headers.get('authorization')||'';
     if(!/^Bearer \S+$/.test(token)) return reply({error:'Oturum geçersiz. Yeniden giriş yapın.'},401);
     try{if(!await authenticate(token,req))return reply({error:'Oturum geçersiz. Yeniden giriş yapın.'},401)}
     catch{return reply({error:'Oturum servisine ulaşılamadı. Tekrar deneyin.'},503)}
-    const match=new URL(req.url).pathname.match(/\/api\/(isler|settings|me|users|import|filtreler)(?:\/(\d+|toplu))?(?:\/(yorum|gecmis|sayac|geri-al|sirala))?\/?$/);
+    const match=new URL(req.url).pathname.match(/\/api\/(isler|settings|me|users|import|filtreler|workspace)(?:\/(\d+|toplu))?(?:\/(yorum|gecmis|sayac|geri-al|sirala))?\/?$/);
     if(!match) return reply({error:'Uç nokta bulunamadı'},404);
     let [,resource,id,action]=match;
     if(id==='toplu'){if(resource!=='isler'||action)return reply({error:'Geçersiz yol'},404);resource='toplu';id=undefined}
@@ -20,7 +20,8 @@ export function createHandler({authenticate, rpc, origins, smtpConfigured=false}
     if(id && (!Number.isSafeInteger(Number(id)) || Number(id)<1)) return reply({error:'Geçersiz iş numarası'},400);
     if(!['GET','POST','PUT','DELETE'].includes(req.method)
       || (resource==='isler' && ((['PUT','DELETE'].includes(req.method) && !id) || (req.method==='POST' && id)))
-      || (['settings','me','users','import','filtreler'].includes(resource) && id)
+      || (['settings','me','users','import','filtreler','workspace'].includes(resource) && id)
+      || (resource==='workspace'&&!['GET','PUT'].includes(req.method))
       || (['yorum','sayac','geri-al','sirala','toplu','import'].includes(resource)&&req.method!=='POST')
       || (['gecmis','users','me'].includes(resource)&&req.method!=='GET')) return reply({error:'Geçersiz işlem'},405);
     let payload={};
@@ -31,7 +32,7 @@ export function createHandler({authenticate, rpc, origins, smtpConfigured=false}
       try {
         // Count streamed bytes, not the untrusted Content-Length header.
         const reader=req.body?.getReader(); let size=0; const chunks=[];
-        if(reader) while(true){const {value,done}=await reader.read(); if(done)break; size+=value.byteLength; if(size>(resource==='import'?1048576:65536)){await reader.cancel();return reply({error:'İstek çok büyük'},413)} chunks.push(value)}
+        if(reader) while(true){const {value,done}=await reader.read(); if(done)break; size+=value.byteLength; if(size>(resource==='workspace'?2097152:resource==='import'?1048576:65536)){await reader.cancel();return reply({error:'İstek çok büyük'},413)} chunks.push(value)}
         const all=new Uint8Array(size); let offset=0; for(const chunk of chunks){all.set(chunk,offset);offset+=chunk.length}
         payload=JSON.parse(new TextDecoder().decode(all));
       }catch{return reply({error:'Geçersiz JSON'},400)}

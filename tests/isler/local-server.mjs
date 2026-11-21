@@ -5,11 +5,12 @@ import {fileURLToPath} from 'node:url';
 import {fixture,sample,actors} from './fixture.mjs';
 import {createHandler} from '../../supabase/functions/isler-api/handler.mjs';
 const root=fileURLToPath(new URL('../../',import.meta.url));
-const {db,call,pick}=await fixture();
+const {db,call,workspace}=await fixture();
 await call('worker','POST','isler',null,{...sample(),due:new Date().toISOString().slice(0,10),title:'Yerel kontrol işi'});
 const port=43824,origin='http://127.0.0.1:'+port;
-const handler=createHandler({origins:[origin],authenticate:async token=>Boolean(actors[token.slice(7)])||/^Bearer pick_[a-f0-9]{64}$/.test(token),
-  rpc:async(token,args,req)=>{try{return {data:token.startsWith('Bearer pick_')?await pick(token.slice(12),req.headers.get('x-kokpit-user'),args.method,args.resource,args.task_id,args.payload):await call(token.slice(7),args.method,args.resource,args.task_id,args.payload)}}catch(error){return {error}}}});
+const actorFor=token=>{const raw=token.replace(/^Bearer\s+/,'');if(actors[raw])return raw;try{const sub=JSON.parse(Buffer.from(raw.split('.')[1],'base64url').toString()).sub;return Object.entries(actors).find(([,id])=>id===sub)?.[0]||''}catch{return ''}};
+const handler=createHandler({origins:[origin],authenticate:async token=>Boolean(actorFor(token)),
+  rpc:async(token,args)=>{try{const actor=actorFor(token);return {data:args.resource==='workspace'?await workspace(actor,args.method,args.payload):await call(actor,args.method,args.resource,args.task_id,args.payload)}}catch(error){return {error}}}});
 const server=http.createServer(async(req,res)=>{
   try{
     const url=new URL(req.url,origin);
@@ -21,7 +22,7 @@ const server=http.createServer(async(req,res)=>{
       if(url.pathname.endsWith('/logout')){res.writeHead(204);res.end();return}
       const chunks=[];for await(const chunk of req)chunks.push(chunk);
       let body={};try{body=JSON.parse(Buffer.concat(chunks).toString()||'{}')}catch{}
-      const name=url.pathname.endsWith('/token')?String(body.email||'').split('@')[0]:actor;
+      const name=url.pathname.endsWith('/token')?String(body.email||body.refresh_token||'').split('@')[0]:actorFor(actor);
       if(!actors[name] || (url.pathname.endsWith('/token')&&body.password!=='local-test-only')){res.writeHead(400,{'Content-Type':'application/json'});res.end(JSON.stringify({error:'invalid_grant',error_description:'Invalid login credentials'}));return}
       const user={id:actors[name],email:name+'@example.invalid',aud:'authenticated',role:'authenticated',app_metadata:{},user_metadata:{}};
       res.setHeader('Content-Type','application/json');res.end(JSON.stringify(url.pathname.endsWith('/user')?user:{access_token:name,refresh_token:name,token_type:'bearer',expires_in:3600,expires_at:Math.floor(Date.now()/1000)+3600,user}));return;
