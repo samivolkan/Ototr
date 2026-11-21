@@ -311,7 +311,8 @@ html[data-review-design="new"] #view-overview .watch-row {
 .branch-segments-metrics button:hover { border-color:#91b6ca; }
 .branch-segments-metrics button[aria-pressed="true"] { background:#e0f5ef; border-color:#e0f5ef; color:#132e28; }
 .branch-segments-metrics button:focus-visible { outline:2px solid #91e7d4; outline-offset:2px; }
-.branch-segments-grid { display:grid; grid-template-columns:minmax(105px,1fr) minmax(0,5fr) minmax(32px,auto); gap:9px 12px; align-items:center; }
+.branch-segments-grid { display:grid; grid-template-columns:minmax(105px,1fr) minmax(0,650px) minmax(32px,auto); gap:9px 12px; align-items:center; }
+.branch-segments-axis, .branch-segments-track { width:100%; max-width:650px; }
 .branch-segments-axis { display:flex; justify-content:space-between; }
 .branch-segments-axis, .branch-segments-unit { color:#b9c3cf; font-size:11px; font-variant-numeric:tabular-nums; }
 .branch-segments-label { background:transparent; border:0; text-align:start; color:inherit; cursor:pointer; min-width:0; font:inherit; }
@@ -319,13 +320,13 @@ html[data-review-design="new"] #view-overview .watch-row {
 .branch-segments-label b { font-size:12px; }
 .branch-segments-label small { font-size:10px; color:#b9c3cf; }
 .branch-segments-label:hover b { text-decoration:underline; }
-.branch-segments-track { display:grid; grid-template-columns:repeat(var(--segments),minmax(0,1fr)); gap:clamp(1px,.2vw,3px); height:15px; }
-.branch-segments-track i { position:relative; overflow:hidden; width:min(100%,10px); justify-self:center; border-radius:99px; background:#343e49; }
+.branch-segments-track { display:grid; grid-template-columns:repeat(var(--segments),minmax(0,1fr)); gap:2px; height:23px; }
+.branch-segments-track i { position:relative; overflow:hidden; border-radius:99px; background:#343e49; }
 .branch-segments-track i::before { content:""; position:absolute; inset:0; transform-origin:left; transform:scaleX(var(--fill)); background-color:var(--series); transition:transform 300ms cubic-bezier(.2,.7,.3,1) var(--delay), background-color 340ms ease var(--delay); }
 .branch-segments-value { text-align:end; font-size:12px; font-variant-numeric:tabular-nums; }
 @media(max-width:600px) {
   .branch-segments-grid { grid-template-columns:minmax(82px,1fr) minmax(0,2fr) minmax(26px,auto); gap:8px 5px; }
-  .branch-segments-track { height:12px; }
+  .branch-segments-track { height:15px; gap:1px; }
   .branch-segments-axis span:nth-child(even) { display:none; }
 }
 
