@@ -165,7 +165,15 @@
   const operationalRows = () => scopedRows(typeof REVIEWS === 'undefined' ? [] : REVIEWS, branchId());
   const allRows = () => analyticsActive() ? matchingBranches().flatMap(analyticsDemo() ? regionalDemoRows : cachedReviews) : operationalRows();
   let period = 'month';
-  const rows = () => periodRows(allRows(), period);
+  let dateRange = null;
+  const rows = () => dateRange ? recordedReviews().filter(row => {
+    const day = dayKey(row.createdAt);
+    return day >= dateRange.start && day <= dateRange.end;
+  }) : periodRows(allRows(), period);
+  const dateKeys = ({start, end}) => Array.from(
+    {length: (Date.parse(end) - Date.parse(start)) / 86400000 + 1},
+    (_, index) => new Date(Date.parse(start) + index * 86400000).toISOString().slice(0, 10)
+  );
   const sla = () => analyticsDemo() ? 24 : Number(isLive() ? management().policy?.default_sla_hours : branch()?.slaH) || 24;
   const stats = list => {
     const summary = live().aggregateReviews(list, { slaHours: sla() });
@@ -269,6 +277,42 @@
       root.switchView(STATE.view);
     };
   }
+  const rangeForm = node('form', null, 'review-date-range');
+  rangeForm.innerHTML = '<label>Başlangıç <input name="start" type="date" required></label><label>Bitiş <input name="end" type="date" required></label><button class="btn sm" type="submit">Tarihi uygula</button>';
+  const filterChips = node('div', null, 'review-filter-chips');
+  const searchField = node('input');
+  searchField.type = 'search';
+  searchField.placeholder = 'Seçeneklerde ara';
+  searchField.setAttribute('aria-label', searchField.placeholder);
+  rangeForm.onsubmit = event => {
+    event.preventDefault();
+    const { start, end } = rangeForm.elements;
+    if (start.value > end.value || Date.parse(end.value) - Date.parse(start.value) >= 366 * 86400000 || end.value > dayKey(new Date())) {
+      root.toast('Geçmişten bugüne en fazla 366 günlük bir aralık seçin.', 'warn');
+      return;
+    }
+    dateRange = {start: start.value, end: end.value};
+    root.switchView(STATE.view);
+  };
+  searchField.oninput = () => updateHierarchy();
+  hierarchy.append(searchField, rangeForm, filterChips);
+  function renderFilterChips() {
+    filterChips.replaceChildren();
+    for (const key of ['region','city','branch','date']) {
+      const value = key === 'date' ? dateRange && dateRange.start + ' – ' + dateRange.end :
+        analyticsScope[key] && levelSelects[key].selectedOptions[0]?.textContent;
+      if (!value) continue;
+      const chip = node('button', value + ' ×', 'btn sm');
+      chip.type = 'button';
+      chip.setAttribute('aria-label', value + ' filtresini kaldır');
+      chip.onclick = () => {
+        if (key === 'date') { dateRange = null; rangeForm.reset(); }
+        else { levelSelects[key].value = ''; levelSelects[key].onchange(); return; }
+        root.switchView(STATE.view);
+      };
+      filterChips.append(chip);
+    }
+  }
   const targetReads = new Set();
   function loadScopeTargets() {
     if (analyticsDemo() || !managementApi) return;
@@ -293,10 +337,13 @@
       city:[['','Tüm iller'],...cities.map(x=>[x,x])],
       branch:[['','Tüm şubeler'],...branches.map(b=>[b.id,b.name])]
     };
+    const query = searchField.value.trim().toLocaleLowerCase('tr-TR');
     for (const [key,select] of Object.entries(levelSelects)) {
-      select.replaceChildren(...choices[key].map(([id,label])=>{const option=node('option',label);option.value=id;return option;}));
+      const options = choices[key].filter(([id, label]) => key === 'mode' || !id || id === analyticsScope[key] || label.toLocaleLowerCase('tr-TR').includes(query));
+      select.replaceChildren(...options.map(([id,label])=>{const option=node('option',label);option.value=id;return option;}));
       select.value=analyticsScope[key];
     }
+    renderFilterChips();
   }
 
   function placeReviewControls() {
@@ -352,7 +399,7 @@
   });
   periodSelect.addEventListener('change', () => {
     if (root.OTOTRReviewBridge?.isEditing?.()) { periodSelect.value = period; root.toast('Önce açık taslağı kaydedin.', 'warn'); return; }
-    period = periodSelect.value; SELECTED.clear(); SEL = null; root.switchView(STATE.view);
+    period = periodSelect.value; dateRange = null; rangeForm.reset(); SELECTED.clear(); SEL = null; root.switchView(STATE.view);
   });
   root.roleReviews = () => rows().filter(row => STATE.role === 'legal' ? row.pipeline?.routedTo === 'legal' || row.status === 'hukuk' : STATE.role === 'complaint' ? row.pipeline?.routedTo === 'complaint' : true);
   const originalSwitch = root.switchView;
@@ -381,7 +428,7 @@
     }}] : chartPlugins, data: { labels, datasets }, options: {
       responsive: true, maintainAspectRatio: false,
       animation: reducedMotion || id.startsWith('v2Mini') ? false : { duration: 550, easing: 'easeOutQuart' },
-      plugins, ...(type === 'doughnut' ? { cutout: '68%' } : { scales: { x: { grid: { display: false }, ticks: { color } }, y: { beginAtZero: true, grid: { color: line }, ticks: { color, precision: 0 } } } }), ...extra
+      plugins, ...(type === 'doughnut' ? { cutout: '68%', ...(id === 'chartRating' && newDesign ? { rotation: -132, circumference: 264, borderRadius: 6 } : {}) } : { scales: { x: { grid: { display: false }, ticks: { color } }, y: { beginAtZero: true, grid: { color: line }, ticks: { color, precision: 0 } } } }), ...extra
     } });
     chartSnapshots.set(charts[id], snapshot);
   }
@@ -444,6 +491,53 @@
     if (!ranked.length) host.append(node('p','Seçili dönemde sıralamaya girecek yorum yok.','empty'));
   }
 
+  function renderActivity(scoped) {
+    const host = byId('reviewActivity');
+    if (!host) return;
+    const today = dayKey(Date.now());
+    const start = period === 'month' ? today.slice(0,7) + '-01' : monthsFor(period)[0] + '-01';
+    const days = dateKeys(dateRange || {start, end:today}).slice(-84);
+    const groups = new Map();
+    for (const row of scoped) {
+      if (!monthKey(row.createdAt)) continue;
+      const day = dayKey(row.createdAt);
+      if (!groups.has(day)) groups.set(day, []);
+      groups.get(day).push(row);
+    }
+    const summary = node('p', days[0] + ' – ' + days.at(-1) + ' · ' + [...groups.entries()].filter(([day]) => day >= days[0] && day <= days.at(-1)).length + ' etkin gün', 'v2-chart-note');
+    const grid = node('div', null, 'review-heat-grid');
+    const detail = node('div', 'Bir gün seçerek yorumları inceleyin.', 'review-heat-detail');
+    detail.setAttribute('aria-live', 'polite');
+    const weekdays = ['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'];
+    for (const day of weekdays) grid.append(node('span', day, 'review-heat-weekday'));
+    const firstWeekday = (new Date(days[0] + 'T12:00:00Z').getUTCDay() + 6) % 7;
+    for (let i = 0; i < firstWeekday; i++) grid.append(node('span'));
+    for (const day of days) {
+      const records = groups.get(day) || [];
+      const label = new Date(day + 'T12:00:00Z').toLocaleDateString('tr-TR', {day:'numeric',month:'long',year:'numeric',timeZone:'UTC'});
+      const cell = node('button', String(Number(day.slice(-2))), 'review-heat-day');
+      cell.type = 'button';
+      cell.dataset.level = Math.min(records.length, 4);
+      cell.title = label + ' · ' + records.length + ' yorum';
+      cell.setAttribute('aria-label', cell.title);
+      cell.setAttribute('aria-pressed', 'false');
+      cell.onclick = () => {
+        grid.querySelector('[aria-pressed="true"]')?.setAttribute('aria-pressed','false');
+        cell.setAttribute('aria-pressed','true');
+        detail.replaceChildren(node('strong', cell.title));
+        if (records.length) {
+          const list = node('ul');
+          for (const review of records) {
+            const entry = node('li', [review.author, Number(review.stars) + ' ★', review.text].filter(Boolean).join(' · '));
+            list.append(entry);
+          }
+          detail.append(list);
+        }
+      };
+      grid.append(cell);
+    }
+    host.replaceChildren(summary, grid, detail);
+  }
   function renderWeeklyReviews(scoped) {
     const toUtcDay = key => Date.parse(key+'T00:00:00Z');
     const dayMs = 86400000;
@@ -451,9 +545,10 @@
       const day = toUtcDay(key);
       return day - ((new Date(day).getUTCDay()+6)%7)*dayMs;
     };
-    const thisMonday = mondayOf(dayKey(Date.now()));
-    const weeks = Array.from({length:period==='month'?5:12},(_,i) => ({
-      start:thisMonday-((period==='month'?4:11)-i)*7*dayMs, answered:0, pending:0
+    const thisMonday = mondayOf(dateRange?.end || dayKey(Date.now()));
+    const weekCount = dateRange ? Math.round((thisMonday - mondayOf(dateRange.start)) / (7 * dayMs)) + 1 : period === 'month' ? 5 : 12;
+    const weeks = Array.from({length:weekCount},(_,i) => ({
+      start:thisMonday-(weekCount-1-i)*7*dayMs, answered:0, pending:0
     }));
     const byWeek = new Map(weeks.map(week=>[week.start,week]));
     for (const row of scoped) {
@@ -524,9 +619,10 @@
   root.initCharts = function () {
     const scoped = rows(), a = stats(scoped), keys = monthsFor(period);
     renderWeeklyReviews(scoped);
-    const daily = period === 'month';
+    renderActivity(scoped);
+    const daily = Boolean(dateRange) || period === 'month';
     const now = Date.now();
-    const points = daily ? recentDays(now) : keys;
+    const points = dateRange ? dateKeys(dateRange) : daily ? recentDays(now) : keys;
     const targets = analyticsTargets(points.map(key => key.slice(0, 7)));
     const reviewDates = recordedReviews(now)
       .map(row => daily ? dayKey(row.createdAt) : monthKey(row.createdAt));
@@ -537,8 +633,9 @@
       achieved: comparisonKeys.map(key => reviewDates.filter(date => date <= key).length),
       planned: targets.slice(firstPoint)
     };
+    const teal = doc.documentElement.dataset.reviewDesign === 'new';
     const series = [
-      { label: 'Mevcut yorum toplamı', data: cumulative.achieved, borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,.08)', fill: true, tension: 0, pointRadius: 5, spanGaps: false },
+      { label: 'Mevcut yorum toplamı', data: cumulative.achieved, borderColor: teal ? '#087e72' : '#2563eb', backgroundColor: teal ? 'rgba(8,126,114,.10)' : 'rgba(37,99,235,.08)', fill: true, tension: 0, pointRadius: 5, spanGaps: false },
       { label: 'Kayıtlı hedef', data: cumulative.planned, borderColor: '#e11d48', borderDash: [7, 4], pointRadius: daily ? 0 : 5, spanGaps: false, fill: false, stepped: daily },
       { label: 'Yorum trendi', data: live().commentTrendSeries(cumulative.achieved), borderColor: '#7c3aed', borderDash: [3, 4], pointRadius: 0, fill: false }
     ];
@@ -548,7 +645,7 @@
     const lastDay = new Date(Date.UTC(year, month, 0)).getUTCDate();
     const currentMonthCount = recordedReviews(now).filter(row => monthKey(row.createdAt) === today.slice(0, 7)).length;
     const actualTotal = cumulative.achieved[observedEnd];
-    const forecast = !missingScopeData() && day >= 2 && day < lastDay && actualTotal > 0
+    const forecast = !dateRange && !missingScopeData() && day >= 2 && day < lastDay && actualTotal > 0
       ? actualTotal + Math.round(currentMonthCount / day * (lastDay - day)) : null;
     const forecastEnd = today.slice(0, 8) + lastDay;
     const futureDates = forecast == null ? [] : daily
@@ -561,14 +658,36 @@
       series[1].data = series[1].data.concat(futureDates.map(() => currentTarget()));
     }
     series.push({ label: 'Tahmin', data: forecast == null ? [] : anchor.concat(projected),
-      borderColor: '#0284c7', borderDash: [2, 4], pointRadius: 0, fill: false });
+      borderColor: teal ? '#a85d16' : '#0284c7', borderDash: [2, 4], pointRadius: 0, fill: false });
     const dailyCounts = daily ? comparisonKeys.map(key => reviewDates.filter(date => date === key).length) : [];
     const dailyBarIndex = series.length;
     if (daily) series.push({
       type:'bar', label:'Günlük yorum', data:dailyCounts, yAxisID:'dailyVolume',
-      backgroundColor:'rgba(100,116,139,.32)', hoverBackgroundColor:'#2563eb',
+      backgroundColor:teal ? 'transparent' : 'rgba(100,116,139,.32)', hoverBackgroundColor:teal ? 'transparent' : '#2563eb',
       borderRadius:4, maxBarThickness:14, order:3
     });
+    const dailyDots = {
+      id: 'reviewDailyDots',
+      beforeDatasetsDraw(chart) {
+        if (!teal || !chart.isDatasetVisible(dailyBarIndex)) return;
+        const ctx = chart.ctx;
+        ctx.save();
+        ctx.fillStyle = '#30a596';
+        for (const [index, bar] of chart.getDatasetMeta(dailyBarIndex).data.entries()) {
+          if (bar.skip || !dailyCounts[index]) continue;
+          const height = bar.base - bar.y;
+          const radius = Math.min(2.5, bar.width / 3, height / 2);
+          if (!(radius > 0)) continue;
+          ctx.beginPath();
+          for (let y = bar.y + radius; y <= bar.base - radius; y += radius * 3 + 1) {
+            ctx.moveTo(bar.x + radius, y);
+            ctx.arc(bar.x, y, radius, 0, Math.PI * 2);
+          }
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+    };
     const dailyLabels = {
       id: 'reviewDailyCounts',
       afterDatasetsDraw(chart) {
@@ -578,8 +697,11 @@
         ctx.font = '10px system-ui';
         ctx.fillStyle = getComputedStyle(doc.documentElement).getPropertyValue('--ink').trim() || '#0f172a';
         ctx.textAlign = 'center';
+        let lastLabelX = -Infinity;
         chart.getDatasetMeta(dailyBarIndex).data.forEach((point, index) => {
-          if (!point.skip && dailyCounts[index] > 0) ctx.fillText(String(dailyCounts[index]), point.x, point.y - 8);
+          if (point.skip || dailyCounts[index] <= 0 || (teal && point.x - lastLabelX < 15)) return;
+          ctx.fillText(String(dailyCounts[index]), point.x, point.y - 8);
+          lastLabelX = point.x;
         });
         ctx.restore();
       }
@@ -633,7 +755,7 @@
     if (legend) {
       const forecastLabel = node('span', '', 'chip');
       const updateForecastLabel = () => {
-        forecastLabel.textContent = forecast == null ? 'Tahmin için veri bekleniyor' : `Ay sonu tahmini ≈ ${fmt(forecast)} yorum`;
+        forecastLabel.textContent = dateRange ? 'Özel tarih aralığı' : forecast == null ? 'Tahmin için veri bekleniyor' : `Ay sonu tahmini ≈ ${fmt(forecast)} yorum`;
         forecastLabel.hidden = hiddenTrendSeries.has('Tahmin');
       };
       updateForecastLabel();
@@ -641,7 +763,7 @@
         const button = node('button', null, 'v2-series-toggle');
         button.type = 'button';
         const swatch = node('i');
-        swatch.style.backgroundColor = series[index].borderColor || series[index].hoverBackgroundColor;
+        swatch.style.backgroundColor = series[index].borderColor || (teal && index === dailyBarIndex ? '#30a596' : series[index].hoverBackgroundColor);
         swatch.setAttribute('aria-hidden', 'true');
         button.append(swatch, doc.createTextNode(label));
         button.setAttribute('aria-controls', 'chartTrend');
@@ -691,9 +813,9 @@
           ];
         }
       }}}
-    }, daily ? [dailyLabels, endpointLabels] : [endpointLabels]);
+    }, daily ? [dailyDots, dailyLabels, endpointLabels] : [endpointLabels]);
     emptyChart('chartTrend', doc.documentElement.dataset.reviewDesign === 'classic' || analyticsDemo() || management().loaded || scoped.length > 0, 'Grafik için ERP verisi bekleniyor.');
-    chartNote('chartTrend', !analyticsDemo() && (management().error || !management().loaded) ? 'Hedef kayıtları doğrulanamadı.' : targets.some(v => v != null) ? (daily ? 'Son 30 gün · Sütunlar günlük yeni yorumları, mavi çizgi toplam yorum sayısını gösterir.' : 'Ay sonu yorum toplamı, kayıtlı aylık hedef ve doğrusal trend.') : 'Kayıtlı hedef yok. Performans ekranından hedef girin.');
+    chartNote('chartTrend', !analyticsDemo() && (management().error || !management().loaded) ? 'Hedef kayıtları doğrulanamadı.' : targets.some(v => v != null) ? (daily ? (dateRange ? 'Özel tarih aralığı' : 'Son 30 gün') + ' · Günlük yorum adetleri ve toplam yorum sayısı.' : 'Ay sonu yorum toplamı, kayıtlı aylık hedef ve doğrusal trend.') : 'Kayıtlı hedef yok. Performans ekranından hedef girin.');
     if (forecast != null) {
       const note = byId('chartTrend')?.closest('.chart-card')?.querySelector('.v2-chart-note');
       if (note) note.textContent += ' Noktalı tahmin, bu ayın günlük ortalama yorum hızını ay sonuna taşır.';
@@ -766,6 +888,22 @@
     byId('v2SaveTarget').onclick = saveTarget;
     if (ratio == null && analyticsLive() && (management().error || !management().loaded)) {
       byId('perfTable').querySelector('tbody tr td:nth-child(4)').textContent = 'Hedef doğrulanamadı';
+    }
+    const groupBody = byId('perfTable').tBodies[0];
+    const branches = matchingBranches().slice().sort((a,b) =>
+      a.region.localeCompare(b.region,'tr') || a.city.localeCompare(b.city,'tr') || a.name.localeCompare(b.name,'tr'));
+    if (branches.length > 1) {
+      let group = '';
+      const scoped = rows();
+      for (const b of branches) {
+        const label = b.region + ' / ' + b.city;
+        if (label !== group) {
+          group = label;
+          groupBody.insertAdjacentHTML('beforeend', `<tr class="review-perf-group"><th colspan="8" scope="rowgroup">${html(group)}</th></tr>`);
+        }
+        const summary = stats(scoped.filter(row => (row.branchId || row.branch_id) === b.id));
+        groupBody.insertAdjacentHTML('beforeend', `<tr><th scope="row">${html(b.name)}</th><td>—</td><td>${(analyticsDemo() ? regionalDemoRows(b) : cachedReviews(b)).length}</td><td>—</td><td>${summary.count}</td><td>${fmt(summary.average)}</td><td>${pct(summary.responseRate)}</td><td>${analyticsDemo() ? 'Demo' : 'Canlı'}</td></tr>`);
+      }
     }
     root.renderTargetBreakdown(); normalizeScope();
   };

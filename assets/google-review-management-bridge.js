@@ -247,7 +247,10 @@
     document.getElementById('emailTo').textContent='Google yorumu';
     document.getElementById('emailReview').textContent=parentApi.getReviewById(row.erpReviewId)?.comment || '';
     document.getElementById('emailResp').textContent=item.reply_text;
+    document.getElementById('reviewPublishNotice').textContent = 'Onayladığınız yanıt Google’da herkese açık yayımlanır.';
+    document.getElementById('reviewPublishConfirm').textContent = 'Google’da yayımla';
     openModal('emailModal');
+    document.querySelector('#emailModal .mfoot button')?.focus();
   };
   window.confirmEmail=async()=>{
     if(!pendingApproval)return originalConfirm();
