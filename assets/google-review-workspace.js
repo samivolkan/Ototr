@@ -105,6 +105,8 @@
     }
     const badge=doc.querySelector('.v2-scope > .chip, .v2-review-status > .chip'); if(badge && STATE.view !== 'performance') badge.textContent=options.length+' canlı şube';
     const isBranch=STATE.view==='branches';
+    const pageHeader = byId('pageTitle')?.closest('.ph');
+    if (pageHeader) pageHeader.hidden = isBranch;
     const analyticsView=['overview','performance','compare','store'].includes(STATE.view);
     if(byId('crumb')) byId('crumb').hidden=true;
     if(byId('pageSub')) byId('pageSub').hidden=true;
@@ -205,7 +207,7 @@
     const state=api().state;
     const rows=root.OTOTRReviewAlternative?.scopedRows?.()||[];
     const metrics=b.id===live()?.getBranchId?.()?live()?.aggregateReviews?.(rows,{slaHours:state.policy?.default_sla_hours||24}):null;
-    section.innerHTML='<div class="workspace-branch-head"><div><h2>Şube ağı</h2><p>Genel Merkez → Bölge → İl → Şube</p><p>'+operationalBranches(items).length+' canlı · '+items.filter(x=>!operationalBranches([x]).length).length+' kurulum / test</p></div><div><button class="btn" data-branch-action="sample" '+(busy?'disabled':'')+'>Örnek şubeyi dene</button> <button class="btn p" data-branch-action="new" '+(busy?'disabled':'')+'>＋ Şube ekle</button></div></div>'+
+    section.innerHTML='<div class="workspace-branch-head"><div><h2>Şube ağı</h2><p>'+operationalBranches(items).length+' canlı · '+items.filter(x=>!operationalBranches([x]).length).length+' kurulum / test</p></div><div><button class="btn" data-branch-action="sample" '+(busy?'disabled':'')+'>Örnek şubeyi dene</button> <button class="btn p" data-branch-action="new" '+(busy?'disabled':'')+'>＋ Şube ekle</button></div></div>'+
       (loadError?'<div class="alert warn" role="alert">'+escape(loadError)+' <button class="btn sm" data-branch-action="reload">Tekrar dene</button></div>':'')+
       '<div class="workspace-branches"><aside class="workspace-branch-list" aria-label="Şube listesi">'+items.map(x=>'<button class="workspace-branch '+(x.id===selected?'selected':'')+'" data-select-branch="'+escape(x.id)+'" aria-pressed="'+(x.id===selected)+'"><strong>'+escape(name(x))+'</strong><span>'+escape(x.region)+' · '+escape(x.city)+'</span><em>'+badge(x)+'</em></button>').join('')+'</aside><div class="workspace-branch-detail"><div class="card"><div class="head"><div><h2>'+escape(name(b))+'</h2><p>'+escape(b.region)+' / '+escape(b.city)+'</p></div><span class="chip '+(liveBranch?'ok':'warn')+'">'+badge(b)+'</span></div>'+
       (b.onboarding?.test?'<div class="alert info">Örnek şube gerçek bir işletme değildir. Canlı raporlara katılmaz; Google yanıtı ve müşteri mesajı gönderemez.</div>':'')+

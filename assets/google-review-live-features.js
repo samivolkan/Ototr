@@ -84,7 +84,36 @@
     });
     return Array.from(groups.values()).filter(group => group.ids.length > 1);
   }
-  const pure = { definitions, validateResource, savePayload, categorySummary, sameNameGroups };
+  const openReplyLabels = {
+    approval_pending:'Yanıt onayı', draft_failed:'Taslak hatası',
+    publish_failed:'Yayın hatası', publish_unknown:'Yayın sonucu belirsiz',
+  };
+  function openReviewWork(reviews, tasks, resources, slaHours, now = Date.now()) {
+    const linked = new Map(resources.filter(row => !row.archived).map(row => [row.data.work_item_id,row.data]));
+    const jobs = [];
+    for (const task of tasks) {
+      const info = linked.get(task.id);
+      if (task.review_snapshot?.rejection || ['done','closed','resolved','published','rejected','cancelled'].includes(task.status) ||
+          (['closed','resolved'].includes(info?.stage) && !task.review_snapshot?.legal_hold)) continue;
+      const label = task.kind === 'reply' ? openReplyLabels[task.status] :
+        task.kind === 'legal' ? 'Hukuk dosyası' : task.kind === 'complaint' ? 'Müşteri şikâyeti' : task.kind === 'branch' ? 'Şube görevi' : null;
+      if (!label) continue;
+      jobs.push({type:task.kind,label,task,info,urgent:task.kind === 'legal' || ['publish_failed','publish_unknown','draft_failed'].includes(task.status) || info?.severity === 'critical'});
+    }
+    for (const review of reviews) {
+      if (review.demo || review.duplicate || review.status === 'gonderildi' || review.replyDate) continue;
+      const created = Date.parse(review.createdAt);
+      const hours = Number(review.slaH || slaHours);
+      const due = Number.isFinite(created) && hours > 0 ? created + hours * 3600000 : null;
+      const late = due != null && due < now;
+      const soon = due != null && !late && due - now <= 2 * 3600000;
+      const critical = Number(review.stars) >= 1 && Number(review.stars) <= 2;
+      if (!late && !soon && !critical) continue;
+      jobs.push({type:'risk',label:late ? 'SLA aşımı' : soon ? 'SLA yaklaşıyor' : 'Yanıtsız düşük puan',review,due,late,soon,critical,urgent:late || critical});
+    }
+    return jobs.sort((a,b) => Number(Boolean(b.urgent)) - Number(Boolean(a.urgent)) || (a.due ?? Infinity) - (b.due ?? Infinity));
+  }
+  const pure = { definitions, validateResource, savePayload, categorySummary, sameNameGroups, openReviewWork };
   if (typeof module === 'object' && module.exports) module.exports = pure;
   if (!root?.document) return;
 
@@ -376,12 +405,48 @@
     byId('erpLiveIncidents')?.remove();
     byId('svcGrid')?.insertAdjacentHTML('beforeend', `<div class="card" id="erpLiveIncidents" style="grid-column:1/-1"><h4>İşlem uyarıları</h4>${problems.map(item => `<div class="watch-row"><div class="info"><b>${esc(item.review_snapshot?.reviewer_name || 'ERP görevi')}</b><small>${esc(item.status)} · ${esc(when(item.updated_at || item.created_at))}</small></div>${button('İlgili kaydı aç', 'open-error', `data-work="${esc(item.id)}"`)}</div>`).join('') || '<p>Alınan görevlerde başarısız veya sonucu belirsiz işlem bulunmuyor.</p>'}</div>`);
   }
+  const scopedJobs = () => openReviewWork(root.OTOTRReviewLiveViews?.scopedReviews?.() || [], workItems(),
+    [...resourceList('legal_cases'),...resourceList('complaints')], state().policy?.default_sla_hours);
+  const workStatus = {approval_pending:'Onay bekliyor',draft_failed:'Taslak hazırlanamadı',publish_failed:'Yayın başarısız',publish_unknown:'Doğrulama gerekli',open:'Açık',review:'İnceleniyor',responded:'Yanıtlandı',received:'Alındı',assigned:'Atandı',in_progress:'İşlemde'};
+  function workAction(job) {
+    if (job.review) return button('Yorumu aç','problem-review',`data-id="${Number(job.review.id)}"`);
+    if (job.type === 'legal' || job.type === 'complaint') return button('Dosyayı aç', 'open-error', `data-work="${esc(job.task.id)}"`);
+    return button(job.type === 'reply' ? 'Yanıtı incele' : 'Görevi aç','open-error',`data-work="${esc(job.task.id)}"`);
+  }
+  function renderOpenProblems() {
+    const jobs = scopedJobs();
+    const branch = root.OTOTRReviewLiveViews?.getBranchRegistry?.().find(row => row.id === currentBranch());
+    byId('problemScopeBadge').textContent = branch?.name || 'Bursa Nilüfer';
+    set('problemKpis', [['Açık iş',jobs.length],['SLA aşımı',jobs.filter(j=>j.late).length],['Kritik / hukuk',jobs.filter(j=>j.critical || j.type==='legal').length],['Yanıt onayı',jobs.filter(j=>j.task?.status==='approval_pending').length]]
+      .map(([label,value])=>`<div class="kpi"><div class="kl">${label}</div><div class="kv">${value}</div></div>`).join(''));
+    set('problemRows', jobs.map(job => {
+      const status = job.task ? workStatus[job.info?.stage || job.task.status] || 'İnceleme gerekli' : 'Yanıtsız';
+      const owner = job.info?.assignee_id ? labelUser(job.info.assignee_id) : job.type==='reply' && job.task.status==='approval_pending' ? 'Yetkili onay ekibi' : 'Atanmamış';
+      return `<tr><td><b>${job.label}</b></td><td>${esc(branch?.name || 'Bursa Nilüfer')}</td><td>${esc(owner)}</td><td>${job.due == null ? '—' : esc(when(new Date(job.due).toISOString()))}</td><td>${esc(status)}</td><td>${workAction(job)}</td></tr>`;
+    }).join('') || `<tr><td colspan="6">${state().loaded ? 'Seçili şubede açık iş bulunmuyor.' : 'ERP iş kayıtları bekleniyor.'}</td></tr>`);
+  }
+  function renderSlaWork() {
+    const jobs = scopedJobs().filter(job=>job.late || job.soon);
+    set('riskSlaWork', jobs.map(job=>`<div class="watch-row"><div class="info"><b>${job.label}</b><small>Son tarih · ${esc(when(new Date(job.due).toISOString()))}</small></div>${workAction(job)}</div>`).join('') || empty('Alınan kayıtlarda SLA süresi yaklaşan veya aşan yanıtsız yorum yok.'));
+  }
   function renderDelegations() {
     const list = resourceList('delegations');
     set('delegBody', list.map(row => `<tr><td>${esc(labelUser(row.data.from_user_id))}</td><td>${esc(labelUser(row.data.to_user_id))}</td><td>${esc(when(row.data.starts_at))}</td><td>${esc(when(row.data.ends_at))}</td><td>${row.data.scope === 'approvals' ? 'Onaylar' : 'Görevler'}</td><td>${row.data.active ? 'Etkin' : 'Pasif'} ${editButton('delegations', row)} ${archiveButton('delegations', row)}</td></tr>`).join('') || `<tr><td colspan="6">${note()}${empty('Kayıtlı yetki devri yok.')}</td></tr>`);
     const add = document.querySelector('#approval-delegation .head button'); if (add) { enable(add); add.onclick = () => openEditor('delegations'); }
   }
   function renderCases(kind) {
+    const legal = kind === 'legal_cases';
+    const tasks = workItems().filter(item => item.kind === (legal ? 'legal' : 'complaint'));
+    const open = scopedJobs().filter(job => job.type === (legal ? 'legal' : 'complaint'));
+    const openIds = new Set(open.map(job => job.task.id));
+    const metrics = [
+      ['Açık dosya',open.length],
+      ['Atanmamış',open.filter(job=>!job.info?.assignee_id).length],
+      [legal ? 'Yayın kilidi' : 'Kritik',open.filter(job=>legal ? job.task.review_snapshot?.legal_hold : job.info?.severity==='critical').length],
+      ['Tamamlanan',tasks.filter(task=>!openIds.has(task.id)).length],
+    ];
+    set(legal ? 'legalMetrics' : 'compMetrics', metrics.map(([label,value]) =>
+      `<div class="metric"><div class="ml">${label}</div><div class="mv">${value}</div></div>`).join(''));
     const tbody = document.querySelector(kind === 'legal_cases' ? '#legalTable tbody' : '#compTable tbody');
     if (tbody) tbody.querySelectorAll('tr').forEach(tr => {
       const displayedId = tr.cells[0]?.textContent?.trim();
@@ -392,6 +457,8 @@
       if (last) last.insertAdjacentHTML('beforeend', linkedResourceButton(kind, source.erpItemId));
       if (record) {
         if (tr.cells[3]) tr.cells[3].textContent = record.data.category;
+        const dateCell = tr.cells[kind === 'legal_cases' ? 6 : 5];
+        if (dateCell) { dateCell.textContent = '—'; dateCell.title = 'Dosyaya özel son tarih kaydı yok'; }
         if (kind === 'legal_cases' && tr.cells[4]) tr.cells[4].textContent = record.data.assignee_id ? labelUser(record.data.assignee_id) : 'Atanmamış';
         if (kind === 'complaints' && tr.cells[7]) tr.cells[7].textContent = record.data.assignee_id ? labelUser(record.data.assignee_id) : 'Atanmamış';
         const statusCell = tr.cells[kind === 'legal_cases' ? 7 : 6];
@@ -517,6 +584,8 @@
   }; }
   wrap('renderSettings', () => { renderTemplates(); renderUsers(); renderBranchSettings(); renderIntegrations(); renderSavedViews(); });
   wrap('renderSystem', renderSystemFeatures);
+  root.renderProblems = renderOpenProblems;
+  wrap('renderRisk', renderSlaWork);
   wrap('renderApproval', renderDelegations);
   wrap('renderLegal', () => renderCases('legal_cases'));
   wrap('renderComplaint', () => renderCases('complaints'));
@@ -565,6 +634,7 @@
     if (action === 'open-notification-rules') { root.switchView('system'); return document.querySelector('#systemTabs [data-t="notifmatrix"]')?.click(); }
     if (action === 'notifications') { renderNotifications(); byId('notifPanel')?.classList.add('on'); return; }
     if (action === 'open-task') return api().openTask(work);
+    if (action === 'problem-review') return root.openReviewFromStore(Number(element.dataset.id));
     if (action === 'open-error') { const item = itemById(work); if (item?.kind !== 'reply') return api().openTask(work); const review = root.OTOTRReviewLiveViews.scopedReviews().find(row => row.googleReviewId === item.review_id); if (review) { root.switchView('reviews'); return root.selectReview(review.id); } return root.toast('Kaynak yorum henüz alınmadı. Bursa yorumlarını yenileyin.', 'info'); }
     run(element, async () => {
       if (action === 'collection-save') return saveCollection();

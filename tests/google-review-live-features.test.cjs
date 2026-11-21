@@ -96,3 +96,29 @@ test('same-display-name groups cannot mix demo branches, anonymous people or dup
   const result = sameNameGroups([task('a', 'Özgür'), task('a', 'Özgür'), task('b', 'Özgür', { status: 'done' }), task('c', 'Özgür', { branch_id: 'demo-gebze' }), task('d', 'Özgür', { kind: 'legal' }), task('e', 'Google kullanıcısı'), task('f', 'Google kullanıcısı')]);
   assert.deepEqual(result, [{ name: 'Özgür', ids: ['a', 'b'], open: 1 }]);
 });
+
+test('open work excludes replied reviews and closed files, and preserves independent jobs', () => {
+  const {openReviewWork} = require('../assets/google-review-live-features.js');
+  const now = Date.parse('2026-11-21T12:00:00Z');
+  const reviews = [
+    {id:1, status:'gonderildi', stars:5, createdAt:'2026-11-18T00:00:00Z'},
+    {id:2, status:'bekliyor', stars:2, createdAt:'2026-11-20T00:00:00Z'},
+    {id:3, status:'bekliyor', stars:5, createdAt:'2026-11-21T01:00:00Z'},
+    {id:4, demo:true, stars:1, createdAt:'2026-11-20T00:00:00Z'},
+  ];
+  const tasks = [
+    {id:'approval', kind:'reply', status:'approval_pending'},
+    {id:'published', kind:'reply', status:'published'},
+    {id:'complaint', kind:'complaint', status:'open'},
+    {id:'legal', kind:'legal', status:'open',review_snapshot:{legal_hold:true}},
+  ];
+  const resources = [
+    {data:{work_item_id:'complaint',stage:'resolved'}},
+    {data:{work_item_id:'legal',stage:'closed'}},
+  ];
+  const jobs = openReviewWork(reviews,tasks,resources,12,now);
+  assert.deepEqual(jobs.filter(j=>j.task).map(j=>j.task.id).sort(),['approval','legal']);
+  assert.equal(jobs.find(j=>j.review?.id===2).late,true);
+  assert.equal(jobs.find(j=>j.review?.id===3).soon,true);
+  assert.equal(jobs.length,4);
+});

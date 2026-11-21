@@ -162,7 +162,7 @@
     replace(APPROVALS, 'reply', item => ({type:'ERP yanıtı · '+escape(item.review_snapshot?.rejection ? 'Reddedildi' : item.status),level:1,total:1,assignedTo:'ERP yetkili onayı',slaH:slaHours,openedAt:Date.parse(item.created_at),review:escape(item.review_snapshot?.comment || '')}));
     for (let i=APPROVALS.length-1;i>=0;i--) {
       const item=items.find(item=>item.id===APPROVALS[i].erpItemId);
-      if(item && (['published','done','closed','rejected'].includes(item.status) || item.review_snapshot?.rejection)) APPROVALS.splice(i,1);
+      if(item && (item.status !== 'approval_pending' || item.review_snapshot?.rejection)) APPROVALS.splice(i,1);
     }
   }
 
