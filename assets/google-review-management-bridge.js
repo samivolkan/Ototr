@@ -275,34 +275,43 @@
     return missing();
   }
   async function editLiveReply(id) {
-    const row=liveRow(id), item=row && currentItem(row), box=document.getElementById('draftBox');
-    if (!row || !item || !box) return missing();
+    const row=liveRow(id), box=document.getElementById('draftBox');
+    if (!row || !box || !getAI()?.manageReview) return missing();
     if (busy) return;
-    if (item.review_snapshot?.legal_hold) return toast('Hukuki bekletme aktif; canlı yanıt değiştirilemez.','warn');
+    const item = currentItem(row);
+    if (item?.review_snapshot?.legal_hold) return toast('Hukuki bekletme aktif; canlı yanıt değiştirilemez.','warn');
     box.readOnly=false; box.dataset.liveEditing='1'; box.focus();
-    dirty.set(id,{text:box.value,version:item.version,published:true}); lockEditing();
-    toast('Yanıt düzenleme modu açıldı. Değişiklikten sonra “Güncel yanıtı gönder” seçeneğini kullanın.','info');
+    dirty.set(id,{text:box.value,version:item?.version,published:true}); lockEditing();
+    renderReviews(); document.getElementById('draftBox')?.focus();
+    toast('Yanıt düzenleme modu açıldı. Değişiklikten sonra Kaydet’e basın.','info');
   }
-  async function sendLiveUpdatedReply(id) {
-    const row=liveRow(id), item=row && currentItem(row), box=document.getElementById('draftBox');
-    if (!row || !item || !box) return missing();
+  async function saveLiveUpdatedReply(id) {
+    const row=liveRow(id), box=document.getElementById('draftBox');
+    if (!row || !box) return missing();
     const text=box.value.trim();
-    if (!dirty.has(id)) return toast('Önce “Yanıtı düzenle” seçeneğini açın.','info');
+    const edit = dirty.get(id);
+    if (busy || !edit?.published) return;
     if (!text || text.length > 4000) return toast('Yanıt 1–4000 karakter olmalıdır.','warn');
     const api = getAI();
-    if (!api?.googleBusinessRequest) return missing();
+    if (!api?.manageReview) return missing();
     busy=true; lockEditing();
     try {
-      const data=await api.googleBusinessRequest('save_draft',{account_id:item.account_id,location_id:item.location_id,review_id:item.review_id,branch_id:item.branch_id,item_id:item.id,expected_version:item.version,reply_text:text,draft_source:'manual',edit_published:true});
+      const data=await api.manageReview(row.erpReviewId,'save',{version:edit.version,text,replacePublished:true});
       dirty.delete(id); box.readOnly=true; box.dataset.liveEditing='';
-      await api.refreshWorkflow?.();
       hydrateLiveBranch(); renderReviews();
-      api?.['openItem']?.(data.item.id);
-      toast('Güncel yanıt kaydedildi; yayın için insan onayı bekleniyor.','ok');
+      toast('Taslak kaydedildi. Google’da yayımlamak için “Güncel yanıtı gönder”e basın.','ok');
       return data;
     } catch (e) { toast(e.message || 'Güncel yanıt kaydedilemedi.','warn'); }
     finally { busy=false; lockEditing(); }
   }
+  const savedReplacement = item => Boolean(item?.status === 'approval_pending' && item.expected_reply && item.reply_text &&
+    !item.review_snapshot?.legal_hold && !item.review_snapshot?.rejection && !item.review_snapshot?.reply_conflict);
+  function sendLiveUpdatedReply(id) {
+    const row = liveRow(id), item = row && currentItem(row);
+    if (busy || dirty.has(id) || !savedReplacement(item)) return;
+    return act(id,'publish',{text:item.reply_text,version:item.version,approved:true,replacePublished:true});
+  }
+  window.saveLiveUpdatedReply = saveLiveUpdatedReply;
   window.editSentReply=id=>liveRow(id)?editLiveReply(id):originalEdit?.(id);
   window.sendUpdatedReply=id=>liveRow(id)?sendLiveUpdatedReply(id):originalSendUpdated?.(id);
   window.regenDraft=id=>liveRow(id)?regenerateLiveReply(id):originalRegen(id);
@@ -361,16 +370,16 @@
     box.readOnly=!editable;
     box.maxLength=4000;
     if(edit)box.value=edit.text;
-    else if(item && row.status!=='gonderildi')box.value=item.reply_text||'';
-    box.oninput=()=>{dirty.set(row.id,{text:box.value,version:edit?.version ?? item?.version});pendingApproval=null;lockEditing();};
+    else if(item && (row.status!=='gonderildi' || savedReplacement(item)))box.value=item.reply_text||'';
+    box.oninput=()=>{dirty.set(row.id,{text:box.value,version:edit?.version ?? item?.version,published:Boolean(edit?.published)});pendingApproval=null;lockEditing();};
     const actions=document.querySelector('#rvTab-detail .actions');
     if(actions && row.status!=='gonderildi'){
       actions.innerHTML=`<button class="btn p" onclick="openEmail(${row.id})" ${editable?'':'disabled'}>✓ Onayla</button><button class="btn" onclick="regenDraft(${row.id})">↻ ${item?.reply_text?'Yeniden':'Taslak hazırla'}</button><button class="btn" onclick="saveLiveDraft(${row.id})" ${editable?'':'disabled'}>Kaydet</button>${['publishing','publish_unknown','publish_failed'].includes(item?.status)?`<button class="btn" onclick="verifyLiveReply(${row.id})">Yayın sonucunu kontrol et</button>`:''}`;
     } else if(actions){
-      actions.innerHTML=`<div class="review-action-group"><h4>Yanıt</h4><div><button class="btn" onclick="editSentReply(${row.id})">Yanıtı düzenle</button><button class="btn" onclick="regenDraft(${row.id})">Alternatif AI</button><button class="btn p" onclick="sendUpdatedReply(${row.id})">Güncel yanıtı gönder</button></div></div><div class="review-action-group"><h4>Takip</h4><div><button class="btn" onclick="addInternalNote(${row.id})">Not ekle</button><button class="btn" onclick="requestHumanApproval(${row.id})">İnsan onayı iste</button><button class="btn" onclick="routeReview(${row.id},'complaint')">Müşteri Şikayeti</button><button class="btn" onclick="verifyLiveReply(${row.id})">Google’da kontrol et</button></div></div><div class="review-action-group"><h4>Yönlendir</h4><div><button class="btn" onclick="escalateRegion(${row.id})">Bölge</button><button class="btn" onclick="routeReview(${row.id},'store')">Şube</button><button class="btn" onclick="routeReview(${row.id},'legal')">Hukuk</button></div></div>`;
+      actions.innerHTML=`<div class="review-action-group"><h4>Yanıt</h4><div><button class="btn" onclick="editSentReply(${row.id})">Yanıtı düzenle</button><button class="btn" onclick="regenDraft(${row.id})">Alternatif AI</button>${edit?.published ? `<button class="btn p" onclick="saveLiveUpdatedReply(${row.id})">Kaydet</button>` : savedReplacement(item) ? `<button class="btn p" onclick="sendUpdatedReply(${row.id})">Güncel yanıtı gönder</button>` : ''}</div></div><div class="review-action-group"><h4>Takip</h4><div><button class="btn" onclick="addInternalNote(${row.id})">Not ekle</button><button class="btn" onclick="requestHumanApproval(${row.id})">İnsan onayı iste</button><button class="btn" onclick="routeReview(${row.id},'complaint')">Müşteri Şikayeti</button><button class="btn" onclick="verifyLiveReply(${row.id})">Google’da kontrol et</button></div></div><div class="review-action-group"><h4>Yönlendir</h4><div><button class="btn" onclick="escalateRegion(${row.id})">Bölge</button><button class="btn" onclick="routeReview(${row.id},'store')">Şube</button><button class="btn" onclick="routeReview(${row.id},'legal')">Hukuk</button></div></div>`;
     }
     const label=document.querySelector('.draft-label .chip');
-    if(label)label.textContent=row.status==='gonderildi'?'Google yanıtı':item?`${item.draft_source==='openai'?'OpenAI':item.draft_source==='manual'?'Elle düzenlenen':'Şablon'} · ${item.review_snapshot?.rejection ? 'Reddedildi · yeniden düzenleyin' : item.status}`:'ERP taslağı bekleniyor';
+    if(label)label.textContent=row.status==='gonderildi'?(savedReplacement(item)?'Kaydedilmiş taslak':'Google yanıtı'):item?`${item.draft_source==='openai'?'OpenAI':item.draft_source==='manual'?'Elle düzenlenen':'Şablon'} · ${item.review_snapshot?.rejection ? 'Reddedildi · yeniden düzenleyin' : item.status}`:'ERP taslağı bekleniyor';
     return result;
   };
   const originalOverview = window.renderOverview;
@@ -431,6 +440,8 @@
     window[name] = (id, ...args) => {
       const row = collection.find(row => row.id === id);
       if (row?.erpItemId) {
+        const publishedReview = name === 'approveApp' && REVIEWS.find(r => !r.demo && r.status === 'gonderildi' && r.googleReviewId === row.googleReviewId);
+        if (publishedReview && savedReplacement(currentItem(publishedReview))) return window.openReviewFromStore(publishedReview.id);
         if (getAI()?.['openItem']) return getAI()['openItem'](row.erpItemId);
         const review=REVIEWS.find(r=>!r.demo && currentItem(r)?.id===row.erpItemId);
         if(review){ switchView('reviews'); if (typeof selectReview === 'function') selectReview(review.id); else { SEL=review.id; renderReviews?.(); } }

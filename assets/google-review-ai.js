@@ -680,9 +680,11 @@
     if (managementLocks.has(reviewId) || publicationLocks.has(item?.id)) throw new Error('Bu yorum için işlem sürüyor.');
     const identity = identityFor(review, branch);
     if (!['prepare','regenerate','save','publish','verify','legal','complaint','branch'].includes(action)) throw new Error('Geçersiz işlem.');
-    if (['save','publish','verify','regenerate'].includes(action) && (!item || options.version !== item.version)) throw new Error('Taslak sürümü değişti; güncel kaydı inceleyin.');
+    const replacementSave = action === 'save' && options.replacePublished === true && review.isReplied;
+    if (['save','publish','verify','regenerate'].includes(action) && (options.version !== item?.version || (!item && !replacementSave))) throw new Error('Taslak sürümü değişti; güncel kaydı inceleyin.');
     if (action === 'publish' && (options.approved !== true || options.text !== item.reply_text || !['approval_pending','publish_failed'].includes(item.status) || item.review_snapshot?.reply_conflict || item.review_snapshot?.rejection || item.review_snapshot?.legal_hold)) throw new Error('Güncel kayıtlı metin için yayın onayı gerekli; reddedilen veya hukuken bekletilen taslak yayınlanamaz.');
-    if (['prepare','regenerate','save','publish'].includes(action) && review.isReplied) throw new Error('Google’da zaten yanıt var; mevcut yanıt korunuyor.');
+    const replacePublished = action === 'publish' && options.replacePublished === true && item?.status === 'approval_pending' && Boolean(item.expected_reply);
+    if (['prepare','regenerate','save','publish'].includes(action) && review.isReplied && !replacePublished && !replacementSave) throw new Error('Google’da zaten yanıt var; mevcut yanıt korunuyor.');
     if (action === 'prepare' && item && !['draft_failed','preparing'].includes(item.status)) return item;
     managementLocks.add(reviewId);
     if (item) publicationLocks.add(item.id);
@@ -694,7 +696,7 @@
         const generated = action === 'regenerate' ? await requestDraft(review,branch,item.reply_text) : null;
         const text = String(generated ? generated.reply || '' : options.text || '').trim();
         if (!text || text.length > 4000) throw new Error('Yanıt 1–4000 karakter olmalı.');
-        result = await googleBusinessRequest('save_draft',{...identity,item_id:item.id,expected_version:item.version,reply_text:text,draft_source:generated?'openai':'manual',generation_id:generated?.generation_id});
+        result = await googleBusinessRequest('save_draft',{...identity,...(item ? {item_id:item.id,expected_version:item.version} : {}),reply_text:text,draft_source:generated?'openai':'manual',generation_id:generated?.generation_id,...(replacementSave ? {edit_published:true} : {})});
       } else result = await googleBusinessRequest(action === 'publish'?'publish_reply':'verify_reply',{item_id:item.id,expected_version:item.version,...(action==='publish'?{approved:true}:{})});
       if (!result?.item) throw new Error('İşlem sonucu doğrulanamadı; güncel kaydı kontrol edin.');
       remember(result.item);

@@ -464,3 +464,30 @@ test('new editor locks background refresh and rejects duplicate in-flight genera
   h.shared.state.releaseAI();await first;
   assert.equal(h.api.getRefreshState().busy,false);
 });
+
+test('published review replacement requires explicit approval of the saved version and text', async () => {
+  const review = {...REVIEW};
+  const h = ui(server(), BRANCH, review);
+  await h.api.generate(review.id);
+  await h.element('[data-google-ai-queue]').dispatch('click');
+  const draft = h.shared.state.items[0];
+  draft.expected_reply = 'The existing Google reply';
+  await h.api.refreshWorkflow();
+  review.isReplied = true;
+  const saved = h.api.getWorkflowItems()[0];
+  const options = {version:saved.version,text:saved.reply_text,approved:true};
+  await assert.rejects(h.api.manageReview(review.id,'publish',options),/mevcut yanıt korunuyor/);
+  await assert.rejects(h.api.manageReview(review.id,'publish',{...options,replacePublished:true,approved:false}),/onayı/);
+  assert.equal(h.shared.state.calls.filter(call => call.action === 'publish_reply').length,0);
+  const item = await h.api.manageReview(review.id,'publish',{...options,replacePublished:true});
+  assert.equal(item.status,'published');
+});
+
+test('editing an existing Google reply without an ERP draft only saves a draft', async () => {
+  const review = {...REVIEW,isReplied:true};
+  const h = ui(server(), BRANCH, review);
+  const saved = await h.api.manageReview(review.id,'save',{text:'A saved replacement',replacePublished:true});
+  assert.equal(saved.status,'approval_pending');
+  assert.equal(saved.reply_text,'A saved replacement');
+  assert.equal(h.shared.state.calls.some(call=>call.action==='publish_reply'),false);
+});
