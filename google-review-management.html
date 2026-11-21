@@ -1533,7 +1533,7 @@ const VIEWS = [
   { id:"risk", label:"⚠️ Risk", title:"Risk ve SLA", sub:"Kritik yorumlar, hukuki süreçler." },
   { id:"problems", label:"🧭 Problemler", title:"Problem Merkezi", sub:"Genelden yoruma inen problem görünümü." },
   { id:"legal", label:"⚖️ Hukuk", title:"Hukuk Merkezi", sub:"Hukuki dosyalar, KVKK." },
-  { id:"complaint", label:"📨 Şikayet", title:"Şikayet Merkezi", sub:"Şikayet pipeline." },
+  { id:"complaint", label:"📨 Şikayet", title:"Müşteri Şikâyetleri", sub:"Şikayet pipeline." },
   { id:"approval", label:"✅ Onay", title:"Onay Akışı", sub:"Çok seviyeli onay." },
   { id:"compare", label:"📊 Karşılaştır", title:"Şube Karşılaştırma", sub:"Yan yana ve lig." },
   { id:"ai", label:"🤖 AI", title:"AI Yapılandırma", sub:"Yapılandırma, kalite, playground." },
@@ -2178,7 +2178,7 @@ function renderComplaint(){
       <td class="mono" style="font-size:11px">${c.id}</td>
       <td>${b?.name || "—"}</td><td>${c.customer}</td><td>${c.category}</td>
       <td><span class="chip ${sCls}" style="font-size:10px">${sLbl}</span></td>
-      <td><span class="chip ${slaCls}" style="font-size:10px">${!Number.isFinite(left)?"Süre ölçülemedi":left<0?"⚠ SLA aşıldı":left.toFixed(1)+" sa kaldı"}</span></td>
+      <td><span class="chip ${slaCls}" style="font-size:10px">${!Number.isFinite(left)?"Süre ölçülemedi":left<0?"Onay süresi aşıldı":left.toFixed(1)+" sa onay süresi"}</span></td>
       <td><span class="chip ${stCls} dot">${stLbl}</span></td>
       <td>${c.assignee}</td>
       <td><button class="btn sm" onclick="advanceComplaint('${c.id}')" ${c.status==="resolved"?"disabled":""}>İlerlet</button></td>
@@ -2248,7 +2248,7 @@ function renderApproval(){
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px">
           <div><div style="font-weight:600;font-size:13px">${a.id} — ${a.customer} · ${b?.name || "—"}</div>
           <div style="font-size:11.5px;color:var(--mute)">${a.type} · ${a.assignedTo}</div></div>
-          <span class="chip ${slaCls}" style="font-size:10.5px">${!Number.isFinite(left)?"Süre ölçülemedi":left<0?"⚠ SLA aşıldı":left.toFixed(1)+" sa kaldı"}</span>
+          <span class="chip ${slaCls}" style="font-size:10.5px">${!Number.isFinite(left)?"Süre ölçülemedi":left<0?"Onay süresi aşıldı":left.toFixed(1)+" sa onay süresi"}</span>
         </div>
         ${a.review ? `<p class="v2-action-review"><strong>Müşteri yorumu</strong><br>${a.review}</p>` : ''}
         <div class="v2-action-draft"><strong>Yanıt taslağı</strong><br>${a.text || 'Taslak bekleniyor.'}</div>

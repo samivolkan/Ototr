@@ -417,7 +417,7 @@
     const jobs = scopedJobs();
     const branch = root.OTOTRReviewLiveViews?.getBranchRegistry?.().find(row => row.id === currentBranch());
     byId('problemScopeBadge').textContent = branch?.name || 'Bursa Nilüfer';
-    set('problemKpis', [['Açık iş',jobs.length],['SLA aşımı',jobs.filter(j=>j.late).length],['Kritik / hukuk',jobs.filter(j=>j.critical || j.type==='legal').length],['Yanıt onayı',jobs.filter(j=>j.task?.status==='approval_pending').length]]
+    set('problemKpis', [['Açık iş',jobs.length],['Yanıt SLA aşımı',jobs.filter(j=>j.late).length],['Kritik / hukuk',jobs.filter(j=>j.critical || j.type==='legal').length],['Yanıt onayı',jobs.filter(j=>j.task?.status==='approval_pending').length]]
       .map(([label,value])=>`<div class="kpi"><div class="kl">${label}</div><div class="kv">${value}</div></div>`).join(''));
     set('problemRows', jobs.map(job => {
       const status = job.task ? workStatus[job.info?.stage || job.task.status] || 'İnceleme gerekli' : 'Yanıtsız';
@@ -431,6 +431,12 @@
   }
   function renderDelegations() {
     const list = resourceList('delegations');
+    const active = list.filter(row => row.data.active && Date.parse(row.data.starts_at) <= Date.now() && Date.now() < Date.parse(row.data.ends_at)).length;
+    const metric = byId('appMetrics')?.children[1];
+    if (metric) {
+      metric.querySelector('.mv').textContent = ready() ? active : '—';
+      metric.querySelector('.md').textContent = ready() ? 'Şu anda etkin yetki devri' : 'ERP verisi bekleniyor';
+    }
     set('delegBody', list.map(row => `<tr><td>${esc(labelUser(row.data.from_user_id))}</td><td>${esc(labelUser(row.data.to_user_id))}</td><td>${esc(when(row.data.starts_at))}</td><td>${esc(when(row.data.ends_at))}</td><td>${row.data.scope === 'approvals' ? 'Onaylar' : 'Görevler'}</td><td>${row.data.active ? 'Etkin' : 'Pasif'} ${editButton('delegations', row)} ${archiveButton('delegations', row)}</td></tr>`).join('') || `<tr><td colspan="6">${note()}${empty('Kayıtlı yetki devri yok.')}</td></tr>`);
     const add = document.querySelector('#approval-delegation .head button'); if (add) { enable(add); add.onclick = () => openEditor('delegations'); }
   }
@@ -455,12 +461,12 @@
       const record = resourceList(kind).find(row => row.data.work_item_id === source.erpItemId);
       const last = tr.cells[tr.cells.length - 1];
       if (last) last.insertAdjacentHTML('beforeend', linkedResourceButton(kind, source.erpItemId));
+      const assigneeCell = tr.cells[legal ? 4 : 7];
+      if (assigneeCell) assigneeCell.textContent = record?.data.assignee_id ? labelUser(record.data.assignee_id) : 'Atanmamış';
       if (record) {
         if (tr.cells[3]) tr.cells[3].textContent = record.data.category;
         const dateCell = tr.cells[kind === 'legal_cases' ? 6 : 5];
         if (dateCell) { dateCell.textContent = '—'; dateCell.title = 'Dosyaya özel son tarih kaydı yok'; }
-        if (kind === 'legal_cases' && tr.cells[4]) tr.cells[4].textContent = record.data.assignee_id ? labelUser(record.data.assignee_id) : 'Atanmamış';
-        if (kind === 'complaints' && tr.cells[7]) tr.cells[7].textContent = record.data.assignee_id ? labelUser(record.data.assignee_id) : 'Atanmamış';
         const statusCell = tr.cells[kind === 'legal_cases' ? 7 : 6];
         if (statusCell) statusCell.textContent = { open: 'Açık', review: 'İnceleniyor', responded: 'Yanıtlandı', closed: 'Kapandı', received: 'Alındı', assigned: 'Atandı', in_progress: 'İşlemde', resolved: 'Çözüldü' }[record.data.stage] || record.data.stage;
         if (kind === 'complaints' && tr.cells[4]) tr.cells[4].textContent = { normal: 'Normal', high: 'Yüksek', critical: 'Kritik' }[record.data.severity] || record.data.severity;
