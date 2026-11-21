@@ -36,6 +36,36 @@ try {
   await demo.reload();
   await demo.waitForFunction(()=>document.body.innerText.includes('TASK2 demo görev testi'));
 
+  for(const width of [320,360,390,430]){
+    const mobile=await browser.newPage({viewport:{width,height:844},isMobile:true,hasTouch:true});
+    mobile.on('pageerror',e=>errors.push(e.message));
+    await mobile.goto('http://127.0.0.1:43824/isler/app/?demo=1');
+    await mobile.getByRole('button',{name:'Ana Sayfa'}).first().waitFor();
+    const homeWidth=await mobile.evaluate(()=>({viewport:innerWidth,document:document.documentElement.scrollWidth,content:document.querySelector('.content').scrollWidth,bottomNav:getComputedStyle(document.querySelector('.bottomnav')).display}));
+    assert.equal(homeWidth.document,width,`${width}px ana sayfada yatay taşma olmamalı`);
+    assert.equal(homeWidth.content,width,`${width}px ana sayfa içeriği taşmamalı`);
+    assert.equal(homeWidth.bottomNav,'flex','mobil alt gezinme görünmeli');
+    await mobile.evaluate(()=>document.querySelector('[data-a=go][data-r=project]')?.click());
+    const board=await mobile.evaluate(()=>({viewport:innerWidth,document:document.documentElement.scrollWidth,board:document.querySelector('.board').clientWidth,boardScroll:document.querySelector('.board').scrollWidth,toolbar:document.querySelector('.toolbar .btn').getBoundingClientRect().height,columnAction:document.querySelector('.bcol-h .ibtn-xs').getBoundingClientRect().height,tab:document.querySelector('.tabs .tab').getBoundingClientRect().height}));
+    assert.equal(board.document,width,`${width}px panoda sayfa taşmamalı`);
+    assert.ok(board.boardScroll>board.board,'pano sütunları yatay kaydırılabilmeli');
+    assert.ok(board.toolbar>=40&&board.columnAction>=36&&board.tab>=40,'dokunmatik araç alanları büyütülmeli');
+    await mobile.evaluate(()=>document.querySelector('[data-a=go][data-r=calendar]')?.click());
+    assert.equal(await mobile.evaluate(()=>document.documentElement.scrollWidth),width,`${width}px takvim taşmamalı`);
+    await mobile.evaluate(()=>document.querySelector('[data-a=go][data-r=timeline]')?.click());
+    assert.equal(await mobile.evaluate(()=>document.documentElement.scrollWidth),width,`${width}px zaman çizelgesi taşmamalı`);
+    await mobile.evaluate(()=>document.querySelector('[data-a=go][data-r=tasks]')?.click());
+    await mobile.locator('[data-a=openTask]').first().click();
+    await mobile.waitForTimeout(400);
+    const drawer=await mobile.evaluate(()=>{const r=document.querySelector('.drawer').getBoundingClientRect();return{left:r.left,right:r.right,width:r.width,viewport:innerWidth}});
+    assert.equal(drawer.left,0,'mobil görev paneli ekranın soluna yaslanmalı');
+    assert.equal(drawer.right,width,'mobil görev paneli ekrana sığmalı');
+    const drawerText=await mobile.locator('.drawer').innerText();
+    assert.match(drawerText,/Engelleyen|Tahmin|Dosyaları buraya bırakın/,'mobil görev ayrıntıları Türkçe görünmeli');
+    assert.doesNotMatch(drawerText,/Blocked by|Drop Files|Start the conversation|Add a description\.\.\./,'mobil görev panelinde İngilizce sabit metin kalmamalı');
+    await mobile.close();
+  }
+
   const erp=await browser.newPage({viewport:{width:1440,height:950}});
   erp.on('pageerror',e=>errors.push(e.message));
   await erp.goto('http://127.0.0.1:43824/');

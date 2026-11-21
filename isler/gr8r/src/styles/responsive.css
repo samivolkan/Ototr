@@ -293,6 +293,42 @@
     top: 8px;
   }
 }
+@media (max-width: 360px) {
+  .mytasks-panel-h .acts {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+  .mytasks-panel-h .seg {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: calc(100% - 30px);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .mytasks-panel-h .seg::-webkit-scrollbar {
+    display: none;
+  }
+  .mytasks-panel-h .seg button {
+    flex: 0 0 auto;
+  }
+  .mytasks-panel-h .tab-count {
+    display: none;
+  }
+}
+@media (max-width: 640px) and (pointer: coarse) {
+  .proj-h .ibtn,
+  .toolbar .btn,
+  .tabs .tab {
+    min-width: 40px;
+    min-height: 40px;
+  }
+  .board .bcol-h .ibtn-xs {
+    width: 36px;
+    height: 36px;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   :root:not([data-motion='full']) {
     --reduce: 1;

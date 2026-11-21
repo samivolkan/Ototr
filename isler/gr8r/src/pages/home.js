@@ -48,7 +48,7 @@ export function pageHome() {
     <div class="grid2">
       <div class="stack">
         <section class="panel" aria-labelledby="h-mytasks">
-          <div class="panel-h"><h2 id="h-mytasks">My tasks</h2>
+          <div class="panel-h mytasks-panel-h"><h2 id="h-mytasks">My tasks</h2>
             <div class="acts"><div class="seg" role="tablist">${[
               ['upcoming', 'Upcoming'],
               ['overdue', 'Overdue'],
@@ -56,7 +56,7 @@ export function pageHome() {
             ]
               .map(
                 ([k, n]) =>
-                  `<button role="tab" class="${tab === k ? 'on' : ''}" data-a="set" data-k="homeTab" data-v="${k}">${n} <span class="faint">${lists[k].length}</span></button>`,
+                  `<button role="tab" class="${tab === k ? 'on' : ''}" data-a="set" data-k="homeTab" data-v="${k}">${n} <span class="faint tab-count">${lists[k].length}</span></button>`,
               )
               .join('')}</div>
             <button class="ibtn ibtn-sm" data-a="go" data-r="mytasks" data-tip="Open My Tasks" aria-label="Open My Tasks">${ic('arrow-up-right', 15)}</button></div></div>
