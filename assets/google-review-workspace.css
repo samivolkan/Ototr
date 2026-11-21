@@ -319,8 +319,8 @@ html[data-review-design="new"] #view-overview .watch-row {
 .branch-segments-label b { font-size:12px; }
 .branch-segments-label small { font-size:10px; color:#b9c3cf; }
 .branch-segments-label:hover b { text-decoration:underline; }
-.branch-segments-track { display:grid; grid-template-columns:repeat(40,minmax(0,1fr)); gap:clamp(1px,.32vw,5px); height:15px; }
-.branch-segments-track i { position:relative; overflow:hidden; width:min(100%,9px); justify-self:center; border-radius:99px; background:#343e49; }
+.branch-segments-track { display:grid; grid-template-columns:repeat(var(--segments),minmax(0,1fr)); gap:clamp(1px,.2vw,3px); height:15px; }
+.branch-segments-track i { position:relative; overflow:hidden; width:min(100%,10px); justify-self:center; border-radius:99px; background:#343e49; }
 .branch-segments-track i::before { content:""; position:absolute; inset:0; transform-origin:left; transform:scaleX(var(--fill)); background-color:var(--series); transition:transform 300ms cubic-bezier(.2,.7,.3,1) var(--delay), background-color 340ms ease var(--delay); }
 .branch-segments-value { text-align:end; font-size:12px; font-variant-numeric:tabular-nums; }
 @media(max-width:600px) {

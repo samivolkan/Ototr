@@ -192,6 +192,7 @@
     count: ['Yorum', null, 0], average: ['Puan', 5, 1], response: ['Yanıt', 100, 2],
     sla: ['SLA', 100, 3], progress: ['Hedef', 100, 4]
   };
+  const branchSegmentCount = 72;
   const branchChartColors = ['#ff974e','#4ebce9','#f192bc','#bca7fe','#73dbc2','#f1ce64','#73a5ff'];
   let branchChartMetric = 'count';
   let branchChartRows = [];
@@ -208,7 +209,7 @@
         const value = row[branchChartMetric];
         const ratio = Number.isFinite(value) ? Math.max(0, Math.min(1,value/scale)) : 0;
         return {value:format(value), color:branchChartColors[(index+colorOffset)%branchChartColors.length],
-          fills:Array.from({length:40},(_,segment)=>Math.max(0,Math.min(1,ratio*40-segment)))};
+          fills:Array.from({length:branchSegmentCount},(_,segment)=>Math.max(0,Math.min(1,ratio*branchSegmentCount-segment)))};
       })
     };
   }
@@ -220,9 +221,9 @@
       '</div></div><div class="branch-segments-grid"><span class="branch-segments-unit">'+label+'</span><div class="branch-segments-axis">'+ticks.map(tick=>'<span>'+escape(tick)+'</span>').join('')+'</div><span></span>'+
       rows.map((row,index)=>{
         const {value,color,fills} = series[index];
-        const segments = fills.map((fill,segment)=>'<i style="--fill:'+fill+';--delay:'+segment*5+'ms"></i>').join('');
+        const segments = fills.map((fill,segment)=>'<i style="--fill:'+fill+';--delay:'+segment*3+'ms"></i>').join('');
         return '<button type="button" class="branch-segments-label" '+(row.demo?'data-demo-branch':'data-select-branch')+'="'+escape(row.id)+'"><b>'+escape(row.name)+'</b><small>'+(row.demo?'Demo':'Canlı')+'</small></button>'+
-          '<div class="branch-segments-track" aria-hidden="true" style="--series:'+color+'">'+segments+'</div>'+
+          '<div class="branch-segments-track" aria-hidden="true" style="--segments:'+branchSegmentCount+';--series:'+color+'">'+segments+'</div>'+
           '<b class="branch-segments-value" aria-label="'+escape(row.name+' '+label+' '+value)+'">'+escape(value)+'</b>';
       }).join('')+'</div></div>';
   }
