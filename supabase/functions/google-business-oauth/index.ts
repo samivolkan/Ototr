@@ -1,3 +1,4 @@
+import { handleReviewGoals, ReviewGoalError } from '../_shared/review-goals.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.57.4';
 import { handleReviewManagement, loadReviewAccess, assertReviewLifecycle } from '../_shared/review-management.ts';
 import { verifyAiGeneration, recordAiOutcome, AiTelemetryError } from '../_shared/google-review-ai-telemetry.ts';
@@ -835,6 +836,41 @@ Deno.serve(async (req) => {
       publish:async(user:any,item:any,connection:any)=>{await assertReviewLifecycle({db,connection,branchId:managementBranchId});const r=await publishWork(db,user,{action:'auto_publish_safe',branch_id:managementBranchId,item_id:item.id,expected_version:item.version,approved:true},await accessToken(await decrypt(connection.refresh_token_encrypted)));await writeGoogleAudit(db,{userId:user.id,role:'ADMIN',action:'auto_publish_safe',entityType:'review_work_item',entityId:item.id,afterState:{status:r.item?.status},detail:'Sunucu otomasyonu: risksiz 4–5 yıldız.'});if(r.item?.status==='published')await recordAiOutcome(db,{item:r.item,actorId:user.id,action:'published'});return r;}
     }));
     const user = await currentUser(req);
+    if (['goal_plan_read','goal_plan_transition','goal_plan_list'].includes(body.action)) {
+      const connection = await loadGoogleConnection(db);
+      const registry = await loadBranchRegistry(db);
+      const registryBranch = registryRow(registry, managementBranchId);
+      const known = [{id:managementBranchId,region:registryBranch?.region || 'Marmara',city:registryBranch?.city || 'Bursa'},
+        ...registry.filter(row=>row.id!==managementBranchId && row.mode==='live' && branchCanSync(row))];
+      const liveBranches = known.filter(row=>row.id!==managementBranchId || branchCanSync(registryBranch));
+      const profile = await db.from('app_users').select('role,branch_id').eq('auth_user_id',user.id).eq('is_active',true).maybeSingle();
+      databaseFailure(profile.error);
+      const allowlist = (Deno.env.get('GOOGLE_BUSINESS_ADMIN_USER_IDS') || '').split(',').map(value=>value.trim());
+      let branch;
+      let role:'gm'|'region'|'branch'|'viewer' = 'viewer';
+      if (connection.connected_by===user.id || allowlist.includes(user.id) || profile.data?.role==='GENERAL_MANAGER') role='gm';
+      else if (profile.data?.branch_id) {
+        const unit = await db.from('branches').select('name,city,district,region').eq('id',profile.data.branch_id).eq('is_active',true).maybeSingle();
+        databaseFailure(unit.error);
+        const normalize = (value:unknown) => String(value || '').trim().toLocaleLowerCase('tr-TR');
+        const erp = unit.data;
+        if (erp) {
+          const candidates = liveBranches.filter(row=>normalize(row.city)===normalize(erp.city) &&
+            (row.id===managementBranchId ? normalize(erp.district)==='nilüfer' : 'name' in row && [erp.name,erp.district].some(value=>normalize(value) && normalize(value)===normalize(row.name))));
+          if (candidates.length===1) branch=candidates[0];
+          if (profile.data.role==='REGIONAL_MANAGER') {
+            branch=liveBranches.find(row=>normalize(row.region)===normalize(erp.region));
+            role='region';
+          } else if (profile.data.role==='BRANCH_MANAGER') role='branch';
+        }
+      }
+      try {
+        return json(await handleReviewGoals({db,connectionId,actor:{id:user.id,role,branch},branches:liveBranches,body}));
+      } catch (error) {
+        if (error instanceof ReviewGoalError) throw new RequestError(error.message,error.status);
+        throw error;
+      }
+    }
     const connection = await authorizedConnection(db, user.id, branchIdOf(body));
     const access = connection._reviewAccess;
     const branchRows = await loadBranchRegistry(db);

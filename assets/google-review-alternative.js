@@ -138,6 +138,20 @@
   }
   const scopedTargetCache = new Map();
   const demoRatingTargets = new Map();
+  const liveGoalRecords = new Map();
+  const liveApprovedGoals = new Map();
+  let approvedGoalsRequest;
+  function syncApprovedGoals() {
+    if (!approvedGoalsRequest) {
+      approvedGoalsRequest = managementApi.request('goal_plan_list',{path:[],month:monthKey(Date.now())}).then(list=>{
+        liveApprovedGoals.clear();
+        for (const row of list.items || []) liveApprovedGoals.set(liveGoalKey(row.month.slice(0,7),JSON.parse(row.scope_key)),row.approved);
+      });
+    }
+    return approvedGoalsRequest;
+  }
+  const liveGoalKey = (month,path) => JSON.stringify([month,...path]);
+  const liveGoal = (month,path) => liveApprovedGoals.get(liveGoalKey(month,path));
   const goalStorageKey = 'ototr.review.demo-goal-workflow.v1';
   let goalMonth = monthKey(Date.now());
   const goalLevels = ['GM', 'Bölge', 'Şehir', 'Şube'];
@@ -172,6 +186,8 @@
       const totals = demoGoalTotals(month);
       if (totals.complete) return Math.round(totals.rating * 100) / 100;
     }
+    const direct = !analyticsDemo() && liveGoal(month,goalPath());
+    if (direct) return direct.rating;
     const values = matchingBranches().map(b => {
       if (analyticsDemo()) {
         const approved = directDemoGoal(month,[b.region,b.city,b.id]);
@@ -182,7 +198,7 @@
         return saved === 'null' ? null : saved == null ? 4.7 : Number(saved);
       }
       const targets = b.id === branchId() ? management().targets || [] : scopedTargetCache.get(b.id) || [];
-      return targets.find(row => row.branch_id === b.id && String(row.month).slice(0,7) === month)?.rating_target;
+      return liveGoal(month,[b.region,b.city,b.id])?.rating ?? targets.find(row => row.branch_id === b.id && String(row.month).slice(0,7) === month)?.rating_target;
     });
     return values.length && values.every(value => value != null && Number(value) >= 1 && Number(value) <= 5)
       ? Math.round(values.reduce((sum,value)=>sum+Number(value),0)/values.length*100)/100 : null;
@@ -191,10 +207,10 @@
     if (!analyticsActive()) return targetSeries(months,management().targets || [],branchId(),branch()?.target);
     const branches = matchingBranches();
     return months.map(month => {
-      const direct = analyticsDemo() ? directDemoGoal(month) : null;
+      const direct = analyticsDemo() ? directDemoGoal(month) : liveGoal(month,goalPath());
       if (direct) return direct.total;
       const values = branches.map(b => analyticsDemo() ? (directDemoGoal(month,[b.region,b.city,b.id])?.total || demoTargets.get(b.id) || b.target) :
-        targetSeries([month], b.id === branchId() ? management().targets || [] : scopedTargetCache.get(b.id) || [],b.id)[0]);
+        liveGoal(month,[b.region,b.city,b.id])?.total ?? targetSeries([month], b.id === branchId() ? management().targets || [] : scopedTargetCache.get(b.id) || [],b.id)[0]);
       return values.length && values.every(value => value != null) ? values.reduce((sum,value) => sum+value,0) : null;
     });
   }
@@ -725,6 +741,9 @@
     chartNote('chartWeeklyReviews',`Son ${weeks.length} hafta · Yalnız seçili dönemde alınan yorumlar.`);
   }
   root.renderOverview = function () {
+    if (!analyticsDemo() && !approvedGoalsRequest) syncApprovedGoals().then(()=>{
+      if (STATE.view==='overview' && !analyticsDemo()) {root.renderOverview();root.initCharts();}
+    }).catch(()=>{});
     const scoped = rows();
     const a = stats(scoped);
     renderBranchRanking(scoped);
@@ -1032,25 +1051,54 @@
   function renderGoalWorkflow() {
     const host = byId('reviewGoalWorkflow');
     if (!host) return;
-    if (!analyticsDemo()) {
-      host.innerHTML = '<h3>Hedef planı</h3><p>Onay akışını denemek için Veri alanından Demo’yu seçin. Canlı şube hedefi mevcut ERP kaydından yönetilir.</p>';
-      return;
-    }
+    const demo = analyticsDemo();
     const path = goalPath();
     const key = goalKey(goalMonth,path);
-    const record = demoGoals()[key] || {};
+    const liveState = liveGoalRecords.get(key);
+    if (!demo && !liveState?.result) {
+      host.innerHTML = '<h3>Hedef planı</h3><p role="status">'+html(liveState?.error || 'ERP hedef planı yükleniyor…')+'</p>';
+      if (liveState?.error) {
+        const retry = node('button','Yeniden dene','btn sm');
+        retry.type = 'button';
+        retry.onclick = () => { liveGoalRecords.delete(key); approvedGoalsRequest = null; renderGoalWorkflow(); };
+        host.append(retry);
+      }
+      if (!liveState) {
+        const month = goalMonth;
+        liveGoalRecords.set(key,{});
+        Promise.all([
+          managementApi.request('goal_plan_read',{path,month}),
+          syncApprovedGoals()
+        ]).then(([result])=>{
+          liveGoalRecords.set(key,{result});
+          if (STATE.view==='performance' && !analyticsDemo() && key===goalKey(goalMonth,goalPath())) root.switchView('performance');
+        }).catch(error=>{
+          liveGoalRecords.set(key,{error:error.message || 'ERP hedef planı alınamadı.'});
+          if (STATE.view==='performance' && !analyticsDemo() && key===goalKey(goalMonth,goalPath())) renderGoalWorkflow();
+        });
+      }
+      return;
+    }
+    const record = (demo ? demoGoals()[key] : liveState.result.record) || {};
     const draft = record.draft || record.approved || {};
     const status = record.status || 'new';
-    const editable = ['new','draft','revision'].includes(status);
+    const permitted = demo ? null : liveState.result.actions;
+    const editable = demo ? ['new','draft','revision'].includes(status) : permitted.includes('save');
     const actions = {save:'Taslak kaydedildi',submit:'Onaya gönderildi',forward:'GM onayına gönderildi',approve:'Onaylandı',revise:'Revizyon açıldı'};
     const states = {new:'Yeni',draft:'Taslak',pending:'GM onayı bekliyor',regional:'Bölge onayı bekliyor',approved:'Onaylandı',revision:'Revizyon'};
-    const button = (action,label) => '<button class="btn sm" type="submit" value="'+action+'">'+label+'</button>';
+    const button = (action,label) => permitted && !permitted.includes(action) ? '' : '<button class="btn sm" type="submit" value="'+action+'">'+label+'</button>';
     const actual = allRows().filter(row => monthKey(row.createdAt) === goalMonth);
     const approved = record.approved;
-    const totals = demoGoalTotals(goalMonth);
+    const totals = demo ? demoGoalTotals(goalMonth) : (() => {
+      const units = matchingBranches();
+      const approved = units.map(unit=>liveGoal(goalMonth,[unit.region,unit.city,unit.id])).filter(Boolean);
+      const target = approved.reduce((total,goal)=>total+goal.total,0);
+      return {target,count:approved.length,complete:units.length>0 && approved.length===units.length,
+        rating:target ? approved.reduce((sum,goal)=>sum+goal.total*goal.rating,0)/target : null};
+    })();
     host.innerHTML = `<h3>Hedef planı · ${goalLevels[path.length]} · ${html(analyticsName())}</h3>
       <label>Hedef ayı <input id="reviewGoalMonth" type="month" min="2000-01" max="2099-12" value="${html(goalMonth)}"></label>
-      <p>Demo · ${states[status]} · ${allRows().length} mevcut yorum</p>
+      <p>${demo ? 'Demo' : 'Canlı ERP'} · ${states[status]} · ${allRows().length} mevcut yorum</p>
       <form id="reviewGoalForm">
         <fieldset ${editable ? '' : 'disabled'}><legend>Hedefler</legend>
           <label>Varılacak toplam yorum <input name="total" type="number" required min="1" max="10000000" value="${draft.total ?? ''}"></label>
@@ -1064,16 +1112,39 @@
       </form>
       <p>${approved ? `Onaylı hedef · ${approved.total} toplam yorum · ${actual.filter(row=>row.stars===approved.stars).length}/${approved.starCount} adet ${approved.stars} yıldızlı yorum · Puan hedefi ${fmt(approved.rating)} ★` : 'Bu kapsam ve ay için onaylı hedef yok.'}</p>
       ${path.length<3 ? `<p>Onaylı şube hedefleri · ${totals.count}/${matchingBranches().length} şube · ${totals.target} toplam yorum hedefi${totals.rating==null?'':' · Ağırlıklı puan hedefi '+fmt(totals.rating)}${approved && totals.complete?' · Yönetim hedefi farkı '+fmt(approved.total-totals.target):''}</p>` : ''}
-      ${record.history?.length ? `<details><summary>İşlem geçmişi</summary><ol>${record.history.map(entry=>`<li>${actions[entry.action]} · ${html(new Date(entry.at).toLocaleString('tr-TR',{timeZone:'Europe/Istanbul'}))} · ${entry.values.total} yorum · ${entry.values.starCount} adet ${entry.values.stars} yıldız · ${fmt(entry.values.rating)} puan${entry.reason?' · '+html(entry.reason):''}</li>`).join('')}</ol></details>` : ''}
+      ${record.history?.length ? `<details><summary>İşlem geçmişi</summary><ol>${record.history.map(entry=>`<li>${actions[entry.action]}${entry.role ? ' · '+html(({gm:'GM',region:'Bölge',branch:'Şube'})[entry.role] || entry.role) : ''} · ${html(new Date(entry.at).toLocaleString('tr-TR',{timeZone:'Europe/Istanbul'}))} · ${entry.values.total} yorum · ${entry.values.starCount} adet ${entry.values.stars} yıldız · ${fmt(entry.values.rating)} puan${entry.reason?' · '+html(entry.reason):''}</li>`).join('')}</ol></details>` : ''}
       <p id="reviewGoalStatus" role="status"></p>`;
     byId('reviewGoalMonth').onchange = event => {
       if (!/^20\d{2}-(0[1-9]|1[0-2])$/.test(event.target.value)) return;
       goalMonth = event.target.value;
       renderGoalWorkflow();
     };
-    byId('reviewGoalForm').onsubmit = event => {
+    byId('reviewGoalForm').onsubmit = async event => {
       event.preventDefault();
       const action = event.submitter?.value || 'save';
+      if (!demo) {
+        if (!permitted.includes(action)) return;
+        const form = event.currentTarget;
+        const fields = new FormData(form);
+        const values = Object.fromEntries(['total','stars','starCount','rating'].map(field=>[field,Number(fields.get(field))]));
+        const reason = action==='revise' ? root.prompt('Revizyon gerekçesi') : null;
+        if (action==='revise' && !reason?.trim()) return;
+        const controls = [...form.querySelectorAll('button')];
+        controls.forEach(control=>control.disabled=true);
+        try {
+          const result = await managementApi.request('goal_plan_transition',{path,month:goalMonth,transition:action,values,reason,expected_version:record.version || 0});
+          liveGoalRecords.set(key,{result});
+          if (result.record?.approved) liveApprovedGoals.set(key,result.record.approved);
+          if (STATE.view==='performance' && !analyticsDemo() && key===goalKey(goalMonth,goalPath())) root.switchView('performance');
+          root.toast(states[result.record.status], 'ok');
+        } catch(error) {
+          root.toast(error.message || 'ERP hedefi kaydedilemedi.','warn');
+          liveGoalRecords.delete(key);
+        } finally {
+          controls.forEach(control=>control.disabled=false);
+        }
+        return;
+      }
       const all = demoGoals();
       const current = all[key] || {};
       if (current.status !== record.status || current.updatedAt !== record.updatedAt) {
@@ -1111,18 +1182,12 @@
 
   root.renderPerformance = function () {
     const a = stats(rows()), total = currentReviewTotal(), target = currentTarget();
-    const ratio = missingScopeData() ? null : progress(total, target), canSave = Boolean(analyticsScope.branch) && (!analyticsLive() || (analyticsScope.branch === branchId() && management().loaded && !management().loading && !management().error && !management().targetError));
+    const ratio = missingScopeData() ? null : progress(total, target);
     const head = byId('perfTable')?.closest('.card2')?.querySelector('.head'); if (head) head.classList.add('v2-performance-head');
-    byId('perfTable').innerHTML = `<thead><tr><th>Şube</th><th class="n">Varılacak toplam</th><th class="n">Mevcut toplam</th><th>Hedef ilerlemesi</th><th class="n">Dönem yorumları</th><th class="n">Puan</th><th class="n">Yanıt</th><th>Ortam</th></tr></thead><tbody><tr><td>${html(analyticsName())}</td><td><div class="v2-target-editor"><input id="v2Target" aria-label="${html(analyticsName())} toplam yorum hedefi" type="number" min="1" max="10000" step="1" value="${target ?? ''}" placeholder="Şube seçin" ${canSave ? '' : 'disabled'}><button id="v2SaveTarget" class="btn sm p" ${canSave ? '' : 'disabled'}>Kaydet</button></div></td><td class="n">${total}</td><td>${ratio == null ? (missingScopeData() ? 'Şube verisi eksik' : 'Hedef girilmedi') : `<div class="v2-progress"><progress aria-label="Hedef ilerlemesi" max="100" value="${Math.min(100, ratio)}"></progress><b>${ratio}%</b></div>`}</td><td class="n">${a.count}</td><td class="n">${fmt(a.average)}</td><td class="n">${pct(a.responseRate)}</td><td><span class="chip ${analyticsLive() ? 'ok' : 'warn'}">${analyticsLive() ? 'Canlı' : 'Demo'}</span></td></tr></tbody>`;
+    byId('perfTable').innerHTML = `<thead><tr><th>Şube</th><th class="n">Varılacak toplam</th><th class="n">Mevcut toplam</th><th>Hedef ilerlemesi</th><th class="n">Dönem yorumları</th><th class="n">Puan</th><th class="n">Yanıt</th><th>Ortam</th></tr></thead><tbody><tr><td>${html(analyticsName())}</td><td>${target == null ? '—' : fmt(target)}</td><td class="n">${total}</td><td>${ratio == null ? (missingScopeData() ? 'Şube verisi eksik' : 'Hedef girilmedi') : `<div class="v2-progress"><progress aria-label="Hedef ilerlemesi" max="100" value="${Math.min(100, ratio)}"></progress><b>${ratio}%</b></div>`}</td><td class="n">${a.count}</td><td class="n">${fmt(a.average)}</td><td class="n">${pct(a.responseRate)}</td><td><span class="chip ${analyticsLive() ? 'ok' : 'warn'}">${analyticsLive() ? 'Canlı' : 'Demo'}</span></td></tr></tbody>`;
     const ratingTarget = currentRatingTarget();
     const ratingCell = byId('perfTable').querySelector('tbody tr td:nth-child(2)');
-    if (canSave && analyticsLive()) {
-      ratingCell.insertAdjacentHTML('beforeend', `<label class="v2-rating-goal">Yıldız hedefi <input id="v2RatingTarget" type="number" min="1" max="5" step="0.1" value="${ratingTarget ?? ''}" placeholder="4,7"></label>`);
-    } else {
-      ratingCell.querySelector('.v2-target-editor').hidden = true;
-      ratingCell.insertAdjacentHTML('beforeend', `<span>${target == null ? '—' : fmt(target)}</span><div class="v2-rating-goal">${ratingTarget == null ? 'Yıldız hedefi eksik' : `Yıldız hedefi ${fmt(ratingTarget)} ★${matchingBranches().length > 1 ? ' · şube hedeflerinin ortalaması' : ''}`}</div>`);
-    }
-    byId('v2SaveTarget').onclick = saveTarget;
+    ratingCell.insertAdjacentHTML('beforeend', `<div class="v2-rating-goal">${ratingTarget == null ? 'Puan hedefi eksik' : `Puan hedefi ${fmt(ratingTarget)} ★`}</div>`);
     renderGoalWorkflow();
     if (ratio == null && analyticsLive() && (management().error || !management().loaded)) {
       byId('perfTable').querySelector('tbody tr td:nth-child(4)').textContent = 'Hedef doğrulanamadı';
@@ -1150,35 +1215,6 @@
     const target = currentTarget(), actual = currentReviewTotal(), ratio = missingScopeData() ? null : progress(actual, target);
     host.innerHTML = `<div class="v2-period-note">Toplam yorum hedefi · ${analyticsLive() ? 'Seçili şubenin canlı verisi' : 'Yalnız seçili demo şube'} · ${monthKey(Date.now())}</div><div class="v2-breakdown">${[['Bölge', branch()?.region || '—'], ['İl', branch()?.city || '—'], ['Şube', analyticsName()]].map(([label, value]) => `<div class="card"><h4>${label}</h4><b>${html(value)}</b><span class="v2-big">${ratio == null ? '—' : `${ratio}%`}</span><progress aria-label="${label} hedef ilerlemesi" max="100" value="${Math.min(100, ratio || 0)}"></progress><p>${actual} yorum / ${target ?? '—'} hedef · ${analyticsLive() ? 'Canlı' : 'Demo'}</p></div>`).join('')}</div>`;
   };
-  async function saveTarget() {
-    const value = Number(byId('v2Target')?.value), button = byId('v2SaveTarget');
-    if (!Number.isInteger(value) || value < 1 || value > 10000) return root.toast('Hedef 1–10000 arasında tam sayı olmalı.', 'warn');
-    const ratingField = byId('v2RatingTarget');
-    if (ratingField && !ratingField.reportValidity()) return;
-    const ratingTarget = ratingField?.value ? Number(ratingField.value) : null;
-    button.disabled = true;
-    if (branchSelect) branchSelect.disabled = true;
-    periodSelect.disabled = true;
-    try {
-      if (!analyticsScope.branch) throw new Error('Hedef kaydetmek için şube seçin.');
-      if (analyticsLive()) {
-        if (analyticsScope.branch !== branchId()) throw new Error('Şube verisi henüz yüklenmedi.');
-        await root.OTOTRReviewManagement.saveTarget(value, ratingTarget);
-        if (currentTarget() !== value || currentRatingTarget() !== ratingTarget) throw new Error('Hedef kaydı doğrulanamadı; bağlantıyı yenileyin.');
-      } else {
-        demoTargets.set(analyticsScope.branch,value);
-        demoRatingTargets.set(analyticsScope.branch,ratingTarget);
-        localStorage.setItem('ototr.regional-demo.rating.'+analyticsScope.branch,String(ratingTarget));
-        localStorage.setItem('ototr.regional-demo.target.'+analyticsScope.branch,String(value));
-      }
-      root.renderPerformance(); root.toast(`${analyticsName()} ${analyticsLive() ? 'ERP' : 'demo'} hedefi kaydedildi.`, 'ok');
-    } catch (error) { root.toast(error.message || 'Hedef kaydedilemedi.', 'warn'); }
-    finally {
-      if (button.isConnected) button.disabled = false;
-      if (branchSelect) branchSelect.disabled = false;
-      periodSelect.disabled = false;
-    }
-  }
   root.exportPerformance = function () {
     const a = stats(rows());
     root.downloadCSV('ototr-yorum-sayfasi-2-performans.csv', [
@@ -1195,7 +1231,7 @@
         const reviewRows = source.filter(row => monthKey(row.createdAt) && Date.parse(row.createdAt) <= now);
         const loaded = demo || reviewRows.length > 0 || Boolean(parentReviews?.getBranchById?.(branch.id)?.lastSyncedAt);
         const stats = live().aggregateReviews(reviewRows,{now,slaHours:demo?24:branch.id===branchId()?sla():Number(branch.sla_hours)||24});
-        const target = demo ? directDemoGoal(month,[branch.region,branch.city,branch.id])?.total || demoTargets.get(branch.id) || branch.target : targetSeries([month],
+        const target = demo ? directDemoGoal(month,[branch.region,branch.city,branch.id])?.total || demoTargets.get(branch.id) || branch.target : liveGoal(month,[branch.region,branch.city,branch.id])?.total ?? targetSeries([month],
           branch.id===branchId()?management().targets || []:scopedTargetCache.get(branch.id) || [],branch.id)[0];
         return {id:branch.id,name:branch.id===BRANCH_IDS[0]?'Bursa Nilüfer':branch.name,demo,
           count:loaded?stats.count:null, average:stats.average, response:stats.responseRate,
