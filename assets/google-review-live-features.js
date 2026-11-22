@@ -316,13 +316,66 @@
   }
 
   const collectionDemoKey = branch => 'ototr.review.collection.demo.' + branch;
+  const collectionDay = () => new Intl.DateTimeFormat('sv-SE', {timeZone:'Europe/Istanbul'}).format(new Date());
+  const demoDeliveries = [
+    {id:'demo-01', time:'09.20', allowed:true},
+    {id:'demo-02', time:'11.45', allowed:false},
+    {id:'demo-03', time:'14.10', allowed:true},
+  ];
+
+  function renderDailyDeliveries(policy = {}) {
+    const host = byId('collectionDailyDeliveries');
+    if (!host) return;
+    if (collectionIsLive()) {
+      host.innerHTML = '<p>Tamamlanan ekspertiz listesi ve iletişim izni bu ekrana henüz aktarılmıyor.</p>';
+      return;
+    }
+    const queued = policy.delivery_day === collectionDay() ? policy.selected_services || [] : [];
+    const mode = policy.delivery_mode === 'automatic' ? 'automatic' : 'manual';
+    host.innerHTML = '<label>Gönderim yöntemi <select id="collectionMode"><option value="manual">Manuel seçim</option><option value="automatic">Otomatik planlama</option></select></label>' +
+      '<div class="tbl-wrap"><table><thead><tr><th scope="col">Seçim</th><th scope="col">Ekspertiz</th><th scope="col">Teslim</th><th scope="col">Durum</th></tr></thead><tbody>' +
+      demoDeliveries.map((item,index) => {
+        const planned = queued.includes(item.id);
+        return '<tr><td><input type="checkbox" data-demo-delivery="' + item.id + '" aria-label="Demo ekspertiz ' + (index + 1) + '" ' +
+          (planned ? 'checked disabled' : !item.allowed ? 'disabled' : '') + '></td><td>Demo ekspertiz ' + (index + 1) +
+          '</td><td>' + item.time + '</td><td>' + (planned ? 'Demo kuyruğunda' : item.allowed ? 'Uygun' : 'İletişim izni yok') + '</td></tr>';
+      }).join('') + '</tbody></table></div><button class="micro-btn primary" type="button" data-feature="collection-plan-demo">Demo kuyruğuna ekle</button>';
+    const select = byId('collectionMode');
+    select.value = mode;
+    const refreshMode = () => {
+      host.querySelectorAll('[data-demo-delivery]').forEach(input => {
+        const item = demoDeliveries.find(row => row.id === input.dataset.demoDelivery);
+        input.disabled = !item.allowed || queued.includes(item.id) || select.value === 'automatic';
+        if (!queued.includes(item.id)) input.checked = select.value === 'automatic' && item.allowed;
+      });
+    };
+    select.addEventListener('change', refreshMode);
+    refreshMode();
+  }
+
+  function planDemoDeliveries() {
+    if (collectionIsLive()) return;
+    const key = collectionDemoKey(collectionBranch());
+    const policy = JSON.parse(root.localStorage.getItem(key) || '{}');
+    const mode = byId('collectionMode').value;
+    const day = collectionDay();
+    const previous = policy.delivery_day === day ? policy.selected_services || [] : [];
+    const checked = [...byId('collectionDailyDeliveries').querySelectorAll('[data-demo-delivery]:checked')].map(input => input.dataset.demoDelivery);
+    const selected = demoDeliveries.filter(item => item.allowed && !previous.includes(item.id) && (mode === 'automatic' || checked.includes(item.id)));
+    if (!selected.length) throw new Error('Kuyruğa eklenebilecek bir demo ekspertiz seçin.');
+    const next = {...policy, delivery_mode:mode, delivery_day:day, selected_services:[...previous,...selected.map(item => item.id)]};
+    root.localStorage.setItem(key,JSON.stringify(next));
+    renderDailyDeliveries(next);
+    byId('collectionStatus').textContent = selected.length + ' demo istek kuyruğa alındı.';
+  }
+
   const collectionFields = { Hour: 'send_hour', Delay: 'delay_minutes', Channel: 'channel', Template: 'template' };
 
   root.renderReviewCollectionSettings = (demo = null) => {
     collectionDemo = demo;
     const branch = root.OTOTRReviewLiveViews?.getBranchRegistry?.().find(item => item.id === currentBranch());
     const branchName = collectionDemo?.name || branch?.name || 'Bursa Nilüfer';
-    set('workspaceCollectionSettings', `<div class="card" id="reviewCollectionCard" style="grid-column:1/-1"><h3>Ekspertiz sonrası yorum toplama · ${esc(branchName)}</h3><p>${collectionIsLive() ? 'Hizmet sonrası yorum isteği için gönderim koşullarını ayarlayın.' : 'Demo ayarları bu tarayıcıda şubeye özel saklanır. Müşteriye mesaj gönderilmez.'}</p><div class="grid2"><label>Aktif <input id="collectionEnabled" type="checkbox"></label><label>Gönderim saati <input id="collectionHour" type="number" min="0" max="23" value="18"></label><label>Hizmet sonrası bekleme (dk) <input id="collectionDelay" type="number" min="0" max="10080" value="120"></label><label>Kanal <select id="collectionChannel"><option value="sms">SMS</option><option value="whatsapp">WhatsApp</option><option value="email">E-posta</option></select></label></div><label>Mesaj şablonu <textarea id="collectionTemplate" rows="3">Merhaba {{musteri_adi}}, hizmet deneyiminizi değerlendirmek ister misiniz? {{yorum_linki}}</textarea></label><div class="pacts"><button class="micro-btn primary" data-feature="collection-save">Ayarları kaydet</button>${collectionIsLive() ? '<button class="micro-btn" data-feature="collection-refresh">Kuyruğu yenile</button><button class="micro-btn" data-feature="collection-run">Vadesi gelenleri çalıştır</button>' : ''}</div><p id="collectionStatus" role="status"></p><div id="collectionQueue"></div></div>`);
+    set('workspaceCollectionSettings', `<div class="card" id="reviewCollectionCard" style="grid-column:1/-1"><h3>Ekspertiz sonrası yorum toplama · ${esc(branchName)}</h3><p>${collectionIsLive() ? 'Hizmet sonrası yorum isteği için gönderim koşullarını ayarlayın.' : 'Demo ayarları bu tarayıcıda şubeye özel saklanır. Müşteriye mesaj gönderilmez.'}</p><div class="grid2"><label>Aktif <input id="collectionEnabled" type="checkbox"></label><label>Gönderim saati <input id="collectionHour" type="number" min="0" max="23" value="18"></label><label>Hizmet sonrası bekleme (dk) <input id="collectionDelay" type="number" min="0" max="10080" value="120"></label><label>Kanal <select id="collectionChannel"><option value="sms">SMS</option><option value="whatsapp">WhatsApp</option><option value="email">E-posta</option></select></label></div><label>Mesaj şablonu <textarea id="collectionTemplate" rows="3">Merhaba {{musteri_adi}}, hizmet deneyiminizi değerlendirmek ister misiniz? {{yorum_linki}}</textarea></label><div class="pacts"><button class="micro-btn primary" data-feature="collection-save">Ayarları kaydet</button>${collectionIsLive() ? '<button class="micro-btn" data-feature="collection-refresh">Kuyruğu yenile</button><button class="micro-btn" data-feature="collection-run">Vadesi gelenleri çalıştır</button>' : ''}</div><p id="collectionStatus" role="status"></p><div id="collectionQueue"></div><h4>Bugün teslim edilen ekspertizler</h4><div id="collectionDailyDeliveries"></div></div>`);
     loadCollection();
   };
   async function loadCollection() {
@@ -344,6 +397,7 @@
         input.value = policy[key] ?? input.value;
       }
       if (isLive) byId('collectionQueue').innerHTML = (data.queue || []).map(x => `<div class="watch-row"><div class="info"><b>${esc(x.customer_name || 'Müşteri')}</b><small>${esc(x.channel)} · ${esc(x.status)} · ${esc(when(x.scheduled_at))}</small></div></div>`).join('') || '<p>Bekleyen yorum isteği yok.</p>';
+      renderDailyDeliveries(policy);
       save.disabled = false;
     } catch (error) {
       if (card === byId('reviewCollectionCard') && branch === collectionBranch()) byId('collectionStatus').textContent = error.message;
@@ -365,7 +419,11 @@
     };
     const isLive = collectionIsLive();
     if (isLive) await request('collection_save_policy', payload);
-    else root.localStorage.setItem(collectionDemoKey(branch), JSON.stringify(payload));
+    else {
+      const key = collectionDemoKey(branch);
+      const current = JSON.parse(root.localStorage.getItem(key) || '{}');
+      root.localStorage.setItem(key, JSON.stringify({...current, ...payload, delivery_mode:byId('collectionMode')?.value || 'manual'}));
+    }
     if (card === byId('reviewCollectionCard') && branch === collectionBranch()) {
       byId('collectionStatus').textContent = isLive ? 'Şube ayarları ERP’ye kaydedildi.' : 'Şube ayarları bu tarayıcıya kaydedildi.';
     }
@@ -645,6 +703,7 @@
     run(element, async () => {
       if (action === 'collection-save') return saveCollection();
       if (action === 'collection-refresh') return loadCollection();
+      if (action === 'collection-plan-demo') return planDemoDeliveries();
       if (action === 'collection-run') { const result=await request('collection_run_due'); const s=byId('collectionStatus'); if(s)s.textContent=`Kuyruk işlendi: ${result.sent} gönderildi, ${result.skipped} dry-run, ${result.failed} hata.`; return loadCollection(); }
       if (action === 'refresh') return refresh();
       if (action === 'google-status') { const result = await ai.googleBusinessStatus(); await refresh(); root.toast(result.connected ? 'Google bağlantısı doğrulandı.' : 'Google bağlantısı doğrulanmadı.', result.connected ? 'ok' : 'warn'); return; }

@@ -599,19 +599,13 @@ main{margin:0 auto;width:auto;max-width:1440px;padding:20px}
   try {
     if (localStorage.getItem('ototr.review.design.teal') === 'new') document.documentElement.dataset.reviewDesign = 'new';
   } catch (_) {}
-</script><link rel="stylesheet" href="assets/google-review-alternative.css?v=20261119-1"><link rel="stylesheet" href="assets/google-review-workspace.css?v=20261121-2"></head><body>
+</script><link rel="stylesheet" href="assets/google-review-alternative.css?v=20261119-1"><link rel="stylesheet" href="assets/google-review-workspace.css?v=20261122-3"></head><body>
 <div id="review-loading-message" role="status">Yorum Yönetimi hazırlanıyor…</div>
 
 <header class="topbar">
   <div class="brand"><span class="bm">OTO</span><span style="color:var(--red)">TR</span><span class="bsub">Google Yorum Yönetim</span></div>
   <nav class="topnav" id="topnav" aria-label="Yorum ekranları"></nav>
-  <div class="searchbar">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-    <input placeholder="Ara..." readonly onclick="openCmdk()">
-    <kbd>⌘K</kbd>
-  </div>
   <div class="sp"></div>
-  <button class="ibtn mob-search-btn" onclick="openCmdk()">🔍</button>
   <div style="position:relative">
     <button class="ibtn" id="notifBtn">🔔<span class="notif-cnt" id="notifCount" style="display:none">0</span></button>
     <div class="notif-panel" id="notifPanel">
@@ -620,18 +614,20 @@ main{margin:0 auto;width:auto;max-width:1440px;padding:20px}
     </div>
   </div>
   <button class="ibtn" id="themeBtn" title="Tema">🌓</button>
-  <button class="ibtn" onclick="openShortcuts()" title="Kısayollar">⌨</button>
   <select class="lang-sel" id="langSel">
     <option value="tr">TR</option><option value="en">EN</option>
   </select>
-  <select class="role-sel" id="roleSelect">
+  <select class="role-sel" id="roleSelect" hidden>
     <option value="admin">👑 Admin</option>
     <option value="region_manager">📍 Bölge</option>
     <option value="store_manager">🏬 Şube</option>
     <option value="legal">⚖️ Hukuk</option>
     <option value="complaint">📨 Şikayet</option>
   </select>
-  <div class="uchip"><b id="userAvatar">MK</b></div>
+  <div class="uchip" hidden><b id="userAvatar">MK</b></div>
+  <div id="reviewHeaderSearch">
+    <button class="ibtn" type="button" onclick="openCmdk()" aria-label="Ara"><span aria-hidden="true">⌕</span><span class="review-search-label">Ara</span></button>
+  </div>
 </header>
 
 <main>
@@ -749,6 +745,7 @@ main{margin:0 auto;width:auto;max-width:1440px;padding:20px}
       <div style="overflow-x:auto"><table id="perfTable"></table></div>
     </div>
     <div id="targetBreakdown" class="target-breakdown"></div>
+    <div id="workspaceBranchChart"></div>
   </section>
 
   <!-- RISK -->
@@ -1190,24 +1187,6 @@ main{margin:0 auto;width:auto;max-width:1440px;padding:20px}
       <div class="frow"><label>Şubeler</label><div id="grBranchesList" style="max-height:200px;overflow-y:auto;border:1px solid var(--line);border-radius:var(--rs);padding:10px"></div></div>
     </div>
     <div class="mfoot"><button class="btn ghost" onclick="closeModal('groupModal')">İptal</button><button class="btn p" onclick="saveGroup()">Oluştur</button></div>
-  </div>
-</div>
-
-<div class="mbd" id="shortcutsModal">
-  <div class="modal" style="max-width:520px">
-    <div class="mhead"><h3>⌨️ Klavye Kısayolları</h3><button onclick="closeModal('shortcutsModal')">×</button></div>
-    <div class="mbody">
-      <div style="display:grid;gap:6px;font-size:13px">
-        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--l2)"><span>Komut paleti</span><kbd style="background:var(--l2);padding:3px 8px;border-radius:4px;font-family:monospace;font-size:11.5px">Ctrl + K</kbd></div>
-        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--l2)"><span>Kısayollar</span><kbd style="background:var(--l2);padding:3px 8px;border-radius:4px;font-family:monospace;font-size:11.5px">?</kbd></div>
-        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--l2)"><span>Genel Bakış</span><kbd style="background:var(--l2);padding:3px 8px;border-radius:4px;font-family:monospace;font-size:11.5px">G → O</kbd></div>
-        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--l2)"><span>Yorumlar</span><kbd style="background:var(--l2);padding:3px 8px;border-radius:4px;font-family:monospace;font-size:11.5px">G → R</kbd></div>
-        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--l2)"><span>Performans</span><kbd style="background:var(--l2);padding:3px 8px;border-radius:4px;font-family:monospace;font-size:11.5px">G → P</kbd></div>
-        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--l2)"><span>Hukuk</span><kbd style="background:var(--l2);padding:3px 8px;border-radius:4px;font-family:monospace;font-size:11.5px">G → L</kbd></div>
-        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--l2)"><span>Sistem</span><kbd style="background:var(--l2);padding:3px 8px;border-radius:4px;font-family:monospace;font-size:11.5px">G → S</kbd></div>
-        <div style="display:flex;justify-content:space-between;padding:8px 0"><span>Kapat</span><kbd style="background:var(--l2);padding:3px 8px;border-radius:4px;font-family:monospace;font-size:11.5px">ESC</kbd></div>
-      </div>
-    </div>
   </div>
 </div>
 
@@ -3019,7 +2998,6 @@ const CMDK = [
   { group:"Sayfalar", label:"⚙️ Ayarlar", action:() => switchView("settings") },
   { group:"Sayfalar", label:"🔧 Sistem", action:() => switchView("system") },
   { group:"İşlemler", label:"🎬 Yeni Yorum Simüle", action:() => { switchView("reviews"); setTimeout(openSimReview, 200); } },
-  { group:"İşlemler", label:"⌨️ Kısayollar", action:openShortcuts },
   { group:"İşlemler", label:"📥 Performans CSV", action:exportPerformance },
   { group:"İşlemler", label:"📄 PDF Export", action:() => window.print() },
   { group:"İşlemler", label:"🌓 Tema", action:() => $("#themeBtn").click() },
@@ -3044,7 +3022,6 @@ function closeCmdk(){ $("#cmdkBackdrop").classList.remove("on"); }
 function runCmdk(i){ const c = window._cmdk[i]; if (c){ closeCmdk(); setTimeout(c.action, 50); } }
 
 /* === SHORTCUTS === */
-function openShortcuts(){ openModal("shortcutsModal"); }
 
 /* === TOUR === */
 const TOUR_STEPS = [
@@ -3101,7 +3078,6 @@ let lastKey = null, lastKeyTime = 0;
 document.addEventListener("keydown", e => {
   const typing = Boolean(e.target.closest("input,textarea,select,[contenteditable='true']"));
   if ((e.ctrlKey || e.metaKey) && e.key === "k"){ e.preventDefault(); openCmdk(); return; }
-  if (e.key === "?" && !typing){ e.preventDefault(); openShortcuts(); return; }
   if (e.key === "Escape"){ closeCmdk(); $$(".mbd.on").forEach(m => closeModal(m.id)); $("#notifPanel").classList.remove("on"); closeDrawer(); $("#tourOverlay").classList.remove("on"); return; }
   if ($("#emailModal").classList.contains("on")) return;
   if (e.key === "g" && !e.target.closest("input,textarea,select")){ lastKey = "g"; lastKeyTime = Date.now(); return; }
@@ -3170,7 +3146,7 @@ if (!STATE.onboarded) setTimeout(startTour, 500);
 <script src="assets/google-review-management-controller.js?v=20261119-1"></script>
 <script src="assets/google-review-live-views.js?v=20261119-1"></script>
 <script src="assets/google-review-enhancements.js?v=20261116-7"></script>
-<script src="assets/google-review-live-features.js?v=20261116-7"></script>
+<script src="assets/google-review-live-features.js?v=20261122-2"></script>
 <script>
   (() => { const purge = (root=document) => { root.getElementById?.('langSel')?.remove(); root.getElementById?.('ototr-feedback-root')?.remove(); root.querySelectorAll?.('#ototr-feedback-root').forEach(e => e.remove()); root.querySelectorAll?.('button,[role="button"],launcher').forEach(b => { if (/Geri\s*bildirim/i.test(b.textContent || '') || b.classList?.contains('launcher')) b.remove(); }); root.querySelectorAll?.('*').forEach(e => { if (e.shadowRoot) purge(e.shadowRoot); }); }; purge(); setInterval(() => purge(), 100); })();
 </script>
@@ -3224,7 +3200,7 @@ if (!STATE.onboarded) setTimeout(startTour, 500);
           });
           menu.append(summary, toggle);
         }
-        anchor.parentElement?.append(menu);
+        document.getElementById('reviewHeaderSearch')?.before(menu);
       }
       if (exit && exit.parentElement !== menu) menu.append(exit);
     };
@@ -3236,7 +3212,7 @@ if (!STATE.onboarded) setTimeout(startTour, 500);
 <script src="assets/google-review-alternative.js?v=20261119-2"></script>
 <script src="assets/google-review-sandbox.js?v=20261119-3"></script>
 <script src="assets/vendor-review-qrcode.js"></script>
-<script src="assets/google-review-workspace.js?v=20261119-3"></script>
+<script src="assets/google-review-workspace.js?v=20261122-3"></script>
 <script>
   document.documentElement.removeAttribute('data-review-loading');
 </script>

@@ -56,6 +56,11 @@
     byId('mobNav').innerHTML = '';
     nav.innerHTML = group.views.filter(id=>allowed(id)&&id!=='store').map(id=>'<button type="button" data-workspace-view="'+id+'" class="'+(id===STATE.view?'on':'')+'" '+(id===STATE.view?'aria-current="page"':'')+'>'+escape(titles[id]||group.label)+'</button>').join('');
     nav.hidden = nav.children.length < 2;
+    const scopeBar = ['tasks','settings'].includes(group.id) ? doc.querySelector('.v2-scope') : null;
+    if (scopeBar && nav.parentElement !== scopeBar) scopeBar.append(nav);
+    if (!scopeBar && nav.parentElement?.classList.contains('v2-scope')) {
+      doc.querySelector('.ph')?.before(nav);
+    }
   };
   const previousSwitch = root.switchView;
   root.switchView = function (id) {
@@ -88,8 +93,12 @@
       }
     }
     normalize();
+    if (STATE.view === 'performance') renderBranchChart();
   };
   function normalize() {
+    const scopeBar = doc.querySelector('.v2-scope');
+    scopeBar?.classList.toggle('workspace-collection-scope', STATE.view === 'collection');
+    if (STATE.view !== 'collection') byId('workspaceCollectionScope')?.remove();
     const active = operationalBranches(registry());
     const options = active.length ? active : [baseline];
     const select=byId('erpGlobalScope');
@@ -106,7 +115,7 @@
     const badge=doc.querySelector('.v2-scope > .chip, .v2-review-status > .chip'); if(badge && STATE.view !== 'performance') badge.textContent=options.length+' canlı şube';
     const isBranch=STATE.view==='branches';
     const pageHeader = byId('pageTitle')?.closest('.ph');
-    if (pageHeader) pageHeader.hidden = isBranch;
+    if (pageHeader) pageHeader.hidden = isBranch || STATE.view === 'problems';
     const analyticsView=['overview','performance','compare','store'].includes(STATE.view);
     if(byId('crumb')) byId('crumb').hidden=true;
     if(byId('pageSub')) byId('pageSub').hidden=true;
@@ -139,21 +148,27 @@
     const id = collectionBranchId();
     const demos = root.OTOTRReviewAlternative?.regionalDemos?.() || [];
     const active = operationalBranches(registry()).find(branch => branch.id === (live()?.getBranchId?.() || NILUFER)) || baseline;
+    byId('workspaceCollectionScope')?.remove();
+    const branchControl = doc.createElement('label');
+    branchControl.id = 'workspaceCollectionScope';
+    branchControl.innerHTML = 'Şube <select id="workspaceCollectionBranch"><option value="">'+escape(name(active))+' · Canlı</option>'+
+      demos.map(branch => '<option value="'+escape(branch.id)+'">'+escape(branch.name)+' · Demo</option>').join('')+'</select>';
+    const scopeBar = doc.querySelector('.v2-scope');
     collectionSection.innerHTML =
-      '<div class="card workspace-collection"><label>Yorum toplama şubesi <select id="workspaceCollectionBranch"><option value="">'+escape(name(active))+' · Canlı</option>'+
-      demos.map(branch => '<option value="'+escape(branch.id)+'">'+escape(branch.name)+' · Demo</option>').join('')+'</select></label></div>'+
       '<div class="card workspace-collection"><h3>Google yorum QR kodu</h3><p>Ekspertiz teslimatında müşteriye gösterin. Bağlantı bu tarayıcıda şubeye özel saklanır.</p>' +
       '<form id="workspaceQrForm"><label>Google yorum bağlantısı<input id="workspaceReviewLink" type="url" required placeholder="https://g.page/r/…/review"></label>' +
       '<button class="btn" type="submit">Bağlantıyı kaydet ve QR oluştur</button><p id="workspaceQrError" role="status"></p><div id="workspaceQrResult"></div></form></div>' +
       '<div id="workspaceCollectionSettings"></div>';
+    (scopeBar || collectionSection).prepend(branchControl);
     try { byId('workspaceReviewLink').value = root.localStorage.getItem('ototr.review.qr.'+id) || ''; } catch (_) {}
     byId('workspaceCollectionBranch').value = collectionDemo?.id || '';
     root.renderReviewCollectionSettings?.(collectionDemo);
   }
-  collectionSection.addEventListener('change', event => {
+  doc.addEventListener('change', event => {
     if (event.target.id !== 'workspaceCollectionBranch') return;
     collectionDemo = root.OTOTRReviewAlternative?.regionalDemos?.().find(branch => branch.id === event.target.value) || null;
     renderCollectionPage();
+    byId('workspaceCollectionBranch')?.focus();
   });
   collectionSection.addEventListener('submit', event => {
     if (event.target.id !== 'workspaceQrForm') return;
@@ -232,12 +247,24 @@
     const cell = (value,warn,good,format) => value == null ? '<td>—</td>' :
       '<td><span class="workspace-heat '+(value>=good?'ok':value>=warn?'warn':'bad')+'">'+escape(format(value))+'</span></td>';
     const pct = number => '%'+Math.round(number);
-    return '<div id="workspaceBranchChart">'+branchChart(rows)+'</div><div class="card workspace-heat-card"><h3>Şube ısı haritası</h3><p>Toplam yorumlar · Canlı ve demo ayrı etiketlenir.</p><div class="workspace-heat-scroll"><table><thead><tr><th>Şube</th><th>Yorum</th><th>Puan</th><th>Yanıt</th><th>SLA</th><th>Hedef</th></tr></thead><tbody>'+
+    return '<div class="card workspace-heat-card"><h3>Şube ısı haritası</h3><p>Toplam yorumlar · Canlı ve demo ayrı etiketlenir.</p><div class="workspace-heat-scroll"><table><thead><tr><th>Şube</th><th>Yorum</th><th>Puan</th><th>Yanıt</th><th>SLA</th><th>Hedef</th></tr></thead><tbody>'+
       rows.map(row=>'<tr><th scope="row"><button type="button" class="btn sm ghost" '+(row.demo?'data-demo-branch':'data-select-branch')+'="'+escape(row.id)+'">'+escape(row.name)+'</button> <span class="chip '+(row.demo?'purple':'ok')+'">'+(row.demo?'Demo':'Canlı')+'</span></th><td>'+(row.count??'—')+'</td>'+
         cell(row.average,4,4.5,n=>n.toLocaleString('tr-TR',{minimumFractionDigits:1,maximumFractionDigits:1}))+cell(row.response,80,95,pct)+cell(row.sla,70,90,pct)+cell(row.progress,60,100,pct)+'</tr>').join('')+
       '</tbody></table></div><p>Renkler: yeşil hedefte, turuncu dikkat, kırmızı iyileştirme gerekli. Ölçülemeyen değerler —.</p></div>';
   }
-  section.addEventListener('click', event => {
+  const branchChartHost = byId('workspaceBranchChart');
+  function renderBranchChart() {
+    branchChartHost.innerHTML = branchChart(root.OTOTRReviewAlternative?.branchHeatmap?.() || []);
+  }
+  branchChartHost.addEventListener('click', event => {
+    const demo = event.target.closest('[data-demo-branch]');
+    if (demo) return root.OTOTRReviewAlternative?.openRegionalDemo?.(demo.dataset.demoBranch);
+    const branch = event.target.closest('[data-select-branch]');
+    if (branch && allowed('branches')) {
+      selected = branch.dataset.selectBranch;
+      setupError = '';
+      return root.switchView('branches');
+    }
     const button = event.target.closest('[data-branch-metric]');
     if (!button || !Object.hasOwn(branchChartMetrics,button.dataset.branchMetric) || button.dataset.branchMetric === branchChartMetric) return;
     branchChartMetric = button.dataset.branchMetric;
@@ -378,7 +405,7 @@
   });
   root.openNewStore=()=>{root.switchView('branches');openForm(null);};
   root.openSimReview=()=>root.toast('Canlı çalışma alanında örnek yorum oluşturulmaz. Şubeler bölümünde kurulum denemesini kullanın.','warn');
-  root.addEventListener('ototr-management-ready',()=>{normalize();if(STATE.view==='branches')renderBranches();});
+  root.addEventListener('ototr-management-ready',()=>{normalize();if(STATE.view==='branches')renderBranches();if(STATE.view==='performance')renderBranchChart();});
   root.addEventListener('ototr-branch-registry-ready',()=>{queueMicrotask(normalize);});
   // Old saved demo scope is never restored into the operational workspace.
   if(live()?.getBranchId?.()!==NILUFER)live()?.setScope?.('live');
