@@ -218,6 +218,11 @@ html[data-review-design="new"] #view-reviews :is(.review-toolbar,#rvListPane,#rv
     align-items: stretch;
   }
 }
+@media (min-width:1150px) {
+  html[data-review-design="new"] #view-overview > #ovAlerts { grid-row:1; }
+  html[data-review-design="new"] #view-overview:has(> #ovAlerts:empty) :is(.v2-overview-main-chart,.overview-kpi-panel) { grid-row:1; }
+  html[data-review-design="new"] #view-overview:has(> #ovAlerts:empty) .v2-overview-side { grid-row:2; }
+}
 html[data-review-design="new"] #view-overview #ovAlerts:empty { display: none; }
 html[data-review-design="new"] #view-overview #ovAlerts .alert {
   margin-bottom: 0;
@@ -463,7 +468,7 @@ html[data-review-design="new"] #view-overview .chart-card:has(#chartRegion) { di
 }
 #view-overview .overview-demo-notice { position:fixed; z-index:20; top:64px; right:12px; width:max-content; max-width:calc(100% - 24px); box-sizing:border-box; pointer-events:none; box-shadow:0 4px 16px #152c3533; }
 .v2-overview-main-chart .v2-chart-scope > .chip { display:none; }
-.v2-overview-main-chart .overview-trend-legend { display:flex; flex-wrap:wrap; justify-content:flex-start; gap:5px; margin-top:3px; }
+.v2-overview-main-chart .overview-trend-legend { display:flex; flex-wrap:wrap; justify-content:center; gap:5px; margin-top:3px; }
 @media (min-width:1150px) {
   html[data-review-design="new"] .overview-kpi-panel { grid-template-rows:auto minmax(0,1fr); }
 }

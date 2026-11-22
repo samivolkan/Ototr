@@ -1021,7 +1021,7 @@
           display:!hiddenTrendSeries.has('Günlük yorum'),
           suggestedMax:Math.max(4,Math.max(...dailyCounts)*4),
           grid:{drawOnChartArea:false},ticks:{color:axisColor,precision:0,maxTicksLimit:4},
-          title:{display:true,text:'Günlük',color:axisColor}}} : {})
+          title:{display:period!=='month',text:'Günlük',color:axisColor}}} : {})
       },
       plugins:{legend:{display:false},tooltip:{callbacks:{
         afterBody(items){
