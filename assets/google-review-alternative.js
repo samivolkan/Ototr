@@ -1056,7 +1056,7 @@
   };
 
   let goalCardSignature;
-  const goalCardDate = new Intl.DateTimeFormat('tr-TR',{timeZone:'Europe/Istanbul',day:'numeric',month:'short'});
+  const goalCardDate = new Intl.DateTimeFormat('tr-TR',{timeZone:'Europe/Istanbul',month:'short',year:'2-digit'});
   function goalCardChildren(path, records, month) {
     const depth = path.length;
     if (depth===3) return [];
@@ -1084,23 +1084,21 @@
     const scope = ['Genel Merkez','Bölge','İl','Şube'][path.length];
     const records = recordedReviews();
     const children = goalCardChildren(path,records,monthKey(Date.now()));
-    const today = recentDays(Date.now()).at(-1);
-    const days = Array.from({length:7},(_,index)=>new Date(Date.parse(today+'T12:00:00Z')-(6-index)*86400000));
+    const months = path.length===3 ? monthsFor('year').slice(-6) : [];
     const additions = new Map();
     for (const review of records) {
-      const key = dayKey(review.createdAt);
-      if (key) additions.set(key,(additions.get(key) || 0)+1);
+      const key = monthKey(review.createdAt);
+      additions.set(key,(additions.get(key) || 0)+1);
     }
-    const first = dayKey(days[0]);
-    let running = [...additions].reduce((sum,[key,count])=>key<first ? sum+count : sum,0);
-    const values = days.map(date=>{running+=additions.get(dayKey(date)) || 0; return running;});
-    const signature = JSON.stringify([analyticsScope,analyticsName(),total,target,ratio,today,values,children.map(({path,name,total,target,ratio,incomplete})=>[path,name,total,target,ratio,incomplete])]);
+    let running = [...additions].reduce((sum,[key,count])=>key<months[0] ? sum+count : sum,0);
+    const values = months.map(month=>{running+=additions.get(month) || 0; return running;});
+    const signature = JSON.stringify([analyticsScope,analyticsName(),total,target,ratio,months,values,children.map(({path,name,total,target,ratio,incomplete})=>[path,name,total,target,ratio,incomplete])]);
     if (signature===goalCardSignature && block.querySelector('.review-goal-card')) return;
     goalCardSignature = signature;
     const open = block.querySelector('details')?.open ?? true;
     const remaining = ratio==null ? null : Math.max(0,target-total);
     const fill = ratio==null ? 0 : Math.max(0,Math.min(100,total/target*100));
-    const lastDaysMax = Math.max(1,target || 0,...values);
+    const historyMax = Math.max(1,target || 0,...values);
     block.innerHTML = `<div class="review-goal-card">
       <header class="review-goal-heading"><h3>Yorum hedefi</h3><span class="review-goal-context">${html(scope===analyticsName() ? scope : scope+' · '+analyticsName())} · ${analyticsDemo()?'Demo':'Canlı'}</span></header>
       <div class="review-goal-rate"><strong data-goal-number="${ratio ?? ''}">${ratio==null?'—':pct(ratio)}</strong>
@@ -1113,10 +1111,10 @@
         ${children.length ? children.map((child,index)=>`<button type="button" data-goal-child="${index}" class="review-goal-child">
           <span>${html(child.name)}</span><span>${fmt(child.total)} / ${fmt(child.target)} · ${child.ratio==null ? (child.incomplete?'Veri eksik':'Hedef yok') : pct(child.ratio)}</span>
           <i aria-hidden="true"><i style="--fill:${Math.min(100,child.ratio || 0)}%;--delay:${Math.min(index,7)*38}ms"></i></i>
-        </button>`).join('') : '<small>Bu kapsamda kayıt yok.</small>'}</div>` : `<details ${open?'open':''}><summary>Son 7 gün</summary><div class="review-goal-days">
-        ${days.map((date,index)=>`<div><span>${goalCardDate.format(date)}</span>
-          <div aria-hidden="true"><i style="--fill:${values[index]/lastDaysMax*100}%;--delay:${index*38}ms"></i></div>
-          <b data-goal-number="${values[index]}">${fmt(values[index])}</b></div>`).join('')}</div><small>Gün sonu toplam yorum sayısı</small></details>`}
+        </button>`).join('') : '<small>Bu kapsamda kayıt yok.</small>'}</div>` : `<details ${open?'open':''}><summary>Son 6 ay</summary><div class="review-goal-days">
+        ${months.map((month,index)=>`<div><span>${goalCardDate.format(new Date(month+'-01T12:00:00Z'))}</span>
+          <div aria-hidden="true"><i style="--fill:${values[index]/historyMax*100}%;--delay:${index*38}ms"></i></div>
+          <b data-goal-number="${values[index]}">${fmt(values[index])}</b></div>`).join('')}</div><small>Ay sonu toplam yorum sayısı · Bu ay bugüne kadar</small></details>`}
       <button type="button" class="btn sm" onclick="switchView('performance')">Hedefleri aç →</button></div>`;
     for (const button of block.querySelectorAll('[data-goal-child]')) button.onclick = () => {
       const [region='',city='',branch=''] = children[Number(button.dataset.goalChild)].path;
