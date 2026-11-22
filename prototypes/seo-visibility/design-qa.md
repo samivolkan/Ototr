@@ -31,3 +31,15 @@ Kaynak ve uygulama aynı birleşik görüntüde incelendi. Koyu menü, beyaz kar
 `npm run test:sites`: 4/4 geçti.
 
 Bilinen sınır: JS paketi yaklaşık 755 kB (gzip 220 kB), Vite boyut uyarısı veriyor. Demo için engelleyici değil; üretim entegrasyonunda route bazlı ayırma önerilir. Gerçek sağlayıcı, gerçek kullanıcı yetkilendirmesi, ekran okuyucu ve cihaz çiftliği kabulü yapılmadı. Canlı SEO doğruluğu veya dağıtımı bu testlerle doğrulanmış değildir.
+
+## Alternatif B kabulü — 22 Kasım 2026
+
+final result: passed — referanstan esinlenen bağımsız alternatif kapsamı.
+
+Referans efferd.com/view/dashboard-7. Kaynak: evidence/efferd-dashboard-reference.jpg (1280×900). Uygulama: evidence/seo-alternative-desktop.jpg (1265×1365 tam sayfa, 1280×900 CSS viewport); dikey kaydırma çubuğu kaynaklı 15px görüntü farkı karşılaştırmada normalize edildi. Birleşik kanıt: evidence/seo-alternative-comparison.png. Mobil kanıt: evidence/seo-alternative-mobile.jpg, 390×844 CSS viewport.
+
+Açık menü, ince gri sınırlar, dört seçilebilir metrik, monokrom alan grafiği ve üç alt analiz bölümü referansla birlikte incelendi. Yazı hiyerarşisi, boşluklar, gri/yeşil/kırmızı renkler, mevcut SVG marka ve Türkçe etiketler gözden geçirildi. Başlık, grafik kartları ve menü ayrı yakın incelemeyle kontrol edildi. Finans metriklerinin SEO verileriyle değiştirilmesi, kapsam filtresi, klasik görünüm seçimi, dokuz bölüm ve erişilebilir grafik tablosu bilinçli uyarlamadır. Görsel kaynakla piksel eşitliği amaçlanmadı.
+
+İlk mobil kontrolde gizli başlığın belge genişliğini 539px'e taşırdığı görüldü (P2). Mutlak konumlu başlık ana panel içine bağlandı. Yeniden kontrolde 390px viewport / 375px belge genişliği: taşma yok. Geniş tablolar ve mobil sekmeler kendi alanında kayıyor. Kalan P0/P1/P2 bulgu yok.
+
+Etkileşim: klasik/alternatif geçişinde bölüm ve metrik korunuyor; hızlı 7/28 günlük seçim global dönemle eşleşiyor; CTR kartı grafiği değiştiriyor; birim araması ve gerçek CSV indirme çalışıyor; fırsat kartı sorgu filtresini %5 hedefle açıyor; dokuz bölüm 9/9 görünür; günlük grafik tablosu ve yönetim raporu penceresi açılıyor; mobil menü çalışıyor. Chrome son tur console error 0. Otomatik 2 veri testi (105+4 kontrol), build ve 4 paketleme testi geçti. Paket büyüklüğü uyarısı sürüyor (gzip yaklaşık 233 kB); canlı entegrasyon yapılmadı.

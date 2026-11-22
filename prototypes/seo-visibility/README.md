@@ -36,3 +36,9 @@ Bu geliştirme dalı canlı sisteme dağıtım değildir. Canlı kaynak kodu ve 
 - Rakip sırası, harita sırası, pazar payı, tahmine dayalı gelir veya başarı skoru bu prototipte üretilmez.
 
 Gerçek Google bağlantıları, canlı SEO doğruluğu, çok kullanıcılı kayıt ve üretim dağıtımı bu teslimin kapsamı dışındadır.
+
+## Alternatif B — Efferd Dashboard 7 esintisi
+
+`http://127.0.0.1:4173/?design=alternative` adresi yeni açık renk görünümü açar. Üstteki Klasik / Alternatif düğmeleri görünümü değiştirir; aktif bölüm, filtreler ve yerel kayıtlar aynı kalır. Alternatifte metrik kartları grafiği değiştirir; niyet dağılımı, son 7 günlük tıklama ve fırsat kartları bulunur. Masaüstünde bölüm seçimi sol menüden, mobilde menü veya üst sekmelerden yapılır.
+
+Referans: https://efferd.com/view/dashboard-7 ve kullanıcının paylaştığı https://x.com/efferdco/status/2123974695674343756. Yalnız halka açık önizleme incelendi; ücretli Efferd kaynak kodu veya registry paketi kullanılmadı. Tasarım özgün React/Recharts uygulamasıdır.
