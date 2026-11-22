@@ -43,3 +43,6 @@ Açık menü, ince gri sınırlar, dört seçilebilir metrik, monokrom alan graf
 İlk mobil kontrolde gizli başlığın belge genişliğini 539px'e taşırdığı görüldü (P2). Mutlak konumlu başlık ana panel içine bağlandı. Yeniden kontrolde 390px viewport / 375px belge genişliği: taşma yok. Geniş tablolar ve mobil sekmeler kendi alanında kayıyor. Kalan P0/P1/P2 bulgu yok.
 
 Etkileşim: klasik/alternatif geçişinde bölüm ve metrik korunuyor; hızlı 7/28 günlük seçim global dönemle eşleşiyor; CTR kartı grafiği değiştiriyor; birim araması ve gerçek CSV indirme çalışıyor; fırsat kartı sorgu filtresini %5 hedefle açıyor; dokuz bölüm 9/9 görünür; günlük grafik tablosu ve yönetim raporu penceresi açılıyor; mobil menü çalışıyor. Chrome son tur console error 0. Otomatik 2 veri testi (105+4 kontrol), build ve 4 paketleme testi geçti. Paket büyüklüğü uyarısı sürüyor (gzip yaklaşık 233 kB); canlı entegrasyon yapılmadı.
+
+## Studio güncellemesi
+Son görünüm, Ads ve veri hazırlığı kapsamı `STUDIO-QA.md` içinde ayrıca kaydedildi. Önceki Klasik/Alternatif kanıtları korunuyor. Studio'nun varsayılan olması kullanıcı tarafından istenen Google Reviews düzenine uyarlama kararına dayanır.

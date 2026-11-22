@@ -10,3 +10,6 @@ Build app UI in `src/`. Keep `.openai/hosting.json`, `worker/index.js`, `scripts
 
 ## Alternatif tasarım kararı — 22 Kasım 2026
 Kullanıcı Efferd Dashboard 7 referansına benzer çalışan bir alternatif istedi. Mevcut klasik görünümü koru; `?design=alternative` ve görünüm düğmeleriyle aynı veri ve işlevler arasında geçiş sağla. Alternatifin görsel dili açık renk menü, ince gri çerçeve, monokrom grafikler ve hafif yeşil/kırmızı değişim etiketleridir. Efferd Pro kaynak paketi alınmadı; özgün yerel uygulama kullanılıyor.
+
+## Studio tasarım kararı — 22 Kasım 2026
+Kullanıcı Google Reviews ekranına benzer, farklı renkli ve ileri analiz grafikleri içeren bir üçüncü tasarım istedi. Varsayılan Studio: koyu lacivert yatay menü, altı KPI, mor/turkuaz analitik grafikler. Klasik ve Alternatif görünümü koru. Demo veri kullan; canlı kokpite dokunma. Ads'i organik metriklerden ayır; gelir doğrulanmadan ROAS üretme. Kullanıcı gerçek verileri sonraki gün sağlayacak; CSV hazırlığı ve yerel doğrulama akışı sun.

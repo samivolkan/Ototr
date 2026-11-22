@@ -42,3 +42,18 @@ Gerçek Google bağlantıları, canlı SEO doğruluğu, çok kullanıcılı kay�
 `http://127.0.0.1:4173/?design=alternative` adresi yeni açık renk görünümü açar. Üstteki Klasik / Alternatif düğmeleri görünümü değiştirir; aktif bölüm, filtreler ve yerel kayıtlar aynı kalır. Alternatifte metrik kartları grafiği değiştirir; niyet dağılımı, son 7 günlük tıklama ve fırsat kartları bulunur. Masaüstünde bölüm seçimi sol menüden, mobilde menü veya üst sekmelerden yapılır.
 
 Referans: https://efferd.com/view/dashboard-7 ve kullanıcının paylaştığı https://x.com/efferdco/status/2123974695674343756. Yalnız halka açık önizleme incelendi; ücretli Efferd kaynak kodu veya registry paketi kullanılmadı. Tasarım özgün React/Recharts uygulamasıdır.
+
+## Studio C — Google Reviews düzeninden uyarlama
+Varsayılan görünüm Studio'dur; `?design=studio`, `?design=classic` ve `?design=alternative` ile üç görünüm arasında geçilir. Kullanıcının Google Reviews sayfasındaki yatay üst menü, KPI şeridi ve ana grafik/sağ özet düzeni SEO'ya uyarlanmıştır; renkler lacivert, mor ve turkuazdır.
+
+Yeni çalışan alanlar:
+- Günlük/birikimli organik seri, önceki dönem, 7 günlük hareketli ortalama; 90 günlük görünümde grafik aralığı sürgüsü.
+- Son 7 günlük hızın ileri taşındığı açıkça etiketlenmiş senaryo; istatistiksel tahmin değildir.
+- Konum dağılımı, sorgu balon haritası, pozitif/negatif şube katkısı, tıklama takvimi ve günlük ayrıntı.
+- Yerel hedef senaryosu düzenleme, sorgu ayrıntısı ve görev kuyruğu.
+- 10. Google Ads: kampanya/cihaz filtreleri, harcama/tıklama/form dönüşümü grafikleri, CPC/CPA, cihaz ayrıntısı, görev ve CSV.
+- 11. Veri hazırlığı: beş kaynak için örnek CSV; en fazla 2 MB / 10.000 satır yerel yapısal kontrol, hatalı satır uyarısı ve ilk 10 satır önizleme.
+
+CSV yükleme veri entegrasyonu değildir. Dosyalar yalnız bileşen belleğinde kalır, dış servise gönderilmez ve demo grafiklerini değiştirmez. Google'ın ham dışa aktarımları şablona dönüştürülmelidir. İsim, telefon, e-posta, plaka veya anahtar gerekli değildir. Şema kontrolü mükerrerlik ve kaynak doğruluğu denetiminin yerine geçmez.
+
+Araştırma gerekçeleri: `RESEARCH.md`. Son doğrulama ve bilinen sınırlar: `STUDIO-QA.md`.
