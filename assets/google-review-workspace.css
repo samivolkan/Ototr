@@ -457,8 +457,8 @@ html[data-review-design="new"] #view-overview .chart-card:has(#chartRegion) { di
 .review-goal-track i:last-child:not(:first-child) { flex:1; background:var(--line); }
 .review-goal-card summary { cursor:pointer; width:fit-content; font-size:12px; }
 .review-goal-days { display:grid; gap:4px; margin-block:6px; font-size:11px; }
-.review-goal-days > div { display:grid; grid-template-columns:43px minmax(0,1fr) 38px; gap:6px; align-items:center; }
-.review-goal-days > div > div { height:5px; border-radius:8px; background:var(--line); }
+.review-goal-month { display:grid; grid-template-columns:43px minmax(0,1fr) 38px; gap:6px; align-items:center; }
+.review-goal-month > div { height:5px; border-radius:8px; background:var(--line); }
 .review-goal-days b { text-align:end; font-variant-numeric:tabular-nums; }
 @media (prefers-reduced-motion:no-preference) {
   .review-goal-track { animation: review-goal-reveal 850ms ease-out both; }
@@ -520,3 +520,30 @@ html[data-review-design="new"] #overviewPeriodButtons { display:grid; gap:4px; }
   content:""; display:inline-block; width:6px; height:6px; margin-inline-end:5px;
   border-radius:50%; background:currentColor; vertical-align:1px;
 }
+#overviewOperations[hidden] { display:none; }
+.overview-ops-head { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:6px; margin-bottom:8px; }
+.overview-ops-head span, #overviewOperations p { color:var(--mute); font-size:11px; }
+.overview-ops-metrics { display:grid; grid-template-columns:repeat(auto-fit,minmax(105px,1fr)); gap:6px; }
+.overview-ops-metrics button { display:grid; gap:3px; text-align:start; white-space:normal; }
+.overview-ops-metrics button strong { font-size:18px; }
+.overview-ops-topic { width:100%; display:flex; flex-wrap:wrap; justify-content:space-between; gap:4px 10px; text-align:start; margin-block:4px; }
+.overview-ops-topic { padding-block:4px; border-bottom:1px solid var(--line); }
+#overviewComplaintTopics > .btn { margin-top:8px; }
+
+.review-goal-month { width:100%; padding:2px 3px; border:1px solid transparent; border-radius:4px; background:transparent; color:var(--ink); text-align:start; cursor:pointer; font:inherit; }
+.review-goal-month:hover, .review-goal-month[aria-pressed="true"] { background:var(--s2); border-color:var(--line); }
+
+#overviewOperations > section[hidden] { display:none; }
+#overviewOperations:has(> section[hidden]) > section:not([hidden]) { grid-column:1/-1; }
+#ovWatchlist .overview-watch-branch { width:100%; border:1px solid transparent; text-align:start; color:var(--ink); font:inherit; cursor:pointer; }
+#ovWatchlist .overview-watch-branch:hover { border-color:var(--line); }
+#ovWatchlist .overview-watch-branch:focus-visible { outline:2px solid var(--blue); outline-offset:1px; }
+.review-scope-search { position:relative; min-width:0; max-width:100%; }
+.review-scope-search input { max-width:100%; }
+.review-scope-results { position:absolute; z-index:12; inset:calc(100% + 4px) 0 auto auto; width:min(260px,75vw); max-height:220px; overflow:auto; padding:4px; background:var(--surface); border:1px solid var(--line); border-radius:8px; box-shadow:0 8px 18px #102c3333; }
+.review-scope-results[hidden] { display:none; }
+.review-scope-results button { display:grid; gap:2px; width:100%; border:0; border-radius:5px; padding:6px 8px; background:transparent; color:var(--ink); text-align:start; cursor:pointer; font:inherit; }
+.review-scope-results button:is(:hover,:focus-visible) { background:var(--s2); }
+.review-scope-results small,.review-scope-results p { color:var(--mute); font-size:11px; }
+.review-scope-results p { margin:7px; }
+@media(max-width:700px) { .review-scope-results { inset-inline:0 auto; } }

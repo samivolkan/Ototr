@@ -291,7 +291,7 @@
     button.setAttribute('aria-label',PERIODS[value]);
     button.setAttribute('aria-controls','chartTrend');
     button.onclick = () => {
-      if (period===value) return;
+      if (period===value && !dateRange) return;
       periodSelect.value = value;
       periodSelect.dispatchEvent(new Event('change',{bubbles:true}));
     };
@@ -369,10 +369,74 @@
   const rangeForm = node('form', null, 'review-date-range');
   rangeForm.innerHTML = '<label>Başlangıç <input name="start" type="date" required></label><label>Bitiş <input name="end" type="date" required></label><button class="btn sm" type="submit">Tarihi uygula</button>';
   const filterChips = node('div', null, 'review-filter-chips');
+  const scopeSearch = node('div',null,'review-scope-search');
   const searchField = node('input');
   searchField.type = 'search';
-  searchField.placeholder = 'Seçeneklerde ara';
+  searchField.placeholder = 'Bölge, il veya şube ara';
   searchField.setAttribute('aria-label', searchField.placeholder);
+  const searchResults = node('div',null,'review-scope-results');
+  searchResults.id = 'reviewScopeResults';
+  searchResults.hidden = true;
+  searchResults.setAttribute('role','group');
+  searchResults.setAttribute('aria-label','Kapsam arama sonuçları');
+  searchField.setAttribute('aria-controls',searchResults.id);
+  scopeSearch.append(searchField,searchResults);
+  const searchKey = value => String(value || '').toLocaleLowerCase('tr-TR').normalize('NFD')
+    .replace(/\p{Diacritic}/gu,'').replace(/ı/g,'i');
+  function renderScopeSearch(candidates) {
+    const query=searchKey(searchField.value.trim());
+    searchResults.hidden=!query;
+    searchResults.replaceChildren();
+    if (!query) return;
+    const groups=new Map();
+    for (const branch of candidates) {
+      const path=[branch.region,branch.city,branch.id];
+      [branch.region,branch.city,branch.name].forEach((name,index)=>{
+        const section=path.slice(0,index+1);
+        const id=JSON.stringify(section);
+        const context=index===0 ? 'Bölge' : index===1 ? 'İl · '+branch.region : 'Şube · '+branch.city;
+        if (name && searchKey(section.slice(0,2).concat(name).join(' ')).includes(query)) {
+          groups.set(id,{section,name,context});
+        }
+      });
+    }
+    const entries=[...groups.values()].sort((a,b)=>
+      Number(searchKey(b.name)===query)-Number(searchKey(a.name)===query) ||
+      a.section.length-b.section.length || a.name.localeCompare(b.name,'tr'));
+    if (!entries.length) searchResults.append(node('p','Eşleşme bulunamadı.'));
+    for (const item of entries) {
+      const button=node('button');
+      button.type='button';
+      button.append(node('strong',item.name),node('small',item.context));
+      button.onclick=()=>{
+        const [region='',city='',branch='']=item.section;
+        Object.assign(analyticsScope,{region,city,branch});
+        searchField.value='';
+        if (branch && !analyticsDemo() && branch!==branchId()) {
+          live().setScope(branch===BRANCH_IDS[0]?'live':branch);
+          managementApi?.refresh().catch(()=>{});
+        }
+        root.switchView(STATE.view);
+        searchField.focus({preventScroll:true});
+      };
+      searchResults.append(button);
+    }
+  }
+  scopeSearch.addEventListener('focusout',event=>{
+    if (!scopeSearch.contains(event.relatedTarget)) searchResults.hidden=true;
+  });
+  searchField.onfocus=()=>updateHierarchy();
+  scopeSearch.addEventListener('keydown',event=>{
+    if (event.key==='Escape') {
+      searchField.focus();
+      searchResults.hidden=true;
+    }
+    if (event.target!==searchField || searchResults.hidden) return;
+    const first=searchResults.querySelector('button');
+    if (!first) return;
+    if (event.key==='ArrowDown') {event.preventDefault();first.focus();}
+    if (event.key==='Enter') {event.preventDefault();first.click();}
+  });
   rangeForm.onsubmit = event => {
     event.preventDefault();
     const { start, end } = rangeForm.elements;
@@ -384,7 +448,7 @@
     root.switchView(STATE.view);
   };
   searchField.oninput = () => updateHierarchy();
-  hierarchy.append(searchField, filterChips);
+  hierarchy.append(scopeSearch, filterChips);
   function renderFilterChips() {
     filterChips.replaceChildren();
     for (const key of ['region','city','branch','date']) {
@@ -426,12 +490,12 @@
       city:[['','Tüm iller'],...cities.map(x=>[x,x])],
       branch:[['','Tüm şubeler'],...branches.map(b=>[b.id,b.name])]
     };
-    const query = searchField.value.trim().toLocaleLowerCase('tr-TR');
     for (const [key,select] of Object.entries(levelSelects)) {
-      const options = choices[key].filter(([id, label]) => key === 'mode' || !id || id === analyticsScope[key] || label.toLocaleLowerCase('tr-TR').includes(query));
+      const options = choices[key];
       select.replaceChildren(...options.map(([id,label])=>{const option=node('option',label);option.value=id;return option;}));
       select.value=analyticsScope[key];
     }
+    renderScopeSearch(candidates);
     renderFilterChips();
   }
 
@@ -766,6 +830,82 @@
     emptyChart('chartWeeklyReviews',weeks.some(w=>w.answered || w.pending),'Bu haftalarda yorum bulunmuyor.');
     chartNote('chartWeeklyReviews',`Son ${weeks.length} hafta · Yalnız seçili dönemde alınan yorumlar.`);
   }
+  function renderOverviewOperations() {
+    const panel = byId('overviewOperations');
+    panel.hidden = doc.documentElement.dataset.reviewDesign!=='new';
+    if (panel.hidden) return;
+    const queue = byId('overviewActionQueue');
+    const topics = byId('overviewComplaintTopics');
+    const demo = analyticsDemo();
+    const branches = matchingBranches();
+    const selected = branches.find(b=>b.id===analyticsScope.branch);
+    const now = Date.now(), today = dayKey(now);
+    const records = recordedReviews(now);
+    const selectedDataMissing = missingScopeData();
+    queue.closest('section').hidden = !selected;
+    queue.innerHTML = `<div class="overview-ops-head"><h3>Bugün aksiyon gerekenler</h3><span>${html(analyticsName())} · ${demo?'Demo':'Canlı'}</span></div>`;
+    const ai = parentReviews && root.parent.OTOTRGoogleReviewAI;
+    const workflow = ai?.getWorkflowState?.();
+    const branchWork = !demo && workflow?.loaded && !workflow.error && selected?.id===branchId()
+      ? (ai.getWorkflowItems?.() || []).filter(item=>item.branch_id===selected.id) : null;
+    const navigate = (view,branch) => {
+      if (demo) {
+        if (branch) openRegionalDemo(branch.id);
+        return;
+      }
+      if (branch && branch.id!==branchId()) live().setScope(branch.id===BRANCH_IDS[0]?'live':branch.id);
+      root.switchView(view);
+    };
+    if (selected) {
+      const open = records.filter(row=>row.status!=='gonderildi' && !row.duplicate);
+      const limits = demo ? 24 : selected.id===branchId() ? sla() : Number(selected.sla_hours);
+      const durations = open.map(row=>now-Date.parse(row.createdAt));
+      const todayOpen = open.filter(row=>dayKey(row.createdAt)===today);
+      const metrics = [
+        ['Bugün yanıtsız',selectedDataMissing?null:todayOpen.length,'reviews'],
+        ['SLA’ya 2 saatten az',selectedDataMissing || !limits?null:durations.filter(ms=>ms<limits*3600000 && ms>=Math.max(0,limits-2)*3600000).length,'risk'],
+        ['SLA aşımı',selectedDataMissing || !limits?null:durations.filter(ms=>ms>=limits*3600000).length,'risk'],
+        ['Onay bekleyen taslak',branchWork?.filter(item=>item.kind==='reply' && item.status==='approval_pending' && item.reply_text && !item.review_snapshot?.rejection).length ?? null,'approval'],
+        ['Açık müşteri şikâyeti',branchWork?.filter(item=>item.kind==='complaint' && item.status==='open').length ?? null,'complaint']
+      ];
+      const grid = node('div',null,'overview-ops-metrics');
+      for (const [label,count,view] of metrics) {
+        const button = node('button',null,'btn sm');
+        button.type='button';button.disabled=count==null || (demo && view!=='reviews');
+        button.append(node('strong',fmt(count)),node('span',label));
+        button.onclick=()=>{
+          if (view!=='reviews') return navigate(view,selected);
+          reviewDay={day:today,label:'Bugün',scope:analyticsName(),records:todayOpen,
+            operational:!demo && selected.id===branchId()};
+          RV_SEARCH='';byId('rvSearch').value='';RV_FILTER='cevap-bekleyen';byId('rvFilter').value=RV_FILTER;
+          SELECTED.clear();SEL=null;root.switchView('reviews');
+        };
+        grid.append(button);
+      }
+      queue.append(grid);
+    }
+    topics.innerHTML='<h3>Düşük puan nedenleri</h3>';
+    const state=management();
+    const available=!demo && branches.some(b=>b.id===branchId()) && state.extendedLoaded && !state.extendedError;
+    const complaints=available ? (state.resources?.complaints || []) : [];
+    const topicsReady=available && workflow?.loaded && !workflow.error;
+    const selectedWork=topicsReady ? (ai.getWorkflowItems?.() || []) : [];
+    const lowWork=new Set(selectedWork.filter(item=>item.kind==='complaint' && item.branch_id===branchId() && [1,2,3].includes(Number(item.review_snapshot?.rating || item.review_snapshot?.star_rating))).map(item=>item.id));
+    const categories=new Map();
+    for (const row of complaints) {
+      const category=row.data?.category?.trim();
+      if (lowWork.has(row.data?.work_item_id) && category) categories.set(category,(categories.get(category)||0)+1);
+    }
+    if (!categories.size) topics.append(node('p',demo?'Demo kayıtlarında neden etiketleri yok.':!topicsReady?'Şikâyet kategorileri henüz doğrulanamadı.':'Düşük puanlı yorumlara bağlı kategori kaydı bulunamadı.'));
+    for (const [category,count] of [...categories].sort((a,b)=>b[1]-a[1]).slice(0,5)) {
+      const row=node('div',null,'overview-ops-topic');row.append(node('span',category),node('b',fmt(count)));topics.append(row);
+    }
+    if (topicsReady) {
+      const button=node('button','Müşteri şikâyetlerini aç →','btn sm');
+      button.type='button';button.onclick=()=>root.switchView('complaint');topics.append(button);
+    }
+  }
+
   let overviewDemoActive = false;
   let overviewDemoTimer;
   let overviewDemoNotice;
@@ -791,7 +931,7 @@
   root.renderOverview = function () {
     showOverviewDemoNotice();
     overviewPeriodButtons?.querySelectorAll('button').forEach(button=>{
-      button.setAttribute('aria-pressed',String(button.dataset.period===period));
+      button.setAttribute('aria-pressed',String(!dateRange && button.dataset.period===period));
     });
     if (!analyticsDemo() && !approvedGoalsRequest) syncApprovedGoals().then(()=>{
       if (STATE.view==='overview' && !analyticsDemo()) {root.renderOverview();root.initCharts();}
@@ -821,7 +961,7 @@
     const ratingTarget = currentRatingTarget();
     const ratingCount = a.ratingCounts.reduce((sum, count) => sum + count, 0);
     const metrics = [
-      ['Yorum hacmi', fmt(a.count), PERIODS[period]],
+      ['Yorum hacmi', fmt(a.count), dateRange?.month ? goalCardDate.format(new Date(dateRange.start+'T12:00:00Z')) : dateRange ? 'Seçili tarih aralığı' : PERIODS[period]],
       ['Ortalama puan', a.average == null ? '—' : `${a.average.toLocaleString('tr-TR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} ★`, ratingTarget == null ? `${fmt(ratingCount)} puanlı yorum` : `Hedef ${fmt(ratingTarget)} ★`, a.average == null ? '' : 'ok'],
       ['Yanıt oranı', a.responseRate == null ? '—' : `%${Math.round(a.responseRate)}`, `Hedef %${responseGoal} · ${fmt(a.answered)}/${fmt(a.count)}`,
         a.responseRate == null ? '' : a.responseRate >= responseGoal ? 'ok' : 'warn', a.responseRate == null ? '' : a.responseRate >= responseGoal ? 'Hedefte' : 'Altında'],
@@ -835,16 +975,52 @@
     ).join('');
     const goalSlot = byId('overviewGoalSlot');
     if (doc.documentElement.dataset.reviewDesign==='new' && goalSlot) renderGoalCard(goalSlot,total,target,ratio);
-    const attention = matchingBranches().map(b => {
-      const branchRows = scoped.filter(r => (r.branchId || r.branch_id) === b.id);
-      const summary = live().aggregateReviews(branchRows,{slaHours:analyticsDemo()?24:b.id===branchId()?sla():Number(b.sla_hours)||24});
-      return {branch:b,...summary};
-    }).filter(b=>b.pending>0 || (b.slaRate!=null && b.slaRate<slaGoal))
-      .sort((a,b)=>b.overdue-a.overdue || b.pending-a.pending || (a.slaRate??100)-(b.slaRate??100));
-    byId('ovWatchlist').innerHTML = attention.slice(0,4).map(b =>
-      `<div class="watch-row"><div class="info"><b>${html(b.branch.name)}</b><small>SLA ${pct(b.slaRate)} · ${fmt(b.pending)} yanıtsız</small></div><span class="chip ${b.overdue?'bad':'warn'}">${b.overdue ? 'SLA aşımı' : 'İncele'}</span></div>`
-    ).join('') || '<div class="empty">Seçili kapsamda dikkat gerektiren şube yok.</div>';
+    const now = Date.now(), month = monthKey(now), previous = monthsFor('quarter',now).at(-2);
+    const records = recordedReviews(now);
+    const watchlist = byId('ovWatchlist');
+    const attention = matchingBranches()
+      .filter(b=>analyticsDemo() || b.id===branchId() || parentReviews?.getBranchById?.(b.id)?.lastSyncedAt)
+      .map(b=>{
+        const own = row=>(row.branchId || row.branch_id)===b.id;
+        const branchRows=records.filter(own);
+        const summary=live().aggregateReviews(scoped.filter(own),{slaHours:analyticsDemo()?24:b.id===branchId()?sla():Number(b.sla_hours)||24});
+        const prior=stats(branchRows.filter(row=>monthKey(row.createdAt)===previous)).average;
+        const current=stats(branchRows.filter(row=>monthKey(row.createdAt)===month)).average;
+        const drop=prior!=null && current!=null ? Math.round((prior-current)*10)/10 : 0;
+        const critical=branchRows.filter(row=>row.stars<=2 && row.status!=='gonderildi' && !row.duplicate).length;
+        const branchTarget=scopedGoalTarget(month,[b.region,b.city,b.id],[b]);
+        return {branch:b,...summary,drop,critical,remaining:branchTarget==null?0:Math.max(0,branchTarget-branchRows.length)};
+      }).filter(item=>item.pending>0 || item.critical || item.overdue || item.drop>0 || item.remaining || (item.slaRate!=null && item.slaRate<slaGoal))
+      .sort((a,b)=>b.critical-a.critical || b.overdue-a.overdue || b.drop-a.drop || b.pending-a.pending || b.remaining-a.remaining);
+    watchlist.replaceChildren();
+    if (!attention.length) watchlist.append(node('div','Seçili kapsamda dikkat gerektiren şube yok.','empty'));
+    for (const item of attention.slice(0,6)) {
+      const branch = item.branch;
+      const button = node('button',null,'watch-row overview-watch-branch');
+      button.type='button';
+      button.setAttribute('aria-label',branch.name+' şube görünümünü aç');
+      const reasons=[item.critical && item.critical+' kritik yanıtsız',item.overdue && item.overdue+' SLA aşımı',
+        item.drop>0 && fmt(item.drop)+' puan düşüşü',item.remaining && 'Hedefe '+fmt(item.remaining)+' yorum'].filter(Boolean);
+      const info=node('div',null,'info');
+      info.append(node('b',branch.name),node('small',['SLA '+pct(item.slaRate),fmt(item.pending)+' yanıtsız',...reasons].join(' · ')));
+      button.append(info,node('span','İncele →','chip '+(item.critical || item.overdue?'bad':'warn')));
+      button.onclick=()=>{
+        if (analyticsScope.branch===branch.id) {
+          if (analyticsDemo()) openRegionalDemo(branch.id);
+          else root.switchView('reviews');
+          return;
+        }
+        Object.assign(analyticsScope,{region:branch.region,city:branch.city,branch:branch.id});
+        if (!analyticsDemo() && branch.id!==branchId()) {
+          live().setScope(branch.id===BRANCH_IDS[0]?'live':branch.id);
+          managementApi?.refresh().catch(()=>{});
+        }
+        root.switchView('overview');
+      };
+      watchlist.append(button);
+    }
     byId('ovSla').innerHTML = `<div class="watch-row"><div class="info"><b>${html(analyticsName())}</b><small>Yorum tarihi → Google yanıt tarihi</small></div><span class="chip">${pct(a.slaRate)}</span></div><p class="v2-chart-note">${a.timedAnswers} kayıt ölçülebildi. Eksik veya geçersiz tarihler ortalamaya dahil edilmez.</p>`;
+    renderOverviewOperations();
     normalizeScope();
   };
   root.initCharts = function () {
@@ -987,7 +1163,7 @@
     if (legend) {
       const forecastLabel = node('span', '', 'chip');
       const updateForecastLabel = () => {
-        forecastLabel.textContent = dateRange ? 'Özel tarih aralığı' : forecast == null ? 'Tahmin için veri bekleniyor' : `Ay sonu tahmini ≈ ${fmt(forecast)} yorum`;
+        forecastLabel.textContent = dateRange?.month ? goalCardDate.format(new Date(dateRange.start+'T12:00:00Z')) : dateRange ? 'Özel tarih aralığı' : forecast == null ? 'Tahmin için veri bekleniyor' : `Ay sonu tahmini ≈ ${fmt(forecast)} yorum`;
         forecastLabel.hidden = hiddenTrendSeries.has('Tahmin');
       };
       updateForecastLabel();
@@ -1048,7 +1224,7 @@
     }, daily ? [dailyDots, dailyLabels, endpointLabels] : [endpointLabels]);
     emptyChart('chartTrend', doc.documentElement.dataset.reviewDesign === 'classic' || analyticsDemo() || management().loaded || scoped.length > 0, 'Grafik için ERP verisi bekleniyor.');
     const trendNote = !analyticsDemo() && (management().error || !management().loaded)
-      ? 'Hedef kayıtları doğrulanamadı.' : targets.some(v=>v!=null) ? '' : 'Kayıtlı hedef yok. Performans ekranından hedef girin.';
+      ? 'Hedef kayıtları doğrulanamadı.' : dateRange?.month && !scoped.length ? 'Bu aya ait yorum kaydı yok.' : targets.some(v=>v!=null) ? '' : 'Kayıtlı hedef yok. Performans ekranından hedef girin.';
     if (trendNote) chartNote('chartTrend',trendNote);
     else byId('chartTrend')?.closest('.chart-card')?.querySelector('.v2-chart-note')?.remove();
     chart('chartRating', 'doughnut', ['5★', '4★', '3★', '2★', '1★'], [{ label: 'Yıldız dağılımı', data: a.ratingCounts, backgroundColor: ['#12805c', '#6bbf9b', '#fbbf24', '#fb923c', '#b42318'], borderWidth: 2 }]);
@@ -1143,7 +1319,7 @@
     }
     let running = [...additions].reduce((sum,[key,count])=>key<months[0] ? sum+count : sum,0);
     const values = months.map(month=>{running+=additions.get(month) || 0; return running;});
-    const signature = JSON.stringify([analyticsScope,analyticsName(),total,target,ratio,months,values,children.map(({path,name,total,target,ratio,incomplete})=>[path,name,total,target,ratio,incomplete])]);
+    const signature = JSON.stringify([analyticsScope,analyticsName(),total,target,ratio,months,values,dateRange?.month,children.map(({path,name,total,target,ratio,incomplete})=>[path,name,total,target,ratio,incomplete])]);
     if (signature===goalCardSignature && block.querySelector('.review-goal-card')) return;
     goalCardSignature = signature;
     const open = block.querySelector('details')?.open ?? true;
@@ -1163,10 +1339,23 @@
           <span>${html(child.name)}</span><span>${fmt(child.total)} / ${fmt(child.target)} · ${child.ratio==null ? (child.incomplete?'Veri eksik':'Hedef yok') : pct(child.ratio)}</span>
           <i aria-hidden="true"><i style="--fill:${Math.min(100,child.ratio || 0)}%;--delay:${Math.min(index,7)*38}ms"></i></i>
         </button>`).join('') : '<small>Bu kapsamda kayıt yok.</small>'}</div>` : `<details ${open?'open':''}><summary>Son 6 ay</summary><div class="review-goal-days">
-        ${months.map((month,index)=>`<div><span>${goalCardDate.format(new Date(month+'-01T12:00:00Z'))}</span>
+        ${months.map((month,index)=>`<button class="review-goal-month" type="button" data-goal-month="${month}" aria-controls="chartTrend" aria-pressed="${dateRange?.month===month}"><span>${goalCardDate.format(new Date(month+'-01T12:00:00Z'))}</span>
           <div aria-hidden="true"><i style="--fill:${values[index]/historyMax*100}%;--delay:${index*38}ms"></i></div>
-          <b data-goal-number="${values[index]}">${fmt(values[index])}</b></div>`).join('')}</div><small>Ay sonu toplam yorum sayısı · Bu ay bugüne kadar</small></details>`}
+          <b data-goal-number="${values[index]}">${fmt(values[index])}</b></button>`).join('')}</div><small>Ay sonu toplam yorum sayısı · Bu ay bugüne kadar</small></details>`}
       </div>`;
+    for (const button of block.querySelectorAll('[data-goal-month]')) button.onclick = () => {
+      const month = button.dataset.goalMonth;
+      if (dateRange?.month===month) {
+        dateRange = null;
+      } else {
+        const [year,number] = month.split('-').map(Number);
+        const last = new Date(Date.UTC(year,number,0,12)).toISOString().slice(0,10);
+        const today = dayKey(Date.now());
+        dateRange = {month,start:month+'-01',end:last<today?last:today};
+      }
+      root.switchView('overview');
+      block.querySelector('[data-goal-month="'+month+'"]')?.focus({preventScroll:true});
+    };
     for (const button of block.querySelectorAll('[data-goal-child]')) button.onclick = () => {
       const [region='',city='',branch=''] = children[Number(button.dataset.goalChild)].path;
       Object.assign(analyticsScope,{region,city,branch});
