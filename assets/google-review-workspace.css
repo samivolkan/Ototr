@@ -399,3 +399,16 @@ html[data-review-design="new"] #view-overview .watch-row {
 @media (max-width: 768px) {
   #reviewHeaderSearch .review-search-label { display: none; }
 }
+
+#reviewGoalWorkflow { margin-block: 16px; }
+#reviewGoalWorkflow fieldset {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
+  gap: 10px;
+  margin: 10px 0;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+#reviewGoalWorkflow fieldset :is(input,select) { width: 100%; margin-top: 4px; }
+#reviewGoalWorkflow .pacts { display: flex; flex-wrap: wrap; gap: 8px; }

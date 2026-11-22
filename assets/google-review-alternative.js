@@ -138,10 +138,44 @@
   }
   const scopedTargetCache = new Map();
   const demoRatingTargets = new Map();
+  const goalStorageKey = 'ototr.review.demo-goal-workflow.v1';
+  let goalMonth = monthKey(Date.now());
+  const goalLevels = ['GM', 'Bölge', 'Şehir', 'Şube'];
+  function goalPath() {
+    const {region,city,branch} = analyticsScope;
+    const unit = matchingBranches()[0];
+    if (branch && unit) return [unit.region,unit.city,unit.id];
+    if (city && unit) return [unit.region,unit.city];
+    return region ? [region] : [];
+  }
+  const goalKey = (month, path) => JSON.stringify([month, ...path]);
+  function demoGoals() {
+    try { return JSON.parse(localStorage.getItem(goalStorageKey) || '{}'); }
+    catch (_) { return {}; }
+  }
+  function directDemoGoal(month, path = goalPath()) {
+    return demoGoals()[goalKey(month, path)]?.approved;
+  }
+  function demoGoalTotals(month) {
+    const goals = matchingBranches().map(b => directDemoGoal(month, [b.region, b.city, b.id]));
+    const complete = goals.every(Boolean) && goals.length > 0;
+    const count = goals.filter(Boolean).length;
+    const target = goals.reduce((sum,g) => sum + (g?.total || 0), 0);
+    return {complete, count, target,
+      rating: target ? goals.reduce((sum,g) => sum + (g ? g.total * g.rating : 0), 0) / target : null};
+  }
   function currentRatingTarget() {
     const month = monthKey(Date.now());
+    if (analyticsDemo()) {
+      const direct = directDemoGoal(month);
+      if (direct) return direct.rating;
+      const totals = demoGoalTotals(month);
+      if (totals.complete) return Math.round(totals.rating * 100) / 100;
+    }
     const values = matchingBranches().map(b => {
       if (analyticsDemo()) {
+        const approved = directDemoGoal(month,[b.region,b.city,b.id]);
+        if (approved) return approved.rating;
         if (demoRatingTargets.has(b.id)) return demoRatingTargets.get(b.id);
         let saved;
         try { saved = localStorage.getItem('ototr.regional-demo.rating.' + b.id); } catch (_) {}
@@ -157,7 +191,9 @@
     if (!analyticsActive()) return targetSeries(months,management().targets || [],branchId(),branch()?.target);
     const branches = matchingBranches();
     return months.map(month => {
-      const values = branches.map(b => analyticsDemo() ? (demoTargets.get(b.id) || b.target) :
+      const direct = analyticsDemo() ? directDemoGoal(month) : null;
+      if (direct) return direct.total;
+      const values = branches.map(b => analyticsDemo() ? (directDemoGoal(month,[b.region,b.city,b.id])?.total || demoTargets.get(b.id) || b.target) :
         targetSeries([month], b.id === branchId() ? management().targets || [] : scopedTargetCache.get(b.id) || [],b.id)[0]);
       return values.length && values.every(value => value != null) ? values.reduce((sum,value) => sum+value,0) : null;
     });
@@ -993,6 +1029,86 @@
     summaryCard('chartResponse', within == null ? '<p>Yanıt süresi ölçülebilen kayıt bulunmuyor.</p>' : `<div class="v2-sla-meter" role="img" aria-label="${within} yanıt SLA içinde, ${a.timedAnswers-within} yanıt SLA dışında"><span style="flex:${within};background:#0f9d75">${within} içinde</span><span style="flex:${a.timedAnswers-within};background:#d92d20">${a.timedAnswers-within} dışında</span></div><div class="v2-summary-line"><span>${a.timedAnswers} tarihli yanıt üzerinden</span><strong>${pct(a.slaRate)} SLA içinde</strong></div><p>Süre: yorum tarihi → Google yanıt tarihi. Tarihi eksik kayıtlar dahil edilmez.</p><button class="btn sm" onclick="switchView('reviews')">Yorumları incele →</button>`);
   };
 
+  function renderGoalWorkflow() {
+    const host = byId('reviewGoalWorkflow');
+    if (!host) return;
+    if (!analyticsDemo()) {
+      host.innerHTML = '<h3>Hedef planı</h3><p>Onay akışını denemek için Veri alanından Demo’yu seçin. Canlı şube hedefi mevcut ERP kaydından yönetilir.</p>';
+      return;
+    }
+    const path = goalPath();
+    const key = goalKey(goalMonth,path);
+    const record = demoGoals()[key] || {};
+    const draft = record.draft || record.approved || {};
+    const status = record.status || 'new';
+    const editable = ['new','draft','revision'].includes(status);
+    const actions = {save:'Taslak kaydedildi',submit:'Onaya gönderildi',forward:'GM onayına gönderildi',approve:'Onaylandı',revise:'Revizyon açıldı'};
+    const states = {new:'Yeni',draft:'Taslak',pending:'GM onayı bekliyor',regional:'Bölge onayı bekliyor',approved:'Onaylandı',revision:'Revizyon'};
+    const button = (action,label) => '<button class="btn sm" type="submit" value="'+action+'">'+label+'</button>';
+    const actual = allRows().filter(row => monthKey(row.createdAt) === goalMonth);
+    const approved = record.approved;
+    const totals = demoGoalTotals(goalMonth);
+    host.innerHTML = `<h3>Hedef planı · ${goalLevels[path.length]} · ${html(analyticsName())}</h3>
+      <label>Hedef ayı <input id="reviewGoalMonth" type="month" min="2000-01" max="2099-12" value="${html(goalMonth)}"></label>
+      <p>Demo · ${states[status]} · ${allRows().length} mevcut yorum</p>
+      <form id="reviewGoalForm">
+        <fieldset ${editable ? '' : 'disabled'}><legend>Hedefler</legend>
+          <label>Varılacak toplam yorum <input name="total" type="number" required min="1" max="10000000" value="${draft.total ?? ''}"></label>
+          <label>Yıldız türü <select name="stars">${[5,4,3,2,1].map(value=>`<option value="${value}" ${value===(draft.stars || 5)?'selected':''}>${value} yıldız</option>`).join('')}</select></label>
+          <label>Dönemde hedeflenen yıldızlı yorum adedi <input name="starCount" type="number" required min="0" max="10000000" value="${draft.starCount ?? ''}"></label>
+          <label>Ortalama puan hedefi <input name="rating" type="number" required min="1" max="5" step="0.1" value="${draft.rating ?? ''}"></label>
+        </fieldset>
+        <div class="pacts">${editable ? button('save','Taslağı kaydet')+button('submit','Onaya gönder') :
+          status==='regional' ? button('forward','Üst onaya gönder')+button('revise','Revize et') :
+          status==='pending' ? button('approve','Onayla')+button('revise','Revize et') : button('revise','Revize et')}</div>
+      </form>
+      <p>${approved ? `Onaylı hedef · ${approved.total} toplam yorum · ${actual.filter(row=>row.stars===approved.stars).length}/${approved.starCount} adet ${approved.stars} yıldızlı yorum · Puan hedefi ${fmt(approved.rating)} ★` : 'Bu kapsam ve ay için onaylı hedef yok.'}</p>
+      ${path.length<3 ? `<p>Onaylı şube hedefleri · ${totals.count}/${matchingBranches().length} şube · ${totals.target} toplam yorum hedefi${totals.rating==null?'':' · Ağırlıklı puan hedefi '+fmt(totals.rating)}${approved && totals.complete?' · Yönetim hedefi farkı '+fmt(approved.total-totals.target):''}</p>` : ''}
+      ${record.history?.length ? `<details><summary>İşlem geçmişi</summary><ol>${record.history.map(entry=>`<li>${actions[entry.action]} · ${html(new Date(entry.at).toLocaleString('tr-TR',{timeZone:'Europe/Istanbul'}))} · ${entry.values.total} yorum · ${entry.values.starCount} adet ${entry.values.stars} yıldız · ${fmt(entry.values.rating)} puan${entry.reason?' · '+html(entry.reason):''}</li>`).join('')}</ol></details>` : ''}
+      <p id="reviewGoalStatus" role="status"></p>`;
+    byId('reviewGoalMonth').onchange = event => {
+      if (!/^20\d{2}-(0[1-9]|1[0-2])$/.test(event.target.value)) return;
+      goalMonth = event.target.value;
+      renderGoalWorkflow();
+    };
+    byId('reviewGoalForm').onsubmit = event => {
+      event.preventDefault();
+      const action = event.submitter?.value || 'save';
+      const all = demoGoals();
+      const current = all[key] || {};
+      if (current.status !== record.status || current.updatedAt !== record.updatedAt) {
+        renderGoalWorkflow();
+        root.toast('Hedef başka oturumda değişti. Güncel kayıt açıldı.', 'warn');
+        return;
+      }
+      let next;
+      if (editable && ['save','submit'].includes(action)) {
+        const fields = new FormData(event.currentTarget);
+        const data = Object.fromEntries(['total','stars','starCount','rating'].map(field=>[field,Number(fields.get(field))]));
+        if (data.starCount > data.total) {
+          byId('reviewGoalStatus').textContent = 'Yıldızlı yorum adedi toplam hedefi aşamaz.';
+          return;
+        }
+        next = {...current,draft:data,status:action==='save'?'draft':path.length>=2?'regional':'pending'};
+      } else if (action==='forward' && status==='regional') {
+        next = {...current,status:'pending'};
+      } else if (action==='approve' && status==='pending') {
+        next = {...current,approved:current.draft,status:'approved'};
+      } else if (action==='revise' && !editable) {
+        const reason = root.prompt('Revizyon gerekçesi');
+        if (!reason?.trim()) return;
+        next = {...current,status:'revision',reason:reason.trim()};
+      } else return;
+      next.updatedAt = new Date().toISOString();
+      next.history = [...(current.history || []), {action,at:next.updatedAt,reason:action==='revise'?next.reason:null,values:next.draft}];
+      all[key] = next;
+      try { localStorage.setItem(goalStorageKey, JSON.stringify(all)); }
+      catch (_) { byId('reviewGoalStatus').textContent = 'Demo hedefi tarayıcıya kaydedilemedi.'; return; }
+      root.switchView('performance');
+      root.toast(states[next.status], 'ok');
+    };
+  }
+
   root.renderPerformance = function () {
     const a = stats(rows()), total = currentReviewTotal(), target = currentTarget();
     const ratio = missingScopeData() ? null : progress(total, target), canSave = Boolean(analyticsScope.branch) && (!analyticsLive() || (analyticsScope.branch === branchId() && management().loaded && !management().loading && !management().error && !management().targetError));
@@ -1000,13 +1116,14 @@
     byId('perfTable').innerHTML = `<thead><tr><th>Şube</th><th class="n">Varılacak toplam</th><th class="n">Mevcut toplam</th><th>Hedef ilerlemesi</th><th class="n">Dönem yorumları</th><th class="n">Puan</th><th class="n">Yanıt</th><th>Ortam</th></tr></thead><tbody><tr><td>${html(analyticsName())}</td><td><div class="v2-target-editor"><input id="v2Target" aria-label="${html(analyticsName())} toplam yorum hedefi" type="number" min="1" max="10000" step="1" value="${target ?? ''}" placeholder="Şube seçin" ${canSave ? '' : 'disabled'}><button id="v2SaveTarget" class="btn sm p" ${canSave ? '' : 'disabled'}>Kaydet</button></div></td><td class="n">${total}</td><td>${ratio == null ? (missingScopeData() ? 'Şube verisi eksik' : 'Hedef girilmedi') : `<div class="v2-progress"><progress aria-label="Hedef ilerlemesi" max="100" value="${Math.min(100, ratio)}"></progress><b>${ratio}%</b></div>`}</td><td class="n">${a.count}</td><td class="n">${fmt(a.average)}</td><td class="n">${pct(a.responseRate)}</td><td><span class="chip ${analyticsLive() ? 'ok' : 'warn'}">${analyticsLive() ? 'Canlı' : 'Demo'}</span></td></tr></tbody>`;
     const ratingTarget = currentRatingTarget();
     const ratingCell = byId('perfTable').querySelector('tbody tr td:nth-child(2)');
-    if (canSave) {
+    if (canSave && analyticsLive()) {
       ratingCell.insertAdjacentHTML('beforeend', `<label class="v2-rating-goal">Yıldız hedefi <input id="v2RatingTarget" type="number" min="1" max="5" step="0.1" value="${ratingTarget ?? ''}" placeholder="4,7"></label>`);
     } else {
       ratingCell.querySelector('.v2-target-editor').hidden = true;
       ratingCell.insertAdjacentHTML('beforeend', `<span>${target == null ? '—' : fmt(target)}</span><div class="v2-rating-goal">${ratingTarget == null ? 'Yıldız hedefi eksik' : `Yıldız hedefi ${fmt(ratingTarget)} ★${matchingBranches().length > 1 ? ' · şube hedeflerinin ortalaması' : ''}`}</div>`);
     }
     byId('v2SaveTarget').onclick = saveTarget;
+    renderGoalWorkflow();
     if (ratio == null && analyticsLive() && (management().error || !management().loaded)) {
       byId('perfTable').querySelector('tbody tr td:nth-child(4)').textContent = 'Hedef doğrulanamadı';
     }
@@ -1078,7 +1195,7 @@
         const reviewRows = source.filter(row => monthKey(row.createdAt) && Date.parse(row.createdAt) <= now);
         const loaded = demo || reviewRows.length > 0 || Boolean(parentReviews?.getBranchById?.(branch.id)?.lastSyncedAt);
         const stats = live().aggregateReviews(reviewRows,{now,slaHours:demo?24:branch.id===branchId()?sla():Number(branch.sla_hours)||24});
-        const target = demo ? demoTargets.get(branch.id) || branch.target : targetSeries([month],
+        const target = demo ? directDemoGoal(month,[branch.region,branch.city,branch.id])?.total || demoTargets.get(branch.id) || branch.target : targetSeries([month],
           branch.id===branchId()?management().targets || []:scopedTargetCache.get(branch.id) || [],branch.id)[0];
         return {id:branch.id,name:branch.id===BRANCH_IDS[0]?'Bursa Nilüfer':branch.name,demo,
           count:loaded?stats.count:null, average:stats.average, response:stats.responseRate,
