@@ -599,7 +599,7 @@ main{margin:0 auto;width:auto;max-width:1440px;padding:20px}
   try {
     if (localStorage.getItem('ototr.review.design.teal') === 'new') document.documentElement.dataset.reviewDesign = 'new';
   } catch (_) {}
-</script><link rel="stylesheet" href="assets/google-review-alternative.css?v=20261119-1"><link rel="stylesheet" href="assets/google-review-workspace.css?v=20261123-7"></head><body>
+</script><link rel="stylesheet" href="assets/google-review-alternative.css?v=20261119-1"><link rel="stylesheet" href="assets/google-review-workspace.css?v=20261123-11"></head><body>
 <div id="review-loading-message" role="status">Yorum Yönetimi hazırlanıyor…</div>
 
 <header class="topbar">
@@ -649,11 +649,12 @@ main{margin:0 auto;width:auto;max-width:1440px;padding:20px}
     </div>
     <div class="chart-grid">
       <div class="chart-card span-8 v2-overview-main-chart">
-        <div class="chart-head">
-          <h3>Yorum hacmi — hedefe karşı <span class="sub">son 12 ay</span></h3>
-          <div class="chart-legend"><span><i style="background:#2563eb"></i>Gerçek</span><span><i style="background:#7c3aed"></i>Yorum trendi</span><span><i style="background:#e11d48"></i>Hedef</span></div>
+        <div class="overview-trend-layout">
+          <div class="chart-head"><h3>Toplam yorum sayısının değişimi ve hedef</h3></div>
+          <div class="chart-wrap h-260"><canvas id="chartTrend"></canvas></div>
+          <div id="overviewPeriodButtons" role="group" aria-label="Grafik dönemi"></div>
         </div>
-        <div class="chart-wrap h-260"><canvas id="chartTrend"></canvas></div>
+        <div class="chart-legend overview-trend-legend"><span><i style="background:#2563eb"></i>Gerçek</span><span><i style="background:#7c3aed"></i>Yorum trendi</span><span><i style="background:#e11d48"></i>Hedef</span></div>
       </div>
       <div class="span-4 v2-overview-side"><div class="chart-card">
         <div class="chart-head"><h3>Yıldız dağılımı</h3></div>
@@ -3213,7 +3214,7 @@ if (!STATE.onboarded) setTimeout(startTour, 500);
     document.head.append(style); move(); new MutationObserver(move).observe(document.body,{childList:true,subtree:true});
   })();
 </script>
-<script src="assets/google-review-alternative.js?v=20261123-6"></script>
+<script src="assets/google-review-alternative.js?v=20261123-10"></script>
 <script src="assets/google-review-sandbox.js?v=20261119-3"></script>
 <script src="assets/vendor-review-qrcode.js"></script>
 <script src="assets/google-review-workspace.js?v=20261122-3"></script>

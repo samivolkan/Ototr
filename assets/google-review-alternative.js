@@ -283,6 +283,20 @@
   const periodSelect = node('select'); periodSelect.id = 'v2Period'; periodSelect.setAttribute('aria-label', 'Analiz dönemi');
   for (const [value, label] of Object.entries(PERIODS)) { const option = node('option', label); option.value = value; periodSelect.append(option); }
   periodSelect.value = period; periodLabel.append(periodSelect); scopeBar.append(periodLabel);
+  const overviewPeriodButtons = byId('overviewPeriodButtons');
+  for (const [value,label] of Object.entries({month:'Bu ay',quarter:'3 ay',ytd:'Yıl başı',year:'12 ay'})) {
+    const button = node('button',label);
+    button.type = 'button';
+    button.dataset.period = value;
+    button.setAttribute('aria-label',PERIODS[value]);
+    button.setAttribute('aria-controls','chartTrend');
+    button.onclick = () => {
+      if (period===value) return;
+      periodSelect.value = value;
+      periodSelect.dispatchEvent(new Event('change',{bubbles:true}));
+    };
+    overviewPeriodButtons?.append(button);
+  }
   const environment = node('span', 'Canlı çalışma alanı', 'chip ok'); scopeBar.append(environment);
   const nav = byId('topnav');
   const navRow = node('div', null, 'v2-nav-row');
@@ -742,7 +756,33 @@
     emptyChart('chartWeeklyReviews',weeks.some(w=>w.answered || w.pending),'Bu haftalarda yorum bulunmuyor.');
     chartNote('chartWeeklyReviews',`Son ${weeks.length} hafta · Yalnız seçili dönemde alınan yorumlar.`);
   }
+  let overviewDemoActive = false;
+  let overviewDemoTimer;
+  let overviewDemoNotice;
+  function showOverviewDemoNotice() {
+    const demo = analyticsDemo();
+    if (overviewDemoActive!==demo) {
+      overviewDemoActive = demo;
+      clearTimeout(overviewDemoTimer);
+      overviewDemoNotice?.remove();
+      overviewDemoNotice = null;
+      if (demo) {
+        const notice = overviewDemoNotice = node('div','','alert warn overview-demo-notice');
+        notice.setAttribute('role','status');
+        byId('view-overview').prepend(notice);
+        overviewDemoTimer = setTimeout(()=>{
+          if (matchMedia('(prefers-reduced-motion: reduce)').matches) notice.remove();
+          else notice.animate([{opacity:1},{opacity:0}],{duration:420,easing:'ease-out',fill:'forwards'}).finished.then(()=>notice.remove());
+        },5000);
+      }
+    }
+    if (overviewDemoNotice?.isConnected) overviewDemoNotice.textContent = analyticsName()+' · Demo çalışma alanı. Yapılan denemeler Google’a gönderilmez.';
+  }
   root.renderOverview = function () {
+    showOverviewDemoNotice();
+    overviewPeriodButtons?.querySelectorAll('button').forEach(button=>{
+      button.setAttribute('aria-pressed',String(button.dataset.period===period));
+    });
     if (!analyticsDemo() && !approvedGoalsRequest) syncApprovedGoals().then(()=>{
       if (STATE.view==='overview' && !analyticsDemo()) {root.renderOverview();root.initCharts();}
     }).catch(()=>{});
@@ -750,7 +790,8 @@
     const a = stats(scoped);
     renderBranchRanking(scoped);
     const connection = management().error ? 'Canlı yönetim bağlantısı alınamadı; Bağlantı durumu ekranını kontrol edin.' : !management().loaded ? 'Canlı kayıtlar için ERP oturumu bekleniyor.' : `${html(analyticsName())} · Google kayıtları ve ERP onay akışı. Kurulum ve test şubeleri hesaplamaya dahil edilmez.`;
-    byId('ovAlerts').innerHTML = `<div class="alert ${analyticsLive() && management().loaded && !management().error ? 'info' : 'warn'}">${analyticsLive() ? connection : `${html(analyticsName())} · Demo çalışma alanı. Yapılan denemeler Google’a gönderilmez.`}</div>`;
+    byId('ovAlerts').innerHTML = `<div class="alert ${analyticsLive() && management().loaded && !management().error ? 'info' : 'warn'}">${connection}</div>`;
+    if (!analyticsLive()) byId('ovAlerts').replaceChildren();
     const total = currentReviewTotal(), target = currentTarget();
     const ratio = missingScopeData() ? null : progress(total, target);
     if (analyticsLive() && management().loaded && !management().error) {
@@ -914,7 +955,8 @@
           }
           ctx.textAlign = 'left';
           ctx.fillStyle = difference < 0 ? target.color : '#12805c';
-          ctx.fillText(difference > 0 ? '+' + fmt(difference) : fmt(difference), x + 8, (y + target.point.y) / 2 + 4);
+          const gapLabel = difference > 0 ? '+' + fmt(difference) : fmt(difference);
+          ctx.fillText(gapLabel,Math.min(x+8,chart.width-ctx.measureText(gapLabel).width-3),(y+target.point.y)/2+4);
         }
         endpoints.forEach((endpoint, index) => {
           if (!endpoint) return;
@@ -970,7 +1012,7 @@
       .toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })));
     const axisColor = getComputedStyle(doc.documentElement).getPropertyValue('--mute').trim();
     chart('chartTrend', 'line', chartLabels, series, {
-      layout:{padding:{top:20,right:48}},
+      layout:{padding:doc.documentElement.dataset.reviewDesign==='new' ? {top:12,right:3} : {top:20,right:48}},
       interaction:{mode:'index',intersect:false},
       scales:{
         x:{grid:{display:false},ticks:{color:axisColor,maxTicksLimit:12}},
@@ -995,11 +1037,10 @@
       }}}
     }, daily ? [dailyDots, dailyLabels, endpointLabels] : [endpointLabels]);
     emptyChart('chartTrend', doc.documentElement.dataset.reviewDesign === 'classic' || analyticsDemo() || management().loaded || scoped.length > 0, 'Grafik için ERP verisi bekleniyor.');
-    chartNote('chartTrend', !analyticsDemo() && (management().error || !management().loaded) ? 'Hedef kayıtları doğrulanamadı.' : targets.some(v => v != null) ? (daily ? (dateRange ? 'Özel tarih aralığı' : 'Son 30 gün') + ' · Günlük yorum adetleri ve toplam yorum sayısı.' : 'Ay sonu yorum toplamı, kayıtlı aylık hedef ve doğrusal trend.') : 'Kayıtlı hedef yok. Performans ekranından hedef girin.');
-    if (forecast != null) {
-      const note = byId('chartTrend')?.closest('.chart-card')?.querySelector('.v2-chart-note');
-      if (note) note.textContent += ' Noktalı tahmin, bu ayın günlük ortalama yorum hızını ay sonuna taşır.';
-    }
+    const trendNote = !analyticsDemo() && (management().error || !management().loaded)
+      ? 'Hedef kayıtları doğrulanamadı.' : targets.some(v=>v!=null) ? '' : 'Kayıtlı hedef yok. Performans ekranından hedef girin.';
+    if (trendNote) chartNote('chartTrend',trendNote);
+    else byId('chartTrend')?.closest('.chart-card')?.querySelector('.v2-chart-note')?.remove();
     chart('chartRating', 'doughnut', ['5★', '4★', '3★', '2★', '1★'], [{ label: 'Yıldız dağılımı', data: a.ratingCounts, backgroundColor: ['#12805c', '#6bbf9b', '#fbbf24', '#fb923c', '#b42318'], borderWidth: 2 }]);
     emptyChart('chartRating', a.count > 0, 'Seçili dönemde yorum bulunmuyor.');
     const breakdown = byId('reviewRatingBreakdown');
@@ -1100,7 +1141,7 @@
     const fill = ratio==null ? 0 : Math.max(0,Math.min(100,total/target*100));
     const historyMax = Math.max(1,target || 0,...values);
     block.innerHTML = `<div class="review-goal-card">
-      <header class="review-goal-heading"><h3>Yorum hedefi</h3><span class="review-goal-context">${html(scope===analyticsName() ? scope : scope+' · '+analyticsName())} · ${analyticsDemo()?'Demo':'Canlı'}</span></header>
+      <header class="review-goal-heading"><h3>Yorum hedefi</h3><span class="review-goal-context">${html(scope===analyticsName() ? scope : scope+' · '+analyticsName())} · ${analyticsDemo()?'Demo':'Canlı'}</span><button type="button" class="btn sm" onclick="switchView('performance')">Hedefleri aç →</button></header>
       <div class="review-goal-rate"><strong data-goal-number="${ratio ?? ''}">${ratio==null?'—':pct(ratio)}</strong>
         <span>${ratio==null ? (missingScopeData()?'Şube verisi eksik':'Bu ayın hedefi girilmedi') : `Bu ay · ${fmt(target)} yorum hedefi`}</span></div>
       <div class="review-goal-figures"><span>Ulaşılan <b data-goal-number="${total}">${fmt(total)}</b></span>
@@ -1115,7 +1156,7 @@
         ${months.map((month,index)=>`<div><span>${goalCardDate.format(new Date(month+'-01T12:00:00Z'))}</span>
           <div aria-hidden="true"><i style="--fill:${values[index]/historyMax*100}%;--delay:${index*38}ms"></i></div>
           <b data-goal-number="${values[index]}">${fmt(values[index])}</b></div>`).join('')}</div><small>Ay sonu toplam yorum sayısı · Bu ay bugüne kadar</small></details>`}
-      <button type="button" class="btn sm" onclick="switchView('performance')">Hedefleri aç →</button></div>`;
+      </div>`;
     for (const button of block.querySelectorAll('[data-goal-child]')) button.onclick = () => {
       const [region='',city='',branch=''] = children[Number(button.dataset.goalChild)].path;
       Object.assign(analyticsScope,{region,city,branch});
