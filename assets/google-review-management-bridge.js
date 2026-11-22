@@ -138,6 +138,7 @@
       tag: Number(review.starRating || review.rating || 0) <= 2 ? 'Kritik' : Number(review.starRating || review.rating || 0) === 3 ? 'Takip' : 'Olumlu',
       text: escape(review.comment || ''),
       drafts: [escape(review.isReplied ? review.replyText || '' : item?.reply_text || 'ERP üzerinden taslak hazırlamak için Yeniden düğmesini kullanın.')],
+      approvalPending: item?.status === 'approval_pending' && Boolean(item.reply_text) && !item.review_snapshot?.rejection,
       status: review.isReplied ? 'gonderildi' : routedTo === 'legal' ? 'hukuk' : routedTo ? 'routed' : 'bekliyor',
       time: review.reviewDate ? new Date(review.reviewDate).toLocaleString('tr-TR') : 'Canlı Google kaydı',
       slaH: slaHours,
@@ -347,8 +348,8 @@
     const count=document.querySelector('#erpGoogleSync')?.parentElement?.querySelector('.chip.ok');
     if(count) count.textContent=`${known.filter(item=>item.lifecycle==='live'||item.id===liveBranchId).length||1} Canlı · ${known.filter(item=>item.lifecycle!=='live'&&item.id!==liveBranchId).length||2} Demo/Onboarding`;
   };
-  const originalFiltered=typeof window.getFilteredReviews === 'function' ? window.getFilteredReviews : () => REVIEWS;
-  window.getFilteredReviews=()=>originalFiltered().filter(row=>{
+  const originalSearch=window.searchedReviews;
+  window.searchedReviews=()=>originalSearch().filter(row=>{
     if(branchFilter.value==='all') return true;
     if(branchFilter.value==='live') return !row.demo && (row.branchId===liveBranchId || !row.branchId);
     if(String(branchFilter.value).startsWith('branch-')) return row.branchId===branchFilter.value || row.branch_id===branchFilter.value;

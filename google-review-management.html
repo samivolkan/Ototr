@@ -599,7 +599,7 @@ main{margin:0 auto;width:auto;max-width:1440px;padding:20px}
   try {
     if (localStorage.getItem('ototr.review.design.teal') === 'new') document.documentElement.dataset.reviewDesign = 'new';
   } catch (_) {}
-</script><link rel="stylesheet" href="assets/google-review-alternative.css?v=20261119-1"><link rel="stylesheet" href="assets/google-review-workspace.css?v=20261122-4"></head><body>
+</script><link rel="stylesheet" href="assets/google-review-alternative.css?v=20261119-1"><link rel="stylesheet" href="assets/google-review-workspace.css?v=20261123-3"></head><body>
 <div id="review-loading-message" role="status">Yorum Yönetimi hazırlanıyor…</div>
 
 <header class="topbar">
@@ -711,6 +711,8 @@ main{margin:0 auto;width:auto;max-width:1440px;padding:20px}
         <option value="routed">Sevk edilen</option>
         <option value="duplicate">Mükerrer / pasif</option>
         <option value="escalated">SLA aşımı</option>
+        <option value="kart-onay" data-summary-only>Onay bekliyor</option>
+        <option value="kart-cevap" data-summary-only>Cevap bekliyor</option>
       </select>
       <select id="rvSort"><option value="date">En yeni</option><option value="risk">Risk</option><option value="rating">Puan</option></select>
       <button class="btn sm" onclick="openSaveView()" data-tip="Filtreyi kaydet">💾 Kaydet</button>
@@ -718,6 +720,7 @@ main{margin:0 auto;width:auto;max-width:1440px;padding:20px}
       <div class="sp"></div>
       <span class="count" style="font-size:11.5px;color:var(--mute);background:var(--s2);padding:4px 9px;border-radius:99px"><b id="rvCount">0</b> yorum</span>
     </div>
+    <div id="reviewResponseSummary" class="card review-response-summary" aria-label="Yanıt durumu"></div>
     <div class="split">
       <div class="card2 list-pane" id="rvListPane">
         <div id="rvList"></div>
@@ -1717,9 +1720,14 @@ function matchesReviewStatus(review, status){
   if (status === "duplicate") return Boolean(review.duplicate);
   if (review.duplicate) return false;
   if (status === "hepsi") return true;
+  if (status === "kart-onay" || status === "kart-cevap") {
+    if (review.status === "gonderildi") return false;
+    const awaitingApproval = review.approvalPending ?? (review.demo && review.status === "bekliyor");
+    return status === "kart-onay" ? Boolean(awaitingApproval) : !awaitingApproval;
+  }
   if (status === "cevap-bekleyen") return review.status !== "gonderildi";
   if (status === "kritik") return review.risk >= 50;
-  if (status === "escalated") return Boolean(review.escalated);
+  if (status === "escalated") return review.status !== "gonderildi" && Boolean(review.escalated);
   return review.status === status;
 }
 
@@ -1734,7 +1742,7 @@ function renderReviewStatusFilters(reviews){
   const select = $("#rvFilter");
   const focused = host.contains(document.activeElement);
   const focusValue = focused ? document.activeElement.dataset.status : null;
-  const buttons = [...select.options].map(option => {
+  const buttons = [...select.options].filter(option => !option.hasAttribute("data-summary-only") || (option.value === RV_FILTER && document.documentElement.dataset.reviewDesign !== "new")).map(option => {
     const button = document.createElement("button");
     const status = option.value;
     button.type = "button";
@@ -1753,6 +1761,78 @@ function renderReviewStatusFilters(reviews){
   });
   host.replaceChildren(...buttons);
   if (focusValue) buttons.find(button => button.dataset.status === focusValue)?.focus();
+  renderReviewResponseSummary(reviews, select);
+}
+
+const reviewSummaryDate = new Intl.DateTimeFormat("tr-TR", {timeZone:"Europe/Istanbul", day:"numeric",month:"short"});
+const reviewSummaryDay = new Intl.DateTimeFormat("en-CA", {timeZone:"Europe/Istanbul", year:"numeric",month:"2-digit",day:"2-digit"});
+const reviewSummaryNumber = new Intl.NumberFormat("tr-TR");
+let reviewSummarySignature;
+let reviewSummaryAnimation;
+function renderReviewResponseSummary(reviews, select) {
+  const host = $("#reviewResponseSummary");
+  if (!host) return;
+  const eligible = reviews.filter(row => !row.duplicate);
+  const buckets = [["gonderildi","Yanıtlandı"],["kart-onay","Onay bekliyor"],["kart-cevap","Cevap bekliyor"]]
+    .map(([key,label]) => ({key,label,count:eligible.filter(row=>matchesReviewStatus(row,key)).length}));
+  const overdue = eligible.filter(row=>matchesReviewStatus(row,"escalated") && row.status!=="gonderildi").length;
+  const rate = eligible.length ? Math.round(buckets[0].count/eligible.length*100) : null;
+  const signature = JSON.stringify(eligible.map(row=>[row.id,row.createdAt,row.replyDate,row.status,row.approvalPending,row.escalated]));
+  const changed = signature !== reviewSummarySignature;
+  const focused = host.contains(document.activeElement) ? document.activeElement.dataset.summaryFilter : null;
+  const wasOpen = host.querySelector("details")?.open;
+  const counts = new Map();
+  for (const row of eligible) {
+    for (const [value,index] of [[row.createdAt,0],[row.status==="gonderildi" ? row.replyDate : null,1]]) {
+      if (!value || !Number.isFinite(Date.parse(value))) continue;
+      const date = new Date(value);
+      const key = reviewSummaryDay.format(date);
+      const item = counts.get(key) || {date,values:[0,0]};
+      item.values[index]++;
+      counts.set(key,item);
+    }
+  }
+  const today = reviewSummaryDay.format(new Date());
+  const days = Array.from({length:7},(_,index)=>{
+    const date = new Date(Date.parse(today+"T12:00:00Z")-(6-index)*86400000);
+    return counts.get(reviewSummaryDay.format(date)) || {date,values:[0,0]};
+  });
+  const peak = Math.max(1,...days.flatMap(day=>day.values));
+  host.innerHTML = `<div class="review-summary-main"><div class="review-summary-title"><strong>Yanıt durumu</strong>
+    <span><b data-review-rate>${rate == null ? "—" : "%"+rate}</b> <small>${reviewSummaryNumber.format(buckets[0].count)}/${reviewSummaryNumber.format(eligible.length)} yanıtlandı</small></span></div>
+    <div class="review-summary-breakdown">
+      <div class="review-summary-track" aria-hidden="true">${buckets.map(bucket=>`<i data-bucket="${bucket.key}" style="flex-grow:${bucket.count}" ${!bucket.count?"hidden":""}></i>`).join("")}</div>
+      <div class="review-summary-filters" role="group" aria-label="Yanıt durumuna göre süz">${buckets.map(bucket=>`<button type="button" data-summary-filter="${bucket.key}" data-bucket="${bucket.key}" aria-pressed="${RV_FILTER===bucket.key}">${bucket.label} <b>${reviewSummaryNumber.format(bucket.count)}</b></button>`).join("")}</div>
+    </div>
+    <button type="button" class="btn sm" data-summary-filter="escalated" aria-pressed="${RV_FILTER==="escalated"}">SLA aşımı <b>${reviewSummaryNumber.format(overdue)}</b></button></div>
+    <details ${wasOpen?"open":""}><summary>Son 7 gün</summary>
+      <div class="review-summary-days">${days.map(({date,values:[received,answered]})=>`<div class="review-summary-day">
+        <strong>${reviewSummaryDate.format(date)}</strong>
+        <div><i style="--size:${received/peak*100}%"></i><span>Gelen ${received}</span></div>
+        <div><i style="--size:${answered/peak*100}%"></i><span>Yanıtlanan ${answered}</span></div>
+      </div>`).join("")}</div><small>Yalnız listedeki yorumlar ve ERP’de kayıtlı yanıt tarihleri.</small>
+    </details>`;
+  for (const button of host.querySelectorAll("[data-summary-filter]")) {
+    button.onclick = () => {
+      select.value = RV_FILTER===button.dataset.summaryFilter ? "hepsi" : button.dataset.summaryFilter;
+      select.dispatchEvent(new Event("change",{bubbles:true}));
+    };
+    if (button.dataset.summaryFilter===focused) button.focus();
+  }
+  if (!changed) return;
+  reviewSummarySignature = signature;
+  cancelAnimationFrame(reviewSummaryAnimation);
+  if (rate == null || document.documentElement.dataset.reviewDesign!=="new" || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const counter = host.querySelector("[data-review-rate]");
+  host.querySelector(".review-summary-track").animate([{opacity:.45,transform:"scaleX(.85)"},{opacity:1,transform:"scaleX(1)"}],{duration:340,easing:"ease-out"});
+  const started = performance.now();
+  const update = now => {
+    if (!counter.isConnected) return;
+    const progress = Math.min(1,(now-started)/340);
+    counter.textContent = "%"+Math.round(rate*(1-(1-progress)**3));
+    if (progress<1) reviewSummaryAnimation = requestAnimationFrame(update);
+  };
+  reviewSummaryAnimation = requestAnimationFrame(update);
 }
 
 function getFilteredReviews(reviews = searchedReviews()){
@@ -3143,7 +3223,7 @@ renderNotifications();
 
 if (!STATE.onboarded) setTimeout(startTour, 500);
 </script>
-<script src="assets/google-review-management-bridge.js?v=20261119-2"></script>
+<script src="assets/google-review-management-bridge.js?v=20261123-1"></script>
 <script src="assets/google-review-management-controller.js?v=20261119-1"></script>
 <script src="assets/google-review-live-views.js?v=20261119-1"></script>
 <script src="assets/google-review-enhancements.js?v=20261116-7"></script>
@@ -3198,6 +3278,7 @@ if (!STATE.onboarded) setTimeout(startTour, 500);
             menu.open = false;
             summary.focus();
             if (STATE.view === 'overview') { window.renderOverview(); window.initCharts(); }
+            if (STATE.view === 'reviews') window.renderReviews();
           });
           menu.append(summary, toggle);
         }
