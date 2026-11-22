@@ -1038,15 +1038,75 @@
       root.destroyChart(canvasId); canvas.parentElement.hidden = true;
       let block = host.querySelector('.v2-summary-card');
       if (!block) { block = node('div', null, 'v2-summary-card'); host.append(block); }
-      block.innerHTML = content;
+      if (content !== undefined) block.innerHTML = content;
       host.querySelector('.v2-chart-note')?.remove();
+      return block;
     }
     const ratio = missingScopeData() ? null : progress(total, target);
+    if (doc.documentElement.dataset.reviewDesign==='new') {
+      const block = summaryCard('chartRegion');
+      if (block) renderGoalCard(block,total,target,ratio);
+    } else {
+      byId('chartRegion')?.closest('.chart-card')?.classList.remove('review-goal-panel');
     summaryCard('chartRegion', `<div class="v2-summary-line"><strong>${html(analyticsName())}</strong><span>${total} / ${target ?? '—'}</span></div><progress class="v2-goal-meter" aria-label="Toplam yorum hedefi gerçekleşmesi" max="100" value="${Math.min(100,ratio || 0)}"></progress><div class="v2-summary-line"><span>${ratio == null ? (missingScopeData() ? 'Şube verisi eksik' : 'Hedef girilmedi') : `${pct(ratio)} gerçekleşti`}</span><span>${target == null ? '—' : `Kalan ${Math.max(0,target-total)} yorum`}</span></div><p>Şube hedefi · ${html(branch()?.region || '—')} / ${html(analyticsName())}</p><button class="btn sm" onclick="switchView('performance')">Hedefi düzenle →</button>`);
+    }
     const responseTitle = byId('chartResponse')?.closest('.chart-card')?.querySelector('h3'); if (responseTitle) responseTitle.textContent = matchingBranches().length > 1 ? 'Yanıt süresi · Şube SLA’ları' : `Yanıt süresi · SLA ${sla()} sa`;
     const within = a.slaRate == null ? null : Math.round(a.slaRate*a.timedAnswers/100);
     summaryCard('chartResponse', within == null ? '<p>Yanıt süresi ölçülebilen kayıt bulunmuyor.</p>' : `<div class="v2-sla-meter" role="img" aria-label="${within} yanıt SLA içinde, ${a.timedAnswers-within} yanıt SLA dışında"><span style="flex:${within};background:#0f9d75">${within} içinde</span><span style="flex:${a.timedAnswers-within};background:#d92d20">${a.timedAnswers-within} dışında</span></div><div class="v2-summary-line"><span>${a.timedAnswers} tarihli yanıt üzerinden</span><strong>${pct(a.slaRate)} SLA içinde</strong></div><p>Süre: yorum tarihi → Google yanıt tarihi. Tarihi eksik kayıtlar dahil edilmez.</p><button class="btn sm" onclick="switchView('reviews')">Yorumları incele →</button>`);
   };
+
+  let goalCardSignature;
+  const goalCardDate = new Intl.DateTimeFormat('tr-TR',{timeZone:'Europe/Istanbul',day:'numeric',month:'short'});
+  function renderGoalCard(block, total, target, ratio) {
+    const host = block.closest('.chart-card');
+    const scope = ['Genel Merkez','Bölge','İl','Şube'][goalPath().length];
+    const today = recentDays(Date.now()).at(-1);
+    const days = Array.from({length:7},(_,index)=>new Date(Date.parse(today+'T12:00:00Z')-(6-index)*86400000));
+    const additions = new Map();
+    for (const review of recordedReviews()) {
+      const key = dayKey(review.createdAt);
+      if (key) additions.set(key,(additions.get(key) || 0)+1);
+    }
+    const first = dayKey(days[0]);
+    let running = [...additions].reduce((sum,[key,count])=>key<first ? sum+count : sum,0);
+    const values = days.map(date=>{running+=additions.get(dayKey(date)) || 0; return running;});
+    const signature = JSON.stringify([analyticsScope,analyticsName(),total,target,ratio,today,values]);
+    if (signature===goalCardSignature && block.querySelector('.review-goal-card')) return;
+    goalCardSignature = signature;
+    host.classList.add('review-goal-panel');
+    const open = block.querySelector('details')?.open ?? true;
+    const remaining = ratio==null ? null : Math.max(0,target-total);
+    const fill = ratio==null ? 0 : Math.max(0,Math.min(100,total/target*100));
+    const lastDaysMax = Math.max(1,target || 0,...values);
+    block.innerHTML = `<div class="review-goal-card">
+      <div class="review-goal-context">${html(scope===analyticsName() ? scope : scope+' · '+analyticsName())} · ${analyticsDemo()?'Demo':'Canlı'}</div>
+      <div class="review-goal-rate"><strong data-goal-number="${ratio ?? ''}">${ratio==null?'—':pct(ratio)}</strong>
+        <span>${ratio==null ? (missingScopeData()?'Şube verisi eksik':'Bu ayın hedefi girilmedi') : `Bu ay · ${fmt(target)} yorum hedefi`}</span></div>
+      <div class="review-goal-figures"><span>Ulaşılan <b data-goal-number="${total}">${fmt(total)}</b></span>
+        <span>Kalan <b data-goal-number="${remaining ?? ''}">${remaining==null?'—':fmt(remaining)}</b></span></div>
+      <div class="review-goal-track" role="img" aria-label="${ratio==null?'Hedef gerçekleşmesi hesaplanamadı':`${pct(ratio)} gerçekleşti`}">
+        <i style="--fill:${fill}%"></i>${remaining ? '<i></i>' : ''}</div>
+      <details ${open?'open':''}><summary>Son 7 gün</summary><div class="review-goal-days">
+        ${days.map((date,index)=>`<div><span>${goalCardDate.format(date)}</span>
+          <div aria-hidden="true"><i style="--fill:${values[index]/lastDaysMax*100}%;--delay:${index*24}ms"></i></div>
+          <b data-goal-number="${values[index]}">${fmt(values[index])}</b></div>`).join('')}</div><small>Gün sonu toplam yorum sayısı</small></details>
+      <button type="button" class="btn sm" onclick="switchView('performance')">Hedefleri aç →</button></div>`;
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const card = block.firstElementChild;
+    const numbers = [...card.querySelectorAll('[data-goal-number]')].filter(el=>el.dataset.goalNumber!=='').map(el=>[el,Number(el.dataset.goalNumber)]);
+    card.animate([{opacity:.65,transform:'translateY(6px)'},{opacity:1,transform:'translateY(0)'}],{duration:300,easing:'ease-out'});
+    const started = performance.now();
+    const tick = now => {
+      if (!card.isConnected) return;
+      const progress = Math.min(1,Math.max(0,(now-started)/340));
+      for (const [el,value] of numbers) {
+        const index = Math.round(value*(1-(1-progress)**3));
+        el.textContent = el.matches('.review-goal-rate strong') ? pct(index) : fmt(index);
+      }
+      if (progress<1) requestAnimationFrame(tick);
+    };
+    tick(started);
+  }
 
   function renderGoalWorkflow() {
     const host = byId('reviewGoalWorkflow');

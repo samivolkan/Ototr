@@ -412,34 +412,27 @@ html[data-review-design="new"] #view-overview .watch-row {
 }
 #reviewGoalWorkflow fieldset :is(input,select) { width: 100%; margin-top: 4px; }
 #reviewGoalWorkflow .pacts { display: flex; flex-wrap: wrap; gap: 8px; }
-.review-response-summary { display: none; }
-html[data-review-design="new"] .review-response-summary { display: block; width: min(100%, 350px); box-sizing: border-box; margin: 0 0 12px; padding: 14px; }
-.review-summary-main { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:8px; }
-.review-summary-title { display:grid; gap:2px; }
-.review-summary-title b { font-size:29px; font-variant-numeric:tabular-nums; }
-.review-summary-title small, .review-response-summary details small { color:var(--mute); }
-.review-summary-breakdown { grid-column:1/-1; min-width:0; }
-.review-summary-track { display:flex; gap:2px; height:8px; border-radius:8px; overflow:hidden; background:var(--line); transform-origin:left; }
-.review-summary-track i { background:var(--bucket); }
-.review-summary-track i[hidden] { display:none; }
-.review-response-summary [data-bucket="gonderildi"] { --bucket:#168474; }
-.review-response-summary [data-bucket="kart-onay"] { --bucket:#9a6514; }
-.review-response-summary [data-bucket="kart-cevap"] { --bucket:#b24e46; }
-.review-summary-filters { display:flex; flex-wrap:wrap; gap:4px 8px; margin-top:4px; }
-.review-summary-filters button { padding:4px 5px; font:inherit; font-size:11px; color:var(--ink); border:1px solid transparent; border-radius:5px; background:transparent; cursor:pointer; }
-.review-summary-filters button::before { content:""; display:inline-block; width:7px; height:7px; margin-inline-end:5px; border-radius:50%; background:var(--bucket); }
-.review-response-summary button[aria-pressed="true"] { border-color:var(--bucket,var(--blue)); background:var(--s2); }
-.review-response-summary details { font-size:11px; }
-.review-response-summary summary { width:fit-content; cursor:pointer; margin-top:4px; color:var(--mute); }
-.review-summary-days { display:grid; gap:4px; margin-block:8px; }
-.review-summary-day { display:grid; grid-template-columns:44px minmax(0,1fr) minmax(0,1fr); gap:5px; align-items:center; }
-.review-summary-day > div { position:relative; isolation:isolate; padding:3px 5px; background:var(--s2); border-radius:4px; }
-.review-summary-day i { position:absolute; z-index:-1; inset:0 auto 0 0; width:var(--size); background:#3988b5; opacity:.2; border-radius:4px; }
-.review-summary-day > div:last-child i { background:#168474; }
-@media (prefers-reduced-motion: no-preference) {
-  .review-response-summary details[open] .review-summary-day i {
-    transform-origin: left;
-    animation: review-summary-bar 300ms ease-out both;
+.review-goal-panel { width:min(100%,350px); box-sizing:border-box; align-self:start; }
+.review-goal-card { display:grid; gap:8px; }
+.review-goal-context, .review-goal-card small { color:var(--mute); font-size:11px; }
+.review-goal-rate { display:flex; align-items:baseline; gap:9px; flex-wrap:wrap; }
+.review-goal-rate strong { font-size:29px; font-variant-numeric:tabular-nums; }
+.review-goal-rate span, .review-goal-figures { color:var(--mute); font-size:12px; }
+.review-goal-figures { display:flex; justify-content:space-between; gap:8px; }
+.review-goal-figures b { color:var(--ink); font-variant-numeric:tabular-nums; }
+.review-goal-track { display:flex; gap:2px; height:8px; border-radius:8px; overflow:hidden; background:var(--line); }
+.review-goal-track i:first-child, .review-goal-days i { display:block; width:var(--fill); height:100%; background:#168474; border-radius:8px; }
+.review-goal-track i:last-child:not(:first-child) { flex:1; background:#c17b40; }
+.review-goal-card summary { cursor:pointer; width:fit-content; font-size:12px; }
+.review-goal-card > button { justify-self:start; }
+.review-goal-days { display:grid; gap:4px; margin-block:6px; font-size:11px; }
+.review-goal-days > div { display:grid; grid-template-columns:43px minmax(0,1fr) 38px; gap:6px; align-items:center; }
+.review-goal-days > div > div { height:5px; border-radius:8px; background:var(--line); }
+.review-goal-days b { text-align:end; font-variant-numeric:tabular-nums; }
+@media (prefers-reduced-motion:no-preference) {
+  .review-goal-track i:first-child, .review-goal-card details[open] .review-goal-days i {
+    transform-origin:left;
+    animation: review-goal-fill 340ms ease-out var(--delay,0ms) both;
   }
 }
-@keyframes review-summary-bar { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes review-goal-fill { from {transform:scaleX(0)} to {transform:scaleX(1)} }
