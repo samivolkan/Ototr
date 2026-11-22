@@ -13,3 +13,9 @@ Kullanıcı Efferd Dashboard 7 referansına benzer çalışan bir alternatif ist
 
 ## Studio tasarım kararı — 22 Kasım 2026
 Kullanıcı Google Reviews ekranına benzer, farklı renkli ve ileri analiz grafikleri içeren bir üçüncü tasarım istedi. Varsayılan Studio: koyu lacivert yatay menü, altı KPI, mor/turkuaz analitik grafikler. Klasik ve Alternatif görünümü koru. Demo veri kullan; canlı kokpite dokunma. Ads'i organik metriklerden ayır; gelir doğrulanmadan ROAS üretme. Kullanıcı gerçek verileri sonraki gün sağlayacak; CSV hazırlığı ve yerel doğrulama akışı sun.
+
+## Gerçek Ads testi — 23 Kasım 2026
+Kullanıcı erişilebilir üç Google Ads hesabının verileriyle yerel test yapılmasını onayladı. Gerçek raporları yalnız dosya seçimiyle tarayıcı belleğine al; kaynak, build, GitHub veya herkese açık demo paketine gömme. SEO demo verileri ayrı kalsın. Kampanya/ay/cihaz/dönüşüm toplamlarını doğrula. Reklam ayarı, ödeme veya canlı kokpitte değişiklik yapma.
+
+## Yoğunluk tercihi — 23 Kasım 2026
+Kullanıcı dikey boşlukların ve tekrarlayan açıklamaların azaltılmasını istedi. Dönem bilgisini tek yerde göster; yöntem ve gizlilik ayrıntılarını Veri kontrolü altında topla. Gerçek/demo ayrımı ve gerçek hesap uyarıları görünür kalsın.
