@@ -1106,6 +1106,7 @@
           <label>Dönemde hedeflenen yıldızlı yorum adedi <input name="starCount" type="number" required min="0" max="10000000" value="${draft.starCount ?? ''}"></label>
           <label>Ortalama puan hedefi <input name="rating" type="number" required min="1" max="5" step="0.1" value="${draft.rating ?? ''}"></label>
         </fieldset>
+        ${!editable && (!permitted || permitted.includes('revise')) ? '<label>Revizyon gerekçesi <input name="reason" type="text" maxlength="500"></label>' : ''}
         <div class="pacts">${editable ? button('save','Taslağı kaydet')+button('submit','Onaya gönder') :
           status==='regional' ? button('forward','Üst onaya gönder')+button('revise','Revize et') :
           status==='pending' ? button('approve','Onayla')+button('revise','Revize et') : button('revise','Revize et')}</div>
@@ -1122,13 +1123,17 @@
     byId('reviewGoalForm').onsubmit = async event => {
       event.preventDefault();
       const action = event.submitter?.value || 'save';
+      const reason = action==='revise' ? event.currentTarget.elements.reason.value.trim() : null;
+      if (action==='revise' && !reason) {
+        byId('reviewGoalStatus').textContent='Revizyon gerekçesini girin.';
+        event.currentTarget.elements.reason.focus();
+        return;
+      }
       if (!demo) {
         if (!permitted.includes(action)) return;
         const form = event.currentTarget;
         const fields = new FormData(form);
         const values = Object.fromEntries(['total','stars','starCount','rating'].map(field=>[field,Number(fields.get(field))]));
-        const reason = action==='revise' ? root.prompt('Revizyon gerekçesi') : null;
-        if (action==='revise' && !reason?.trim()) return;
         const controls = [...form.querySelectorAll('button')];
         controls.forEach(control=>control.disabled=true);
         try {
@@ -1166,8 +1171,6 @@
       } else if (action==='approve' && status==='pending') {
         next = {...current,approved:current.draft,status:'approved'};
       } else if (action==='revise' && !editable) {
-        const reason = root.prompt('Revizyon gerekçesi');
-        if (!reason?.trim()) return;
         next = {...current,status:'revision',reason:reason.trim()};
       } else return;
       next.updatedAt = new Date().toISOString();
