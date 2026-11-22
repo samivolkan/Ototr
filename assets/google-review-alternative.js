@@ -314,6 +314,16 @@
   const refreshButtons = node('div', null, 'v2-nav-status');
   const connectionButton = byId('erpGoogleConnect');
   if (connectionButton) refreshButtons.append(connectionButton);
+  function renderConnectionStatus() {
+    if (!connectionButton) return;
+    const state = management();
+    const connected = state.loaded && !state.error && state.settings?.google_connected === true;
+    const label = connected ? 'Bağlantı Canlı' : 'Bağlantı durumu';
+    connectionButton.classList.toggle('v2-connection-live',Boolean(connected));
+    if (connectionButton.textContent !== label) connectionButton.textContent = label;
+  }
+  renderConnectionStatus();
+  root.addEventListener('ototr-management-ready',renderConnectionStatus);
   const freshness = node('span', '', 'v2-freshness');
   freshness.setAttribute('aria-live', 'polite');
   refreshButtons.append(freshness);
@@ -1233,11 +1243,12 @@
       return {target,count:approved.length,complete:units.length>0 && approved.length===units.length,
         rating:target ? approved.reduce((sum,goal)=>sum+goal.total*goal.rating,0)/target : null};
     })();
-    host.innerHTML = `<h3>Hedef planı · ${goalLevels[path.length]} · ${html(analyticsName())}</h3>
+    host.innerHTML = `<div class="review-goal-editor-head"><strong>Hedef planı</strong>
+      <span class="chip ${status==='approved'?'ok':'warn'}">${states[status]}</span>
       <label>Hedef ayı <input id="reviewGoalMonth" type="month" min="2000-01" max="2099-12" value="${html(goalMonth)}"></label>
-      <p>${demo ? 'Demo' : 'Canlı ERP'} · ${states[status]} · ${allRows().length} mevcut yorum</p>
+      </div>
       <form id="reviewGoalForm">
-        <fieldset ${editable ? '' : 'disabled'}><legend>Hedefler</legend>
+        <fieldset aria-label="Hedef değerleri" ${editable ? '' : 'disabled'}>
           <label>Varılacak toplam yorum <input name="total" type="number" required min="1" max="10000000" value="${draft.total ?? ''}"></label>
           <label>Yıldız türü <select name="stars">${[5,4,3,2,1].map(value=>`<option value="${value}" ${value===(draft.stars || 5)?'selected':''}>${value} yıldız</option>`).join('')}</select></label>
           <label>Dönemde hedeflenen yıldızlı yorum adedi <input name="starCount" type="number" required min="0" max="10000000" value="${draft.starCount ?? ''}"></label>
@@ -1324,10 +1335,12 @@
     const a = stats(rows()), total = currentReviewTotal(), target = currentTarget();
     const ratio = missingScopeData() ? null : progress(total, target);
     const head = byId('perfTable')?.closest('.card2')?.querySelector('.head'); if (head) head.classList.add('v2-performance-head');
-    byId('perfTable').innerHTML = `<thead><tr><th>Şube</th><th class="n">Varılacak toplam</th><th class="n">Mevcut toplam</th><th>Hedef ilerlemesi</th><th class="n">Dönem yorumları</th><th class="n">Puan</th><th class="n">Yanıt</th><th>Ortam</th></tr></thead><tbody><tr><td>${html(analyticsName())}</td><td>${target == null ? '—' : fmt(target)}</td><td class="n">${total}</td><td>${ratio == null ? (missingScopeData() ? 'Şube verisi eksik' : 'Hedef girilmedi') : `<div class="v2-progress"><progress aria-label="Hedef ilerlemesi" max="100" value="${Math.min(100, ratio)}"></progress><b>${ratio}%</b></div>`}</td><td class="n">${a.count}</td><td class="n">${fmt(a.average)}</td><td class="n">${pct(a.responseRate)}</td><td><span class="chip ${analyticsLive() ? 'ok' : 'warn'}">${analyticsLive() ? 'Canlı' : 'Demo'}</span></td></tr></tbody>`;
+    byId('perfTable').innerHTML = `<thead><tr><th>Kapsam</th><th class="n">Varılacak toplam</th><th class="n">Mevcut toplam</th><th>Hedef ilerlemesi</th><th class="n">Dönem yorumları</th><th class="n">Puan</th><th class="n">Yanıt</th><th>Ortam</th></tr></thead><tbody><tr><td>${html(analyticsName())}</td><td>${target == null ? '—' : fmt(target)}</td><td class="n">${total}</td><td>${ratio == null ? (missingScopeData() ? 'Şube verisi eksik' : 'Hedef girilmedi') : `<div class="v2-progress"><progress aria-label="Hedef ilerlemesi" max="100" value="${Math.min(100, ratio)}"></progress><b>${ratio}%</b></div>`}</td><td class="n">${a.count}</td><td class="n">${fmt(a.average)}</td><td class="n">${pct(a.responseRate)}</td><td><span class="chip ${analyticsLive() ? 'ok' : 'warn'}">${analyticsLive() ? 'Canlı' : 'Demo'}</span></td></tr></tbody>`;
     const ratingTarget = currentRatingTarget();
     const ratingCell = byId('perfTable').querySelector('tbody tr td:nth-child(2)');
     ratingCell.insertAdjacentHTML('beforeend', `<div class="v2-rating-goal">${ratingTarget == null ? 'Puan hedefi eksik' : `Puan hedefi ${fmt(ratingTarget)} ★`}</div>`);
+    byId('perfTable').tBodies[0].insertAdjacentHTML('beforeend',
+      '<tr class="review-goal-editor-row"><td colspan="8"><div id="reviewGoalWorkflow"></div></td></tr>');
     renderGoalWorkflow();
     if (ratio == null && analyticsLive() && (management().error || !management().loaded)) {
       byId('perfTable').querySelector('tbody tr td:nth-child(4)').textContent = 'Hedef doğrulanamadı';
@@ -1345,9 +1358,16 @@
           groupBody.insertAdjacentHTML('beforeend', `<tr class="review-perf-group"><th colspan="8" scope="rowgroup">${html(group)}</th></tr>`);
         }
         const summary = stats(scoped.filter(row => (row.branchId || row.branch_id) === b.id));
-        groupBody.insertAdjacentHTML('beforeend', `<tr><th scope="row">${html(b.name)}</th><td>—</td><td>${(analyticsDemo() ? regionalDemoRows(b) : cachedReviews(b)).length}</td><td>—</td><td>${summary.count}</td><td>${fmt(summary.average)}</td><td>${pct(summary.responseRate)}</td><td>${analyticsDemo() ? 'Demo' : 'Canlı'}</td></tr>`);
+        const branchTotal=(analyticsDemo()?regionalDemoRows(b):cachedReviews(b)).filter(row=>monthKey(row.createdAt) && Date.parse(row.createdAt)<=Date.now()).length;
+        const branchTarget=scopedGoalTarget(monthKey(Date.now()),[b.region,b.city,b.id],[b]);
+        const branchRatio=!analyticsDemo() && b.id!==branchId() && !parentReviews?.getBranchById?.(b.id)?.lastSyncedAt ? null : progress(branchTotal,branchTarget);
+        groupBody.insertAdjacentHTML('beforeend', `<tr><th scope="row"><button type="button" class="btn sm" data-goal-edit="${html(b.id)}" aria-label="${html(b.name)} hedefini düzenle">${html(b.name)}</button></th><td>${fmt(branchTarget)}</td><td>${fmt(branchTotal)}</td><td>${pct(branchRatio)}</td><td>${summary.count}</td><td>${fmt(summary.average)}</td><td>${pct(summary.responseRate)}</td><td>${analyticsDemo() ? 'Demo' : 'Canlı'}</td></tr>`);
       }
     }
+    for (const button of groupBody.querySelectorAll('[data-goal-edit]')) button.onclick = () => {
+      levelSelects.branch.value=button.dataset.goalEdit;
+      levelSelects.branch.dispatchEvent(new Event('change'));
+    };
     root.renderTargetBreakdown(); normalizeScope();
   };
   root.renderTargetBreakdown = function () {
