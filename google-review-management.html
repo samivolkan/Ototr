@@ -599,7 +599,7 @@ main{margin:0 auto;width:auto;max-width:1440px;padding:20px}
   try {
     if (localStorage.getItem('ototr.review.design.teal') === 'new') document.documentElement.dataset.reviewDesign = 'new';
   } catch (_) {}
-</script><link rel="stylesheet" href="assets/google-review-alternative.css?v=20261119-1"><link rel="stylesheet" href="assets/google-review-workspace.css?v=20261123-5"></head><body>
+</script><link rel="stylesheet" href="assets/google-review-alternative.css?v=20261119-1"><link rel="stylesheet" href="assets/google-review-workspace.css?v=20261123-6"></head><body>
 <div id="review-loading-message" role="status">Yorum Yönetimi hazırlanıyor…</div>
 
 <header class="topbar">
@@ -643,7 +643,10 @@ main{margin:0 auto;width:auto;max-width:1440px;padding:20px}
   <!-- OVERVIEW -->
   <section class="view on" id="view-overview">
     <div id="ovAlerts"></div>
-    <div class="metrics" id="ovKpis"></div>
+    <div class="overview-kpi-panel">
+      <div class="metrics" id="ovKpis"></div>
+      <section id="overviewGoalSlot" class="chart-card review-goal-panel" aria-label="Yorum hedefi"></section>
+    </div>
     <div class="chart-grid">
       <div class="chart-card span-8 v2-overview-main-chart">
         <div class="chart-head">
@@ -3210,7 +3213,7 @@ if (!STATE.onboarded) setTimeout(startTour, 500);
     document.head.append(style); move(); new MutationObserver(move).observe(document.body,{childList:true,subtree:true});
   })();
 </script>
-<script src="assets/google-review-alternative.js?v=20261123-3"></script>
+<script src="assets/google-review-alternative.js?v=20261123-4"></script>
 <script src="assets/google-review-sandbox.js?v=20261119-3"></script>
 <script src="assets/vendor-review-qrcode.js"></script>
 <script src="assets/google-review-workspace.js?v=20261122-3"></script>
