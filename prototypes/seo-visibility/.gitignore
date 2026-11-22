@@ -2,3 +2,8 @@ node_modules/
 dist/
 *.log
 .env*
+
+oauth-client*.json
+api-cache.json
+*-private*.json
+private-data/

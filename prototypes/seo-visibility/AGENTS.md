@@ -19,3 +19,6 @@ Kullanıcı erişilebilir üç Google Ads hesabının verileriyle yerel test yap
 
 ## Yoğunluk tercihi — 23 Kasım 2026
 Kullanıcı dikey boşlukların ve tekrarlayan açıklamaların azaltılmasını istedi. Dönem bilgisini tek yerde göster; yöntem ve gizlilik ayrıntılarını Veri kontrolü altında topla. Gerçek/demo ayrımı ve gerçek hesap uyarıları görünür kalsın.
+
+## Gerçek kaynak bağlantıları — 23 Kasım 2026
+Kullanıcı Google hesaplarından geçmiş verilerin okunmasını ve otomatik yenilemeyi istedi. Ayrı masaüstü OAuth istemcisi ve yalnız Search Console/GA4 okuma izinleri işlem anında onaylandı. Özel yerel servis 127.0.0.1 üzerinde; OAuth tokenları yalnız bellekte, rapor önbelleği kaynak deposunun dışındaki özel klasörde. Canlı kokpite, reklamlara ve bütçelere dokunma. CRM/randevu/gelir kullanıcı isteğiyle ertelendi. Gerçek rapor merkezi ve tasarım demo sekmeleri açıkça ayrılmalı.
