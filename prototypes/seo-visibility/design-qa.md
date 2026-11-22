@@ -31,4 +31,3 @@ Kaynak ve uygulama aynı birleşik görüntüde incelendi. Koyu menü, beyaz kar
 `npm run test:sites`: 4/4 geçti.
 
 Bilinen sınır: JS paketi yaklaşık 755 kB (gzip 220 kB), Vite boyut uyarısı veriyor. Demo için engelleyici değil; üretim entegrasyonunda route bazlı ayırma önerilir. Gerçek sağlayıcı, gerçek kullanıcı yetkilendirmesi, ekran okuyucu ve cihaz çiftliği kabulü yapılmadı. Canlı SEO doğruluğu veya dağıtımı bu testlerle doğrulanmış değildir.
-

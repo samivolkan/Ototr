@@ -91,4 +91,3 @@ export function csvText(headers,rows){
  return '\uFEFF'+[headers,...rows].map(r=>r.map(cell).join(';')).join('\r\n');
 }
 export const escapeHtml = x => String(x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-
