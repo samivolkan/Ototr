@@ -1,0 +1,10 @@
+const {test}=require('node:test');
+const assert=require('node:assert/strict');
+const {cents,model,render}=require('../muhasebe-v2/assets/finance-payvora.js');
+const money=grossAmount=>({grossAmount,currency:'TRY'});
+const fixture=()=>({asOf:'2026-11-23',currency:'TRY',dealerCount:1,branchCount:1,accrued:money('100.10'),invoiced:money('100.10'),collected:money('60.05'),open:money('40.05'),overdue:money('10'),refunded:money('0'),disputed:money('0'),feeFamilies:[{feeFamily:'ROYALTY',currency:'TRY',grossAmount:'100.10'}],dealerRanking:[{dealerName:'Örnek bayi',dealerCode:'DEMO',branchCode:'01',currency:'TRY',accruedGrossAmount:'100.10',collectedGrossAmount:'60.05',openGrossAmount:'40.05',overdueGrossAmount:'10'}]});
+test('decimal currency converted without rounding drift',()=>{assert.equal(cents('100.10'),10010);assert.equal(cents('0.01')+cents('0.02'),3);for(const n of ['-1','1e3','NaN','1.234','9007199254740999'])assert.throws(()=>cents(n));});
+test('reject mixed currencies in totals, ranking and breakdown',()=>{for(const mutate of [s=>s.open.currency='USD',s=>s.dealerRanking[0].currency='EUR',s=>s.feeFamilies[0].currency='EUR']){const s=fixture();mutate(s);assert.throws(()=>model(s),/CURRENCY_MISMATCH/);}});
+test('collection ratio uses paid plus outstanding and returns no invented score on empty data',()=>{const s=fixture(),m=model(s);assert.equal(m.rate,6005/10010*100);s.collected=money('0');s.open=money('0');assert.equal(model(s).rate,null);assert.equal(model(null),null);assert(!render(null).includes('₺0'));});
+test('ranked amounts and fees reconcile with source snapshot',()=>{const m=model(fixture());assert.equal(m.families[0].value,m.accrued);assert.equal(m.dealers[0].open,m.open);assert.equal(m.dealers[0].collected,m.collected);});
+test('untrusted dealer labels are escaped; filtered empty state is visible',()=>{const s=fixture();s.dealerRanking[0].dealerName='<img src=x onerror=alert(1)>';const m=model(s);assert(!render(m).includes('<img'));assert(render(m,{filter:'paid'}).includes('Bu filtrede kayıt bulunmuyor'));});

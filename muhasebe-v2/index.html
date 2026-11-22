@@ -772,6 +772,9 @@ button,input,select,textarea{font:inherit}.app{min-height:100vh;display:grid;gri
 @media(max-width:900px){#financePage .finance-workspace{grid-template-columns:1fr}#financePage .finance-screen-nav{position:static;grid-template-columns:repeat(2,minmax(0,1fr));max-height:none}}
 @media(max-width:560px){#financePage{padding:10px}#financePage .module-head{padding:14px}.finance-head-actions{justify-content:flex-start!important}#financePage .finance-screen-nav{grid-template-columns:1fr}}
 </style>
+<link rel="stylesheet" href="assets/finance-payvora.css?v=20261123-1">
+<link rel="stylesheet" href="assets/finance-analytics.css?v=20261123-2">
+<link rel="stylesheet" href="assets/finance-review-scale.css?v=20261123-3">
 </head><body class="module-page-open">
 <section class="module-page active" id="financePage">
         <div class="module-head finance-module-head">
@@ -853,6 +856,8 @@ button,input,select,textarea{font:inherit}.app{min-height:100vh;display:grid;gri
             </section>
             <section class="finance-statement" data-finance-headquarters hidden aria-labelledby="financeHeadquartersTitle">
               <div class="finance-statement-head"><div><span class="finance-screen-code">GENEL MERKEZ PROJECTION</span><h3 id="financeHeadquartersTitle">Tüm Bayiler Finans Görünümü</h3><p data-finance-headquarters-subtitle>Yetkili tüzel kişi kapsamındaki bayi ve şubelerin seçili gün ve para birimindeki snapshot toplamları.</p></div><div class="finance-statement-controls"><label>Tarih<input type="date" data-finance-headquarters-as-of></label><label>Para birimi<select data-finance-headquarters-currency><option value="TRY">TRY</option><option value="EUR">EUR</option><option value="USD">USD</option></select></label><button class="btn" type="button" data-finance-headquarters-refresh>GM Özetini Getir</button><button class="btn" type="button" data-finance-headquarters-export>Yetkili CSV</button><span class="finance-state-chip" data-finance-headquarters-state>EMPTY · YETKİLİ VERİ BEKLENİYOR</span></div></div>
+              <div id="financePayvoraDashboard"></div>
+              <details class="finance-source-detail"><summary>Ayrıntılı finans tabloları ve operasyon sağlığı</summary>
               <div class="finance-period-grid" data-finance-headquarters-counts hidden><article><span>Bayi sayısı</span><b data-finance-headquarters-dealers>—</b><small>Aktif bayi tüzel kişileri</small></article><article><span>Şube sayısı</span><b data-finance-headquarters-branches>—</b><small>Snapshot kapsamındaki şubeler</small></article><article><span>İade edilen</span><b data-finance-headquarters-refunded>—</b><small>Royalty ve diğer ters kayıtlar</small></article><article><span>İtirazlı</span><b data-finance-headquarters-disputed>—</b><small>Karar bekleyen finansal tutar</small></article></div>
               <div class="finance-period-grid" data-finance-operational-health hidden><article><span>Operasyon sağlığı</span><b data-finance-health-status>—</b><small data-finance-health-generated>Yetkili sağlık özeti bekleniyor</small></article><article><span>Outbox bekleyen</span><b data-finance-health-pending>—</b><small data-finance-health-age>En yaşlı kayıt: —</small></article><article><span>Dead-letter</span><b data-finance-health-dead>—</b><small data-finance-health-errors>Açık hata: —</small></article><article><span>Audit zinciri</span><b data-finance-health-audit>—</b><small data-finance-health-audit-count>Kontrol edilen: —</small></article></div>
               <section class="finance-readiness" data-finance-readiness data-state="LOADING" aria-labelledby="financeReadinessTitle">
@@ -867,6 +872,7 @@ button,input,select,textarea{font:inherit}.app{min-height:100vh;display:grid;gri
               <div class="finance-statement-head"><div><span class="finance-screen-code">BAYİ SIRALAMASI</span><h4>Açık Bakiye Önceliği</h4></div></div>
               <div class="finance-statement-table-wrap" data-finance-headquarters-ranking-table hidden><table class="finance-statement-table"><thead><tr><th>Bayi / şube</th><th>Tahakkuk</th><th>Tahsilat</th><th>Açık</th><th>Geciken</th></tr></thead><tbody data-finance-headquarters-ranking></tbody></table></div>
               <div class="finance-statement-state" data-finance-headquarters-empty>Yetkili genel merkez özeti bekleniyor.</div>
+              </details>
             </section>
               <p class="finance-statement-state" data-finance-royalty-balance role="status">Güncel royalty bakiyesi bekleniyor.</p>
             <section class="finance-statement" data-finance-dealer-breakdown hidden aria-labelledby="financeDealerBreakdownTitle">
@@ -1133,6 +1139,8 @@ button,input,select,textarea{font:inherit}.app{min-height:100vh;display:grid;gri
   <button type="button" value="refund-200">200 TL demo iade</button>
   <output aria-live="polite"></output>
 </section>
+<script src="assets/finance-payvora.js?v=20261123-1"></script>
+<script src="assets/finance-analytics.js?v=20261123-2"></script>
 <script src="assets/finance-ui.js"></script>
 <script type="module" src="assets/finance-walkthrough.mjs"></script>
 <script type="module" src="assets/finance-settlement-demo.mjs"></script>

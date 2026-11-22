@@ -219,6 +219,7 @@
     const [id, name, screenSections, screenActions] = screen;
     const previousScreenId=activeScreenId;
     activeScreenId = id;
+    root.dataset.financeScreen = id;
     nav.querySelectorAll('.finance-screen-button').forEach(button => {
       const selected = button.dataset.financeScreen === id;
       button.classList.toggle('is-active', selected);
@@ -654,7 +655,15 @@
     window.dispatchEvent(new CustomEvent('ototr:finance-period-rendered',{detail:payload}));
   };
 
+  const renderPayvoraSummary = summary => window.OTOTRFinancePayvora?.mount(document.getElementById('financePayvoraDashboard'),summary,{
+    demo:document.documentElement.dataset.financeDemo==='synthetic',
+    onNavigate:id=>nav.querySelector('[data-finance-screen="'+id+'"]')?.click(),
+    onExport:()=>root.querySelector('[data-finance-headquarters-export]')?.click(),
+    onDetails:()=>{const detail=root.querySelector('.finance-source-detail');detail.open=true;detail.scrollIntoView({behavior:'smooth',block:'start'});}
+  });
+
   const resetAmounts = () => {
+    renderPayvoraSummary(null);
     Object.values(kpis).forEach(node => { node.textContent = '—'; });
     overdue.textContent = 'Açık kalem projectionı yok';
   };
@@ -703,13 +712,14 @@
   const resetOperationalHealth=()=>{operationalHealth.hidden=true;operationalHealth.dataset.status='';healthStatus.textContent='—';healthGenerated.textContent='Yetkili sağlık özeti bekleniyor';healthPending.textContent='—';healthAge.textContent='En yaşlı kayıt: —';healthDead.textContent='—';healthErrors.textContent='Açık hata: —';healthAudit.textContent='—';healthAuditCount.textContent='Kontrol edilen: —';};
   const renderOperationalHealth=payload=>{if(!payload||!['HEALTHY','DEGRADED','CRITICAL'].includes(payload.status)||!payload.outbox||!payload.integrationErrors||!payload.auditIntegrity||typeof payload.auditIntegrity.valid!=='boolean'||payload.rawPayloadExposed!==false)throw new Error('INVALID_OPERATIONAL_HEALTH');for(const value of[payload.outbox.pending,payload.outbox.failed,payload.outbox.deadLetter,payload.outbox.oldestPendingAgeSeconds,payload.integrationErrors.open,payload.integrationErrors.retryScheduled,payload.auditIntegrity.checkedEventCount,payload.auditIntegrity.invalidEventCount])if(!Number.isInteger(value)||value<0)throw new Error('INVALID_OPERATIONAL_HEALTH');operationalHealth.hidden=false;operationalHealth.dataset.status=payload.status;healthStatus.textContent=({HEALTHY:'SAĞLIKLI',DEGRADED:'İZLEME GEREKİYOR',CRITICAL:'KRİTİK'})[payload.status];healthGenerated.textContent=`Güncelleme: ${new Intl.DateTimeFormat('tr-TR',{dateStyle:'short',timeStyle:'short'}).format(new Date(payload.generatedAtUtc))}`;healthPending.textContent=String(payload.outbox.pending);healthAge.textContent=`En yaşlı kayıt: ${payload.outbox.oldestPendingAgeSeconds} sn`;healthDead.textContent=String(payload.outbox.deadLetter);healthErrors.textContent=`Açık hata: ${payload.integrationErrors.open} · Retry: ${payload.integrationErrors.retryScheduled}`;healthAudit.textContent=payload.auditIntegrity.valid?'DOĞRULANDI':'GEÇERSİZ';healthAuditCount.textContent=`Kontrol edilen: ${payload.auditIntegrity.checkedEventCount} · Hatalı: ${payload.auditIntegrity.invalidEventCount}`;};
   window.OTOTRFinanceOperationalUI=Object.freeze({renderOperationalHealth,resetOperationalHealth});
-  const resetHeadquartersSummary=message=>{cachedHeadquartersSummary=null;headquarters.dataset.state='EMPTY';headquartersState.textContent='EMPTY · YETKİLİ VERİ BEKLENİYOR';headquartersCounts.hidden=true;resetOperationalHealth();headquartersFamiliesTable.hidden=true;headquartersRankingTable.hidden=true;headquartersFamilies.replaceChildren();headquartersRanking.replaceChildren();headquartersEmpty.hidden=false;headquartersEmpty.textContent=message||'Yetkili genel merkez özeti bekleniyor.';};
+  const resetHeadquartersSummary=message=>{renderPayvoraSummary(null);cachedHeadquartersSummary=null;headquarters.dataset.state='EMPTY';headquartersState.textContent='EMPTY · YETKİLİ VERİ BEKLENİYOR';headquartersCounts.hidden=true;resetOperationalHealth();headquartersFamiliesTable.hidden=true;headquartersRankingTable.hidden=true;headquartersFamilies.replaceChildren();headquartersRanking.replaceChildren();headquartersEmpty.hidden=false;headquartersEmpty.textContent=message||'Yetkili genel merkez özeti bekleniyor.';};
   const renderHeadquartersSummary=summary=>{
     if(summary===null){resetHeadquartersSummary('Seçili tarih ve para biriminde genel merkez snapshotı bulunamadı.');return;}
     if(!summary||!uuidPattern.test(summary.legalEntityId||'')||!/^\d{4}-\d{2}-\d{2}$/.test(summary.asOf||'')||!/^[A-Z]{3}$/.test(summary.currency||'')||!Number.isInteger(summary.dealerCount)||!Number.isInteger(summary.branchCount)||!Array.isArray(summary.feeFamilies)||!Array.isArray(summary.dealerRanking)) throw new Error('INVALID_HEADQUARTERS_SUMMARY');
     for(const key of ['accrued','invoiced','collected','open','overdue','refunded','disputed']) money(summary[key]);
     const familyRows=summary.feeFamilies.map(item=>{if(!item||typeof item.feeFamily!=='string'||item.currency!==summary.currency) throw new Error('INVALID_HEADQUARTERS_FAMILY');const tr=document.createElement('tr');tr.append(cell(item.feeFamily),cell(amount(item.netAmount,item.currency)),cell(amount(item.taxAmount,item.currency)),cell(amount(item.grossAmount,item.currency)));return tr;});
     const rankingRows=summary.dealerRanking.map(item=>{if(!item||!uuidPattern.test(item.dealerAccountId||'')||!uuidPattern.test(item.branchId||'')||item.currency!==summary.currency) throw new Error('INVALID_HEADQUARTERS_RANKING');const descriptor=document.createElement('td');const dealer=document.createElement('div');dealer.className='finance-statement-fee';dealer.textContent=`${item.dealerCode} · ${item.dealerName}`;const branch=document.createElement('small');branch.textContent=item.branchCode;descriptor.append(dealer,branch);const tr=document.createElement('tr');tr.append(descriptor,cell(amount(item.accruedGrossAmount,item.currency)),cell(amount(item.collectedGrossAmount,item.currency)),cell(amount(item.openGrossAmount,item.currency)),cell(amount(item.overdueGrossAmount,item.currency)));return tr;});
+    renderPayvoraSummary(summary);
     cachedHeadquartersSummary=summary;headquartersDealers.textContent=String(summary.dealerCount);headquartersBranches.textContent=String(summary.branchCount);headquartersRefunded.textContent=money(summary.refunded);headquartersDisputed.textContent=money(summary.disputed);headquartersFamilies.replaceChildren(...familyRows);headquartersRanking.replaceChildren(...rankingRows);headquartersCounts.hidden=false;headquartersFamiliesTable.hidden=!familyRows.length;headquartersRankingTable.hidden=!rankingRows.length;headquartersEmpty.hidden=true;headquarters.dataset.state='READY';headquartersState.textContent='READY · HEADQUARTERS AGGREGATION';if(activeScreenId==='SCR-01') applySummaryKpis(summary);
   };
 

@@ -1,0 +1,29 @@
+/* Match the live Google Reviews v2 content width and type scale (2026-11-23).
+   The Payvora palette, charts, card layout and motion remain unchanged. */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+#financePage[data-finance-screen="SCR-01"]{width:100%;max-width:1720px;margin-inline:auto;padding:20px}
+#financePage[data-finance-screen="SCR-01"] .finance-workspace{grid-template-columns:minmax(0,1fr)}
+#financePage[data-finance-screen="SCR-01"] .finance-screen-nav{position:static;display:flex;flex-wrap:wrap;max-height:none}
+#financePage[data-finance-screen="SCR-01"] .finance-screen-button{width:auto;flex:0 1 210px}
+.pv-viewport{width:100%;max-width:1720px;margin-inline:auto}
+.pv-board.pa-board{font:14px/1.5 'DM Sans',system-ui,sans-serif;padding:20px;letter-spacing:normal}
+.pa-board .pv-title h2{font-size:20px;letter-spacing:-.4px}
+.pa-board .pv-top nav,.pa-board .pv-profile,.pa-board .pv-logo small{font-size:11.5px}
+.pa-board .pv-logo{font-size:14.5px}
+.pa-board .pv-kpi>strong,.pa-board .pv-kpi:nth-child(2)>strong,.pa-board .pv-kpi:nth-child(3)>strong{font-size:30px;line-height:1.3;margin:12px 0 8px;overflow-wrap:anywhere}
+.pa-board .pv-kpi{min-height:145px;padding:18px}
+.pa-board .pv-kpi>span{font-size:11.5px}
+.pa-board .pv-kpi>small,.pa-board .pa-kpi-split{font-size:12px}
+.pa-board .pv-title p,.pa-board .pv-footnote,.pa-board .pa-delta,.pa-board .pv-profile small{font-size:10.5px}
+.pa-board .pv-head h3,.pa-board .pv-insights .pv-head h3{font-size:14px}
+.pa-board .pa-scope,.pa-board .pa-scope select,.pa-board .pa-date input,.pa-board .pa-comparison-level{font:12px/1.5 'DM Sans',system-ui,sans-serif}
+.pa-board .pa-date input{width:132px}
+.pa-board .pv-title-actions,.pa-board .pa-periods button,.pa-board .pv-pills,.pa-board .pa-metrics{font-size:11.5px}
+.pa-board .pa-chart-totals span,.pa-board .pa-legend,.pa-board .pv-table th,.pa-board .pv-scale{font-size:11px}
+.pa-board .pa-chart-totals b,.pa-board .pv-family-list b{font-size:14px}
+.pa-board .pv-family-list span,.pa-board .pv-family-list small,.pa-board .pv-table td,.pa-board .pa-drill,.pa-board .pv-insight-list b,.pa-board .pv-answer,.pa-board .pv-question p,.pa-board .pa-target-row>div:first-child{font-size:12px!important}
+.pa-board .pv-insight-list small,.pa-board .pv-insight-list em,.pa-board .pa-target-row small,.pa-board .pa-card-note,.pa-board .pv-volume>p,.pa-board .pv-ask,.pa-board .pv-ask span{font-size:11px!important}
+.pa-board .pv-volume>strong,.pa-board .pv-health-number strong,.pa-board .pv-recovery>strong{font-size:30px}
+.pa-board .pv-recovery h3{font-size:14px}.pa-board .pv-recovery>p,.pa-board .pv-recovery footer button{font-size:12px}.pa-board .pv-recovery small,.pa-board .pv-recovery-steps,.pa-board .pv-recovery>div:first-child>span{font-size:10.5px}
+.pa-board .pv-kpis{gap:14px}.pa-board .pv-top{flex-wrap:wrap}.pa-board .pv-top nav{flex-wrap:wrap}.pa-board .pv-title{flex-wrap:wrap}.pa-board .pa-chart-totals{flex-wrap:wrap}.pa-board .pv-insight-list>button{min-height:64px}.pa-board .pv-table-scroll{overflow:auto}
+@media(max-width:650px){#financePage[data-finance-screen="SCR-01"]{padding:12px}.pv-board.pa-board{padding:12px}.pa-board .pv-kpis{grid-template-columns:1fr}.pa-board .pv-kpi{min-height:145px}.pa-board .pv-ring{top:58px}.pa-board .pv-dots{bottom:16px}.pa-board .pv-top nav{gap:4px}.pa-board .pv-title-actions{justify-content:flex-start}.pa-board .pa-scope select{max-width:100%}}
