@@ -450,3 +450,11 @@ html[data-review-design="new"] #view-overview .chart-card:has(#chartRegion) { di
 @keyframes review-goal-fill { from {transform:scaleX(0)} to {transform:scaleX(1)} }
 
 @keyframes review-goal-reveal { from {clip-path:inset(0 100% 0 0)} to {clip-path:inset(0)} }
+.review-goal-children { display:grid; gap:4px; max-height:151px; overflow:auto; font-size:11px; }
+.review-goal-child { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:3px 5px; width:100%; padding:5px; text-align:start; color:var(--ink); background:var(--s2); border:1px solid var(--line); border-radius:6px; cursor:pointer; font:inherit; }
+.review-goal-child span:last-of-type { color:var(--mute); font-variant-numeric:tabular-nums; }
+.review-goal-child > i { grid-column:1/-1; display:block; height:4px; border-radius:8px; background:var(--line); }
+.review-goal-child i i { display:block; width:var(--fill); height:100%; border-radius:inherit; background:#168474; }
+@media (prefers-reduced-motion:no-preference) {
+  .review-goal-child i i { transform-origin:left; animation:review-goal-fill 580ms ease-out var(--delay,0ms) both; }
+}

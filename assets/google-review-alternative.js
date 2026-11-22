@@ -203,16 +203,18 @@
     return values.length && values.every(value => value != null && Number(value) >= 1 && Number(value) <= 5)
       ? Math.round(values.reduce((sum,value)=>sum+Number(value),0)/values.length*100)/100 : null;
   }
+  function scopedGoalTarget(month, path, branches) {
+    const approvedGoal = analyticsDemo() ? directDemoGoal : liveGoal;
+    const direct = approvedGoal(month,path);
+    if (direct) return direct.total;
+    const values = branches.map(b => approvedGoal(month,[b.region,b.city,b.id])?.total ??
+      (analyticsDemo() ? (demoTargets.get(b.id) || b.target) :
+        targetSeries([month],b.id===branchId() ? management().targets || [] : scopedTargetCache.get(b.id) || [],b.id)[0]));
+    return values.length && values.every(value=>value!=null) ? values.reduce((sum,value)=>sum+value,0) : null;
+  }
   function analyticsTargets(months) {
     if (!analyticsActive()) return targetSeries(months,management().targets || [],branchId(),branch()?.target);
-    const branches = matchingBranches();
-    return months.map(month => {
-      const direct = analyticsDemo() ? directDemoGoal(month) : liveGoal(month,goalPath());
-      if (direct) return direct.total;
-      const values = branches.map(b => analyticsDemo() ? (directDemoGoal(month,[b.region,b.city,b.id])?.total || demoTargets.get(b.id) || b.target) :
-        liveGoal(month,[b.region,b.city,b.id])?.total ?? targetSeries([month], b.id === branchId() ? management().targets || [] : scopedTargetCache.get(b.id) || [],b.id)[0]);
-      return values.length && values.every(value => value != null) ? values.reduce((sum,value) => sum+value,0) : null;
-    });
+    return months.map(month=>scopedGoalTarget(month,goalPath(),matchingBranches()));
   }
   const operationalRows = () => scopedRows(typeof REVIEWS === 'undefined' ? [] : REVIEWS, branchId());
   const allRows = () => analyticsActive() ? matchingBranches().flatMap(analyticsDemo() ? regionalDemoRows : cachedReviews) : operationalRows();
@@ -1055,19 +1057,44 @@
 
   let goalCardSignature;
   const goalCardDate = new Intl.DateTimeFormat('tr-TR',{timeZone:'Europe/Istanbul',day:'numeric',month:'short'});
+  function goalCardChildren(path, records, month) {
+    const depth = path.length;
+    if (depth===3) return [];
+    const groups = new Map();
+    for (const branch of matchingBranches()) {
+      const childPath = [branch.region,branch.city,branch.id].slice(0,depth+1);
+      const key = JSON.stringify(childPath);
+      if (!groups.has(key)) groups.set(key,{path:childPath,name:depth===2?branch.name:childPath.at(-1),branches:[]});
+      groups.get(key).branches.push(branch);
+    }
+    const counts = new Map();
+    for (const row of records) {
+      const id = row.branchId || row.branch_id;
+      counts.set(id,(counts.get(id) || 0)+1);
+    }
+    return [...groups.values()].sort((a,b)=>a.name.localeCompare(b.name,'tr')).map(group=>{
+      const total = group.branches.reduce((sum,branch)=>sum+(counts.get(branch.id) || 0),0);
+      const target = scopedGoalTarget(month,group.path,group.branches);
+      const incomplete = !analyticsDemo() && group.branches.some(b=>b.id!==branchId() && !parentReviews?.getBranchById?.(b.id)?.lastSyncedAt);
+      return {...group,total,target,ratio:incomplete?null:progress(total,target),incomplete};
+    });
+  }
   function renderGoalCard(block, total, target, ratio) {
-    const scope = ['Genel Merkez','Bölge','İl','Şube'][goalPath().length];
+    const path = goalPath();
+    const scope = ['Genel Merkez','Bölge','İl','Şube'][path.length];
+    const records = recordedReviews();
+    const children = goalCardChildren(path,records,monthKey(Date.now()));
     const today = recentDays(Date.now()).at(-1);
     const days = Array.from({length:7},(_,index)=>new Date(Date.parse(today+'T12:00:00Z')-(6-index)*86400000));
     const additions = new Map();
-    for (const review of recordedReviews()) {
+    for (const review of records) {
       const key = dayKey(review.createdAt);
       if (key) additions.set(key,(additions.get(key) || 0)+1);
     }
     const first = dayKey(days[0]);
     let running = [...additions].reduce((sum,[key,count])=>key<first ? sum+count : sum,0);
     const values = days.map(date=>{running+=additions.get(dayKey(date)) || 0; return running;});
-    const signature = JSON.stringify([analyticsScope,analyticsName(),total,target,ratio,today,values]);
+    const signature = JSON.stringify([analyticsScope,analyticsName(),total,target,ratio,today,values,children.map(({path,name,total,target,ratio,incomplete})=>[path,name,total,target,ratio,incomplete])]);
     if (signature===goalCardSignature && block.querySelector('.review-goal-card')) return;
     goalCardSignature = signature;
     const open = block.querySelector('details')?.open ?? true;
@@ -1082,11 +1109,26 @@
         <span>Kalan <b data-goal-number="${remaining ?? ''}">${remaining==null?'—':fmt(remaining)}</b></span></div>
       <div class="review-goal-track" role="img" aria-label="${ratio==null?'Hedef gerçekleşmesi hesaplanamadı':`${pct(ratio)} gerçekleşti`}">
         <i style="--fill:${fill}%"></i>${remaining ? '<i></i>' : ''}</div>
-      <details ${open?'open':''}><summary>Son 7 gün</summary><div class="review-goal-days">
+      ${path.length<3 ? `<div class="review-goal-children"><strong>${['Bölgeler','İller','Şubeler'][path.length]}</strong>
+        ${children.length ? children.map((child,index)=>`<button type="button" data-goal-child="${index}" class="review-goal-child">
+          <span>${html(child.name)}</span><span>${fmt(child.total)} / ${fmt(child.target)} · ${child.ratio==null ? (child.incomplete?'Veri eksik':'Hedef yok') : pct(child.ratio)}</span>
+          <i aria-hidden="true"><i style="--fill:${Math.min(100,child.ratio || 0)}%;--delay:${Math.min(index,7)*38}ms"></i></i>
+        </button>`).join('') : '<small>Bu kapsamda kayıt yok.</small>'}</div>` : `<details ${open?'open':''}><summary>Son 7 gün</summary><div class="review-goal-days">
         ${days.map((date,index)=>`<div><span>${goalCardDate.format(date)}</span>
           <div aria-hidden="true"><i style="--fill:${values[index]/lastDaysMax*100}%;--delay:${index*38}ms"></i></div>
-          <b data-goal-number="${values[index]}">${fmt(values[index])}</b></div>`).join('')}</div><small>Gün sonu toplam yorum sayısı</small></details>
+          <b data-goal-number="${values[index]}">${fmt(values[index])}</b></div>`).join('')}</div><small>Gün sonu toplam yorum sayısı</small></details>`}
       <button type="button" class="btn sm" onclick="switchView('performance')">Hedefleri aç →</button></div>`;
+    for (const button of block.querySelectorAll('[data-goal-child]')) button.onclick = () => {
+      const [region='',city='',branch=''] = children[Number(button.dataset.goalChild)].path;
+      Object.assign(analyticsScope,{region,city,branch});
+      if (branch && !analyticsDemo() && branch!==branchId()) {
+        live().setScope(branch===BRANCH_IDS[0]?'live':branch);
+        managementApi?.refresh().catch(()=>{});
+      }
+      root.switchView('overview');
+      const heading = block.querySelector('h3');
+      if (heading) { heading.tabIndex=-1; heading.focus(); }
+    };
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const card = block.firstElementChild;
     const numbers = [...card.querySelectorAll('[data-goal-number]')].filter(el=>el.dataset.goalNumber!=='').map(el=>[el,Number(el.dataset.goalNumber)]);
