@@ -599,7 +599,7 @@ main{margin:0 auto;width:auto;max-width:1440px;padding:20px}
   try {
     if (localStorage.getItem('ototr.review.design.teal') === 'new') document.documentElement.dataset.reviewDesign = 'new';
   } catch (_) {}
-</script><link rel="stylesheet" href="assets/google-review-alternative.css?v=20261119-1"><link rel="stylesheet" href="assets/google-review-workspace.css?v=20261123-3"></head><body>
+</script><link rel="stylesheet" href="assets/google-review-alternative.css?v=20261119-1"><link rel="stylesheet" href="assets/google-review-workspace.css?v=20261123-4"></head><body>
 <div id="review-loading-message" role="status">Yorum Yönetimi hazırlanıyor…</div>
 
 <header class="topbar">
@@ -1780,7 +1780,7 @@ function renderReviewResponseSummary(reviews, select) {
   const signature = JSON.stringify(eligible.map(row=>[row.id,row.createdAt,row.replyDate,row.status,row.approvalPending,row.escalated]));
   const changed = signature !== reviewSummarySignature;
   const focused = host.contains(document.activeElement) ? document.activeElement.dataset.summaryFilter : null;
-  const wasOpen = host.querySelector("details")?.open;
+  const wasOpen = host.querySelector("details")?.open ?? true;
   const counts = new Map();
   for (const row of eligible) {
     for (const [value,index] of [[row.createdAt,0],[row.status==="gonderildi" ? row.replyDate : null,1]]) {
@@ -1800,11 +1800,12 @@ function renderReviewResponseSummary(reviews, select) {
   const peak = Math.max(1,...days.flatMap(day=>day.values));
   host.innerHTML = `<div class="review-summary-main"><div class="review-summary-title"><strong>Yanıt durumu</strong>
     <span><b data-review-rate>${rate == null ? "—" : "%"+rate}</b> <small>${reviewSummaryNumber.format(buckets[0].count)}/${reviewSummaryNumber.format(eligible.length)} yanıtlandı</small></span></div>
+    <button type="button" class="btn sm" data-summary-filter="escalated" aria-pressed="${RV_FILTER==="escalated"}">SLA aşımı <b>${reviewSummaryNumber.format(overdue)}</b></button>
     <div class="review-summary-breakdown">
       <div class="review-summary-track" aria-hidden="true">${buckets.map(bucket=>`<i data-bucket="${bucket.key}" style="flex-grow:${bucket.count}" ${!bucket.count?"hidden":""}></i>`).join("")}</div>
       <div class="review-summary-filters" role="group" aria-label="Yanıt durumuna göre süz">${buckets.map(bucket=>`<button type="button" data-summary-filter="${bucket.key}" data-bucket="${bucket.key}" aria-pressed="${RV_FILTER===bucket.key}">${bucket.label} <b>${reviewSummaryNumber.format(bucket.count)}</b></button>`).join("")}</div>
     </div>
-    <button type="button" class="btn sm" data-summary-filter="escalated" aria-pressed="${RV_FILTER==="escalated"}">SLA aşımı <b>${reviewSummaryNumber.format(overdue)}</b></button></div>
+    </div>
     <details ${wasOpen?"open":""}><summary>Son 7 gün</summary>
       <div class="review-summary-days">${days.map(({date,values:[received,answered]})=>`<div class="review-summary-day">
         <strong>${reviewSummaryDate.format(date)}</strong>
@@ -1824,6 +1825,7 @@ function renderReviewResponseSummary(reviews, select) {
   cancelAnimationFrame(reviewSummaryAnimation);
   if (rate == null || document.documentElement.dataset.reviewDesign!=="new" || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   const counter = host.querySelector("[data-review-rate]");
+  host.animate([{opacity:.65,transform:"translateY(6px)"},{opacity:1,transform:"translateY(0)"}],{duration:300,easing:"ease-out"});
   host.querySelector(".review-summary-track").animate([{opacity:.45,transform:"scaleX(.85)"},{opacity:1,transform:"scaleX(1)"}],{duration:340,easing:"ease-out"});
   const started = performance.now();
   const update = now => {
