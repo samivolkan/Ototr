@@ -23,7 +23,8 @@
     button.addEventListener('click', () => window.location.assign(moduleUrl));
     node.appendChild(button);
 
-    nav.append(heading, node);
+    const group = [...nav.querySelectorAll('.nav-title')].find(el => el.textContent.trim() === 'İnsan Kaynakları ve Eğitim');
+    if (group) { let next = group.nextElementSibling; while (next && !next.classList.contains('nav-title')) next = next.nextElementSibling; nav.insertBefore(node, next); } else { nav.append(heading, node); }
     if (window.lucide && typeof window.lucide.createIcons === 'function') {
       window.lucide.createIcons();
     }

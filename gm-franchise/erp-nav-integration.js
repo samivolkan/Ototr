@@ -39,7 +39,7 @@
     node.appendChild(button);
 
     const franchiseHeading = [...nav.querySelectorAll('.nav-title')]
-      .find(title => title.textContent.trim() === 'Franchise Yönetimi');
+      .find(title => ['Bayi ve Franchise','Franchise Yönetimi'].includes(title.textContent.trim()));
     if (franchiseHeading) {
       let nextGroup = franchiseHeading.nextElementSibling;
       while (nextGroup && !nextGroup.classList.contains('nav-title')) nextGroup = nextGroup.nextElementSibling;
