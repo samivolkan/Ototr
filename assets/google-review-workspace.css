@@ -550,3 +550,7 @@ html[data-review-design="new"] #overviewPeriodButtons { display:grid; gap:4px; }
 .review-scope-results small,.review-scope-results p { color:var(--mute); font-size:11px; }
 .review-scope-results p { margin:7px; }
 @media(max-width:700px) { .review-scope-results { inset-inline:0 auto; } }
+.review-google-heading { display:flex; align-items:center; gap:5px; }
+.review-google-link { display:inline-grid; place-items:center; width:28px; height:28px; border:1px solid var(--line); border-radius:6px; background:var(--surface); color:#1765d1; text-decoration:none; font-size:13px; font-weight:800; flex:none; }
+.review-google-link:hover,.review-google-link:focus-visible { outline:2px solid var(--blue); outline-offset:1px; }
+@media (max-width:700px) { .review-google-link { width:36px; height:36px; } }

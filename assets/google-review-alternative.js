@@ -133,7 +133,7 @@
   function cachedReviews(b) {
     if (b.id === branchId() && isLive()) return scopedRows(REVIEWS,b.id);
     return (parentReviews?.fetchGoogleReviews?.(b.id) || []).map(r => ({
-      branchId:b.id,store:b.name,author:r.reviewerName,text:r.comment,createdAt:r.reviewDate,stars:r.rating,status:r.isReplied?'gonderildi':'bekliyor',isReplied:r.isReplied,replyDate:r.replyDate || r.replyUpdatedAt
+      branchId:b.id,erpReviewId:r.id,googleReviewId:r.googleReviewId,store:b.name,author:r.reviewerName,text:r.comment,createdAt:r.reviewDate,stars:r.rating,status:r.isReplied?'gonderildi':'bekliyor',isReplied:r.isReplied,replyText:r.replyText,replyDate:r.replyDate || r.replyUpdatedAt
     }));
   }
   const scopedTargetCache = new Map();
@@ -578,9 +578,17 @@
     const list = byId('rvList');
     const detail = byId('rvDetail');
     const showDetail = review => {
-      detail.replaceChildren(node('h4', review.author || 'Google kullanıcısı'),
-        node('p', review.store + ' · ' + review.stars + ' ★'),
+      const heading = node('h4', review.author || 'Google kullanıcısı');
+      const bridge = root.OTOTRReviewBridge;
+      const links = bridge?.googleReviewLinks?.(review);
+      bridge?.addReviewGoogleLink?.(heading,links?.review);
+      detail.replaceChildren(heading,node('p', review.store + ' · ' + review.stars + ' ★'),
         node('p', review.text || (review.demo ? 'Demo kaydı' : 'Yorum metni yok')));
+      if (review.isReplied && review.replyText) {
+        const replyHeading=node('h4','Gönderilen yanıt');
+        bridge?.addReviewGoogleLink?.(replyHeading,links?.reply);
+        detail.append(replyHeading,node('p',review.replyText));
+      }
       if (matchMedia('(max-width:700px)').matches) {
         const drawer = byId('reviewMobileDialog');
         drawer.append(detail);

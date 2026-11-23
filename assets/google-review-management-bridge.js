@@ -194,7 +194,38 @@
   let pendingApproval = null, busy = false;
   const currentItem = row => getAI()?.getWorkflowItems?.().find(i=>i.kind==='reply' && i.branch_id===currentBranchId() && i.review_id===row.googleReviewId);
   const isEditing = () => dirty.size>0 || Boolean(pendingApproval) || busy;
-  window.OTOTRReviewBridge = {hydrate:hydrateLiveBranch,isEditing};
+  function googleReviewLinks(row) {
+    if (!row || row.demo || !row.branchId || !parentApi) return {};
+    const review = parentApi.getReviewById?.(row.erpReviewId);
+    const branch = parentApi.getBranchById?.(row.branchId);
+    const safe = window.parent.OTOTRGoogleComplaintBridge?.safeGoogleUrl || window.parent.googleSafeReviewUrl;
+    if (!safe) return {};
+    const publicReview = safe(review?.googleMapsUri);
+    const snapshot = getAI()?.getWorkflowItems?.().find(item => item.kind==='reply' &&
+      item.branch_id===row.branchId && item.review_id===row.googleReviewId)?.review_snapshot;
+    const reply = safe(review?.reviewReplyUrl) || safe(snapshot?.review_reply_url);
+    const profile = safe(branch?.publicProfileUrl) || safe(branch?.mapsUrl);
+    const exact = publicReview || reply;
+    const opensMaps = publicReview || /^https:\/\/(?:maps\.google\.com\/|(?:www\.)?google\.com\/maps(?:[/?]|$))/i.test(exact);
+    const destination = opensMaps ? 'Google Haritalar’da' : 'Google İşletme Profili’nde';
+    const link = (label, fallbackLabel) => exact ? {href:exact,label:`${label} ${destination} aç`} :
+      profile ? {href:profile,label:fallbackLabel} : undefined;
+    return {
+      review: link('Yorumu','Şubenin Google profilini aç'),
+      reply: link('Yanıtı','Yanıtı kontrol etmek için şubenin Google profilini aç')
+    };
+  }
+  function addReviewGoogleLink(heading,link) {
+    if (!heading || !link) return;
+    const anchor = document.createElement('a');
+    anchor.href=link.href; anchor.target='_blank'; anchor.rel='noopener noreferrer';
+    anchor.className='review-google-link'; anchor.title=link.label;
+    anchor.setAttribute('aria-label',link.label);
+    anchor.innerHTML='<span aria-hidden="true">G</span>';
+    heading.classList.add('review-google-heading');
+    heading.append(anchor);
+  }
+  window.OTOTRReviewBridge = {hydrate:hydrateLiveBranch,isEditing,googleReviewLinks,addReviewGoogleLink};
   const lockEditing = () => getAI()?.setManagementEditing?.(isEditing());
   async function act(id, action, extra={}) {
     const row=liveRow(id); if(!row) return missing();
@@ -364,6 +395,11 @@
     document.querySelectorAll('#rvList .row2').forEach((node,index)=>{node.textContent+=' · '+(filtered[index]?.demo?'Demo':'Canlı');});
     const selected=REVIEWS.find(r=>r.id===SEL),meta=document.querySelector('#rvDetail .meta');
     if(selected&&meta){const badge=document.createElement('span');badge.className='chip '+(selected.demo?'warn':'ok');badge.textContent=selected.demo?'Demo · Google’a gönderilmez':'Bursa · Canlı Google kaydı';meta.prepend(badge);}
+    if (row && box) {
+      const links = googleReviewLinks(row);
+      addReviewGoogleLink(document.querySelector('#rvDetail .review-quote h4'),links.review);
+      if (row.status==='gonderildi') addReviewGoogleLink(document.querySelector('#rvDetail .draft-label h4'),links.reply);
+    }
     if(!row||!box)return result;
     const item=currentItem(row),edit=dirty.get(row.id);
     const editable=Boolean(edit) || (!row.replyDate && row.status!=='gonderildi' && ['approval_pending','publish_failed'].includes(item?.status));
