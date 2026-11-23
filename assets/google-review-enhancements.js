@@ -148,7 +148,7 @@
 
   function enhanceReviews() {
     const query = typeof RV_SEARCH === 'string' ? RV_SEARCH : '';
-    doc.querySelectorAll('#rvList .content p, #rvList .row1 > span:first-child, #rvDetail .review-quote').forEach(node => highlightText(node, query));
+    doc.querySelectorAll('#rvList .content p, #rvList .row1 > span:first-child, #rvDetail .review-quote > div').forEach(node => highlightText(node, query));
     const detail = doc.querySelector('#rvDetail .top');
     if (!detail || typeof SEL === 'undefined' || byId('customerHistoryButton')) return;
     const reviewId = SEL; // Capture canonical UI identity, never interpolate the customer name into JS.
