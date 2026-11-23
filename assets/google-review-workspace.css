@@ -681,11 +681,31 @@ html:has(#view-reviews.on), #rvListPane {
 
 html:has(#view-reviews.on) { overflow-anchor:none; }
 
+#view-overview .overview-trend-legend:has(.overview-trend-controls) {
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
+  align-items:center;
+}
+.overview-trend-controls {
+  grid-column:2;
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:5px;
+}
 #view-overview .overview-trend-legend > .chip {
-  margin-inline-start:auto;
+  justify-self:end;
+  text-align:end;
 }
 #view-overview .overview-trend-legend > .chip[hidden] {
-  display:none;
+  display:flex;
+  visibility:hidden;
+}
+@media (max-width:1300px) {
+  #view-overview .overview-trend-legend:has(.overview-trend-controls) {
+    grid-template-columns:minmax(0,1fr);
+  }
+  .overview-trend-controls { grid-column:1; }
 }
 
 #view-overview .overview-summary-grid {

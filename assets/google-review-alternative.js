@@ -1102,7 +1102,7 @@
       .sort((a,b)=>b.critical-a.critical || b.overdue-a.overdue || b.drop-a.drop || b.pending-a.pending || b.remaining-a.remaining);
     watchlist.replaceChildren();
     if (!attention.length) watchlist.append(node('div','Seçili kapsamda dikkat gerektiren şube yok.','empty'));
-    for (const item of attention.slice(0,6)) {
+    for (const item of attention.slice(0,4)) {
       const branch = item.branch;
       const button = node('button',null,'watch-row overview-watch-branch');
       button.type='button';
@@ -1269,13 +1269,14 @@
     const legend = byId('chartTrend')?.closest('.chart-card')?.querySelector('.chart-legend');
     const seriesKeys = ['Ulaşılan', 'Hedef', 'Trend', 'Tahmin', ...(daily ? ['Günlük yorum'] : [])];
     if (legend) {
+      const controls = node('div', null, 'overview-trend-controls');
       const forecastLabel = node('span', '', 'chip');
       const updateForecastLabel = () => {
         forecastLabel.textContent = dateRange?.month ? goalCardDate.format(new Date(dateRange.start+'T12:00:00Z')) : dateRange ? 'Özel tarih aralığı' : forecast == null ? 'Tahmin için veri bekleniyor' : `Ay sonu tahmini ≈ ${fmt(forecast)} yorum`;
         forecastLabel.hidden = hiddenTrendSeries.has('Tahmin');
       };
       updateForecastLabel();
-      legend.replaceChildren(...seriesKeys.map((label, index) => {
+      controls.replaceChildren(...seriesKeys.map((label, index) => {
         const button = node('button', null, 'v2-series-toggle');
         button.type = 'button';
         const swatch = node('i');
@@ -1292,27 +1293,29 @@
           else hiddenTrendSeries.add(label);
           button.setAttribute('aria-pressed', String(visible));
           trendChart.setDatasetVisibility(index, visible);
-          if (daily) trendChart.options.scales.dailyVolume.display = trendChart.isDatasetVisible(dailyBarIndex);
           trendChart.update();
           updateForecastLabel();
         };
         series[index].hidden = hiddenTrendSeries.has(label);
         return button;
-      }), forecastLabel);
+      }));
+      legend.replaceChildren(controls, forecastLabel);
     }
     const chartLabels = comparisonKeys.map(key => new Date(`${daily ? key : key + '-01'}T12:00:00Z`)
       .toLocaleDateString('tr-TR', daily ? { day: 'numeric', month: 'short' } : { month: 'short', year: '2-digit' }));
     chartLabels.push(...futureDates.map(key => new Date(key + 'T12:00:00Z')
       .toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })));
     const axisColor = getComputedStyle(doc.documentElement).getPropertyValue('--mute').trim();
+    const trendScaleMax = series.filter(dataset => dataset.yAxisID !== 'dailyVolume')
+      .reduce((max, dataset) => dataset.data.reduce((peak, value) => Number.isFinite(value) ? Math.max(peak, value) : peak, max), 1);
     chart('chartTrend', 'line', chartLabels, series, {
       layout:{padding:doc.documentElement.dataset.reviewDesign==='new' ? {top:12,right:3} : {top:20,right:48}},
       interaction:{mode:'index',intersect:false},
       scales:{
         x:{grid:{display:false},ticks:{color:axisColor,maxTicksLimit:12}},
-        y:{beginAtZero:true,ticks:{color:axisColor,precision:0}},
+        y:{min:0,suggestedMax:trendScaleMax,ticks:{color:axisColor,precision:0}},
         ...(daily ? {dailyVolume:{type:'linear',position:'right',beginAtZero:true,
-          display:!hiddenTrendSeries.has('Günlük yorum'),
+          display:true,
           suggestedMax:Math.max(4,Math.max(...dailyCounts)*4),
           grid:{drawOnChartArea:false},ticks:{color:axisColor,precision:0,maxTicksLimit:4},
           title:{display:period!=='month',text:'Günlük',color:axisColor}}} : {})
