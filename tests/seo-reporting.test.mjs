@@ -1,0 +1,12 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {parseMetrics,assess,metrics} from '../supabase/functions/seo-reporting/metrics.mjs';
+const fixture=()=>({multiDailyMetricTimeSeries:[{dailyMetricTimeSeries:Object.keys(metrics).map(dailyMetric=>({dailyMetric,timeSeries:{datedValues:[{date:{year:2026,month:11,day:1},value:'2'},{date:{year:2026,month:11,day:2}}]}}))}]});
+const parse=b=>parseMetrics(b,'2026-11-01','2026-11-30');
+test('Google omitted zero value is zero; monthly totals equal daily',()=>{const r=parse(fixture());assert.deepEqual(r.monthly,[{name:'2026-11',calls:2,directions:2,website:2}]);assert.equal(r.daily[1].calls,0)});
+test('missing metric does not fabricate zero',()=>{const b=fixture();b.multiDailyMetricTimeSeries[0].dailyMetricTimeSeries.pop();assert.throws(()=>parse(b),/INCOMPLETE/)});
+test('invalid date, negative and duplicate values rejected',()=>{for(const kind of ['date','negative','duplicate']){const b=fixture(),v=b.multiDailyMetricTimeSeries[0].dailyMetricTimeSeries[0].timeSeries.datedValues;if(kind==='date')v[0].date.day=32;if(kind==='negative')v[0].value='-1';if(kind==='duplicate')v.push(v[0]);assert.throws(()=>parse(b),/GBP_INVALID|GBP_DUPLICATE/)}});
+test('empty report cannot replace successful cache',()=>assert.throws(()=>parse({}),/NO_DATA/));
+const daily=()=>Array.from({length:56},(_,i)=>({name:new Date(Date.UTC(2026,8,1+i)).toISOString().slice(0,10),calls:i<28?10:7,directions:2,website:0}));
+test('28 day drop threshold includes exactly 30 percent with evidence',()=>{const r=daily(),f=assess(r,r.at(-1).name);assert.equal(f.length,1);assert.equal(f[0].id,'drop-calls');assert.match(f[0].evidence,/196.*280/)});
+test('missing days block comparison, low baseline does not create alarm',()=>{const r=daily();assert.equal(assess(r.slice(1),r.at(-1).name)[0].id,'coverage');r.forEach(x=>x.calls=0);assert.deepEqual(assess(r,r.at(-1).name),[])});
