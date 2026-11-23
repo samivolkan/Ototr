@@ -4197,7 +4197,7 @@ function renderPages(){
     pageShell('branchProfile', BranchProfilePage())+
     pageShell('operations', OperationsCenterPage())+
     pageShell('quality', QualityDashboard())+
-    pageShell('seo-visibility', '<iframe title="SEO ve Görünürlük · Tasarım ve analiz paneli" src="seo-visibility/index.html?design=studio&amp;v=20261124" loading="lazy" style="display:block;width:100%;height:calc(100dvh - 100px);min-height:600px;border:0;border-radius:12px"></iframe>')+
+    pageShell('seo-visibility', '<div class="seo-mobile-launch"><a href="seo-visibility/index.html?design=studio">SEO panelini tam ekranda aç ↗</a></div><iframe title="SEO ve Görünürlük · Tasarım ve analiz paneli" src="seo-visibility/index.html?design=studio&amp;v=20261124" loading="lazy" style="display:block;width:100%;height:calc(100dvh - 100px);min-height:600px;border:0;border-radius:12px"></iframe>')+
     pageShell('finance-v2', '<iframe title="Genel Merkez Finans V2 · Demo veri" src="muhasebe-v2/demo.html?v=20261123-4" loading="lazy" style="display:block;width:100%;height:calc(100vh - 100px);min-height:700px;border:0;border-radius:16px"></iframe>')+
     pageShell('finance', FinanceRoyaltyHealthCenterPage())+
     pageShell('marketing', typeof MarketingDashboard==='function' ? MarketingDashboard() : `<div class="grid g4">${stat('Pazarlama Harcaması',fmtTL(368000),'Nisan kampanyaları')}${stat('Toplam Lead',1314,'Çapraz kanal','green')}${stat('En İyi ROI','6.6x','Google Maps','blue')}${stat('CPL Ort.',fmtTL(268),'- %11 düşüş','green')}</div><div class="card"><div class="card-head"><div><div class="card-title">Kanal Performansı</div><div class="card-sub">Google Maps dominasyonu, sosyal medya, remarketing</div></div></div>${marketingTable()}</div>`)+
