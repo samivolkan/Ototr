@@ -801,3 +801,26 @@ html[data-review-variant="2"] #ototr-profile-actions.review-header-actions #otot
 }
 
 #ototr-profile-actions.review-header-actions #ototr-profile-menu { min-width:112px; padding:4px; }
+
+body:has(:is(#view-reviews,#view-performance,#view-ai,#view-collection).on) main > .ph { display:none; }
+body:has(#view-reviews.on) main { padding-top:8px; }
+#reviewPerformanceHead {
+  padding:8px 12px;
+  margin:0;
+  gap:8px;
+  flex-wrap:wrap;
+  border-bottom:1px solid var(--line);
+}
+#reviewPerformanceHead .workspace-subnav { margin:0; border:0; }
+#reviewPerformanceHead .workspace-subnav button { padding:6px 9px; }
+.v2-scope > #v2PeriodNote { margin:0; font-size:11px; }
+.v2-scope.workspace-collection-scope > :not(#workspaceCollectionScope) { display:none; }
+#view-collection .workspace-collection { margin-top:12px; }
+#view-collection .workspace-collection summary { font-weight:700; cursor:pointer; }
+#view-collection .workspace-collection[open] summary { margin-bottom:8px; }
+#problemKpis .kpi { min-height:0; padding:10px 12px; }
+#problemKpis .kpi .kv { margin-bottom:0; }
+.workspace-heat-card .workspace-branch-head { margin:0; }
+.workspace-heat-actions { display:flex; flex-wrap:wrap; align-items:center; gap:6px; }
+.branch-segments-label[data-demo-branch] b { color:#ff9696; font-weight:750; }
+#overviewBranchChart .branch-segments-label[data-demo-branch] b { color:#af2525; }

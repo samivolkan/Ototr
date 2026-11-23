@@ -599,7 +599,7 @@ main{margin:0 auto;width:auto;max-width:1440px;padding:20px}
   try {
     document.documentElement.dataset.reviewDesign = localStorage.getItem('ototr.review.design.teal') === 'classic' ? 'classic' : 'new';
   } catch (_) {}
-</script><link rel="stylesheet" href="assets/google-review-alternative.css?v=20261119-1"><link rel="stylesheet" href="assets/google-review-workspace.css?v=20261123-38"></head><body>
+</script><link rel="stylesheet" href="assets/google-review-alternative.css?v=20261119-1"><link rel="stylesheet" href="assets/google-review-workspace.css?v=20261123-39"></head><body>
 <div id="review-loading-message" role="status">Yorum Yönetimi hazırlanıyor…</div>
 
 <header class="topbar">
@@ -741,8 +741,8 @@ main{margin:0 auto;width:auto;max-width:1440px;padding:20px}
   <!-- PERFORMANCE -->
   <section class="view" id="view-performance">
     <div class="card2" style="padding:0;overflow:hidden">
-      <div class="head" style="padding:14px 18px;border-bottom:1px solid var(--line);margin:0">
-        <div><h3>Bölge › İl › Şube</h3><p class="desc" style="margin:2px 0 0">Hedefleri düzenleyin</p></div>
+      <div class="head" id="reviewPerformanceHead">
+        <h3>Hedef ve performans</h3>
         <button class="btn sm ghost" onclick="exportPerformance()">📥 CSV</button>
         <button class="btn sm ghost" onclick="window.print()">📄 PDF</button>
       </div>
@@ -764,7 +764,6 @@ main{margin:0 auto;width:auto;max-width:1440px;padding:20px}
     <div class="card"><div class="head"><div><h3>🟡 Rakip şüphesi</h3></div></div><div id="riskSuspicious"></div></div>
   </section>
   <section class="view" id="view-problems">
-    <div class="card-head"><span class="chip" id="problemScopeBadge">Şube kapsamı</span></div>
     <div class="metrics" id="problemKpis"></div>
     <div class="table-wrap"><table><thead><tr><th>Açık iş</th><th>Şube</th><th>Sorumlu</th><th>Son tarih</th><th>Durum</th><th>İşlem</th></tr></thead><tbody id="problemRows"></tbody></table></div>
   </section>
@@ -3175,7 +3174,7 @@ if (!STATE.onboarded) setTimeout(startTour, 500);
 <script src="assets/google-review-management-controller.js?v=20261119-1"></script>
 <script src="assets/google-review-live-views.js?v=20261119-1"></script>
 <script src="assets/google-review-enhancements.js?v=20261123-1"></script>
-<script src="assets/google-review-live-features.js?v=20261122-2"></script>
+<script src="assets/google-review-live-features.js?v=20261123-1"></script>
 <script>
   (() => { const purge = (root=document) => { root.getElementById?.('langSel')?.remove(); root.getElementById?.('ototr-feedback-root')?.remove(); root.querySelectorAll?.('#ototr-feedback-root').forEach(e => e.remove()); root.querySelectorAll?.('button,[role="button"],launcher').forEach(b => { if (/Geri\s*bildirim/i.test(b.textContent || '') || b.classList?.contains('launcher')) b.remove(); }); root.querySelectorAll?.('*').forEach(e => { if (e.shadowRoot) purge(e.shadowRoot); }); }; purge(); setInterval(() => purge(), 100); })();
 </script>
@@ -3200,7 +3199,7 @@ if (!STATE.onboarded) setTimeout(startTour, 500);
 <script src="assets/google-review-alternative.js?v=20261123-29"></script>
 <script src="assets/google-review-sandbox.js?v=20261119-3"></script>
 <script src="assets/vendor-review-qrcode.js"></script>
-<script src="assets/google-review-workspace.js?v=20261123-2"></script>
+<script src="assets/google-review-workspace.js?v=20261123-3"></script>
 <script>
   document.documentElement.removeAttribute('data-review-loading');
 </script>

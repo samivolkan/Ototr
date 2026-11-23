@@ -474,7 +474,6 @@
   function renderOpenProblems() {
     const jobs = scopedJobs();
     const branch = root.OTOTRReviewLiveViews?.getBranchRegistry?.().find(row => row.id === currentBranch());
-    byId('problemScopeBadge').textContent = branch?.name || 'Bursa Nilüfer';
     set('problemKpis', [['Açık iş',jobs.length],['Yanıt SLA aşımı',jobs.filter(j=>j.late).length],['Kritik / hukuk',jobs.filter(j=>j.critical || j.type==='legal').length],['Yanıt onayı',jobs.filter(j=>j.task?.status==='approval_pending').length]]
       .map(([label,value])=>`<div class="kpi"><div class="kl">${label}</div><div class="kv">${value}</div></div>`).join(''));
     set('problemRows', jobs.map(job => {
