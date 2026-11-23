@@ -70,3 +70,16 @@ Açık, devam eden, kaynakta bitti işaretli, sorumlusu eksik/eşleşmeyen, tari
 SQL güvenliği izole PGlite PostgreSQL ortamında sentetik iki kapsamla test edildi. Test kimlik fonksiyonları sahtedir; üretimde mevcut ERP kimlik denetimleri kullanılır. 54 ilgili test geçti. Üretim danışman taramasında bulgu kategorileri ve sayıları değişmedi; bu bütün sistemin güvenli olduğu iddiası değildir.
 
 Yeniden test: `npm install --prefix <ayrı-test-klasörü> @electric-sql/pglite@0.6.0`, `OTOTR_PGLITE_MODULE=<ayrı-test-klasörü>/node_modules/@electric-sql/pglite/dist/index.js`, ardından `node --test tests/office-work-health-sql.test.mjs`. Test veritabanı yalnız bellektedir; gerçek veriye bağlanmaz.
+
+## Kalıcı kontrol geçmişi
+
+`office_work_observations` ve olay defteri, mevcut görevlerin kopyası değildir. Yalnız kapsam, sorun kategorisi, sayı, kaynak değişim özeti, zaman ve okundu işlemi tutulur. Görev ataması, görev kabulü, performans veya tamamlanma kararı vermez. Kaynak tablolarında yazma yoktur.
+
+- Kapsam sunucuda mevcut merkez yetkisi ve aktif ERP hesabından türetilir; istemci şube seçemez.
+- Aynı kaynak tekrar kontrol edilince yeni uyarı olayı oluşmaz. Kaynak değişimi (sahip/durum/tarih, sürüm, kullanıcı eşlemesi veya gün değişimi) eski okundu kaydını geçersiz kılar. Bu kategori bazlı kontroldür; tekil görev denetimi iddiası yoktur.
+- Kaynakta sayı sıfırsa kategori kapanır; geçmiş silinmez. Yeniden görünürse tekrar açılır. Kaynak okunamazsa eski kayıtlar kapanmaz.
+- “Özeti gördüm” yalnız insanın bu özeti gördüğünü kaydeder. Aynı istek tekrar gönderilince çoğalmaz; farklı içerikle aynı istek kimliği reddedilir. Eski kaynak sürümü kabul edilmez.
+- Kontrol yalnız sayfa açık ve görünürken yapılır. Arka plan yürütücüsü veya dış bildirim değildir.
+- Canlı tablolar `app_private` altında, RLS açık ve doğrudan istemci erişimi kapalıdır. İki yeni “RLS açık/politika yok” INFO kaydı bu RPC-only tasarımın beklenen sonucudur; erişim politikası ekleyerek tablo açılmadı. Diğer danışman bulgu sayıları değişmedi.
+
+İlgili testler 57/57 geçti. Aynı kontroller Pages yayın iş akışına eklendi; başarısız testle yayın ilerlemez. İzole SQL testleri gerçek PostgreSQL motorunda kurgusal kimlikler ve kapsamlarla çalışır, canlı kullanıcı kayıtlarını kullanmaz.
