@@ -3195,27 +3195,15 @@ export default router;
         updateReleaseVisibility();
         (window.OTOTRReviewReleasePromise || fetch('release.json',{cache:'no-store'}).then(r=>r.ok?r.json():null)).then(meta=>{if(meta){release.querySelector('b').textContent=meta.date||'';release.querySelector('span').textContent=`${meta.time||''} · Güncelleme #${meta.run||''}`.trim();}}).catch(()=>{});
       }
-      let profile = document.getElementById('ototr-profile-actions');
-      if (!profile) {
-        profile = document.createElement('div');
-        profile.id = 'ototr-profile-actions';
-        profile.setAttribute('aria-label', 'Profil işlemleri');
-        profile.innerHTML = '<span class="ototr-profile-label">Profil</span>';
-        document.body.append(profile);
-      }
-      const exit = document.getElementById('ototr-account-exit');
       document.getElementById('ototr-feedback-root')?.remove();
       document.querySelectorAll('button[aria-label="Geri bildirim merkezi"]').forEach(button => { button.remove(); });
       document.querySelectorAll('button,[role="button"]').forEach(button => { if (/Geri\s*bildirim/i.test(button.textContent || '')) button.remove(); });
-      if (exit && exit.parentElement !== profile) profile.append(exit);
     };
-    const style = document.createElement('style');
-    style.textContent = '#ototr-profile-actions{position:fixed;top:12px;right:18px;z-index:10000;display:flex;align-items:center;gap:8px;padding:5px 7px 5px 10px;border:1px solid #dfe3e8;border-radius:999px;background:#fff;box-shadow:0 6px 18px rgba(15,23,42,.12);font:600 12px system-ui;color:#475569}#ototr-profile-actions button{position:static!important;min-height:32px!important;border:1px solid #dfe3e8!important;border-radius:7px!important;background:#fff!important;color:#171b20!important;padding:7px 10px!important;font:600 12px system-ui!important;cursor:pointer!important}#ototr-profile-actions button:hover{border-color:#d71920!important;color:#d71920!important}.ototr-profile-label{font-weight:800;color:#64748b}#ototr-feedback-root,button[aria-label="Geri bildirim merkezi"]{display:none!important}@media(max-width:640px){#ototr-profile-actions{top:8px;right:8px}.ototr-profile-label{display:none}}';
-    document.head.append(style);
     mount();
     new MutationObserver(mount).observe(document.body, { childList: true, subtree: true });
     setInterval(mount, 250);
   })();
 </script>
+<script type="module" src="assets/erp-profile-ui.mjs?v=1"></script>
 </body>
 </html>

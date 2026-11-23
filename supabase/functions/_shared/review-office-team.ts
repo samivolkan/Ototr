@@ -24,5 +24,26 @@ export async function officeReviewTeam(input:any){
  readReply().catch(()=>null)
  ]);
  if(targets.error||plans.error)throw Object.assign(new Error('Kayıtlı şube hedefleri okunamadı.'),{status:503});
+ for(const branch of google.branches||[])await observeOfficeBranch(db,branch).catch(()=>console.warn('Office notification observation unavailable'));
  return {month,checked_at:new Date().toISOString(),branches:branches.map(b=>teamBranchProjection(b,month,targets.data||[],plans.data||[],google.branches?.find((g:any)=>g.branch_id===b.id))),reply:reply?.summary||null,personnel_targets_enabled:false};
+}
+export async function observeOfficeBranch(db:any,branch:any){
+ if(branch?.pagination_complete!==true||branch?.review_count_matches!==true||!Number.isSafeInteger(branch.totalReviewCount))return;
+ const month=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Istanbul',year:'numeric',month:'2-digit'}).format(new Date());
+ const [targets,plans]=await Promise.all([
+ db.from('google_review_targets').select('branch_id,month,target').eq('connection_id','ototr-primary').eq('branch_id',branch.branch_id).eq('month',month+'-01'),
+ db.from('google_review_goal_plans').select('scope_key,month,approved').eq('connection_id','ototr-primary').eq('month',month+'-01').not('approved','is',null)]);
+ if(targets.error||plans.error)throw Error('Bildirim hedef kaynağı okunamadı.');
+ const approved=(plans.data||[]).find((p:any)=>{try{const path=JSON.parse(p.scope_key);return path.length===3&&path[2]===branch.branch_id;}catch{return false;}})?.approved;
+ const rawTarget=approved?.total??targets.data?.[0]?.target;
+ const result=await db.rpc('observe_review_office',{p_branch_id:branch.branch_id,p_review_ids:[...new Set(branch.reviews.map((r:any)=>r.reviewId).filter(Boolean))],p_reply_ids:[...new Set(branch.reviews.filter((r:any)=>String(r.reviewReply?.comment||'').trim()).map((r:any)=>r.reviewId).filter(Boolean))],p_month:month,p_target:Number.isSafeInteger(rawTarget)&&rawTarget>0?rawTarget:null,p_total:branch.totalReviewCount});
+ if(result.error)throw Error('Bildirim gözlemi kaydedilemedi.');
+}
+export async function officeNotifications(db:any,body:any,access:any,user:any){
+ if(access?.role!=='admin'||!access?.is_owner)throw Object.assign(new Error('Bildirimler için bağlantı sahibi yönetici gerekli.'),{status:403});
+ if(body.action==='office_notification_read'){
+ if(typeof body.id!=='string'||! /^[0-9a-f-]{36}$/i.test(body.id))throw Object.assign(new Error('Geçersiz bildirim.'),{status:400});
+ const r=await db.from('google_review_notifications').update({read_at:new Date().toISOString()}).eq('id',body.id).eq('connection_id','ototr-primary').eq('user_id',user.id).select('id').maybeSingle();if(r.error)throw Error('Bildirim güncellenemedi.');if(!r.data)throw Object.assign(new Error('Bildirim bulunamadı.'),{status:404});return{ok:true};
+ }
+ const r=await db.from('google_review_notifications').select('id,branch_id,event,title,body,created_at,read_at').eq('connection_id','ototr-primary').eq('user_id',user.id).order('created_at',{ascending:false}).limit(50);if(r.error)throw Error('Bildirimler okunamadı.');return{items:r.data||[]};
 }

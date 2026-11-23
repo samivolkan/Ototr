@@ -36,6 +36,7 @@ export async function runAutomation(db: any, workerToken: string, deps: any) {
     const branch=synced.branches?.find((b:any)=>b.branch_id===AUTOMATION_BRANCH);
     if(synced.errors?.length || !branch || !branch.pagination_complete) throw new Error(synced.errors?.[0]?.error || 'Google kayıtları tam alınamadı.');
     googleSuccess=new Date().toISOString();counts.reviewed=branch.reviews.length;
+    if(deps.observe)try{await deps.observe(branch);}catch{console.warn('Office notification observation unavailable');}
     const pending=branch.reviews.filter((r:any)=>!String(r.reviewReply?.comment||'').trim());
     // A bounded batch protects provider quotas and the edge request deadline.
     for(const review of pending) {

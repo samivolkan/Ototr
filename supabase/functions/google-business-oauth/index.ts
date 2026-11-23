@@ -1,4 +1,4 @@
-import { officeReviewTeam } from '../_shared/review-office-team.ts';
+import { officeReviewTeam, observeOfficeBranch, officeNotifications } from '../_shared/review-office-team.ts';
 import { assertReplyDelay, officeReviewAction } from '../_shared/review-agent-office.ts';
 import { handleReviewGoals, ReviewGoalError } from '../_shared/review-goals.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.57.4';
@@ -831,6 +831,7 @@ Deno.serve(async (req) => {
     const db = admin();
     if(body.action==='automation_tick') return json(await runAutomation(db,req.headers.get('x-ototr-worker-token')||'',{
       connection:async()=>{const r=await db.from('google_business_connections').select('*').eq('id',connectionId).maybeSingle();databaseFailure(r.error);if(!r.data || r.data.oauth_client_id!==env('GOOGLE_OAUTH_CLIENT_ID'))throw new RequestError('Google bağlantısı yenilenmeli.',409);return {connection:r.data,user:{id:r.data.connected_by}};},
+      observe:async(branch:any)=>observeOfficeBranch(db,branch),
       lifecycle:async(connection:any)=>assertReviewLifecycle({db,connection,branchId:managementBranchId}),
       sync:async(connection:any)=>syncReviews([managementBranchId],await accessToken(await decrypt(connection.refresh_token_encrypted)),AbortSignal.timeout(25000)),
       find:async(review:any,branch:any)=>preparationItem(db,workIdentity({branch_id:managementBranchId,account_id:branch.account_id,location_id:branch.location_id,review_id:review.reviewId})),
@@ -876,6 +877,7 @@ Deno.serve(async (req) => {
     }
     const connection = await authorizedConnection(db, user.id, branchIdOf(body));
     const access = connection._reviewAccess;
+    if(['office_notifications','office_notification_read'].includes(body.action))return json(await officeNotifications(db,body,access,user));
     if(['office_review_status','office_review_profile_save'].includes(body.action))return json(await officeReviewAction(db,body,access,user));
     const branchRows = await loadBranchRegistry(db);
     if(body.action==='office_review_team')return json(await officeReviewTeam({db,access,registry:branchRows,
