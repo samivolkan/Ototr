@@ -653,3 +653,11 @@ html[data-theme="dark"][data-review-variant="2"] #ovAlerts .v2-insight {
   border-color:#584727;
   border-left-color:#dfb453;
 }
+
+html:has(#view-reviews.on), #rvListPane {
+  scrollbar-gutter:stable;
+}
+#view-reviews .split {
+  overflow-anchor:none;
+  align-items:start;
+}
