@@ -1,0 +1,220 @@
+{
+  "version": 1,
+  "codeWriting": false,
+  "updatedAt": "2026-11-23T18:36:42Z",
+  "sourceCommit": "9e2dfcada8590c9d9e39a0fd8acfce6f64d4ecc8",
+  "mode": "Codex oturumu · iki ayrı salt-okunur incelemeci · yayınlanan durum kaydı",
+  "runs": [
+    {
+      "department": "FIN",
+      "producer": "finance_review",
+      "status": "reviewed",
+      "scope": [
+        "FIN-01",
+        "FIN-02",
+        "FIN-03",
+        "FIN-04"
+      ],
+      "events": [
+        {
+          "at": "2026-11-23T18:36:13Z",
+          "message": "İnceleme tamamlandı: dört uzmanlık alanı, üç kanıtlı çıktı. Kod ve veri değişikliği yok."
+        },
+        {
+          "at": "2026-11-23T18:36:13Z",
+          "message": "Koordinatör kaydı: altı çıktının tamamı ayrı bekçiye kaynak denetimi için iletildi."
+        },
+        {
+          "at": "2026-11-23T18:36:42Z",
+          "message": "BEK-01 bağımsız kaynak denetimi tamamlandı: 3/3 çıktı geçer. Uygulama onayı verilmedi."
+        }
+      ],
+      "reports": [
+        {
+          "id": "FIN-R01",
+          "finding": "Tutar doğrulayıcısı 0.01 ve 0.50 gibi pozitif alt-birim ödeme/tahsis tutarlarını reddediyor.",
+          "evidence": [
+            {
+              "file": "muhasebe-v2/assets/finance-command-bridge.mjs",
+              "start": 59,
+              "end": 63
+            },
+            {
+              "file": "muhasebe-v2/assets/finance-command-bridge.mjs",
+              "start": 69,
+              "end": 69
+            }
+          ],
+          "recommendation": "Kesin ondalık doğrulama ve sıfır/negatif/alt-birim kabul matrisi planlansın.",
+          "risk": "para",
+          "effort": "1–2 saat plan ve kabul testi tasarımı",
+          "decision": "Yeni ticari karar yok; minimum işlem tutarı politikası varsa referansı gerekli.",
+          "limitation": "Yalnız istemci davranışı. Sentetik regex kontrolü yapıldı; sunucu minimum tutar politikası doğrulanmadı.",
+          "guard": "BEK-01 · Kaynak kanıtı ve şablon doğrulandı. Üretim testi, Sami onayı veya kod yazma yetkisi değildir."
+        },
+        {
+          "id": "FIN-R02",
+          "finding": "Ödeme oluşturma, doğrulama ve tahsis formu her gönderimde yeni idempotency anahtarı üretiyor.",
+          "evidence": [
+            {
+              "file": "muhasebe-v2/assets/finance-command-bridge.mjs",
+              "start": 63,
+              "end": 63
+            },
+            {
+              "file": "muhasebe-v2/assets/finance-command-bridge.mjs",
+              "start": 68,
+              "end": 69
+            },
+            {
+              "file": "muhasebe-v2/assets/finance-command-bridge.mjs",
+              "start": 133,
+              "end": 140
+            }
+          ],
+          "recommendation": "Aynı komutun ağ yeniden denemesinde aynı anahtar, değişen payload için yeni anahtar sözleşmesini ve kayıp yanıt senaryosunu planla.",
+          "risk": "para",
+          "effort": "2–4 saat sözleşme ve test planı",
+          "decision": "Ticari karar yok; teknik inceleme kuyruğunda.",
+          "limitation": "Çift ödeme oluştuğu iddia edilmiyor. Sunucu tekillik ve expectedVersion korumaları ayrıca doğrulanmalı.",
+          "guard": "BEK-01 · Kaynak kanıtı ve şablon doğrulandı. Üretim testi, Sami onayı veya kod yazma yetkisi değildir."
+        },
+        {
+          "id": "FIN-R03",
+          "finding": "Kural düzenleme komutu mevcut istisnalardan bağımsız olarak exceptions: [] gönderiyor.",
+          "evidence": [
+            {
+              "file": "muhasebe-v2/assets/finance-command-bridge.mjs",
+              "start": 20,
+              "end": 22
+            },
+            {
+              "file": "muhasebe-v2/assets/finance-ui.js",
+              "start": 387,
+              "end": 387
+            }
+          ],
+          "recommendation": "updateContractFeeRule için alan yok / boş liste / mevcut istisnaları koru semantiğini incele. Yalnız açıklama değiştiğinde istisnaların korunmasını kabul koşulu yap.",
+          "risk": "para / veri",
+          "effort": "2–4 saat sözleşme inceleme ve kabul planı",
+          "decision": "İstisna kaldırma önerilmiyor. Ticari kapsam değişikliği yalnız Sami kararıyla.",
+          "limitation": "Sunucuda istisnaların silindiği doğrulanmadı; bulgu istemci payload içeriğiyle sınırlı.",
+          "guard": "BEK-01 · Kaynak kanıtı ve şablon doğrulandı. Üretim testi, Sami onayı veya kod yazma yetkisi değildir."
+        }
+      ]
+    },
+    {
+      "department": "FRA",
+      "producer": "franchise_review",
+      "status": "reviewed",
+      "scope": [
+        "FRA-01",
+        "FRA-02",
+        "FRA-03",
+        "FRA-04"
+      ],
+      "events": [
+        {
+          "at": "2026-11-23T18:36:13Z",
+          "message": "İnceleme tamamlandı: dört uzmanlık alanı, üç kanıtlı çıktı. Kod ve veri değişikliği yok."
+        },
+        {
+          "at": "2026-11-23T18:36:13Z",
+          "message": "Koordinatör kaydı: altı çıktının tamamı ayrı bekçiye kaynak denetimi için iletildi."
+        },
+        {
+          "at": "2026-11-23T18:36:42Z",
+          "message": "BEK-01 bağımsız kaynak denetimi tamamlandı: 3/3 çıktı geçer. Uygulama onayı verilmedi."
+        }
+      ],
+      "reports": [
+        {
+          "id": "FRA-R01",
+          "finding": "Kurul hazırlama çekirdeği makerId varlığını doğrulamıyor; mevcut ekran ise kimliği açıkça gönderiyor.",
+          "evidence": [
+            {
+              "file": "gm-franchise/franchise-core.mjs",
+              "start": 76,
+              "end": 92
+            },
+            {
+              "file": "gm-franchise/index.html",
+              "start": 975,
+              "end": 977
+            }
+          ],
+          "recommendation": "Boş hazırlayan kimliğinin reddi ve maker-checker ayrımının gerçek oturum kimliğine bağlanması için Faz 2 kabul planı oluştur.",
+          "risk": "yetki",
+          "effort": "2–3 saat inceleme ve test planı",
+          "decision": "Şimdi karar gerekmiyor; kod değişikliği Faz 2 onayına bağlı.",
+          "limitation": "Sentetik demo çekirdeği bulgusu; canlı sunucu yetkilendirmesinin aşılabildiği kanıtlanmadı.",
+          "guard": "BEK-01 · Kaynak kanıtı ve şablon doğrulandı. Üretim testi, Sami onayı veya kod yazma yetkisi değildir."
+        },
+        {
+          "id": "FRA-R02",
+          "finding": "Sertifika geçerliliği çekirdekte ve ekran çağrılarında 2026-11-05 sabit demo tarihiyle değerlendiriliyor.",
+          "evidence": [
+            {
+              "file": "gm-franchise/franchise-core.mjs",
+              "start": 211,
+              "end": 217
+            },
+            {
+              "file": "gm-franchise/franchise-core.mjs",
+              "start": 254,
+              "end": 267
+            },
+            {
+              "file": "gm-franchise/index.html",
+              "start": 685,
+              "end": 685
+            },
+            {
+              "file": "gm-franchise/index.html",
+              "start": 985,
+              "end": 985
+            }
+          ],
+          "recommendation": "Demo tarihini görünür kılma ve gerçek çalışma için güvenilir saat kaynağı, son gün/ertesi gün/eksik tarih senaryolarını planla.",
+          "risk": "yetki",
+          "effort": "2–3 saat inceleme ve test planı",
+          "decision": "Geçerlilik politikası değişmiyor; şimdi karar gerekmiyor.",
+          "limitation": "Modül sentetik pilot ve NO_GO. Üretimde süresi geçmiş sertifikayla erişim olduğu iddia edilmiyor.",
+          "guard": "BEK-01 · Kaynak kanıtı ve şablon doğrulandı. Üretim testi, Sami onayı veya kod yazma yetkisi değildir."
+        },
+        {
+          "id": "FRA-R03",
+          "finding": "Sözleşme ve tahsilat için ayrı kanıt/onay kapıları var. UI taskDone değerini sağlıyor; çekirdekte eksik parametre true varsayımı sürüyor.",
+          "evidence": [
+            {
+              "file": "gm-franchise/franchise-core.mjs",
+              "start": 96,
+              "end": 133
+            },
+            {
+              "file": "gm-franchise/franchise-core.mjs",
+              "start": 254,
+              "end": 263
+            },
+            {
+              "file": "gm-franchise/index.html",
+              "start": 678,
+              "end": 685
+            },
+            {
+              "file": "gm-franchise/index.html",
+              "start": 985,
+              "end": 985
+            }
+          ],
+          "recommendation": "Tahsilat hesabı FIN-02, sözleşme/açılış kanıtı FRA-02 sahibi olsun. Kanıt–dosya/şube bağı, bağımsız onay, açık görev toplamı sırasıyla incelensin.",
+          "risk": "para / yetki / veri",
+          "effort": "3–4 saat bağımlılık ve kabul senaryosu incelemesi",
+          "decision": "Tahsilat kapısı veya istisna kuralı değişmiyor; şimdi karar gerekmiyor.",
+          "limitation": "SHA-256 biçim kontrolü belge doğrulaması değildir. Doğru şube/gerçek belge bağı kanıtlanmadı. UI görev bilgisini atlamıyor.",
+          "guard": "BEK-01 · Kaynak kanıtı ve şablon doğrulandı. Üretim testi, Sami onayı veya kod yazma yetkisi değildir."
+        }
+      ]
+    }
+  ]
+}

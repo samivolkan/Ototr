@@ -31,3 +31,12 @@ Sunucu aciksa her gun 08:30 Turkiye saatinde runtime/data/summaries/YYYY-MM-DD.j
 ERP ENTEGRASYONU
 ERP menusunun en ustunde Ajan Ofisi basligi bulunur. Barindirilan sayfa salt-okunurdur; /api istekleri veya localhost baglantisi otomatik yapilmaz. Canli kuyruk/karar islemleri icin PC uzerinde yerel sunucu gerekir. GitHub Pages Node sunucusunu calistirmaz.
 Yeni Yazilim/Sosyal Medya ekipleri ve yonetici rolleri roadmap.json icinde planlidir; henuz uygulanmadi.
+
+23 KASIM KAYNAK INCELEMESI
+Finans ve Franchise bu Codex oturumunda iki ayri incelemeciyle incelendi.
+6 cikti BEK-01 tarafindan bagimsiz kaynak denetiminden gecti. Uygulama onayi yok.
+review-state.json yalniz kamuya uygun durum/rapor kaydidir; ham ajan gunlugu degildir.
+Sayfa 15 saniyede bir dosyayi okur; GitHub Pages yayin gecikmesi olabilir.
+Bu bir surekli ajan sunucusu veya otomatik calistirma servisi degildir.
+Yeni kosularin durumlari koordinator tarafindan yayinlanmalidir.
+ERP yazma, gercek veri, ticari karar ve dis mesaj yetkileri kapali kalir.
