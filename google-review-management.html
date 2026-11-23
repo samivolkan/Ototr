@@ -599,7 +599,7 @@ main{margin:0 auto;width:auto;max-width:1440px;padding:20px}
   try {
     if (localStorage.getItem('ototr.review.design.teal') === 'new') document.documentElement.dataset.reviewDesign = 'new';
   } catch (_) {}
-</script><link rel="stylesheet" href="assets/google-review-alternative.css?v=20261119-1"><link rel="stylesheet" href="assets/google-review-workspace.css?v=20261123-19"></head><body>
+</script><link rel="stylesheet" href="assets/google-review-alternative.css?v=20261119-1"><link rel="stylesheet" href="assets/google-review-workspace.css?v=20261123-20"></head><body>
 <div id="review-loading-message" role="status">Yorum Yönetimi hazırlanıyor…</div>
 
 <header class="topbar">
@@ -750,7 +750,8 @@ main{margin:0 auto;width:auto;max-width:1440px;padding:20px}
         <button class="btn sm ghost" onclick="exportPerformance()">📥 CSV</button>
         <button class="btn sm ghost" onclick="window.print()">📄 PDF</button>
       </div>
-      <div style="overflow-x:auto"><table id="perfTable"></table></div>
+      <section id="reviewGoalWorkflow" aria-label="Hedef planı"></section>
+      <div class="performance-table-scroll" tabindex="0" role="region" aria-label="Performans tablosu"><table id="perfTable"></table></div>
     </div>
     <div id="targetBreakdown" class="target-breakdown"></div>
     <div id="workspaceBranchChart"></div>
@@ -3217,7 +3218,7 @@ if (!STATE.onboarded) setTimeout(startTour, 500);
     document.head.append(style); move(); new MutationObserver(move).observe(document.body,{childList:true,subtree:true});
   })();
 </script>
-<script src="assets/google-review-alternative.js?v=20261123-17"></script>
+<script src="assets/google-review-alternative.js?v=20261123-18"></script>
 <script src="assets/google-review-sandbox.js?v=20261119-3"></script>
 <script src="assets/vendor-review-qrcode.js"></script>
 <script src="assets/google-review-workspace.js?v=20261122-3"></script>

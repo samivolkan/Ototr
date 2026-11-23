@@ -1422,7 +1422,7 @@
     const editable = demo ? ['new','draft','revision'].includes(status) : permitted.includes('save');
     const actions = {save:'Taslak kaydedildi',submit:'Onaya gönderildi',forward:'GM onayına gönderildi',approve:'Onaylandı',revise:'Revizyon açıldı'};
     const states = {new:'Yeni',draft:'Taslak',pending:'GM onayı bekliyor',regional:'Bölge onayı bekliyor',approved:'Onaylandı',revision:'Revizyon'};
-    const button = (action,label) => permitted && !permitted.includes(action) ? '' : '<button class="btn sm" type="submit" value="'+action+'">'+label+'</button>';
+    const button = (action,label) => permitted && !permitted.includes(action) ? '' : '<button class="btn sm'+(['submit','forward','approve'].includes(action)?' p':'')+'" type="submit" value="'+action+'">'+label+'</button>';
     const actual = allRows().filter(row => monthKey(row.createdAt) === goalMonth);
     const approved = record.approved;
     const totals = demo ? demoGoalTotals(goalMonth) : (() => {
@@ -1432,16 +1432,22 @@
       return {target,count:approved.length,complete:units.length>0 && approved.length===units.length,
         rating:target ? approved.reduce((sum,goal)=>sum+goal.total*goal.rating,0)/target : null};
     })();
-    host.innerHTML = `<div class="review-goal-editor-head"><strong>Hedef planı</strong>
+    const renderKey=JSON.stringify([key,demo,record.version,record.updatedAt,status,permitted,actual.length,totals.count,totals.target]);
+    if (host.dataset.goalEditorKey===renderKey && host.querySelector('form')) return;
+    host.dataset.goalEditorKey=renderKey;
+    host.innerHTML = `<div class="review-goal-editor-head">
+      <div><h3>Hedef planı</h3><p>${html(analyticsName())} · ${demo?'Demo':'Canlı ERP'}</p></div>
       <span class="chip ${status==='approved'?'ok':'warn'}">${states[status]}</span>
-      <label>Hedef ayı <input id="reviewGoalMonth" type="month" min="2000-01" max="2099-12" value="${html(goalMonth)}"></label>
+      <label for="reviewGoalMonth">Hedef ayı <input id="reviewGoalMonth" type="month" min="2000-01" max="2099-12" value="${html(goalMonth)}"></label>
       </div>
       <form id="reviewGoalForm">
         <fieldset aria-label="Hedef değerleri" ${editable ? '' : 'disabled'}>
-          <label>Varılacak toplam yorum <input name="total" type="number" required min="1" max="10000000" value="${draft.total ?? ''}"></label>
-          <label>Yıldız türü <select name="stars">${[5,4,3,2,1].map(value=>`<option value="${value}" ${value===(draft.stars || 5)?'selected':''}>${value} yıldız</option>`).join('')}</select></label>
-          <label>Dönemde hedeflenen yıldızlı yorum adedi <input name="starCount" type="number" required min="0" max="10000000" value="${draft.starCount ?? ''}"></label>
-          <label>Ortalama puan hedefi <input name="rating" type="number" required min="1" max="5" step="0.1" value="${draft.rating ?? ''}"></label>
+          <label>Toplam yorum hedefi <input name="total" type="number" inputmode="numeric" required min="1" max="10000000" value="${draft.total ?? ''}"></label>
+          <div class="review-goal-star-fields">
+            <label>Yıldız türü <select name="stars">${[5,4,3,2,1].map(value=>`<option value="${value}" ${value===(draft.stars || 5)?'selected':''}>${value} yıldız</option>`).join('')}</select></label>
+            <label>Yıldızlı yorum hedefi <input name="starCount" type="number" inputmode="numeric" required min="0" max="10000000" value="${draft.starCount ?? ''}"></label>
+          </div>
+          <label>Ortalama puan hedefi <input name="rating" type="number" inputmode="decimal" required min="1" max="5" step="0.1" value="${draft.rating ?? ''}"></label>
         </fieldset>
         ${!editable && (!permitted || permitted.includes('revise')) ? '<label>Revizyon gerekçesi <input name="reason" type="text" maxlength="500"></label>' : ''}
         <div class="pacts">${editable ? button('save','Taslağı kaydet')+button('submit','Onaya gönder') :
@@ -1528,8 +1534,6 @@
     const ratingTarget = currentRatingTarget();
     const ratingCell = byId('perfTable').querySelector('tbody tr td:nth-child(2)');
     ratingCell.insertAdjacentHTML('beforeend', `<div class="v2-rating-goal">${ratingTarget == null ? 'Puan hedefi eksik' : `Puan hedefi ${fmt(ratingTarget)} ★`}</div>`);
-    byId('perfTable').tBodies[0].insertAdjacentHTML('beforeend',
-      '<tr class="review-goal-editor-row"><td colspan="8"><div id="reviewGoalWorkflow"></div></td></tr>');
     renderGoalWorkflow();
     if (ratio == null && analyticsLive() && (management().error || !management().loaded)) {
       byId('perfTable').querySelector('tbody tr td:nth-child(4)').textContent = 'Hedef doğrulanamadı';

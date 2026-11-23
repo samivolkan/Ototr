@@ -404,30 +404,33 @@ html[data-review-design="new"] #view-overview .watch-row {
   #reviewHeaderSearch .review-search-label { display: none; }
 }
 
-#perfTable .review-goal-editor-row > td { padding:0; }
-#reviewGoalWorkflow { padding:12px 16px; border-block-start:1px solid var(--line); background:var(--s2); }
-.review-goal-editor-head { display:flex; flex-wrap:wrap; align-items:center; gap:6px 10px; }
+.performance-table-scroll { overflow-x:auto; }
+#reviewGoalWorkflow { min-width:0; padding:16px 18px; border-bottom:1px solid var(--line); background:var(--s2); }
+.review-goal-editor-head { display:flex; flex-wrap:wrap; align-items:center; gap:8px 12px; }
+.review-goal-editor-head h3 { margin:0; font-size:15px; }
 .review-goal-editor-head label { display:flex; align-items:center; gap:6px; margin-inline-start:auto; }
 #reviewGoalWorkflow :is(input,select) {
-  border:1px solid var(--line); border-radius:6px; background:var(--surface); color:var(--ink);
-  min-height:32px; padding:4px 7px; box-sizing:border-box;
+  max-width:100%; border:1px solid var(--line); border-radius:7px; background:var(--surface); color:var(--ink);
+  min-height:38px; padding:6px 9px; box-sizing:border-box;
 }
-#reviewGoalWorkflow p { margin:6px 0 0; color:var(--mute); }
+#reviewGoalWorkflow p { margin:4px 0 0; color:var(--mute); }
 #reviewGoalWorkflow p:empty { display:none; }
-#reviewGoalWorkflow details { margin-top:6px; }
-@media (max-width:700px) {
-  #reviewGoalWorkflow { max-width:calc(100vw - 36px); box-sizing:border-box; }
-}
+#reviewGoalWorkflow details { margin-top:8px; }
 #reviewGoalWorkflow fieldset {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
-  gap: 10px;
-  margin: 10px 0;
-  border: 0;
-  padding: 0;
+  min-width:0; display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.5fr) minmax(0,1fr);
+  gap:12px; margin:12px 0; padding:0; border:0;
 }
-#reviewGoalWorkflow fieldset :is(input,select) { width: 100%; margin-top: 4px; }
-#reviewGoalWorkflow .pacts { display: flex; flex-wrap: wrap; gap: 8px; }
+.review-goal-star-fields { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.35fr); gap:8px; }
+#reviewGoalForm label { min-width:0; display:block; font-size:12px; }
+#reviewGoalForm label :is(input,select) { display:block; width:100%; margin-top:4px; }
+#reviewGoalWorkflow .pacts { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0; }
+@media (max-width:700px) {
+  #reviewGoalWorkflow { padding:12px; }
+  .review-goal-editor-head label { margin-inline-start:0; width:100%; }
+  #reviewGoalWorkflow fieldset { grid-template-columns:minmax(0,1fr); gap:10px; }
+  #reviewGoalWorkflow :is(input,select) { min-height:44px; font-size:16px; }
+  #reviewGoalWorkflow .pacts > button { flex:1 1 auto; min-height:44px; }
+}
 .overview-kpi-panel { display:contents; }
 #overviewGoalSlot { display:none; }
 html[data-review-design="new"] .overview-kpi-panel { display:grid; gap:10px; align-content:start; min-width:0; }
