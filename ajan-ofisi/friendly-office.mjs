@@ -18,7 +18,7 @@ if(document.querySelector('#scene')){
   if(!['FRA','REV','SEO'].includes(button.dataset.team)){teamDetails.open=true;setTimeout(()=>teamDetails.scrollIntoView({block:'start',behavior:'smooth'}),0);}
  },true);
  const quick=document.createElement('nav');quick.className='friendly-shortcuts';quick.setAttribute('aria-label','Ofis kısayolları');
- quick.innerHTML='<div><strong>Ajan Ofisi</strong><p>Ekibini ve senden beklenenleri tek yerden takip et.</p></div><a href="#web-demo-tasks">Aday ve kararları gör ↓</a>';
+ quick.innerHTML='<div><strong>Ajan Ofisi</strong><p>Ekibini ve senden beklenenleri tek yerden takip et.</p></div><div class="office-entry-actions"><a href="operations-center.html">Operasyon kontrolü →</a><a href="#web-demo-tasks">Aday ve kararları gör ↓</a></div>';
  office.prepend(quick);
  const pilot=document.createElement('aside');pilot.className='inspection-pilot';pilot.innerHTML='<div><small>YENİ GÖREV PLANI · ÇALIŞTIRILMADI</small><strong>Ekspertiz Süreç Takip Ajanı</strong><p>İş emri → Usta girişi → Sorgu → Rapor → Sunum ve teslim → Memnuniyet</p></div><a href="inspection-coordinator.html">Görev planını incele →</a>';quick.after(pilot);
  const top=document.querySelector('.topbar');
