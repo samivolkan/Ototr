@@ -1,0 +1,9 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {validateRealAds,summarizeReal,groupReal} from '../src/realAds.js';
+const values={cost:12.5,clicks:5,impressions:100,conversions:2};
+function fixture(){return {version:1,source:'Google Ads CSV',currency:'TRY',timezone:'Europe/Istanbul',accounts:[{id:'test',name:'Synthetic test',start:'2026-10-02',end:'2026-11-22',totals:{...values},campaigns:[{name:'Synthetic campaign',...values}],monthly:[{campaign:'Synthetic campaign',month:'2026-10',...values}],devices:[{campaign:'Synthetic campaign',device:'Mobile',...values}],conversions:[{campaign:'Synthetic campaign',action:'Synthetic contact click',conversions:2}]}]};}
+test('Reconciled separate grains load without being added together',()=>{const d=validateRealAds(fixture());assert.equal(summarizeReal(d.accounts[0].monthly).cost,12.5);assert.equal(groupReal(d.accounts[0].devices,'device')[0].cpa,6.25)});
+test('Null total means unavailable, and zero denominator stays unavailable',()=>{const d=fixture();Object.assign(d.accounts[0],{totals:null,campaigns:[],monthly:[],devices:[],conversions:[]});assert.equal(validateRealAds(d).accounts[0].totals,null);assert.equal(summarizeReal([]).cpa,null);d.accounts[0].monthly=[{}];assert.throws(()=>validateRealAds(d));});
+test('Reject mismatched totals, duplicates, out of coverage dates and unknown campaign',()=>{for(const mutate of [a=>a.monthly[0].cost++,a=>a.devices.push({...a.devices[0]}),a=>a.monthly[0].month='2026-09',a=>a.devices[0].campaign='unknown',a=>a.conversions[0].conversions=3,a=>a.start='2026-02-30']){const d=fixture();mutate(d.accounts[0]);assert.throws(()=>validateRealAds(d));}});
+test('Ratios use sums and decimal conversions are preserved',()=>{const t=summarizeReal([{cost:10,clicks:2,impressions:10,conversions:.5},{cost:30,clicks:6,impressions:90,conversions:1.5}]);assert.equal(t.ctr,8);assert.equal(t.cpc,5);assert.equal(t.cpa,20);});

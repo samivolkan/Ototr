@@ -1654,6 +1654,7 @@ const navGroups = [
         "Saha Satış",
         "map-pinned"
       ],
+      ["seo-visibility", "SEO ve Görünürlük", "chart-no-axes-combined"],
       [
         "marketing",
         "Pazarlama",
@@ -1722,7 +1723,7 @@ const navGroups = [
     ]
   ]
 ];
-const titles = {'finance-v2':'Genel Merkez Finans V2',ruhsat:'Ruhsat Oku',dashboard:'Yönetim Kokpiti','project-roadmap':'Proje Yol Haritası',intelligence:'İş Zekası',looker:'Looker Canlı Panolar',branches:'Bayiler & Şubeler','branch-health':'Şube Sağlık & Erken Uyarı',dealer:'Bayi Portalı','ototr-web':'OTOTR Web',operations:'Operasyon',franchise:'Franchise Satış',crm:'CRM & Randevu','chronic-issues':'Kronik Sorunlar',complaints:'Müşteri Şikayetleri','google-reviews':'Google Haritalar İtibar Merkezi',reputation:'İtibar Radar',finance:'GM Finans',marketing:'Pazarlama',quality:'Kalite & Denetim','report-assurance':'Rapor Güvence Merkezi','report-design':'Ekspertiz Rapor Tasarımı',sunum32:'32 Ekran Sunumu',sunum32v2:'32 Ekran Sunumu V2','vehicle-passport':'Dijital Araç Karnesi',academy:'OTOTR Academy',hr:'İnsan Kaynakları',legal:'Hukuk & Risk','erp-arge':'ERP ARGE',crisis:'Kriz Merkezi',actions:'Aksiyon & Görev',ai:'AI Öneri',growth:'Bayii Büyüme',legacy:'Legacy Room',architecture:'Sistem Mimarisi',settings:'Ayarlar',branchProfile:'Şube Profili',franchiseProfile:'Aday Değerlendirme',customerProfile:'Müşteri 360'};
+const titles = {'seo-visibility':'SEO ve Görünürlük','finance-v2':'Genel Merkez Finans V2',ruhsat:'Ruhsat Oku',dashboard:'Yönetim Kokpiti','project-roadmap':'Proje Yol Haritası',intelligence:'İş Zekası',looker:'Looker Canlı Panolar',branches:'Bayiler & Şubeler','branch-health':'Şube Sağlık & Erken Uyarı',dealer:'Bayi Portalı','ototr-web':'OTOTR Web',operations:'Operasyon',franchise:'Franchise Satış',crm:'CRM & Randevu','chronic-issues':'Kronik Sorunlar',complaints:'Müşteri Şikayetleri','google-reviews':'Google Haritalar İtibar Merkezi',reputation:'İtibar Radar',finance:'GM Finans',marketing:'Pazarlama',quality:'Kalite & Denetim','report-assurance':'Rapor Güvence Merkezi','report-design':'Ekspertiz Rapor Tasarımı',sunum32:'32 Ekran Sunumu',sunum32v2:'32 Ekran Sunumu V2','vehicle-passport':'Dijital Araç Karnesi',academy:'OTOTR Academy',hr:'İnsan Kaynakları',legal:'Hukuk & Risk','erp-arge':'ERP ARGE',crisis:'Kriz Merkezi',actions:'Aksiyon & Görev',ai:'AI Öneri',growth:'Bayii Büyüme',legacy:'Legacy Room',architecture:'Sistem Mimarisi',settings:'Ayarlar',branchProfile:'Şube Profili',franchiseProfile:'Aday Değerlendirme',customerProfile:'Müşteri 360'};
 let selectedArgeModule=null;
 function dealerPortalUrl(){
   const path=decodeURIComponent(location.pathname||'').replace(/\\/g,'/').toLowerCase();
@@ -3012,7 +3013,7 @@ function syncSunum32V2Target(target){ const receiver=target?.contentWindow||targ
 function openSunum32V2FullScreen(){ const popup=window.open('sunum-32-ekran-v2/?v=20261103-1','_blank'); if(popup) setTimeout(()=>syncSunum32V2Target(popup),700); }
 function Sunum32V2Page(){ return `<div class="card" style="padding:0;overflow:hidden"><iframe title="32 Ekran Ekspertiz Sunumu V2" src="sunum-32-ekran-v2/?v=20261103-1" onload="syncSunum32V2Target(this)" style="display:block;width:100%;height:calc(100vh - 92px);min-height:860px;border:0;background:#eef0f4"></iframe></div>`; }
 window.addEventListener('message',event=>{ if(event.origin===location.origin&&event.data?.type==='ototr-report-ready'){ const frame=document.querySelector('iframe[title="32 Ekran Ekspertiz Sunumu V2"]'); if(frame) syncSunum32V2Target(frame); } });
-function pageShell(id, content){ const cleanGoogle=id==='google-reviews'||id==='finance-v2'; return `<div class="page ${id===current?'active':''}" id="page-${id}">${cleanGoogle?'':pageHeader(id)}${content}${cleanGoogle||id==='dealer'||id==='sunum32'||id==='sunum32v2'?'':deptPlan(id)}</div>`; }
+function pageShell(id, content){ const cleanGoogle=id==='google-reviews'||id==='finance-v2'||id==='seo-visibility'; return `<div class="page ${id===current?'active':''}" id="page-${id}">${cleanGoogle?'':pageHeader(id)}${content}${cleanGoogle||id==='dealer'||id==='sunum32'||id==='sunum32v2'?'':deptPlan(id)}</div>`; }
 function stat(label,value,trend,color=''){ return `<div class="card stat ${color}"><div class="label">${label}</div><div class="value">${value}</div><div class="trend ${String(trend).startsWith('-')?'down':''}">${trend}</div></div>`; }
 const reputationFilters={source:'',risk:'',sentiment:'',branch:'',status:''};
 let reputationSelectedId='REP-1003', reputationDuplicateWarning=null, reputationDetailOpen=false;
@@ -4196,6 +4197,7 @@ function renderPages(){
     pageShell('branchProfile', BranchProfilePage())+
     pageShell('operations', OperationsCenterPage())+
     pageShell('quality', QualityDashboard())+
+    pageShell('seo-visibility', '<iframe title="SEO ve Görünürlük · Tasarım ve analiz paneli" src="seo-visibility/index.html?design=studio&amp;v=20261124" loading="lazy" style="display:block;width:100%;height:calc(100dvh - 100px);min-height:600px;border:0;border-radius:12px"></iframe>')+
     pageShell('finance-v2', '<iframe title="Genel Merkez Finans V2 · Demo veri" src="muhasebe-v2/demo.html?v=20261123-4" loading="lazy" style="display:block;width:100%;height:calc(100vh - 100px);min-height:700px;border:0;border-radius:16px"></iframe>')+
     pageShell('finance', FinanceRoyaltyHealthCenterPage())+
     pageShell('marketing', typeof MarketingDashboard==='function' ? MarketingDashboard() : `<div class="grid g4">${stat('Pazarlama Harcaması',fmtTL(368000),'Nisan kampanyaları')}${stat('Toplam Lead',1314,'Çapraz kanal','green')}${stat('En İyi ROI','6.6x','Google Maps','blue')}${stat('CPL Ort.',fmtTL(268),'- %11 düşüş','green')}</div><div class="card"><div class="card-head"><div><div class="card-title">Kanal Performansı</div><div class="card-sub">Google Maps dominasyonu, sosyal medya, remarketing</div></div></div>${marketingTable()}</div>`)+
