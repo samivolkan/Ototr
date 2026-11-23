@@ -52,3 +52,11 @@ Kaynak dosyasının bulunması canlı entegrasyon veya tamamlanmış iş kanıt�
 - Yönetici engelleri, Sami kararı gerekenler, kapsam dışı/gönderilmemiş bildirimler.
 - Test sonuçları, commit/yayın kimliği ve doğrulanan bağlantılar.
 - Sürekli çalışan servis yoksa açıkça belirtilir; başarı uydurulmaz.
+
+## Doğrulanan ikinci adım
+
+- Üç okuma kaynağı canlı tarayıcıda doğrulandı: Franchise/Finans, Nilüfer yorumları, yöneticiye ait ayrı demo aday. Bu üç kaynak tüm ERP kapsamı değildir.
+- Ekspertiz sayfasına dokuz adımlık, yalnız bellekte çalışan demo eklendi. Sorgu kesintisi, paralel istasyonlar, insan rapor onayı, ayrı baskı/sunum ve teslim gösterilir. Gerçek işlem veya model yürütmesi yoktur.
+- Çalışan kaynak eşlemesi `EMPLOYEE-WORKFLOW-MAPPING.md` dosyasındadır. Görev verisi taşınmadı ve kişi takibi başlatılmadı.
+- Ortak iş sözleşmesi denetçiye üretim devrini reddeder; reddedilen teslim yeni kanıt ve yeni inceleme ister.
+- İlgili otomatik kontroller: 51 test başarılı. Canlı ekran doğrulaması ayrıca yapılır.
