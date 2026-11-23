@@ -1,3 +1,4 @@
+import { officeReviewTeam } from '../_shared/review-office-team.ts';
 import { assertReplyDelay, officeReviewAction } from '../_shared/review-agent-office.ts';
 import { handleReviewGoals, ReviewGoalError } from '../_shared/review-goals.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.57.4';
@@ -877,6 +878,10 @@ Deno.serve(async (req) => {
     const access = connection._reviewAccess;
     if(['office_review_status','office_review_profile_save'].includes(body.action))return json(await officeReviewAction(db,body,access,user));
     const branchRows = await loadBranchRegistry(db);
+    if(body.action==='office_review_team')return json(await officeReviewTeam({db,access,registry:branchRows,
+      readReply:()=>officeReviewAction(db,{action:'office_review_status'},access,user),
+      readGoogle:async (items:any[])=>{const signal=AbortSignal.timeout(25000);const token=await accessToken(await decrypt(connection.refresh_token_encrypted),signal);const configs:any={};for(const b of items)if(b.account_id&&b.location_id)configs[b.id]={account_id:b.account_id,location_id:b.location_id,store_code:b.store_code};return syncReviews(items.map(b=>b.id),token,signal,{},configs);}
+    }));
     const requestedBranch = body.branch_id === undefined ? managementBranchId : String(body.branch_id);
     if (body.branch_id !== undefined && (!managedBranchId(requestedBranch) || (requestedBranch.startsWith('branch-custom-') && !registryRow(branchRows, requestedBranch)))) throw new RequestError('Şube kaydı bulunamadı veya bu kapsam canlı yönetim için açılmadı.',400);
     const requestedRegistry = registryRow(branchRows, requestedBranch);

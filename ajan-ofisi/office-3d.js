@@ -38,7 +38,7 @@ function init(){
  for(const x of [-4.4,4.4]){box(scene,3.4,2.15,.05,x,1.83,-4.86,material(0xc1d3cf,{metalness:.2}));for(const dx of [-1.7,0,1.7])box(scene,.055,2.2,.09,x+dx,1.83,-4.79,0x53605b);box(scene,3.45,.045,.09,x,1.8,-4.79,0x53605b);}
  const tex=new THREE.TextureLoader().load('assets/ototr-official-logo.png',()=>renderOnce());tex.colorSpace=THREE.SRGBColorSpace;box(scene,3.15,1.1,.09,0,2.12,-4.65,0xf7f4ee);const sign=new THREE.Mesh(new THREE.PlaneGeometry(3.02,1.02),new THREE.MeshBasicMaterial({map:tex}));sign.position.set(0,2.12,-4.595);scene.add(sign);
  desk('FIN','Finans',-4.3,-1.5,0x52664e);desk('FRA','Franchise',0,-1.5,0xb5a082);desk('HR','İnsan Kaynakları',4.3,-1.5,0x86745a);
- desk('COM','Müşteri Şikayetleri',-4.3,2,0x374c61);desk('REV','Yorumlar',0,2,0x3a5663);desk('SALE','Saha Satış',4.3,2,0xa28b6e);
+ desk('COM','Müşteri Şikayetleri',-4.3,2,0x374c61);desk('REV','Yorum Ekibi',0,2,0x3a5663);desk('SALE','Saha Satış',4.3,2,0xa28b6e);
  // Compact SEO workstation faces into the central rear zone.
  const seo=desk('SEO','SEO & Web',-4.3,-3.9,0x58677a);seo.scale.set(.68,.85,.65);points.at(-1).position.set(-4.3,2,-3.5);
  const coo=desk('COO','Koordinatör',0,-3.9,0x354d49);coo.scale.set(.68,.85,.65);points.at(-1).position.set(0,2,-3.5);const guard=desk('GUARD','Bağımsız bekçi',4.3,-3.9,0x76684e);guard.scale.set(.68,.85,.65);points.at(-1).position.set(4.3,2,-3.5);document.querySelector('#coordinatorRoom3d').onclick=()=>document.querySelector('#coordinatorRoom').click();document.querySelector('#guardRoom3d').onclick=()=>document.querySelector('#guardRoom').click();
