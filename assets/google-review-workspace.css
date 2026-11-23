@@ -68,14 +68,6 @@ html[data-review-variant="2"] button:focus-visible,html[data-review-variant="2"]
 html[data-review-design="classic"] .review-rating-layout { display: contents; }
 html[data-review-design="classic"] .review-rating-breakdown { display: none; }
 #review-profile-actions { position: relative; }
-#review-profile-actions[open] #reviewDesignToggle {
-  display: block !important;
-  position: absolute !important;
-  top: 100%;
-  right: 0;
-  z-index: 2;
-  white-space: nowrap;
-}
 
 /* Shared review workspace surfaces and dashboard rhythm. */
 html[data-review-design="new"][data-review-variant="2"] :is(.v2-scope, .card, .chart-card, .kpi, #rvListPane, #rvDetail) {
@@ -135,9 +127,6 @@ html[data-review-design="new"] #workspaceCollectionBranch { min-height: 34px; ma
   html[data-review-design="new"][data-review-variant="2"] .v2-nav-row { flex-wrap: wrap; gap: 4px; }
   html[data-review-design="new"][data-review-variant="2"] .v2-nav-row .topnav { flex-basis: 100%; }
   html[data-review-design="new"][data-review-variant="2"] .v2-nav-actions { flex-wrap: wrap; min-width: 0; margin-block: 0 8px; }
-}
-html[data-review-variant="2"] #review-profile-actions[open] > #ototr-account-exit {
-  top: calc(100% + 38px) !important;
 }
 
 /* Optional turquoise view, scoped to the review workspace. */
@@ -565,7 +554,7 @@ html[data-review-design="new"] #overviewPeriodButtons { display:grid; gap:4px; }
 .review-goal-month:hover, .review-goal-month[aria-pressed="true"] { background:var(--s2); border-color:var(--line); }
 
 #overviewOperations > section[hidden] { display:none; }
-#overviewOperations:has(> section[hidden]) > section:not([hidden]) { grid-column:1/-1; }
+#overviewOperations > section { grid-column:1/-1; }
 #ovWatchlist .overview-watch-branch { width:100%; border:1px solid transparent; text-align:start; color:var(--ink); font:inherit; cursor:pointer; }
 #ovWatchlist .overview-watch-branch:hover { border-color:var(--line); }
 #ovWatchlist .overview-watch-branch:focus-visible { outline:2px solid var(--blue); outline-offset:1px; }
@@ -692,11 +681,31 @@ html:has(#view-reviews.on), #rvListPane {
 
 html:has(#view-reviews.on) { overflow-anchor:none; }
 
+#view-overview .overview-trend-legend:has(.overview-trend-controls) {
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
+  align-items:center;
+}
+.overview-trend-controls {
+  grid-column:2;
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:5px;
+}
 #view-overview .overview-trend-legend > .chip {
-  margin-inline-start:auto;
+  justify-self:end;
+  text-align:end;
 }
 #view-overview .overview-trend-legend > .chip[hidden] {
-  display:none;
+  display:flex;
+  visibility:hidden;
+}
+@media (max-width:1300px) {
+  #view-overview .overview-trend-legend:has(.overview-trend-controls) {
+    grid-template-columns:minmax(0,1fr);
+  }
+  .overview-trend-controls { grid-column:1; }
 }
 
 #view-overview .overview-summary-grid {
@@ -709,8 +718,20 @@ html:has(#view-reviews.on) { overflow-anchor:none; }
 @media (max-width:600px) {
   #view-overview .overview-summary-grid { grid-template-columns:minmax(0,1fr); }
 }
-#overviewBranchChart { max-width:860px; margin:0 0 16px; }
-#view-overview > #overviewBranchChart { grid-column:1/-1; width:100%; min-width:0; }
+#view-overview > .overview-branch-row {
+  grid-column:1/-1;
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:14px;
+  align-items:start;
+  margin-bottom:16px;
+}
+#overviewBranchChart { min-width:0; }
+.overview-complaint-card[hidden] { display:none; }
+.overview-complaint-card p { color:var(--mute); font-size:11px; }
+@media (max-width:760px) {
+  #view-overview > .overview-branch-row { grid-template-columns:minmax(0,1fr); }
+}
 #overviewBranchChart .branch-segments {
   background:var(--surface);
   color:var(--ink);
@@ -792,3 +813,62 @@ html:has(#view-reviews.on) { overflow-anchor:none; }
     min-height:36px;
   }
 }
+
+html[data-review-variant="2"] #ototr-profile-actions.review-header-actions #ototr-profile-menu #ototr-account-exit {
+  min-height:28px !important;
+  padding:4px 8px !important;
+  font-size:11px !important;
+}
+
+#ototr-profile-actions.review-header-actions #ototr-profile-menu { min-width:112px; padding:4px; }
+
+body:has(:is(#view-reviews,#view-performance,#view-ai,#view-collection).on) main > .ph { display:none; }
+body:has(#view-reviews.on) main { padding-top:8px; }
+#reviewPerformanceHead {
+  padding:8px 12px;
+  margin:0;
+  gap:8px;
+  flex-wrap:wrap;
+  border-bottom:1px solid var(--line);
+}
+#reviewPerformanceHead .workspace-subnav { margin:0; border:0; }
+#reviewPerformanceHead .workspace-subnav button { padding:6px 9px; }
+.v2-scope > #v2PeriodNote { margin:0; font-size:11px; }
+.v2-scope.workspace-collection-scope > :not(#workspaceCollectionScope) { display:none; }
+#view-collection .workspace-collection { margin-top:12px; }
+#view-collection .workspace-collection summary { font-weight:700; cursor:pointer; }
+#view-collection .workspace-collection[open] summary { margin-bottom:8px; }
+#problemKpis .kpi { min-height:0; padding:10px 12px; }
+#problemKpis .kpi .kv { margin-bottom:0; }
+.workspace-heat-card .workspace-branch-head { margin:0; }
+.workspace-heat-actions { display:flex; flex-wrap:wrap; align-items:center; gap:6px; }
+.branch-segments-label[data-demo-branch] b { color:#ff9696; font-weight:750; }
+#overviewBranchChart .branch-segments-label[data-demo-branch] b { color:#af2525; }
+
+#view-problems .problem-table {
+  overflow:auto;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:var(--surface);
+}
+#view-problems .problem-table table {
+  width:100%;
+  min-width:640px;
+  border-collapse:collapse;
+}
+#view-problems .problem-table :is(th,td) {
+  padding:9px 12px;
+  border-bottom:1px solid var(--line);
+  text-align:start;
+  vertical-align:middle;
+}
+#view-problems .problem-table thead th {
+  background:var(--s3);
+  color:var(--ink);
+  font-weight:700;
+}
+#view-problems .problem-table tbody tr:nth-child(odd) > td { background:var(--surface); }
+#view-problems .problem-table tbody tr:nth-child(even) > td { background:var(--s2); }
+#view-problems .problem-table tbody tr:is(:hover,:focus-within) > td { background:var(--bbg); }
+#view-problems .problem-table tbody tr:last-child > td { border-bottom:0; }
+#view-problems .problem-table td:last-child .btn { white-space:nowrap; }

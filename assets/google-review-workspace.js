@@ -56,11 +56,10 @@
     byId('mobNav').innerHTML = '';
     nav.innerHTML = group.views.filter(id=>allowed(id)&&id!=='store').map(id=>'<button type="button" data-workspace-view="'+id+'" class="'+(id===STATE.view?'on':'')+'" '+(id===STATE.view?'aria-current="page"':'')+'>'+escape(titles[id]||group.label)+'</button>').join('');
     nav.hidden = nav.children.length < 2;
-    const scopeBar = ['tasks','settings'].includes(group.id) ? doc.querySelector('.v2-scope') : null;
-    if (scopeBar && nav.parentElement !== scopeBar) scopeBar.append(nav);
-    if (!scopeBar && nav.parentElement?.classList.contains('v2-scope')) {
-      doc.querySelector('.ph')?.before(nav);
-    }
+    const destination = STATE.view === 'performance' ? byId('reviewPerformanceHead') :
+      ['tasks','settings'].includes(group.id) ? doc.querySelector('.v2-scope') : null;
+    if (destination && nav.parentElement !== destination) destination.append(nav);
+    if (!destination) doc.querySelector('.ph')?.before(nav);
   };
   const previousSwitch = root.switchView;
   root.switchView = function (id) {
@@ -126,7 +125,12 @@
     if(byId('crumb')) byId('crumb').hidden=true;
     if(byId('pageSub')) byId('pageSub').hidden=true;
     const period=byId('v2Period')?.parentElement; if(period) period.hidden=!analyticsView;
-    if(byId('v2PeriodNote')) byId('v2PeriodNote').hidden=!analyticsView || STATE.view==='overview';
+    const periodNote=byId('v2PeriodNote');
+    if (periodNote) {
+      periodNote.hidden=!analyticsView || STATE.view==='overview';
+      if (STATE.view==='performance') scopeBar?.append(periodNote);
+      else if (periodNote.parentElement===scopeBar) pageHeader?.after(periodNote);
+    }
     doc.querySelectorAll('#settingsTabs [data-t="stores"]').forEach(n=>n.hidden=true);
     doc.querySelectorAll('.review-page-switch').forEach(n=>n.remove());
     doc.querySelectorAll('button[onclick="openSimReview()"]').forEach(n=>n.hidden=true);
@@ -153,26 +157,32 @@
   function renderCollectionPage() {
     const id = collectionBranchId();
     const demos = root.OTOTRReviewAlternative?.regionalDemos?.() || [];
-    const active = operationalBranches(registry()).find(branch => branch.id === (live()?.getBranchId?.() || NILUFER)) || baseline;
+    const available = operationalBranches(registry());
+    const active = available.length ? available : [baseline];
     byId('workspaceCollectionScope')?.remove();
     const branchControl = doc.createElement('label');
     branchControl.id = 'workspaceCollectionScope';
-    branchControl.innerHTML = 'Şube <select id="workspaceCollectionBranch"><option value="">'+escape(name(active))+' · Canlı</option>'+
+    branchControl.innerHTML = 'Şube <select id="workspaceCollectionBranch">'+
+      active.map(branch => '<option value="'+escape(branch.id)+'">'+escape(name(branch))+' · Canlı</option>').join('')+
       demos.map(branch => '<option value="'+escape(branch.id)+'">'+escape(branch.name)+' · Demo</option>').join('')+'</select>';
     const scopeBar = doc.querySelector('.v2-scope');
     collectionSection.innerHTML =
-      '<div class="card workspace-collection"><h3>Google yorum QR kodu</h3><p>Ekspertiz teslimatında müşteriye gösterin. Bağlantı bu tarayıcıda şubeye özel saklanır.</p>' +
+      '<div id="workspaceCollectionSettings"></div><details class="card workspace-collection"><summary>Google yorum QR kodu</summary><p>Ekspertiz teslimatında müşteriye gösterin. Bağlantı bu tarayıcıda şubeye özel saklanır.</p>' +
       '<form id="workspaceQrForm"><label>Google yorum bağlantısı<input id="workspaceReviewLink" type="url" required placeholder="https://g.page/r/…/review"></label>' +
-      '<button class="btn" type="submit">Bağlantıyı kaydet ve QR oluştur</button><p id="workspaceQrError" role="status"></p><div id="workspaceQrResult"></div></form></div>' +
-      '<div id="workspaceCollectionSettings"></div>';
+      '<button class="btn" type="submit">Bağlantıyı kaydet ve QR oluştur</button><p id="workspaceQrError" role="status"></p><div id="workspaceQrResult"></div></form></details>';
     (scopeBar || collectionSection).prepend(branchControl);
     try { byId('workspaceReviewLink').value = root.localStorage.getItem('ototr.review.qr.'+id) || ''; } catch (_) {}
-    byId('workspaceCollectionBranch').value = collectionDemo?.id || '';
+    byId('workspaceCollectionBranch').value = id;
     root.renderReviewCollectionSettings?.(collectionDemo);
   }
   doc.addEventListener('change', event => {
     if (event.target.id !== 'workspaceCollectionBranch') return;
-    collectionDemo = root.OTOTRReviewAlternative?.regionalDemos?.().find(branch => branch.id === event.target.value) || null;
+    const id = event.target.value;
+    collectionDemo = root.OTOTRReviewAlternative?.regionalDemos?.().find(branch => branch.id === id) || null;
+    if (!collectionDemo && id !== live()?.getBranchId?.()) {
+      live()?.setScope?.(id === NILUFER ? 'live' : id);
+      return;
+    }
     renderCollectionPage();
     byId('workspaceCollectionBranch')?.focus();
   });
@@ -220,15 +230,16 @@
   function branchChartData(rows) {
     const [label, fixedMax, colorOffset] = branchChartMetrics[branchChartMetric];
     const peak = Math.max(0, ...rows.map(row=>row[branchChartMetric]).filter(Number.isFinite));
+    const minimum = branchChartMetric === 'average' ? 4 : 0;
     const scale = fixedMax === 5 ? 5 : Math.max(fixedMax || 20, Math.ceil(peak / 20) * 20);
     const format = value => !Number.isFinite(value) ? '—' : branchChartMetric === 'average'
       ? value.toLocaleString('tr-TR', {minimumFractionDigits:1, maximumFractionDigits:1})
       : (fixedMax === 100 ? '%' : '') + Math.round(value).toLocaleString('tr-TR');
     return {
-      label, ticks: Array.from({length:5}, (_,i)=>format(scale*i/4)),
+      label, ticks: Array.from({length:5}, (_,i)=>minimum ? (minimum+(scale-minimum)*i/4).toLocaleString('tr-TR',{minimumFractionDigits:1,maximumFractionDigits:2}) : format(scale*i/4)),
       series: rows.map((row,index)=>{
         const value = row[branchChartMetric];
-        const ratio = Number.isFinite(value) ? Math.max(0, Math.min(1,value/scale)) : 0;
+        const ratio = Number.isFinite(value) ? Math.max(0, Math.min(1,(value-minimum)/(scale-minimum))) : 0;
         return {value:format(value), color:branchChartColors[(index+colorOffset)%branchChartColors.length],
           fills:Array.from({length:branchSegmentCount},(_,segment)=>Math.max(0,Math.min(1,ratio*branchSegmentCount-segment)))};
       })
@@ -243,17 +254,17 @@
       rows.map((row,index)=>{
         const {value,color,fills} = series[index];
         const segments = fills.map((fill,segment)=>'<i style="--fill:'+fill+';--delay:'+segment*3+'ms"></i>').join('');
-        return '<button type="button" class="branch-segments-label" '+(row.demo?'data-demo-branch':'data-select-branch')+'="'+escape(row.id)+'"><b>'+escape(row.name)+'</b><small>'+(row.demo?'Demo':'Canlı')+'</small></button>'+
+        return '<button type="button" class="branch-segments-label" '+(row.demo?'data-demo-branch':'data-select-branch')+'="'+escape(row.id)+'" aria-label="'+escape(row.name+(row.demo?' · Demo':' · Canlı'))+'"><b>'+escape(row.name)+'</b></button>'+
           '<div class="branch-segments-track" aria-hidden="true" style="--segments:'+branchSegmentCount+';--series:'+color+'">'+segments+'</div>'+
           '<b class="branch-segments-value" aria-label="'+escape(row.name+' '+label+' '+value)+'">'+escape(value)+'</b>';
       }).join('')+'</div></div>';
   }
-  function heatmapCard() {
+  function heatmapCard(headingActions) {
     const rows = root.OTOTRReviewAlternative?.branchHeatmap?.() || [];
     const cell = (value,warn,good,format) => value == null ? '<td>—</td>' :
       '<td><span class="workspace-heat '+(value>=good?'ok':value>=warn?'warn':'bad')+'">'+escape(format(value))+'</span></td>';
     const pct = number => '%'+Math.round(number);
-    return '<div class="card workspace-heat-card"><h3>Şube ısı haritası</h3><p>Toplam yorumlar · Canlı ve demo ayrı etiketlenir.</p><div class="workspace-heat-scroll"><table><thead><tr><th>Şube</th><th>Yorum</th><th>Puan</th><th>Yanıt</th><th>SLA</th><th>Hedef</th></tr></thead><tbody>'+
+    return '<div class="card workspace-heat-card"><div class="workspace-branch-head"><h3>Şube ısı haritası</h3>'+headingActions+'</div><p>Toplam yorumlar · Canlı ve demo ayrı etiketlenir.</p><div class="workspace-heat-scroll"><table><thead><tr><th>Şube</th><th>Yorum</th><th>Puan</th><th>Yanıt</th><th>SLA</th><th>Hedef</th></tr></thead><tbody>'+
       rows.map(row=>'<tr><th scope="row"><button type="button" class="btn sm ghost" '+(row.demo?'data-demo-branch':'data-select-branch')+'="'+escape(row.id)+'">'+escape(row.name)+'</button> <span class="chip '+(row.demo?'purple':'ok')+'">'+(row.demo?'Demo':'Canlı')+'</span></th><td>'+(row.count??'—')+'</td>'+
         cell(row.average,4,4.5,n=>n.toLocaleString('tr-TR',{minimumFractionDigits:1,maximumFractionDigits:1}))+cell(row.response,80,95,pct)+cell(row.sla,70,90,pct)+cell(row.progress,60,100,pct)+'</tr>').join('')+
       '</tbody></table></div><p>Renkler: yeşil hedefte, turuncu dikkat, kırmızı iyileştirme gerekli. Ölçülemeyen değerler —.</p></div>';
@@ -301,7 +312,8 @@
     const state=api().state;
     const rows=root.OTOTRReviewAlternative?.scopedRows?.()||[];
     const metrics=b.id===live()?.getBranchId?.()?live()?.aggregateReviews?.(rows,{slaHours:state.policy?.default_sla_hours||24}):null;
-    section.innerHTML='<div class="workspace-branch-head"><div><h2>Şube ağı</h2><p>'+operationalBranches(items).length+' canlı · '+items.filter(x=>!operationalBranches([x]).length).length+' kurulum / test</p></div><div><button class="btn" data-branch-action="sample" '+(busy?'disabled':'')+'>Örnek şubeyi dene</button> <button class="btn p" data-branch-action="new" '+(busy?'disabled':'')+'>＋ Şube ekle</button></div></div>'+
+    const branchActions='<div class="workspace-heat-actions"><span class="chip">'+operationalBranches(items).length+' canlı · '+items.filter(x=>!operationalBranches([x]).length).length+' kurulum / test</span> <button class="btn" data-branch-action="sample" '+(busy?'disabled':'')+'>Örnek şubeyi dene</button> <button class="btn p" data-branch-action="new" '+(busy?'disabled':'')+'>＋ Şube ekle</button></div>';
+    section.innerHTML=
       (loadError?'<div class="alert warn" role="alert">'+escape(loadError)+' <button class="btn sm" data-branch-action="reload">Tekrar dene</button></div>':'')+
       '<div class="workspace-branches"><aside class="workspace-branch-list" aria-label="Şube listesi">'+items.map(x=>'<button class="workspace-branch '+(x.id===selected?'selected':'')+'" data-select-branch="'+escape(x.id)+'" aria-pressed="'+(x.id===selected)+'"><strong>'+escape(name(x))+'</strong><span>'+escape(x.region)+' · '+escape(x.city)+'</span><em>'+badge(x)+'</em></button>').join('')+'</aside><div class="workspace-branch-detail"><div class="card"><div class="head"><div><h2>'+escape(name(b))+'</h2><p>'+escape(b.region)+' / '+escape(b.city)+'</p></div><span class="chip '+(liveBranch?'ok':'warn')+'">'+badge(b)+'</span></div>'+
       (b.onboarding?.test?'<div class="alert info">Örnek şube gerçek bir işletme değildir. Canlı raporlara katılmaz; Google yanıtı ve müşteri mesajı gönderemez.</div>':'')+
@@ -316,7 +328,7 @@
       '<button class="btn" data-branch-action="check" '+(busy?'disabled':'')+'>Kurulumu kontrol et</button></div><p class="v2-chart-note">AI ve bağlantılar mevcut ERP ayarlarından kullanılır. Yeni şubede müşteri mesajı gönderimi başlangıçta kapalıdır.</p></div>'+
       (!liveBranch&&c?'<div class="card"><h3>Şubenin çalışma hedefleri</h3><p class="v2-chart-note">Bu şubeye özel sunucu kaydı · '+escape(c.target_month?.slice(0,7)||'')+'</p><div class="workspace-form-grid"><label>Toplam yorum hedefi<input id="setupTarget" type="number" min="1" max="10000" step="1" value="'+escape(c.target?.target||b.target||30)+'"><span>Yıldız hedefi</span><input id="setupRatingTarget" type="number" min="1" max="5" step="0.1" value="'+escape(c.target?.rating_target??'')+'"><button class="btn" data-branch-action="save-target" '+(busy?'disabled':'')+'>Hedefi kaydet</button></label><label>Yanıt SLA (saat)<input id="setupSla" type="number" min="1" max="168" step="1" value="'+escape(b.sla_hours||24)+'"><button class="btn" data-branch-action="save-sla" '+(busy?'disabled':'')+'>SLA kaydet</button></label></div><p class="v2-chart-note">Kaydettiğiniz değerler yalnız bu şubeye uygulanır. Canlı Bursa hedefi ve SLA’sı değişmez.</p></div>':'')+
       (b.onboarding?.test?'<div id="workspaceSandbox"></div>':'')+mapPanel(b)+'</div></div>';
-    section.querySelector('.workspace-branches')?.insertAdjacentHTML('beforebegin',heatmapCard());
+    section.querySelector('.workspace-branches')?.insertAdjacentHTML('beforebegin',heatmapCard(branchActions));
     if(b.onboarding?.test)root.OTOTRReviewSandbox?.mount(byId('workspaceSandbox'),b);
   }
   async function loadBranches() {
