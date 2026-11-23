@@ -441,7 +441,6 @@ html[data-review-design="new"] #ovKpis .kd { gap:3px 5px; }
 html[data-review-design="new"] #ovKpis .kd .chip { font-size:9px; padding:2px 5px; }
 html[data-review-design="new"] #ovKpis .kv { font-size:clamp(18px,1.6vw,24px); margin:3px 0; }
 html[data-review-design="new"] #overviewGoalSlot { display:block; width:100%; box-sizing:border-box; padding:12px 14px; }
-html[data-review-design="new"] #view-overview .chart-card:has(#chartRegion) { display:none; }
 .review-goal-heading { display:flex; flex-wrap:wrap; align-items:center; gap:4px 8px; }
 .review-goal-heading .review-goal-context { margin-inline-start:auto; }
 .review-goal-heading h3 { margin:0; font-size:13px; }
@@ -663,3 +662,51 @@ html:has(#view-reviews.on), #rvListPane {
 }
 
 html:has(#view-reviews.on) { overflow-anchor:none; }
+
+#view-overview .overview-trend-legend > .chip {
+  margin-inline-start:auto;
+}
+#view-overview .overview-trend-legend > .chip[hidden] {
+  display:none;
+}
+
+#view-overview .overview-summary-grid {
+  grid-template-columns:repeat(4,minmax(0,1fr));
+}
+#view-overview .overview-summary-grid > .chart-card { grid-column:auto; min-width:0; }
+@media (max-width:1100px) {
+  #view-overview .overview-summary-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+@media (max-width:600px) {
+  #view-overview .overview-summary-grid { grid-template-columns:minmax(0,1fr); }
+}
+#overviewBranchChart { max-width:860px; margin:0 0 16px; }
+#view-overview > #overviewBranchChart { grid-column:1/-1; width:100%; min-width:0; }
+#overviewBranchChart .branch-segments {
+  background:var(--surface);
+  color:var(--ink);
+  border-color:var(--line);
+  padding:16px;
+}
+#overviewBranchChart .branch-segments-grid {
+  grid-template-columns:minmax(88px,160px) minmax(0,1fr) minmax(26px,auto);
+  gap:6px 8px;
+}
+#overviewBranchChart .branch-segments-track { height:15px; }
+#overviewBranchChart .branch-segments-track i { background:var(--s3); }
+#overviewBranchChart .branch-segments-header p,
+#overviewBranchChart .branch-segments-axis,
+#overviewBranchChart .branch-segments-unit,
+#overviewBranchChart .branch-segments-label small { color:var(--mute); }
+#overviewBranchChart .branch-segments-metrics button {
+  background:var(--s2);
+  border-color:var(--line);
+  color:var(--ink);
+}
+#overviewBranchChart .branch-segments-metrics button[aria-pressed="true"] {
+  background:var(--okbg);
+  border-color:var(--ok);
+}
+@media (max-width:600px) {
+  #overviewBranchChart .branch-segments-grid { grid-template-columns:minmax(82px,1fr) minmax(0,1.8fr) auto; gap:6px 5px; }
+}

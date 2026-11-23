@@ -93,7 +93,7 @@
       }
     }
     normalize();
-    if (STATE.view === 'performance') renderBranchChart();
+    if (['overview','performance'].includes(STATE.view)) renderBranchChart();
   };
   function normalize() {
     const scopeBar = doc.querySelector('.v2-scope');
@@ -259,10 +259,12 @@
       '</tbody></table></div><p>Renkler: yeşil hedefte, turuncu dikkat, kırmızı iyileştirme gerekli. Ölçülemeyen değerler —.</p></div>';
   }
   const branchChartHost = byId('workspaceBranchChart');
+  const overviewBranchChart = byId('overviewBranchChart');
   function renderBranchChart() {
-    branchChartHost.innerHTML = branchChart(root.OTOTRReviewAlternative?.branchHeatmap?.() || []);
+    const host = STATE.view === 'overview' ? overviewBranchChart : branchChartHost;
+    host.innerHTML = branchChart(root.OTOTRReviewAlternative?.branchHeatmap?.() || []);
   }
-  branchChartHost.addEventListener('click', event => {
+  const handleBranchChartClick = event => {
     const demo = event.target.closest('[data-demo-branch]');
     if (demo) return root.OTOTRReviewAlternative?.openRegionalDemo?.(demo.dataset.demoBranch);
     const branch = event.target.closest('[data-select-branch]');
@@ -287,7 +289,9 @@
       values[index].textContent = value;
       values[index].setAttribute('aria-label',branchChartRows[index].name+' '+label+' '+value);
     });
-  });
+  };
+  branchChartHost.addEventListener('click', handleBranchChartClick);
+  overviewBranchChart.addEventListener('click', handleBranchChartClick);
   function renderBranches() {
     if(formOpen) return;
     const items=visibleBranches(), b=items.find(b=>b.id===selected)||items[0]; selected=b.id;
@@ -411,7 +415,7 @@
   });
   root.openNewStore=()=>{root.switchView('branches');openForm(null);};
   root.openSimReview=()=>root.toast('Canlı çalışma alanında örnek yorum oluşturulmaz. Şubeler bölümünde kurulum denemesini kullanın.','warn');
-  root.addEventListener('ototr-management-ready',()=>{normalize();if(STATE.view==='branches')renderBranches();if(STATE.view==='performance')renderBranchChart();});
+  root.addEventListener('ototr-management-ready',()=>{normalize();if(STATE.view==='branches')renderBranches();if(['overview','performance'].includes(STATE.view))renderBranchChart();});
   root.addEventListener('ototr-branch-registry-ready',()=>{queueMicrotask(normalize);});
   // Old saved demo scope is never restored into the operational workspace.
   if(live()?.getBranchId?.()!==NILUFER)live()?.setScope?.('live');

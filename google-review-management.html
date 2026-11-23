@@ -599,7 +599,7 @@ main{margin:0 auto;width:auto;max-width:1440px;padding:20px}
   try {
     document.documentElement.dataset.reviewDesign = localStorage.getItem('ototr.review.design.teal') === 'classic' ? 'classic' : 'new';
   } catch (_) {}
-</script><link rel="stylesheet" href="assets/google-review-alternative.css?v=20261119-1"><link rel="stylesheet" href="assets/google-review-workspace.css?v=20261123-29"></head><body>
+</script><link rel="stylesheet" href="assets/google-review-alternative.css?v=20261119-1"><link rel="stylesheet" href="assets/google-review-workspace.css?v=20261123-31"></head><body>
 <div id="review-loading-message" role="status">Yorum Yönetimi hazırlanıyor…</div>
 
 <header class="topbar">
@@ -675,7 +675,7 @@ main{margin:0 auto;width:auto;max-width:1440px;padding:20px}
         <div class="chart-wrap h-220"><canvas id="chartWeeklyReviews"></canvas></div>
       </div>
     </div>
-    <div class="chart-grid">
+    <div class="chart-grid overview-summary-grid">
       <div class="chart-card span-4">
         <div class="chart-head"><h3>Puan hedefi ve mevcut durum</h3></div>
         <div id="ratingGoalSummary" class="v2-summary-line"></div>
@@ -689,13 +689,12 @@ main{margin:0 auto;width:auto;max-width:1440px;padding:20px}
         <div class="chart-head"><h3>Yanıt süresi <span class="sub">SLA 24 sa</span></h3></div>
         <div class="chart-wrap h-220"><canvas id="chartResponse"></canvas></div>
       </div>
-    </div>
-    <div class="chart-grid">
-      <div class="chart-card span-12 v2-overview-sla">
+      <div class="chart-card span-4 v2-overview-sla">
         <div class="chart-head"><h3>SLA görünümü</h3></div>
         <div id="ovSla"></div>
       </div>
     </div>
+    <div id="overviewBranchChart"></div>
     <div id="overviewOperations" class="chart-grid" hidden>
       <section class="chart-card span-8"><div id="overviewActionQueue"></div></section>
       <section class="chart-card span-4"><div id="overviewComplaintTopics"></div></section>
@@ -3229,7 +3228,7 @@ if (!STATE.onboarded) setTimeout(startTour, 500);
 <script src="assets/google-review-alternative.js?v=20261123-25"></script>
 <script src="assets/google-review-sandbox.js?v=20261119-3"></script>
 <script src="assets/vendor-review-qrcode.js"></script>
-<script src="assets/google-review-workspace.js?v=20261123-1"></script>
+<script src="assets/google-review-workspace.js?v=20261123-2"></script>
 <script>
   document.documentElement.removeAttribute('data-review-loading');
 </script>
