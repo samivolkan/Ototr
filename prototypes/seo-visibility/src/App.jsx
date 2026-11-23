@@ -9,6 +9,7 @@ import './alternative.css';
 import {Studio} from './Studio';
 import {Ads} from './Ads';
 import {RealAds,RealAdsLoader} from './RealAds.jsx';
+import {HostedSources} from './HostedSources.jsx';
 import {LiveSources} from './LiveSources.jsx';
 import {Intake} from './Intake.jsx';
 import './studio.css';
@@ -25,7 +26,7 @@ export function App(){
  const[realAds,setRealAds]=useState(null);
  const[design,setDesign]=useState(()=>['classic','alternative'].includes(new URLSearchParams(location.search).get('design'))?new URLSearchParams(location.search).get('design'):'studio');
  function changeDesign(value){setDesign(value);const url=new URL(location.href);url.searchParams.set('design',value);history.replaceState(null,'',url)}
- const[view,setView]=useState(new URLSearchParams(location.search).get('view')==='live'?'live':'overview'),[days,setDays]=useState(28),[branch,setBranch]=useState('all'),[compare,setCompare]=useState(true),[metric,setMetric]=useState('impressions');
+ const[view,setView]=useState(new URLSearchParams(location.search).get('view')==='live'||location.hostname==='samivolkan.github.io'?'live':'overview'),[days,setDays]=useState(28),[branch,setBranch]=useState('all'),[compare,setCompare]=useState(true),[metric,setMetric]=useState('impressions');
  const[db,setDb]=useState(initial),[modal,setModal]=useState(null),[toast,setToast]=useState(''),[menu,setMenu]=useState(false),[busy,setBusy]=useState(false),[storageError,setStorageError]=useState(false);
  const[queryMode,setQueryMode]=useState('query'),[search,setSearch]=useState(''),[device,setDevice]=useState('all'),[group,setGroup]=useState('all'),[opOnly,setOpOnly]=useState(false),[targetCtr,setTargetCtr]=useState(5);
  const[issueFilter,setIssueFilter]=useState('all'),[taskFilter,setTaskFilter]=useState('all'),[contentFilter,setContentFilter]=useState('all');
@@ -67,7 +68,7 @@ export function App(){
    <div className="workspace"><div className="workspace-icon"><Compass size={23}/></div><div><strong>Dijital büyüme</strong><small>SEO çalışma alanı</small></div></div>
    <div className="nav-caption">GÖRÜNÜRLÜK MERKEZİ</div>
    <nav aria-label="Modül menüsü">{nav.map(([id,label,Icon])=><button key={id} className={view===id?'active':''} onClick={()=>go(id)} aria-current={view===id?'page':undefined}><Icon size={20}/><span>{label}</span>{id==='actions'&&<em>{openTasks}</em>}</button>)}</nav>
-   <div className="sidebar-bottom"><div className="sandbox-card"><Flask size={21}/><strong>Güvenli deneme alanı</strong><p>Örnek veriler. Canlı sisteme bağlantı yok.</p></div><button onClick={()=>setModal({type:'help'})}><Question size={19}/> Prototip kılavuzu</button><button onClick={()=>setModal({type:'reset'})}><ArrowCounterClockwise size={19}/> Demoyu sıfırla</button><div className="side-foot">OTOTR <span>Prototip / v1.0</span></div></div>
+   <div className="sidebar-bottom"><div className="sandbox-card"><Flask size={21}/><strong>Güvenli deneme alanı</strong><p>Demo sekmeleri örnek veridir. Gerçek raporlar veri merkezindedir.</p></div><button onClick={()=>setModal({type:'help'})}><Question size={19}/> Prototip kılavuzu</button><button onClick={()=>setModal({type:'reset'})}><ArrowCounterClockwise size={19}/> Demoyu sıfırla</button><div className="side-foot">OTOTR <span>Prototip / v1.0</span></div></div>
   </aside>
   <main id="main" inert={menu?true:undefined}>
    <div className="topline">{design==='studio'&&<div className="studio-brand"><img src={import.meta.env.BASE_URL+"logo-beyaz.svg"} alt="OTOTR"/><span>GÖRÜNÜRLÜK MERKEZİ</span></div>}<span><button ref={menuTrigger} className="icon-button menu-toggle" aria-expanded={menu} aria-label="Menüyü aç" onClick={()=>setMenu(true)}><List size={22}/></button>WEB SİTESİ <span className="breadcrumb">/ Görünürlük</span></span><div className="design-switch" role="group" aria-label="Tasarım görünümü"><button aria-pressed={design==='studio'} onClick={()=>changeDesign('studio')}>Studio</button><button aria-pressed={design==='classic'} onClick={()=>changeDesign('classic')}>Klasik</button><button aria-pressed={design==='alternative'} onClick={()=>changeDesign('alternative')}>Alternatif</button></div><Badge tone="red"><Flask size={13}/> {view==='live'?'ÖZEL · GERÇEK RAPORLAR':view==='ads'&&realAds?'ADS GERÇEK':'DEMO · ÖRNEK VERİ'}</Badge></div>
@@ -79,7 +80,7 @@ export function App(){
    <div role="tabpanel" id="seo-tab-panel" aria-labelledby={`tab-${view}`}>
    {view==='overview'&&design==='studio'&&<Studio onReport={()=>setModal({type:'report'})} days={days} branch={branch} compare={compare} metrics={metrics} previous={previous} threshold={db.threshold} go={go} onQuery={item=>{setQueryMode('query');setDevice('all');setTargetCtr(5);setModal({type:'query',item})}} addTask={addTask} exportRows={exportRows}/>}
    {view==='ads'&&(realAds?<RealAds data={realAds} onClear={()=>setRealAds(null)}/>:<><RealAdsLoader onLoad={setRealAds}/><Ads days={days} branch={branch} compare={compare} exportRows={exportRows} addTask={addTask} go={go}/></>)}
-   <div hidden={view!=='live'}><LiveSources onAds={setRealAds}/></div>
+   <div hidden={view!=='live'}>{['127.0.0.1','localhost'].includes(location.hostname)?<LiveSources onAds={setRealAds}/>:<HostedSources/>}</div>
    {view==='intake'&&<Intake/>}
    {view==='analysis'&&<Analysis days={days} branch={branch} compare={compare} setDays={setDays} setBranch={setBranch} setCompare={setCompare} reports={db.reports} setReports={reports=>setDb(s=>({...s,reports}))} exportRows={exportRows} notify={notify}/>}
    {view==='local'&&<LocalAnalysis days={days} branch={branch} compare={compare} exportRows={exportRows} addTask={addTask}/>}
