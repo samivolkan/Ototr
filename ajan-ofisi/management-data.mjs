@@ -291,6 +291,29 @@ export default {
           "deliverable": "Hedef hesap ve görseliyle onaya hazır içerik paketi"
         }
       ]
+    },
+    {
+      "id": "OPS",
+      "name": "Ekspertiz Süreç Takibi",
+      "manager": "Şube operasyon sorumlusu · rol eşlemesi bekliyor",
+      "kind": "proposed",
+      "mission": "İş emrinden teslim sonrası memnuniyete tek takip sorumlusu",
+      "window": "Olay kaynakları doğrulandıktan sonra tek şube demo pilotu",
+      "phase": 2,
+      "risk": "veri",
+      "href": "inspection-coordinator.html",
+      "dependencies": [],
+      "decision": "Pilot şube ve sorumlu; süre, sorgu bütçesi ve müşteri iletişim politikası",
+      "next": "İş emri, usta girişi, sorgu, rapor sürümü, baskı, sunum ve teslim olaylarını eşleştir.",
+      "mode": "Planlandı · canlı takip ve gönderim kapalı",
+      "agents": [
+        {
+          "id": "PLAN-OPS-01",
+          "name": "Ekspertiz Süreç Takip Ajanı",
+          "scope": "Aşamaları ve istisnaları takip eder; rapor bulgusunu değiştirmez, gerçek müşteri mesajı göndermez.",
+          "deliverable": "Şube bazlı eksik/geciken iş listesi, teslim kanıtı ve onaya hazır takip planı"
+        }
+      ]
     }
   ],
   "limits": {

@@ -1,4 +1,4 @@
-import data from './management-data.mjs';
+import data from './management-data.mjs?v=ops-1';
 import {STATES,cleanNotes,selectedModules,planningSummary} from './management-model.mjs';
 const $=s=>document.querySelector(s), esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const key='ototr.management.planning.v1';
