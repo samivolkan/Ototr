@@ -480,7 +480,7 @@
         if (publishedReview && savedReplacement(currentItem(publishedReview))) return window.openReviewFromStore(publishedReview.id);
         if (getAI()?.['openItem']) return getAI()['openItem'](row.erpItemId);
         const review=REVIEWS.find(r=>!r.demo && currentItem(r)?.id===row.erpItemId);
-        if(review){ switchView('reviews'); if (typeof selectReview === 'function') selectReview(review.id); else { SEL=review.id; renderReviews?.(); } }
+        if(review){ switchView('reviews',{reviewId:review.id}); if (typeof selectReview === 'function') selectReview(review.id); else { SEL=review.id; renderReviews?.(); } }
         else toast('Bu canlı görev ERP kuyruğunda kayıtlıdır. Demo adımları canlı görevi değiştiremez.', 'info');
         return;
       }
