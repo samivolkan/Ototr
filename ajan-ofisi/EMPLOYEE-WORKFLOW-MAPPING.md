@@ -28,7 +28,7 @@ Risk: yetki / veri. Efor: önce salt okunur tek kaynak adaptörü ve sentetik ye
 
 ## Açık kapılar
 
-- Mevcut ekspertiz yazma yollarının şube sınırı ve boş sahip durumları bağımsız güvenlik incelemesi gerektiriyor. Ajanlar bu RPC'leri çağırmaz; bu teslimde yetkiler genişletilmez.
+- Görev sahiplenme yoluna şube sınırı eklendi ve izole SQL ile doğrulandı. Diğer ekspertiz yazma yollarının şube sınırı ve boş sahip durumları ayrıca incelenmeli. Ajanlar bu RPC'leri çağırmaz; yetkileri genişletilmedi.
 - Gerçek kaynağın hangi şubede kullanıldığı, aktif vardiya ve izin verisinin yetkili kaynağı doğrulanmadı.
 - Baskı başarısı, sunum bitişi, teslim edilen sürüm, sorgu sağlayıcısı ve iletişim uygunluğu henüz eşlenmedi.
 - Canlı kişi takibi, uyarı gönderimi veya performans puanı bu eşleme ile açılmadı.

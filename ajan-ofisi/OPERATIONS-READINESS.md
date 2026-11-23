@@ -83,3 +83,9 @@ Yeniden test: `npm install --prefix <ayrı-test-klasörü> @electric-sql/pglite@
 - Canlı tablolar `app_private` altında, RLS açık ve doğrudan istemci erişimi kapalıdır. İki yeni “RLS açık/politika yok” INFO kaydı bu RPC-only tasarımın beklenen sonucudur; erişim politikası ekleyerek tablo açılmadı. Diğer danışman bulgu sayıları değişmedi.
 
 İlgili testler 57/57 geçti. Aynı kontroller Pages yayın iş akışına eklendi; başarısız testle yayın ilerlemez. İzole SQL testleri gerçek PostgreSQL motorunda kurgusal kimlikler ve kapsamlarla çalışır, canlı kullanıcı kayıtlarını kullanmaz.
+
+## Ekspertiz sahiplenme erişimi
+
+Mevcut manuel sahiplenme yolunda şube eşleşmesi eksikliği izole PostgreSQL'de sentetik kullanıcılar ve mevcut fonksiyon/tetikleyici kopyalarıyla doğrulandı. Dar düzeltme: yalnız aktif ustanın kendi şubesindeki görev sahiplenilebilir; şubesiz hesap ve boş/farklı rol reddedilir. Mevcut görev sahibi, audit ve rapor kilidi akışı korunur. Gerçek görev/rapor üzerinde deneme veya değişiklik yapılmadı.
+
+`20261123234547_inspection_claim_branch_scope_guard.sql` canlıya uygulandı. Canlı fonksiyon tanımı ve anonim erişim engeli doğrulandı. Aynı şube için başarılı yol, başka şube, başka görev sahibi, yanlış/boş rol ve pasif hesap testleri yayın kapısına eklendi. Bu, diğer ekspertiz yazma yollarının tümünün denetlendiği veya ajan yazma yetkisinin açıldığı anlamına gelmez.
