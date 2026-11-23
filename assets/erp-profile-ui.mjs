@@ -15,3 +15,12 @@ function render(){const unread=items.filter(x=>!x.read_at).length;q('#ototr-noti
 async function refresh(){if(busy||document.hidden)return;busy=true;q('#ototr-notification-refresh').disabled=true;try{items=(await api('office_notifications')).items;render();}catch(e){q('#ototr-notification-count').hidden=true;q('#ototr-notification-list').innerHTML='<p class="on-empty">'+esc(e.message)+'</p>';}finally{busy=false;q('#ototr-notification-refresh').disabled=false;}}
 q('#ototr-notification-refresh').onclick=refresh;q('#ototr-notification-list').onclick=async e=>{const button=e.target.closest('[data-read]');if(!button)return;button.disabled=true;try{await api('office_notification_read',{id:button.dataset.read});const row=items.find(n=>n.id===button.dataset.read);if(row)row.read_at=new Date().toISOString();render();}catch{button.disabled=false;button.textContent='Kaydedilemedi · tekrar dene';}};
 let tries=0;const boot=setInterval(()=>{if(window.OTOTRGetERPAuthSession||++tries>=30){clearInterval(boot);refresh();}},500);setInterval(refresh,60000);
+
+// Reuse the same account menu and inbox inside the standalone/embedded review header.
+if(document.querySelector('.topbar')&&document.getElementById('notifBtn')){
+ document.querySelector('.topbar').append(host);
+ host.classList.add('review-header-actions');
+ bell.innerHTML='🔔 <span id="ototr-notification-count" hidden>0</span>';
+ document.getElementById('notifBtn').style.display='none';
+ const embeddedStyle=document.createElement('style');embeddedStyle.textContent='#ototr-profile-actions.review-header-actions{position:relative;top:auto;right:auto;box-shadow:none;border:0;background:transparent;margin-left:4px;padding:0;flex-shrink:0}#ototr-profile-actions.review-header-actions #ototr-profile-menu{z-index:200}#ototr-notifications-panel{z-index:200}';document.head.append(embeddedStyle);
+}
