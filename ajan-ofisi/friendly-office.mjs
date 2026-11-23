@@ -8,7 +8,15 @@ function group(nodes,title,after){
 if(document.querySelector('#scene')){
  document.body.classList.add('friendly-office');
  const office=document.querySelector('.office'),sidebar=document.querySelector('.sidebar');
- group([sidebar],'Ekip ve kaynak incelemeleri',office);
+ const teamDetails=group([sidebar],'Ekip ve kaynak incelemeleri',office);
+ document.addEventListener('click',event=>{
+  const button=event.target.closest('[data-team]');if(!button)return;
+  if(button.dataset.team==='FIN'){
+   const task=document.querySelector('.friendly-work[data-details$=":FIN-04"]');
+   if(task){event.preventDefault();event.stopImmediatePropagation();task.open=true;task.scrollIntoView({block:'center',behavior:'smooth'});return;}
+  }
+  if(!['FRA','REV','SEO'].includes(button.dataset.team)){teamDetails.open=true;setTimeout(()=>teamDetails.scrollIntoView({block:'start',behavior:'smooth'}),0);}
+ },true);
  const quick=document.createElement('nav');quick.className='friendly-shortcuts';quick.setAttribute('aria-label','Ofis kısayolları');
  quick.innerHTML='<div><strong>Ajan Ofisi</strong><p>Ekibini ve senden beklenenleri tek yerden takip et.</p></div><a href="#web-demo-tasks">Aday ve kararları gör ↓</a>';
  office.prepend(quick);
