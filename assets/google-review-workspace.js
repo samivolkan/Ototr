@@ -157,11 +157,13 @@
   function renderCollectionPage() {
     const id = collectionBranchId();
     const demos = root.OTOTRReviewAlternative?.regionalDemos?.() || [];
-    const active = operationalBranches(registry()).find(branch => branch.id === (live()?.getBranchId?.() || NILUFER)) || baseline;
+    const available = operationalBranches(registry());
+    const active = available.length ? available : [baseline];
     byId('workspaceCollectionScope')?.remove();
     const branchControl = doc.createElement('label');
     branchControl.id = 'workspaceCollectionScope';
-    branchControl.innerHTML = 'Şube <select id="workspaceCollectionBranch"><option value="">'+escape(name(active))+' · Canlı</option>'+
+    branchControl.innerHTML = 'Şube <select id="workspaceCollectionBranch">'+
+      active.map(branch => '<option value="'+escape(branch.id)+'">'+escape(name(branch))+' · Canlı</option>').join('')+
       demos.map(branch => '<option value="'+escape(branch.id)+'">'+escape(branch.name)+' · Demo</option>').join('')+'</select>';
     const scopeBar = doc.querySelector('.v2-scope');
     collectionSection.innerHTML =
@@ -170,12 +172,17 @@
       '<button class="btn" type="submit">Bağlantıyı kaydet ve QR oluştur</button><p id="workspaceQrError" role="status"></p><div id="workspaceQrResult"></div></form></details>';
     (scopeBar || collectionSection).prepend(branchControl);
     try { byId('workspaceReviewLink').value = root.localStorage.getItem('ototr.review.qr.'+id) || ''; } catch (_) {}
-    byId('workspaceCollectionBranch').value = collectionDemo?.id || '';
+    byId('workspaceCollectionBranch').value = id;
     root.renderReviewCollectionSettings?.(collectionDemo);
   }
   doc.addEventListener('change', event => {
     if (event.target.id !== 'workspaceCollectionBranch') return;
-    collectionDemo = root.OTOTRReviewAlternative?.regionalDemos?.().find(branch => branch.id === event.target.value) || null;
+    const id = event.target.value;
+    collectionDemo = root.OTOTRReviewAlternative?.regionalDemos?.().find(branch => branch.id === id) || null;
+    if (!collectionDemo && id !== live()?.getBranchId?.()) {
+      live()?.setScope?.(id === NILUFER ? 'live' : id);
+      return;
+    }
     renderCollectionPage();
     byId('workspaceCollectionBranch')?.focus();
   });
