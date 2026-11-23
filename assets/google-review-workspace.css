@@ -525,17 +525,31 @@ html[data-review-design="new"] #overviewPeriodButtons { display:grid; gap:4px; }
 #erpGoogleConnect.v2-connection-live[data-connection-label]::before {
   background:#54df9a;
 }
-#erpGoogleConnect[data-connection-label]:is(:hover,:focus-visible)::after {
-  content:attr(data-connection-label);
+.v2-nav-status { position:relative; }
+.v2-connection-details {
+  display:none;
   position:absolute;
-  top:calc(100% + 6px);
+  top:100%;
   inset-inline-start:0;
-  z-index:1;
-  padding:6px 8px;
-  border-radius:6px;
+  z-index:2;
+  min-width:max-content;
+  padding:9px 11px;
+  border-radius:8px;
   background:#151a21;
   color:#fff;
-  white-space:nowrap;
+  box-shadow:0 6px 18px #0003;
+  font-size:12px;
+}
+.v2-connection-details > span { color:#d5e0e9; }
+.v2-connection-settings { display:none; }
+.v2-nav-status[data-open] .v2-connection-details { display:grid; gap:5px; }
+.v2-nav-status[data-open] .v2-connection-settings { display:block; margin-top:3px; }
+@media (hover:hover) and (pointer:fine) and (min-width:601px) {
+  .v2-nav-status:hover .v2-connection-details,
+  .v2-nav-status:has(#erpGoogleConnect:focus-visible) .v2-connection-details {
+    display:grid;
+    gap:5px;
+  }
 }
 #overviewOperations[hidden] { display:none; }
 .overview-ops-head { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:6px; margin-bottom:8px; }
@@ -763,7 +777,6 @@ html:has(#view-reviews.on) { overflow-anchor:none; }
     flex-wrap:nowrap;
     margin:0;
   }
-  html[data-review-variant="2"] .topbar:has(.review-header-brand) .v2-freshness { white-space:nowrap; }
 }
 
 @media (max-width:600px) {
@@ -773,18 +786,9 @@ html:has(#view-reviews.on) { overflow-anchor:none; }
     gap:5px;
     margin:0 0 6px;
   }
-  html[data-review-variant="2"] .topbar:has(.review-header-brand) .v2-nav-status {
-    display:contents;
-  }
   html[data-review-variant="2"] .topbar:has(.review-header-brand) .v2-nav-actions .btn {
     padding-inline:6px;
     font-size:11px;
     min-height:36px;
-  }
-  html[data-review-variant="2"] .topbar:has(.review-header-brand) .v2-freshness {
-    order:1;
-    flex-basis:100%;
-    border:0;
-    padding:0;
   }
 }
