@@ -569,16 +569,6 @@
       for (const row of live()?.getBranchRegistry?.() || []) {
         if (row.id.startsWith('branch-custom-') && row.live && row.active !== false && row.google_verified_at && !row.onboarding?.test) labels[row.id] = row.name;
       }
-      if (STATE.view === 'reviews') {
-        for (const [value, label] of Object.entries({ gebze:'Kocaeli Gebze · Demo', inegol:'Bursa İnegöl · Demo' })) {
-          labels[value] = label;
-          if (![...branchSelect.options].some(option => option.value === value)) {
-            const option = node('option', label);
-            option.value = value;
-            branchSelect.append(option);
-          }
-        }
-      }
       for (const option of [...branchSelect.options]) { if (labels[option.value]) option.textContent = labels[option.value]; else option.remove(); }
       branchSelect.setAttribute('aria-label', 'Şube seçimi');
     }

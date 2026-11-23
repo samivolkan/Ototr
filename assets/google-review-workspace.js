@@ -104,13 +104,19 @@
     const select=byId('erpGlobalScope');
     if (select) {
       const value=live()?.getBranchId?.() || NILUFER;
-      const signature=options.map(b=>b.id+name(b)).join('|');
-      if (select.dataset.workspaceOptions!==signature || select.options.length!==options.length) {
-        select.innerHTML=options.map(b=>'<option value="'+escape(b.id===NILUFER?'live':b.id)+'">'+escape(name(b))+'</option>').join('');
+      const choices=options.map(b=>({id:b.id,value:b.id===NILUFER?'live':b.id,label:name(b)}));
+      if (STATE.view === 'reviews') choices.push(
+        {id:'branch-google-gebze',value:'gebze',label:'Kocaeli Gebze · Demo'},
+        {id:'branch-google-inegol',value:'inegol',label:'Bursa İnegöl · Demo'}
+      );
+      const signature=choices.map(b=>b.value+b.label).join('|');
+      if (select.dataset.workspaceOptions!==signature || select.options.length!==choices.length) {
+        select.innerHTML=choices.map(b=>'<option value="'+escape(b.value)+'">'+escape(b.label)+'</option>').join('');
         select.dataset.workspaceOptions=signature;
       }
-      select.value=value===NILUFER?'live':value;
-      if (!options.some(b=>b.id===value) && !root.OTOTRReviewBridge?.isEditing?.()) live()?.setScope?.('live');
+      const chosen=choices.find(b=>b.id===value);
+      select.value=chosen?.value || 'live';
+      if (!chosen && !root.OTOTRReviewBridge?.isEditing?.()) live()?.setScope?.('live');
     }
     const badge=doc.querySelector('.v2-scope > .chip, .v2-review-status > .chip'); if(badge && STATE.view !== 'performance') badge.textContent=options.length+' canlı şube';
     const isBranch=STATE.view==='branches';
