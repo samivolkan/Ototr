@@ -397,13 +397,6 @@ html[data-review-design="new"] #view-overview .watch-row {
 #workspaceCollectionScope select { min-width: 0; margin-inline-start: 0; }
 
 .topbar :is(.uchip, .role-sel)[hidden], html[data-review-variant="2"] .v2-nav-actions #releaseFooterBadge { display: none; }
-#reviewHeaderSearch { flex: none; }
-#reviewHeaderSearch button { display: flex; align-items: center; justify-content: center; gap: 6px; width: auto; padding-inline: 9px; }
-#reviewHeaderSearch button > [aria-hidden] { font-size: 18px; line-height: 1; }
-@media (max-width: 768px) {
-  #reviewHeaderSearch .review-search-label { display: none; }
-}
-
 .performance-table-scroll { overflow-x:auto; }
 #reviewGoalWorkflow { min-width:0; padding:16px 18px; border-bottom:1px solid var(--line); background:var(--s2); }
 .review-goal-editor-head { display:flex; flex-wrap:wrap; align-items:center; gap:8px 12px; }
@@ -712,3 +705,41 @@ html:has(#view-reviews.on) { overflow-anchor:none; }
 }
 
 #view-overview .overview-trend-layout .chart-head h3 { color:var(--mute); }
+
+.review-header-brand img {
+  display:block;
+  width:104px;
+  height:34px;
+  object-fit:contain;
+  object-position:left center;
+}
+@media (min-width:1200px) {
+  html[data-review-variant="2"] .topbar:has(.review-header-brand) {
+    flex-wrap:nowrap;
+    min-height:54px;
+    padding-block:0;
+    gap:8px;
+  }
+  html[data-review-variant="2"] .topbar:has(.review-header-brand) > .sp { display:none; }
+  html[data-review-variant="2"] .topbar:has(.review-header-brand) .v2-nav-row {
+    order:0;
+    flex:1 1 0;
+    flex-wrap:nowrap;
+    gap:10px;
+    margin:0;
+    padding:0;
+    border:0;
+  }
+  html[data-review-variant="2"] .topbar:has(.review-header-brand) .v2-nav-row .topnav {
+    flex:1 1 auto;
+    padding:0;
+  }
+  html[data-review-variant="2"] .topbar:has(.review-header-brand) #topnav button {
+    padding-inline:clamp(6px, .65vw, 14px);
+  }
+  html[data-review-variant="2"] .topbar:has(.review-header-brand) :is(.v2-nav-actions,.v2-nav-status) {
+    flex-wrap:nowrap;
+    margin:0;
+  }
+  html[data-review-variant="2"] .topbar:has(.review-header-brand) .v2-freshness { white-space:nowrap; }
+}
