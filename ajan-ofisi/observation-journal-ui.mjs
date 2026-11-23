@@ -6,7 +6,7 @@ const events={opened:'Kontrolde fark edildi',changed:'Kaynak değişti; özet ye
 function render(){
  root.querySelector('[data-journal-status]').textContent=error||(!data?'Kontrol geçmişi yükleniyor…':'Kontrol kayıtları sunucuda saklandı. Bu, görev kabulü veya tamamlanma onayı değildir.');
  root.querySelector('[data-journal-items]').innerHTML=(data?.observations||[]).map(o=>`<article class="control-item"><h3>${esc(observationLabels[o.code])}</h3><p>${o.value} iş · ${esc(observationStatus(o))}</p><small>Son kontrol: ${esc(date(o.observed_at))} · İlk görülme: ${esc(date(o.first_seen_at))}</small><div class="actions"><a href="../isler/">İşler ekranını aç →</a>${o.state==='open'?`<button data-ack="${o.code}" data-version="${o.version}" ${busy||o.acknowledged_at||error?'disabled':''}>${o.acknowledged_at?'Özet görüldü':'Özeti gördüm'}</button>`:''}</div></article>`).join('')||(data?'<p>Bu kapsamda henüz kalıcı kontrol kaydı oluşmadı.</p>':'');
- root.querySelector('[data-journal-events]').innerHTML=(data?.events||[]).map(e=>`<li>${esc(date(e.at))} · ${esc(observationLabels[e.code])} · ${esc(events[e.kind])} (${e.value})</li>`).join('');
+ root.querySelector('[data-journal-events]').innerHTML=(data?.events||[]).map(e=>`<li>${esc(date(e.at))} · ${esc(observationLabels[e.code])} · ${esc(events[e.kind])} (${e.value}) · ${e.origin==='worker'?'Arka plan kontrolü':'Ekran kontrolü'}</li>`).join('');
 }
 async function refresh(){if(busy||document.hidden)return;busy=true;try{data=await journalRequest('refresh');error=null;}catch{error='Kontrol geçmişi yenilenemedi. Önceki kayıtlar güncel kabul edilmemeli.';}finally{busy=false;render();}}
 root.addEventListener('click',async e=>{const b=e.target.closest('[data-ack]');if(!b||busy)return;

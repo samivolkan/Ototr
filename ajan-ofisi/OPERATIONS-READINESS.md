@@ -89,3 +89,15 @@ Yeniden test: `npm install --prefix <ayrı-test-klasörü> @electric-sql/pglite@
 Mevcut manuel sahiplenme yolunda şube eşleşmesi eksikliği izole PostgreSQL'de sentetik kullanıcılar ve mevcut fonksiyon/tetikleyici kopyalarıyla doğrulandı. Dar düzeltme: yalnız aktif ustanın kendi şubesindeki görev sahiplenilebilir; şubesiz hesap ve boş/farklı rol reddedilir. Mevcut görev sahibi, audit ve rapor kilidi akışı korunur. Gerçek görev/rapor üzerinde deneme veya değişiklik yapılmadı.
 
 `20261123234547_inspection_claim_branch_scope_guard.sql` canlıya uygulandı. Canlı fonksiyon tanımı ve anonim erişim engeli doğrulandı. Aynı şube için başarılı yol, başka şube, başka görev sahibi, yanlış/boş rol ve pasif hesap testleri yayın kapısına eklendi. Bu, diğer ekspertiz yazma yollarının tümünün denetlendiği veya ajan yazma yetkisinin açıldığı anlamına gelmez.
+
+## Süreli arka plan yürütücüsü
+
+Yalnız İşler v24 mevcut kapsamının sayısal kontrolü için kuruldu. Kaynak tablosu salt okunur; kontrol geçmişi ve yürütücü sağlık kaydı yazılır. Görev, mesaj, mali işlem veya rapor değiştirmez; model API'si ve gizli anahtar kullanmaz.
+
+Başlatma açık bir işlemdir; migration kendiliğinden cron oluşturmaz. Yetki iki kez doğrulanır: başlangıçta mevcut merkez/ERP oturumu, her arka plan çalışmasında yetki veren hesabın aktifliği, doğrulanmış hesabı, merkez rolü ve değişmemiş iş kapsamı. Oturum taklidi veya kullanıcı JWT'si saklama yoktur.
+
+Beş dakikada bir çalışır; sunucunun Türkiye saatine göre bir sonraki 08:30'da biter. Bitiş, yetki kaybı veya üç ardışık kaynak hatasında durur. Başka işlerin zamanlaması ve durdurulmuş mevcut işler değiştirilmez. Yalnız `ototr-office-work-health-v1` adını yönetir. Başlatma tekrarı çalışmakta olan işi çoğaltmaz veya hata sayacını sıfırlamaz.
+
+Arayüz “zamanlandı” ve “başarılı çalışma doğrulandı” durumlarını ayırır; eski çalışma kaydı yeşil başarı sayılmaz. Gerçek cron yürütmesi, cron çalışma kaydıyla birlikte yürütücünün last_success_at ve run_count alanlarından doğrulanmalıdır. Sayfa açılması bu sayacı artırmaz.
+
+İzole SQL testinde pg_cron yerine tablo/fonksiyon taklidi kullanılır; zamanlayıcının gerçekten çalıştığı ancak canlı cron kaydıyla kanıtlanır. Yetki kaldırma, sona erme, üç hata sonrası durma, oturumsuz yürütme bağlamı, istemcinin kapsam seçememesi ve mevcut durdurulmuş işi koruma sınandı. 61 ilgili kontrol geçti. Diğer departmanlar ve gerçek görev kabulü bu yürütücünün kapsamı değildir.

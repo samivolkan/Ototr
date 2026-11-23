@@ -67,7 +67,7 @@ jobs:
           OTOTR_PGLITE_MODULE: /tmp/ototr-office-sql/node_modules/@electric-sql/pglite/dist/index.js
         run: |
           npm install --prefix /tmp/ototr-office-sql --no-audit --no-fund --ignore-scripts @electric-sql/pglite@0.6.0
-          node --test tests/inspection-claim-scope-sql.test.mjs tests/observation-journal.test.mjs tests/office-observation-sql.test.mjs tests/operations-api.test.mjs tests/office-work-health-sql.test.mjs tests/operations-control.test.mjs tests/inspection-demo.test.mjs tests/franchise-demo-workflow.test.mjs tests/franchise-web-demo.test.mjs tests/franchise-office.test.mjs tests/management-office.test.mjs tests/agent-office-nav.test.mjs ajan-ofisi/runtime/phase1.test.cjs
+          node --test tests/office-worker.test.mjs tests/office-worker-sql.test.mjs tests/inspection-claim-scope-sql.test.mjs tests/observation-journal.test.mjs tests/office-observation-sql.test.mjs tests/operations-api.test.mjs tests/office-work-health-sql.test.mjs tests/operations-control.test.mjs tests/inspection-demo.test.mjs tests/franchise-demo-workflow.test.mjs tests/franchise-web-demo.test.mjs tests/franchise-office.test.mjs tests/management-office.test.mjs tests/agent-office-nav.test.mjs ajan-ofisi/runtime/phase1.test.cjs
 
       - name: Stage public assets without backend data
         run: rsync -a --exclude='.git' --exclude='backend' --exclude='.env*' --exclude='*.sqlite*' --exclude='node_modules' ./ /tmp/ototr-pages/
