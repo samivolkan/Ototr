@@ -1,0 +1,6 @@
+Generated raster assets; no ERP customer or vehicle data used.
+Office: isometric premium oak-floor OTOTR office, black-framed glass rooms, warm daylight, desks, meeting and management rooms, no UI, no people; user screenshot used as visual reference.
+Worker 1: seated typing miniature office developer, green cardigan, transparent background.
+Worker 2: matching woman with dark short hair, navy cardigan, cream trousers, seated typing, transparent background.
+Office image 1536x1024 displayed at 2.15:1 desktop / 1.8:1 responsive scene ratio to fit the wide office UI. Worker overlays are decorative; no fake task animation.
+Lucide bundle copied from existing local ERP vendor asset.

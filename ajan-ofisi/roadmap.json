@@ -1,0 +1,15 @@
+{
+  "status": "planned_not_implemented",
+  "currentDepartments": 7,
+  "targetDepartments": 9,
+  "activationPolicy": "Yalnız Finans ve Franchise aktif kapsamda kalır. Yeni roller kendiliğinden çalıştırılmaz.",
+  "requestedAdditions": [
+    {"name": "Yazılım Ekibi", "type": "department", "roles": ["Teknik lider", "Geliştirme", "Test", "Güvenlik"]},
+    {"name": "Sosyal Medya", "type": "department", "roles": ["İçerik", "Tasarım", "Yayın planlama"], "constraint": "Yayınlar insan onaylıdır."},
+    {"name": "Bölge Müdürleri", "type": "management_role", "parent": "Franchise"},
+    {"name": "Satış Müdürleri", "type": "management_role", "parent": "Saha Satış"},
+    {"name": "İK Yöneticisi", "type": "existing_role", "parent": "İnsan Kaynakları (İK)", "existingId": "MGR-HR"}
+  ],
+  "implementationOrder": "Önce ana görev, raporlama ve denetim akışı sağlamlaştırılır; sonra gerekli roller eklenir. Her unvan ayrı model oturumu değildir.",
+  "phase2CodeAuthority": false
+}

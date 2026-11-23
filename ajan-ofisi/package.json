@@ -1,0 +1,9 @@
+{
+  "name": "ototr-office-phase1",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node runtime/server.cjs",
+    "test": "node --test runtime/phase1.test.cjs"
+  }
+}

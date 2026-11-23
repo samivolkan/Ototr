@@ -1,0 +1,9 @@
+runtime/data/
+runtime/*.log
+runtime/*.pid
+runtime/config.local.json
+.env
+.env.*
+auth.json
+node_modules/
+*.zip

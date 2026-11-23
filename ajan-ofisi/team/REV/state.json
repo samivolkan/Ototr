@@ -1,0 +1,16 @@
+{
+  "department": "REV",
+  "status": "waiting",
+  "modelExecution": false,
+  "manager": "MGR-REV",
+  "experts": [
+    {
+      "id": "REV-01",
+      "status": "waiting"
+    },
+    {
+      "id": "REV-02",
+      "status": "waiting"
+    }
+  ]
+}

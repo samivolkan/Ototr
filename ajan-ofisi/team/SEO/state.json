@@ -1,0 +1,16 @@
+{
+  "department": "SEO",
+  "status": "waiting",
+  "modelExecution": false,
+  "manager": "MGR-SEO",
+  "experts": [
+    {
+      "id": "SEO-01",
+      "status": "waiting"
+    },
+    {
+      "id": "SEO-02",
+      "status": "waiting"
+    }
+  ]
+}

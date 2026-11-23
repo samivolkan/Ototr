@@ -1,0 +1,16 @@
+{
+  "department": "SALE",
+  "status": "waiting",
+  "modelExecution": false,
+  "manager": "MGR-SALE",
+  "experts": [
+    {
+      "id": "SALE-01",
+      "status": "waiting"
+    },
+    {
+      "id": "SALE-02",
+      "status": "waiting"
+    }
+  ]
+}

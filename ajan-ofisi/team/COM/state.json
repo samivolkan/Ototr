@@ -1,0 +1,16 @@
+{
+  "department": "COM",
+  "status": "waiting",
+  "modelExecution": false,
+  "manager": "MGR-COM",
+  "experts": [
+    {
+      "id": "COM-01",
+      "status": "waiting"
+    },
+    {
+      "id": "COM-02",
+      "status": "waiting"
+    }
+  ]
+}

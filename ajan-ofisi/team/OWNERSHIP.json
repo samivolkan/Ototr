@@ -1,0 +1,128 @@
+[
+  {
+    "scope": "Royalty matrahı, tahakkuk izi, iade ve ters kayıt",
+    "owner": "FIN-01",
+    "manager": "MGR-FIN",
+    "department": "FIN",
+    "conflictResolver": "COO-01"
+  },
+  {
+    "scope": "Ödeme doğrulama, tahsis, açık kalem ve bayi ekstresi",
+    "owner": "FIN-02",
+    "manager": "MGR-FIN",
+    "department": "FIN",
+    "conflictResolver": "COO-01"
+  },
+  {
+    "scope": "Dönem kilidi, mutabakat, finans onayları ve audit",
+    "owner": "FIN-03",
+    "manager": "MGR-FIN",
+    "department": "FIN",
+    "conflictResolver": "COO-01"
+  },
+  {
+    "scope": "Bedel kataloğu, finans kural sürümü ve etki analizi",
+    "owner": "FIN-04",
+    "manager": "MGR-FIN",
+    "department": "FIN",
+    "conflictResolver": "COO-01"
+  },
+  {
+    "scope": "Personel akışı, rol sınırları ve demo erişim senaryoları",
+    "owner": "HR-01",
+    "manager": "MGR-HR",
+    "department": "HR",
+    "conflictResolver": "COO-01"
+  },
+  {
+    "scope": "Eğitim, yeterlilik ve performans ekranlarının geliştirme planı",
+    "owner": "HR-02",
+    "manager": "MGR-HR",
+    "department": "HR",
+    "conflictResolver": "COO-01"
+  },
+  {
+    "scope": "Kayıt, sınıflandırma, sahiplik ve takip",
+    "owner": "COM-01",
+    "manager": "MGR-COM",
+    "department": "COM",
+    "conflictResolver": "COO-01"
+  },
+  {
+    "scope": "Çözüm süreci, kanıt ve iç kalite ölçümleri; rapor bulgusunu değiştirmez",
+    "owner": "COM-02",
+    "manager": "MGR-COM",
+    "department": "COM",
+    "conflictResolver": "COO-01"
+  },
+  {
+    "scope": "Demo yorumların sınıflandırılması ve panel gereksinimleri",
+    "owner": "REV-01",
+    "manager": "MGR-REV",
+    "department": "REV",
+    "conflictResolver": "COO-01"
+  },
+  {
+    "scope": "Yanıt taslağı ve insan onayı; otomatik gönderim yok",
+    "owner": "REV-02",
+    "manager": "MGR-REV",
+    "department": "REV",
+    "conflictResolver": "COO-01"
+  },
+  {
+    "scope": "Ziyaret, takvim ve satış fırsatı akışları",
+    "owner": "SALE-01",
+    "manager": "MGR-SALE",
+    "department": "SALE",
+    "conflictResolver": "COO-01"
+  },
+  {
+    "scope": "Müşteri ilişki ekranları, tekrar kayıt ve ölçüm tutarlılığı",
+    "owner": "SALE-02",
+    "manager": "MGR-SALE",
+    "department": "SALE",
+    "conflictResolver": "COO-01"
+  },
+  {
+    "scope": "Başvuru, aday, kurul ve aşama geçişleri",
+    "owner": "FRA-01",
+    "manager": "MGR-FRA",
+    "department": "FRA",
+    "conflictResolver": "COO-01"
+  },
+  {
+    "scope": "İmzalı sözleşme ve giriş bedeli kanıtının açılış akışı; hesaplama FIN-01/02 sahibi",
+    "owner": "FRA-02",
+    "manager": "MGR-FRA",
+    "department": "FRA",
+    "conflictResolver": "COO-01"
+  },
+  {
+    "scope": "Bayi kurulum bağımlılıkları ve açılış engelleri",
+    "owner": "FRA-03",
+    "manager": "MGR-FRA",
+    "department": "FRA",
+    "conflictResolver": "COO-01"
+  },
+  {
+    "scope": "Franchise rol matrisi, hazırlayan/onaylayan ayrımı ve denetim izi",
+    "owner": "FRA-04",
+    "manager": "MGR-FRA",
+    "department": "FRA",
+    "conflictResolver": "COO-01"
+  },
+  {
+    "scope": "Tarama, indeksleme, canonical, yapılandırılmış veri ve performans planı",
+    "owner": "SEO-01",
+    "manager": "MGR-SEO",
+    "department": "SEO",
+    "conflictResolver": "COO-01"
+  },
+  {
+    "scope": "Sayfa içeriği ve yerel arama planı; Google yorum operasyonları REV ekibinde",
+    "owner": "SEO-02",
+    "manager": "MGR-SEO",
+    "department": "SEO",
+    "conflictResolver": "COO-01"
+  }
+]

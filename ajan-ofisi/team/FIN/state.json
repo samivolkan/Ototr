@@ -1,0 +1,24 @@
+{
+  "department": "FIN",
+  "status": "active_scope",
+  "modelExecution": false,
+  "manager": "MGR-FIN",
+  "experts": [
+    {
+      "id": "FIN-01",
+      "status": "ready_for_readonly_review"
+    },
+    {
+      "id": "FIN-02",
+      "status": "ready_for_readonly_review"
+    },
+    {
+      "id": "FIN-03",
+      "status": "ready_for_readonly_review"
+    },
+    {
+      "id": "FIN-04",
+      "status": "ready_for_readonly_review"
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "department": "HR",
+  "status": "waiting",
+  "modelExecution": false,
+  "manager": "MGR-HR",
+  "experts": [
+    {
+      "id": "HR-01",
+      "status": "waiting"
+    },
+    {
+      "id": "HR-02",
+      "status": "waiting"
+    }
+  ]
+}

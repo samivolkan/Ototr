@@ -1,0 +1,24 @@
+{
+  "department": "FRA",
+  "status": "active_scope",
+  "modelExecution": false,
+  "manager": "MGR-FRA",
+  "experts": [
+    {
+      "id": "FRA-01",
+      "status": "ready_for_readonly_review"
+    },
+    {
+      "id": "FRA-02",
+      "status": "ready_for_readonly_review"
+    },
+    {
+      "id": "FRA-03",
+      "status": "ready_for_readonly_review"
+    },
+    {
+      "id": "FRA-04",
+      "status": "ready_for_readonly_review"
+    }
+  ]
+}
