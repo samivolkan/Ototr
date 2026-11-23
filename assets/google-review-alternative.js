@@ -328,7 +328,49 @@
   }
   const refreshButtons = node('div', null, 'v2-nav-status');
   const connectionButton = byId('erpGoogleConnect');
-  if (connectionButton) refreshButtons.append(connectionButton);
+  const connectionDetails = node('div', null, 'v2-connection-details');
+  const connectionState = node('strong');
+  const freshness = node('span');
+  const connectionSettings = node('button', 'Bağlantı ekranını aç', 'btn sm v2-connection-settings');
+  connectionDetails.id = 'reviewConnectionDetails';
+  connectionSettings.type = 'button';
+  connectionDetails.append(connectionState, freshness, connectionSettings);
+  if (connectionButton) {
+    refreshButtons.append(connectionButton, connectionDetails);
+    connectionButton.setAttribute('aria-describedby', connectionDetails.id);
+    const openSettings = connectionButton.onclick;
+    const closeDetails = () => {
+      delete refreshButtons.dataset.open;
+      connectionButton.setAttribute('aria-expanded', 'false');
+    };
+    const compactInteraction = matchMedia('(hover: none), (pointer: coarse), (max-width: 600px)');
+    connectionButton.onclick = event => {
+      if (!compactInteraction.matches) return openSettings?.call(connectionButton, event);
+      if (refreshButtons.dataset.open) return closeDetails();
+      refreshButtons.dataset.open = 'true';
+      connectionButton.setAttribute('aria-expanded', 'true');
+    };
+    connectionSettings.onclick = event => {
+      closeDetails();
+      openSettings?.call(connectionButton, event);
+    };
+    const setInteraction = () => {
+      closeDetails();
+      if (compactInteraction.matches) connectionButton.setAttribute('aria-expanded', 'false');
+      else connectionButton.removeAttribute('aria-expanded');
+    };
+    setInteraction();
+    compactInteraction.addEventListener('change', setInteraction);
+    doc.addEventListener('click', event => {
+      if (refreshButtons.dataset.open && !refreshButtons.contains(event.target)) closeDetails();
+    });
+    doc.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && refreshButtons.dataset.open) {
+        connectionButton.focus();
+        closeDetails();
+      }
+    });
+  }
   function renderConnectionStatus() {
     if (!connectionButton) return;
     const state = management();
@@ -338,12 +380,10 @@
     connectionButton.textContent = '';
     connectionButton.setAttribute('aria-label', label);
     connectionButton.dataset.connectionLabel = label;
+    connectionState.textContent = label;
   }
   renderConnectionStatus();
   root.addEventListener('ototr-management-ready',renderConnectionStatus);
-  const freshness = node('span', '', 'v2-freshness');
-  freshness.setAttribute('aria-live', 'polite');
-  refreshButtons.append(freshness);
   navActions.prepend(refreshButtons);
   if (oldControls) oldControls.hidden = true;
   const meta = node('div', null, 'v2-period-note'); meta.id = 'v2PeriodNote'; meta.setAttribute('aria-live', 'polite');
@@ -581,7 +621,7 @@
     const currentMonth = monthKey(Date.now());
     meta.innerHTML = `<strong>${html(PERIODS[period])}</strong><span>${monthsFor(period)[0]} — ${currentMonth}</span><span>· ${isLive() ? 'Alınan canlı kayıtlar' : 'Örnek kayıtlar'}</span>`;
     const source = branch();
-    freshness.textContent = isLive() && source?.lastSync ? `Son veri: ${source.lastSync}` : 'Son veri: —';
+    freshness.textContent = isLive() && source?.lastSync ? `Son güncelleme: ${source.lastSync}` : 'Son güncelleme bilgisi yok';
     doc.querySelectorAll('#topnav a').forEach(link => { link.setAttribute('role', 'button'); link.tabIndex = 0; });
   }
   doc.addEventListener('keydown', event => {
