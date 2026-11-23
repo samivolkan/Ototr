@@ -30,7 +30,7 @@
     if (period === 'all') return rows;
     const today = dayKey(now);
     const date = new Date(today + 'T12:00:00Z');
-    const offset = period === 'yesterday' ? 1 : period === 'week' ? (date.getUTCDay() + 6) % 7 : 0;
+    const offset = period === 'yesterday' ? 1 : period === 'week' ? 6 : 0;
     date.setUTCDate(date.getUTCDate() - offset);
     const start = date.toISOString().slice(0, 10);
     const end = period === 'yesterday' ? start : today;
