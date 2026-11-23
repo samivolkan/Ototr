@@ -26,6 +26,20 @@
   function dayKey(value) {
     return dayFormat.format(new Date(value));
   }
+  function reviewPeriodRows(rows, period, now = Date.now()) {
+    if (period === 'all') return rows;
+    const today = dayKey(now);
+    const date = new Date(today + 'T12:00:00Z');
+    const offset = period === 'yesterday' ? 1 : period === 'week' ? (date.getUTCDay() + 6) % 7 : 0;
+    date.setUTCDate(date.getUTCDate() - offset);
+    const start = date.toISOString().slice(0, 10);
+    const end = period === 'yesterday' ? start : today;
+    return rows.filter(row => {
+      if (!monthKey(row.createdAt) || new Date(row.createdAt).getTime() > now) return false;
+      const day = dayKey(row.createdAt);
+      return day >= start && day <= end;
+    });
+  }
   function recentDays(now) {
     const today = Date.parse(dayKey(now) + 'T12:00:00Z');
     return Array.from({ length: 30 }, (_, index) => new Date(today - (29 - index) * 86400000).toISOString().slice(0, 10));
@@ -133,7 +147,7 @@
   function cachedReviews(b) {
     if (b.id === branchId() && isLive()) return scopedRows(REVIEWS,b.id);
     return (parentReviews?.fetchGoogleReviews?.(b.id) || []).map(r => ({
-      branchId:b.id,store:b.name,author:r.reviewerName,text:r.comment,createdAt:r.reviewDate,stars:r.rating,status:r.isReplied?'gonderildi':'bekliyor',isReplied:r.isReplied,replyDate:r.replyDate || r.replyUpdatedAt
+      branchId:b.id,erpReviewId:r.id,googleReviewId:r.googleReviewId,store:b.name,author:r.reviewerName,text:r.comment,createdAt:r.reviewDate,stars:r.rating,status:r.isReplied?'gonderildi':'bekliyor',isReplied:r.isReplied,replyText:r.replyText,replyDate:r.replyDate || r.replyUpdatedAt
     }));
   }
   const scopedTargetCache = new Map();
@@ -221,6 +235,7 @@
   let period = 'month';
   let dateRange = null;
   let reviewDay = null;
+  let reviewPeriod = 'today';
   const rows = () => dateRange ? recordedReviews().filter(row => {
     const day = dayKey(row.createdAt);
     return day >= dateRange.start && day <= dateRange.end;
@@ -342,6 +357,20 @@
     root.switchView('reviews');
   };
   reviewToolbar?.append(reviewDayChip);
+  const reviewPeriods = [...doc.querySelectorAll('#rvPeriods button')];
+  for (const button of reviewPeriods) {
+    button.onclick = () => {
+      if (root.OTOTRReviewBridge?.isEditing?.()) {
+        root.toast('Önce açık taslağı kaydedin.', 'warn');
+        return;
+      }
+      reviewPeriod = button.dataset.period;
+      reviewDay = null;
+      SELECTED.clear();
+      SEL = null;
+      root.switchView('reviews');
+    };
+  }
   const reviewStatus = node('div', null, 'v2-review-status');
   doc.querySelector('.ph')?.append(reviewStatus);
 
@@ -512,6 +541,9 @@
       loadScopeTargets();
     }
     reviewStatus.hidden = !reviewView;
+    for (const button of reviewPeriods) {
+      button.setAttribute('aria-pressed', String(!reviewDay && reviewPeriod === button.dataset.period));
+    }
     reviewDayChip.hidden = !reviewView || !reviewDay;
     if (reviewDay) reviewDayChip.textContent = reviewDay.label + ' · ' + reviewDay.scope + ' ×';
     if (branchSelect) branchSelect.hidden = Boolean(reviewView && reviewDay);
@@ -563,6 +595,7 @@
       const source = reviewDay.operational ? operationalRows() : reviewDay.records;
       return source.filter(row => monthKey(row.createdAt) && dayKey(row.createdAt) === reviewDay.day && roleAllows(row));
     }
+    if (STATE.view === 'reviews') return reviewPeriodRows(operationalRows(), reviewPeriod).filter(roleAllows);
     return rows().filter(roleAllows);
   };
   const normalRenderReviews = root.renderReviews;
@@ -578,9 +611,17 @@
     const list = byId('rvList');
     const detail = byId('rvDetail');
     const showDetail = review => {
-      detail.replaceChildren(node('h4', review.author || 'Google kullanıcısı'),
-        node('p', review.store + ' · ' + review.stars + ' ★'),
+      const heading = node('h4', review.author || 'Google kullanıcısı');
+      const bridge = root.OTOTRReviewBridge;
+      const links = bridge?.googleReviewLinks?.(review);
+      bridge?.addReviewGoogleLink?.(heading,links?.review);
+      detail.replaceChildren(heading,node('p', review.store + ' · ' + review.stars + ' ★'),
         node('p', review.text || (review.demo ? 'Demo kaydı' : 'Yorum metni yok')));
+      if (review.isReplied && review.replyText) {
+        const replyHeading=node('h4','Gönderilen yanıt');
+        bridge?.addReviewGoogleLink?.(replyHeading,links?.reply);
+        detail.append(replyHeading,node('p',review.replyText));
+      }
       if (matchMedia('(max-width:700px)').matches) {
         const drawer = byId('reviewMobileDialog');
         drawer.append(detail);
@@ -609,7 +650,14 @@
   };
   const originalSwitch = root.switchView;
   root.switchView = function (...args) {
-    if (args[0] !== 'reviews') reviewDay = null;
+    if (args[0] !== 'reviews') {
+      reviewDay = null;
+      reviewPeriod = 'today';
+    } else if (args[1]?.reviewId != null) {
+      reviewDay = null;
+      const selected = operationalRows().find(row => row.id === args[1].reviewId);
+      if (selected && !reviewPeriodRows([selected], reviewPeriod).length) reviewPeriod = 'all';
+    }
     const result = originalSwitch.apply(this, args); normalizeScope(); return result;
   };
 

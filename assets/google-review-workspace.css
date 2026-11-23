@@ -550,3 +550,65 @@ html[data-review-design="new"] #overviewPeriodButtons { display:grid; gap:4px; }
 .review-scope-results small,.review-scope-results p { color:var(--mute); font-size:11px; }
 .review-scope-results p { margin:7px; }
 @media(max-width:700px) { .review-scope-results { inset-inline:0 auto; } }
+.review-google-heading { display:flex; align-items:center; gap:5px; }
+.review-google-link { display:inline-grid; place-items:center; width:28px; height:28px; border:1px solid var(--line); border-radius:6px; background:var(--surface); color:#1765d1; text-decoration:none; font-size:13px; font-weight:800; flex:none; }
+.review-google-link:hover,.review-google-link:focus-visible { outline:2px solid var(--blue); outline-offset:1px; }
+@media (max-width:700px) { .review-google-link { width:36px; height:36px; } }
+
+#view-reviews .review-quote > h4 {
+  display:flex;
+  align-items:center;
+  gap:5px;
+  margin:0 0 6px;
+  color:var(--ink);
+  font-size:15px;
+  font-weight:700;
+}
+#view-reviews .review-quote > div {
+  padding:10px 12px;
+  border:1px solid #cee0ee;
+  border-radius:8px;
+  background:#eef6fc;
+  color:var(--ink);
+  overflow-wrap:anywhere;
+}
+html[data-theme="dark"] #view-reviews .review-quote > div {
+  border-color:#365268;
+  background:#1b3041;
+}
+
+body:has(#view-reviews.on) #pageTitle { display:none; }
+body:has(#view-reviews.on) .ph:has(.v2-review-status:not([hidden])) {
+  justify-content:flex-end;
+  margin-bottom:6px;
+}
+.review-periods {
+  position:sticky;
+  top:0;
+  z-index:2;
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:5px;
+  padding:7px;
+  background:var(--surface);
+  border-bottom:1px solid var(--line);
+}
+.review-periods button {
+  min-height:34px;
+  padding:4px 2px;
+  border:1px solid var(--line);
+  border-radius:7px;
+  background:linear-gradient(135deg,var(--surface),var(--period-color));
+  color:var(--ink);
+  font:inherit;
+  font-size:12px;
+  cursor:pointer;
+  transition:border-color .18s, box-shadow .18s;
+}
+.review-periods button:nth-child(1) { --period-color:color-mix(in srgb,#42b6a6 21%,var(--surface)); }
+.review-periods button:nth-child(2) { --period-color:color-mix(in srgb,#78aee5 22%,var(--surface)); }
+.review-periods button:nth-child(3) { --period-color:color-mix(in srgb,#a790d9 22%,var(--surface)); }
+.review-periods button:nth-child(4) { --period-color:color-mix(in srgb,#efb47b 24%,var(--surface)); }
+.review-periods button:is(:hover,:focus-visible,[aria-pressed="true"]) { border-color:var(--blue); }
+.review-periods button[aria-pressed="true"] { box-shadow:inset 0 0 0 1px var(--blue); font-weight:700; }
+@media (max-width:700px) { .review-periods button { min-height:44px; } }
