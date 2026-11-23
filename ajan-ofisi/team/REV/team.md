@@ -1,8 +1,8 @@
 # Google Yorumları ve Yanıtları
 Yönetici: MGR-REV
-Durum: Beklemede
+Durum: Canlı yorum takibi
 
-- REV-01 · Yorum analizi: Demo yorumların sınıflandırılması ve panel gereksinimleri
-- REV-02 · Yanıt ve onay akışı: Yanıt taslağı ve insan onayı; otomatik gönderim yok
+- REV-01 · Yorum ve Yanıt Uzmanı: tek sorumlu; yeni yorum, taslak, iki saatlik süre, risk yönlendirmesi, doğrulanmış yayın.
+- REV-02 görevi REV-01 altında birleştirilmiştir; ikinci çalışan yoktur.
 
-Yönetici aynı kaynak/konu tekrarını birleştirir, farklı kanıt veya çelişkiyi silmez. Özet yalnız koordinatöre gider.
+Uzman → MGR-REV → koordinatör → Sami. Görev kartı yetkili hesapla sunucuda düzenlenir. Kod yazma kapalı.

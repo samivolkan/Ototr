@@ -1,6 +1,6 @@
 OTOTR AJAN OFISI — FAZ 1
 
-Guncel teslim: 7 ekip, 18 uzman (8 aktif kapsam / 10 beklemede).
+Guncel teslim: 7 ekip, 17 uzman: 8 Finans/Franchise inceleme kapsamı, 1 canlı yorum uzmanı, 8 bekleyen uzman.
 Onceki 199 ajanli prototip gecersiz; teknik arsiv olarak tutuldu.
 
 ACMA
@@ -40,3 +40,5 @@ Sayfa 15 saniyede bir dosyayi okur; GitHub Pages yayin gecikmesi olabilir.
 Bu bir surekli ajan sunucusu veya otomatik calistirma servisi degildir.
 Yeni kosularin durumlari koordinator tarafindan yayinlanmalidir.
 ERP yazma, gercek veri, ticari karar ve dis mesaj yetkileri kapali kalir.
+
+Yorum masasi: review-specialist.html. Tek uzman REV-01; gorev karti sunucuda surumlu kayit. Musteri metni ofise tasinmaz. Canli yorum islemleri mevcut yetkili ERP yorum ekranindadir.

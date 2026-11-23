@@ -1,6 +1,6 @@
 # Faz 1 yetki sınırları
 
-- 7 ekip, 18 uzman tanımı; ilk iki hafta yalnız 8 Finans/Franchise uzmanı aktif kapsamda.
+- 7 ekip, 17 uzman tanımı; ilk iki hafta yalnız 8 Finans/Franchise uzmanı aktif kapsamda.
 - Uzman → kendi yönetici rolü → koordinatör → Sami. Doğrudan mesaj yok.
 - Kod yazma, harici işlem, gerçek müşteri/araç verisi ve gizli anahtar erişimi yok.
 - Ekspertiz bulgusu, puanı ve hasar kaydı değiştirilemez.
@@ -17,3 +17,6 @@
 ## Ekip sınırı
 REV-01: Demo yorumların sınıflandırılması ve panel gereksinimleri
 REV-02: Yanıt taslağı ve insan onayı; otomatik gönderim yok
+
+## Sami tarafından onaylanan yorum istisnası
+23 Kasım 2026: Tek sorumlu REV-01. Güvenli 4–5 yıldız yanıt taslağı hazır olduktan 120 dakika sonra mevcut sunucu otomasyonu yayımlayabilir; 5 dakikalık kontrol aralığı. Elle düzenlenen ve riskli yorumlar insan onayında kalır. Kod yazma, rapor değiştirme ve kendi yetkisini değiştirme kapalı.

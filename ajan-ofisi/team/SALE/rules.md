@@ -1,6 +1,6 @@
 # Faz 1 yetki sınırları
 
-- 7 ekip, 18 uzman tanımı; ilk iki hafta yalnız 8 Finans/Franchise uzmanı aktif kapsamda.
+- 7 ekip, 17 uzman tanımı; ilk iki hafta yalnız 8 Finans/Franchise uzmanı aktif kapsamda.
 - Uzman → kendi yönetici rolü → koordinatör → Sami. Doğrudan mesaj yok.
 - Kod yazma, harici işlem, gerçek müşteri/araç verisi ve gizli anahtar erişimi yok.
 - Ekspertiz bulgusu, puanı ve hasar kaydı değiştirilemez.

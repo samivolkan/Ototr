@@ -1,16 +1,14 @@
 {
   "department": "REV",
-  "status": "waiting",
-  "modelExecution": false,
+  "status": "live_review_operations",
+  "modelExecution": "existing_google_review_pipeline",
   "manager": "MGR-REV",
   "experts": [
     {
       "id": "REV-01",
-      "status": "waiting"
-    },
-    {
-      "id": "REV-02",
-      "status": "waiting"
+      "status": "live_review_operations"
     }
-  ]
+  ],
+  "codeWriting": false,
+  "automaticReply": "safe_4_5_star_after_draft_ready_plus_120_minutes"
 }
