@@ -46,7 +46,7 @@ function init(){
  const arrow=new THREE.ArrowHelper(new THREE.Vector3(-1,0,0),new THREE.Vector3(-.4,.24,-.7),3.4,0xb68d40,.35,.18);arrow.name='financeHandoff';arrow.visible=lastFinancePending>0;scene.add(arrow);
  new ResizeObserver(resize).observe(host);resize();started=true;animate();
 }
-function resize(){if(!renderer||!visible)return;const w=host.clientWidth,h=host.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();renderOnce();}
+function resize(){if(!renderer||!visible)return;const w=host.clientWidth,h=host.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.fov=camera.aspect<1?54:38;camera.updateProjectionMatrix();renderOnce();}
 function renderOnce(){if(!renderer||!visible)return;renderer.render(scene,camera);for(const p of points){const v=p.position.clone().project(camera);p.button.style.left=((v.x+1)/2*host.clientWidth)+'px';p.button.style.top=((-v.y+1)/2*host.clientHeight)+'px';p.button.hidden=v.z>1||Math.abs(v.x)>1||Math.abs(v.y)>1;}}
 function animate(){cancelAnimationFrame(frame);if(!visible||document.hidden)return;controls.update();renderOnce();frame=requestAnimationFrame(animate);}
 function switchView(use3d){visible=use3d;host.hidden=!use3d;document.querySelector('#sceneViewport').hidden=use3d;document.querySelector('.scene-toolbar').hidden=use3d;document.querySelector('#view3d').setAttribute('aria-pressed',String(use3d));document.querySelector('#viewIllustrated').setAttribute('aria-pressed',String(!use3d));if(use3d){try{if(!started)init();resize();animate();}catch(e){document.querySelector('#threeError').textContent='Bu cihazda 3D başlatılamadı. Resimli ofis görünümünü kullanabilirsiniz.';}}else cancelAnimationFrame(frame);}
@@ -55,3 +55,4 @@ function rotate(angle){if(!camera)return;const offset=camera.position.clone().su
 document.querySelector('#rotateLeft').onclick=()=>rotate(-Math.PI/6);document.querySelector('#rotateRight').onclick=()=>rotate(Math.PI/6);document.querySelector('#threeReset').onclick=()=>controls?.reset();
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&visible)animate();else cancelAnimationFrame(frame);});
 window.addEventListener('franchise-office-status',e=>{lastFinancePending=e.detail?.finance_pending||0;const arrow=scene?.getObjectByName('financeHandoff');if(arrow)arrow.visible=lastFinancePending>0;});
+
