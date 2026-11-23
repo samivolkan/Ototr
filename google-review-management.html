@@ -597,7 +597,7 @@ main{margin:0 auto;width:auto;max-width:1440px;padding:20px}
 </style><script>
   document.documentElement.dataset.reviewDesign = 'classic';
   try {
-    if (localStorage.getItem('ototr.review.design.teal') === 'new') document.documentElement.dataset.reviewDesign = 'new';
+    document.documentElement.dataset.reviewDesign = localStorage.getItem('ototr.review.design.teal') === 'new' ? 'new' : 'classic';
   } catch (_) {}
 </script><link rel="stylesheet" href="assets/google-review-alternative.css?v=20261119-1"><link rel="stylesheet" href="assets/google-review-workspace.css?v=20261123-29"></head><body>
 <div id="review-loading-message" role="status">Yorum Yönetimi hazırlanıyor…</div>
@@ -3068,10 +3068,19 @@ function nextTour(){ if (tourIdx < TOUR_STEPS.length - 1){ tourIdx++; renderTour
 function endTour(){ $("#tourOverlay").classList.remove("on"); STATE.onboarded = true; saveState(); }
 
 /* === INIT === */
-$("#themeBtn").onclick = () => {
-  document.documentElement.dataset.theme = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
-  if (STATE.view === "overview") setTimeout(initCharts, 20);
-  if (STATE.view === "store" && STATE.currentStore){ const b = BRANCHES.find(x => x.id === STATE.currentStore); if (b) setTimeout(() => renderStoreCharts(b), 20); }
+const themeButton = $("#themeBtn");
+function updateReviewDesignButton(){
+  const next = document.documentElement.dataset.reviewDesign === 'new' ? 'Klasik görünüme geç' : 'Turkuaz görünüme geç';
+  themeButton.title = next;
+  themeButton.setAttribute('aria-label', next);
+}
+updateReviewDesignButton();
+themeButton.onclick = () => {
+  const design = document.documentElement.dataset.reviewDesign === 'new' ? 'classic' : 'new';
+  document.documentElement.dataset.reviewDesign = design;
+  try { localStorage.setItem('ototr.review.design.teal', design); } catch (_) {}
+  updateReviewDesignButton();
+  if (STATE.view === 'overview') { window.renderOverview(); window.initCharts(); }
 };
 $("#notifBtn").onclick = e => { e.stopPropagation(); $("#notifPanel").classList.toggle("on"); };
 document.addEventListener("click", e => { if (!e.target.closest("#notifBtn") && !e.target.closest("#notifPanel")) $("#notifPanel").classList.remove("on"); });
@@ -3206,21 +3215,7 @@ if (!STATE.onboarded) setTimeout(startTour, 500);
         if (second) {
           const summary = document.createElement('summary');
           summary.textContent = 'Profil ▾';
-          const toggle = document.createElement('button');
-          toggle.type = 'button';
-          toggle.id = 'reviewDesignToggle';
-          const classic = document.documentElement.dataset.reviewDesign === 'classic';
-          toggle.textContent = classic ? 'Turkuaz görünüme geç' : 'Klasik görünüme dön';
-          toggle.addEventListener('click', () => {
-            const design = document.documentElement.dataset.reviewDesign === 'classic' ? 'new' : 'classic';
-            document.documentElement.dataset.reviewDesign = design;
-            try { localStorage.setItem('ototr.review.design.teal', design); } catch (_) {}
-            toggle.textContent = design === 'classic' ? 'Turkuaz görünüme geç' : 'Klasik görünüme dön';
-            menu.open = false;
-            summary.focus();
-            if (STATE.view === 'overview') { window.renderOverview(); window.initCharts(); }
-          });
-          menu.append(summary, toggle);
+          menu.append(summary);
         }
         document.getElementById('reviewHeaderSearch')?.before(menu);
       }
