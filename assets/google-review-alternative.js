@@ -616,7 +616,7 @@
       const links = bridge?.googleReviewLinks?.(review);
       bridge?.addReviewGoogleLink?.(heading,links?.review);
       detail.replaceChildren(heading,node('p', review.store + ' · ' + review.stars + ' ★'),
-        node('p', review.text || (review.demo ? 'Demo kaydı' : 'Yorum metni yok')));
+        node('p', originalReviewText(review.text) || (review.demo ? 'Demo kaydı' : 'Yorum metni yok')));
       if (review.isReplied && review.replyText) {
         const replyHeading=node('h4','Gönderilen yanıt');
         bridge?.addReviewGoogleLink?.(replyHeading,links?.reply);
@@ -636,7 +636,7 @@
       heading.append(node('strong', review.author || 'Google kullanıcısı'),
         node('span', review.stars == null ? '—' : review.stars + ' ★', 'review-day-rating'));
       row.append(heading, node('span', review.store, 'review-day-branch'));
-      const preview = review.text || (review.demo ? 'Demo kaydı' : '');
+      const preview = originalReviewText(review.text) || (review.demo ? 'Demo kaydı' : '');
       if (preview) row.append(node('span', preview, 'review-day-preview'));
       row.onclick = () => {
         list.querySelector('[aria-pressed="true"]')?.setAttribute('aria-pressed','false');
@@ -702,6 +702,8 @@
   const watchTitle = byId('ovWatchlist')?.closest('.chart-card')?.querySelector('h3');
   if (watchTitle) watchTitle.textContent = 'Dikkat gerektiren şubeler';
   const dismissedTargets = new Set();
+  let insightTimer;
+  let insightDeadline;
   function renderBranchRanking(scoped) {
     const host = byId('ovTopBranches');
     if (!host) return;
@@ -988,6 +990,7 @@
     const a = stats(scoped);
     renderBranchRanking(scoped);
     const connection = management().error ? 'Canlı yönetim bağlantısı alınamadı; Bağlantı durumu ekranını kontrol edin.' : !management().loaded ? 'Canlı kayıtlar için ERP oturumu bekleniyor.' : `${html(analyticsName())} · Google kayıtları ve ERP onay akışı. Kurulum ve test şubeleri hesaplamaya dahil edilmez.`;
+    clearTimeout(insightTimer);
     byId('ovAlerts').innerHTML = `<div class="alert ${analyticsLive() && management().loaded && !management().error ? 'info' : 'warn'}">${connection}</div>`;
     if (!analyticsLive()) byId('ovAlerts').replaceChildren();
     const total = currentReviewTotal(), target = currentTarget();
@@ -996,12 +999,26 @@
       const headline = ratio == null ? 'Toplam yorum hedefi' : ratio >= 100 ? 'Toplam yorum hedefine ulaşıldı' : 'Toplam yorum hedefinde ilerleme';
       const insightKey = branchId() + ':' + monthKey(Date.now()) + ':' + target;
       byId('ovAlerts').innerHTML = dismissedTargets.has(insightKey) ? '' : `<div class="v2-insight"><button class="v2-insight-close" type="button" aria-label="Hedef özetini kapat">×</button><strong>${headline}</strong><p>${`Mevcut toplam: ${fmt(total)} yorum · Hedef: ${target == null ? 'Girilmedi' : fmt(target)}`} ${target == null ? '' : `· ${pct(ratio)} gerçekleşme · Kalan ${fmt(Math.max(0, target - total))} yorum.`} ${a.count ? `Ortalama puan ${fmt(a.average)}, yanıt oranı ${pct(a.responseRate)}. ${a.timedAnswers ? `${sla()} saatlik SLA içinde yanıtlananların oranı ${pct(a.slaRate)}.` : 'Yanıt süresi için ölçülebilir kayıt bekleniyor.'}` : ''}</p></div>`;
+      const insight = byId('ovAlerts').querySelector('.v2-insight');
+      if (insight) {
+        if (insightDeadline?.key !== insightKey) insightDeadline = {key:insightKey, time:Date.now() + 10000};
+        const close = () => {
+          clearTimeout(insightTimer);
+          dismissedTargets.add(insightKey);
+          if (!insight.getClientRects().length || matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            insight.remove();
+            return;
+          }
+          const animation = insight.animate([
+            {height:insight.offsetHeight+'px', opacity:1},
+            {height:'0px', opacity:0, paddingBlock:'0px', marginBlockEnd:'0px', borderBlockWidth:'0px'}
+          ], {duration:320, easing:'ease-in-out', fill:'forwards'});
+          animation.onfinish = () => insight.remove();
+        };
+        insight.querySelector('button').onclick = close;
+        insightTimer = setTimeout(close, Math.max(0, insightDeadline.time - Date.now()));
+      }
     }
-      const dismiss = byId('ovAlerts').querySelector('.v2-insight-close');
-      if (dismiss) dismiss.onclick = () => {
-        dismissedTargets.add(branchId() + ':' + monthKey(Date.now()) + ':' + target);
-        byId('ovAlerts').replaceChildren();
-      };
     if (missingScopeData()) byId('ovAlerts').insertAdjacentHTML('beforeend',
       '<div class="alert warn">Bu kapsamda henüz senkronize edilmemiş canlı şubeler var. Yorum göstergeleri alınmış kayıtları kapsar.</div>');
     const responseGoal = 95;

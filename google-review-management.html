@@ -599,7 +599,7 @@ main{margin:0 auto;width:auto;max-width:1440px;padding:20px}
   try {
     if (localStorage.getItem('ototr.review.design.teal') === 'new') document.documentElement.dataset.reviewDesign = 'new';
   } catch (_) {}
-</script><link rel="stylesheet" href="assets/google-review-alternative.css?v=20261119-1"><link rel="stylesheet" href="assets/google-review-workspace.css?v=20261123-24"></head><body>
+</script><link rel="stylesheet" href="assets/google-review-alternative.css?v=20261119-1"><link rel="stylesheet" href="assets/google-review-workspace.css?v=20261123-27"></head><body>
 <div id="review-loading-message" role="status">Yorum Yönetimi hazırlanıyor…</div>
 
 <header class="topbar">
@@ -735,14 +735,6 @@ main{margin:0 auto;width:auto;max-width:1440px;padding:20px}
           <button type="button" data-period="all" aria-pressed="false">Tümü</button>
         </div>
         <div id="rvList"></div>
-        <div class="bulk-bar" id="bulkBar">
-          <div class="bulk-info"><b id="bulkCount">0</b> yorum seçili</div>
-          <div class="sp"></div>
-          <button onclick="bulkAction('approve')">Toplu onayla</button>
-          <button onclick="bulkAction('route_legal')">⚖ Hukuka</button>
-          <button onclick="bulkAction('route_complaint')">📨 Şikayete</button>
-          <button onclick="bulkAction('clear')">İptal</button>
-        </div>
       </div>
       <div class="card2 detail" id="rvDetail"></div><dialog id="reviewMobileDialog" aria-label="Yorum detayı"><button type="button" class="btn sm" id="reviewMobileClose">Listeye dön</button></dialog>
     </div>
@@ -1777,6 +1769,10 @@ function getFilteredReviews(reviews = searchedReviews()){
   return list;
 }
 
+function originalReviewText(text){
+  return String(text ?? "").split(/\s*\(Translated by Google\)/i, 1)[0].trimEnd();
+}
+
 function sentReplyFollowup(id){
   return `<div class="review-action-group"><h4>Takip</h4><div><button class="btn" onclick="addInternalNote(${id})">Not ekle</button><button class="btn" onclick="routeReview(${id},'complaint')">Müşteri şikâyeti</button><button class="btn" onclick="verifyLiveReply(${id})">Yayını doğrula</button></div></div><div class="review-action-group"><h4>Yönlendir</h4><div><button class="btn" onclick="escalateRegion(${id})">Bölge</button><button class="btn" onclick="routeReview(${id},'store')">Şube</button><button class="btn" onclick="routeReview(${id},'legal')">Hukuk</button></div></div>`;
 }
@@ -1785,8 +1781,6 @@ function renderReviews(){
   const searched = searchedReviews();
   const filtered = getFilteredReviews(searched);
   renderReviewStatusFilters(searched);
-  const selectableIds = new Set(filtered.filter(row => row.demo).map(row => row.id));
-  for (const id of SELECTED) if (!selectableIds.has(id)) SELECTED.delete(id);
   if (!filtered.some(row => row.id === SEL)) SEL = filtered[0]?.id ?? null;
   const fresh=$('#dataFreshness'); if(fresh) fresh.textContent=`Veri: ${new Date().toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})}`;
   $("#rvCount").textContent = filtered.length;
@@ -1797,21 +1791,15 @@ function renderReviews(){
     $("#rvList").innerHTML = filtered.map(r => {
       const cls = r.status === "gonderildi" ? "ok" : r.status === "hukuk" || r.status === "routed" ? "bad" : r.risk >= 50 ? "bad" : "warn";
       const label = { bekliyor:"Onay", gonderildi:"Gönderildi", hukuk:"Hukuk", routed:"Sevk" }[r.status] || r.status;
-      return `<div class="li ${r.demo?"":"review-single-action"} ${r.id===SEL?"on":""} ${SELECTED.has(r.id)?"selected":""}" onclick="if(!event.target.closest('.cb'))selectReview(${r.id})">
-        ${r.demo ? `<button type="button" class="cb" aria-label="Toplu işlem için seç" aria-pressed="${SELECTED.has(r.id)}" onclick="event.stopPropagation();toggleSelect(${r.id})"></button>` : ""}
+      return `<div class="li review-single-action ${r.id===SEL?"on":""}" onclick="selectReview(${r.id})">
         <div class="content">
           <div class="row1"><span>${r.author} <span class="stars">${"★".repeat(r.stars)}</span></span><span class="chip ${cls}">${label}</span></div>
           <div class="row2">${r.store} · ${r.time}${r.escalated?' · ⚠':''}</div>
-          <p>${r.text}</p>
+          <p>${originalReviewText(r.text)}</p>
         </div>
       </div>`;
     }).join("");
   }
-
-  const isBulk = SELECTED.size > 1;
-  $("#bulkBar").classList.toggle("on", isBulk);
-  $("#rvListPane").classList.toggle("has-bulk", isBulk);
-  $("#bulkCount").textContent = SELECTED.size;
 
   let r = REVIEWS.find(x => x.id === SEL);
   if (!r || !filtered.find(x => x.id === SEL)) r = filtered[0];
@@ -1826,7 +1814,7 @@ function renderReviews(){
 
   $("#rvDetail").innerHTML = `
     <div class="top">
-      <div><b style="font-size:14px">${r.author}</b> <span class="stars">${"★".repeat(r.stars)}${"☆".repeat(5-r.stars)}</span><div style="font-size:11.5px;color:var(--mute);margin-top:2px">${r.store} · ${r.time}</div></div>
+      <div class="review-detail-byline"><span><b style="font-size:14px">${r.author}</b> <span class="stars">${"★".repeat(r.stars)}${"☆".repeat(5-r.stars)}</span></span><span class="review-detail-location">${r.store} · ${r.time}</span></div>
       <div class="meta">
         <span class="chip ${r.risk>=50?"bad":r.risk>=20?"warn":"ok"}">Risk ${r.risk}</span>
         <span class="chip">${r.tag}</span>
@@ -1836,9 +1824,9 @@ function renderReviews(){
     </div>
     <div class="stabs" style="margin:12px 0"><button class="on" data-rtab="detail">Detay</button><button data-rtab="history">📋 Geçmiş</button></div>
     <div id="rvTab-detail">
-      <div class="review-quote"><h4>Müşteri yorumu</h4><div>${r.text}</div></div>
+      <div class="review-quote"><h4>Müşteri yorumu</h4><div>${originalReviewText(r.text) || "Yorum metni yok"}</div></div>
       <div class="draft-label"><h4>${isFinal ? "Gönderilen yanıt" : "AI taslağı"}</h4>${isFinal ? `<span class="chip ok">Gönderildi</span>` : `<span class="chip">${idx+1}/${r.drafts.length}</span>`}</div>
-      <textarea id="draftBox" ${isFinal||isRouted?"readonly":""}>${draft}</textarea>
+      <textarea id="draftBox" aria-label="Yanıt metni" ${isFinal||isRouted?"readonly":""}>${draft}</textarea>
       <div class="actions">
         ${isFinal ? `<div class="review-action-group"><h4>Yanıt</h4><div><button class="btn" onclick="editSentReply(${r.id})">Yanıtı düzenle</button><button class="btn" onclick="regenDraft(${r.id})">Alternatif AI</button><button class="btn p" onclick="sendUpdatedReply(${r.id})">Güncel yanıtı gönder</button></div></div>${sentReplyFollowup(r.id)}`
         : isRouted ? `<span class="chip purple" style="padding:8px 12px">Sevk edildi</span><button class="btn" onclick="closeRouting(${r.id})">Kapat</button>`
@@ -3238,7 +3226,7 @@ if (!STATE.onboarded) setTimeout(startTour, 500);
     document.head.append(style); move(); new MutationObserver(move).observe(document.body,{childList:true,subtree:true});
   })();
 </script>
-<script src="assets/google-review-alternative.js?v=20261123-23"></script>
+<script src="assets/google-review-alternative.js?v=20261123-25"></script>
 <script src="assets/google-review-sandbox.js?v=20261119-3"></script>
 <script src="assets/vendor-review-qrcode.js"></script>
 <script src="assets/google-review-workspace.js?v=20261123-1"></script>

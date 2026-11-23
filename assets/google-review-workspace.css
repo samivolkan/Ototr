@@ -615,3 +615,41 @@ body:has(#view-reviews.on) .ph:has(.v2-review-status:not([hidden])) {
 
 #view-reviews #rvList .li.review-single-action { grid-template-columns:minmax(0,1fr); }
 #view-reviews #rvList .cb { padding:0; }
+
+@supports (field-sizing:content) {
+  html[data-review-variant="2"] #rvDetail #draftBox {
+    field-sizing:content;
+    display:block;
+    width:100%;
+    height:auto;
+    min-height:3.5em;
+    max-height:none;
+    resize:none;
+  }
+}
+
+.review-detail-byline {
+  display:flex;
+  flex-wrap:wrap;
+  align-items:baseline;
+  gap:3px 10px;
+  min-width:0;
+}
+.review-detail-location {
+  font-size:11.5px;
+  color:var(--mute);
+  overflow-wrap:anywhere;
+}
+
+html[data-review-variant="2"] #ovAlerts .v2-insight {
+  box-sizing:border-box;
+  overflow:hidden;
+  background:#fff6dc;
+  border-color:#ead9a5;
+  border-left-color:#b48120;
+}
+html[data-theme="dark"][data-review-variant="2"] #ovAlerts .v2-insight {
+  background:#322a18;
+  border-color:#584727;
+  border-left-color:#dfb453;
+}
