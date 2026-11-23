@@ -1,0 +1,5 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import{displayCount,validateProfile,franchiseOfficeRequest}from'../ajan-ofisi/franchise-desk-model.mjs';
+test('unverified counts are not represented as an empty queue',()=>{assert.equal(displayCount(undefined),'—');assert.equal(displayCount(null),'—');assert.equal(displayCount(-1),'—');assert.equal(displayCount(0),'0');});
+test('profile requires exactly the five approved text fields',()=>{const p={mission:'Görev tanımı',scope:'Kapsam tanımı',handoff:'Devir koşulları',escalation:'Yönlendirme kuralları',acceptance:'Kabul koşulları'};assert.equal(validateProfile(p),true);assert.equal(validateProfile({...p,scope:''}),false);assert.equal(validateProfile({...p,code_write:true}),false);assert.equal(validateProfile({...p,scope:'a'.repeat(2001)}),false);});
+test('client rejects business mutations before any network call',async()=>{await assert.rejects(()=>franchiseOfficeRequest('activate_franchise_case'),/yetkisi yok/);await assert.rejects(()=>franchiseOfficeRequest('approve_finance'),/yetkisi yok/);});
