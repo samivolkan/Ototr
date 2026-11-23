@@ -45,5 +45,5 @@ export async function officeNotifications(db:any,body:any,access:any,user:any){
  if(typeof body.id!=='string'||! /^[0-9a-f-]{36}$/i.test(body.id))throw Object.assign(new Error('Geçersiz bildirim.'),{status:400});
  const r=await db.from('google_review_notifications').update({read_at:new Date().toISOString()}).eq('id',body.id).eq('connection_id','ototr-primary').eq('user_id',user.id).select('id').maybeSingle();if(r.error)throw Error('Bildirim güncellenemedi.');if(!r.data)throw Object.assign(new Error('Bildirim bulunamadı.'),{status:404});return{ok:true};
  }
- const r=await db.from('google_review_notifications').select('id,branch_id,event,title,body,created_at,read_at').eq('connection_id','ototr-primary').eq('user_id',user.id).order('created_at',{ascending:false}).limit(50);if(r.error)throw Error('Bildirimler okunamadı.');return{items:r.data||[]};
+ const r=await db.from('google_review_notifications').select('id,branch_id,event,title,body,created_at,read_at,review_id,goal_month').eq('connection_id','ototr-primary').eq('user_id',user.id).order('created_at',{ascending:false}).limit(50);if(r.error)throw Error('Bildirimler okunamadı.');return{items:r.data||[]};
 }

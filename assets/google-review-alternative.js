@@ -1708,7 +1708,25 @@
     Object.assign(analyticsScope,{mode:'demo',region:b.region,city:b.city,branch:b.id});
     root.switchView('performance');
   }
-  root.OTOTRReviewAlternative = { ...pure, branchHeatmap, openDemoRanking, regionalDemos: () => regionalDemos.map(b=>({...b})), openRegionalDemo, getPeriod: () => period, scopedRows: operationalRows, filteredRows: rows };
+  async function openNotification(notification) {
+    if(root.OTOTRReviewBridge?.isEditing?.()) throw Error('Önce açık yorum taslağını kaydedin.');
+    const selectedBranch=liveRegistry().find(b=>b.id===notification.branch_id);
+    if(!selectedBranch) throw Error('Bildirimin şubesi bulunamadı veya erişiminiz yok.');
+    live().setScope(selectedBranch.id===BRANCH_IDS[0]?'live':selectedBranch.id);
+    if(live().getBranchId()!==selectedBranch.id) throw Error('Şube kapsamı açılamadı.');
+    Object.assign(analyticsScope,{mode:'live',region:selectedBranch.region,city:selectedBranch.city,branch:selectedBranch.id});
+    if(notification.event.startsWith('goal_')){
+      if(/^20\d{2}-(0[1-9]|1[0-2])$/.test(notification.goal_month||'')) goalMonth=notification.goal_month;
+      root.switchView('performance');
+      byId('reviewGoalWorkflow')?.scrollIntoView({block:'start'});
+      return;
+    }
+    reviewDay=null;reviewPeriod='all';
+    const review=operationalRows().find(r=>r.googleReviewId===notification.review_id&&!r.demo);
+    if(review){root.switchView('reviews',{reviewId:review.id});root.selectReview(review.id);}
+    else {root.switchView('reviews');root.toast(notification.review_id?'İlgili yorum yüklenemedi veya Google’dan kaldırılmış. Şubenin yorumları açıldı.':'Bu eski toplu bildirime ait şube yorumları açıldı.','info');}
+  }
+  root.OTOTRReviewAlternative = { openNotification, ...pure, branchHeatmap, openDemoRanking, regionalDemos: () => regionalDemos.map(b=>({...b})), openRegionalDemo, getPeriod: () => period, scopedRows: operationalRows, filteredRows: rows };
   STATE.view = 'overview';
   root.switchView('overview');
 })(typeof window === 'undefined' ? null : window);
