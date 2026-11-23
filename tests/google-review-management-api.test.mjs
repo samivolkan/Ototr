@@ -113,7 +113,7 @@ test('automatic publication requires enabled policy and exact verified safe AI o
  const reply='Doğrulanmış örnek AI yanıtı';
  const hash=Array.from(new Uint8Array(await webcrypto.subtle.digest('SHA-256',new TextEncoder().encode(reply))),b=>b.toString(16).padStart(2,'0')).join('');
  f.tables.google_review_ai_generations.push({id:LEGAL,connection_id:CONNECTION,branch_id:BRANCH,review_id:'review',context:'generate',status:'succeeded',reply_sha256:hash,requires_human_review:false});
- const item=f.item({draft_source:'openai',reply_text:reply,review_snapshot:{rating:5,comment:'Memnunum.',ai_analysis:{generation_id:LEGAL,requires_human_review:false}}});
+ const item=f.item({draft_ready_at:'2026-01-01T00:00:00Z',auto_send_after:'2026-01-01T02:00:00Z',draft_source:'openai',reply_text:reply,review_snapshot:{rating:5,comment:'Memnunum.',ai_analysis:{generation_id:LEGAL,requires_human_review:false}}});
  await f.context.api.assertAutomaticReply(f.db,item);
  for(const patch of [{draft_source:'manual'},{reply_text:'Sonradan değiştirilen metin'},{review_snapshot:{...item.review_snapshot,rating:3}},{review_snapshot:{...item.review_snapshot,comment:'Avukatım dönüş yapacak.'}},{review_snapshot:{...item.review_snapshot,ai_analysis:{requires_human_review:false}}},{review_snapshot:{...item.review_snapshot,legal_hold:true}}])await assert.rejects(f.context.api.assertAutomaticReply(f.db,{...item,...patch}));
  f.tables.google_review_policies[0].auto_reply_enabled=false;

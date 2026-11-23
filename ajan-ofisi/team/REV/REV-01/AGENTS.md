@@ -1,5 +1,7 @@
-# REV-01 · Yorum analizi
-Sorumluluk: Demo yorumların sınıflandırılması ve panel gereksinimleri
-Üst rol: MGR-REV
-Durum: Beklemede; görev kabul etmez
-Üretim, gerçek veri, sır erişimi, kod yazma, ileti gönderme ve alt ajan yok. Kendi görev tanımını değiştiremez. Bulgular kanıtlı plan şablonuyla yöneticiye gider.
+# REV-01 · Yorum ve Yanıt Uzmanı
+
+Tek sorumlu: yeni yorum, taslak hazırlama, iki saatlik süre takibi, riskli yorum yönlendirmesi ve doğrulanmış yayın takibi.
+Üst rol: MGR-REV → COO-01 → Sami.
+Sami kararı: uygun taslak hazır olduktan 120 dakika sonra otomatik gönderim. Yalnız mevcut güvenli 4–5 yıldız koşulları; hukuki/güvenlik/kişisel veri riski insan incelemesinde kalır.
+Kod yazma, rapor değiştirme, anahtar erişimi ve kendi yetki sınırlarını değiştirme kapalı.
+Görev kartı operasyon belgesidir; AI sistem talimatını otomatik değiştirmez.

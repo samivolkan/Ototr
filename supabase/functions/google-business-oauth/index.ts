@@ -1,3 +1,4 @@
+import { assertReplyDelay, officeReviewAction } from '../_shared/review-agent-office.ts';
 import { handleReviewGoals, ReviewGoalError } from '../_shared/review-goals.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.57.4';
 import { handleReviewManagement, loadReviewAccess, assertReviewLifecycle } from '../_shared/review-management.ts';
@@ -687,6 +688,7 @@ function sameGoogleReply(actual: string, expected: string) {
 const sentPendingMessage = 'Yanıt gönderildi, kontrol ediliyor. Google’ın yayın kontrolü bekleniyor.';
 const outcomePendingMessage = 'Gönderim sonucu kontrol ediliyor.';
 async function assertAutomaticReply(db: any, item: any) {
+  assertReplyDelay(item);
   const policy=await db.from('google_review_policies').select('auto_reply_enabled').eq('connection_id',connectionId).maybeSingle();databaseFailure(policy.error);
   const snapshot=item.review_snapshot||{}, analysis=snapshot.ai_analysis||{};
   const unsafe=/avukat|dava|hukuk|mahkeme|tazminat|dolandır|kişisel veri|ayrımcılık|güvenlik|can güven|ücret iade|ciddi teknik/i.test(String(snapshot.comment||''));
@@ -873,6 +875,7 @@ Deno.serve(async (req) => {
     }
     const connection = await authorizedConnection(db, user.id, branchIdOf(body));
     const access = connection._reviewAccess;
+    if(['office_review_status','office_review_profile_save'].includes(body.action))return json(await officeReviewAction(db,body,access,user));
     const branchRows = await loadBranchRegistry(db);
     const requestedBranch = body.branch_id === undefined ? managementBranchId : String(body.branch_id);
     if (body.branch_id !== undefined && (!managedBranchId(requestedBranch) || (requestedBranch.startsWith('branch-custom-') && !registryRow(branchRows, requestedBranch)))) throw new RequestError('Şube kaydı bulunamadı veya bu kapsam canlı yönetim için açılmadı.',400);

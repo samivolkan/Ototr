@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "department": "REV",
+  "owner": "REV-01",
+  "ownerTitle": "Yorum ve Yanıt Uzmanı",
+  "specialistCount": 1,
+  "decision": "Sami: taslak hazır olduğunda başlayan iki saat sonunda otomatik gönderim",
+  "timerStartsAt": "draft_ready_at",
+  "delayMinutes": 120,
+  "automaticSendAuthorized": true,
+  "runtimeDispatchEnabled": true,
+  "runtimeStatus": "Nilüfer sunucu otomasyonu: uygun düşük riskli 4–5 yıldız, taslak hazır +120 dakika; 5 dakikalık sunucu kontrolü.",
+  "allowCancellationBeforeDispatch": true,
+  "allowEditingBeforeDispatch": true,
+  "codeWritingAllowed": false,
+  "implementationRequirements": [
+    "Süre yorumun gelişinde değil, taslağın hazır oluşunda başlar.",
+    "Gönderim sonucu doğrulanmadan yayımlandı gösterilmez.",
+    "İptal edilen taslak gönderilmez.",
+    "Aynı yorum için tekrarlı gönderim engellenir.",
+    "Bağlantı, hata ve bekleyen durumlar ayrı gösterilir.",
+    "Gerçek müşteri verisi demo ortamına taşınmaz."
+  ],
+  "editedDraftBehavior": "Yeni sürüm için iki saat yeniden başlar; elle düzenlenen yanıt insan onayında kalır."
+}

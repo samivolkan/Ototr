@@ -1,6 +1,6 @@
 # Bursa sunucu otomasyonu
 
-Bursa Nilüfer için pg_cron her 2 saatte bir Vault kimliğiyle sunucu fonksiyonunu çağırır. Diğer şubeler kapsama alınmaz. Tarayıcı oturumu gerekmez.
+Bursa Nilüfer için pg_cron her 5 dakikada bir Vault kimliğiyle sunucu fonksiyonunu çağırır. Diğer şubeler kapsama alınmaz. Tarayıcı oturumu gerekmez.
 
 ## Güvenlik ve yayın
 - İstek gövdesi bir kullanıcı kimliği veya şube seçemez. İş kapsamı sunucuda Nilüfer olarak sabittir.
@@ -21,3 +21,7 @@ select cron.unschedule('ototr-nilufer-review-automation');
 ```
 
 Yeni şubeler otomatik olarak bu kapsama eklenmez; doğrulama, yetki ve ayrı aktivasyon gerektirir. SMS/WhatsApp gönderimi bu zamanlayıcıya dahil değildir.
+
+## Taslak hazır + iki saat
+23 Kasım 2026 Sami kararı: otomatik yayın uygunluğu taslak hazır olduğunda başlayan 120 dakika sonrasıdır. Veritabanı draft_ready_at / auto_send_after değerlerini damgalar. Metin veya sürüm değişince süre yeniden başlar. Elle düzenlenen taslaklar mevcut güvenlik kuralıyla insan onayında kalır.
+Sunucu kontrolü 5 dakikada bir; bu nedenle uygun gönderim iki saatten önce olmaz, sonraki uygun kontrolde işlenir. Kuyrukta çalışma başına en fazla iki taslak/yayın sınırı korunur. Yorum uzmanı görev kartı operasyon belgesidir, AI sistem istemini otomatik değiştirmez.

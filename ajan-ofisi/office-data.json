@@ -86,15 +86,11 @@
       "agents": [
         {
           "id": "REV-01",
-          "name": "Yorum analizi",
-          "scope": "Demo yorumların sınıflandırılması ve panel gereksinimleri"
-        },
-        {
-          "id": "REV-02",
-          "name": "Yanıt ve onay akışı",
-          "scope": "Yanıt taslağı ve insan onayı; otomatik gönderim yok"
+          "name": "Yorum ve Yanıt Uzmanı",
+          "scope": "Yeni yorum, yanıt taslağı, iki saatlik süre, insan incelemesi ve doğrulanmış yayın takibi"
         }
-      ]
+      ],
+      "workspace": "review-specialist.html"
     },
     {
       "id": "SALE",
