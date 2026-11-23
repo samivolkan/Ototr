@@ -60,3 +60,13 @@ Kaynak dosyasının bulunması canlı entegrasyon veya tamamlanmış iş kanıt�
 - Çalışan kaynak eşlemesi `EMPLOYEE-WORKFLOW-MAPPING.md` dosyasındadır. Görev verisi taşınmadı ve kişi takibi başlatılmadı.
 - Ortak iş sözleşmesi denetçiye üretim devrini reddeder; reddedilen teslim yeni kanıt ve yeni inceleme ister.
 - İlgili otomatik kontroller: 51 test başarılı. Canlı ekran doğrulaması ayrıca yapılır.
+
+## İşler v24 salt okunur bağlantısı
+
+`office_work_health_summary` mevcut merkez yetki kontrolünü ve tekil aktif ERP kullanıcısını zorunlu tutar. Kapsam istemciden alınmaz; mevcut kullanıcının iş kapsamından türetilir. Yalnız sayı döndürür, görev/personel metni veya kimliği döndürmez. Silinen işler dışarıda kalır.
+
+Açık, devam eden, kaynakta bitti işaretli, sorumlusu eksik/eşleşmeyen, tarihi geçmiş/eksik/geçersiz ve tanınmayan durumlar ayrılır. Kaynakta bitti işaretli olması bağımsız denetim değildir. Kabul, teslim kanıtı, vardiya ve izin bağlantısı henüz yoktur. Sayılar çakışabilir; sorun sayıları toplanarak benzersiz görev sayısı üretilmez.
+
+SQL güvenliği izole PGlite PostgreSQL ortamında sentetik iki kapsamla test edildi. Test kimlik fonksiyonları sahtedir; üretimde mevcut ERP kimlik denetimleri kullanılır. 54 ilgili test geçti. Üretim danışman taramasında bulgu kategorileri ve sayıları değişmedi; bu bütün sistemin güvenli olduğu iddiası değildir.
+
+Yeniden test: `npm install --prefix <ayrı-test-klasörü> @electric-sql/pglite@0.6.0`, `OTOTR_PGLITE_MODULE=<ayrı-test-klasörü>/node_modules/@electric-sql/pglite/dist/index.js`, ardından `node --test tests/office-work-health-sql.test.mjs`. Test veritabanı yalnız bellektedir; gerçek veriye bağlanmaz.
