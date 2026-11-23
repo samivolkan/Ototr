@@ -58,4 +58,3 @@ Deno.serve(async req=>{
  return out({branch:'Nilüfer',gbp:g,schedule,ads:{connected:false,developerTokenConfigured:!!Deno.env.get('GOOGLE_ADS_DEVELOPER_TOKEN'),oauthScopeReady:String(c.scope).includes('/auth/adwords'),reason:'Ads için ayrı API yetkilendirmesi gerekli.'}});
  }catch{return out({error:'REPORT_SERVICE_ERROR'},503);}
 });
-

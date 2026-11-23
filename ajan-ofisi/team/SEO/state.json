@@ -1,6 +1,6 @@
 {
   "department": "SEO",
-  "status": "waiting",
+  "status": "rule_automation_configured",
   "modelExecution": false,
   "manager": "MGR-SEO",
   "experts": [
@@ -12,5 +12,12 @@
       "id": "SEO-02",
       "status": "waiting"
     }
-  ]
+  ],
+  "liveStatusUrl": "../seo-visibility/index.html?view=live",
+  "automation": {
+    "source": "GBP Nilufer",
+    "schedule": "hourly minute 17",
+    "runtime": "seo-reporting",
+    "humanApprovalRequiredForWrites": true
+  }
 }
