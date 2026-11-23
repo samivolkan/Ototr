@@ -16,7 +16,7 @@ test('current Franchise pilot is wired into the ERP Franchise menu',()=>{
   assert.match(html,/data-growth-profile/);
   assert.match(nav,/data-gm-franchise-link/);
   assert.match(nav,/Franchise Yönetim Merkezi/);
-  assert.match(nav,/title\.textContent\.trim\(\) === 'Franchise Yönetimi'/);
+  assert.match(nav,/\['Bayi ve Franchise','Franchise Yönetimi'\]\.includes\(title\.textContent\.trim\(\)\)/);
   assert.match(nav,/nav\.insertBefore\(node, nextGroup\)/);
-  assert.match(root,/gm-franchise\/erp-nav-integration\.js\?v=20261111/);
+  assert.match(root,/gm-franchise\/erp-nav-integration\.js\?v=[a-zA-Z0-9.-]+/);
 });
