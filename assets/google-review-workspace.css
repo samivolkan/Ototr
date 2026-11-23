@@ -844,3 +844,31 @@ body:has(#view-reviews.on) main { padding-top:8px; }
 .workspace-heat-actions { display:flex; flex-wrap:wrap; align-items:center; gap:6px; }
 .branch-segments-label[data-demo-branch] b { color:#ff9696; font-weight:750; }
 #overviewBranchChart .branch-segments-label[data-demo-branch] b { color:#af2525; }
+
+#view-problems .problem-table {
+  overflow:auto;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:var(--surface);
+}
+#view-problems .problem-table table {
+  width:100%;
+  min-width:640px;
+  border-collapse:collapse;
+}
+#view-problems .problem-table :is(th,td) {
+  padding:9px 12px;
+  border-bottom:1px solid var(--line);
+  text-align:start;
+  vertical-align:middle;
+}
+#view-problems .problem-table thead th {
+  background:var(--s3);
+  color:var(--ink);
+  font-weight:700;
+}
+#view-problems .problem-table tbody tr:nth-child(odd) > td { background:var(--surface); }
+#view-problems .problem-table tbody tr:nth-child(even) > td { background:var(--s2); }
+#view-problems .problem-table tbody tr:is(:hover,:focus-within) > td { background:var(--bbg); }
+#view-problems .problem-table tbody tr:last-child > td { border-bottom:0; }
+#view-problems .problem-table td:last-child .btn { white-space:nowrap; }

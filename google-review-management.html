@@ -599,7 +599,7 @@ main{margin:0 auto;width:auto;max-width:1440px;padding:20px}
   try {
     document.documentElement.dataset.reviewDesign = localStorage.getItem('ototr.review.design.teal') === 'classic' ? 'classic' : 'new';
   } catch (_) {}
-</script><link rel="stylesheet" href="assets/google-review-alternative.css?v=20261119-1"><link rel="stylesheet" href="assets/google-review-workspace.css?v=20261123-40"></head><body>
+</script><link rel="stylesheet" href="assets/google-review-alternative.css?v=20261119-1"><link rel="stylesheet" href="assets/google-review-workspace.css?v=20261123-41"></head><body>
 <div id="review-loading-message" role="status">Yorum Yönetimi hazırlanıyor…</div>
 
 <header class="topbar">
@@ -765,7 +765,7 @@ main{margin:0 auto;width:auto;max-width:1440px;padding:20px}
   </section>
   <section class="view" id="view-problems">
     <div class="metrics" id="problemKpis"></div>
-    <div class="table-wrap"><table><thead><tr><th>Açık iş</th><th>Şube</th><th>Sorumlu</th><th>Son tarih</th><th>Durum</th><th>İşlem</th></tr></thead><tbody id="problemRows"></tbody></table></div>
+    <div class="table-wrap problem-table" tabindex="0" role="region" aria-label="Açık işler"><table><thead><tr><th>Açık iş</th><th>Şube</th><th>Sorumlu</th><th>Son tarih</th><th>Durum</th><th>İşlem</th></tr></thead><tbody id="problemRows"></tbody></table></div>
   </section>
 
   <!-- LEGAL -->
