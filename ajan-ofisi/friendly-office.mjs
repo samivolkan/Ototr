@@ -1,0 +1,28 @@
+// Progressive disclosure only: preserve sources, controls, and permission boundaries.
+function group(nodes,title,after){
+ const valid=nodes.filter(Boolean);if(!valid.length)return;
+ const details=document.createElement('details');details.className='friendly-extra';
+ const summary=document.createElement('summary');summary.textContent=title;details.append(summary);
+ after.after(details);valid.forEach(n=>details.append(n));return details;
+}
+if(document.querySelector('#scene')){
+ document.body.classList.add('friendly-office');
+ const office=document.querySelector('.office'),sidebar=document.querySelector('.sidebar');
+ group([sidebar],'Ekip ve kaynak incelemeleri',office);
+ const quick=document.createElement('nav');quick.className='friendly-shortcuts';quick.setAttribute('aria-label','Ofis kısayolları');
+ quick.innerHTML='<div><strong>Ajan Ofisi</strong><p>Ekibini ve senden beklenenleri tek yerden takip et.</p></div><a href="#web-demo-tasks">Aday ve kararları gör ↓</a>';
+ office.prepend(quick);
+ const top=document.querySelector('.topbar');
+ const extra=[...top.querySelectorAll('a')].filter(a=>/candidate-demo|management.html|delivery.html/.test(a.getAttribute('href')||''));
+ if(extra.length){const d=document.createElement('details');d.className='friendly-menu';d.innerHTML='<summary>Diğer ekranlar</summary><div></div>';extra.forEach(a=>d.querySelector('div').append(a));top.append(d);}
+ document.querySelector('.office-bottom').hidden=true;
+}else if(document.querySelector('#franchiseWorkbench')){
+ document.body.classList.add('friendly-franchise');
+ const host=document.querySelector('#web-demo-tasks'),workbench=document.querySelector('#franchiseWorkbench');
+ const main=document.querySelector('main');
+ const stats=[...main.children].filter(n=>n!==host&&n!==workbench&&n.tagName!=='FOOTER'&&!n.classList.contains('intro'));
+ group(stats,'Gerçek süreçler ve Finans kayıtları',host);
+ group([workbench],'Süreç rehberi ve uzman görevleri',main.querySelector('.friendly-extra'));
+ const intro=main.querySelector('.intro');intro.querySelector('h1').textContent='Franchise takibi';
+ intro.querySelector('p:not(.eyebrow)').textContent='Adayın durumu, ekibin işleri ve senden beklenen kararlar.';
+}
