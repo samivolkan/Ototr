@@ -599,7 +599,7 @@ main{margin:0 auto;width:auto;max-width:1440px;padding:20px}
   try {
     document.documentElement.dataset.reviewDesign = localStorage.getItem('ototr.review.design.teal') === 'classic' ? 'classic' : 'new';
   } catch (_) {}
-</script><link rel="stylesheet" href="assets/google-review-alternative.css?v=20261119-1"><link rel="stylesheet" href="assets/google-review-workspace.css?v=20261123-36"></head><body>
+</script><link rel="stylesheet" href="assets/google-review-alternative.css?v=20261119-1"><link rel="stylesheet" href="assets/google-review-workspace.css?v=20261123-38"></head><body>
 <div id="review-loading-message" role="status">Yorum Yönetimi hazırlanıyor…</div>
 
 <header class="topbar">
@@ -691,10 +691,12 @@ main{margin:0 auto;width:auto;max-width:1440px;padding:20px}
         <div id="ovSla"></div>
       </div>
     </div>
-    <div id="overviewBranchChart"></div>
+    <div class="overview-branch-row">
+      <div id="overviewBranchChart"></div>
+      <section class="chart-card overview-complaint-card" hidden><div id="overviewComplaintTopics"></div></section>
+    </div>
     <div id="overviewOperations" class="chart-grid" hidden>
-      <section class="chart-card span-8"><div id="overviewActionQueue"></div></section>
-      <section class="chart-card span-4"><div id="overviewComplaintTopics"></div></section>
+      <section class="chart-card"><div id="overviewActionQueue"></div></section>
     </div>
   </section>
 
@@ -3195,7 +3197,7 @@ if (!STATE.onboarded) setTimeout(startTour, 500);
   }).catch(() => {});
 </script>
 <script type="module" src="assets/erp-profile-ui.mjs?v=2"></script>
-<script src="assets/google-review-alternative.js?v=20261123-28"></script>
+<script src="assets/google-review-alternative.js?v=20261123-29"></script>
 <script src="assets/google-review-sandbox.js?v=20261119-3"></script>
 <script src="assets/vendor-review-qrcode.js"></script>
 <script src="assets/google-review-workspace.js?v=20261123-2"></script>

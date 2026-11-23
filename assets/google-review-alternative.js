@@ -925,9 +925,10 @@
   function renderOverviewOperations() {
     const panel = byId('overviewOperations');
     panel.hidden = doc.documentElement.dataset.reviewDesign!=='new';
+    const topics = byId('overviewComplaintTopics');
+    topics.closest('section').hidden = panel.hidden;
     if (panel.hidden) return;
     const queue = byId('overviewActionQueue');
-    const topics = byId('overviewComplaintTopics');
     const demo = analyticsDemo();
     const branches = matchingBranches();
     const selected = branches.find(b=>b.id===analyticsScope.branch);

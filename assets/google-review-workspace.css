@@ -68,14 +68,6 @@ html[data-review-variant="2"] button:focus-visible,html[data-review-variant="2"]
 html[data-review-design="classic"] .review-rating-layout { display: contents; }
 html[data-review-design="classic"] .review-rating-breakdown { display: none; }
 #review-profile-actions { position: relative; }
-#review-profile-actions[open] #reviewDesignToggle {
-  display: block !important;
-  position: absolute !important;
-  top: 100%;
-  right: 0;
-  z-index: 2;
-  white-space: nowrap;
-}
 
 /* Shared review workspace surfaces and dashboard rhythm. */
 html[data-review-design="new"][data-review-variant="2"] :is(.v2-scope, .card, .chart-card, .kpi, #rvListPane, #rvDetail) {
@@ -135,9 +127,6 @@ html[data-review-design="new"] #workspaceCollectionBranch { min-height: 34px; ma
   html[data-review-design="new"][data-review-variant="2"] .v2-nav-row { flex-wrap: wrap; gap: 4px; }
   html[data-review-design="new"][data-review-variant="2"] .v2-nav-row .topnav { flex-basis: 100%; }
   html[data-review-design="new"][data-review-variant="2"] .v2-nav-actions { flex-wrap: wrap; min-width: 0; margin-block: 0 8px; }
-}
-html[data-review-variant="2"] #review-profile-actions[open] > #ototr-account-exit {
-  top: calc(100% + 38px) !important;
 }
 
 /* Optional turquoise view, scoped to the review workspace. */
@@ -565,7 +554,7 @@ html[data-review-design="new"] #overviewPeriodButtons { display:grid; gap:4px; }
 .review-goal-month:hover, .review-goal-month[aria-pressed="true"] { background:var(--s2); border-color:var(--line); }
 
 #overviewOperations > section[hidden] { display:none; }
-#overviewOperations:has(> section[hidden]) > section:not([hidden]) { grid-column:1/-1; }
+#overviewOperations > section { grid-column:1/-1; }
 #ovWatchlist .overview-watch-branch { width:100%; border:1px solid transparent; text-align:start; color:var(--ink); font:inherit; cursor:pointer; }
 #ovWatchlist .overview-watch-branch:hover { border-color:var(--line); }
 #ovWatchlist .overview-watch-branch:focus-visible { outline:2px solid var(--blue); outline-offset:1px; }
@@ -709,8 +698,20 @@ html:has(#view-reviews.on) { overflow-anchor:none; }
 @media (max-width:600px) {
   #view-overview .overview-summary-grid { grid-template-columns:minmax(0,1fr); }
 }
-#overviewBranchChart { max-width:860px; margin:0 0 16px; }
-#view-overview > #overviewBranchChart { grid-column:1/-1; width:100%; min-width:0; }
+#view-overview > .overview-branch-row {
+  grid-column:1/-1;
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:14px;
+  align-items:start;
+  margin-bottom:16px;
+}
+#overviewBranchChart { min-width:0; }
+.overview-complaint-card[hidden] { display:none; }
+.overview-complaint-card p { color:var(--mute); font-size:11px; }
+@media (max-width:760px) {
+  #view-overview > .overview-branch-row { grid-template-columns:minmax(0,1fr); }
+}
 #overviewBranchChart .branch-segments {
   background:var(--surface);
   color:var(--ink);
@@ -792,3 +793,11 @@ html:has(#view-reviews.on) { overflow-anchor:none; }
     min-height:36px;
   }
 }
+
+html[data-review-variant="2"] #ototr-profile-actions.review-header-actions #ototr-profile-menu #ototr-account-exit {
+  min-height:28px !important;
+  padding:4px 8px !important;
+  font-size:11px !important;
+}
+
+#ototr-profile-actions.review-header-actions #ototr-profile-menu { min-width:112px; padding:4px; }
