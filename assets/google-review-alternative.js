@@ -333,9 +333,11 @@
     if (!connectionButton) return;
     const state = management();
     const connected = state.loaded && !state.error && state.settings?.google_connected === true;
-    const label = connected ? 'Bağlantı Canlı' : 'Bağlantı durumu';
+    const label = connected ? 'Bağlantı canlı' : 'Bağlantı canlı değil';
     connectionButton.classList.toggle('v2-connection-live',Boolean(connected));
-    if (connectionButton.textContent !== label) connectionButton.textContent = label;
+    connectionButton.textContent = '';
+    connectionButton.setAttribute('aria-label', label);
+    connectionButton.dataset.connectionLabel = label;
   }
   renderConnectionStatus();
   root.addEventListener('ototr-management-ready',renderConnectionStatus);
