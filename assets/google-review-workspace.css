@@ -661,3 +661,5 @@ html:has(#view-reviews.on), #rvListPane {
   overflow-anchor:none;
   align-items:start;
 }
+
+html:has(#view-reviews.on) { overflow-anchor:none; }
