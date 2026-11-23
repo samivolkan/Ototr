@@ -1,0 +1,47 @@
+/* Mobile-only overrides: desktop layout remains unchanged. */
+@media(max-width:760px){
+ .app-shell .tabs{display:none}
+ .app-shell main{min-width:0}
+ .app-shell .topline{margin-bottom:12px;gap:6px}
+ .app-shell .menu-toggle{min-width:44px;min-height:44px;justify-content:center;padding:0}
+ .app-shell .design-switch button{min-height:44px;min-width:44px;font-size:11px;padding:6px}
+ .app-shell .btn,.app-shell .segmented button,.app-shell .icon-button,.app-shell .text-link,.app-shell th button{min-height:44px;font-size:12px}
+ .app-shell .icon-button{min-width:44px}
+ .app-shell select,.app-shell input:not([type=checkbox]):not([type=range]){min-height:44px;font-size:14px;min-width:0;max-width:100%}
+ .app-shell input[type=checkbox]{width:20px;height:20px;flex-shrink:0}
+ .app-shell .check-label{min-height:44px;font-size:12px}
+ .app-shell .section-title{flex-wrap:wrap;gap:8px;margin-bottom:10px}
+ .app-shell .section-title>div:first-child{min-width:0;flex:1 1 100%}
+ .app-shell .section-title .toolbar{display:flex;flex-wrap:wrap;gap:6px}
+ .app-shell .section-title>.select-label{flex:1 1 140px;min-width:0}
+ .app-shell .section-title>.search{flex:1 1 140px;min-width:0;width:auto;max-width:100%}
+ .app-shell .search input{width:100%;min-width:0}
+ .app-shell .source-grid{gap:8px;margin-bottom:10px}
+ .app-shell .source-card{padding:10px}
+ .app-shell .source-card .badge{white-space:normal}
+ .app-shell .panel{margin-bottom:10px}
+ .app-shell .panel-heading{padding:12px;gap:8px;flex-wrap:wrap}
+ .app-shell .note{margin:8px 0;padding:8px;font-size:11px}
+ .app-shell .metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:10px 0}
+ .app-shell .metric:nth-child(odd){border-left:0;padding-left:0}
+ .app-shell .metric-foot{margin-top:3px}
+ .app-shell .studio-dashboard,.app-shell .ads-dashboard{gap:12px}
+ .app-shell .studio-kpi>strong{margin:8px 0;font-size:24px;overflow-wrap:anywhere}
+ .app-shell .studio-card-heading{flex-wrap:wrap;margin-bottom:10px}
+ .app-shell .studio-card-heading select{max-width:100%;font-size:12px}
+ .app-shell .segmented{max-width:100%;width:auto;flex-wrap:wrap}
+ .app-shell .segmented button{white-space:normal;flex:1;padding:8px}
+ .app-shell .table-scroll{max-width:100%;overscroll-behavior-x:contain}
+ .app-shell .sidebar nav button{min-height:48px;font-size:14px}
+ .app-shell .scope-bar{margin-bottom:10px;padding:10px}
+ .app-shell .chart-toolbar,.app-shell .studio-chart-controls{flex-wrap:wrap;gap:8px}
+ .app-shell .report-controls{padding:12px;gap:10px}
+ .app-shell .real-tabs{margin:8px 0}
+ .app-shell .real-actions .btn{font-size:12px}
+ .app-shell .page-header{flex-wrap:wrap}
+ .app-shell .page-header>.btn{font-size:12px}
+}
+
+@media(max-width:760px){.app-shell .sidebar{transition:none}}
+
+@media(max-width:380px){.app-shell .topline{flex-wrap:wrap;height:auto;min-height:60px;padding-block:8px}.app-shell .design-switch{order:5;flex-basis:100%;justify-content:center;margin:0}.app-shell .topline>.badge{margin-left:auto}.app-shell .studio-brand{margin-right:0}}

@@ -22,3 +22,6 @@ Kullanıcı dikey boşlukların ve tekrarlayan açıklamaların azaltılmasını
 
 ## Gerçek kaynak bağlantıları — 23 Kasım 2026
 Kullanıcı Google hesaplarından geçmiş verilerin okunmasını ve otomatik yenilemeyi istedi. Ayrı masaüstü OAuth istemcisi ve yalnız Search Console/GA4 okuma izinleri işlem anında onaylandı. Özel yerel servis 127.0.0.1 üzerinde; OAuth tokenları yalnız bellekte, rapor önbelleği kaynak deposunun dışındaki özel klasörde. Canlı kokpite, reklamlara ve bütçelere dokunma. CRM/randevu/gelir kullanıcı isteğiyle ertelendi. Gerçek rapor merkezi ve tasarım demo sekmeleri açıkça ayrılmalı.
+
+## Mobil tercih — 23 Kasım 2026
+Mobilde tek hamburger menü kullan; yatay sekme tekrarını kaldır. Kontroller en az 44px, boşluklar kompakt; tablolar kendi içinde kaydırılmalı. Mobil stiller 760px ve altında uygulanmalı, masaüstü korunmalı.
