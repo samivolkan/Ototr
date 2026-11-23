@@ -25,3 +25,6 @@ Kullanıcı Google hesaplarından geçmiş verilerin okunmasını ve otomatik ye
 
 ## Mobil tercih — 23 Kasım 2026
 Mobilde tek hamburger menü kullan; yatay sekme tekrarını kaldır. Kontroller en az 44px, boşluklar kompakt; tablolar kendi içinde kaydırılmalı. Mobil stiller 760px ve altında uygulanmalı, masaüstü korunmalı.
+
+## ERP mobil kullanım — 24 Kasım 2026
+Mobilde ERP içinden ayrı panel açma ve ERP'ye dönüş bağlantısı kullan. Yapışkan mobil menü, 16px form alanları, kompakt kartlar ve kendi içinde kaydırılan tablolar; masaüstü kuralları korunur.
