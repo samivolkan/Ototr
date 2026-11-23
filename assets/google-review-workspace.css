@@ -710,3 +710,5 @@ html:has(#view-reviews.on) { overflow-anchor:none; }
 @media (max-width:600px) {
   #overviewBranchChart .branch-segments-grid { grid-template-columns:minmax(82px,1fr) minmax(0,1.8fr) auto; gap:6px 5px; }
 }
+
+#view-overview .overview-trend-layout .chart-head h3 { color:var(--mute); }

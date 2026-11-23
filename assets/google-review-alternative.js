@@ -1222,7 +1222,7 @@
       }
     };
     const title = byId('chartTrend')?.closest('.chart-card')?.querySelector('h3');
-    if (title) title.textContent = 'Toplam yorum sayısının değişimi ve hedef';
+    if (title) title.textContent = 'Yorum sayısı Değişimi Ve Hedef';
     const legend = byId('chartTrend')?.closest('.chart-card')?.querySelector('.chart-legend');
     const seriesKeys = ['Ulaşılan', 'Hedef', 'Trend', 'Tahmin', ...(daily ? ['Günlük yorum'] : [])];
     if (legend) {
