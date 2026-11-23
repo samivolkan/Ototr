@@ -1,9 +1,138 @@
-<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Yorum Ekibi · OTOTR</title><link rel="stylesheet" href="review-specialist.css?v=2"><link rel="stylesheet" href="review-team.css"><script type="module" src="review-team.mjs"></script></head><body>
-<header><a href="./"><img src="assets/ototr-official-logo.png" alt="OTOTR Ekspertiz" width="508" height="172"></a><span>AJAN OFİSİ / YORUM EKİBİ</span><a href="./">Ofise dön</a></header>
-<main><section class="intro"><div><p class="eyebrow">ŞUBE HEDEFLERİ & YANIT UZMANI</p><h1>Yorum ekibi.<br>Hedefler ve yanıtlar bir arada.</h1><p>Şubelerin kayıtlı hedeflerini izle, yanıt uzmanının çalışma ekranını aç.</p></div><div class="person"><div class="desk-portrait" role="img" aria-label="Yorum ekibinin bilgisayar başındaki masası"></div><div><strong>Yanıt Uzmanı · REV-01</strong><span id="replyState">Durum doğrulanıyor</span><a class="primary" href="review-specialist.html">Uzman ekranını aç →</a></div></div></section>
-<section class="connection"><div><b id="connectionTitle">Şube hedefleri okunuyor</b><p id="connectionText">Kayıtlı hedefler ve Google gerçekleşmeleri doğrulanıyor.</p></div><button id="refresh">Yenile</button></section>
-<section class="team-heading"><div><p class="eyebrow" id="month">BU AY</p><h2>Şube hedefleri</h2></div><a href="../?page=google-reviews#google-reviews">Yorum yönetimini aç ↗</a></section>
-<p class="note">Hedef, seçili ay sonunda ulaşılacak toplam yorum sayısıdır. Bu ay gelen yorumlar ayrıca gösterilir. Personel bazlı hedefler henüz kapsamda değil.</p>
-<div id="branchCards" class="branch-cards" aria-live="polite"><p class="empty">Kaynak bağlantısı bekleniyor.</p></div>
-<section class="workflow"><div class="section-title"><div><p class="eyebrow">YANIT OPERASYONU · TEK AJAN</p><h2>Yanıt Uzmanı</h2></div><a class="primary" href="review-specialist.html">Görev kartı ve iş akışı →</a></div><div class="reply-metrics" id="replyMetrics"></div><p class="note">Taslak hazır olduğunda iki saatlik inceleme süresi başlar. Gönderim durumu uzman ekranından takip edilir. Şube hedefleri yanıt sayısıyla karıştırılmaz.</p></section>
-<footer>Canlı şube kaynakları · Hedeflerde değişiklik yapılmaz · Kişisel performans ataması yok</footer></main></body></html>
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Yorum Ekibi · OTOTR</title>
+  <script type="module" src="review-team.mjs"></script>
+  <style>
+    :root {
+      font: 14px/1.45 Inter, "Segoe UI", sans-serif;
+      color: #262729;
+      background: #f5f5f6;
+      --muted: #595d62;
+      --line: #dfe0e3;
+      --accent: #b8241a;
+    }
+    * { box-sizing: border-box; }
+    body, h1, h2, h3, p { margin: 0; }
+    a { color: inherit; text-decoration: none; }
+    button { font: inherit; cursor: pointer; }
+    button:disabled { opacity: .55; cursor: wait; }
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+    .topbar { background: #fff; border-bottom: 1px solid var(--line); }
+    .topbar-inner, main { max-width: 1240px; margin: auto; padding-inline: 20px; }
+    .topbar-inner, .page-heading, .team-heading, .connection, .section-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px 16px;
+    }
+    .topbar-inner { min-height: 54px; font-size: 13px; }
+    .topbar img { display: block; width: 118px; height: auto; }
+    main { padding-block: 18px 24px; display: grid; gap: 12px; }
+    h1 { font-size: clamp(25px, 4vw, 34px); letter-spacing: -.04em; line-height: 1.1; }
+    h2 { font-size: 17px; }
+    h3 { font-size: 16px; }
+    .action, #refresh {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 36px;
+      padding: 6px 11px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #fff;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .action:hover, #refresh:hover { background: #f0f0f2; }
+    .connection, .branch-card, .workflow {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 12px;
+    }
+    .connection { gap: 6px 12px; flex-wrap: nowrap; padding-block: 7px; }
+    .connection > div { min-width: 0; overflow-wrap: anywhere; }
+    .connection[data-error="true"] { background: #fff6e8; border-color: #e7c899; }
+    .connection b { font-size: 13px; }
+    .connection p, .note, .source, .empty { color: var(--muted); font-size: 12px; }
+    .team-heading > div { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; }
+    #month { color: var(--muted); font-size: 11px; font-weight: 700; }
+    .branch-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 270px), 1fr));
+      gap: 8px;
+      margin-block: 8px 5px;
+    }
+    .branch-card { min-width: 0; }
+    .branch-card > .source:first-child { font-size: 10px; font-weight: 700; }
+    .goal-total { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0 6px; }
+    .goal-total strong { font-size: 28px; line-height: 1.15; }
+    .goal-total span { color: var(--muted); font-size: 12px; }
+    .branch-card progress { display: block; width: 100%; height: 7px; margin-top: 6px; accent-color: var(--accent); }
+    .details, .reply-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+    .details { margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--line); }
+    .details b, .reply-metrics b { display: block; font-size: 17px; font-variant-numeric: tabular-nums; }
+    .details small, .reply-metrics span { display: block; color: var(--muted); font-size: 11px; }
+    .branch-card .note, .workflow .note { margin-top: 6px; }
+    .section-title .action { background: #292a2d; color: #fff; border-color: #292a2d; }
+    .section-title .action:hover { background: #414247; }
+    #replyState { color: var(--muted); font-size: 12px; }
+    .reply-metrics { grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: 8px; }
+    .reply-metrics > div { background: #f5f5f6; border-radius: 6px; padding: 4px 8px; }
+    @media (max-width: 520px) {
+      .topbar-inner, main { padding-inline: 12px; }
+      main { padding-block: 12px; }
+      .action, #refresh { min-height: 40px; }
+      .reply-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a href="./"><img src="assets/ototr-official-logo.png" alt="OTOTR Ekspertiz" width="508" height="172"></a>
+      <a href="./">← Ajan Ofisi</a>
+    </div>
+  </header>
+  <main>
+    <div class="page-heading">
+      <h1>Yorum Ekibi</h1>
+      <a class="action" href="../?page=google-reviews#google-reviews">Yorum yönetimi ↗</a>
+    </div>
+
+    <section class="connection" aria-label="Veri bağlantısı">
+      <div role="status">
+        <b id="connectionTitle">Şube hedefleri okunuyor</b>
+        <p id="connectionText">Kayıtlı hedefler ve Google gerçekleşmeleri doğrulanıyor.</p>
+      </div>
+      <button type="button" id="refresh">Yenile</button>
+    </section>
+
+    <section aria-labelledby="branchHeading">
+      <div class="team-heading">
+        <div><h2 id="branchHeading">Şube hedefleri</h2><p id="month">BU AY</p></div>
+      </div>
+      <div id="branchCards" class="branch-cards" aria-live="polite">
+        <p class="empty">Kaynak bağlantısı bekleniyor.</p>
+      </div>
+      <p class="note">Hedef, ay sonunda ulaşılacak toplam yorum sayısıdır.</p>
+    </section>
+
+    <section class="workflow" aria-labelledby="replyHeading">
+      <div class="section-title">
+        <div>
+          <h2 id="replyHeading">Yanıt Uzmanı</h2>
+          <p id="replyState" role="status">Durum doğrulanıyor</p>
+        </div>
+        <a class="action" href="review-specialist.html">Uzman ekranını aç →</a>
+      </div>
+      <div class="reply-metrics" id="replyMetrics"></div>
+      <p class="note">Taslak hazır olduğunda iki saatlik inceleme süresi başlar.</p>
+    </section>
+  </main>
+</body>
+</html>
