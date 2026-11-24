@@ -20,7 +20,7 @@ revoke all on app_private.task2_deliveries,app_private.task2_delivery_events fro
 create function app_private.task2_delivery_action(p_task_id text,p_action text,p_revision text,p_version bigint,p_request_id uuid,p_payload jsonb)
 returns jsonb language plpgsql security definer set search_path='' as $$
 declare actor public.app_users;scope_name text;role_name text;workspace jsonb;workspace_version bigint;task jsonb;
- revision text;d app_private.task2_deliveries;e app_private.task2_delivery_events;owner boolean;manager boolean;
+ revision text;d app_private.task2_deliveries;e app_private.task2_delivery_events;owner boolean;manager boolean;is_current boolean;
 begin
  if auth.uid() is null then raise exception 'ERP oturumu gerekli' using errcode='42501';end if;
  select * into strict actor from public.app_users where auth_user_id=auth.uid() and is_active;
@@ -37,6 +37,7 @@ begin
  revision:=app_private.task2_assignment_revision(task);
  owner:=coalesce(task->>'assignee'=actor.id::text,false);
  select * into d from app_private.task2_deliveries where scope=scope_name and task_id=p_task_id for update;
+ is_current:=coalesce(d.source_revision=revision and task->>'status'=case when d.state='closed' then 'done' when d.state='rejected' then 'progress' else 'review' end,false);
  if p_action<>'read' then
   if role_name not in ('yonetici','calisan') then raise exception 'Yazma yetkisi gerekli' using errcode='42501';end if;
   if task->'archived'='true'::jsonb then raise exception 'Arşivlenen görev ilerletilemez' using errcode='22023';end if;
@@ -56,14 +57,14 @@ begin
     raise exception 'Güncel görev kabulü gerekli' using errcode='22023';end if;
    if p_payload-'reference'<>'{}'::jsonb or jsonb_typeof(p_payload->'reference') is distinct from 'string' or length(btrim(p_payload->>'reference')) not between 5 and 1000 then
     raise exception 'Kanıt referansı gerekli' using errcode='22023';end if;
-   if d.source_revision=revision and d.state in ('submitted','reviewed','closed') then raise exception 'Mevcut teslim ilerletilmeli; üzerine yazılamaz' using errcode='22023';end if;
+   if is_current and d.state in ('submitted','reviewed','closed') then raise exception 'Mevcut teslim ilerletilmeli; üzerine yazılamaz' using errcode='22023';end if;
    insert into app_private.task2_deliveries(scope,task_id,source_revision,version,state,producer_id,evidence_reference,submitted_at)
    values(scope_name,p_task_id,revision,coalesce(d.version,0)+1,'submitted',actor.id,btrim(p_payload->>'reference'),clock_timestamp())
    on conflict(scope,task_id) do update set source_revision=excluded.source_revision,version=excluded.version,state='submitted',producer_id=excluded.producer_id,
     evidence_reference=excluded.evidence_reference,submitted_at=excluded.submitted_at,reviewer_id=null,review_note=null,reviewed_at=null,closed_by=null,closed_at=null returning * into d;
   else
    if not manager then raise exception 'Yönetici yetkisi gerekli' using errcode='42501';end if;
-   if d.task_id is null or d.source_revision<>revision then raise exception 'Güncel teslim bulunamadı' using errcode='40001';end if;
+   if not is_current then raise exception 'Güncel teslim bulunamadı' using errcode='40001';end if;
    if p_action='review' then
     if d.state<>'submitted' or d.producer_id=actor.id then raise exception 'Üreticiden farklı yetkili inceleyen gerekli' using errcode='42501';end if;
     if p_payload-'decision'-'note'<>'{}'::jsonb or p_payload->>'decision' is null or p_payload->>'decision' not in ('approve','reject') or jsonb_typeof(p_payload->'note') is distinct from 'string' or length(btrim(p_payload->>'note')) not between 5 and 2000 then
@@ -84,9 +85,10 @@ begin
   update app_private.task2_workspace set data=workspace,version=version+1,updated_at=clock_timestamp(),updated_by=actor.id where scope=scope_name returning version into workspace_version;
   insert into app_private.task2_delivery_events(scope,request_id,task_id,source_revision,expected_version,action,actor_id,payload,resulting_version)
    values(scope_name,p_request_id,p_task_id,revision,p_version,p_action,actor.id,p_payload,d.version);
+  is_current:=true;
  end if;
  return jsonb_build_object('source','task2','task_id',p_task_id,'source_revision',revision,'workspace_version',workspace_version,
-  'version',coalesce(d.version,0),'state',coalesce(d.state,'not_submitted'),'current',d.task_id is not null and d.source_revision=revision,
+  'version',coalesce(d.version,0),'state',coalesce(d.state,'not_submitted'),'current',is_current,
   'reference',d.evidence_reference,'submitted_at',d.submitted_at,'review_note',d.review_note,'reviewed_at',d.reviewed_at,'closed_at',d.closed_at,
   'is_owner',owner,'is_manager',manager,'is_producer',coalesce(d.producer_id=actor.id,false),'archived',coalesce(task->'archived'='true'::jsonb,false),
   'meaning','human_review_required');

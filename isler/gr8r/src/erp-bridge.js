@@ -1,3 +1,4 @@
+import { createDeliveryService } from './features/delivery-service.js';
 import { createAssignmentReceiptService } from './features/assignment-receipt.js';
 import { createClient } from '../../../task-merkezi-v2/js/vendor/supabase.js';
 import { requireSession, signOut as erpSignOut } from '../../../task-merkezi-v2/js/auth.js';
@@ -191,3 +192,19 @@ const assignmentReceipts = createAssignmentReceiptService({
 });
 export const readAssignmentReceipt = id => assignmentReceipts.read(id);
 export const acceptAssignment = id => assignmentReceipts.accept(id);
+
+const deliveries = createDeliveryService({
+  rpc: async args => {
+    const { data, error } = await client.rpc('task2_delivery_action', args);
+    if (error) throw Error(error.message || 'Teslim işlemi doğrulanamadı.');
+    return data;
+  },
+  getVersion: () => version,
+  getSnapshot: currentSnapshot,
+  isReady: () => !!session && !saving && !dirty && version > 0 && currentSnapshot() === lastSnapshot && !new URLSearchParams(location.search).has('demo'),
+  sync: () => refresh(true),
+  newId: () => crypto.randomUUID(),
+});
+export const readTaskDelivery = id => deliveries.read(id);
+export const advanceTaskDelivery = (id, action, payload) => deliveries.act(id, action, payload);
+export const taskDeliveryCurrent = id => deliveries.current(id);

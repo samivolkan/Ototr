@@ -1,4 +1,4 @@
-import { readAssignmentReceipt, acceptAssignment } from '../erp-bridge.js';
+import { readTaskDelivery, advanceTaskDelivery, readAssignmentReceipt, acceptAssignment } from '../erp-bridge.js';
 /* =====================================================================
    ACTIONS · INPUT HANDLERS · DRAG & DROP · KEYBOARD · INIT
    ===================================================================== */
@@ -2313,3 +2313,33 @@ async function assignmentAction(el, accept) {
 }
 A.readAssignmentReceipt = el => assignmentAction(el, false);
 A.acceptAssignment = el => assignmentAction(el, true);
+
+async function deliveryAction(el, action) {
+  const id = el.dataset.id;
+  S.ui.deliveryBusy ||= {};
+  if (S.ui.deliveryBusy[id]) return;
+  const panel = el.closest('[data-delivery-panel]');
+  const reference = panel?.querySelector('[data-delivery-reference]')?.value || '';
+  const note = panel?.querySelector('[data-delivery-note]')?.value || '';
+  S.ui.deliveryDrafts ||= {};
+  S.ui.deliveryDrafts[id] = { reference, note };
+  S.ui.deliveryBusy[id] = true;
+  render();
+  try {
+    let result;
+    if (action === 'read') result = await readTaskDelivery(id);
+    else {
+      const payload = action === 'submit' ? { reference } : action === 'close' ? {} : { decision: action === 'approve' ? 'approve' : 'reject', note };
+      result = await advanceTaskDelivery(id, ['approve', 'reject'].includes(action) ? 'review' : action, payload);
+    }
+    S.ui.deliveryStates ||= {};
+    S.ui.deliveryStates[id] = result;
+    if (action !== 'read') toast('Teslim kaydı sunucudan doğrulandı.');
+  } catch (error) { toast(error.message || 'Teslim işlemi doğrulanamadı.'); }
+  finally { S.ui.deliveryBusy[id] = false; render(); }
+}
+A.loadTaskDelivery = el => deliveryAction(el, 'read');
+A.submitTaskDelivery = el => deliveryAction(el, 'submit');
+A.approveTaskDelivery = el => deliveryAction(el, 'approve');
+A.rejectTaskDelivery = el => deliveryAction(el, 'reject');
+A.closeTaskDelivery = el => deliveryAction(el, 'close');
