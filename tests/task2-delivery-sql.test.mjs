@@ -1,0 +1,47 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {readFile} from 'node:fs/promises';import {pathToFileURL} from 'node:url';import {randomUUID} from 'node:crypto';
+const {PGlite}=await import(pathToFileURL(process.env.OTOTR_PGLITE_MODULE).href);
+const owner='10000000-0000-4000-8000-000000000001',manager='10000000-0000-4000-8000-000000000002',reviewer='10000000-0000-4000-8000-000000000003',viewer='10000000-0000-4000-8000-000000000004',other='10000000-0000-4000-8000-000000000005';
+test('persistent delivery: acceptance, evidence, separate reviewer, rejection, closure, source and retry guards',async()=>{
+ const db=new PGlite();try{
+ await db.exec(`create role anon;create role authenticated;create schema auth;create schema app_private;
+ create function auth.uid() returns uuid language sql as $$select nullif(current_setting('test.uid',true),'')::uuid$$;
+ create table public.app_users(id uuid,auth_user_id uuid,is_active boolean,branch_id uuid,role text);
+ create table app_private.kokpit_roles(user_id uuid,role text);
+ create table app_private.task2_workspace(scope text primary key,data jsonb,version bigint,updated_at timestamptz,updated_by uuid);
+ grant usage on schema app_private,auth to authenticated;
+ insert into public.app_users values('${owner}','${owner}',true,null,'CEO'),('${manager}','${manager}',true,null,'CEO'),('${reviewer}','${reviewer}',true,null,'GENERAL_MANAGER'),('${viewer}','${viewer}',true,null,'AUDITOR'),('${other}','${other}',true,'30000000-0000-4000-8000-000000000001','CEO');
+ insert into app_private.task2_workspace values('hq','{"marker":"preserve","tasks":[{"id":"one","title":"Private task","assignee":"${owner}","status":"progress"},{"id":"untouched","status":"todo"}]}',1,now(),null);`);
+ for(const file of ['20261124002206_task2_assignment_acceptance.sql','20261124003416_task2_semantic_assignment_revision.sql','20261124003803_task2_delivery_review.sql'])await db.exec(await readFile(new URL('../supabase/migrations/'+file,import.meta.url),'utf8'));
+ const call=(actor,fn,args)=>db.transaction(async tx=>{await tx.query("select set_config('test.uid',$1,true)",[actor]);await tx.exec('set local role authenticated');return (await tx.query(fn,args)).rows[0].v;});
+ const read=actor=>call(actor,"select public.task2_delivery_action('one') as v",[]);
+ const act=(actor,state,action,payload={},id=randomUUID())=>call(actor,'select public.task2_delivery_action($1,$2,$3,$4,$5,$6) as v',['one',action,state.source_revision,state.version,id,JSON.stringify(payload)]);
+ await db.exec('set role anon');await assert.rejects(db.query("select public.task2_delivery_action('one')"),/permission denied/);await db.exec('reset role');
+ await assert.rejects(read(''),/oturumu/);await assert.rejects(read(other),/kaynağı/);
+ let s=await read(owner);assert.equal(s.state,'not_submitted');assert.equal(s.current,false);
+ await assert.rejects(act(viewer,s,'submit',{reference:'evidence:1'}),/yetkisi/);
+ await assert.rejects(act(manager,s,'submit',{reference:'evidence:1'}),/atanmış/);
+ await assert.rejects(act(owner,s,'submit',{reference:'evidence:1'}),/kabulü/);
+ const receipt=await call(owner,"select public.get_task2_assignment_receipt('one') as v",[]);
+ await call(owner,"select public.accept_task2_assignment('one',$1,$2) as v",[receipt.source_revision,randomUUID()]);
+ await assert.rejects(act(owner,s,'submit',{reference:''}),/referansı/);
+ const submitId=randomUUID();const before=s;s=await act(owner,s,'submit',{reference:'attachment:synthetic-1'},submitId);assert.equal(s.state,'submitted');assert.equal(s.current,true);
+ assert.deepEqual(await act(owner,before,'submit',{reference:'attachment:synthetic-1'},submitId),s);
+ await assert.rejects(act(owner,before,'submit',{reference:'attachment:other'},submitId),/farklı işlem/);
+ await assert.rejects(act(manager,s,'close'),/inceleme/);
+ await assert.rejects(act(owner,s,'review',{decision:'approve',note:'Self review'}),/farklı/);
+ s=await act(reviewer,s,'review',{decision:'reject',note:'Evidence incomplete'});assert.equal(s.state,'rejected');
+ await assert.rejects(act(manager,s,'close'),/inceleme/);
+ s=await act(owner,s,'submit',{reference:'attachment:synthetic-2'});assert.equal(s.review_note,null);assert.equal(s.reviewed_at,null);
+ await assert.rejects(act(reviewer,{...s,version:s.version-1},'review',{decision:'approve',note:'Checked proof'}),/değiştirildi/);
+ s=await act(reviewer,s,'review',{decision:'approve',note:'Checked proof'});assert.equal(s.state,'reviewed');
+ s=await act(manager,s,'close');assert.equal(s.state,'closed');
+ const workspace=(await db.query("select data from app_private.task2_workspace where scope='hq'")).rows[0].data;
+ assert.equal(workspace.tasks[0].status,'done');assert.ok(workspace.tasks[0].completedAt>0);assert.deepEqual(workspace.tasks[1],{id:'untouched',status:'todo'});assert.equal(workspace.marker,'preserve');
+ assert.equal((await db.query('select count(*)::int n from app_private.task2_delivery_events')).rows[0].n,5);
+ assert.doesNotMatch(JSON.stringify(s),/10000000|Private task/);
+ await db.exec("update app_private.task2_workspace set data=jsonb_set(data,'{tasks,0,title}','\"Changed scope\"') where scope='hq'");
+ assert.equal((await read(manager)).current,false);await assert.rejects(act(manager,s,'close'),/sürümü/);
+ await db.exec('set role authenticated');await assert.rejects(db.query('select * from app_private.task2_delivery_events'),/permission denied/);await db.exec('reset role');
+ await db.exec(`update public.app_users set is_active=false where id='${owner}'`);await assert.rejects(read(owner),/aktif/);
+ }finally{await db.close();}
+});
