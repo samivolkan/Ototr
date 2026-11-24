@@ -1,3 +1,4 @@
+import { readTaskHandoff, advanceTaskHandoff } from '../erp-bridge.js';
 import { readTaskDelivery, advanceTaskDelivery, readAssignmentReceipt, acceptAssignment } from '../erp-bridge.js';
 /* =====================================================================
    ACTIONS · INPUT HANDLERS · DRAG & DROP · KEYBOARD · INIT
@@ -2343,3 +2344,33 @@ A.submitTaskDelivery = el => deliveryAction(el, 'submit');
 A.approveTaskDelivery = el => deliveryAction(el, 'approve');
 A.rejectTaskDelivery = el => deliveryAction(el, 'reject');
 A.closeTaskDelivery = el => deliveryAction(el, 'close');
+
+async function handoffAction(el, action) {
+  const id = el.dataset.id;
+  S.ui.handoffBusy ||= {};
+  if (S.ui.handoffBusy[id]) return;
+  const panel = el.closest('[data-handoff-panel]');
+  const draft = {
+    recipient_id: panel?.querySelector('[data-handoff-recipient]')?.value || '',
+    acceptance: panel?.querySelector('[data-handoff-acceptance]')?.value || '',
+    reason: panel?.querySelector('[data-handoff-reason]')?.value || '',
+  };
+  S.ui.handoffDrafts ||= {};
+  S.ui.handoffDrafts[id] = draft;
+  S.ui.handoffBusy[id] = true;
+  render();
+  try {
+    const payload = action === 'offer' ? { recipient_id: draft.recipient_id, acceptance: draft.acceptance } :
+      action === 'accept' ? {} : { reason: draft.reason };
+    const result = action === 'read' ? await readTaskHandoff(id) : await advanceTaskHandoff(id, action, payload);
+    S.ui.handoffStates ||= {};
+    S.ui.handoffStates[id] = result;
+    if (action !== 'read') toast('Devir kaydi sunucudan dogrulandi.');
+  } catch (error) { toast(error.message || 'Devir dogrulanamadi.'); }
+  finally { S.ui.handoffBusy[id] = false; render(); }
+}
+A.loadTaskHandoff = el => handoffAction(el, 'read');
+A.offerTaskHandoff = el => handoffAction(el, 'offer');
+A.acceptTaskHandoff = el => handoffAction(el, 'accept');
+A.declineTaskHandoff = el => handoffAction(el, 'decline');
+A.cancelTaskHandoff = el => handoffAction(el, 'cancel');

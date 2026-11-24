@@ -15,8 +15,10 @@ test('handoff keeps ownership until named recipient accepts; atomic receipt, ret
  grant usage on schema app_private,auth to authenticated;
  insert into public.app_users values('${sender}','${sender}',true,null,'FRANCHISE_SALES'),('${recipient}','${recipient}',true,null,'OPERATIONS'),('${manager}','${manager}',true,null,'CEO'),('${outsider}','${outsider}',true,'30000000-0000-4000-8000-000000000001','CEO'),('${viewer}','${viewer}',true,null,'AUDITOR');
  insert into app_private.task2_workspace values('hq','{"marker":"keep","tasks":[{"id":"one","title":"Synthetic task","assignee":"${sender}","status":"progress"},{"id":"other","status":"todo"}]}',1,now(),null);`);
- for(const file of ['20261124002206_task2_assignment_acceptance.sql','20261124003416_task2_semantic_assignment_revision.sql','20261124003803_task2_delivery_review.sql','20261124005937_task2_handoff.sql'])await db.exec(await readFile(new URL('../supabase/migrations/'+file,import.meta.url),'utf8'));
+ for(const file of ['20261124002206_task2_assignment_acceptance.sql','20261124003416_task2_semantic_assignment_revision.sql','20261124003803_task2_delivery_review.sql','20261124005937_task2_handoff.sql','20261124010553_office_task2_handoff_summary.sql'])await db.exec(await readFile(new URL('../supabase/migrations/'+file,import.meta.url),'utf8'));
  const call=(actor,sql,args=[])=>db.transaction(async tx=>{await tx.query("select set_config('test.uid',$1,true)",[actor]);await tx.exec('set local role authenticated');return (await tx.query(sql,args)).rows[0].v;});
+ await db.exec(`create function app_private.franchise_office_manager() returns boolean language sql as $$select auth.uid()='${manager}'::uuid$$`);
+ const summary=()=>call(manager,'select public.office_task2_handoff_summary() as v');
  const read=actor=>call(actor,"select public.task2_handoff_action('one') as v");
  const act=(actor,state,action,payload={},id=randomUUID())=>call(actor,'select public.task2_handoff_action($1,$2,$3,$4,$5,$6) as v',['one',action,state.source_revision,state.version,id,JSON.stringify(payload)]);
  const offer={recipient_id:recipient,acceptance:'Prepare source-backed options only'};
@@ -34,7 +36,7 @@ test('handoff keeps ownership until named recipient accepts; atomic receipt, ret
  await assert.rejects(act(sender,s,'offer',{...offer,recipient_id:sender}),/Farklı/);
  await assert.rejects(act(sender,s,'offer',{...offer,acceptance:''}),/koşulu/);
  const initial=await workspace();const before=s,id=randomUUID();s=await act(sender,s,'offer',offer,id);
- assert.equal(s.state,'pending');assert.deepEqual(await workspace(),initial);assert.deepEqual(await act(sender,before,'offer',offer,id),s);
+ assert.equal(s.state,'pending');assert.equal((await summary()).pending,1);assert.deepEqual(await workspace(),initial);assert.deepEqual(await act(sender,before,'offer',offer,id),s);
  await assert.rejects(act(sender,before,'offer',{...offer,acceptance:'Different condition'},id),/farklı işlem/);
  await assert.rejects(act(sender,s,'offer',offer),/sonuçlanmalı/);
  await assert.rejects(act(manager,s,'accept'),/alıcı/);
@@ -53,7 +55,7 @@ test('handoff keeps ownership until named recipient accepts; atomic receipt, ret
  await assert.rejects(act(recipient,s,'accept'),/synthetic receipt failure/);
  assert.deepEqual(await workspace(),initial);assert.equal((await read(recipient)).state,'pending');
  await db.exec('drop trigger fail_receipt on app_private.task2_assignment_receipts;drop function app_private.fail_receipt()');
- const pending=s,acceptId=randomUUID();s=await act(recipient,s,'accept',{},acceptId);assert.equal(s.state,'accepted');assert.equal(s.is_owner,true);assert.notEqual(s.source_revision,pending.source_revision);
+ const pending=s,acceptId=randomUUID();s=await act(recipient,s,'accept',{},acceptId);assert.equal(s.state,'accepted');assert.equal((await summary()).accepted,1);assert.equal(s.is_owner,true);assert.notEqual(s.source_revision,pending.source_revision);
  assert.deepEqual(await act(recipient,pending,'accept',{},acceptId),s);
  const after=await workspace();assert.equal(after.version,initial.version+1);assert.equal(after.data.tasks[0].assignee,recipient);assert.equal(after.data.tasks[0].status,'progress');assert.deepEqual(after.data.tasks[1],initial.data.tasks[1]);assert.equal(after.data.marker,'keep');
  const accepted=await call(recipient,"select public.get_task2_assignment_receipt('one') as v");assert.equal(accepted.accepted,true);assert.equal(accepted.source_revision,s.source_revision);
@@ -71,7 +73,7 @@ test('handoff keeps ownership until named recipient accepts; atomic receipt, ret
  await db.exec(`update app_private.task2_workspace set data=jsonb_set(data,'{tasks,0,status}','"progress"') where scope='hq'`);
  // Direct edits invalidate history as current authority; an old successful retry cannot mask it.
  await db.exec(`update app_private.task2_workspace set data=jsonb_set(data,'{tasks,0,title}','"Changed scope"') where scope='hq'`);
- assert.equal((await read(recipient)).current,false);await assert.rejects(act(recipient,pending,'accept',{},acceptId),/değişti/);
+ assert.equal((await read(recipient)).current,false);assert.equal((await summary()).stale,1);await assert.rejects(call(recipient,'select public.office_task2_handoff_summary() as v'),/merkez/);assert.doesNotMatch(JSON.stringify(await summary()),/10000000|Synthetic|source-backed/);await assert.rejects(act(recipient,pending,'accept',{},acceptId),/değişti/);
  let fresh=await read(recipient);await assert.rejects(act(recipient,fresh,'offer',{...offer,recipient_id:sender}),/kabulü/);
  const freshReceipt=await call(recipient,"select public.get_task2_assignment_receipt('one') as v");await call(recipient,"select public.accept_task2_assignment('one',$1,$2) as v",[freshReceipt.source_revision,randomUUID()]);
  fresh=await act(recipient,fresh,'offer',{...offer,recipient_id:sender});

@@ -1,6 +1,6 @@
 # TASK2 sorumluluk devri
 
-Durum: Yerel geliştirme ve sentetik SQL doğrulaması tamamlandı. Yeni migration henüz uygulanmadı; ekran ve ofis bağlantısı henüz yok. Canlı özellik olarak sunulamaz.
+Durum: Migrationlar uygulandı; istemci ekranı, ofis özeti ve sentetik testler hazır. Canlı ekran doğrulaması yayın sonrası yapılacak. Gerçek çalışan adına devir yapılmadı.
 
 ## İşleyiş
 
@@ -25,10 +25,10 @@ Para, ekspertiz raporu veya müşteri iletişimi yetkisi verilmez. Şubeler aras
 
 `tests/task2-handoff-sql.test.mjs` gerçek migration SQL'ini izole PGlite üzerinde sentetik hesaplarla çalıştırır. Yetki/şube sınırı, aktiflik, izleyici rolü, yanlış alıcı, eski sürüm, tekrar istek, gerekçeli ret/iptal, görev kapsamı değişikliği, kapalı görev ve özel tablo erişimi denetlenir. Kabul kaydı eklenirken yapay hata verilerek sahiplik değişikliğinin geri alındığı doğrulanır. Kabul edilen devirden sonra yeni sahibin teslimi, bağımsız yönetici incelemesi ve kapanışı da mevcut teslim migration'ıyla birlikte çalıştırılır.
 
-## Yayına geçmeden kalanlar
+## Entegrasyon ve kalan doğrulamalar
 
-- Görev detayında alıcı seçimi, kabul koşulu ve açık kabul/ret/iptal kontrolleri.
-- Kaydedilmemiş yerel değişiklikler ve eski ekran sürümünde işlem engeli; ağ tekrarlarında sabit istek kimliği.
-- Ofiste bekleyen ve güncelliğini kaybetmiş devir sayıları; rutin takip yöneticiye, karar gerektiren engeller koordinatöre.
-- İstemci testleri, masaüstü/mobil görsel doğrulama, migration uygulama ve canlı salt-okunur kontrol.
+- Hazır: Görev detayında alıcı seçimi, kabul koşulu ve açık kabul/ret/iptal kontrolleri.
+- Test edildi: Kaydedilmemiş yerel değişiklikler ve eski ekran sürümünde işlem engeli; ağ tekrarlarında sabit istek kimliği.
+- Hazır: Ofiste bekleyen ve güncelliğini kaybetmiş devir sayıları; rutin takip yöneticiye, karar gerektiren engeller koordinatöre.
+- İstemci testleri geçti; migrationlar uygulandı. Masaüstü/mobil görsel doğrulama ve canlı salt-okunur kontrol yayın sonrasında yapılacak.
 - Gerçek departman/yönetici eşlemesi ve ortak Sami karar kuyruğu hâlâ ayrı, tamamlanmamış işlerdir.

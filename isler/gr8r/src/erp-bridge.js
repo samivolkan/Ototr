@@ -1,3 +1,4 @@
+import { createHandoffService } from './features/handoff-service.js';
 import { createDeliveryService } from './features/delivery-service.js';
 import { createAssignmentReceiptService } from './features/assignment-receipt.js';
 import { createClient } from '../../../task-merkezi-v2/js/vendor/supabase.js';
@@ -208,3 +209,19 @@ const deliveries = createDeliveryService({
 export const readTaskDelivery = id => deliveries.read(id);
 export const advanceTaskDelivery = (id, action, payload) => deliveries.act(id, action, payload);
 export const taskDeliveryCurrent = id => deliveries.current(id);
+
+const handoffs = createHandoffService({
+  rpc: async args => {
+    const { data, error } = await client.rpc('task2_handoff_action', args);
+    if (error) throw Error(error.message || 'Devir işlemi doğrulanamadı.');
+    return data;
+  },
+  getVersion: () => version,
+  getSnapshot: currentSnapshot,
+  isReady: () => !!session && !saving && !dirty && version > 0 && currentSnapshot() === lastSnapshot && !new URLSearchParams(location.search).has('demo'),
+  sync: () => refresh(true),
+  newId: () => crypto.randomUUID(),
+});
+export const readTaskHandoff = id => handoffs.read(id);
+export const advanceTaskHandoff = (id, action, payload) => handoffs.act(id, action, payload);
+export const taskHandoffCurrent = id => handoffs.current(id);

@@ -1,4 +1,5 @@
 export const sourceDefinitions=[
+ {id:'handoff',name:'TASK2 görev devri',scope:'Mevcut oturum kapsamı · kişi bilgisi içermez',href:'../isler/',fields:['total','none','pending','accepted','declined','cancelled','stale']},
  {id:'delivery',name:'TASK2 teslim ve inceleme',scope:'Mevcut oturum kapsamı · kanıt içeriği ve kişi bilgisi içermez',href:'../isler/',fields:['total','not_submitted','submitted','rejected','reviewed','closed','stale','unverified_done']},
  {id:'franchise',name:'Franchise ve Finans devri',scope:'Yetkili ERP kapsamı',href:'franchise-specialist.html',fields:['case_count','approvals','finance_pending','finance_failed','finance_processed']},
  {id:'reviews',name:'Yorum yanıtları',scope:'Nilüfer bağlantısı · tüm şubeler değil',href:'review-team.html',fields:['preparing','waiting','human','published']},
@@ -8,6 +9,7 @@ export const sourceDefinitions=[
 ];
 export function validateSource(id,value){
  const def=sourceDefinitions.find(d=>d.id===id);if(!def||!value||typeof value!=='object')return false;
+ if(id==='handoff')return value.source==='task2_handoff'&&value.scope==='current_user_scope'&&Number.isFinite(Date.parse(value.observed_at))&&def.fields.every(f=>Number.isSafeInteger(value[f])&&value[f]>=0)&&['none','pending','accepted','declined','cancelled','stale'].reduce((n,k)=>n+value[k],0)===value.total;
  if(id==='delivery')return value.source==='task2_delivery'&&value.scope==='current_user_scope'&&Number.isFinite(Date.parse(value.observed_at))&&def.fields.every(f=>Number.isSafeInteger(value[f])&&value[f]>=0)&&['not_submitted','submitted','rejected','reviewed','closed','stale'].reduce((n,k)=>n+value[k],0)===value.total&&value.unverified_done<=value.total-value.closed;
  if(id==='demo')return Array.isArray(value.tasks)&&value.tasks.every(t=>typeof t.task_id==='string'&&Number.isInteger(t.workflow_step)&&t.workflow_step>=0&&t.workflow_step<=4);
  if(['work','task2'].includes(id)&&(value.source!==(id==='task2'?'task2':'isler24')||value.scope!=='current_user_scope'||value.acceptance_supported!==(id==='task2')||value.evidence_supported!==false||!Number.isFinite(Date.parse(value.observed_at))))return false;
@@ -24,6 +26,9 @@ export function controlSummary(sources,now=Date.now()){
  const internal=[],decisions=[],demo=[];
  for(const s of list){
   if(s.status!=='verified'){internal.push({id:`source:${s.id}`,priority:1,title:`${s.name}: bağlantı ${s.status==='stale'?'eski':'doğrulanamadı'}`,owner:'Teknik sorumlu → ilgili yönetici',next:'Veriyi yeniden doğrula; bilinmeyen sayıları sıfır kabul etme.',href:s.href});continue;}
+  if(s.id==='handoff'){
+   for(const [key,label]of [['pending','devir alıcı kabulü bekliyor'],['declined','devir reddedildi'],['stale','devir güncel kaynakla uyuşmuyor']])if(s.value[key])internal.push({id:`handoff:${key}`,priority:2,title:`${s.value[key]} ${label}`,owner:'İlgili yönetici',next:'Görev detayındaki devir koşulunu ve sorumluyu incele. Devir işi tamamlamaz.',href:s.href});
+  }
   if(s.id==='delivery'){
    for(const [key,label,next] of [['submitted','teslim bağımsız inceleme bekliyor','Kanıtı teslim eden kişiden farklı yetkili yönetici incelemeli.'],['rejected','iş düzeltme bekliyor','Çalışan inceleme gerekçesine göre yeniden teslim etmeli.'],['reviewed','iş yönetici kapanışı bekliyor','Güncel teslim ve incelemeyi doğrulayarak işi kapat.'],['stale','teslimin kaynak durumu değişmiş','Eski onayı kullanma; güncel görev ve teslimi incele.'],['unverified_done','bitti işaretli işte doğrulanmış kapanış yok','Bitti işaretini onay sayma; kanıtlı teslim akışını tamamla.']])if(s.value[key])internal.push({id:`delivery:${key}`,priority:2,title:`${s.value[key]} ${label}`,owner:'İlgili yönetici',next,href:s.href});
   }
