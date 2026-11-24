@@ -18,9 +18,16 @@ if(document.querySelector('#scene')){
   if(!['FRA','REV','SEO'].includes(button.dataset.team)){teamDetails.open=true;setTimeout(()=>teamDetails.scrollIntoView({block:'start',behavior:'smooth'}),0);}
  },true);
  const quick=document.createElement('nav');quick.className='friendly-shortcuts';quick.setAttribute('aria-label','Ofis kısayolları');
- quick.innerHTML='<div><strong>Ajan Ofisi</strong><p>Ekibini ve senden beklenenleri tek yerden takip et.</p></div><div class="office-entry-actions"><a href="operations-center.html">Operasyon kontrolü →</a><a href="#web-demo-tasks">Aday ve kararları gör ↓</a></div>';
+ quick.innerHTML='<div><strong>Bugün ne yapmak istiyorsun?</strong><p>Günlük işlerini aç, kararlarını incele veya ekibin durumunu kontrol et.</p></div>';
  office.prepend(quick);
- const pilot=document.createElement('aside');pilot.className='inspection-pilot';pilot.innerHTML='<div><small>YENİ GÖREV PLANI · ÇALIŞTIRILMADI</small><strong>Ekspertiz Süreç Takip Ajanı</strong><p>İş emri → Usta girişi → Sorgu → Rapor → Sunum ve teslim → Memnuniyet</p></div><a href="inspection-coordinator.html">Görev planını incele →</a>';quick.after(pilot);
+ const actions=document.createElement('section');actions.className='daily-actions';actions.setAttribute('aria-label','Günlük işler');
+ actions.innerHTML=`<a href="../isler/"><small>GÖREVLER</small><strong>İşlerimi takip et →</strong><p>Görev, sorumlu, devir ve teslim durumlarını aç.</p></a><a href="decision-desk.html"><small>KARARLAR</small><strong>Karar masamı aç →</strong><p>Mevcut yetkinle sana bağlı incelemeleri ve kararları gör.</p></a><a href="operations-center.html"><small>SALT OKUNUR</small><strong>Ekibin durumuna bak →</strong><p>Satış, ekspertiz ve görev kaynaklarının güncel özetini kontrol et.</p></a><a href="review-team.html"><small>YORUM EKİBİ</small><strong>Yorumları takip et →</strong><p>Bağlı şubenin yanıt ve inceleme durumlarını aç.</p></a>`;
+ quick.after(actions);
+ const pending=document.createElement('details');pending.className='friendly-extra readiness-hold';pending.innerHTML='<summary>Hazırlık bekleyen bağlantılar</summary><p>Finans kapsamı, gerçek departman sorumluları ve izin–vardiya bağlantısı hazır olduğunda açılacak. Şimdilik işlem yapman gerekmiyor; mevcut takip ekranlarını kullanabilirsin.</p><a href="management.html">Birim planlarını incele →</a><a href="inspection-coordinator.html">Ekspertiz süreç planı →</a>';
+ actions.after(pending);
+ const wrapDemo=()=>{const demoHost=document.querySelector('#web-demo-tasks');
+ if(demoHost&&!demoHost.closest('.office-demo')){const demo=document.createElement('details');demo.className='friendly-extra office-demo';demo.innerHTML='<summary>Demo: aday sürecini dene</summary><p>Örnek başvuru ve ekip devri. Gerçek müşteri işi veya canlı görev değildir.</p>';demoHost.before(demo);demo.append(demoHost);}return !!demoHost;};
+ if(!wrapDemo()){const observer=new MutationObserver(()=>{if(wrapDemo())observer.disconnect();});observer.observe(office,{childList:true});}
  const top=document.querySelector('.topbar');
  const extra=[...top.querySelectorAll('a')].filter(a=>/candidate-demo|management.html|delivery.html/.test(a.getAttribute('href')||''));
  if(extra.length){const d=document.createElement('details');d.className='friendly-menu';d.innerHTML='<summary>Diğer ekranlar</summary><div></div>';extra.forEach(a=>d.querySelector('div').append(a));top.append(d);}
