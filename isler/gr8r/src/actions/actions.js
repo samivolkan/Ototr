@@ -1,3 +1,4 @@
+import { readAssignmentReceipt, acceptAssignment } from '../erp-bridge.js';
 /* =====================================================================
    ACTIONS · INPUT HANDLERS · DRAG & DROP · KEYBOARD · INIT
    ===================================================================== */
@@ -2298,3 +2299,17 @@ A.onbFinish = () => {
   go('project', { id: p.id, tab: S.prefs.defaultTab });
   toast(`Welcome to ${D().ws.name}`);
 };
+
+const receiptBusy = new Set();
+async function assignmentAction(el, accept) {
+  const id = el.dataset.id;
+  if (receiptBusy.has(id)) return;
+  receiptBusy.add(id);
+  try {
+    const receipt = await (accept ? acceptAssignment(id) : readAssignmentReceipt(id));
+    toast(receipt.accepted ? 'Bu görev sürümü çalışan tarafından kabul edildi. Teslim veya yönetici onayı değildir.' : 'Bu görev sürümü için geçerli çalışan kabulü yok.');
+  } catch (error) { toast(error.message || 'Kabul doğrulanamadı.'); }
+  finally { receiptBusy.delete(id); }
+}
+A.readAssignmentReceipt = el => assignmentAction(el, false);
+A.acceptAssignment = el => assignmentAction(el, true);

@@ -63,6 +63,7 @@ export function drawerHtml(t) {
         ? subtaskHtml(t, sub)
         : `
       ${t.status === 'done' ? `<div class="alert ok" style="margin-bottom:12px">${ic('circle-check', 15)}<span>Completed ${t.completedAt ? ago(t.completedAt) : ''}. <button class="link" data-a="toggleDone" data-id="${t.id}">Reopen task</button></span></div>` : isOver(t) ? `<div class="alert danger" style="margin-bottom:12px">${ic('clock-alert', 15)}<span>Overdue by ${-diffD(parse(t.due), TODAY)} day${-diffD(parse(t.due), TODAY) > 1 ? 's' : ''}. <button class="link" data-a="pop" data-pop="date" data-field="due" data-id="${t.id}">Reschedule</button></span></div>` : ''}
+      <div class="alert" style="margin-bottom:12px;display:block"><p>Çalışan kabulü, görevin üstlenildiğini belirtir; teslim veya yönetici onayı değildir. Görev değişirse yeniden kabul gerekir.</p><button class="btn btn-sm" data-a="readAssignmentReceipt" data-id="${esc(t.id)}">Kabul durumunu kontrol et</button>${t.assignee === D().me && !t.archived && ['todo','backlog','progress'].includes(t.status) ? `<button class="btn btn-sm btn-primary" data-a="acceptAssignment" data-id="${esc(t.id)}">Görevi kabul et</button>` : ''}</div>
       <textarea class="ttl-edit" id="d-title" rows="1" data-autosize data-blur="commitDrawerTitle" data-key-enter="blur" data-id="${t.id}" aria-label="Task title">${esc(t.title)}</textarea>
       <dl class="kv" style="margin-top:12px;${u.drawerFull ? 'grid-template-columns:112px minmax(0,1fr) 112px minmax(0,1fr)' : ''}">
         ${prop('circle-dot', 'Status', cellStatus(t))}

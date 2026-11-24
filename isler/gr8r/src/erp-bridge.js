@@ -1,3 +1,4 @@
+import { createAssignmentReceiptService } from './features/assignment-receipt.js';
 import { createClient } from '../../../task-merkezi-v2/js/vendor/supabase.js';
 import { requireSession, signOut as erpSignOut } from '../../../task-merkezi-v2/js/auth.js';
 import { seed } from './data/seed.js';
@@ -176,3 +177,17 @@ export async function leaveWorkspace() {
   await erpSignOut(client);
   location.replace('../../task-merkezi-v2/');
 }
+
+const assignmentReceipts = createAssignmentReceiptService({
+  rpc: async (name, args) => {
+    const { data, error } = await client.rpc(name, args);
+    if (error) throw Error(error.message || 'Kabul kaydı alınamadı.');
+    return data;
+  },
+  getVersion: () => version,
+  getSnapshot: currentSnapshot,
+  isReady: () => !!session && !saving && !dirty && version > 0 && currentSnapshot() === lastSnapshot && !new URLSearchParams(location.search).has('demo'),
+  newId: () => crypto.randomUUID(),
+});
+export const readAssignmentReceipt = id => assignmentReceipts.read(id);
+export const acceptAssignment = id => assignmentReceipts.accept(id);
