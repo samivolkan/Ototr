@@ -1,4 +1,6 @@
+import{inspectionHealth}from'./inspection-health.mjs';
 export const sourceDefinitions=[
+ {id:'inspection',name:'Ekspertiz şube özeti',scope:'Mevcut hesabın şubesi · salt okunur · fiziksel teslim doğrulanmaz',href:'inspection-coordinator.html',fields:[]},
  {id:'handoff',name:'TASK2 görev devri',scope:'Mevcut oturum kapsamı · kişi bilgisi içermez',href:'../isler/',fields:['total','none','pending','accepted','declined','cancelled','stale']},
  {id:'delivery',name:'TASK2 teslim ve inceleme',scope:'Mevcut oturum kapsamı · kanıt içeriği ve kişi bilgisi içermez',href:'../isler/',fields:['total','not_submitted','submitted','rejected','reviewed','closed','stale','unverified_done']},
  {id:'franchise',name:'Franchise ve Finans devri',scope:'Yetkili ERP kapsamı',href:'franchise-specialist.html',fields:['case_count','approvals','finance_pending','finance_failed','finance_processed']},
@@ -7,8 +9,9 @@ export const sourceDefinitions=[
  {id:'work',name:'Eski İşler v24 kayıtları',scope:'Eski kaynak · yeni TASK2 panosunu kapsamaz · kişi bilgisi içermez',href:'#legacy-work-source',fields:['total','open','in_progress','reported_done','owner_missing','owner_unresolved','past_due','due_missing','due_invalid','unknown_status']},
  {id:'task2',name:'TASK2 güncel görev panosu',scope:'Mevcut oturumun TASK2 kapsamı · kişi bilgisi içermez',href:'../isler/',fields:['accepted_open','acceptance_pending','acceptance_unavailable','review_pending','archived','total','open','in_progress','reported_done','owner_missing','owner_unresolved','past_due','due_missing','due_invalid','unknown_status']}
 ];
-export function validateSource(id,value){
+export function validateSource(id,value,now=Date.now()){
  const def=sourceDefinitions.find(d=>d.id===id);if(!def||!value||typeof value!=='object')return false;
+ if(id==='inspection'){try{inspectionHealth(value,now);return value.status==='ok';}catch{return false;}}
  if(id==='handoff')return value.source==='task2_handoff'&&value.scope==='current_user_scope'&&Number.isFinite(Date.parse(value.observed_at))&&def.fields.every(f=>Number.isSafeInteger(value[f])&&value[f]>=0)&&['none','pending','accepted','declined','cancelled','stale'].reduce((n,k)=>n+value[k],0)===value.total;
  if(id==='delivery')return value.source==='task2_delivery'&&value.scope==='current_user_scope'&&Number.isFinite(Date.parse(value.observed_at))&&def.fields.every(f=>Number.isSafeInteger(value[f])&&value[f]>=0)&&['not_submitted','submitted','rejected','reviewed','closed','stale'].reduce((n,k)=>n+value[k],0)===value.total&&value.unverified_done<=value.total-value.closed;
  if(id==='demo')return Array.isArray(value.tasks)&&value.tasks.every(t=>typeof t.task_id==='string'&&Number.isInteger(t.workflow_step)&&t.workflow_step>=0&&t.workflow_step<=4);
@@ -18,7 +21,7 @@ export function validateSource(id,value){
  return true;
 }
 export function sourceState(id,value,receivedAt,now=Date.now(),error=null){
- const valid=validateSource(id,value),age=now-receivedAt;
+ const valid=validateSource(id,value,now),age=now-receivedAt;
  return {id,value:valid?value:null,receivedAt,status:error||!valid?'unavailable':!Number.isFinite(age)||age<0||age>180000?'stale':'verified'};
 }
 export function controlSummary(sources,now=Date.now()){
@@ -26,6 +29,10 @@ export function controlSummary(sources,now=Date.now()){
  const internal=[],decisions=[],demo=[];
  for(const s of list){
   if(s.status!=='verified'){internal.push({id:`source:${s.id}`,priority:1,title:`${s.name}: bağlantı ${s.status==='stale'?'eski':'doğrulanamadı'}`,owner:'Teknik sorumlu → ilgili yönetici',next:'Veriyi yeniden doğrula; bilinmeyen sayıları sıfır kabul etme.',href:s.href});continue;}
+  if(s.id==='inspection'){
+   const gaps=[['tasks_without_owner','tamamlanmamış usta görevi sahiplenilmemiş'],['intake_gates_unconfirmed','iş emrinde kabul kapısı teyitsiz'],['report_version_unconfirmed','işte güncel kilitli rapor doğrulanamadı'],['delivery_status_unverified','iş teslim etiketli; fiziksel teslim kanıtı doğrulanmadı']];
+   for(const[key,label]of gaps)if(s.value.counts[key])internal.push({id:`inspection:${key}`,priority:2,title:`${s.value.counts[key]} ${label}`,owner:'Şube operasyon sorumlusu',next:'Kayıt ve bekleme nedenini kaynakta incele. Kategoriler örtüşebilir; performans veya gecikme sonucu çıkarma. Otomatik mesaj gönderme.',href:s.href});
+  }
   if(s.id==='handoff'){
    for(const [key,label]of [['pending','devir alıcı kabulü bekliyor'],['declined','devir reddedildi'],['stale','devir güncel kaynakla uyuşmuyor']])if(s.value[key])internal.push({id:`handoff:${key}`,priority:2,title:`${s.value[key]} ${label}`,owner:'İlgili yönetici',next:'Görev detayındaki devir koşulunu ve sorumluyu incele. Devir işi tamamlamaz.',href:s.href});
   }
