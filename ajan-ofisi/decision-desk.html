@@ -1,0 +1,18 @@
+<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Karar Masası · OTOTR</title><link rel="stylesheet" href="decision-desk.css"><script type="module" src="decision-desk-ui.mjs"></script></head><body>
+<header><a href="./"><img src="assets/ototr-official-logo.png" alt="OTOTR"></a><a href="operations-center.html">Ofis kontrolüne dön →</a></header>
+<main><p class="eyebrow">KOORDİNATÖR → KARAR SAHİBİ</p><h1>Karar masası</h1><p>Rutin işler ekipte kalır. Buraya yalnız kanıtı ve bağımsız incelemesi bulunan karar talepleri gelir.</p>
+<div class="toolbar"><button id="refresh">Durumu yenile</button><a href="../isler/">Görev panosunu aç</a></div><p id="message" role="status" aria-live="polite">Oturum ve kuyruk kontrol ediliyor…</p>
+<section id="setup" hidden><h2>Karar masasını başlat</h2><p>Bu çalışma alanının karar sahibi, şu an giriş yaptığın ERP hesabı olacak. Bu işlem yeni bir yetki vermez; başka kişiye ait masayı devralmaz.</p><button id="initialize">Bu hesapla karar masamı başlat</button></section>
+<section id="budget" hidden aria-label="İnceleme kapasitesi"></section>
+<section id="decisionSection" hidden><h2>Karar bekleyenler</h2><p id="ownerNote"></p><div id="decisions"></div></section>
+<details id="reviewSection" hidden><summary>Ekip içinde bağımsız inceleme bekleyenler</summary><p>Planı hazırlayan kişi kendi planını denetleyemez. Bu kayıtlar da 10 maddelik kapasiteye dahildir.</p><div id="reviews"></div></details>
+<section id="sourceSection" hidden><h2>Görevden karar planı</h2><p id="sourceStatus">İncelenmiş görev kaynağı kontrol ediliyor…</p><form id="planForm" hidden>
+<label>Karar başlığı<input name="key" required minlength="3" maxlength="100"></label>
+<label>Bulgu<textarea name="finding" required minlength="3" maxlength="2000"></textarea></label>
+<p>İncelenmiş kanıt: <span id="sourceEvidence"></span></p>
+<label>Öneri ve seçeneklerin etkisi<textarea name="recommendation" required minlength="3" maxlength="2000"></textarea></label>
+<div class="row"><label>Risk<select name="risk"><option value="para">Para</option><option value="yetki">Yetki</option><option value="veri">Veri</option><option value="şema">Şema</option><option value="tasarım">Tasarım</option><option value="düşük">Düşük</option></select></label><label>Tahmini uygulama eforu<input name="effort" required minlength="3" maxlength="2000"></label></div>
+<label>İstenen karar<textarea name="decision" required minlength="3" maxlength="2000"></textarea></label>
+<div class="row"><label>Öncelik<select name="priority"><option value="1">1 · Öncelikli</option><option value="2" selected>2 · Normal</option><option value="3">3 · Sonra</option></select></label><label>İnceleme günü<input name="day" type="date" required></label><label>Planlanan dakika<input name="minutes" type="number" min="1" max="45" value="5" required></label></div>
+<button>Bağımsız incelemeye gönder</button></form></section>
+<footer>Kararı kaydetmek mali işlem, ekspertiz raporu değişikliği veya müşteri mesajı göndermez. Süreler beyana dayanır. Bağlı kapsam TASK2’dir; tüm ERP kararları henüz bu masaya bağlı değildir.</footer></main></body></html>

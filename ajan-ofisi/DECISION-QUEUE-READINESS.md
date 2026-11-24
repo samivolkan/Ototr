@@ -1,6 +1,6 @@
 # Ortak karar kuyruğu
 
-Durum: Yerel SQL ve sentetik uçtan uca testler hazır. Migration uygulanmadı, ekran bağlantısı yok; canlı ortak kuyruk henüz mevcut değil.
+Durum: SQL ve istemci testleri geçti; migration uygulandı. Ekran ve ofis bağlantısı hazır; yayın sonrası canlı doğrulama bekleniyor. Masa kurulumu açık kullanıcı eylemiyle yapılır, migration masa veya karar oluşturmaz.
 
 ## Akış
 
@@ -25,10 +25,10 @@ Karar sahibi yanıt veya gerekçeli iptal kaydeder. Yanıt görev durumunu, para
 
 Bu altyapı henüz tüm ERP süreçleri için merkezi durdurma mekanizması değildir. Bağlanacak üretici adaptörleri kapasiteye uymalı; eski görev düzenleyicisi ve ayrı modüller otomatik olarak bu kuyruğa bağlanmış sayılmaz. Departman sorumlusu eşlemesi bulunmadan bir ajanın insan adına yetkili işlem yaptığı iddia edilemez.
 
-## Kalan entegrasyon
+## Entegrasyon durumu
 
-1. Açık masa kurulumu, iki ayrı inceleme/karar listesi ve güncel kaynak uyarılı ekran.
-2. Kaynak sürümü ve kayıt sürümü ile işlem yapan istemci; ağ tekrarında sabit istek kimliği.
-3. Ofis özetinde gerçek kuyruk kapsamı, kapasite ve yalnız sahibinin kararları.
-4. Migration uygulama, anonim/rol kontrolleri, canlı salt-okunur ve mobil doğrulama.
+1. Hazır: Açık masa kurulumu, iki ayrı inceleme/karar listesi ve güncel kaynak uyarılı ekran.
+2. Test edildi: Kaynak sürümü ve kayıt sürümü ile işlem yapan istemci; ağ tekrarında sabit istek kimliği.
+3. Hazır: Ofis özetinde gerçek kuyruk kapsamı, kapasite ve yalnız sahibinin kararları.
+4. Migration uygulandı; anonim/rol kontrolleri test edildi. Canlı ve mobil doğrulama yayın sonrası yapılacak.
 5. Gerçek departman sahipliği, diğer kaynak adaptörleri ve iş üretim kapıları.

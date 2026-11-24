@@ -15,7 +15,7 @@ export function deliveryPanel(id, data, current, busy = false, draft = {}) {
           body += `<label>Kanıt referansı<input class="input" data-delivery-reference value="${esc(draft.reference || '')}" maxlength="1000" placeholder="Dosya veya kayıt referansı"></label><p>Önce görevi kabul edip başlatın. Referansın içeriği insan incelemesinde doğrulanır.</p>${button('submitTaskDelivery', 'Kanıtla teslim et')}`;
         if (data.current && data.is_manager && !data.is_producer && data.state === 'submitted')
           body += `<label>İnceleme gerekçesi<textarea class="textarea" data-delivery-note maxlength="2000">${esc(draft.note || '')}</textarea></label>${button('approveTaskDelivery', 'Kanıtı inceledim, uygun')}${button('rejectTaskDelivery', 'Düzeltme iste')}`;
-        if (data.current && data.is_manager && data.state === 'reviewed') body += button('closeTaskDelivery', 'Yönetici olarak işi kapat');
+        if (data.current && data.is_manager && data.state === 'reviewed') body += button('closeTaskDelivery', 'Yönetici olarak işi kapat') + `<p><a href="../../ajan-ofisi/decision-desk.html?task=${encodeURIComponent(id)}">Karar gerekiyorsa plan hazırla →</a></p>`;
       }
     }
   }
