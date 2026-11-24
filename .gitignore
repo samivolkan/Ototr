@@ -41,3 +41,6 @@ task-merkezi-v2/vendor-build/node_modules/
 **/.temp/
 backups/
 test-results/
+
+# Generated from the exact Pages checkout before HTML access gating
+ajan-ofisi/review-evidence-status.json

@@ -53,6 +53,11 @@ jobs:
           test -s docs/assets/rapor-arsiv-bulgu-kanitlari.webp
           grep -Fq './rapor-arsiv-tasarim.html' index.html || echo 'Archive link check skipped for current ERP shell'
 
+      - name: Verify historical source evidence against this release
+        run: |
+          node --test tests/review-evidence.test.cjs
+          node scripts/check-review-evidence.cjs
+
       - name: Protect ERP entry screens
         run: node scripts/apply-erp-access-gate.cjs
 

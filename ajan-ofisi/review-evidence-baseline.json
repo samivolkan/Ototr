@@ -1,0 +1,168 @@
+{
+  "version": 1,
+  "sourceCommit": "9e2dfcada8590c9d9e39a0fd8acfce6f64d4ecc8",
+  "origin": "historical_review_commit",
+  "reports": [
+    {
+      "id": "FIN-R01",
+      "department": "FIN",
+      "reportHash": "fdfca4b0d1154f983114b6d6da1f865f12f734a6be0431cff1704ab485e014ae",
+      "evidence": [
+        {
+          "file": "muhasebe-v2/assets/finance-command-bridge.mjs",
+          "start": 59,
+          "end": 63,
+          "fileHash": "1aa66ba6486de3ff40663cc2f5f40d66494404ef6a4d68db2035b018330e74fc",
+          "rangeHash": "5b1c62783ddf3d57d4b4a20210e4f40ad9b456866b335dff318e8d60b683fada"
+        },
+        {
+          "file": "muhasebe-v2/assets/finance-command-bridge.mjs",
+          "start": 69,
+          "end": 69,
+          "fileHash": "1aa66ba6486de3ff40663cc2f5f40d66494404ef6a4d68db2035b018330e74fc",
+          "rangeHash": "e9bda48d66b307f1c3ed142e4e44a7b85181a0112376d6d423d859fd505ee604"
+        }
+      ]
+    },
+    {
+      "id": "FIN-R02",
+      "department": "FIN",
+      "reportHash": "5455ac5115d7cc11f54141eb574466224e44beb769923dec1a04970fffc10f41",
+      "evidence": [
+        {
+          "file": "muhasebe-v2/assets/finance-command-bridge.mjs",
+          "start": 63,
+          "end": 63,
+          "fileHash": "1aa66ba6486de3ff40663cc2f5f40d66494404ef6a4d68db2035b018330e74fc",
+          "rangeHash": "0df64ecb6edb88d9f4261c529f55051975f8fd8d45237276d26d09f5d1a628b5"
+        },
+        {
+          "file": "muhasebe-v2/assets/finance-command-bridge.mjs",
+          "start": 68,
+          "end": 69,
+          "fileHash": "1aa66ba6486de3ff40663cc2f5f40d66494404ef6a4d68db2035b018330e74fc",
+          "rangeHash": "82b9d94e5918f464d453ba80961cfe2435950da2631ef50f1fc6444d3de2ab20"
+        },
+        {
+          "file": "muhasebe-v2/assets/finance-command-bridge.mjs",
+          "start": 133,
+          "end": 140,
+          "fileHash": "1aa66ba6486de3ff40663cc2f5f40d66494404ef6a4d68db2035b018330e74fc",
+          "rangeHash": "8e15609720de2e05a2286c3ea34f02617b7b8225ca3d4ea152c05e5c3147606d"
+        }
+      ]
+    },
+    {
+      "id": "FIN-R03",
+      "department": "FIN",
+      "reportHash": "c4792db5e8d0dcfe281b187aa80e9aed99b9fa4a9427f2abe69015177a64a6ca",
+      "evidence": [
+        {
+          "file": "muhasebe-v2/assets/finance-command-bridge.mjs",
+          "start": 20,
+          "end": 22,
+          "fileHash": "1aa66ba6486de3ff40663cc2f5f40d66494404ef6a4d68db2035b018330e74fc",
+          "rangeHash": "e487bd48e5f5ffaeef5695674b3bd80483b0921aa4b26635a3cdc8c40c233b46"
+        },
+        {
+          "file": "muhasebe-v2/assets/finance-ui.js",
+          "start": 387,
+          "end": 387,
+          "fileHash": "fa79fe1b947b49f9ace228fff87a200ee74f1bf7264802b6f433f4b80e66cc9b",
+          "rangeHash": "d2ed9951b02c2a914fb8e95933a128d24f49851e7c970fae57c80e55fa8d0f9b"
+        }
+      ]
+    },
+    {
+      "id": "FRA-R01",
+      "department": "FRA",
+      "reportHash": "33655199b048b30b17ad1b3102c520486ea65c9b51be1b0a6326f99f9ea8889f",
+      "evidence": [
+        {
+          "file": "gm-franchise/franchise-core.mjs",
+          "start": 76,
+          "end": 92,
+          "fileHash": "1cf11972d2df8ba9970d6a0db001197b992bfc76d224b41c968a4245abd42a20",
+          "rangeHash": "bcf1679499239a4516af48907c444f8fda0c0b5d2d09139aeee073625f5518ca"
+        },
+        {
+          "file": "gm-franchise/index.html",
+          "start": 975,
+          "end": 977,
+          "fileHash": "f150b5c68679342ff89e087cceb5d73bf645df449cfbb588f0e6ebbf8503c664",
+          "rangeHash": "495c84d89944189c6aad78db72218398d5a7cefb70be9ed34824725dfd8e4308"
+        }
+      ]
+    },
+    {
+      "id": "FRA-R02",
+      "department": "FRA",
+      "reportHash": "fc0110a2bcb97a195874ba6392b243791b03fd43b40fb03426daaf7344222ad8",
+      "evidence": [
+        {
+          "file": "gm-franchise/franchise-core.mjs",
+          "start": 211,
+          "end": 217,
+          "fileHash": "1cf11972d2df8ba9970d6a0db001197b992bfc76d224b41c968a4245abd42a20",
+          "rangeHash": "067d1509c0122e3d39bcefbdf1915c8c4379993ee6cb9b5fca2c060b48678553"
+        },
+        {
+          "file": "gm-franchise/franchise-core.mjs",
+          "start": 254,
+          "end": 267,
+          "fileHash": "1cf11972d2df8ba9970d6a0db001197b992bfc76d224b41c968a4245abd42a20",
+          "rangeHash": "3026b5daaf269e800c66a188f4e6e4dd2a5cb7317a98dbbdcfdbf7ea558c8122"
+        },
+        {
+          "file": "gm-franchise/index.html",
+          "start": 685,
+          "end": 685,
+          "fileHash": "f150b5c68679342ff89e087cceb5d73bf645df449cfbb588f0e6ebbf8503c664",
+          "rangeHash": "9e0b115bb44c7ddc9a00b1fd0a86c43dc4e84e4e5fa7a8ce83724faa4d0ec9fb"
+        },
+        {
+          "file": "gm-franchise/index.html",
+          "start": 985,
+          "end": 985,
+          "fileHash": "f150b5c68679342ff89e087cceb5d73bf645df449cfbb588f0e6ebbf8503c664",
+          "rangeHash": "a1583a64a110acda170ac1178dc714d27da8dfe10a7fbd0630c23b8eedbae759"
+        }
+      ]
+    },
+    {
+      "id": "FRA-R03",
+      "department": "FRA",
+      "reportHash": "70976857eea9bce1b0fb86a17e7369549294ab040bf29f864d3d418fd65663d3",
+      "evidence": [
+        {
+          "file": "gm-franchise/franchise-core.mjs",
+          "start": 96,
+          "end": 133,
+          "fileHash": "1cf11972d2df8ba9970d6a0db001197b992bfc76d224b41c968a4245abd42a20",
+          "rangeHash": "c2c4398f547e074ba5fa3bf44054b68d10c024f4f33d1468c20c008988d3712d"
+        },
+        {
+          "file": "gm-franchise/franchise-core.mjs",
+          "start": 254,
+          "end": 263,
+          "fileHash": "1cf11972d2df8ba9970d6a0db001197b992bfc76d224b41c968a4245abd42a20",
+          "rangeHash": "e4379244012cd62b0fefd53b3e30f58d654f0bd9287ad706df92eccbbcaef0b9"
+        },
+        {
+          "file": "gm-franchise/index.html",
+          "start": 678,
+          "end": 685,
+          "fileHash": "f150b5c68679342ff89e087cceb5d73bf645df449cfbb588f0e6ebbf8503c664",
+          "rangeHash": "3d98d671d472e1cb1616e1010cf88eb0092aa250525427cb7d48973660e80f29"
+        },
+        {
+          "file": "gm-franchise/index.html",
+          "start": 985,
+          "end": 985,
+          "fileHash": "f150b5c68679342ff89e087cceb5d73bf645df449cfbb588f0e6ebbf8503c664",
+          "rangeHash": "a1583a64a110acda170ac1178dc714d27da8dfe10a7fbd0630c23b8eedbae759"
+        }
+      ]
+    }
+  ]
+}
