@@ -1,5 +1,5 @@
 import data from'./management-data.mjs?v=ops-1';
-import{sourceDefinitions,controlSummary,managerBrief}from'./operations-model.mjs?v=task2-1';
+import{sourceDefinitions,controlSummary,managerBrief}from'./operations-model.mjs?v=acceptance-1';
 import{readOperationalSource}from'./operations-api.mjs?v=task2-1';
 const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let cache={},summary=controlSummary({}),busy=false;
@@ -9,6 +9,7 @@ function render(){summary=controlSummary(cache);$('#controlStatus').textContent=
  $('#decisions').innerHTML=summary.decisions.map(item).join('')||`<p>${summary.complete?'Bağlı kaynaklarda karar kaydı görünmüyor.':'Bağlantılar eksik; kararların tamamı doğrulanamadı.'}</p>`;
  $('#internal').innerHTML=summary.internal.map(item).join('')||'<p>Bağlı kaynaklarda işaretlenen engel veya inceleme yok.</p>';
  $('#demo').innerHTML=summary.demo.map(item).join('')||'<p>Karar aşamasında doğrulanmış demo aday yok.</p>';
+ const task2=summary.sources.find(s=>s.id==='task2');$('#task2Acceptance').textContent=task2.status==='verified'?`${task2.value.accepted_open} açık iş üstlenildi · ${task2.value.acceptance_pending} iş çalışan kabulü bekliyor · ${task2.value.acceptance_unavailable} işte sorumlu eşleşmesi gerekli. Kabul, teslim veya yönetici onayı değildir.`:'TASK2 çalışan kabulü doğrulanamadı; bekleyen sayısı sıfır varsayılmaz.';
  const work=summary.sources.find(s=>s.id==='work');$('#workHealth').textContent=work.status==='verified'?`${work.value.open} açık iş · ${work.value.in_progress} devam ediyor · ${work.value.reported_done} kaynakta bitti işaretli · ${work.value.due_missing} açık işte tarih yok. Bitti işareti bağımsız teslim denetimi değildir.`:'İşler v24 kapsamı doğrulanamadı; çalışan işleri hakkında sonuç çıkarılamaz.';
  const coverage={FRA:'Gerçek kayıt özeti + ayrı demo akışı',FIN:'Yalnız Franchise devir özeti; muhasebenin bütünü bağlı değil',REV:'Nilüfer yanıt özeti; diğer şubeler ve kişisel hedefler bu kapsama bağlı değil',SEO:'Ayrı raporlama ekranı mevcut; bu merkezde çalışma durumu doğrulanmıyor',OPS:'Görev tasarımı hazır; iş emri olay bağlantısı bekliyor'};
  $('#coverage').innerHTML=data.modules.map(m=>`<article><h3>${esc(m.name)}</h3><span>${m.kind==='proposed'?'Önerilen rol':'Tanımlı ekip'}</span><p>${esc(coverage[m.id]||'Bu merkezde doğrulanmış operasyon veri bağlantısı yok.')}</p><small>${m.agents.length} rol · ${esc(m.manager)}</small></article>`).join('');
