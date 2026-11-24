@@ -1,3 +1,4 @@
+import{refreshRouting}from'./routing-readiness-ui.mjs?v=1';
 import data from'./management-data.mjs?v=ops-1';
 import{sourceDefinitions,controlSummary,managerBrief}from'./operations-model.mjs?v=handoff-1';
 import{readOperationalSource}from'./operations-api.mjs?v=handoff-1';
@@ -18,6 +19,7 @@ function render(){summary=controlSummary(cache);$('#controlStatus').textContent=
 }
 async function refresh(){if(busy||document.hidden)return;busy=true;$('#refreshControl').disabled=true;
  await Promise.allSettled(sourceDefinitions.map(async d=>{try{const value=await readOperationalSource(d.id);cache[d.id]={value,receivedAt:Date.now()};}catch{cache[d.id]={error:true,receivedAt:Date.now()};}render();}));
+ await refreshRouting();
  busy=false;$('#refreshControl').disabled=false;
 }
 $('#refreshControl').onclick=refresh;$('#downloadBrief').onclick=()=>{const url=URL.createObjectURL(new Blob([managerBrief(controlSummary(cache))],{type:'text/plain;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='ototr-coordinator-brief.txt';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
