@@ -12,6 +12,7 @@
       "color": "#8972b9",
       "icon": "landmark",
       "manager": "MGR-FIN",
+      "managerName": "OTOTR Finans",
       "active": true,
       "agents": [
         {
@@ -118,6 +119,7 @@
       "color": "#4d8671",
       "icon": "network",
       "manager": "MGR-FRA",
+      "managerName": "OTOTR Franchise",
       "active": true,
       "agents": [
         {
