@@ -36,3 +36,21 @@ Risk: yetki / veri. Efor: önce salt okunur tek kaynak adaptörü ve sentetik ye
 ## Test edilen demo
 
 `inspection-demo-model.mjs` yalnız bellekte çalışır. Hatalı sorgu rapor kapısını kapatır; usta adımları paralel tamamlanabilir. Baskı ve sunum olmadan teslim yoktur. Eski rapor sürümü reddedilir; yeniden açılan raporda baskı/sunum/teslim teyitleri geçersizleşir. Mükerrer olay, yanlış şube, canlı mod, eski sürüm ve iptal sonrası ilerleme reddedilir. Dış çağrı yoktur.
+
+
+## TASK2 kabul bağlantısı: doğrulanan sınır
+
+24 Kasım 2026: TASK2 ayrı `app_private.task2_workspace` kaynağıdır; `isler/index.html` bu yeni panoya yönlenir. `office_task2_health_summary` canlıda yalnız mevcut oturum kapsamının sayısal özetini verir. Eski v24 kontrol geçmişiyle birleştirilmez.
+
+`work-contract.mjs` canlı akış için bağımsız kaynak bağlamını zorunlu tutar. Kaynak kimliği, şube, sorumlu, varlık/arşiv durumu ve içerik sürümü eşleşmeden kabul, teslim, denetim, kapanış veya mükerrer işlem dönüşü yapılmaz. Teslim ve denetim aynı kaynak sürümünü belirtir. Kapanmış kayıt için de kaynak tazeliği ayrıca değerlendirilir; geçmişte kabul edilmiş olması bugünkü içeriğin kabul edildiği anlamına gelmez.
+
+Bu saf model sunucu yetkisi değildir. Canlı görev kabulü henüz açılmadı. Kalıcı adaptörün kapıları:
+
+- Aktörü istemci gövdesinden değil mevcut ERP oturumundan çöz; tek aktif hesap ve mevcut rol/kapsam denetimini uygula.
+- Görev kimliği ve içerik sürümünü sunucuda mevcut TASK2 kaydından üret. Kullanıcının gönderdiği `sourceContext` veya onay alanına güvenme.
+- Aynı işlem içinde kaynak ve takip kaydını kilitle; sürüm karşılaştır, yetkiyi tekrar doğrula, kanıt ve olay kaydını birlikte yaz.
+- Devirde alıcı kabul edene kadar eski sahibi koru. Alıcı kabulü ve kaynak sahibi değişikliği atomik olmalı; yalnız yan kayıt değiştirilmişse devir tamamlandı sayılmamalı.
+- Kaynak değiştiğinde geçmişi silme; eski teslim ve onayı güncel başarı olarak sunma. Yeniden kabul akışı açıkça tasarlanmadan otomatik sıfırlama yapma.
+- Kaynak görevleri kopyalama; yalnız kaynak referansı, sürüm, aktör, durum ve kanıt referansını sakla. Müşteri mesajı, para kararı, rapor bulgusu değişikliği üretme.
+
+Kanıt: `tests/work-source-binding.test.mjs` kaynak/kapsam/sahip değişikliği, eski olay tekrarı, yanlış teslim sürümü, öz denetim ve eski onayla kapanışı reddeder. SQL veya canlı uçtan uca kabul testinin yerine geçmez.

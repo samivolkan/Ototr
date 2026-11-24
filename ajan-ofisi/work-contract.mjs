@@ -1,13 +1,27 @@
 // Validated domain contract, not a deployed worker or permission grant.
 const terminal=new Set(['done','cancelled']);
 const highRisk=new Set(['para','veri','yetki','şema']);
-export function createWork({id,branchId,owner,manager,risk,source,mode='demo',reviewer='BEK-01'}){
+export function createWork({id,branchId,owner,manager,risk,source,mode='demo',reviewer='BEK-01',sourceRevision=null}){
  if(![id,branchId,owner,manager,source].every(x=>typeof x==='string'&&x.trim())||!['para','veri','yetki','şema','tasarım','düşük'].includes(risk)||!['demo','live'].includes(mode))throw Error('İşin kimliği, şubesi, sahibi ve kaynağı zorunlu.');
  if(!reviewer||reviewer===owner)throw Error('Denetçi üreticiden ayrı olmalı.');
- return {id,branchId,owner,manager,reviewer,risk,source,mode,state:'assigned',version:0,events:[],evidence:[],handoff:null,review:null};
+ if(mode==='live'&&(typeof sourceRevision!=='string'||!sourceRevision.trim()))throw Error('Canlı iş için sunucudan doğrulanmış kaynak sürümü gerekli.');
+ return {id,branchId,owner,manager,reviewer,risk,source,sourceRevision,mode,state:'assigned',version:0,events:[],evidence:[],handoff:null,review:null};
 }
-export function applyWorkEvent(work,event){
+// The authenticated server adapter supplies this context, never the event payload.
+// This pure model alone does not authorize a live write.
+export function inspectWorkSource(work,context){
+ if(work.mode!=='live')return {current:true,reason:'demo'};
+ if(!context||context.source!==work.source||context.branchId!==work.branchId||context.id!==work.id)return {current:false,reason:'source_unverified'};
+ if(context.exists!==true||context.archived!==false)return {current:false,reason:'source_unavailable'};
+ if(context.revision!==work.sourceRevision)return {current:false,reason:'source_changed'};
+ if(context.owner!==work.owner)return {current:false,reason:'owner_changed'};
+ return {current:true,reason:'verified'};
+}
+export function applyWorkEvent(work,event,sourceContext){
  if(!event||!event.id||!event.actor||!event.type||!Number.isFinite(Date.parse(event.at)))throw Error('Olay kimliği, yapan ve zaman gerekli.');
+ if(!inspectWorkSource(work,sourceContext).current)throw Error('Kaynak veya sorumlu değişti ya da doğrulanamadı; eski kabul kullanılamaz.');
+ if(work.mode==='live'&&event.type==='submit'&&event.evidence?.version!==work.sourceRevision)throw Error('Teslim kanıtı doğrulanmış kaynak sürümüne ait olmalı.');
+ if(work.mode==='live'&&event.type==='review'&&event.evidence?.version!==work.sourceRevision)throw Error('Denetim kanıtı teslim edilen kaynak sürümüne ait olmalı.');
  const previous=work.events.find(e=>e.id===event.id);
  if(previous){if(JSON.stringify(previous)!==JSON.stringify(event))throw Error('Aynı olay kimliği farklı içerikle kullanıldı.');return work;}
  if(event.branchId!==work.branchId||event.mode!==work.mode)throw Error('Şube veya demo/canlı kapsamı uyuşmuyor.');
