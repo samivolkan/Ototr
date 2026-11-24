@@ -2,14 +2,15 @@ export const sourceDefinitions=[
  {id:'franchise',name:'Franchise ve Finans devri',scope:'Yetkili ERP kapsamı',href:'franchise-specialist.html',fields:['case_count','approvals','finance_pending','finance_failed','finance_processed']},
  {id:'reviews',name:'Yorum yanıtları',scope:'Nilüfer bağlantısı · tüm şubeler değil',href:'review-team.html',fields:['preparing','waiting','human','published']},
  {id:'demo',name:'Kurgusal aday akışı',scope:'Bu yöneticiye ait demo kayıtlar',href:'franchise-specialist.html#web-demo-tasks',fields:[]},
- {id:'work',name:'Eski İşler v24 kayıtları',scope:'Eski kaynak · yeni TASK2 panosunu kapsamaz · kişi bilgisi içermez',href:'#legacy-work-source',fields:['total','open','in_progress','reported_done','owner_missing','owner_unresolved','past_due','due_missing','due_invalid','unknown_status']}
+ {id:'work',name:'Eski İşler v24 kayıtları',scope:'Eski kaynak · yeni TASK2 panosunu kapsamaz · kişi bilgisi içermez',href:'#legacy-work-source',fields:['total','open','in_progress','reported_done','owner_missing','owner_unresolved','past_due','due_missing','due_invalid','unknown_status']},
+ {id:'task2',name:'TASK2 güncel görev panosu',scope:'Mevcut oturumun TASK2 kapsamı · kişi bilgisi içermez',href:'../isler/',fields:['review_pending','archived','total','open','in_progress','reported_done','owner_missing','owner_unresolved','past_due','due_missing','due_invalid','unknown_status']}
 ];
 export function validateSource(id,value){
  const def=sourceDefinitions.find(d=>d.id===id);if(!def||!value||typeof value!=='object')return false;
  if(id==='demo')return Array.isArray(value.tasks)&&value.tasks.every(t=>typeof t.task_id==='string'&&Number.isInteger(t.workflow_step)&&t.workflow_step>=0&&t.workflow_step<=4);
- if(id==='work'&&(value.source!=='isler24'||value.scope!=='current_user_scope'||value.acceptance_supported!==false||value.evidence_supported!==false||!Number.isFinite(Date.parse(value.observed_at))))return false;
+ if(['work','task2'].includes(id)&&(value.source!==(id==='task2'?'task2':'isler24')||value.scope!=='current_user_scope'||value.acceptance_supported!==false||value.evidence_supported!==false||!Number.isFinite(Date.parse(value.observed_at))))return false;
  if(!def.fields.every(f=>Number.isSafeInteger(value[f])&&value[f]>=0))return false;
- if(id==='work')return value.open+value.reported_done+value.unknown_status===value.total&&['in_progress','owner_missing','owner_unresolved','past_due','due_missing','due_invalid'].every(k=>value[k]<=value.open)&&value.owner_missing+value.owner_unresolved<=value.open;
+ if(['work','task2'].includes(id))return (id!=='task2'||value.review_pending<=value.open)&& value.open+value.reported_done+value.unknown_status===value.total&&['in_progress','owner_missing','owner_unresolved','past_due','due_missing','due_invalid'].every(k=>value[k]<=value.open)&&value.owner_missing+value.owner_unresolved<=value.open;
  return true;
 }
 export function sourceState(id,value,receivedAt,now=Date.now(),error=null){
@@ -28,9 +29,10 @@ export function controlSummary(sources,now=Date.now()){
   }
   if(s.id==='reviews'&&s.value.human)internal.push({id:'reviews:human',priority:2,title:`${s.value.human} yorum insan incelemesi bekliyor`,owner:'Yorum sorumlusu',next:'İlgili yorumları incele; toplu veya otomatik onay verme.',href:s.href});
   if(s.id==='demo')for(const t of s.value.tasks.filter(t=>t.workflow_step===4))demo.push({id:`demo:${t.task_id}`,title:'Örnek aday: iki karar başlığı',href:s.href});
-  if(s.id==='work'){
+  if(['work','task2'].includes(s.id)){
+   if(s.id==='task2'&&s.value.review_pending)internal.push({id:'task2:review',priority:2,title:`${s.value.review_pending} TASK2 teslimi inceleme bekliyor`,owner:'İlgili yönetici',next:'Kaynakta teslimi incele. Review durumu yönetici kabulü veya bağımsız denetim kanıtı değildir.',href:s.href});
    const rows=[['owner_missing','sorumlusu belirtilmemiş açık iş','İş yöneticisi','Mevcut iş ekranında tek sorumluyu belirle.'],['owner_unresolved','sorumlu eşlemesi doğrulanamayan açık iş','İş yöneticisi','Aktif kullanıcı ve iş kapsamı eşlemesini kontrol et.'],['past_due','planlanan tarihi geçmiş açık iş','İlgili yönetici','Vardiya, izin, müşteri veya sistem beklemesini incele; kişi performansı sonucu çıkarma.'],['due_invalid','tarih kaydı doğrulanamayan açık iş','İş yöneticisi','Kaynakta geçerli tarihi kontrol et.'],['unknown_status','durumu tanınmayan iş','Teknik sorumlu','Kaynak sözleşmesini doğrula; tamamlandı varsayma.']];
-   for(const[key,label,owner,next]of rows)if(s.value[key])internal.push({id:`work:${key}`,priority:key==='unknown_status'?1:2,title:`${s.value[key]} ${label}`,owner,next,href:s.href});
+   for(const[key,label,owner,next]of rows)if(s.value[key])internal.push({id:`${s.id}:${key}`,priority:key==='unknown_status'?1:2,title:`${s.name}: ${s.value[key]} ${label}`,owner,next,href:s.href});
   }
  }
  internal.sort((a,b)=>a.priority-b.priority);decisions.sort((a,b)=>a.priority-b.priority);

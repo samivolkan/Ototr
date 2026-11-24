@@ -1,11 +1,11 @@
 import data from'./management-data.mjs?v=ops-1';
-import{sourceDefinitions,controlSummary,managerBrief}from'./operations-model.mjs?v=legacy-2';
-import{readOperationalSource}from'./operations-api.mjs?v=work-1';
+import{sourceDefinitions,controlSummary,managerBrief}from'./operations-model.mjs?v=task2-1';
+import{readOperationalSource}from'./operations-api.mjs?v=task2-1';
 const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let cache={},summary=controlSummary({}),busy=false;
 function item(i){return `<article class="control-item"><h3>${esc(i.title)}</h3><small>${esc(i.owner||'Demo akışı')}</small>${i.next?`<p>${esc(i.next)}</p>`:''}<a href="${esc(i.href)}">İlgili kaydı incele →</a></article>`;}
 function render(){summary=controlSummary(cache);$('#controlStatus').textContent=summary.message+' Son okuma: '+new Date(summary.checkedAt).toLocaleTimeString('tr-TR',{timeZone:'Europe/Istanbul'});
- $('#sources').innerHTML=summary.sources.map(s=>`<article><span class="source-state" data-status="${s.status}">${({verified:'Bağlantı doğrulandı',stale:'Veri eski',unavailable:'Bağlantı doğrulanamadı'})[s.status]}</span><h3>${esc(s.name)}</h3><p>${esc(s.scope)}</p><strong>${s.status!=='verified'?'Durum bilinmiyor':s.id==='franchise'?`${s.value.case_count} süreç`:s.id==='work'?`${s.value.open} açık iş`:s.id==='reviews'?`${s.value.preparing+s.value.waiting+s.value.human} bekleyen işlem`:`${s.value.tasks.length} demo aday`}</strong><a href="${s.href}">Kaynağı aç →</a></article>`).join('');
+ $('#sources').innerHTML=summary.sources.map(s=>`<article><span class="source-state" data-status="${s.status}">${({verified:'Bağlantı doğrulandı',stale:'Veri eski',unavailable:'Bağlantı doğrulanamadı'})[s.status]}</span><h3>${esc(s.name)}</h3><p>${esc(s.scope)}</p><strong>${s.status!=='verified'?'Durum bilinmiyor':s.id==='franchise'?`${s.value.case_count} süreç`:['work','task2'].includes(s.id)?`${s.value.open} açık iş`:s.id==='reviews'?`${s.value.preparing+s.value.waiting+s.value.human} bekleyen işlem`:`${s.value.tasks.length} demo aday`}</strong><a href="${s.href}">Kaynağı aç →</a></article>`).join('');
  $('#decisions').innerHTML=summary.decisions.map(item).join('')||`<p>${summary.complete?'Bağlı kaynaklarda karar kaydı görünmüyor.':'Bağlantılar eksik; kararların tamamı doğrulanamadı.'}</p>`;
  $('#internal').innerHTML=summary.internal.map(item).join('')||'<p>Bağlı kaynaklarda işaretlenen engel veya inceleme yok.</p>';
  $('#demo').innerHTML=summary.demo.map(item).join('')||'<p>Karar aşamasında doğrulanmış demo aday yok.</p>';
