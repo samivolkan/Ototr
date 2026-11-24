@@ -9,9 +9,9 @@ async function fixture(){
  create table app_private.task2_workspace(scope text primary key,data jsonb,version bigint,updated_at timestamptz,updated_by uuid);
  create function app_private.franchise_office_manager() returns boolean language sql as $$select auth.uid() is not null$$;
  grant usage on schema app_private,auth to authenticated;
- insert into public.app_users values('${owner}','${owner}',true,null,'GENERAL_MANAGER'),('${producer}','${producer}',true,null,'GENERAL_MANAGER'),('${reviewer}','${reviewer}',true,null,'GENERAL_MANAGER');
+ insert into public.app_users values('${owner}','${owner}',true,null,'OPERATIONS'),('${producer}','${producer}',true,null,'GENERAL_MANAGER'),('${reviewer}','${reviewer}',true,null,'GENERAL_MANAGER');
  insert into app_private.task2_workspace values('hq','{"tasks":[{"id":"one","assignee":"${producer}","title":"Synthetic source","status":"review"}]}',1,now(),null);`);
- for(const f of ['20261124002206_task2_assignment_acceptance.sql','20261124003416_task2_semantic_assignment_revision.sql','20261124003803_task2_delivery_review.sql','20261124011906_office_decision_queue.sql','20261124012942_office_decision_owner_unique.sql'])await db.exec(await readFile(new URL('../supabase/migrations/'+f,import.meta.url),'utf8'));
+ for(const f of ['20261124002206_task2_assignment_acceptance.sql','20261124003416_task2_semantic_assignment_revision.sql','20261124003803_task2_delivery_review.sql','20261124011906_office_decision_queue.sql','20261124012942_office_decision_owner_unique.sql','20261124013110_office_decision_desk_owner_access.sql'])await db.exec(await readFile(new URL('../supabase/migrations/'+f,import.meta.url),'utf8'));
  const revision=(await db.query("select app_private.task2_assignment_revision(data->'tasks'->0) r from app_private.task2_workspace")).rows[0].r;
  await db.query("insert into app_private.task2_deliveries(scope,task_id,source_revision,version,state,producer_id,evidence_reference,submitted_at,reviewer_id,review_note,reviewed_at) values('hq','one',$1,2,'reviewed',$2,'fixture:proof',now(),$3,'Synthetic review',now())",[revision,producer,reviewer]);
  const day=(await db.query("select to_char(clock_timestamp() at time zone 'Europe/Istanbul','YYYY-MM-DD') d")).rows[0].d;
@@ -22,12 +22,12 @@ async function fixture(){
 }
 test('shared queue requires owner initialization, source evidence and separate plan reviewer; no business action',async()=>{
  const {db,call,payload}=await fixture();try{
- assert.equal((await call(owner)).configured,false);await assert.rejects(call(owner,'enqueue',payload('key-1'),randomUUID()),/sahibi/);
- await call(owner,'initialize');await assert.rejects(call(producer,'initialize'),/başka/);
+ assert.equal((await call(owner)).configured,false);await assert.rejects(call(producer,'enqueue',payload('key-1'),randomUUID()),/sahibi/);
+ await call(owner,'initialize');await assert.rejects(call(owner,'enqueue',payload('owner-no-task-role'),randomUUID()),/yöneticisi/);await assert.rejects(call(producer,'initialize'),/başka/);
  await assert.rejects(call(producer,'enqueue',{...payload('key-1'),plan:{}},randomUUID()),/eksik/);
  await assert.rejects(call(producer,'enqueue',{...payload('key-1'),plan:{...payload('key-1').plan,evidence:'other'}},randomUUID()),/kanıtı/);
  const id=randomUUID(),request=payload('key-1');let s=await call(producer,'enqueue',request,id);
- assert.equal(s.items.length,0);assert.equal(s.review_items.length,1);assert.equal(s.budget.pending,1);assert.equal(s.business_actions_executed,false);
+ assert.equal((await call(owner)).review_items[0].can_review,false);assert.equal(s.items.length,0);assert.equal(s.review_items.length,1);assert.equal(s.budget.pending,1);assert.equal(s.business_actions_executed,false);
  assert.equal((await call(producer,'enqueue',request,id)).review_items.length,1);
  await assert.rejects(call(producer,'enqueue',{...request,priority:1},id),/farklı/);
  await assert.rejects(call(producer,'enqueue',request,randomUUID()),/zaten/);
