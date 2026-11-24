@@ -1,6 +1,6 @@
 import{refreshDecisionDesk}from'./decision-desk-office.mjs';
 import{refreshRouting}from'./routing-readiness-ui.mjs?v=1';
-import data from'./management-data.mjs?v=ops-1';
+import data from'./management-data.mjs?v=authority-1';
 import{sourceDefinitions,controlSummary,managerBrief}from'./operations-model.mjs?v=inspection-1';
 import{readOperationalSource}from'./operations-api.mjs?v=inspection-1';
 const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
