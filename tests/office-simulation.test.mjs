@@ -1,0 +1,2 @@
+import test from 'node:test';import assert from 'node:assert/strict';import{steps,advanceSimulation as next}from '../ajan-ofisi/office-simulation-model.mjs';
+test('handoff keeps Franchise ownership until Finance accepts and waits for explicit demo decision',()=>{assert.equal(steps[2].team,'FRA');assert.equal(steps[3].team,'FIN');let i=0;for(let n=0;n<20;n++)i=next(i);assert.equal(i,5);assert.equal(next(5,'revise'),1);i=next(i,'approve');assert.equal(i,6);assert.equal(next(i),7);assert.equal(next(7),7);assert.equal(steps[7].team,null);assert.throws(()=>next(-1));});
