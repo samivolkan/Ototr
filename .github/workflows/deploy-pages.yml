@@ -67,7 +67,7 @@ jobs:
           OTOTR_PGLITE_MODULE: /tmp/ototr-office-sql/node_modules/@electric-sql/pglite/dist/index.js
         run: |
           npm install --prefix /tmp/ototr-office-sql --no-audit --no-fund --ignore-scripts @electric-sql/pglite@0.6.0
-          node --test tests/office-worker.test.mjs tests/office-worker-sql.test.mjs tests/inspection-claim-scope-sql.test.mjs tests/observation-journal.test.mjs tests/office-observation-sql.test.mjs tests/operations-api.test.mjs tests/office-work-health-sql.test.mjs tests/office-task2-health-sql.test.mjs tests/office-task2-acceptance-sql.test.mjs tests/operations-control.test.mjs tests/work-source-binding.test.mjs tests/task2-assignment-receipt-sql.test.mjs tests/task2-assignment-client.test.mjs tests/task2-delivery-sql.test.mjs tests/task2-delivery-client.test.mjs tests/task2-semantic-receipt-sql.test.mjs tests/office-task2-semantic-acceptance-sql.test.mjs tests/inspection-demo.test.mjs tests/franchise-demo-workflow.test.mjs tests/franchise-web-demo.test.mjs tests/franchise-office.test.mjs tests/management-office.test.mjs tests/agent-office-nav.test.mjs ajan-ofisi/runtime/phase1.test.cjs
+          node --test tests/office-worker.test.mjs tests/office-worker-sql.test.mjs tests/inspection-claim-scope-sql.test.mjs tests/observation-journal.test.mjs tests/office-observation-sql.test.mjs tests/operations-api.test.mjs tests/office-work-health-sql.test.mjs tests/office-task2-health-sql.test.mjs tests/office-task2-acceptance-sql.test.mjs tests/operations-control.test.mjs tests/work-source-binding.test.mjs tests/task2-assignment-receipt-sql.test.mjs tests/task2-assignment-client.test.mjs tests/task2-delivery-sql.test.mjs tests/task2-delivery-client.test.mjs tests/pages-artifact-wait.test.cjs tests/task2-semantic-receipt-sql.test.mjs tests/office-task2-semantic-acceptance-sql.test.mjs tests/inspection-demo.test.mjs tests/franchise-demo-workflow.test.mjs tests/franchise-web-demo.test.mjs tests/franchise-office.test.mjs tests/management-office.test.mjs tests/agent-office-nav.test.mjs ajan-ofisi/runtime/phase1.test.cjs
 
       - name: Stage public assets without backend data
         run: rsync -a --exclude='.git' --exclude='backend' --exclude='.env*' --exclude='*.sqlite*' --exclude='node_modules' ./ /tmp/ototr-pages/
@@ -78,19 +78,24 @@ jobs:
           name: github-pages-${{ github.run_attempt }}
           path: /tmp/ototr-pages
 
-      - name: Wait for Pages artifact metadata
+      - name: Install deployment artifact client
+        run: npm install --prefix /tmp/ototr-pages-artifact --no-audit --no-fund --ignore-scripts @actions/artifact@2.1.3
+
+      - name: Wait for deployment artifact service
+        uses: actions/github-script@v7
         env:
-          GH_TOKEN: ${{ github.token }}
           ARTIFACT_NAME: github-pages-${{ github.run_attempt }}
-        shell: bash
-        run: |
-          for attempt in {1..12}; do
-            count=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/artifacts" --jq "[.artifacts[] | select(.name == \"$ARTIFACT_NAME\")] | length")
-            if [ "$count" = "1" ]; then exit 0; fi
-            sleep 5
-          done
-          echo "Pages artifact metadata unavailable"
-          exit 1
+        with:
+          script: |
+            const { DefaultArtifactClient } = require('/tmp/ototr-pages-artifact/node_modules/@actions/artifact');
+            const { waitForPagesArtifact } = require(process.env.GITHUB_WORKSPACE + '/scripts/wait-pages-artifact.cjs');
+            const client = new DefaultArtifactClient();
+            const artifact = await waitForPagesArtifact({
+              artifactName: process.env.ARTIFACT_NAME,
+              listArtifacts: () => client.listArtifacts(),
+              sleep: ms => new Promise(resolve => setTimeout(resolve, ms))
+            });
+            core.info('Deployment artifact service verified id: ' + artifact.id);
 
       - name: Deploy
         id: deployment
