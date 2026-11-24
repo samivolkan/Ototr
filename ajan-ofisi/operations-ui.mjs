@@ -1,5 +1,5 @@
 import data from'./management-data.mjs?v=ops-1';
-import{sourceDefinitions,controlSummary,managerBrief}from'./operations-model.mjs?v=work-1';
+import{sourceDefinitions,controlSummary,managerBrief}from'./operations-model.mjs?v=legacy-2';
 import{readOperationalSource}from'./operations-api.mjs?v=work-1';
 const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let cache={},summary=controlSummary({}),busy=false;

@@ -2,7 +2,7 @@ export const sourceDefinitions=[
  {id:'franchise',name:'Franchise ve Finans devri',scope:'Yetkili ERP kapsamı',href:'franchise-specialist.html',fields:['case_count','approvals','finance_pending','finance_failed','finance_processed']},
  {id:'reviews',name:'Yorum yanıtları',scope:'Nilüfer bağlantısı · tüm şubeler değil',href:'review-team.html',fields:['preparing','waiting','human','published']},
  {id:'demo',name:'Kurgusal aday akışı',scope:'Bu yöneticiye ait demo kayıtlar',href:'franchise-specialist.html#web-demo-tasks',fields:[]},
- {id:'work',name:'İşler v24 takip özeti',scope:'Oturumdaki kullanıcının mevcut iş kapsamı · kişi bilgisi içermez',href:'../isler/',fields:['total','open','in_progress','reported_done','owner_missing','owner_unresolved','past_due','due_missing','due_invalid','unknown_status']}
+ {id:'work',name:'Eski İşler v24 kayıtları',scope:'Eski kaynak · yeni TASK2 panosunu kapsamaz · kişi bilgisi içermez',href:'#legacy-work-source',fields:['total','open','in_progress','reported_done','owner_missing','owner_unresolved','past_due','due_missing','due_invalid','unknown_status']}
 ];
 export function validateSource(id,value){
  const def=sourceDefinitions.find(d=>d.id===id);if(!def||!value||typeof value!=='object')return false;
@@ -43,7 +43,7 @@ export function managerBrief(summary){return ['OTOTR · Koordinatör durum özet
  'Yöneticide çözülecek: '+(summary.internal.map(i=>`${i.title} / ${i.owner} / ${i.next}`).join('\n')||'Bağlı kaynaklarda işaretlenen kayıt yok.'),
  'Yetkili karar incelemesi: '+(summary.decisions.map(i=>i.title).join('; ')||'Bağlı kaynaklarda işaretlenen kayıt yok.'),
  `Demo: ${summary.demo.length} aday; gerçek işlerle birleştirilmedi.`,
- 'İşler v24: '+(summary.sources.find(s=>s.id==='work'&&s.status==='verified')?.value.open??'doğrulanamadı')+' açık iş. Kabul, teslim kanıtı ve bağımsız denetim bu kaynaktan doğrulanmıyor.',
+ 'Eski İşler v24 (TASK2 hariç): '+(summary.sources.find(s=>s.id==='work'&&s.status==='verified')?.value.open??'doğrulanamadı')+' açık iş. Kabul, teslim kanıtı ve bağımsız denetim bu kaynaktan doğrulanmıyor.',
  'Bilinmeyenler: genel Sami kuyruğu, çalışan görev kabul olayları ve harcanan inceleme süresi henüz ortak kaynağa bağlı değil.',
  'Sonraki iş: kaynak eksiklerini yöneticilerle doğrula; ortak görev kabul ve tamamlanma kanıtını bağla.',
  'Bu dosya okuma anının özetidir; arka plan çalışanı veya dışarı gönderilmiş rapor değildir.'
