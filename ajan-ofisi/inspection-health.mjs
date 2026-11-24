@@ -1,0 +1,7 @@
+const labels={cases:'İptal dışındaki iş emirleri',intake_gates_unconfirmed:'Kabul kapılarından en az biri teyitsiz',tasks:'İptal dışındaki usta görevleri',tasks_not_completed:'Tamamlandı durumunda olmayan görev',tasks_without_owner:'Tamamlanmamış ve sahiplenilmemiş görev',current_locked_report:'Güncel sürümde tek kilitli rapor',report_version_unconfirmed:'Güncel kilitli raporu doğrulanamayan iş',delivery_status_unverified:'Teslim etiketi var; fiziksel teslim kanıtı doğrulanmadı'};
+export function inspectionHealth(value,now=Date.now()){
+ if(value?.source!=='inspection_health'||value.scope!=='current_user_branch'||value.delivery_verified!==false||!Number.isFinite(Date.parse(value.observed_at))||now-Date.parse(value.observed_at)>120000||Date.parse(value.observed_at)>now+30000)throw Error('Güncel kaynak doğrulanamadı.');
+ if(value.status==='branch_required'&&value.counts===null)return {message:'ERP hesabının şubesi tanımlı değil; sıfır iş sonucu değildir.',rows:[]};
+ const c=value.counts;if(value.status!=='ok'||!c||!Object.keys(labels).every(k=>Number.isSafeInteger(c[k])&&c[k]>=0)||c.tasks_without_owner>c.tasks_not_completed||c.tasks_not_completed>c.tasks||c.current_locked_report+c.report_version_unconfirmed!==c.cases||c.intake_gates_unconfirmed>c.cases||c.delivery_status_unverified>c.cases)throw Error('Kaynak sayıları doğrulanamadı.');
+ return {message:'Şube özeti okundu. Baskı, sunum ve fiziksel teslim doğrulanmış sayılmaz.',rows:Object.entries(labels).map(([key,label])=>`${label}: ${c[key]}`)};
+}
