@@ -1,5 +1,6 @@
 import{inspectionHealth}from'./inspection-health.mjs';
 export const sourceDefinitions=[
+ {id:'sales',name:'Saha Satış takibi',scope:'Mevcut satış ekibi erişimi · ayrı anlarda okunan sayımlar · hedef başarısı ve Franchise devri doğrulanmaz',href:'../saha-satis/?v=v2-main',fields:['openTasks','overdueTasks','visibleGoalRecords','visiblePerformanceTargetRecords']},
  {id:'inspection',name:'Ekspertiz şube özeti',scope:'Mevcut hesabın şubesi · salt okunur · fiziksel teslim doğrulanmaz',href:'inspection-coordinator.html',fields:[]},
  {id:'handoff',name:'TASK2 görev devri',scope:'Mevcut oturum kapsamı · kişi bilgisi içermez',href:'../isler/',fields:['total','none','pending','accepted','declined','cancelled','stale']},
  {id:'delivery',name:'TASK2 teslim ve inceleme',scope:'Mevcut oturum kapsamı · kanıt içeriği ve kişi bilgisi içermez',href:'../isler/',fields:['total','not_submitted','submitted','rejected','reviewed','closed','stale','unverified_done']},
@@ -11,6 +12,7 @@ export const sourceDefinitions=[
 ];
 export function validateSource(id,value,now=Date.now()){
  const def=sourceDefinitions.find(d=>d.id===id);if(!def||!value||typeof value!=='object')return false;
+ if(id==='sales')return value.status==='ok'&&value.scope==='current_user_rls'&&value.atomicSnapshot===false&&value.targetAchievementVerified===false&&value.franchiseHandoffVerified===false&&value.timeZone==='Europe/Istanbul'&&Number.isFinite(Date.parse(value.observedAt))&&now-Date.parse(value.observedAt)>=0&&now-Date.parse(value.observedAt)<=180000&&def.fields.every(f=>Number.isSafeInteger(value[f])&&value[f]>=0);
  if(id==='inspection'){try{inspectionHealth(value,now);return value.status==='ok';}catch{return false;}}
  if(id==='handoff')return value.source==='task2_handoff'&&value.scope==='current_user_scope'&&Number.isFinite(Date.parse(value.observed_at))&&def.fields.every(f=>Number.isSafeInteger(value[f])&&value[f]>=0)&&['none','pending','accepted','declined','cancelled','stale'].reduce((n,k)=>n+value[k],0)===value.total;
  if(id==='delivery')return value.source==='task2_delivery'&&value.scope==='current_user_scope'&&Number.isFinite(Date.parse(value.observed_at))&&def.fields.every(f=>Number.isSafeInteger(value[f])&&value[f]>=0)&&['not_submitted','submitted','rejected','reviewed','closed','stale'].reduce((n,k)=>n+value[k],0)===value.total&&value.unverified_done<=value.total-value.closed;
@@ -29,6 +31,7 @@ export function controlSummary(sources,now=Date.now()){
  const internal=[],decisions=[],demo=[];
  for(const s of list){
   if(s.status!=='verified'){internal.push({id:`source:${s.id}`,priority:1,title:`${s.name}: bağlantı ${s.status==='stale'?'eski':'doğrulanamadı'}`,owner:'Teknik sorumlu → ilgili yönetici',next:'Veriyi yeniden doğrula; bilinmeyen sayıları sıfır kabul etme.',href:s.href});continue;}
+  if(s.id==='sales'&&s.value.overdueTasks)internal.push({id:'sales:overdue',priority:2,title:`${s.value.overdueTasks} satış görevinin planlanan tarihi geçmiş`,owner:'Satış yöneticisi',next:'Saha Satış uygulamasında görevleri ve bekleme nedenini incele. Bu sayı kişi performans puanı veya Sami karar talebi değildir.',href:s.href});
   if(s.id==='inspection'){
    const gaps=[['tasks_without_owner','tamamlanmamış usta görevi sahiplenilmemiş'],['intake_gates_unconfirmed','iş emrinde kabul kapısı teyitsiz'],['report_version_unconfirmed','işte güncel kilitli rapor doğrulanamadı'],['delivery_status_unverified','iş teslim etiketli; fiziksel teslim kanıtı doğrulanmadı']];
    for(const[key,label]of gaps)if(s.value.counts[key])internal.push({id:`inspection:${key}`,priority:2,title:`${s.value.counts[key]} ${label}`,owner:'Şube operasyon sorumlusu',next:'Kayıt ve bekleme nedenini kaynakta incele. Kategoriler örtüşebilir; performans veya gecikme sonucu çıkarma. Otomatik mesaj gönderme.',href:s.href});

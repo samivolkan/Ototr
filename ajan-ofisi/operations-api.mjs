@@ -1,6 +1,8 @@
+import{createOfficeSalesClient}from'./sales-health.mjs';
 import{franchiseOfficeRequest}from'./franchise-desk-model.mjs';
 import{demoRequest}from'./franchise-web-demo-api.mjs?v=2';
 export async function readOperationalSource(id){
+ if(id==='sales')return createOfficeSalesClient({getSession:()=>window.OTOTRGetERPAuthSession?.()}).read();
  if(id==='franchise')return franchiseOfficeRequest('franchise_office_summary');
  if(id==='demo')return demoRequest('list_franchise_office_demo_tasks');
  if(!['reviews','work','task2','delivery','handoff','routing','inspection'].includes(id))throw Error('Tanımsız kaynak. Yazma ve gönderim kapalı.');
