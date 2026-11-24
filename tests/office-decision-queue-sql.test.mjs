@@ -11,7 +11,7 @@ async function fixture(){
  grant usage on schema app_private,auth to authenticated;
  insert into public.app_users values('${owner}','${owner}',true,null,'GENERAL_MANAGER'),('${producer}','${producer}',true,null,'GENERAL_MANAGER'),('${reviewer}','${reviewer}',true,null,'GENERAL_MANAGER');
  insert into app_private.task2_workspace values('hq','{"tasks":[{"id":"one","assignee":"${producer}","title":"Synthetic source","status":"review"}]}',1,now(),null);`);
- for(const f of ['20261124002206_task2_assignment_acceptance.sql','20261124003416_task2_semantic_assignment_revision.sql','20261124003803_task2_delivery_review.sql','20261124011906_office_decision_queue.sql'])await db.exec(await readFile(new URL('../supabase/migrations/'+f,import.meta.url),'utf8'));
+ for(const f of ['20261124002206_task2_assignment_acceptance.sql','20261124003416_task2_semantic_assignment_revision.sql','20261124003803_task2_delivery_review.sql','20261124011906_office_decision_queue.sql','20261124012942_office_decision_owner_unique.sql'])await db.exec(await readFile(new URL('../supabase/migrations/'+f,import.meta.url),'utf8'));
  const revision=(await db.query("select app_private.task2_assignment_revision(data->'tasks'->0) r from app_private.task2_workspace")).rows[0].r;
  await db.query("insert into app_private.task2_deliveries(scope,task_id,source_revision,version,state,producer_id,evidence_reference,submitted_at,reviewer_id,review_note,reviewed_at) values('hq','one',$1,2,'reviewed',$2,'fixture:proof',now(),$3,'Synthetic review',now())",[revision,producer,reviewer]);
  const day=(await db.query("select to_char(clock_timestamp() at time zone 'Europe/Istanbul','YYYY-MM-DD') d")).rows[0].d;
@@ -40,6 +40,9 @@ test('shared queue requires owner initialization, source evidence and separate p
  s=await call(owner,'answer',{id:item.id,version:item.version,answer:'Use the existing approved policy; no execution authorized',minutes:7},randomUUID());assert.equal(s.budget.pending,0);assert.equal(s.budget.today_actual,7);assert.equal(s.budget.today_reserved,0);
  assert.equal((await db.query("select data->'tasks'->0->>'status' s from app_private.task2_workspace")).rows[0].s,'review');
  assert.equal((await db.query('select count(*)::int n from app_private.office_decision_events')).rows[0].n,3);
+ await db.exec(`insert into app_private.task2_workspace select '30000000-0000-4000-8000-000000000001',data,version,updated_at,updated_by from app_private.task2_workspace where scope='hq';update public.app_users set branch_id='30000000-0000-4000-8000-000000000001' where id='${owner}'`);
+ await assert.rejects(call(owner,'initialize'),/owner_unique/);
+ assert.equal((await db.query('select count(*)::int n from app_private.office_decision_desks')).rows[0].n,1);
  await db.exec('set role anon');await assert.rejects(db.query('select public.office_decision_queue()'),/permission denied/);await db.exec('reset role');
  await db.exec('set role authenticated');await assert.rejects(db.query('select * from app_private.office_decisions'),/permission denied/);await db.exec('reset role');
  }finally{await db.close();}
