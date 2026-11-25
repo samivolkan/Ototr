@@ -46,4 +46,3 @@ assert.throws(()=>validateContent({kind:'blog',status:'published',slug:'test-blo
 assert.throws(()=>validateContent({kind:'blog',status:'draft',slug:'test-blog',title:'Test',details:{mapsUrl:'javascript:alert(1)'}}));
 await db.query("insert into branches(name) values('X')");assert.equal((await db.query("select count(*)::int n from website_content where title='OTOTR Yeni Şube' and status='draft'")).rows[0].n,1);
 await db.close();console.log('PASS: branch draft, publish validation, immutable published URL, revision, atomic intake, idempotency, consent, inactive branch, rate limit, anon and unauthorized roles, model validation.');
-
