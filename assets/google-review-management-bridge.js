@@ -23,7 +23,7 @@
         if (found) { found.addEventListener('load', () => resolve(getAI()), { once: true }); setTimeout(() => resolve(getAI()), 1500); return; }
         const script = doc.createElement('script');
         const release=window.parent.OTOTRReviewRelease;
-        const version=encodeURIComponent(release?.version && release?.commit ? release.version+'.'+release.commit : 'google-workflow-25');
+        const version=encodeURIComponent(release?.version && release?.commit ? release.version+'.'+release.commit : 'google-workflow-26');
         script.src = new URL('assets/google-review-ai.js?v='+version, window.parent.location.href).href;
         script.dataset.ototrGoogleAi = '1';
         script.onload = () => resolve(getAI());
@@ -295,19 +295,24 @@
     const row=liveRow(id), item=row && currentItem(row);
     if (!row) return toast('Bu canlı yorum için ERP yanıt kaydı bulunamadı. Önce Bursa’yı yenileyin.','warn');
     if (dirty.has(id)) return toast('Önce açık düzenlemeyi kaydedin veya vazgeçin.','warn');
-    let ai = getAI();
-    if (!ai) { ai = await ensureParentAI(); }
-    if (!item && ai?.generate) return ai.generate(row.erpReviewId);
-    if (!item) return toast('Bu canlı yorum için ERP yanıt kaydı bulunamadı. Önce Bursa’yı yenileyin.','warn');
-    const regenerate = ai?.['regeneratePublishedItem'] || ai?.['regenerateItem'];
-    if (regenerate) return regenerate(item.id);
-    if (ai?.generate) return ai.generate(row.erpReviewId);
-    if (ai?.['openItem']) { ai['openItem'](item.id); return toast('ERP yanıt düzenleyicisi açıldı. Yeni yanıt hazırla seçeneğini kullanın.','info'); }
-    return missing();
+    if (busy) return;
+    const ai = getAI() || await ensureParentAI();
+    if (!ai?.manageReview) return missing();
+    if (item?.review_snapshot?.legal_hold) return toast('Hukuki bekletme aktif; canlı yanıt değiştirilemez.','warn');
+    if (row.status !== 'gonderildi' && !item?.reply_text) return act(id,'prepare');
+    busy=true; lockEditing();
+    toast('Yeni AI taslağı hazırlanıyor…','info');
+    try {
+      await ai.manageReview(row.erpReviewId,'regenerate',{version:item?.version,replacePublished:row.status==='gonderildi'});
+      hydrateLiveBranch(); renderReviews();
+      toast('Yeni AI taslağı kaydedildi.','ok');
+    } catch (error) {
+      toast(error.message || 'Alternatif AI yanıtı hazırlanamadı.','warn');
+    } finally { busy=false; lockEditing(); }
   }
   async function editLiveReply(id) {
     const row=liveRow(id), box=document.getElementById('draftBox');
-    if (!row || !box || !getAI()?.manageReview) return missing();
+    if (!row || !box || !(getAI() || await ensureParentAI())?.manageReview) return missing();
     if (busy) return;
     const item = currentItem(row);
     if (item?.review_snapshot?.legal_hold) return toast('Hukuki bekletme aktif; canlı yanıt değiştirilemez.','warn');
@@ -342,6 +347,10 @@
     if (busy || dirty.has(id) || !savedReplacement(item)) return;
     return act(id,'publish',{text:item.reply_text,version:item.version,approved:true,replacePublished:true});
   }
+  window.cancelLiveReplyEdit = id => {
+    if (busy) return;
+    dirty.delete(id); lockEditing(); renderReviews();
+  };
   window.saveLiveUpdatedReply = saveLiveUpdatedReply;
   window.editSentReply=id=>liveRow(id)?editLiveReply(id):originalEdit?.(id);
   window.sendUpdatedReply=id=>liveRow(id)?sendLiveUpdatedReply(id):originalSendUpdated?.(id);
@@ -412,7 +421,7 @@
     if(actions && row.status!=='gonderildi'){
       actions.innerHTML=`<button class="btn p" onclick="openEmail(${row.id})" ${editable?'':'disabled'}>✓ Onayla</button><button class="btn" onclick="regenDraft(${row.id})">↻ ${item?.reply_text?'Yeniden':'Taslak hazırla'}</button><button class="btn" onclick="saveLiveDraft(${row.id})" ${editable?'':'disabled'}>Kaydet</button>${['publishing','publish_unknown','publish_failed'].includes(item?.status)?`<button class="btn" onclick="verifyLiveReply(${row.id})">Yayın sonucunu kontrol et</button>`:''}`;
     } else if(actions){
-      actions.innerHTML=`<div class="review-action-group"><h4>Yanıt</h4><div><button class="btn" onclick="editSentReply(${row.id})">Yanıtı düzenle</button><button class="btn" onclick="regenDraft(${row.id})">Alternatif AI</button>${edit?.published ? `<button class="btn p" onclick="saveLiveUpdatedReply(${row.id})">Kaydet</button>` : savedReplacement(item) ? `<button class="btn p" onclick="sendUpdatedReply(${row.id})">Güncel yanıtı gönder</button>` : ''}</div></div>${sentReplyFollowup(row.id)}`;
+      actions.innerHTML=`<div class="review-action-group"><h4>Yanıt</h4><div><button class="btn" onclick="editSentReply(${row.id})">Yanıtı düzenle</button><button class="btn" onclick="regenDraft(${row.id})">Alternatif AI</button>${edit?.published ? `<button class="btn p" onclick="saveLiveUpdatedReply(${row.id})">Kaydet</button><button class="btn" onclick="cancelLiveReplyEdit(${row.id})">Vazgeç</button>` : savedReplacement(item) ? `<button class="btn p" onclick="sendUpdatedReply(${row.id})">Güncel yanıtı gönder</button>` : ''}</div></div>${sentReplyFollowup(row.id)}`;
     }
     const label=document.querySelector('.draft-label .chip');
     if(label)label.textContent=row.status==='gonderildi'?(savedReplacement(item)?'Kaydedilmiş taslak':'Google yanıtı'):item?`${item.draft_source==='openai'?'OpenAI':item.draft_source==='manual'?'Elle düzenlenen':'Şablon'} · ${item.review_snapshot?.rejection ? 'Reddedildi · yeniden düzenleyin' : item.status}`:'ERP taslağı bekleniyor';

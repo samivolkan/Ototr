@@ -680,7 +680,7 @@
     if (managementLocks.has(reviewId) || publicationLocks.has(item?.id)) throw new Error('Bu yorum için işlem sürüyor.');
     const identity = identityFor(review, branch);
     if (!['prepare','regenerate','save','publish','verify','legal','complaint','branch'].includes(action)) throw new Error('Geçersiz işlem.');
-    const replacementSave = action === 'save' && options.replacePublished === true && review.isReplied;
+    const replacementSave = ['save','regenerate'].includes(action) && options.replacePublished === true && review.isReplied;
     if (['save','publish','verify','regenerate'].includes(action) && (options.version !== item?.version || (!item && !replacementSave))) throw new Error('Taslak sürümü değişti; güncel kaydı inceleyin.');
     if (action === 'publish' && (options.approved !== true || options.text !== item.reply_text || !['approval_pending','publish_failed'].includes(item.status) || item.review_snapshot?.reply_conflict || item.review_snapshot?.rejection || item.review_snapshot?.legal_hold)) throw new Error('Güncel kayıtlı metin için yayın onayı gerekli; reddedilen veya hukuken bekletilen taslak yayınlanamaz.');
     const replacePublished = action === 'publish' && options.replacePublished === true && item?.status === 'approval_pending' && Boolean(item.expected_reply);
@@ -693,7 +693,7 @@
       if (action === 'prepare') result = await googleBusinessRequest('prepare_draft', {...identity,...(item ? {retry:true,item_id:item.id,expected_version:item.version}: {})});
       else if (['legal','complaint','branch'].includes(action)) result = await googleBusinessRequest('create_task', {...identity,kind:action,note:''});
       else if (['save','regenerate'].includes(action)) {
-        const generated = action === 'regenerate' ? await requestDraft(review,branch,item.reply_text) : null;
+        const generated = action === 'regenerate' ? await requestDraft(review, branch, item?.reply_text || review.replyText) : null;
         const text = String(generated ? generated.reply || '' : options.text || '').trim();
         if (!text || text.length > 4000) throw new Error('Yanıt 1–4000 karakter olmalı.');
         result = await googleBusinessRequest('save_draft',{...identity,...(item ? {item_id:item.id,expected_version:item.version} : {}),reply_text:text,draft_source:generated?'openai':'manual',generation_id:generated?.generation_id,...(replacementSave ? {edit_published:true} : {})});
