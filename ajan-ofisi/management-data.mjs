@@ -234,6 +234,12 @@ export default {
           "name": "İçerik ve yerel SEO",
           "scope": "Sayfa içeriği ve yerel arama planı; Google yorum operasyonları REV ekibinde",
           "deliverable": "Onaya sunulan şube sayfası ve yerel içerik planı"
+        },
+        {
+          "id": "SEO-03",
+          "name": "Sosyal Medya ve SEO İçerik Ajanı",
+          "scope": "Saha vakalarından blog ve LinkedIn taslakları",
+          "deliverable": "Uzman incelemesine ve yayın onayına sunulan içerik"
         }
       ]
     },

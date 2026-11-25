@@ -7,7 +7,7 @@ const roster=JSON.parse(fs.readFileSync(new URL('../ajan-ofisi/office-data.json'
 test('every current expert has exactly one owner and a deliverable; planned roles stay separate',()=>{
  const ids=data.modules.flatMap(m=>m.agents.map(a=>a.id)); assert.equal(new Set(ids).size,ids.length);
  for(const d of roster.departments){const m=data.modules.find(m=>m.id===d.id);assert.equal(m.manager,d.manager);assert.deepEqual(m.agents.map(a=>a.id),d.agents.map(a=>a.id));assert.ok(m.agents.every(a=>a.deliverable&&a.scope));}
- assert.equal(data.modules.filter(m=>m.kind==='existing').flatMap(m=>m.agents).length,17);
+ assert.equal(data.modules.filter(m=>m.kind==='existing').flatMap(m=>m.agents).length,18);
  assert.ok(data.modules.filter(m=>m.kind==='proposed').every(m=>m.agents.every(a=>a.id.startsWith('PLAN-'))));
 });
 test('dependency chain has no missing nodes or cycles',()=>{function visit(id,path=[]){assert.ok(!path.includes(id));const m=data.modules.find(m=>m.id===id);assert.ok(m);m.dependencies.forEach(d=>visit(d,[...path,id]));}data.modules.forEach(m=>visit(m.id));});
