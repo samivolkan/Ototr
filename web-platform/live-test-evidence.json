@@ -1,0 +1,17 @@
+{
+  "testedAt": "2026-11-25T00:48:21.516Z",
+  "checks": [
+    "published content only",
+    "admin requires login",
+    "CORS rejects unknown origin",
+    "consent validation",
+    "invalid date rejected",
+    "appointment server receipt",
+    "duplicate produces one receipt",
+    "changed retry rejected",
+    "franchise server receipt"
+  ],
+  "appointment": "WEB-CRM-0FD783F3",
+  "franchise": "WEB-FR-A1252A33",
+  "outgoingMessages": false
+}

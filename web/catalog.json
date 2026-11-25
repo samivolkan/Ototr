@@ -1,0 +1,10 @@
+{
+ "verifiedAt":"2026-11-25",
+ "source":"https://ototr.com/paketler",
+ "packages":[
+  {"name":"Temel","price":6500,"summary":"Kaporta, motor ve mekanik durumun temel kontrolü.","features":["Kaporta ve boya kontrolü","Motor ve alt mekanik","Yol testi ve OBD taraması","Borç ve hasar sorgulama"]},
+  {"name":"Uzman","price":7500,"listPrice":9500,"summary":"Temel kapsama güvenlik ve donanım kontrolleri eklenir.","features":["Temel paketin kapsamı","Fren, süspansiyon ve yanal kayma","İç / dış ekspertiz","Airbag fiziksel kontrolü","Üç aşamalı kilometre kontrolü","Conta kaçak testi"]},
+  {"name":"Dolu Dolu","price":12500,"summary":"Daha ayrıntılı mekanik testler ve araç geçmişi incelemesi.","features":["Uzman paketin kapsamı","Motor aşınma testi","Mor ışık ve duman testi","Detaylı hasar ve değişen sorgusu","Araç sahiplik ve sigorta geçmişi"]},
+  {"name":"OTOTR 360 Güvence","price":17500,"summary":"Ayrıntılı kontrol ile koşullara bağlı geri alım güvencesi.","features":["Dolu Dolu paketin kapsamı","7 gün / 1.000 km geri alım güvencesi","Uygunluk ve sözleşme koşullarına tabidir"]}
+ ]
+}

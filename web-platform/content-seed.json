@@ -1,0 +1,67 @@
+[
+  {
+    "kind": "branch",
+    "slug": "bursa-nilufer-oto-ekspertiz",
+    "title": "Bursa Nilüfer Oto Ekspertiz",
+    "summary": "Nilüfer Küçük Sanayi Sitesi’nde OTOTR ekspertiz: paket kapsamını inceleyin, şubeye ulaşın ve aracınız için randevu talebi oluşturun.",
+    "body": "Bursa Nilüfer’de araç alımından önce kontrol kapsamını birlikte belirleyin. Üçevler Küçük Sanayi Sitesi’ndeki şubeye ulaşmak için aşağıdaki adresi ve yol tarifi bağlantısını kullanabilirsiniz.\n\nRandevu talebinde aracınızın tipi ve ihtiyaç duyduğunuz kontroller hakkında not bırakabilirsiniz. Ekibimiz tarih ve saat uygunluğunu sizinle görüşerek netleştirir. Seçtiğiniz paketin kapsamını ve güncel ücretini işlem öncesinde teyit edin.\n\nKontrol tamamlandığında bulguları, ölçüm sonuçlarını ve incelemenin sınırlarını rapor üzerinden değerlendirin. Anlaşılmayan bir terimi uzmana sorun; satın alma kararınızı yalnız tek bir ölçüm değerine dayandırmayın.",
+    "details": {
+      "city": "Bursa",
+      "district": "Nilüfer",
+      "address": "Üçevler Mah. 28. Sk. Küçük Sanayi Sitesi No:18 Blok No:21/1, 16270 Nilüfer / Bursa",
+      "phone": "0535 568 42 60",
+      "hours": "Pzt–Cum 08.30–18.30 · Cmt 08.30–17.30 · Pazar kapalı",
+      "mapsUrl": "https://www.google.com/maps/search/?api=1&query=OTOTR+Nil%C3%BCfer+%C3%9C%C3%A7evler"
+    },
+    "code": "OTOTR-BRS-001"
+  },
+  {
+    "kind": "branch",
+    "slug": "kocaeli-gebze-oto-ekspertiz",
+    "title": "Kocaeli Gebze Oto Ekspertiz",
+    "summary": "Gebze İstanbul Caddesi’ndeki OTOTR şubesine ulaşın. Ekspertiz paketlerini karşılaştırın; telefonla görüşün veya randevu talebi bırakın.",
+    "body": "Gebze’de ikinci el araç kontrolü için Hacıhalil Mahallesi, İstanbul Caddesi’ndeki OTOTR şubesine ulaşabilirsiniz. Gelmeden önce şubeyi arayarak araç tipine uygun testleri ve zaman planını öğrenin.\n\nWeb üzerinden seçtiğiniz paket ve tarih bir randevu talebi olarak kaydedilir. Şube ekibi uygunluğu kontrol ederek sizinle iletişime geçer. Talep numaranızı görüşmede paylaşabilirsiniz.\n\nKaporta ve boya, mekanik durum, elektronik sistemler ve diğer kontroller seçilen paketin kapsamına göre değerlendirilir. Rapor tesliminde bulguların ne anlama geldiğini ve inceleme sırasında erişilemeyen alanları uzmanınızdan açıklamasını isteyin.",
+    "details": {
+      "city": "Kocaeli",
+      "district": "Gebze",
+      "address": "Hacıhalil Mah. İstanbul Cad. No:171/A, 41400 Gebze / Kocaeli",
+      "phone": "0530 446 33 06",
+      "hours": "Pzt–Cum 08.30–18.00 · Cmt 08.30–17.30 · Pazar kapalı",
+      "mapsUrl": "https://www.google.com/maps/search/?api=1&query=OTOTR+Gebze+Hac%C4%B1halil+171"
+    },
+    "code": "OTOTR-GBZ-001"
+  },
+  {
+    "kind": "blog",
+    "slug": "ekspertiz-randevusuna-hazirlik",
+    "title": "Ekspertiz randevusuna gelmeden önce",
+    "summary": "Şube, paket ve zaman seçimini netleştirerek başlayın. Randevu talebinden rapor görüşmesine kadar hazırlanmanıza yardımcı olacak kısa bir kontrol listesi.",
+    "body": "Önce kapsamı belirleyin\n\nAracın yaşı, modeli ve sizin öncelikleriniz hakkında şubeye bilgi verin. Paket isimleri tek başına yeterli değildir: hangi kontrollerin dahil olduğunu, araç üzerinde uygulanamayacak test olup olmadığını ve ek hizmetleri sorun.\n\nZamanı birlikte netleştirin\n\nWeb formunda bıraktığınız tarih ve saat tercihi, şube teyidiyle kesinleşir. Araç sahibiyle aynı zamanı planlayın. Kontrolün ne kadar süreceğini ve raporun nasıl sunulacağını önceden öğrenin.\n\nSorularınızı not edin\n\nSürüşte duyduğunuz bir ses, önceki bir işlem veya sizi düşündüren bir uyarı varsa bunu uzmana aktarın. Bir şikâyetin hangi koşulda ortaya çıktığı, kontrol sırasında doğru noktaya odaklanılmasına yardımcı olur.\n\nRapor görüşmesine zaman ayırın\n\nYalnız sonuca bakmayın. Bulguları, kontrol kapsamını ve erişilemeyen alanları birlikte değerlendirin. Ekspertiz bir satın alma kararı vermez; aracın kontrol anındaki durumunu anlamanıza yardımcı olur.",
+    "details": {
+      "author": "OTOTR",
+      "category": "Randevu rehberi"
+    }
+  },
+  {
+    "kind": "blog",
+    "slug": "ekspertiz-raporu-nasil-okunur",
+    "title": "Ekspertiz raporunu okurken nelere bakmalı?",
+    "summary": "Raporu yalnız bir sonuç satırı olarak değerlendirmeyin. Kontrol kapsamı, uzman notları ve inceleme sınırları birlikte okunmalı.",
+    "body": "Önce araç ve işlem bilgisini kontrol edin\n\nRaporun doğru araca, doğru tarihe ve seçtiğiniz pakete ait olduğunu teyit edin. Kimlik veya işlem bilgisinde uyuşmazlık görürseniz açıklama isteyin.\n\nÖlçümü uzman notuyla birlikte okuyun\n\nTek bir boya değeri, arıza kodu veya test sonucu bütün aracı anlatmaz. Bulguların hangi bölgede kaydedildiğini ve uzman tarafından nasıl yorumlandığını inceleyin. Teknik bir ifadeyi anlamadığınızda sade bir açıklama isteyin.\n\nKontrol edilmeyen alanları sorun\n\nErişim, araç tipi veya test koşulları nedeniyle bazı kontroller yapılamayabilir. Bu durumların raporda nasıl belirtildiğini kontrol edin. Eksik bilgi ile olumlu bulgu aynı şey değildir.\n\nKararı toplam bilgiyle verin\n\nEkspertiz raporu, aracın kontrol anındaki teknik durumuna ilişkin bilgi sağlar. Araç geçmişi, bakım kayıtları ve kendi ihtiyaçlarınızla birlikte değerlendirin. Bulguların satışın gerçekleşmesi için değiştirilmesini talep etmeyin.",
+    "details": {
+      "author": "OTOTR",
+      "category": "Rapor okuma"
+    }
+  },
+  {
+    "kind": "blog",
+    "slug": "ekspertiz-paketi-secerken",
+    "title": "Ekspertiz paketini nasıl seçmelisiniz?",
+    "summary": "En uzun kontrol listesi yerine ihtiyacınıza uygun kapsamı bulun. Paket karşılaştırırken sorabileceğiniz soruları bir araya getirdik.",
+    "body": "Kontrol başlıklarını karşılaştırın\n\nKaporta ve boya, motor ve mekanik, elektronik sistemler, güvenlik ve araç geçmişi incelemelerinin hangi pakette yer aldığına bakın. Benzer isimler farklı kapsamlar içerebilir; yalnız paket adına göre karar vermeyin.\n\nAracınıza uygulanabilirliği sorun\n\nHer test her araçta aynı şekilde uygulanamaz. Araç tipi ve teknik koşulların paket kapsamını etkileyip etkilemediğini şubeden öğrenin. Uygulanamayan kontrolün raporda nasıl belirtileceğini sorun.\n\nFiyatın kapsamını öğrenin\n\nToplam ücretin hangi hizmetleri içerdiğini, ek kontrollerin ayrıca ücretlendirilip ücretlendirilmediğini ve varsa kampanya koşullarını işlem başlamadan netleştirin. Webde görülen fiyatın güncelliğini randevu teyidinde kontrol edin.\n\nKararsızsanız destek isteyin\n\nRandevu formunda Kararsızım seçeneğini kullanabilirsiniz. Ekibimize araç ve önceliklerinizi anlatın. Amaç en yüksek fiyatlı paketi seçmek değil, hangi bilgiyi hangi kontrolle elde edeceğinizi bilmektir.",
+    "details": {
+      "author": "OTOTR",
+      "category": "Paket seçimi"
+    }
+  }
+]

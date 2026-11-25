@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import {writeFile} from 'node:fs/promises';
+const api='https://bsjkohwbtrfwrqcyhsfz.supabase.co/functions/v1/website-api';
+const call=async(path,body,origin='https://oto-tr.com')=>{const r=await fetch(api+path,{method:body?'POST':'GET',headers:{Origin:origin,'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});return {status:r.status,data:await r.json()};};
+const content=await call('/content');assert.equal(content.status,200);assert.equal(content.data.items.filter(x=>x.kind==='branch').length,2);assert.ok(content.data.items.every(x=>x.status==='published'));
+assert.equal((await call('/admin')).status,401);assert.equal((await call('/content',null,'https://untrusted.example')).status,403);
+const date=new Date(Date.now()+86400000).toISOString().slice(0,10);
+const base={requestId:crypto.randomUUID(),fullName:'TEST OTOTR Web Kabul',phone:'05000000000',kvkkConsent:true,test:true,note:'Sentetik kabul testi. Aranmayacak, mesaj gönderilmeyecek.'};
+const appointment={...base,branchSlug:content.data.items.find(x=>x.kind==='branch').slug,service:'Temel',preferredDate:date,preferredTime:'Fark etmez'};
+assert.equal((await call('/appointment',{...appointment,kvkkConsent:false})).status,400);
+assert.equal((await call('/appointment',{...appointment,preferredDate:'2026-02-30'})).status,400);
+const first=await call('/appointment',appointment);assert.equal(first.status,201);assert.match(first.data.referenceNo,/^WEB-CRM-[A-F0-9]{8}$/);
+const retry=await call('/appointment',appointment);assert.equal(retry.data.duplicate,true);assert.equal(retry.data.referenceNo,first.data.referenceNo);
+assert.equal((await call('/appointment',{...appointment,note:'Changed'})).status,409);
+const franchise=await call('/franchise',{...base,requestId:crypto.randomUUID(),province:'TEST Bursa',district:'TEST Nilüfer',processingConsent:true,applicationType:'Yeni yatırım',hasLocation:'Henüz belirlenmedi'});assert.equal(franchise.status,201);assert.match(franchise.data.referenceNo,/^WEB-FR-[A-F0-9]{8}$/);
+const evidence={testedAt:new Date().toISOString(),checks:['published content only','admin requires login','CORS rejects unknown origin','consent validation','invalid date rejected','appointment server receipt','duplicate produces one receipt','changed retry rejected','franchise server receipt'],appointment:first.data.referenceNo,franchise:franchise.data.referenceNo,outgoingMessages:false};
+await writeFile(new URL('./live-test-evidence.json',import.meta.url),JSON.stringify(evidence,null,2));console.log(JSON.stringify(evidence,null,2));

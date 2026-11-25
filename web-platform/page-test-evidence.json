@@ -1,0 +1,122 @@
+{
+  "testedAt": "2026-11-25T00:51:30.060Z",
+  "results": [
+    {
+      "path": "/web/",
+      "status": 200,
+      "htmlBytes": 10634,
+      "responseMs": 1191
+    },
+    {
+      "path": "/web/paketler",
+      "status": 200,
+      "htmlBytes": 5805,
+      "responseMs": 560
+    },
+    {
+      "path": "/web/randevu",
+      "status": 200,
+      "htmlBytes": 6132,
+      "responseMs": 629
+    },
+    {
+      "path": "/web/franchise",
+      "status": 200,
+      "htmlBytes": 5985,
+      "responseMs": 548
+    },
+    {
+      "path": "/web/subeler",
+      "status": 200,
+      "htmlBytes": 4766,
+      "responseMs": 1021
+    },
+    {
+      "path": "/web/blog",
+      "status": 200,
+      "htmlBytes": 4590,
+      "responseMs": 557
+    },
+    {
+      "path": "/web/hakkimizda",
+      "status": 200,
+      "htmlBytes": 3913,
+      "responseMs": 550
+    },
+    {
+      "path": "/web/iletisim",
+      "status": 200,
+      "htmlBytes": 3960,
+      "responseMs": 553
+    },
+    {
+      "path": "/web/sss",
+      "status": 200,
+      "htmlBytes": 4323,
+      "responseMs": 537
+    },
+    {
+      "path": "/web/gizlilik",
+      "status": 200,
+      "htmlBytes": 4218,
+      "responseMs": 1049
+    },
+    {
+      "path": "/web/hizmetler",
+      "status": 200,
+      "htmlBytes": 5528,
+      "responseMs": 1079
+    },
+    {
+      "path": "/web/hizmetler/kaporta-boya-kontrolu",
+      "status": 200,
+      "htmlBytes": 4779,
+      "responseMs": 1127
+    },
+    {
+      "path": "/web/hizmetler/motor-mekanik-kontrolu",
+      "status": 200,
+      "htmlBytes": 4751,
+      "responseMs": 926
+    },
+    {
+      "path": "/web/hizmetler/elektronik-obd-kontrolu",
+      "status": 200,
+      "htmlBytes": 4824,
+      "responseMs": 569
+    },
+    {
+      "path": "/web/subeler/bursa-nilufer-oto-ekspertiz",
+      "status": 200,
+      "htmlBytes": 5380,
+      "responseMs": 573
+    },
+    {
+      "path": "/web/subeler/kocaeli-gebze-oto-ekspertiz",
+      "status": 200,
+      "htmlBytes": 5285,
+      "responseMs": 869
+    },
+    {
+      "path": "/web/blog/ekspertiz-randevusuna-hazirlik",
+      "status": 200,
+      "htmlBytes": 5184,
+      "responseMs": 1259
+    },
+    {
+      "path": "/web/blog/ekspertiz-raporu-nasil-okunur",
+      "status": 200,
+      "htmlBytes": 5075,
+      "responseMs": 739
+    },
+    {
+      "path": "/web/blog/ekspertiz-paketi-secerken",
+      "status": 200,
+      "htmlBytes": 5111,
+      "responseMs": 1388
+    }
+  ],
+  "notFound": 404,
+  "sitemap": 200,
+  "visualBrowserCheck": "pending"
+}
