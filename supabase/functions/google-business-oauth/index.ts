@@ -5,7 +5,7 @@ import { createClient } from 'npm:@supabase/supabase-js@2.57.4';
 import { handleReviewManagement, loadReviewAccess, assertReviewLifecycle } from '../_shared/review-management.ts';
 import { verifyAiGeneration, recordAiOutcome, AiTelemetryError } from '../_shared/google-review-ai-telemetry.ts';
 
-import { runAutomation, automationStatus } from '../_shared/review-automation.ts';
+import { runAutomation, automationStatus, matchesReviewSnapshot } from '../_shared/review-automation.ts';
 
 const cors = {
   'Access-Control-Allow-Origin': '*',
@@ -577,9 +577,18 @@ function preparationResult(item: any, extra: any = {}) {
 async function prepareDraft(db: any, user: any, body: any, connection: any, authorization: string) {
   const identity = workIdentity(body), now = new Date().toISOString(), attemptId = crypto.randomUUID();
   let existing = await preparationItem(db, identity), item: any;
+  const revising = authorization.startsWith('Worker ') && body.edited_review === true &&
+    existing?.draft_source === 'openai' && (existing.status === 'published' ||
+      (existing.status === 'approval_pending' && existing.review_snapshot?.edited_review === true));
+  if (revising) {
+    try { await assertNoLegalHold(db, existing); } catch (error) {
+      if (error instanceof RequestError && error.status === 409) return preparationResult(existing, {skipped:true});
+      throw error;
+    }
+  }
   const stale = existing?.status === 'preparing' && Date.now() - Date.parse(existing.updated_at) > 120_000;
   if (existing) {
-    if (body.retry === true && (existing.status === 'draft_failed' || stale)) {
+    if (revising || (body.retry === true && (existing.status === 'draft_failed' || stale))) {
       if (workId(body) !== existing.id || expectedVersion(body) !== existing.version) throw new RequestError('Taslak başka oturumda değişti. Listeyi yenileyin.', 409);
       const claim = await db.from(workTable).update({ status: 'preparing', attempt_id: attemptId, last_error: null, version: existing.version + 1, updated_by: user.id, updated_at: now }).eq('connection_id', connectionId).eq('id', existing.id).eq('version', existing.version).eq('status', existing.status).eq('updated_at', existing.updated_at).select('*').maybeSingle();
       databaseFailure(claim.error);
@@ -610,7 +619,15 @@ async function prepareDraft(db: any, user: any, body: any, connection: any, auth
     const token = await accessToken(await decrypt(connection.refresh_token_encrypted), signal);
     const verified = await verifiedReview(identity, token, signal);
     snapshot = withReviewReplyUrl({ ...verified.snapshot, ...(item.review_snapshot?.legal_hold ? { legal_hold: true } : {}) }, verified.snapshot.review_reply_url || item.review_snapshot?.review_reply_url);
-    if (verified.expected_reply) { skipped = true; throw new RequestError('Bu yorum Google’da zaten yanıtlanmış. Mevcut yanıt korundu.', 409); }
+    if (revising) {
+      const priorReply = existing.status === 'published' ? existing.reply_text : existing.expected_reply;
+      if (!verified.expected_reply || !sameGoogleReply(verified.expected_reply, priorReply) ||
+          (snapshot.comment === existing.review_snapshot?.comment && snapshot.rating === Number(existing.review_snapshot?.rating))) {
+        return preparationResult(await finish({status:existing.status}), {skipped:true});
+      }
+      snapshot.edited_review = true;
+    }
+    if (verified.expected_reply && !revising) { skipped = true; throw new RequestError('Bu yorum Google’da zaten yanıtlanmış. Mevcut yanıt korundu.', 409); }
     // Forward the same ERP identity to the existing AI service. Its authorization,
     // canonical prompt, moderation and signature validation remain the only path.
     const response = await fetch(`${env('SUPABASE_URL')}/functions/v1/google-review-ai`, { method: 'POST', signal, headers: { ...(authorization.startsWith('Worker ') ? {'x-ototr-worker-token':authorization.slice(7)} : {Authorization: authorization}), apikey: injectedSupabaseKey('SUPABASE_ANON_KEY', 'SUPABASE_PUBLISHABLE_KEYS'), 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'generate', branch: { id: identity.branch_id }, review: { id: identity.review_id, rating: snapshot.rating, comment: snapshot.comment, reviewerName: snapshot.reviewer_name } }) });
@@ -623,12 +640,15 @@ async function prepareDraft(db: any, user: any, body: any, connection: any, auth
     // rejecting an otherwise valid draft.
     if (!draft.reply.trim().endsWith(expectedSignature)) draft.reply = `${draft.reply.trim()}\n\n${expectedSignature}`;
     const current = await verifiedReview(identity, token, signal);
-    if (current.expected_reply) { skipped = true; throw new RequestError('Hazırlık sırasında bu yoruma Google’da yanıt verilmiş. Mevcut yanıt korundu.', 409); }
+    if (!sameGoogleReply(current.expected_reply, verified.expected_reply)) { skipped = true; throw new RequestError('Hazırlık sırasında bu yoruma Google’da yanıt verilmiş. Mevcut yanıt korundu.', 409); }
     if (current.snapshot.comment !== snapshot.comment || current.snapshot.rating !== snapshot.rating || current.snapshot.reviewer_name !== snapshot.reviewer_name) throw new RequestError('Yorum hazırlık sırasında değişti. Güncel yorum için taslağı yeniden hazırlayın.', 409);
     snapshot = withReviewReplyUrl(snapshot, current.snapshot.review_reply_url);
     const ai_analysis = { tone: draft.tone, requires_human_review: draft.requires_human_review, risk_reason: draft.risk_reason, suggested_route: draft.suggested_route, quality_score: draft.quality_score, generation_id:draft.generation_id,experiment_id:draft.experiment_id,variant:draft.variant,usage:draft.usage };
-    return preparationResult(await finish({ status: 'approval_pending', reply_text: draft.reply, draft_source: 'openai', review_snapshot: { ...snapshot, ai_analysis }, expected_reply: '', last_error: null }));
+    return preparationResult(await finish({ status: 'approval_pending', reply_text: draft.reply, draft_source: 'openai', review_snapshot: { ...snapshot, ai_analysis }, expected_reply: verified.expected_reply, last_error: null, approved_by: null, approved_at: null, published_at: null }));
   } catch (error) {
+    if (revising && error instanceof RequestError && error.status === 409) {
+      return preparationResult(await finish({status:existing.status}), {skipped:true});
+    }
     const message = signal.aborted ? 'AI taslağı hazırlığı zaman aşımına uğradı. Yeniden denemek için tekrar hazırlayın.' : error instanceof RequestError || error instanceof GoogleApiError ? error.message : 'AI taslağı hazırlanamadı. Yeniden denemek için tekrar hazırlayın.';
     return preparationResult(await finish({ status: 'draft_failed', reply_text: '', draft_source: 'manual', review_snapshot: snapshot, last_error: message.slice(0, 800) }), { ...(skipped ? { skipped: true } : {}) });
   }
@@ -661,6 +681,7 @@ async function saveWork(db: any, user: any, body: any, token: string) {
   }
   const values = { ...identity, kind, review_snapshot: withReviewReplyUrl({ ...verified.snapshot, ...(existing?.review_snapshot?.legal_hold ? { legal_hold: true } : {}) }, verified.snapshot.review_reply_url || existing?.review_snapshot?.review_reply_url), expected_reply: verified.expected_reply, reply_text: reply, draft_source: source, status: isReply ? 'approval_pending' : 'open', note: String(body.note || '').trim().slice(0, 2000), version: existing ? existing.version + 1 : 1, updated_by: user.id, updated_at: now, last_error: null, attempt_id: null, approved_by: null, approved_at: null, published_at: null };
   if (aiAnalysis) values.review_snapshot.ai_analysis=aiAnalysis;
+  if (existing?.review_snapshot?.edited_review && verified.expected_reply) values.review_snapshot.edited_review = true;
   const result = existing
     ? await db.from(workTable).update(values).eq('connection_id', connectionId).eq('id', existing.id).eq('version', existing.version).in('status', existing.status === 'published' && body.edit_published === true ? ['published'] : ['approval_pending', 'publish_failed', 'draft_failed']).select('*').maybeSingle()
     : await db.from(workTable).insert({ ...values, created_by: user.id }).select('*').single();
@@ -696,6 +717,23 @@ async function assertAutomaticReply(db: any, item: any) {
   if(policy.data?.auto_reply_enabled!==true || item.kind!=='reply' || item.draft_source!=='openai' || ![4,5].includes(Number(snapshot.rating)) || analysis.requires_human_review!==false || !analysis.generation_id || unsafe || snapshot.legal_hold || snapshot.rejection || snapshot.reply_conflict) throw new RequestError('Yorum otomatik yayın koşullarını karşılamıyor; insan onayı gerekli.',409);
   const generation=await verifyAiGeneration(db,analysis.generation_id,{reviewId:item.review_id,branchId:item.branch_id,replyText:item.reply_text});
   if(generation.requires_human_review!==false)throw new RequestError('AI değerlendirmesi insan onayı gerektiriyor.',409);
+}
+async function notifyEditedReview(db: any, item: any, published: boolean) {
+  try {
+    const connection = await db.from('google_business_connections').select('connected_by').eq('id',connectionId).maybeSingle();
+    databaseFailure(connection.error);
+    if (!connection.data?.connected_by) return;
+    const result = await db.from('google_review_notifications').upsert({
+      connection_id:connectionId, branch_id:item.branch_id, user_id:connection.data.connected_by,
+      review_id:item.review_id, event:published ? 'reply_published' : 'new_review',
+      title:published ? 'Değişen yorumun yanıtı güncellendi' : 'Müşteri yorumunu güncelledi',
+      body:published ? 'Yeni yanıt Google üzerinde doğrulandı.' : 'Yorum ajanı güncel yorum için bir AI taslağı hazırladı.',
+      source_key:'review-edit:'+item.id+':'+item.version+':'+(published?'published':'draft')
+    }, {onConflict:'connection_id,branch_id,user_id,source_key',ignoreDuplicates:true});
+    databaseFailure(result.error);
+  } catch {
+    console.warn('Yorum değişikliği bildirimi kaydedilemedi.');
+  }
 }
 async function publishWork(db: any, user: any, body: any, token: string) {
   const item = await getWork(db, body), verifyOnly = body.action === 'verify_reply';
@@ -763,16 +801,16 @@ async function publishWork(db: any, user: any, body: any, token: string) {
     if (state === 'REJECTED') return { item: await finishPublication(db, item, attemptId, { status: 'publish_failed', review_snapshot: { ...replySnapshot, google_reply_accepted: true }, last_error: `Google yanıtı reddetti${replySnapshot.google_reply_policy_violation ? ` (${replySnapshot.google_reply_policy_violation})` : ''}. Metni inceleyip yeniden kaydedin; yeni onay gerekir.` }) };
     if (state && state !== 'APPROVED') return { item: await finishPublication(db, item, attemptId, { status: 'publish_unknown', review_snapshot: { ...replySnapshot, google_reply_accepted: true }, last_error: sentPendingMessage }) };
     if (!claim.data.approved_by || !claim.data.approved_at) throw new RequestError('Kayıtlı insan onayı olmadan yayın doğrulanamaz.', 409);
-    return { item: await finishPublication(db, item, attemptId, { status: 'published', review_snapshot: replySnapshot, published_at: reply.updateTime || now, last_error: null }), ...(alreadyPublished ? { already_published: true } : {}) };
+    const published = await finishPublication(db, item, attemptId, { status: 'published', review_snapshot: replySnapshot, published_at: reply.updateTime || now, last_error: null });
+    if (replySnapshot.edited_review && !sameGoogleReply(item.expected_reply, item.reply_text)) await notifyEditedReview(db, published, true);
+    return { item: published, ...(alreadyPublished ? { already_published: true } : {}) };
   }
   let writeStarted = false, writeDefinitelyRejected = false;
   try {
     const live = await readReview();
-    if(body.action==='auto_publish_safe'){
-      const stars=({ONE:1,TWO:2,THREE:3,FOUR:4,FIVE:5} as Record<string,number>)[live.starRating];
-      if(stars!==Number(item.review_snapshot?.rating)||String(live.comment||'')!==String(item.review_snapshot?.comment||''))throw new RequestError('Google yorumu değişti. Yeni değerlendirme ve onay gerekli.',409);
-      await assertAutomaticReply(db,item);
-    }
+    if (!verifyOnly && (body.action === 'auto_publish_safe' || item.review_snapshot?.edited_review) &&
+        !matchesReviewSnapshot(live, item.review_snapshot)) throw new RequestError('Google yorumu değişti. Yeni değerlendirme ve onay gerekli.',409);
+    if (body.action === 'auto_publish_safe') await assertAutomaticReply(db,item);
     const currentReply = String(live.reviewReply?.comment || '');
     if (sameGoogleReply(currentReply, item.reply_text)) return await matchedReply(live.reviewReply, true);
     if (verifyOnly) {
@@ -835,7 +873,17 @@ Deno.serve(async (req) => {
       lifecycle:async(connection:any)=>assertReviewLifecycle({db,connection,branchId:managementBranchId}),
       sync:async(connection:any)=>syncReviews([managementBranchId],await accessToken(await decrypt(connection.refresh_token_encrypted)),AbortSignal.timeout(25000)),
       find:async(review:any,branch:any)=>preparationItem(db,workIdentity({branch_id:managementBranchId,account_id:branch.account_id,location_id:branch.location_id,review_id:review.reviewId})),
-      prepare:async(user:any,connection:any,review:any,branch:any,token:string)=>{const r=await prepareDraft(db,user,{branch_id:managementBranchId,account_id:branch.account_id,location_id:branch.location_id,review_id:review.reviewId},connection,'Worker '+token);if(r.item?.status==='approval_pending')await recordAiOutcome(db,{item:r.item,actorId:user.id,action:'saved'});return r;},
+      prepare:async(user:any,connection:any,review:any,branch:any,token:string,replacement:any)=>{
+        const r=await prepareDraft(db,user,{
+          branch_id:managementBranchId,account_id:branch.account_id,location_id:branch.location_id,review_id:review.reviewId,
+          ...(replacement ? {edited_review:true,item_id:replacement.id,expected_version:replacement.version} : {})
+        },connection,'Worker '+token);
+        if(r.item?.status==='approval_pending'){
+          await recordAiOutcome(db,{item:r.item,actorId:user.id,action:'saved'});
+          if (replacement && !r.existing && !r.skipped) await notifyEditedReview(db,r.item,false);
+        }
+        return r;
+      },
       safe:async(item:any)=>assertAutomaticReply(db,item),
       publish:async(user:any,item:any,connection:any)=>{await assertReviewLifecycle({db,connection,branchId:managementBranchId});const r=await publishWork(db,user,{action:'auto_publish_safe',branch_id:managementBranchId,item_id:item.id,expected_version:item.version,approved:true},await accessToken(await decrypt(connection.refresh_token_encrypted)));await writeGoogleAudit(db,{userId:user.id,role:'ADMIN',action:'auto_publish_safe',entityType:'review_work_item',entityId:item.id,afterState:{status:r.item?.status},detail:'Sunucu otomasyonu: risksiz 4–5 yıldız.'});if(r.item?.status==='published')await recordAiOutcome(db,{item:r.item,actorId:user.id,action:'published'});return r;}
     }));
