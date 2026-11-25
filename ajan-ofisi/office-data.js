@@ -161,6 +161,11 @@ window.OFFICE_DATA = {
           "id": "SEO-02",
           "name": "İçerik ve yerel SEO",
           "scope": "Sayfa içeriği ve yerel arama planı; Google yorum operasyonları REV ekibinde"
+        },
+        {
+          "id": "SEO-03",
+          "name": "Sosyal Medya ve SEO İçerik Ajanı",
+          "scope": "Doğrulanmış saha vakalarından blog ve LinkedIn taslakları; Codex’te talep üzerine"
         }
       ]
     }
