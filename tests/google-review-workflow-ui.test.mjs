@@ -491,3 +491,13 @@ test('editing an existing Google reply without an ERP draft only saves a draft',
   assert.equal(saved.reply_text,'A saved replacement');
   assert.equal(h.shared.state.calls.some(call=>call.action==='publish_reply'),false);
 });
+
+test('an alternative for a Google reply without an ERP draft saves without publishing', async () => {
+  const review = {...REVIEW, isReplied:true, replyText:'Existing Google reply'};
+  const h = ui(server(), BRANCH, review);
+  const saved = await h.api.manageReview(review.id,'regenerate',{replacePublished:true});
+  assert.equal(saved.status,'approval_pending');
+  assert.ok(saved.reply_text);
+  assert.equal(h.shared.state.calls.find(call => call.action === 'save_draft').edit_published,true);
+  assert.equal(h.shared.state.calls.some(call => call.action === 'publish_reply'),false);
+});

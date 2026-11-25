@@ -17,6 +17,19 @@ export async function automationStatus(db: any) {
   if (state.error || runs.error || ai.error) throw Object.assign(new Error('Servis durumu okunamadı.'),{status:503});
   return {automation:state.data,runs:runs.data||[],ai:ai.data?.[0]||null,checked_at:new Date().toISOString()};
 }
+const googleStars: Record<string, number> = { ONE:1, TWO:2, THREE:3, FOUR:4, FIVE:5 };
+export function matchesReviewSnapshot(review: any, snapshot: any) {
+  return Boolean(review && snapshot) && String(review.comment || '').slice(0, 6000) === snapshot.comment &&
+    googleStars[review.starRating] === Number(snapshot.rating);
+}
+export function canRevisePublishedReply(review: any, item: any) {
+  const snapshot = item?.review_snapshot;
+  const priorReply = item?.status === 'published' ? item.reply_text :
+    item?.status === 'approval_pending' && snapshot?.edited_review ? item.expected_reply : '';
+  return item?.draft_source === 'openai' && typeof snapshot?.comment === 'string' &&
+    !snapshot.legal_hold && !snapshot.rejection && !matchesReviewSnapshot(review, snapshot) &&
+    Boolean(priorReply?.trim()) && String(review.reviewReply?.comment || '').trim() === priorReply.trim();
+}
 // Dependencies use the same Google read, AI validation and publication code as the ERP.
 export async function runAutomation(db: any, workerToken: string, deps: any) {
   await verifyWorker(db,workerToken);
@@ -39,11 +52,21 @@ export async function runAutomation(db: any, workerToken: string, deps: any) {
     if(deps.observe)try{await deps.observe(branch);}catch{console.warn('Office notification observation unavailable');}
     const pending=branch.reviews.filter((r:any)=>!String(r.reviewReply?.comment||'').trim());
     // A bounded batch protects provider quotas and the edge request deadline.
-    for(const review of pending) {
+    const byId = new Map(branch.reviews.map((review:any) => [review.reviewId,review]));
+    const edited = branch.reviews.filter((review:any) =>
+      String(review.reviewReply?.comment || '').trim() &&
+      Date.parse(review.updateTime) > Date.parse(review.createTime));
+    for(const review of [...edited, ...pending]) {
       if(counts.prepared>=2 || Date.now()-started>85000) break;
-      const existing=await deps.find(review,branch);
-      if(existing) continue; // Failed drafts need explicit retry; no unbounded paid retry loop.
-      const result=await deps.prepare(user,connection,review,branch,workerToken);
+      let existing;
+      try { existing=await deps.find(review,branch); } catch(error:any) {
+        if(error.status===409) continue;
+        throw error;
+      }
+      const replacement = canRevisePublishedReply(review, existing) ? existing : null;
+      if (existing && !replacement) continue;
+      if (!replacement && String(review.reviewReply?.comment || '').trim()) continue;
+      const result=await deps.prepare(user,connection,review,branch,workerToken,replacement);
       counts.prepared++;
       if(result.item?.status==='draft_failed') throw new Error(result.item.last_error || 'AI taslağı hazırlanamadı.');
     }
@@ -54,7 +77,11 @@ export async function runAutomation(db: any, workerToken: string, deps: any) {
     const unanswered=new Set(pending.map((r:any)=>r.reviewId));
     for(const item of queue.data||[]) {
       if(attempted>=2 || Date.now()-started>105000)break;
-      if(!unanswered.has(item.review_id))continue; // Never replace an existing Google reply.
+      const live:any = byId.get(item.review_id);
+      const replacement = item.review_snapshot?.edited_review === true &&
+        String(live?.reviewReply?.comment || '').trim() === String(item.expected_reply || '').trim() &&
+        Boolean(item.expected_reply?.trim()) && matchesReviewSnapshot(live, item.review_snapshot);
+      if (item.review_snapshot?.edited_review ? !replacement : !unanswered.has(item.review_id)) continue;
       try { await deps.safe(item); } catch(e:any) { if(e.status===409)continue; throw e; }
       attempted++;
       const result=await deps.publish(user,item,connection);

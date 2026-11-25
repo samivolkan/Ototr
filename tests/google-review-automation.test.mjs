@@ -13,7 +13,7 @@ function fixture(options={}) {
  const rows=options.reviews||[{reviewId:'safe'},{reviewId:'risk'},{reviewId:'done',reviewReply:{comment:'Existing'}}];
  const queue=options.queue||[{id:'safe',review_id:'safe'},{id:'risk',review_id:'risk'},{id:'done',review_id:'done'}];
  const db={rpc:async()=>{if(claimed||options.locked)return {data:[]};claimed=true;return {data:[state]};},from(table){let values=null;const query={select(){return this},eq(){return this},order(){return this},limit(){return this},maybeSingle(){return this},insert(v){values=v;return this},update(v){values=v;return this},then(resolve){if(values)writes.push({table,values});return Promise.resolve({data:values|| (table==='google_review_automation'?state:queue),error:null}).then(resolve)}};return query;}};
- const deps={connection:async()=>({connection:{},user:{id:'owner'}}),lifecycle:async()=>{if(options.paused)throw new Error('paused')},sync:async()=>options.sync||({branches:[{branch_id:'branch-google-nilufer',pagination_complete:true,reviews:rows}]}),find:async()=>options.existing?{status:'draft_failed'}:null,prepare:async(u,c,r)=>{prepared.push(r.reviewId);return {item:{status:'approval_pending'}}},safe:async(item)=>{if(item.id==='risk')throw Object.assign(new Error('human'),{status:409})},publish:async(u,item)=>{published.push(item.id);return {item:{status:'published'}}}};
+ const deps={connection:async()=>({connection:{},user:{id:'owner'}}),lifecycle:async()=>{if(options.paused)throw new Error('paused')},sync:async()=>options.sync||({branches:[{branch_id:'branch-google-nilufer',pagination_complete:true,reviews:rows}]}),find:async(r)=>options.items?.[r.reviewId] ?? (options.existing?{status:'draft_failed'}:null),prepare:async(u,c,r,b,t,replacement)=>{prepared.push(replacement ? replacement.id+':'+r.reviewId : r.reviewId);return {item:{status:'approval_pending'}}},safe:async(item)=>{if(item.id==='risk')throw Object.assign(new Error('human'),{status:409})},publish:async(u,item)=>{published.push(item.id);return {item:{status:'published'}}}};
  return {state,db,deps,writes,published,prepared};
 }
 test('worker rejects missing, forged and disabled credentials before doing any work',async()=>{
@@ -42,4 +42,23 @@ test('existing failed work does not trigger unbounded paid regeneration',async()
 });
 test('AI batch is bounded to two and does not touch replied reviews',async()=>{
  const f=fixture({reviews:[1,2,3,4].map(n=>({reviewId:String(n)})),queue:[]});await context.runAutomation(f.db,token,f.deps);assert.equal(f.prepared.length,2);
+});
+
+test('edited reviews regenerate only ERP AI replies that still match Google',async()=>{
+ const review={reviewId:'edited',comment:'Updated',starRating:'FIVE',createTime:'2026-01-01',updateTime:'2026-01-02',reviewReply:{comment:'Existing'}};
+ const item={id:'work',status:'published',draft_source:'openai',reply_text:'Existing',review_snapshot:{comment:'Before',rating:5}};
+ for(const [source,expected] of [[item,['work:edited']],[{...item,draft_source:'manual'},[]],[{...item,reply_text:'Another reply'},[]],[{...item,review_snapshot:{comment:'Updated',rating:5}},[]]]){
+  const f=fixture({reviews:[review],items:{edited:source},queue:[]});
+  await context.runAutomation(f.db,token,f.deps);
+  assert.deepEqual(f.prepared,expected);
+ }
+});
+test('an edited draft only replaces the same Google reply for the same comment version',async()=>{
+ const row={reviewId:'edited',starRating:'FIVE',comment:'Updated',reviewReply:{comment:'Existing'}};
+ const item={id:'work',review_id:'edited',expected_reply:'Existing',review_snapshot:{edited_review:true,comment:'Updated',rating:5}};
+ for(const [review,expected] of [[row,['work']],[{...row,comment:'Changed again'},[]],[{...row,reviewReply:{comment:'Other'}},[]],[{...row,reviewReply:null},[]]]){
+  const f=fixture({reviews:[review],items:{edited:item},queue:[item]});
+  await context.runAutomation(f.db,token,f.deps);
+  assert.deepEqual(f.published,expected);
+ }
 });

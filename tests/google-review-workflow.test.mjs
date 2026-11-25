@@ -1070,3 +1070,23 @@ test('preparation retry retains a legal hold through both AI failure and success
   assert.equal((await f.request(publishBody(complete.data.item))).status, 409);
   assert.equal(f.state.putCount, 0);
 });
+
+test('an explicit replacement can save under the verified account for the same Google review', async () => {
+  const f = workflowFixture();
+  const initial = await saveDraft(f);
+  f.rows[0].status = 'published';
+  f.rows[0].review_snapshot.edited_review = true;
+  f.setRemoteReply(REPLY);
+  const result = await f.request({
+    action: 'save_draft', ...TARGET, account_id: '789', item_id: initial.id,
+    expected_version: initial.version, edit_published: true, draft_source: 'manual',
+    reply_text: 'Only an internal replacement draft'
+  });
+  assert.equal(result.status, 200);
+  assert.equal(f.rows.length, 1);
+  assert.equal(result.data.item.account_id, '789');
+  assert.equal(result.data.item.expected_reply, REPLY);
+  assert.equal(result.data.item.status, 'approval_pending');
+  assert.equal(result.data.item.review_snapshot.manual_replacement, true);
+  assert.equal(result.data.item.review_snapshot.edited_review, undefined);
+});
