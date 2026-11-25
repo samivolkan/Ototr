@@ -1,0 +1,7 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+globalThis.window={dispatchEvent(){}};const storage=new Map();globalThis.sessionStorage={getItem:k=>storage.get(k),setItem:(k,v)=>storage.set(k,v)};
+const {load,reset,addCase,advance,stageOf,decisionCount}=await import('../web/assets/demo-store.mjs');
+test('decision cannot be bypassed; more info returns; stop prevents further progress',()=>{reset();let job=load().cases[0];for(let i=0;i<5;i++)advance(job.id);assert.equal(stageOf(job)[3],'decision');assert.throws(()=>advance(job.id),/kararı/);advance(job.id,'more');assert.equal(job.stage,1);for(let i=0;i<4;i++)advance(job.id);advance(job.id,'stop');const stage=job.stage;advance(job.id,'approve');assert.equal(job.stage,stage);assert.equal(job.status,'stopped');});
+test('ten pending decisions prevent creation; resolving one releases capacity',()=>{reset();for(let i=0;i<10;i++){const job=i===0?load().cases[0]:addCase('franchise','Örnek');for(let n=0;n<5;n++)advance(job.id);}assert.equal(decisionCount(),10);assert.throws(()=>addCase('appointment','Örnek'),/10/);advance(load().cases[0].id,'approve');assert.equal(decisionCount(),9);assert.ok(addCase('appointment','Örnek').id.startsWith('DEMO-RD'));});
+test('complete flows stop advancing and IDs are unique',()=>{reset();const first=addCase('content','Örnek');for(let i=0;i<10;i++)advance(first.id);assert.equal(first.status,'complete');assert.equal(first.stage,3);const next=addCase('content','Örnek');assert.notEqual(first.id,next.id);});

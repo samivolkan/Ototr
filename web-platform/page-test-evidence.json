@@ -1,119 +1,155 @@
 {
-  "testedAt": "2026-11-25T01:26:38.630Z",
+  "testedAt": "2026-11-25T01:50:23.823Z",
   "results": [
+    {
+      "path": "/web/destek",
+      "status": 200,
+      "htmlBytes": 8173,
+      "responseMs": 224
+    },
+    {
+      "path": "/web/rapor",
+      "status": 200,
+      "htmlBytes": 7524,
+      "responseMs": 30
+    },
+    {
+      "path": "/web/surecler",
+      "status": 200,
+      "htmlBytes": 9505,
+      "responseMs": 18
+    },
+    {
+      "path": "/web/yonetim",
+      "status": 200,
+      "htmlBytes": 9177,
+      "responseMs": 26
+    },
+    {
+      "path": "/web/ofis",
+      "status": 200,
+      "htmlBytes": 9388,
+      "responseMs": 17
+    },
+    {
+      "path": "/web/kalite",
+      "status": 200,
+      "htmlBytes": 7220,
+      "responseMs": 18
+    },
     {
       "path": "/web/",
       "status": 200,
-      "htmlBytes": 14096,
-      "responseMs": 177
+      "htmlBytes": 14878,
+      "responseMs": 25
     },
     {
       "path": "/web/paketler",
       "status": 200,
-      "htmlBytes": 10139,
+      "htmlBytes": 10828,
       "responseMs": 18
     },
     {
       "path": "/web/randevu",
       "status": 200,
-      "htmlBytes": 8714,
-      "responseMs": 18
+      "htmlBytes": 10372,
+      "responseMs": 16
     },
     {
       "path": "/web/franchise",
       "status": 200,
-      "htmlBytes": 8341,
-      "responseMs": 18
+      "htmlBytes": 9997,
+      "responseMs": 16
     },
     {
       "path": "/web/subeler",
       "status": 200,
-      "htmlBytes": 7122,
-      "responseMs": 16
+      "htmlBytes": 7810,
+      "responseMs": 24
     },
     {
       "path": "/web/blog",
       "status": 200,
-      "htmlBytes": 6946,
-      "responseMs": 15
+      "htmlBytes": 7649,
+      "responseMs": 17
     },
     {
       "path": "/web/hakkimizda",
       "status": 200,
-      "htmlBytes": 6269,
-      "responseMs": 15
+      "htmlBytes": 6888,
+      "responseMs": 16
     },
     {
       "path": "/web/iletisim",
       "status": 200,
-      "htmlBytes": 6316,
-      "responseMs": 21
+      "htmlBytes": 7079,
+      "responseMs": 17
     },
     {
       "path": "/web/sss",
       "status": 200,
-      "htmlBytes": 6679,
-      "responseMs": 15
+      "htmlBytes": 7296,
+      "responseMs": 18
     },
     {
       "path": "/web/gizlilik",
       "status": 200,
-      "htmlBytes": 6574,
-      "responseMs": 18
+      "htmlBytes": 6951,
+      "responseMs": 16
     },
     {
       "path": "/web/hizmetler",
       "status": 200,
-      "htmlBytes": 7884,
-      "responseMs": 15
+      "htmlBytes": 8502,
+      "responseMs": 18
     },
     {
       "path": "/web/hizmetler/kaporta-boya-kontrolu",
       "status": 200,
-      "htmlBytes": 7135,
-      "responseMs": 15
+      "htmlBytes": 7775,
+      "responseMs": 16
     },
     {
       "path": "/web/hizmetler/motor-mekanik-kontrolu",
       "status": 200,
-      "htmlBytes": 7107,
+      "htmlBytes": 7748,
       "responseMs": 16
     },
     {
       "path": "/web/hizmetler/elektronik-obd-kontrolu",
       "status": 200,
-      "htmlBytes": 7180,
+      "htmlBytes": 7822,
       "responseMs": 17
     },
     {
       "path": "/web/subeler/bursa-nilufer-oto-ekspertiz",
       "status": 200,
-      "htmlBytes": 7744,
-      "responseMs": 22
+      "htmlBytes": 8464,
+      "responseMs": 17
     },
     {
       "path": "/web/subeler/kocaeli-gebze-oto-ekspertiz",
       "status": 200,
-      "htmlBytes": 7649,
-      "responseMs": 15
+      "htmlBytes": 8369,
+      "responseMs": 16
     },
     {
       "path": "/web/blog/ekspertiz-randevusuna-hazirlik",
       "status": 200,
-      "htmlBytes": 7540,
-      "responseMs": 18
+      "htmlBytes": 8172,
+      "responseMs": 16
     },
     {
       "path": "/web/blog/ekspertiz-raporu-nasil-okunur",
       "status": 200,
-      "htmlBytes": 7431,
-      "responseMs": 14
+      "htmlBytes": 8062,
+      "responseMs": 19
     },
     {
       "path": "/web/blog/ekspertiz-paketi-secerken",
       "status": 200,
-      "htmlBytes": 7467,
-      "responseMs": 17
+      "htmlBytes": 8094,
+      "responseMs": 18
     }
   ],
   "notFound": 404,

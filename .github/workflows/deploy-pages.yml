@@ -77,6 +77,9 @@ jobs:
       - name: Verify website publishing and intake boundaries
         run: node web-platform/backend/test.mjs /tmp/ototr-office-sql/node_modules/@electric-sql/pglite/dist/index.js
 
+      - name: Verify offline website demo decision gates
+        run: node --test web-platform/demo-model.test.mjs
+
       - name: Stage public assets without backend data
         run: rsync -a --exclude='.git' --exclude='backend' --exclude='/web/' --exclude='/web-platform/router.php' --exclude='.env*' --exclude='*.sqlite*' --exclude='node_modules' ./ /tmp/ototr-pages/
 

@@ -13,5 +13,5 @@ for(const route of routes){const response=await fetch(base+'/web/'+route);assert
 await cp(new URL('../web/assets/',import.meta.url),target+'/assets',{recursive:true});
 await writeFile(target+'/sitemap.xml',sitemap);
 await cp(new URL('./static-web.config',import.meta.url),target+'/web.config');
-await writeFile(target+'/publication.json',JSON.stringify({builtAt:new Date().toISOString(),mode:'static-preview',pages:routes.length,contentUpdates:'Require rebuild and upload; form submissions use the live website API.'},null,2));
+await writeFile(target+'/publication.json',JSON.stringify({builtAt:new Date().toISOString(),mode:'offline-demo',pages:routes.length,contentUpdates:'Phase 1 demo only. No API calls or real submissions.'},null,2));
 console.log('Built '+routes.length+' pages in '+target);

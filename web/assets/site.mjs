@@ -1,34 +1,16 @@
-const API='https://bsjkohwbtrfwrqcyhsfz.supabase.co/functions/v1/website-api';
+import {addCase} from './demo-store.mjs';
 const normalize=s=>s.toLocaleLowerCase('tr-TR').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ı/g,'i');
 document.querySelector('#branchSearch')?.addEventListener('input',e=>{let n=0;document.querySelectorAll('[data-search]').forEach(el=>{el.hidden=!normalize(el.dataset.search).includes(normalize(e.target.value));if(!el.hidden)n++;});document.querySelector('#noBranches').hidden=n>0;});
-for(const form of document.querySelectorAll('.lead-form')){
- const query=new URLSearchParams(location.search);
- for(const [field,key] of [['branchSlug','sube'],['service','paket']]){const select=form.elements[field],value=query.get(key);if(select&&value&&[...select.options].some(option=>option.value===value))select.value=value;}
- const first=form.querySelector('[data-step="1"]'),second=form.querySelector('[data-step="2"]');
- function showStep(n){if(first)first.hidden=n!==1;second.hidden=n!==2;form.querySelectorAll('[data-progress]').forEach(el=>{if(Number(el.dataset.progress)===n)el.setAttribute('aria-current','step');else el.removeAttribute('aria-current');});const summary=form.querySelector('.selection-summary');if(summary){summary.hidden=n!==2;summary.textContent=[form.elements.branchSlug?.selectedOptions[0]?.textContent,form.elements.service?.value].filter(Boolean).join(' · ');}form.querySelector('fieldset:not([hidden]) input,fieldset:not([hidden]) select')?.focus({preventScroll:true});}
- form.querySelector('.next-step')?.addEventListener('click',()=>{for(const el of first.querySelectorAll('select')){if(!el.reportValidity())return;}showStep(2);});
- form.querySelector('.previous-step')?.addEventListener('click',()=>showStep(1));
- if(first&&new URLSearchParams(location.search).has('sube')&&form.elements.branchSlug.value&&form.elements.service.value)showStep(2);
- let requestId=crypto.randomUUID(),pending=null,submitting=false;
- const error=form.querySelector('.form-error'),success=form.querySelector('.form-success');
- form.addEventListener('input',()=>{if(!pending)requestId=crypto.randomUUID();});
- form.addEventListener('submit',async e=>{
-  e.preventDefault();if(submitting)return;
-  error.hidden=true;success.hidden=true;
-  if(!pending){const values=Object.fromEntries(new FormData(form));pending={...values,requestId,kvkkConsent:values.kvkkConsent==='on',processingConsent:values.processingConsent==='on',test:String(values.fullName).startsWith('TEST ')};}
-  const button=form.querySelector('[type="submit"]'),label=button.textContent;
-  submitting=true;button.disabled=true;button.textContent='Kaydediliyor…';
-  form.querySelectorAll('input,select,textarea,.previous-step').forEach(el=>el.disabled=true);
-  try{
-   const response=await fetch(API+'/'+form.dataset.kind,{method:'POST',headers:{'Content-Type':'application/json'},credentials:'omit',body:JSON.stringify(pending),signal:AbortSignal.timeout(20000)});
-   const data=await response.json();
-   if(!response.ok){if(response.status>=400&&response.status<500){pending=null;form.querySelectorAll('input,select,textarea,.previous-step').forEach(el=>el.disabled=false);}throw Error(data.error||'Talep kaydedilemedi.');}
-   const pattern=form.dataset.kind==='appointment'?/^WEB-CRM-[A-F0-9]{8}$/:/^WEB-FR-[A-F0-9]{8}$/;
-   if(data.ok!==true||!pattern.test(data.referenceNo||''))throw Error('Sunucu kaydı doğrulanamadı. Aynı talebi yeniden deneyin.');
-   success.textContent=`${form.dataset.kind==='appointment'?'Randevu talebiniz':'Franchise başvurunuz'} kaydedildi. Kayıt numarası: ${data.referenceNo}. ${form.dataset.kind==='appointment'?'Tarih ve saat şube teyidiyle kesinleşir.':'Franchise ekibi başvurunuzu değerlendirecek.'}`;
-   const copy=document.createElement('button');copy.type='button';copy.className='button secondary copy-reference';copy.textContent='Kayıt numarasını kopyala';copy.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(data.referenceNo);copy.textContent='Kopyalandı';}catch{copy.textContent='Kayıt numarası: '+data.referenceNo;}});success.append(copy);
-   success.hidden=false;form.querySelectorAll('fieldset,.form-progress,.selection-summary').forEach(el=>el.hidden=true);pending=null;success.scrollIntoView({block:'center'});
-  }catch(err){error.textContent=(err.name==='TimeoutError'||err.name==='TypeError'?'Bağlantı sonucu doğrulanamadı. Bilgileriniz korunuyor; aynı talebi yeniden deneyin.':err.message);error.hidden=false;error.scrollIntoView({block:'center'});}
-  finally{submitting=false;button.disabled=false;button.textContent=pending?'Aynı talebi tekrar dene':label;}
- });
+function result(container,job){container.replaceChildren();const p=document.createElement('p');p.textContent='Demo iş oluşturuldu: '+job.id+'. Gerçek başvuru veya mesaj gönderilmedi.';const a=document.createElement('a');a.className='button';a.href='/web/ofis?is='+encodeURIComponent(job.id);a.textContent='İşi ajan ofisinde takip et';container.append(p,a);container.hidden=false;}
+for(const form of document.querySelectorAll('.demo-wizard')){
+ const steps=[...form.querySelectorAll('[data-step]')],progress=[...form.querySelectorAll('[data-progress]')],next=form.querySelector('[data-next]'),back=form.querySelector('[data-back]'),submit=form.querySelector('[type=submit]'),error=form.querySelector('.form-error');let current=0,created=false;
+ const query=new URLSearchParams(location.search);for(const [field,key] of [['branchSlug','sube'],['service','paket']]){const select=form.elements[field],value=query.get(key);if(select&&value&&[...select.options].some(o=>o.value===value))select.value=value;}
+ const date=form.elements.preferredDate;if(date){const now=new Date();const iso=d=>new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10);date.min=iso(now);date.max=iso(new Date(now.getTime()+90*86400000));}
+ function show(n){current=n;steps.forEach((s,i)=>s.hidden=i!==n);progress.forEach((s,i)=>i===n?s.setAttribute('aria-current','step'):s.removeAttribute('aria-current'));back.hidden=n===0;next.hidden=n===steps.length-1;submit.hidden=n!==steps.length-1;error.hidden=true;if(n===steps.length-1){const summary=form.querySelector('.review-summary');summary.replaceChildren();for(const [key,label]of [['branchSlug','Şube'],['service','Paket'],['vehicleType','Araç türü'],['preferredDate','Tarih tercihi'],['preferredTime','Saat tercihi'],['province','İl'],['district','İlçe'],['applicationType','Başvuru türü'],['hasLocation','Yer durumu'],['experience','Deneyim'],['timeline','Takvim'],['fullName','Örnek ad'],['phone','Örnek telefon']]){const el=form.elements[key];if(el?.value){const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=label;dd.textContent=el.tagName==='SELECT'?el.selectedOptions[0].textContent:el.value;summary.append(dt,dd);}}}steps[n].querySelector('input,select,textarea')?.focus({preventScroll:true});}
+ function valid(step){for(const el of step.querySelectorAll('input,select,textarea'))if(!el.checkValidity()){el.reportValidity();return false;}return true;}
+ next.addEventListener('click',()=>{if(valid(steps[current]))show(current+1);});back.addEventListener('click',()=>show(current-1));form.querySelector('[data-fill-example]').addEventListener('click',()=>{form.elements.fullName.value='Demo Müşteri';form.elements.phone.value='05000000000';});
+ form.addEventListener('submit',e=>{e.preventDefault();if(created)return;if(current!==steps.length-1){if(valid(steps[current]))show(current+1);return;}for(let i=0;i<steps.length;i++)if(!valid(steps[i])){show(i);return;}try{const summary=form.dataset.kind==='appointment'?'Örnek müşteri · '+form.elements.service.value+' · '+form.elements.branchSlug.selectedOptions[0].textContent:'Örnek franchise adayı · bölge ve yer değerlendirmesi';const job=addCase(form.dataset.kind,summary);created=true;steps.forEach(s=>s.hidden=true);form.querySelector('.wizard-actions').hidden=true;form.querySelector('.form-progress').hidden=true;result(form.querySelector('.form-success'),job);form.querySelector('.form-success').scrollIntoView({block:'center'});}catch(e){error.textContent=e.message;error.hidden=false;}});show(0);
 }
+document.querySelector('.simple-demo-form')?.addEventListener('submit',e=>{e.preventDefault();const f=e.currentTarget;if(!f.reportValidity())return;const box=f.querySelector('.form-success');try{result(box,addCase('support','Örnek destek · '+f.elements.topic.value));f.querySelector('[type=submit]').disabled=true;}catch(err){box.textContent=err.message;box.hidden=false;}});
+document.querySelector('#reportDemo')?.addEventListener('submit',e=>{e.preventDefault();const found=e.currentTarget.elements.reference.value.trim().toUpperCase()==='DEMO-001';document.querySelector('#reportResult').hidden=!found;const error=document.querySelector('#reportError');error.hidden=found;error.textContent='Bu demo raporu bulunamadı. DEMO-001 numarasını kullanın. Gerçek rapor sorgulanmaz.';});
+document.querySelector('#reportFollowup')?.addEventListener('click',e=>{try{result(document.querySelector('#reportFollowupStatus'),addCase('report','Örnek rapor · sunum sonrası takip'));e.currentTarget.disabled=true;}catch(err){document.querySelector('#reportFollowupStatus').textContent=err.message;}});

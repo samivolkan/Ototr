@@ -1,37 +1,21 @@
 {
-  "testedAt": "2026-11-25T01:25:15.556Z",
+  "testedAt": "2026-11-25T01:50:16.665Z",
   "base": "https://oto-tr.com",
-  "results": [
-    {
-      "viewport": 390,
-      "homeOverflow": false
-    },
-    {
-      "viewport": 360,
-      "homeOverflow": false
-    },
-    {
-      "viewport": 320,
-      "homeOverflow": false
-    },
-    {
-      "viewport": 768,
-      "homeOverflow": false
-    },
-    {
-      "viewport": 1440,
-      "homeOverflow": false
-    },
-    {
-      "appointment": "WEB-CRM-91F932BD"
-    },
-    {
-      "franchise": "WEB-FR-985777FA"
-    },
-    {
-      "runtimeErrors": [],
-      "mobileFlows": "passed",
-      "outgoingMessages": "none from website API"
-    }
-  ]
+  "layouts": [
+    320,
+    390,
+    1440
+  ],
+  "flows": [
+    "appointment-to-completion",
+    "franchise-finance-decision-return-and-approve",
+    "support",
+    "report",
+    "content-review-publish",
+    "error-empty-permission-preview",
+    "disabled-outbound"
+  ],
+  "externalOrWriteRequests": [],
+  "runtimeErrors": [],
+  "personalDataPersisted": false
 }
