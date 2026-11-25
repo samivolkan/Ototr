@@ -193,6 +193,7 @@
   const dirty = new Map();
   let pendingApproval = null, busy = false;
   const currentItem = row => getAI()?.getWorkflowItems?.().find(i=>i.kind==='reply' && i.branch_id===currentBranchId() && i.review_id===row.googleReviewId);
+  const replyProcessing = item => ['preparing','publishing','publish_unknown'].includes(item?.status);
   const isEditing = () => dirty.size>0 || Boolean(pendingApproval) || busy;
   function googleReviewLinks(row) {
     if (!row || row.demo || !row.branchId || !parentApi) return {};
@@ -298,6 +299,7 @@
     if (busy) return;
     const ai = getAI() || await ensureParentAI();
     if (!ai?.manageReview) return missing();
+    if (replyProcessing(item)) return toast('Önce devam eden yanıt işleminin sonucunu doğrulayın.','warn');
     if (item?.review_snapshot?.legal_hold) return toast('Hukuki bekletme aktif; canlı yanıt değiştirilemez.','warn');
     if (row.status !== 'gonderildi' && !item?.reply_text) return act(id,'prepare');
     busy=true; lockEditing();
@@ -315,6 +317,7 @@
     if (!row || !box || !(getAI() || await ensureParentAI())?.manageReview) return missing();
     if (busy) return;
     const item = currentItem(row);
+    if (replyProcessing(item)) return toast('Önce devam eden yanıt işleminin sonucunu doğrulayın.','warn');
     if (item?.review_snapshot?.legal_hold) return toast('Hukuki bekletme aktif; canlı yanıt değiştirilemez.','warn');
     box.readOnly=false; box.dataset.liveEditing='1'; box.focus();
     dirty.set(id,{text:box.value,version:item?.version,published:true}); lockEditing();
@@ -421,7 +424,7 @@
     if(actions && row.status!=='gonderildi'){
       actions.innerHTML=`<button class="btn p" onclick="openEmail(${row.id})" ${editable?'':'disabled'}>✓ Onayla</button><button class="btn" onclick="regenDraft(${row.id})">↻ ${item?.reply_text?'Yeniden':'Taslak hazırla'}</button><button class="btn" onclick="saveLiveDraft(${row.id})" ${editable?'':'disabled'}>Kaydet</button>${['publishing','publish_unknown','publish_failed'].includes(item?.status)?`<button class="btn" onclick="verifyLiveReply(${row.id})">Yayın sonucunu kontrol et</button>`:''}`;
     } else if(actions){
-      actions.innerHTML=`<div class="review-action-group"><h4>Yanıt</h4><div><button class="btn" onclick="editSentReply(${row.id})">Yanıtı düzenle</button><button class="btn" onclick="regenDraft(${row.id})">Alternatif AI</button>${edit?.published ? `<button class="btn p" onclick="saveLiveUpdatedReply(${row.id})">Kaydet</button><button class="btn" onclick="cancelLiveReplyEdit(${row.id})">Vazgeç</button>` : savedReplacement(item) ? `<button class="btn p" onclick="sendUpdatedReply(${row.id})">Güncel yanıtı gönder</button>` : ''}</div></div>${sentReplyFollowup(row.id)}`;
+      actions.innerHTML=replyProcessing(item) ? `<p role="status">Yanıt işleminin sonucu bekleniyor. Önce yayını doğrulayın.</p>${sentReplyFollowup(row.id)}` : `<div class="review-action-group"><h4>Yanıt</h4><div><button class="btn" onclick="editSentReply(${row.id})">Yanıtı düzenle</button><button class="btn" onclick="regenDraft(${row.id})">Alternatif AI</button>${edit?.published ? `<button class="btn p" onclick="saveLiveUpdatedReply(${row.id})">Kaydet</button><button class="btn" onclick="cancelLiveReplyEdit(${row.id})">Vazgeç</button>` : savedReplacement(item) ? `<button class="btn p" onclick="sendUpdatedReply(${row.id})">Güncel yanıtı gönder</button>` : ''}</div></div>${sentReplyFollowup(row.id)}`;
     }
     const label=document.querySelector('.draft-label .chip');
     if(label)label.textContent=row.status==='gonderildi'?(savedReplacement(item)?'Kaydedilmiş taslak':'Google yanıtı'):item?`${item.draft_source==='openai'?'OpenAI':item.draft_source==='manual'?'Elle düzenlenen':'Şablon'} · ${item.review_snapshot?.rejection ? 'Reddedildi · yeniden düzenleyin' : item.status}`:'ERP taslağı bekleniyor';

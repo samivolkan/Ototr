@@ -664,7 +664,12 @@ async function saveWork(db: any, user: any, body: any, token: string) {
   let existingQuery = db.from(workTable).select('*').eq('connection_id', connectionId).eq('location_id', identity.location_id).eq('review_id', identity.review_id).eq('kind', kind);
   const { data: existing, error } = await existingQuery.maybeSingle(); databaseFailure(error);
   if (source==='openai' && !body.generation_id && !(existing?.draft_source==='openai' && existing.reply_text===reply)) source='manual';
-  if (existing && existing.account_id !== identity.account_id) throw new RequestError('Bu Google yorumu başka hesap eşleşmesiyle kayıtlı. Mevcut görevi kullanın; hedef otomatik değiştirilmedi.', 409);
+  // Google can expose one location through a new account wrapper. Rebind only
+  // an explicitly selected reply after the live location and review were verified.
+  const explicitReplacement = isReply && body.edit_published === true && Boolean(verified.expected_reply.trim()) &&
+    existing?.branch_id === identity.branch_id && existing.id === body.item_id && existing.version === body.expected_version;
+  if (existing && (existing.branch_id !== identity.branch_id ||
+      (existing.account_id !== identity.account_id && !explicitReplacement))) throw new RequestError('Bu Google yorumu başka hesap eşleşmesiyle kayıtlı. Mevcut görevi kullanın; hedef otomatik değiştirilmedi.', 409);
   if (existing && !isReply) return { item: existing, existing: true };
   if (existing && !body.item_id) {
     if (existing.reply_text === reply && existing.status === 'approval_pending') return { item: existing, existing: true };
@@ -681,7 +686,7 @@ async function saveWork(db: any, user: any, body: any, token: string) {
   }
   const values = { ...identity, kind, review_snapshot: withReviewReplyUrl({ ...verified.snapshot, ...(existing?.review_snapshot?.legal_hold ? { legal_hold: true } : {}) }, verified.snapshot.review_reply_url || existing?.review_snapshot?.review_reply_url), expected_reply: verified.expected_reply, reply_text: reply, draft_source: source, status: isReply ? 'approval_pending' : 'open', note: String(body.note || '').trim().slice(0, 2000), version: existing ? existing.version + 1 : 1, updated_by: user.id, updated_at: now, last_error: null, attempt_id: null, approved_by: null, approved_at: null, published_at: null };
   if (aiAnalysis) values.review_snapshot.ai_analysis=aiAnalysis;
-  if (existing?.review_snapshot?.edited_review && verified.expected_reply) values.review_snapshot.edited_review = true;
+  if (isReply && verified.expected_reply) values.review_snapshot.manual_replacement = true;
   const result = existing
     ? await db.from(workTable).update(values).eq('connection_id', connectionId).eq('id', existing.id).eq('version', existing.version).in('status', existing.status === 'published' && body.edit_published === true ? ['published'] : ['approval_pending', 'publish_failed', 'draft_failed']).select('*').maybeSingle()
     : await db.from(workTable).insert({ ...values, created_by: user.id }).select('*').single();
@@ -714,7 +719,7 @@ async function assertAutomaticReply(db: any, item: any) {
   const policy=await db.from('google_review_policies').select('auto_reply_enabled').eq('connection_id',connectionId).maybeSingle();databaseFailure(policy.error);
   const snapshot=item.review_snapshot||{}, analysis=snapshot.ai_analysis||{};
   const unsafe=/avukat|dava|hukuk|mahkeme|tazminat|dolandır|kişisel veri|ayrımcılık|güvenlik|can güven|ücret iade|ciddi teknik/i.test(String(snapshot.comment||''));
-  if(policy.data?.auto_reply_enabled!==true || item.kind!=='reply' || item.draft_source!=='openai' || ![4,5].includes(Number(snapshot.rating)) || analysis.requires_human_review!==false || !analysis.generation_id || unsafe || snapshot.legal_hold || snapshot.rejection || snapshot.reply_conflict) throw new RequestError('Yorum otomatik yayın koşullarını karşılamıyor; insan onayı gerekli.',409);
+  if(policy.data?.auto_reply_enabled!==true || item.kind!=='reply' || item.draft_source!=='openai' || ![4,5].includes(Number(snapshot.rating)) || analysis.requires_human_review!==false || !analysis.generation_id || unsafe || snapshot.legal_hold || snapshot.rejection || snapshot.reply_conflict || snapshot.manual_replacement) throw new RequestError('Yorum otomatik yayın koşullarını karşılamıyor; insan onayı gerekli.',409);
   const generation=await verifyAiGeneration(db,analysis.generation_id,{reviewId:item.review_id,branchId:item.branch_id,replyText:item.reply_text});
   if(generation.requires_human_review!==false)throw new RequestError('AI değerlendirmesi insan onayı gerektiriyor.',409);
 }
