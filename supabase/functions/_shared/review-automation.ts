@@ -58,7 +58,11 @@ export async function runAutomation(db: any, workerToken: string, deps: any) {
       Date.parse(review.updateTime) > Date.parse(review.createTime));
     for(const review of [...edited, ...pending]) {
       if(counts.prepared>=2 || Date.now()-started>85000) break;
-      const existing=await deps.find(review,branch);
+      let existing;
+      try { existing=await deps.find(review,branch); } catch(error:any) {
+        if(error.status===409) continue;
+        throw error;
+      }
       const replacement = canRevisePublishedReply(review, existing) ? existing : null;
       if (existing && !replacement) continue;
       if (!replacement && String(review.reviewReply?.comment || '').trim()) continue;
