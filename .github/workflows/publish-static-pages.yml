@@ -39,7 +39,7 @@ jobs:
           printf '{"version":"%s","date":"%s","time":"%s","commit":"%s","run":%s}\n' "$VERSION" "$DATE" "$TIME" "${GITHUB_SHA:0:7}" "$GITHUB_RUN_NUMBER" > release.json
 
       - name: Stage public assets without backend data
-        run: rsync -a --exclude='.git' --exclude='backend' --exclude='.env*' --exclude='*.sqlite*' --exclude='node_modules' ./ /tmp/ototr-pages/
+        run: rsync -a --exclude='.git' --exclude='backend' --exclude='/web/' --exclude='/web-platform/router.php' --exclude='.env*' --exclude='*.sqlite*' --exclude='node_modules' ./ /tmp/ototr-pages/
 
       - name: Upload static site
         uses: actions/upload-pages-artifact@v3

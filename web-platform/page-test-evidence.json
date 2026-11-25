@@ -1,122 +1,123 @@
 {
-  "testedAt": "2026-11-25T00:51:30.060Z",
+  "testedAt": "2026-11-25T01:26:38.630Z",
   "results": [
     {
       "path": "/web/",
       "status": 200,
-      "htmlBytes": 10634,
-      "responseMs": 1191
+      "htmlBytes": 14096,
+      "responseMs": 177
     },
     {
       "path": "/web/paketler",
       "status": 200,
-      "htmlBytes": 5805,
-      "responseMs": 560
+      "htmlBytes": 10139,
+      "responseMs": 18
     },
     {
       "path": "/web/randevu",
       "status": 200,
-      "htmlBytes": 6132,
-      "responseMs": 629
+      "htmlBytes": 8714,
+      "responseMs": 18
     },
     {
       "path": "/web/franchise",
       "status": 200,
-      "htmlBytes": 5985,
-      "responseMs": 548
+      "htmlBytes": 8341,
+      "responseMs": 18
     },
     {
       "path": "/web/subeler",
       "status": 200,
-      "htmlBytes": 4766,
-      "responseMs": 1021
+      "htmlBytes": 7122,
+      "responseMs": 16
     },
     {
       "path": "/web/blog",
       "status": 200,
-      "htmlBytes": 4590,
-      "responseMs": 557
+      "htmlBytes": 6946,
+      "responseMs": 15
     },
     {
       "path": "/web/hakkimizda",
       "status": 200,
-      "htmlBytes": 3913,
-      "responseMs": 550
+      "htmlBytes": 6269,
+      "responseMs": 15
     },
     {
       "path": "/web/iletisim",
       "status": 200,
-      "htmlBytes": 3960,
-      "responseMs": 553
+      "htmlBytes": 6316,
+      "responseMs": 21
     },
     {
       "path": "/web/sss",
       "status": 200,
-      "htmlBytes": 4323,
-      "responseMs": 537
+      "htmlBytes": 6679,
+      "responseMs": 15
     },
     {
       "path": "/web/gizlilik",
       "status": 200,
-      "htmlBytes": 4218,
-      "responseMs": 1049
+      "htmlBytes": 6574,
+      "responseMs": 18
     },
     {
       "path": "/web/hizmetler",
       "status": 200,
-      "htmlBytes": 5528,
-      "responseMs": 1079
+      "htmlBytes": 7884,
+      "responseMs": 15
     },
     {
       "path": "/web/hizmetler/kaporta-boya-kontrolu",
       "status": 200,
-      "htmlBytes": 4779,
-      "responseMs": 1127
+      "htmlBytes": 7135,
+      "responseMs": 15
     },
     {
       "path": "/web/hizmetler/motor-mekanik-kontrolu",
       "status": 200,
-      "htmlBytes": 4751,
-      "responseMs": 926
+      "htmlBytes": 7107,
+      "responseMs": 16
     },
     {
       "path": "/web/hizmetler/elektronik-obd-kontrolu",
       "status": 200,
-      "htmlBytes": 4824,
-      "responseMs": 569
+      "htmlBytes": 7180,
+      "responseMs": 17
     },
     {
       "path": "/web/subeler/bursa-nilufer-oto-ekspertiz",
       "status": 200,
-      "htmlBytes": 5380,
-      "responseMs": 573
+      "htmlBytes": 7744,
+      "responseMs": 22
     },
     {
       "path": "/web/subeler/kocaeli-gebze-oto-ekspertiz",
       "status": 200,
-      "htmlBytes": 5285,
-      "responseMs": 869
+      "htmlBytes": 7649,
+      "responseMs": 15
     },
     {
       "path": "/web/blog/ekspertiz-randevusuna-hazirlik",
       "status": 200,
-      "htmlBytes": 5184,
-      "responseMs": 1259
+      "htmlBytes": 7540,
+      "responseMs": 18
     },
     {
       "path": "/web/blog/ekspertiz-raporu-nasil-okunur",
       "status": 200,
-      "htmlBytes": 5075,
-      "responseMs": 739
+      "htmlBytes": 7431,
+      "responseMs": 14
     },
     {
       "path": "/web/blog/ekspertiz-paketi-secerken",
       "status": 200,
-      "htmlBytes": 5111,
-      "responseMs": 1388
+      "htmlBytes": 7467,
+      "responseMs": 17
     }
   ],
   "notFound": 404,
   "sitemap": 200,
-  "visualBrowserCheck": "pending"
+  "base": "https://oto-tr.com",
+  "visualBrowserCheck": "See browser-test-evidence.json"
 }
