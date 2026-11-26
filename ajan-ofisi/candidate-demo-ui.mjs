@@ -2,7 +2,7 @@ import {scenes,questions} from './candidate-demo-data.mjs';
 import catalog from './management-data.mjs';
 import {initialState,transition,canAdvance,demoReport} from './candidate-demo-model.mjs';
 const $=s=>document.querySelector(s),esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const teams=[['FRA','Franchise'],['FIN','Finans'],['HR','İnsan Kaynakları'],['COM','Şikayet'],['REV','Yorum'],['SALE','Saha Satış'],['SEO','SEO / Web'],['DEV','Yazılım · öneri'],['SOC','Sosyal · öneri']];
+const teams=[['OPS','Operasyon'],['FRA','Franchise'],['FIN','Finans'],['HR','İnsan Kaynakları'],['COM','Şikayet'],['REV','Yorum'],['SALE','Saha Satış'],['SEO','SEO / Web'],['DEV','Yazılım · öneri'],['SOC','Sosyal · öneri']];
 const names=Object.fromEntries([...teams,['COO','Koordinatör'],['BEK','Bağımsız bekçi'],['SAMI','Sami']]);
 const experts=Object.fromEntries(catalog.modules.flatMap(m=>m.agents.map(a=>[a.id,a.name])));
 let state=initialState(),playing=false,elapsed=0,lastTick=performance.now();
