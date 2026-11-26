@@ -124,5 +124,14 @@
     "manager": "MGR-SEO",
     "department": "SEO",
     "conflictResolver": "COO-01"
+  },
+  {
+    "scope": "Şube ve iş emri aşamaları, süreler ve eksik kontrol takibi; salt okunur",
+    "owner": "OPS-01",
+    "manager": "MGR-OPS",
+    "department": "OPS",
+    "conflictResolver": "COO-01",
+    "status": "assigned_read_only",
+    "execution": "not_background"
   }
 ]

@@ -302,26 +302,28 @@ export default {
     },
     {
       "id": "OPS",
-      "name": "Ekspertiz Süreç Takibi",
-      "manager": "Şube operasyon sorumlusu · rol eşlemesi bekliyor",
-      "kind": "proposed",
-      "mission": "İş emrinden teslim sonrası memnuniyete tek takip sorumlusu",
-      "window": "Olay kaynakları doğrulandıktan sonra tek şube demo pilotu",
+      "name": "Operasyon Ajanı",
+      "manager": "MGR-OPS",
+      "kind": "assigned",
+      "mission": "Şube ve iş emri bazında aşama, sorumlu, süre ve kontrol eksiklerini GM Koordinatörüne bağla",
+      "window": "Rol eklendi · çok şubeli görünüm sıradaki aşama",
       "phase": 2,
       "risk": "veri",
-      "href": "inspection-coordinator.html",
+      "href": "branch-operations.html",
       "dependencies": [],
-      "decision": "Pilot şube ve sorumlu; süre, sorgu bütçesi ve müşteri iletişim politikası",
-      "next": "İş emri, usta girişi, sorgu, rapor sürümü, baskı, sunum ve teslim olaylarını eşleştir.",
-      "mode": "Planlandı · canlı takip ve gönderim kapalı",
+      "decision": "Bütçe, personel, politika veya mevcut yetkinin genişlemesi gerekiyorsa",
+      "next": "Yetkili şube listesi ve insan sorumlusunu doğrula; mevcut ekranı şube seçicisiyle genişlet.",
+      "mode": "Ekibe dahil · salt okunur takip",
       "agents": [
         {
-          "id": "PLAN-OPS-01",
-          "name": "Ekspertiz Süreç Takip Ajanı",
-          "scope": "Aşamaları ve istisnaları takip eder; rapor bulgusunu değiştirmez, gerçek müşteri mesajı göndermez.",
-          "deliverable": "Şube bazlı eksik/geciken iş listesi, teslim kanıtı ve onaya hazır takip planı"
+          "id": "OPS-01",
+          "name": "Operasyon Ajanı",
+          "scope": "Şube aşamaları, bekleme/işlem süreleri, eksik kontrol ve gecikme; ERP yazma ve müşteri mesajı yok.",
+          "deliverable": "Kaynaklı şube özeti, engel ve sorumlu; MGR-OPS üzerinden COO-01 için aksiyon dosyası"
         }
-      ]
+      ],
+      "managerName": "Şube Operasyon Yönetimi",
+      "plan": "OPERATIONS-AGENT-PLAN.md"
     }
   ],
   "limits": {
