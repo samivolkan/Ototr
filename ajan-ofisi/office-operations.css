@@ -18,3 +18,14 @@
 
 /* Front-facing coordinator scene; hit area excludes adjacent department desks. */
 .operations-zone{left:60%;top:26%;width:34%;height:23%;justify-content:flex-end}
+.room-label[data-team=REV]{display:grid;grid-template-columns:auto auto auto;column-gap:5px;row-gap:4px}
+.room-label[data-team=REV] .room-work-status{grid-column:1/-1;grid-row:2;text-align:left;font-size:9px;color:#a52626}
+.room-label[data-team=REV] .activity-marker{grid-column:1/-1;grid-row:3;margin:0;background:#b91c1c;color:white;animation:officeRedPulse 1.5s ease-in-out infinite}
+.room-label.team-has-work{border-color:#c53939;animation:officeRedPulse 1.5s ease-in-out infinite}
+.activity-marker{background:#b91c1c;color:#fff}
+@keyframes officeRedPulse{0%,100%{box-shadow:0 0 0 1px #be323233}50%{box-shadow:0 0 12px 3px #da373777;background-color:#ffe3df;color:#8a1313}}
+.office-master.presentation{left:89%;top:29%}
+.office-master.is-demo-working{border:2px solid #c33434;animation:officeRedPulse 1.5s ease-in-out infinite}
+.ops-simulation{border:1px solid #e1d3be;background:#f8f3e9;border-radius:10px;padding:12px;margin:14px 0}
+.ops-simulation p{font-size:11px;line-height:1.6}.ops-simulation>div{display:flex;gap:5px;flex-wrap:wrap}.ops-simulation button{font-size:11px;padding:7px}.ops-journey{list-style:none;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:5px;font-size:10px}.ops-journey li{padding:7px;border-radius:5px;background:#e9e6df}.ops-journey .current{background:#244f43;color:white}.ops-journey .done{color:#276643;background:#e1edde}.ops-handoff{font-weight:650;color:#385a43}.ops-simulation details{font-size:11px}.ops-simulation summary{cursor:pointer}
+@media(prefers-reduced-motion:reduce){.room-label.team-has-work,.activity-marker,.office-master.is-demo-working{animation:none;outline:2px solid #b91c1c}}
