@@ -22,4 +22,4 @@ jobs:
         with:
           node-version: '24'
       - name: Verify coordinator and existing office navigation
-        run: node --test ajan-ofisi/gm-koordinator/*.test.mjs tests/management-office.test.mjs tests/agent-office-nav.test.mjs tests/work-source-binding.test.mjs tests/operations-control.test.mjs tests/routing-readiness.test.mjs tests/decision-desk-client.test.mjs tests/branch-operations.test.mjs tests/candidate-demo.test.mjs
+        run: node --test ajan-ofisi/gm-koordinator/*.test.mjs tests/management-office.test.mjs tests/agent-office-nav.test.mjs tests/work-source-binding.test.mjs tests/operations-control.test.mjs tests/routing-readiness.test.mjs tests/decision-desk-client.test.mjs tests/branch-operations.test.mjs tests/branch-operations-empty.test.mjs tests/candidate-demo.test.mjs
