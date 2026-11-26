@@ -58,6 +58,9 @@ jobs:
           node --test tests/review-evidence.test.cjs
           node scripts/check-review-evidence.cjs
 
+      - name: Verify GM coordinator demo
+        run: node --test ajan-ofisi/gm-koordinator/*.test.mjs
+
       - name: Protect ERP entry screens
         run: node scripts/apply-erp-access-gate.cjs
 

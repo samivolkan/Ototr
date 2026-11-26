@@ -1,0 +1,25 @@
+name: GM Coordinator Demo Tests
+on:
+  push:
+    paths:
+      - 'ajan-ofisi/gm-koordinator/**'
+      - 'ajan-ofisi/office-data.json'
+      - 'ajan-ofisi/index.html'
+      - '.github/workflows/gm-coordinator-tests.yml'
+  pull_request:
+    paths:
+      - 'ajan-ofisi/gm-koordinator/**'
+      - 'ajan-ofisi/office-data.json'
+      - 'ajan-ofisi/index.html'
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Verify coordinator and existing office navigation
+        run: node --test ajan-ofisi/gm-koordinator/*.test.mjs tests/management-office.test.mjs tests/agent-office-nav.test.mjs tests/work-source-binding.test.mjs tests/operations-control.test.mjs tests/routing-readiness.test.mjs tests/decision-desk-client.test.mjs tests/branch-operations.test.mjs
