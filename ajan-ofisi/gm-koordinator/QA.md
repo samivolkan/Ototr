@@ -7,14 +7,14 @@ Tarih: 26 Kasım 2026. Kapsam: sentetik demo ve mevcut Ajan Ofisiyle regresyon u
 Komut:
 
 ```text
-node --test ajan-ofisi/gm-koordinator/*.test.mjs tests/management-office.test.mjs tests/agent-office-nav.test.mjs tests/work-source-binding.test.mjs tests/operations-control.test.mjs tests/routing-readiness.test.mjs tests/decision-desk-client.test.mjs
+node --test ajan-ofisi/gm-koordinator/*.test.mjs tests/management-office.test.mjs tests/agent-office-nav.test.mjs tests/work-source-binding.test.mjs tests/operations-control.test.mjs tests/routing-readiness.test.mjs tests/decision-desk-client.test.mjs tests/branch-operations.test.mjs
 ```
 
-Sonuç: **78 geçti, 0 başarısız, 0 atlanan**.
+Sonuç: **84 geçti, 0 başarısız, 0 atlanan**.
 
 - 35 demo kabul senaryosu: sahiplik, tekrar olay/komut, çakışma, eski sürüm, rol ayrımı, onay, red, veri güncelliği, bağımlılık, kesinti, mutabakat, tekrar limiti, durdurma, bağlantı, kapasite, bütçe, etki, SLA ve tam akış.
 - 11 modül entegrasyon/güvenlik testi: mevcut 7 ekip/18 uzman, bağlantılar, yayın kontrolü, harici yazma istemcisi bulunmaması, döngüsel bağımlılık, onay içeriği, yanlış teslim, geçersiz kaynak, demo izolasyonu, haftalık bütçe, eksik bağımlılık.
-- 32 mevcut ofis/operasyon regresyon testi.
+- 38 mevcut ofis/operasyon regresyon testi.
 
 ## Tarayıcı doğrulaması
 
@@ -48,6 +48,8 @@ Mobil kontrol bir tarayıcı viewport testidir; fiziksel telefon testi değildir
 4. Kaynak adı kontrolünün nesne kalıtım alanlarını kabul edebilmesi: yalnız bilinen departman listesi kabul edilir; `__proto__` testi geçti.
 5. Demo dosyalarının referans paylaşımı riski: her yeni işe bağımsız kopya verilir; iki ayrı demo durumunun izolasyon testi geçti.
 6. Döngüsel bağımlılıkların sessiz beklemesi: yeni olay sırasında döngü kontrolü eklendi; işlem atomik reddedilir.
+
+7. Eşzamanlı geliştirilen Şube Operasyon Ajanı gezinme bağlantısı ve CI testi aktarım sırasında eski tabandan gelmişti: yayın öncesi güncel ana dal karşılaştırmasıyla korundu; 6 ek şube operasyon testi geçti.
 
 ## Doğrulamanın sınırları
 
