@@ -16,8 +16,35 @@ function desk(id,name,x,z,color){const g=new THREE.Group();g.position.set(x,0,z)
  // Seated body: chair behind desk, knees under tabletop, hands at keyboard.
  box(g,.65,.12,.58,0,.62,.93,0x424e49);box(g,.65,.65,.12,0,.96,1.2,0x424e49);cylinder(g,.055,.055,.48,0,.36,.95,0x39433c);
  box(g,.62,.04,.06,0,.2,.95,0x3b453e);box(g,.06,.04,.6,0,.2,.95,0x3b453e);
- sphere(g,.27,0,1.02,.94,color,1,1.45,.65);sphere(g,.17,0,1.54,.91,0xc69b78,1,1.18,1);sphere(g,.18,0,1.62,.94,0x39322a,1,.65,1);
- for(const dx of [-.2,.2]){box(g,.16,.15,.55,dx,.69,.64,0x343e49);box(g,.14,.45,.14,dx,.43,.43,0x343e49);box(g,.17,.1,.3,dx,.21,.34,0x242c2a);const arm=box(g,.12,.14,.48,dx*1.4,1.08,.59,color);arm.rotation.x=-.18;sphere(g,.07,dx*1.4,1.04,.32,0xc69b78);}
+ const profiles={
+ FIN:{skin:0xd3aa87,hair:0x504638,width:1.12,height:1,style:'short',glasses:true,shirt:0x40516a},
+ FRA:{skin:0xb9805f,hair:0x292626,width:1.06,height:1.06,style:'short',beard:true,shirt:0x785845},
+ HR:{skin:0xe1b392,hair:0x553528,width:.88,height:1.02,style:'bun',shirt:0x8c5263},
+ COM:{skin:0x956b50,hair:0x272323,width:.96,height:.96,style:'curls',shirt:0x54766f},
+ REV:{skin:0xd6a07a,hair:0x342924,width:.9,height:1,style:'long',glasses:true,shirt:0x436f86},
+ SALE:{skin:0xbf8969,hair:0x6b4e32,width:1.18,height:1.04,style:'short',beard:true,shirt:0x9c7440},
+ SEO:{skin:0xe2bc9c,hair:0xa67843,width:.86,height:.98,style:'curls',glasses:true,shirt:0x646089},
+ COO:{skin:0xc99575,hair:0x77746e,width:1.14,height:1.08,style:'short',shirt:0x33483f},
+ GUARD:{skin:0xa77b5e,hair:0xaaa59c,width:1,height:1.02,style:'bun',glasses:true,shirt:0x746348}
+ };
+ const p=profiles[id], person=new THREE.Group();person.name='character-'+id;person.userData.profile=p;g.add(person);
+ // Scale the upper body around the seated hip, leaving hands and feet at their work surfaces.
+ const upper=new THREE.Group();upper.position.set(0,.7,.94);upper.scale.set(p.width,p.height,1);person.add(upper);
+ sphere(upper,.27,0,.32,0,p.shirt,1,1.45,.65);
+ cylinder(upper,.075,.085,.13,0,.65,-.02,p.skin);
+ sphere(upper,.17,0,.84,-.03,p.skin,.94,1.18,.95);
+ sphere(upper,.18,0,.94,0,p.hair,1,.65,1);
+ if(p.style==='long')sphere(upper,.19,0,.77,.09,p.hair,1.2,1.6,.55);
+ if(p.style==='bun')sphere(upper,.105,0,1.04,.09,p.hair);
+ if(p.style==='curls')for(let i=0;i<9;i++){const a=i*Math.PI*2/9;sphere(upper,.065,Math.cos(a)*.14,.96+((i%3)*.025),Math.sin(a)*.12,p.hair);}
+ sphere(upper,.035,0,.82,-.188,p.skin,.75,1,1.1);
+ for(const x of [-.062,.062]){sphere(upper,.019,x,.87,-.18,0x242b30,1,.8,.5);sphere(upper,.036,x*2.7,.83,-.02,p.skin,.5,1,.65);}
+ box(upper,.055,.012,.012,0,.76,-.178,0x87584b);
+ if(p.beard)sphere(upper,.11,0,.735,-.08,p.hair,1,.55,1);
+ if(p.glasses){for(const x of [-.067,.067]){const lens=box(upper,.105,.073,.013,x,.87,-.193,material(0xa8d5e0,{transparent:true,opacity:.45}));for(const y of [.832,.908])box(upper,.115,.009,.017,x,y,-.2,0x303b40);for(const dx of [-.055,.055])box(upper,.009,.076,.017,x+dx,.87,-.2,0x303b40);}box(upper,.03,.01,.02,0,.875,-.2,0x303b40);}
+ // Shirt front and lapels distinguish outfits at normal office zoom.
+ box(upper,.095,.32,.015,0,.4,-.171,0xe8e4db);
+ for(const dx of [-.2,.2]){box(person,.16,.15,.55,dx,.69,.64,0x343e49);box(person,.14,.45,.14,dx,.43,.43,0x343e49);box(person,.17,.1,.3,dx,.21,.34,0x242c2a);const arm=box(person,.12,.14,.48,dx*1.4,1.08,.59,p.shirt);arm.rotation.x=-.18;sphere(person,.07,dx*1.4,1.04,.32,p.skin);}
  // Low glass partitions keep every seat visible from either side.
  const glass=material(0xc6d7d1,{transparent:true,opacity:.16,depthWrite:false});
  for(const dx of [-1.52,1.52]){box(g,.025,1.3,2.35,dx,.82,.36,glass);for(const dz of [-.82,1.53])box(g,.035,1.5,.035,dx,.91,dz,0x44524b);box(g,.035,.035,2.35,dx,1.66,.36,0x44524b);}
