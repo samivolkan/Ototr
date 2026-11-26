@@ -398,11 +398,12 @@ export const scenes=[
       "FRA-03",
       "SEO-01",
       "SEO-02",
+      "SEO-03",
       "PLAN-SOC-01",
       "SALE-02"
     ],
     "headline": "Demo şube açıldı; takip yeni başlıyor.",
-    "story": "SEO şube sayfası kontrolünü, Sosyal Medya önerilen rolü açılış taslağını hazırlar. İnsan yayın onayı alınmış bir olay senaryoda gösterilir; içerik yayınlanmaz.",
+    "story": "SEO-03 içerik taslağını, SEO ekibi şube sayfası kontrolünü, Sosyal Medya önerilen rolü açılış taslağını hazırlar. İnsan yayın onayı alınmış bir olay senaryoda gösterilir; içerik yayınlanmaz.",
     "actions": [
       "Şube sayfası ve konum bilgisi kontrol listesi",
       "Sosyal içerik: taslak → insan onayı → demo yayın olayı",
@@ -424,6 +425,7 @@ export const scenes=[
     "day": "Açılış +30 gün",
     "team": "COM",
     "agents": [
+      "OPS-01",
       "COM-01",
       "COM-02",
       "REV-01",
@@ -432,6 +434,7 @@ export const scenes=[
     "headline": "Şikayet ve yorumlar tek kalite özetinde.",
     "story": "Örnek müşteri bekleme şikayeti insan çözüm onayıyla kapanır. Yorum uzmanı şube hedefi durumunu ve yanıt kuyruğunu izler; kişi bazlı hedef kullanılmaz.",
     "actions": [
+      "OPS-01: aşama ve bekleme kanıtlarını MGR-OPS üzerinden koordinatöre hazırlar",
       "Tekrarlayan bekleme nedeni yöneticide toplanır",
       "İnsan onaylı çözüm kaydı kontrol edilir",
       "Şube yorum hedefi ve yanıt takibi birlikte görünür"
@@ -439,6 +442,7 @@ export const scenes=[
     "output": "Operasyon ve kalite kontrolünün demo özeti hazır.",
     "advice": "Her yorumu tek tek değil, tekrar eden sorun ve gerekli aksiyonu görürsün.",
     "route": [
+      "OPS",
       "COM",
       "REV",
       "COO"

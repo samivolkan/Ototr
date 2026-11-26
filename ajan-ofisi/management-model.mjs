@@ -9,7 +9,7 @@ export function cleanNotes(raw, modules) {
 }
 export function selectedModules(modules, query='', filter='all') {
   const q=query.toLocaleLowerCase('tr');
-  return modules.filter(m=>(filter==='all'||(filter==='current'&&m.kind==='existing')||(filter==='proposed'&&m.kind==='proposed')||(filter==='first'&&m.phase===1)) && [m.name,m.mission,...m.agents.map(a=>a.name)].join(' ').toLocaleLowerCase('tr').includes(q));
+  return modules.filter(m=>(filter==='all'||(filter==='current'&&['existing','assigned'].includes(m.kind))||(filter==='proposed'&&m.kind==='proposed')||(filter==='first'&&m.phase===1)) && [m.name,m.mission,...m.agents.map(a=>a.name)].join(' ').toLocaleLowerCase('tr').includes(q));
 }
 export function planningSummary(data,notes={}) {
   return ['OTOTR · Yönetim çalışma planı','Planlama kaydıdır; canlı görev veya onay kuyruğu değildir.',
