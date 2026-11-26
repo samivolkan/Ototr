@@ -7358,6 +7358,8 @@ function dealerLiveWorkOrderFromCase(row,tasks,evidenceRows=[],answerRows=[]){
     ...window.OtotrRuhsatERP?.persistence?.(snapshot),
     id,
     supabaseId:row.id,
+    openedAtISO:row.opened_at||null,
+    livePackageCode:plan.code||null,
     liveTemplateId:row.template_id||snapshot.templateId||'',
     liveCustomerId:row.customer_id||'',
     liveVehicleId:row.vehicle_id||'',
@@ -7448,6 +7450,9 @@ function dealerLiveWorkOrderFromCase(row,tasks,evidenceRows=[],answerRows=[]){
       const answerText=latestAnswer?[latestAnswer.title,selectedLabel,answerNote.description].filter(Boolean).join(' - '):'';
       return {
         id:task.id,
+        taskKey:task.task_key||null,
+        ownerUserId:task.owner_user_id||null,
+        assignedUserId:task.assigned_user_id||null,
         station:task.title||task.task_key||('Görev '+(i+1)),
         owner:dealerLiveRoleLabel(task.assigned_role),
         scope:task.report_field_key||task.task_key||'Canlı teknik görev',

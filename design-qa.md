@@ -39,3 +39,21 @@ Browser checks passed for enable/menu/discover, disable/no links, persisted clos
 
 ## İK OTOTR variant — 2026-11-18
 Separate `ik-ototr/` copy preserves the G708 `gm-ik2/` template and storage. Variant QA and demo scope are recorded in `ik-ototr/design-qa.md` and `ik-ototr/README.md`. No existing IK2 source file was changed for this variant.
+
+# Nilüfer branch operations visual acceptance — 2026-11-26
+
+final result: passed
+
+Scope: local rendered UI and synthetic source integration, not authenticated production data acceptance.
+Reference: user-supplied codex-clipboard-d10f6243-4d11-4246-9b0f-ee9fa89d60fa.png (1672×941).
+Comparison: branch-operations-comparison.jpg contains reference and implementation side by side, each 1672×941, device scale 1. Active detail and 390×844 mobile captures were also inspected in outputs/website-review outside the published repository.
+
+- Layout: 1332px workshop + fixed 340px tracking panel at reference viewport. Opening/closing the agent preserves both widths; no dialog or fullscreen state. Four scene anchors stay relative to the uncropped image.
+- Typography: system sans stack, readable task names and stacked details. Mobile first pass had overlapping 8px labels (P1); fixed with 720px horizontally pannable scene and 10–11px labels. Automated bounding-box checks and renewed screenshot passed.
+- Color: anthracite canvas, red station borders, cyan progress, yellow elapsed time follow reference. A source-status band is intentional to distinguish example and actual records.
+- Images: custom generated workshop matches reception / two lifts / presentation, LED ceiling and white remote. Original repository logo used in header. Workshop signage is part of the generated illustration. People are illustrative, not verified employee portraits.
+- Content: task and plate labels are DOM controls, not baked into the image. Initial sample is 85/55/15 with presentation not started and total 25. Changed-task screenshot deliberately shows 20 and total 26 after a test update.
+- Interaction: agent → plate → anchored task → person/count/times, plate changes reset detail, close restores tracking, data update changes DOM without reload. Focus outlines and native controls remain available.
+- Intentional adaptations: mobile panel stacks beneath scene; lower workflow uses existing gate status text rather than inventing a new executable workflow. Current source gaps display unknown rather than mocked live names/times.
+
+No remaining P0/P1/P2 visual findings in tested states. Live ERP sign-in acceptance is still unverified; it is an integration limitation, not covered by this visual pass.
