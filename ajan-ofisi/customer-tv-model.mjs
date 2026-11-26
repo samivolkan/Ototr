@@ -9,3 +9,10 @@ export function customerView(c,now=Date.now()){
  const status=finished?'Sunum tamamlandı':presenting?'Raporunuz anlatılıyor':ready?'Aracınız sunuma hazır':report.pct===100?'Raporunuz son kontrolde':'Ekspertiz devam ediyor';
  return {id:c.id,plate:c.plate,ready:ready&&!presenting&&!finished,status,message:finished?'Teslim işlemleri için müşteri danışmanınız sizi yönlendirecek.':presenting?'Uzmanımız sonuçları sizinle birlikte değerlendiriyor.':ready?'Lütfen sunum alanına geçiniz.':report.pct===100?'Son kontrolün ardından sizi sunum alanına davet edeceğiz.':'Kontroller tamamlandığında sizi sunum alanına davet edeceğiz.',reportPct:report.pct,elapsedMinutes:Number.isFinite(elapsed(c,now))?Math.floor(elapsed(c,now)/60000):null,steps:[{title:'Araç kabul',value:intake.pct===null?'Bilgi bekleniyor':'%'+intake.pct,done:intake.pct===100},{title:'Teknik kontroller',value:tech===null?'Bilgi bekleniyor':'%'+tech,done:tech===100},{title:'Rapor hazırlığı',value:report.pct===null?'Bilgi bekleniyor':'%'+report.pct,done:report.pct===100},{title:'Rapor sunumu',value:finished?'Tamamlandı':presenting?'Sunumda':ready?'Hazır':'Sırada',done:finished}]};
 }
+
+export function customerTestView(c,station){
+ const t=c.tasks?.find(t=>t.station===station);if(!t)return null;
+ const items=(t.items||[]).filter(i=>i.required!==false&&i.applicable!==false),p=taskProgress(t);
+ const active=items.find(i=>i.id===t.currentItemId&&!i.done);
+ return {plate:c.plate,title:t.title,pct:p.pct,done:p.done,total:p.total,current:t.status==='completed'?'Bu bölümün testleri tamamlandı':t.status==='active'&&active?active.label:'Anlık test kaydı bulunmuyor',completed:items.filter(i=>i.done).slice(-3).map(i=>i.label)};
+}
