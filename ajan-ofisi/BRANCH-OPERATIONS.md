@@ -35,3 +35,10 @@ Sunumda ölçülebilir ara madde yok: Başlamadı / Sunumda / Tamamlandı; rastg
 `node --test tests/branch-operations.test.mjs` (hesaplar, aynı personelin bağımsız görevleri, sunum kapısı, veri alanı azaltma).
 Mevcut inspection-demo, operations-api/control, inspection-health, management-office ve agent-office-nav kontrolleri de geçti.
 Playwright: masaüstü 1672×1000, mobil 390×844; görsel karşılaştırma 1672×941. Ayrı test tarayıcısı kullanıldı.
+
+## 42 inç müşteri TV görünümü — 2026-11-26
+`customer-tv.html` ayrı, demo veri kullanan yatay 16:9 müşteri ekranıdır. Yönetici sayfasına müşteri görünümü bağlantısı eklendi. 1920×1080 tasarım 4K ve 1366×768 ekrana oranı korunarak sığdırılır; güvenli dış boşluk 42–48 px. Fiziksel 42 inç cihazda kontrol yapılmadı, bu çözünürlüklerde tarayıcı ölçümü yapıldı.
+Üst ortada büyük plaka, sağda müşteri dilinde aşama, rapor ilerlemesi ve geçen süre; altta dört aşama ve üç örnek plaka bulunur. Çalışan adı, iç bekleme nedeni, bulgu, telefon ve müşteri adı müşteri projeksiyonuna alınmaz. Tahmini teslim saati üretilmez.
+Araçlar 12 saniyede bir değişir. Sol/sağ ok: araç seçimi; boşluk: duraklat/devam; F veya Tam ekran: tarayıcı tam ekran isteği. Sekme görünmezken dönüş durur. Ses üretimi ve anons bağlantısı yoktur.
+“Sunuma hazır”: yalnız açık hazır teyidi, aynı rapor sürümüne ait baskı ve sunuma uygunluk teyidi ve %100 rapor ilerlemesi birlikte varsa görünür. %100 tek başına çağrı oluşturmaz. Örnek üçüncü araçta bu teyitler sentetik olarak vardır. Gerçek ERP yayını bu TV sayfasına henüz bağlanmadı.
+Test: dört model testi; 1080p/4K/768 ölçülerinde taşma, plaka seçimi, durum/renk değişimi, duraklatma, müşteri alanı ayrımı ve JavaScript hata kontrolü geçti. Tasarım ekran görüntüleri outputs/website-review/customer-tv-*.png dosyalarında tutulur.
