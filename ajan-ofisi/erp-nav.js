@@ -4,6 +4,19 @@
   function mount() {
     const nav = document.getElementById('nav');
     if (!nav) return;
+    let tv = nav.querySelector('[data-customer-tv]');
+    if (!tv) {
+      tv = document.createElement('div');
+      tv.className = 'nav-node';
+      tv.dataset.customerTv = '';
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.setAttribute('aria-label', 'Müşteri TV Ekranı — 42 inç demo görünümü');
+      button.innerHTML = '<i data-lucide="tv" aria-hidden="true"></i><span>Müşteri TV Ekranı · 42 inç</span>';
+      button.addEventListener('click', () => window.location.assign(new URL('ajan-ofisi/customer-tv.html', document.baseURI).href));
+      tv.append(button);
+      nav.prepend(tv);
+    }
     let item = nav.querySelector('[data-agent-office]');
     if (!item) {
       item = document.createElement('div');
@@ -20,6 +33,7 @@
     } else if (nav.firstElementChild !== item) {
       nav.prepend(item);
     }
+    if (item.nextElementSibling !== tv) item.after(tv);
   }
   mount();
   new MutationObserver(mount).observe(document.documentElement, {childList: true, subtree: true});
