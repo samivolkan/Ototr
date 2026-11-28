@@ -193,6 +193,7 @@
   const dirty = new Map();
   let pendingApproval = null, busy = false;
   const currentItem = row => getAI()?.getWorkflowItems?.().find(i=>i.kind==='reply' && i.branch_id===currentBranchId() && i.review_id===row.googleReviewId);
+  const replyConflict = item => item?.status === 'publish_failed' && item.review_snapshot?.reply_conflict === true;
   const replyProcessing = item => ['preparing','publishing','publish_unknown'].includes(item?.status);
   const isEditing = () => dirty.size>0 || Boolean(pendingApproval) || busy;
   function googleReviewLinks(row) {
@@ -418,7 +419,7 @@
     box.readOnly=!editable;
     box.maxLength=4000;
     if(edit)box.value=edit.text;
-    else if(item && (row.status!=='gonderildi' || savedReplacement(item)))box.value=item.reply_text||'';
+    else if(item && (row.status!=='gonderildi' || savedReplacement(item) || replyConflict(item)))box.value=item.reply_text||'';
     box.oninput=()=>{dirty.set(row.id,{text:box.value,version:edit?.version ?? item?.version,published:Boolean(edit?.published)});pendingApproval=null;lockEditing();};
     const actions=document.querySelector('#rvTab-detail .actions');
     if(actions && row.status!=='gonderildi'){
@@ -426,8 +427,23 @@
     } else if(actions){
       actions.innerHTML=replyProcessing(item) ? `<p role="status">Yanıt işleminin sonucu bekleniyor. Önce yayını doğrulayın.</p>${sentReplyFollowup(row.id)}` : `<div class="review-action-group"><h4>Yanıt</h4><div><button class="btn" onclick="editSentReply(${row.id})">Yanıtı düzenle</button><button class="btn" onclick="regenDraft(${row.id})">Alternatif AI</button>${edit?.published ? `<button class="btn p" onclick="saveLiveUpdatedReply(${row.id})">Kaydet</button><button class="btn" onclick="cancelLiveReplyEdit(${row.id})">Vazgeç</button>` : savedReplacement(item) ? `<button class="btn p" onclick="sendUpdatedReply(${row.id})">Güncel yanıtı gönder</button>` : ''}</div></div>${sentReplyFollowup(row.id)}`;
     }
+    if (actions && replyConflict(item)) {
+      const notice=document.createElement('div');
+      notice.setAttribute('role','status');
+      const message=document.createElement('p');
+      message.textContent='Google’daki yanıt değişti. Taslağınızı yeniden kaydedip onaylayın.';
+      notice.append(message);
+      const reply=document.createElement('details');
+      const summary=document.createElement('summary');
+      summary.textContent='Google’daki güncel yanıtı göster';
+      const text=document.createElement('p');
+      text.textContent=item.review_snapshot.current_reply || 'Google’da mevcut yanıt yok.';
+      reply.append(summary,text);
+      notice.append(reply);
+      actions.prepend(notice);
+    }
     const label=document.querySelector('.draft-label .chip');
-    if(label)label.textContent=row.status==='gonderildi'?(savedReplacement(item)?'Kaydedilmiş taslak':'Google yanıtı'):item?`${item.draft_source==='openai'?'OpenAI':item.draft_source==='manual'?'Elle düzenlenen':'Şablon'} · ${item.review_snapshot?.rejection ? 'Reddedildi · yeniden düzenleyin' : item.status}`:'ERP taslağı bekleniyor';
+    if(label)label.textContent=row.status==='gonderildi'?(replyConflict(item)?'Yeniden incelenecek taslak':savedReplacement(item)?'Kaydedilmiş taslak':'Google yanıtı'):item?`${item.draft_source==='openai'?'OpenAI':item.draft_source==='manual'?'Elle düzenlenen':'Şablon'} · ${item.review_snapshot?.rejection ? 'Reddedildi · yeniden düzenleyin' : item.status}`:'ERP taslağı bekleniyor';
     return result;
   };
   const originalOverview = window.renderOverview;
